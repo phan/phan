@@ -1,0 +1,9 @@
+./includes/cli.php
+./phan
+./includes/ast_util.php
+./includes/pass1.php
+./includes/pass2.php
+./includes/log.php
+./includes/arginfo.php
+./includes/util.php
+./run-tests.php

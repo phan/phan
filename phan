@@ -1,0 +1,66 @@
+#!/usr/bin/env php
+<?php
+namespace phan;
+
+$time_start = microtime(true);
+
+// Grab these before we define our own classes
+$internal_classes = get_declared_classes();
+
+require __DIR__.'/includes/log.php';
+require __DIR__.'/includes/cli.php';
+require __DIR__.'/includes/util.php';
+require __DIR__.'/includes/pass1.php';
+require __DIR__.'/includes/pass2.php';
+require __DIR__.'/includes/arginfo.php';
+require __DIR__.'/includes/ast_util.php';
+
+// Globals where we store everything
+$classes = [];
+$functions = [];
+$summary = [ 'classes'=>0, 'traits'=>0, 'methods'=>0, 'functions'=>0, 'closures'=>0, 'conditionals'=>0 ];
+$scope = [];
+$namespace = null;
+
+// First add all the internal classes and functions
+add_internal($internal_classes);
+
+// Then the user-defined
+foreach($files as $file) {
+	$ast = \ast\parse_file($file);
+	if($dump_ast) echo $file."\n".str_repeat("\u{00AF}",strlen($file))."\n".ast_dump($ast)."\n";
+	else {
+		$namespace = null;	// Namespaces are file-scoped
+		pass1($file, false, $ast, 'global');
+	}
+}
+if($dump_ast) exit;
+
+// Check for any redefinitions
+check_classes($classes);
+check_functions($functions);
+
+$scope['global'] = [ 'vars'=>['_GET'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
+                              '_POST'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
+                              '_COOKIE'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
+                              '_REQUEST'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
+                              '_SERVER'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
+                              '_FILES'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
+                              'GLOBALS'=>['type'=>'array', 'tainted'=>false, 'tainted_by'=>''] ] ];
+
+// The second pass looks at the execution blocks themselves
+foreach($files as $file) {
+	$ast = \ast\parse_file($file);
+	$namespace = null;	// Namespaces are file-scoped
+	pass2($file, $ast, 'global');
+}
+
+if($dump_scope) dump_scope($scope);
+else if($dump_user_functions) dump_functions('user');
+else {
+	$summary['time'] = (microtime(true)-$time_start);
+	$summary['total_files'] = count($files);
+
+	Log::display($summary);
+}
+
