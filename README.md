@@ -118,7 +118,7 @@ and check that, before doing the same to `c()`.
 There is a `$scope` global hash which keeps track of all variables. It mimics PHP's scope handling in that it
 has a `$scope['global']` along with entries for each function, method and closure. This is used to detect
 undefined variables and also type-checked on a `return $var`. There is a debugging feature which will let
-you dump the scope. `phan -s test.php`. If `test.php` is:
+you dump the scope. If `test.php` is:
 
 ```php
 <?php
@@ -222,7 +222,7 @@ almost no re-factoring and cleanup yet. Please give me a hand with that.
 
 Look through the code for `TODO` comments and see if you can tackle any of those.
 
-And this last one is something anyone can help with. The [arginfo][arginfo.php] file is not
+And this last one is something anyone can help with. The [arginfo.php][arginfo] file is not
 complete. It was generated and then hand-edited but with currently around 8500 entries, there
 are mistakes. Many of them even. You will notice them when you scan your own code. Please help me
 fix it. Hopefully the format is self-explanatory, especially if you read the comment at the top
