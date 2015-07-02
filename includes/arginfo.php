@@ -19,7 +19,7 @@ namespace phan;
  * A '=' following the <arg_name> indicates this arg is optional.
  *
  * The <arg_name> can also be '...' to indicate the arg is variadic.
- * '...=' indicates it is borth variadic and optional.
+ * '...=' indicates it is both variadic and optional.
  */
 
 $internal_arginfo = [
