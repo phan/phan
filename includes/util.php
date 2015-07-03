@@ -2,7 +2,7 @@
 namespace phan;
 
 function add_class($class_name, $flags) {
-	global $classes;
+	global $classes, $internal_arginfo;
 
 	$lc = strtolower($class_name);
 	$class = new \ReflectionClass($class_name);
@@ -38,28 +38,35 @@ function add_class($class_name, $flags) {
 		$meth = new \ReflectionMethod($class_name, $method->name);
 		$required = $meth->getNumberOfRequiredParameters();
 		$optional = $meth->getNumberOfParameters() - $required;
-		$classes[$lc]['methods'][strtolower($method->name)] = [
-															  'file'=>'internal',
-															  'conditional'=>false,
-															  'flags'=>$meth->getModifiers(),
-															  'lineno'=>0,
-															  'endLineno'=>0,
-															  'name'=>$method->name,
-															  'docComment'=>'',
-															  'required'=>$required,
-															  'optional'=>$optional,
-															  'ret'=>null
-															];
+		$lmname = strtolower($method->name);
+		$classes[$lc]['methods'][$lmname] = [
+                                              'file'=>'internal',
+                                              'conditional'=>false,
+                                              'flags'=>$meth->getModifiers(),
+                                              'lineno'=>0,
+                                              'endLineno'=>0,
+                                              'name'=>$method->name,
+                                              'docComment'=>'',
+                                              'required'=>$required,
+                                              'optional'=>$optional,
+                                              'ret'=>null
+		                                    ];
+		$arginfo = null;
+		if(!empty($internal_arginfo["{$class_name}::{$method->name}"])) {
+			$arginfo = $internal_arginfo["{$class_name}::{$method->name}"];
+			$classes[$lc]['methods'][$lmname]['ret'] = $arginfo[0];
+		}
 		foreach($method->getParameters() as $param) {
 			$flags = 0;
 			if($param->isPassedByReference()) $flags |= \ast\flags\PARAM_REF;
 			if($param->isVariadic()) $flags |= \ast\flags\PARAM_VARIADIC;
-			$classes[$lc]['methods'][strtolower($method->name)]['params'][strtolower($param->name)] =
+			$classes[$lc]['methods'][strtolower($method->name)]['params'][] =
 				 [ 'file'=>'internal',
 				   'flags'=>$flags,
 				   'lineno'=>0,
 				   'name'=>$param->name,
-				   'type'=>$param->getType(),
+#				   'type'=>$param->getType(),
+				   'type'=>(empty($arginfo) ? null : next($arginfo)),
 				   'def'=>null
 				 ];
 

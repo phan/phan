@@ -5119,6 +5119,7 @@ $internal_arginfo = [
 'DateTimeImmutable::diff' => ['DateInterval', 'datetime2'=>'datetime', 'absolute='=>'bool'],
 'DateTime::add' => ['DateTime', 'interval'=>'dateinterval'],
 'DateTime::format' => ['DateTime', 'format'=>'string'],
+'date_format' => ['DateTime', 'obj'=>'DateTime', 'format'=>'string'],
 'DateTimeImmutable::format' => ['DateTimeImmutable', 'format'=>'string'],
 'DateTimeImmutable::add' => ['DateTimeImmutable', 'interval'=>'dateinterval'],
 'DateTime::createFromFormat' => ['DateTime', 'format'=>'string', 'time'=>'string', 'timezone='=>'datetimezone'],
