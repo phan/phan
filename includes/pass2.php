@@ -1142,7 +1142,7 @@ function add_var_scope(string $cs, string $name, string $type, $replace_type = f
 }
 
 function superglobal(string $var):bool {
-	return in_array($var, ['_GET','_POST','_COOKIE','_REQUEST','_SERVER','_ENV','GLOBALS']);
+	return in_array($var, ['_GET','_POST','_COOKIE','_REQUEST','_SERVER','_ENV','_FILES','GLOBALS']);
 }
 /*
  * Local variables:
