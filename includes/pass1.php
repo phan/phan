@@ -222,14 +222,24 @@ function node_func($file, $conditional, $node, $current_scope, $namespace='') {
 					if(!empty($dc['params'][$k]['type'])) {
 						$scope[$current_scope]['vars'][$v['name']] = ['type'=>$dc['params'][$k]['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
 					} else {
-						if(!empty($v['def'])) {
-							$scope[$current_scope]['vars'][$v['name']] = ['type'=>node_type($file, $v['def'], $current_scope), 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
-						} else {
-							$scope[$current_scope]['vars'][$v['name']] = ['type'=>'', 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
-						}
+						$scope[$current_scope]['vars'][$v['name']] = ['type'=>'', 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
 					}
 				} else {
 					$scope[$current_scope]['vars'][$v['name']] = ['type'=>$v['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
+				}
+				if(array_key_exists('def', $v)) {
+					$type = node_type($file, $v['def'], $current_scope);
+					if($type==="NULL") {
+						add_type($current_scope, $v['name'], $type, $current_scope);
+						$result['params'][$k]['type'] .= '|NULL';
+					} else {
+						if($scope[$current_scope]['vars'][$v['name']]['type'] !== '') {
+							// Does the default value match the declared type?
+							if(!type_check($type, $scope[$current_scope]['vars'][$v['name']]['type'])) {
+								Log::err(Log::ETYPE, "Default value for {$scope[$current_scope]['vars'][$v['name']]['type']} parameter can't be $type", $file, $node->lineno);
+							}
+						}
+					}
 				}
 				$i++;
 			}
