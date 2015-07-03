@@ -366,6 +366,29 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 				}
 				break;
 
+			case \ast\AST_NEW:
+					if($ast->children[0]->kind == \ast\AST_NAME) {  //  non-dynamic new
+						$class_name = $ast->children[0]->children[0];
+						if($class_name == 'self' || $class_name == 'static') $class_name = $current_class['name'];
+						if($class_name == 'parent') $class_name = $current_class['parent'];
+						if(empty($classes[$namespace.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
+							Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $ast->lineno);
+						} else {
+							$method_name = '__construct';  // No type checking for PHP4-style constructors
+							$method = find_method($namespace.$class_name, $method_name);
+							if($method) $class_name = $namespace.$class_name;
+							else $method = find_method($class_name, $method_name);
+							if($method) { // Found a constructor
+								arg_check($file, $ast, $method_name, $method, $current_scope, $class_name);
+								if($method['file'] != 'internal') {
+									// re-check the function's ast with these args
+									if(!$quick_mode) pass2($method['file'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
+								}
+							}
+						}
+					}
+					break;
+
 			case \ast\AST_STATIC_CALL:
 				$found = false;
 				$call = $ast->children[0];
@@ -405,21 +428,17 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 			case \ast\AST_METHOD_CALL:
 				if(($ast->children[0] instanceof \ast\Node) && $ast->children[0]->kind == \ast\AST_VAR) {
 					if(!($ast->children[0]->children[0] instanceof \ast\Node)) {
-						if(false && $ast->children[0]->children[0] == 'this') {
-							list($class_name,) = explode('::',$current_scope,2);
-						} else {
-							if(empty($scope[$current_scope]['vars'][$ast->children[0]->children[0]]) ||
-							   strpos($scope[$current_scope]['vars'][$ast->children[0]->children[0]]['type'], ':')===false) {
-								// TODO: Something too dynamic is going on here - might be able to track stuff a bit better here
-								break;
-							}
-							$call = $scope[$current_scope]['vars'][$ast->children[0]->children[0]]['type'];
-							foreach(explode('|',$call) as $c) {
-								if(strpos($c,':')===false) continue;
-								list(,$class_name) = explode(':',$c);
-								if(!empty($class_name)) continue;
-								if(!empty($classes[strtolower($class_name)])) break;
-							}
+						if(empty($scope[$current_scope]['vars'][$ast->children[0]->children[0]]) ||
+						   strpos($scope[$current_scope]['vars'][$ast->children[0]->children[0]]['type'], ':')===false) {
+							// TODO: Something too dynamic is going on here - might be able to track stuff a bit better here
+							break;
+						}
+						$call = $scope[$current_scope]['vars'][$ast->children[0]->children[0]]['type'];
+						foreach(explode('|',$call) as $c) {
+							if(strpos($c,':')===false) continue;
+							list(,$class_name) = explode(':',$c);
+							if(!empty($class_name)) continue;
+							if(!empty($classes[strtolower($class_name)])) break;
 						}
 						if(empty($class_name)) break;
 						if(empty($classes[$namespace.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
@@ -580,7 +599,7 @@ function arg_check(string $file, $ast, string $func_name, $func, string $current
 	$taint = false;
 
 	// Are we calling it with the right number of args?
-	if($ast->kind == \ast\AST_CALL) $arglist = $ast->children[1];
+	if($ast->kind == \ast\AST_CALL || $ast->kind == \ast\AST_NEW) $arglist = $ast->children[1];
 	else  $arglist = $ast->children[2];
 
 	$argcount = count($arglist->children);
