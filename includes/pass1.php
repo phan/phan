@@ -40,7 +40,9 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 											'properties' => [],
 											'constants'  => [],
 											'traits'	 => [],
+											'interfaces' => [],
 											'methods'	 => [] ];
+				$classes[strtolower($current_class)]['interfaces'] = array_merge($classes[strtolower($current_class)]['interfaces'], node_namelist($ast->children[1]));
 				$summary['classes']++;
 				break;
 
@@ -136,14 +138,13 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 }
 
 function node_namelist($node) {
+	$result = [];
 	if($node instanceof \ast\Node) {
-		$result = [];
 		foreach($node->children as $name_node) {
 			$result[] = strtolower((string)$name_node->children[0]);
 		}
-		return $result;
 	}
-	assert(false, "$node was not an \\ast\\Node");
+	return $result;
 }
 
 function node_paramlist($file, $node, &$req, &$opt, $dc) {
