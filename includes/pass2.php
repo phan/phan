@@ -155,6 +155,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 		}
 		switch($ast->kind) {
 			case \ast\AST_ASSIGN:
+			case \ast\AST_ASSIGN_REF:
 				var_assign($file, $ast, $current_scope, $vars);
 				foreach($vars as $k=>$v) {
 					if(empty($v)) $v = ['type'=>'mixed', 'tainted'=>false, 'tainted_by'=>''];
