@@ -8,4 +8,4 @@ function test(int $arg, int $arg2=1.5, A $arg3=null) { }
 test(1, 2, null);
 
 --EXPECTF--
-%s:4 TypeError Default value for int parameter can't be float
+%s:4 TypeError Default value for int $arg2 can't be float

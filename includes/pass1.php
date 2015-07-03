@@ -236,7 +236,7 @@ function node_func($file, $conditional, $node, $current_scope, $namespace='') {
 						if($scope[$current_scope]['vars'][$v['name']]['type'] !== '') {
 							// Does the default value match the declared type?
 							if(!type_check($type, $scope[$current_scope]['vars'][$v['name']]['type'])) {
-								Log::err(Log::ETYPE, "Default value for {$scope[$current_scope]['vars'][$v['name']]['type']} parameter can't be $type", $file, $node->lineno);
+								Log::err(Log::ETYPE, "Default value for {$scope[$current_scope]['vars'][$v['name']]['type']} \${$v['name']} can't be $type", $file, $node->lineno);
 							}
 						}
 					}
