@@ -81,6 +81,7 @@ See the [tests][tests] directory for some examples of the various checks.
 
 ## Planned
 
+* [Obsolescence](#obsolescence)
 * Array element tracking (generics-like)
 * Class consts and properties
 * Namespace mapping
@@ -99,12 +100,12 @@ the bug. And once you have done that, fix it. Then turn your code snippet into a
 
 ## How it works
 
-One of the big changes in PHP 7 is the fact that the parser now uses a real 
+One of the big changes in PHP 7 is the fact that the parser now uses a real
 Abstract Syntax Tree ([AST][php7ast]). This makes it much easier to write code
 analysis tools by pulling the tree and walking it looking for interesting things.
 
 Phan has 2 passes. On the first pass it reads every file, gets the AST and recursively parses it
-looking only for functions, methods and classes in order to populate a bunch of 
+looking only for functions, methods and classes in order to populate a bunch of
 global hashes which will hold all of them. It also loads up definitions for all internal
 functions and classes. The type info for these come from a big file called [arginfo.php][arginfo].
 [Pass1][pass1] is quite simple to follow.
@@ -228,6 +229,14 @@ complete. It was generated and then hand-edited but with currently around 8500 e
 are mistakes. Many of them even. You will notice them when you scan your own code. Please help me
 fix it. Hopefully the format is self-explanatory, especially if you read the comment at the top
 of the file.
+
+### Obsolescence
+
+I don't actually want to write, nor maintain a static analyzer. This is a placeholder and
+proof-of-concept designed to inspire and enourage others to write something better. We need
+a practical and pragmatic analyzer that we can just point at a bunch of code and have it
+tell us about any issues in it. Bits and pieces of this, especially [arginfo.php][arginfo]
+and maybe the tests will likely surive long-term, but much of it probably won't.
 
   [phpast]: https://github.com/nikic/php-ast
   [scrutinizer]: https://scrutinizer-ci.com/docs/guides/php/automated-code-reviews
