@@ -795,44 +795,35 @@ function arglist_type_check($file, $arglist, $func, $current_scope):array {
 // float->int is not
 function type_check($src, $dst):bool {
 	global $classes;
-	static $typemap = ['integer'=>'int','double'=>'float','boolean'=>'bool','callback'=>'callable','false'=>'bool','true'=>'bool'];
+	static $typemap = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback' ],
+                        ['int',     'float',   'bool',    'bool',  'bool', 'callable' ]];
 
-	if(empty($dst) || empty($src) || $dst=='mixed' || $src=='mixed') return true;
-	$src = strtolower($src);
-	$dst = strtolower($dst);
-	$src = $typemap[$src] ?? $src;
-	$dst = $typemap[$dst] ?? $dst;
-	if($src=='int' && $dst=='float') return true;
-	if(($src=='array' || $src=='string') && $dst=='callable') return true;
-	if($src == 'NULL') return true;
-	$src = str_replace('object:','',$src);
-	$dst = str_replace('object:','',$dst);
-	if(strcasecmp($src,$dst) === 0) return true;
+	// Fast-track most common cases first
+	if($src===$dst) return true;
+	if(empty($dst) || empty($src)) return true;
 	if(strpos("|$src|", '|mixed|') !== false) return true;
 	if(strpos("|$dst|", '|mixed|') !== false) return true;
+	if($src==='int' && $dst==='float') return true;
 
-	$src = type_map($src);
-	$dst = type_map($dst);
-
-	if($src == 'object' && !type_scalar($dst) && $dst!='array') return true;
-	if($dst == 'object' && !type_scalar($src) && $src!='array') return true;
+	$src = str_replace($typemap[0], $typemap[1], strtolower($src));
+	$dst = str_replace($typemap[0], $typemap[1], strtolower($dst));
+	$src = str_replace('object:','',$src);
+	$dst = str_replace('object:','',$dst);
 
 	// our own union types
 	foreach(explode('|',$src) as $s) {
 		foreach(explode('|',$dst) as $d) {
-			if(substr($s,0,8)=='callable') $s = 'callable';
-			if(substr($d,0,8)=='callable') $d = 'callable';
-			if($d == $s) return true;
-			if(($s=='string' || $s=='array') && $d=='callable') return true;
-			if($s == 'object' && !type_scalar($d) && $d!='array') return true;
-			if($d == 'object' && !type_scalar($s) && $s!='array') return true;
-			if(!in_array($s, ['string','int','float','bool','callable','array','object','null','void','mixed','resource'])) {
-				if($d=='object') return true;
-				// Perhaps it is an object, see if it is a descendant
-			}
+			if(substr($s,0,9)=='callable:') $s = 'callable';
+			if(substr($d,0,9)=='callable:') $d = 'callable';
+			if($s===$d) return true;
+			if($s==='int' && $d==='float') return true; // int->float is ok
+			if(($s==='array' || $s==='string') && $d==='callable') return true;
+			if($s === 'object' && !type_scalar($d) && $d!=='array') return true;
+			if($d === 'object' && !type_scalar($s) && $s!=='array') return true;
+			if(strpos($s,'[]')!==false && $d==='array') return true;
+			if(strpos($d,'[]')!==false && $s==='array') return true;
 		}
 	}
-
 	return false;
 }
 
