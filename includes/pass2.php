@@ -390,12 +390,18 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 					break;
 
 			case \ast\AST_STATIC_CALL:
-				$found = false;
+				$found = $static_call_ok = false;
 				$call = $ast->children[0];
 				if($call->kind == \ast\AST_NAME) {  // Simple static function call
 					$class_name = $call->children[0];
-					if($class_name == 'self' || $class_name == 'static') $class_name = $current_class['name'];
-					if($class_name == 'parent') $class_name = $current_class['parent'];
+					if($class_name == 'self' || $class_name == 'static') {
+						$class_name = $current_class['name'];
+						$static_call_ok = true;
+					}
+					if($class_name == 'parent') {
+						$class_name = $current_class['parent'];
+						$static_call_ok = true;
+					}
 					// If the class doesn't exist
 					if(empty($classes[$namespace.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
 						Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $ast->lineno);
@@ -413,7 +419,9 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 						} else if($method != 'dynamic') {
 							// Was it declared static?
 							if(!($method['flags'] & \ast\flags\MODIFIER_STATIC)) {
-								Log::err(Log::ESTATIC, "static call to non-static method {$class_name}::{$method_name}() defined at {$method['file']}:{$method['lineno']}", $file, $ast->lineno);
+								if(!$static_call_ok) {
+									Log::err(Log::ESTATIC, "static call to non-static method {$class_name}::{$method_name}() defined at {$method['file']}:{$method['lineno']}", $file, $ast->lineno);
+								}
 							}
 							arg_check($file, $ast, $method_name, $method, $current_scope, $class_name);
 							if($method['file'] != 'internal') {
