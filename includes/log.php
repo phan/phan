@@ -9,6 +9,7 @@ class Log {
 	protected static $instance;
 	protected $output_mode  = 'verbose'; // 'json', 'csv', ?
 	protected $output_order = 'chrono';  // 'type', 'file' ?
+	protected $output_filename = '';
 	const EREDEF  =  1;
 	const EUNDEF  =  2;
 	const ETYPE   =  3;
@@ -49,6 +50,11 @@ class Log {
 		$log->output_mode = $mode;
 	}
 
+	public static function setFilename(string $filename) {
+		$log = self::getInstance();
+		$log->output_filename = $filename;
+	}
+
 	public static function err(int $etype, string $msg, string $file='', int $lineno=0) {
 		$log = self::getInstance();
 		if($etype == self::EFATAL) {
@@ -68,29 +74,33 @@ class Log {
 
 	public static function display(array $summary=[]) {
 		$log = self::getInstance();
+		$out = '';
+		if(!empty($log->output_filename)) $fp = fopen($log->output_filename, "w");
+		else $fp = fopen("php://stdout","w");
 		switch($log->output_mode) {
 			case 'verbose':
 				if(!empty($summary)) {
 					$t = round($summary['time'],2);
-					echo "Files scanned:	{$summary['total_files']}\n";
-					echo "Time:		{$t}s\n";
-					echo "Classes:	{$summary['classes']}\n";
-					echo "Methods:	{$summary['methods']}\n";
-					echo "Functions:	{$summary['functions']}\n";
-					echo "Closures:	{$summary['closures']}\n";
-					echo "Traits:		{$summary['traits']}\n";
-					echo "Conditionals:	{$summary['conditionals']}\n";
-					echo "Issues found:	".count($log->msgs)."\n";
-					echo "\n";
+					$out .= "Files scanned: {$summary['total_files']}\n";
+					$out .= "Time:		{$t}s\n";
+					$out .= "Classes:	{$summary['classes']}\n";
+					$out .= "Methods:	{$summary['methods']}\n";
+					$out .= "Functions:	{$summary['functions']}\n";
+					$out .= "Closures:	{$summary['closures']}\n";
+					$out .= "Traits:		{$summary['traits']}\n";
+					$out .= "Conditionals:	{$summary['conditionals']}\n";
+					$out .= "Issues found:	".count($log->msgs)."\n\n";
+					fputs($fp, $out);
 				}
 				// Fall-through
 			case 'short':
 				foreach($log->msgs as $e) {
-					echo "{$e['file']}:{$e['lineno']} ".self::ERRS[$e['etype']]." {$e['msg']}\n";
+					fputs($fp, "{$e['file']}:{$e['lineno']} ".self::ERRS[$e['etype']]." {$e['msg']}\n");
 				}
 				break;
 			// TODO: json and csv
 		}
+		fclose($fp);
 	}
 }
 

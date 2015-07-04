@@ -5,10 +5,11 @@ error_reporting(-1);
 ini_set("memory_limit", -1);
 
 // Parse command line args
-$opts = getopt("f:m:hasuqp");
+$opts = getopt("f:m:o:hasuqp");
 $pruneargv = array();
 $files = [];
 $dump_ast = $dump_scope = $dump_user_functions = $quick_mode = $progress_bar = false;
+
 foreach($opts as $key=>$value) {
 	switch($key) {
 		case 'h': usage(); break;
@@ -38,6 +39,9 @@ foreach($opts as $key=>$value) {
 		case 'p':
 			$progress_bar = true;
 			break;
+		case 'o':
+			Log::setFilename($value);
+			break;
 		default: usage("Unknown option '-$key'"); break;
 	}
 }
@@ -64,6 +68,7 @@ Usage: {$argv[0]} [options] [files...]
   -f <filename>   A file containing a list of PHP files to be analyzed
   -q              Quick mode - doesn't recurse into all function calls
   -m <mode>       Output mode: verbose, short, json, csv
+  -o <filename>   Output filename
   -p              Show progress bar
   -a              Dump AST of provides files (for debugging)
   -s              Dump scope tree (for debugging)
@@ -76,9 +81,11 @@ EOB;
 
 function progress(string $msg, float $p) {
 	echo "\r$msg ";
-	echo str_repeat("\u{25b0}", (int)($p*60));
-	echo str_repeat("\u{25b1}", (int)((1-$p)*60));
-	echo " ".(int)(100*$p)."%";
+	$current = (int)($p * 60);
+	$rest = 60 - $current;
+	echo str_repeat("\u{25b0}", $current);
+	echo str_repeat("\u{25b1}", $rest);
+	echo " ".sprintf("% 3d",(int)(100*$p))."%";
 }
 /*
  * Local variables:
