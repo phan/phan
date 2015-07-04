@@ -26,7 +26,12 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 				} else {
 					$current_class = $namespace.$ast->name;
 				}
-				if(!empty($ast->children[0])) $parent = $namespace.$ast->children[0]->children[0];
+				if(!empty($ast->children[0])) {
+					$parent = $ast->children[0]->children[0];
+					if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+						$parent = $namespace.$parent;
+					}
+				}
 				else $parent = null;
 				$classes[strtolower($current_class)] = [
 											'file'		 => $file,

@@ -330,12 +330,19 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 				if($call->kind == \ast\AST_NAME) {
 					$func_name = $call->children[0];
 					$found = null;
-					if(!empty($functions[strtolower($namespace.$func_name)])) {
-						$cs = $namespace.$func_name;
-						$found = $functions[strtolower($namespace.$func_name)];
-					} else if(!empty($functions[strtolower($func_name)])) {
-						$cs = $func_name;
-						$found = $functions[strtolower($func_name)];
+					if($call->flags & \ast\flags\NAME_NOT_FQ) {
+						if(!empty($functions[strtolower($namespace.$func_name)])) {
+							$cs = $namespace.$func_name;
+							$found = $functions[strtolower($namespace.$func_name)];
+						} else if(!empty($functions[strtolower($func_name)])) {
+							$cs = $func_name;
+							$found = $functions[strtolower($func_name)];
+						}
+					} else {
+						if(!empty($functions[strtolower($func_name)])) {
+							$cs = $func_name;
+							$found = $functions[strtolower($func_name)];
+						}
 					}
 					if(!$found) Log::err(Log::EUNDEF, "call to undefined function {$func_name}()", $file, $ast->lineno);
 					else {
@@ -371,12 +378,16 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 						$class_name = $ast->children[0]->children[0];
 						if($class_name == 'self' || $class_name == 'static') $class_name = $current_class['name'];
 						if($class_name == 'parent') $class_name = $current_class['parent'];
-						if(empty($classes[$namespace.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
+						$use_ns = $namespace;
+						if($ast->children[0]->flags & \ast\flags\NAME_FQ) {
+							$use_ns = '';
+						}
+						if(empty($classes[$use_ns.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
 							Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $ast->lineno);
 						} else {
 							$method_name = '__construct';  // No type checking for PHP4-style constructors
-							$method = find_method($namespace.$class_name, $method_name);
-							if($method) $class_name = $namespace.$class_name;
+							$method = find_method($use_ns.$class_name, $method_name);
+							if($method) $class_name = $use_ns.$class_name;
 							else $method = find_method($class_name, $method_name);
 							if($method) { // Found a constructor
 								arg_check($file, $ast, $method_name, $method, $current_scope, $class_name);
@@ -402,14 +413,18 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 						$class_name = $current_class['parent'];
 						$static_call_ok = true;
 					}
+					$use_ns = $namespace;
+					if($call->flags & \ast\flags\NAME_FQ) {
+						$use_ns = '';
+					}
 					// If the class doesn't exist
-					if(empty($classes[$namespace.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
+					if(empty($classes[$use_ns.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
 						Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $ast->lineno);
 					} else {
 						// The class is declared, but does it have the method?
 						$method_name = $ast->children[1];
-						$method = find_method($namespace.$class_name, $method_name);
-						if($method) $class_name = $namespace.$class_name;
+						$method = find_method($use_ns.$class_name, $method_name);
+						if($method) $class_name = $use_ns.$class_name;
 						else $method = find_method($class_name, $method_name);
 						if(is_array($method) && array_key_exists('avail', $method) && !$method['avail']) {
 							Log::err(Log::EAVAIL, "method {$class_name}::{$method_name}() is not compiled into this version of PHP", $file, $ast->lineno);
@@ -568,7 +583,11 @@ function var_assign($file, $ast, $current_scope, &$vars) {
 			// This is some sort of self::${$key}  thing, give up
 			return $right_type;
 		}
-		$left_name = $namespace.$left->children[0]->children[0].'::'.$left->children[1];
+		if($left->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+			$left_name = $namespace.$left->children[0]->children[0].'::'.$left->children[1];
+		} else {
+			$left_name = $left->children[0]->children[0].'::'.$left->children[1];
+		}
 	} else {
 		$left_name = $left->children[0];
 	}
@@ -892,7 +911,8 @@ function find_method(string $class_name, $method_name) {
 		}
 	}
 	if(!empty($classes[$class_name]['parent'])) {
-		return find_method($classes[$class_name]['parent'], $method_name);
+		if(strtolower($classes[$class_name]['parent']) == $class_name) return $class_name;
+		else return find_method($classes[$class_name]['parent'], $method_name);
 	}
 	return false;
 }
@@ -916,7 +936,8 @@ function find_method_class(string $class_name, $method_name) {
 		}
 	}
 	if(!empty($classes[$class_name]['parent'])) {
-		return find_method_class($classes[$class_name]['parent'], $method_name);
+		if(strtolower($classes[$class_name]['parent']) == $class_name) return $class_name;
+		else return find_method_class($classes[$class_name]['parent'], $method_name);
 	}
 	return false;
 }
@@ -997,8 +1018,14 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 					list($class,) = explode('::',$current_scope);
 					$name = $class;
 				}
-				if(empty($classes[$namespace.strtolower($name)]) && empty($classes[strtolower($name)])) {
-					Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
+				if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+					if(empty($classes[$namespace.strtolower($name)]) && empty($classes[strtolower($name)])) {
+						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
+					}
+				} else {
+					if(empty($classes[strtolower($name)])) {
+						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
+					}
 				}
 				return 'object:'.$name;
 			}
@@ -1031,7 +1058,11 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 		} else if($node->kind == \ast\AST_CALL) {
 			if($node->children[0]->kind == \ast\AST_NAME) {
 				$func_name = $node->children[0]->children[0];
-				$func = $functions[strtolower($namespace.$func_name)] ??  $functions[strtolower($func_name)] ?? null;
+				if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+					$func = $functions[strtolower($namespace.$func_name)] ??  $functions[strtolower($func_name)] ?? null;
+				} else {
+					$func = $functions[strtolower($func_name)] ?? null;
+				}
 				if($func['file'] == 'internal' && empty($func['ret'])) {
 					if(!empty($internal_arginfo[$func_name])) {
 						return $internal_arginfo[$func_name][0] ?? 'mixed';
@@ -1048,9 +1079,14 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 			if($call->kind == \ast\AST_NAME) {  // Simple static function call
 				$class_name = $call->children[0];
 				$method_name = $node->children[1];
-				$method = find_method($namespace.$class_name, $method_name);
-				if(!$method) find_method($class_name, $method_name);
-				if($method) return $method['ret'] ?? 'mixed';
+				if($call->flags & \ast\flags\NAME_NOT_FQ) {
+					$method = find_method($namespace.$class_name, $method_name);
+					if(!$method) find_method($class_name, $method_name);
+					if($method) return $method['ret'] ?? 'mixed';
+				} else {
+					$method = find_method($class_name, $method_name);
+					if($method) return $method['ret'] ?? 'mixed';
+				}
 			} else {
 				// Weird dynamic static call - give up
 				return 'mixed';
