@@ -5,10 +5,10 @@ error_reporting(-1);
 ini_set("memory_limit", -1);
 
 // Parse command line args
-$opts = getopt("f:m:hasuq");
+$opts = getopt("f:m:hasuqp");
 $pruneargv = array();
 $files = [];
-$dump_ast = $dump_scope = $dump_user_functions = $quick_mode = false;
+$dump_ast = $dump_scope = $dump_user_functions = $quick_mode = $progress_bar = false;
 foreach($opts as $key=>$value) {
 	switch($key) {
 		case 'h': usage(); break;
@@ -34,6 +34,9 @@ foreach($opts as $key=>$value) {
 			break;
 		case 'q':
 			$quick_mode = true;
+			break;
+		case 'p':
+			$progress_bar = true;
 			break;
 		default: usage("Unknown option '-$key'"); break;
 	}
@@ -61,6 +64,7 @@ Usage: {$argv[0]} [options] [files...]
   -f <filename>   A file containing a list of PHP files to be analyzed
   -q              Quick mode - doesn't recurse into all function calls
   -m <mode>       Output mode: verbose, short, json, csv
+  -p              Show progress bar
   -a              Dump AST of provides files (for debugging)
   -s              Dump scope tree (for debugging)
   -u              Dump user defined functions (for debugging)
@@ -70,6 +74,12 @@ EOB;
   exit;
 }
 
+function progress(string $msg, float $p) {
+	echo "\r$msg ";
+	echo str_repeat("\u{25b0}", (int)($p*60));
+	echo str_repeat("\u{25b1}", (int)((1-$p)*60));
+	echo " ".(int)(100*$p)."%";
+}
 /*
  * Local variables:
  * tab-width: 4

@@ -230,8 +230,8 @@ function node_func($file, $conditional, $node, $current_scope, $namespace='') {
 				if(array_key_exists('def', $v)) {
 					$type = node_type($file, $v['def'], $current_scope);
 					if($type==="NULL") {
-						add_type($current_scope, $v['name'], $type, $current_scope);
-						$result['params'][$k]['type'] .= '|NULL';
+						add_type($current_scope, $v['name'], $type);
+						if(!empty($result['params'][$k]['type'])) $result['params'][$k]['type'] .= '|NULL';
 					} else {
 						if($scope[$current_scope]['vars'][$v['name']]['type'] !== '') {
 							// Does the default value match the declared type?
