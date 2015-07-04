@@ -507,8 +507,8 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 // For pass-by-ref args, we suppress the not defined error message
 function var_type($file, $node, $current_scope, &$taint, $check_var_exists=true) {
 	global $scope, $tainted_by;
-	// Check for $$var (whose idea was that anyway?)
-	if(($node->children[0] instanceof \ast\Node) && ($node->children[0]->kind == \ast\AST_VAR)) {
+	// Check for $$var or ${...} (whose idea was that anyway?)
+	if(($node->children[0] instanceof \ast\Node) && ($node->children[0]->kind == \ast\AST_VAR || $node->children[0]->kind == \ast\AST_BINARY_OP)) {
 		return "mixed";
 	}
 	if(empty($scope[$current_scope]['vars'][$node->children[0]])) {
