@@ -972,6 +972,7 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 	global $classes, $functions, $namespace, $internal_arginfo;
 
 	if(!($node instanceof \ast\Node)) {
+		if($node===null) return '';
 		return(type_map(gettype($node)));
 	} else {
 		if($node->kind == \ast\AST_ARRAY) {
