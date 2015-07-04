@@ -289,6 +289,9 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 					if(strpos("|$check_type|",'|self|')!==false) {
 						$check_type = preg_replace("/\bself\b/", $current_class['name'], $check_type);
 					}
+					if(strpos("|$check_type|",'|static|')!==false) {
+						$check_type = preg_replace("/\bstatic\b/", $current_class['name'], $check_type);
+					}
 					if(strpos("|$check_type|",'|\$this|')!==false) {
 						$check_type = preg_replace("/\b\$this\b/", $current_class['name'], $check_type);
 					}
