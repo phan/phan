@@ -5,7 +5,7 @@ error_reporting(-1);
 ini_set("memory_limit", -1);
 
 // Parse command line args
-$opts = getopt("f:m:o:hasuqp");
+$opts = getopt("f:m:o:hasuqpi");
 $pruneargv = array();
 $files = [];
 $dump_ast = $dump_scope = $dump_user_functions = $quick_mode = $progress_bar = false;
@@ -42,6 +42,9 @@ foreach($opts as $key=>$value) {
 		case 'o':
 			Log::setFilename($value);
 			break;
+		case 'i':
+			Log::setOutputMask(Log::getOutputMask()^Log::EUNDEF);
+			break;
 		default: usage("Unknown option '-$key'"); break;
 	}
 }
@@ -67,6 +70,7 @@ function usage($msg='') {
 Usage: {$argv[0]} [options] [files...]
   -f <filename>   A file containing a list of PHP files to be analyzed
   -q              Quick mode - doesn't recurse into all function calls
+  -i              Ignore undeclared functions and classes
   -m <mode>       Output mode: verbose, short, json, csv
   -o <filename>   Output filename
   -p              Show progress bar

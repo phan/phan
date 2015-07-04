@@ -842,6 +842,8 @@ function type_check($src, $dst):bool {
 		foreach(explode('|',$dst) as $d) {
 			if(substr($s,0,9)=='callable:') $s = 'callable';
 			if(substr($d,0,9)=='callable:') $d = 'callable';
+			if($s[0]=='\\') $s = substr($s,1);
+			if($d[0]=='\\') $d = substr($d,1);
 			if($s===$d) return true;
 			if($s==='int' && $d==='float') return true; // int->float is ok
 			if(($s==='array' || $s==='string') && $d==='callable') return true;
@@ -984,19 +986,21 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 					$left = type_map(node_type($file, $node->children[0], $current_scope));
 					$right = type_map(node_type($file, $node->children[1], $current_scope));
 
-					if($left == 'array' && $right != 'array') {
+					if($left == 'array' && $right == 'array') {
+						return 'array';
+					} else if($left == 'array' && !type_check($right, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: left operand is array and right is not", $file, $node->lineno);
 						return 'mixed';
-					} else if($right == 'array' && $left != 'array') {
+					} else if($right == 'array' && !type_check($left, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: right operand is array and left is not", $file, $node->lineno);
 						return 'mixed';
-					} else if($left == 'int' && $right =='int') {
+					} else if($left=='int' && $right == 'int') {
 						return 'int';
-					} else if($left == 'float' || $right == 'float') {
+					} else if($left=='float' || $right=='float') {
 						return 'float';
 					}
+					return 'int|float';
 					$taint = false;
-					return $left;
 					break;
 			}
 		} else if($node->kind == \ast\AST_CAST) {

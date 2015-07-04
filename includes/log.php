@@ -10,16 +10,19 @@ class Log {
 	protected $output_mode  = 'verbose'; // 'json', 'csv', ?
 	protected $output_order = 'chrono';  // 'type', 'file' ?
 	protected $output_filename = '';
-	const EREDEF  =  1;
-	const EUNDEF  =  2;
-	const ETYPE   =  3;
-	const EPARAM  =  4;
-	const EVAR    =  5;
-	const ENOOP   =  6;
-	const EOPTREQ =  7;
-	const ESTATIC =  8;
-	const EAVAIL  =  9;
-	const ETAINT  = 10;
+	protected $output_mask = -1;
+
+	const EREDEF  =  1<<0;
+	const EUNDEF  =  1<<1;
+	const ETYPE   =  1<<2;
+	const EPARAM  =  1<<3;
+	const EVAR    =  1<<4;
+	const ENOOP   =  1<<5;
+	const EOPTREQ =  1<<6;
+	const ESTATIC =  1<<6;
+	const EAVAIL  =  1<<8;
+	const ETAINT  =  1<<9;
+
 	const ERRS    = [ self::EREDEF  => 'RedefineError',
 					  self::EUNDEF  => 'UndefError',
 					  self::ETYPE   => 'TypeError',
@@ -55,6 +58,16 @@ class Log {
 		$log->output_filename = $filename;
 	}
 
+	public static function getOutputMask():int {
+		$log = self::getInstance();
+		return $log->output_mask;
+	}
+
+	public static function setOutputMask(int $mask) {
+		$log = self::getInstance();
+		$log->output_mask = $mask;
+	}
+
 	public static function err(int $etype, string $msg, string $file='', int $lineno=0) {
 		$log = self::getInstance();
 		if($etype == self::EFATAL) {
@@ -63,8 +76,10 @@ class Log {
 			if($file) die("$file:$lineno $msg\n");
 			else die($msg."\n");
 		}
-		$ukey = md5($file.$lineno.$etype.$msg);
-		$log->msgs[$ukey] = ['file'=>$file, 'lineno' => $lineno, 'etype'=>$etype, 'msg' => $msg];
+		if($etype & $log->output_mask) {
+			$ukey = md5($file.$lineno.$etype.$msg);
+			$log->msgs[$ukey] = ['file'=>$file, 'lineno' => $lineno, 'etype'=>$etype, 'msg' => $msg];
+		}
 	}
 
 	public static function errorHandler($errno, $errstr, $errfile, $errline) {
