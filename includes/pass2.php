@@ -285,7 +285,14 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 						// This is distinct from returning actual NULL which doesn't hit this else since it is an AST_CONST node
 						if($ret_type=='NULL') $ret_type='void';
 					}
-					if(!type_check($ret_type, $current_function['oret'])) {
+					$check_type = $current_function['oret'];
+					if(strpos("|$check_type|",'|self|')!==false) {
+						$check_type = preg_replace("/\bself\b/", $current_class['name'], $check_type);
+					}
+					if(strpos("|$check_type|",'|\$this|')!==false) {
+						$check_type = preg_replace("/\b\$this\b/", $current_class['name'], $check_type);
+					}
+					if(!type_check($ret_type, $check_type)) {
 						Log::err(Log::ETYPE, "return $ret_type but {$current_function['name']}() is declared to return {$current_function['oret']}", $file, $ast->lineno);
 					}
 				} else {
