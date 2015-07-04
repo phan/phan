@@ -292,13 +292,13 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 					if(strpos("|$check_type|",'|\$this|')!==false) {
 						$check_type = preg_replace("/\b\$this\b/", $current_class['name'], $check_type);
 					}
-					if(!type_check($ret_type, $check_type)) {
+					if(!type_check($ret_type, $check_type, $namespace)) {
 						Log::err(Log::ETYPE, "return $ret_type but {$current_function['name']}() is declared to return {$current_function['oret']}", $file, $ast->lineno);
 					}
 				} else {
 					$type = node_type($file, $ast->children[0], $current_scope);
 					if(!empty($functions[$current_scope]['oret'])) { // The function has a return type declared
-						if(!type_check($type, $functions[$current_scope]['oret'])) {
+						if(!type_check($type, $functions[$current_scope]['oret'], $namespace)) {
 							Log::err(Log::ETYPE, "return $type but {$functions[$current_scope]['name']}() is declared to return {$functions[$current_scope]['oret']}", $file, $ast->lineno);
 						}
 					} else {
@@ -746,7 +746,7 @@ function arg_check(string $file, $ast, string $func_name, $func, string $current
 }
 
 function arglist_type_check($file, $arglist, $func, $current_scope):array {
-	global $internal_arginfo, $scope, $tainted_by;
+	global $internal_arginfo, $scope, $tainted_by, $namespace;
 
 	$errs=[];
 	$fn = $func['scope'] ?? $func['name'];
@@ -811,7 +811,7 @@ function arglist_type_check($file, $arglist, $func, $current_scope):array {
 		// TODO: specific object checks here. this is turning object:name into just object
         //       (and also callable:{closure n} into just callable
 		if(strpos($arg_type, ':') !== false) list($arg_type,) = explode(':',$arg_type,2);
-		if(!type_check($arg_type, $param['type'])) {
+		if(!type_check($arg_type, $param['type'], $namespace)) {
 			if(!empty($param['name'])) $paramstr = '('.trim($param['name'],'&=').')';
 			else $paramstr = '';
 			if(empty($arg_type)) $arg_type = 'mixed';
@@ -827,7 +827,7 @@ function arglist_type_check($file, $arglist, $func, $current_scope):array {
 
 // int->float is allowed
 // float->int is not
-function type_check($src, $dst):bool {
+function type_check($src, $dst, $namespace=''):bool {
 	global $classes;
 	static $typemap = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback' ],
                         ['int',     'float',   'bool',    'bool',  'bool', 'callable' ]];
@@ -858,6 +858,20 @@ function type_check($src, $dst):bool {
 			if($d === 'object' && !type_scalar($s) && $s!=='array') return true;
 			if(strpos($s,'[]')!==false && $d==='array') return true;
 			if(strpos($d,'[]')!==false && $s==='array') return true;
+			if(($pos=strrpos($d,'\\'))!==false) {
+				if(!empty($namespace)) {
+					if(trim(strtolower($namespace.$s),'\\') == $d) return true;
+				} else {
+					if(substr($d,$pos+1)===$s) return true; // Lazy hack, but...
+				}
+			}
+			if(($pos=strrpos($s,'\\'))!==false) {
+				if(!empty($namespace)) {
+					if(trim(strtolower($namespace.$d),'\\') == $s) return true;
+				} else {
+					if(substr($s,$pos+1)===$d) return true; // Lazy hack, but...
+				}
+			}
 		}
 	}
 	return false;

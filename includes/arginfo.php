@@ -7492,7 +7492,7 @@ $internal_arginfo = [
 'stream_is_local' => ['bool', 'stream'=>''],
 'stream_notification_callback' => ['callback', 'notification_code'=>'int', 'severity'=>'int', 'message'=>'string', 'message_code'=>'int', 'bytes_transferred'=>'int', 'bytes_max'=>'int'],
 'stream_resolve_include_path' => ['string', 'filename'=>'string'],
-'stream_select' => ['int', '&read_streams'=>'array', '&write_streams'=>'array|null', '&except_streams'=>'array|null', 'tv_sec'=>'int', 'tv_usec='=>'int'],
+'stream_select' => ['int', '&read_streams'=>'array', '&write_streams'=>'array|null', '&except_streams'=>'array|null', 'tv_sec'=>'int|null', 'tv_usec='=>'int|null'],
 'stream_set_blocking' => ['bool', 'socket'=>'', 'mode'=>'int'],
 'stream_set_chunk_size' => ['int', 'fp'=>'', 'chunk_size'=>'int'],
 'stream_set_read_buffer' => ['int', 'fp'=>'', 'buffer'=>'int'],
