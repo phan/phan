@@ -260,7 +260,11 @@ function check_classes(&$classes) {
 				$types = [$class['name']];
 				if(!empty($class['interfaces'])) {
 					foreach($class['interfaces'] as $interface) {
-						$temp = $namespace_map[T_CLASS][strtolower($interface)] ?? $interface;
+						if(($pos = strrpos($interface,'\\'))!==false) {
+							$temp = $namespace_map[T_CLASS][$class['file']][strtolower(substr($interface, $pos+1))] ?? $interface;
+						} else {
+							$temp = $namespace_map[T_CLASS][$class['file']][strtolower($interface)] ?? $interface;
+						}
 						if(empty($classes[strtolower($temp)])) {
 							Log::err(Log::EUNDEF, "Trying to implement unknown interface {$temp}", $class['file'], $class['lineno']);
 						} else {
@@ -314,7 +318,7 @@ function dump_scope($scope) {
 }
 
 function dump_functions($type='user') {
-	global $classes, $functions;
+	global $classes, $functions, $namespace_map;
 	$temp = "Global functions";
 	echo $temp."\n".str_repeat("\u{00AF}", strlen($temp))."\n";
 
@@ -363,6 +367,42 @@ function dump_functions($type='user') {
 				echo ')';
 				if(!empty($func['ret'])) echo ':'.$func['ret'];
 				echo "\n";
+			}
+		}
+		echo "\n";
+	}
+
+	if(!empty($namespace_map[T_CLASS])) {
+		$temp = "Namespace class aliases";
+		echo $temp."\n".str_repeat("\u{00AF}", strlen($temp))."\n";
+		foreach($namespace_map[T_CLASS] as $file=>$entries) {
+			echo "\t$file:\n";
+			foreach($entries as $alias=>$target) {
+				echo "\t\t$alias => $target\n";
+			}
+		}
+		echo "\n";
+	}
+
+	if(!empty($namespace_map[T_FUNCTION])) {
+		$temp = "Namespace function aliases";
+		echo $temp."\n".str_repeat("\u{00AF}", strlen($temp))."\n";
+		foreach($namespace_map[T_FUNCTION] as $file=>$entries) {
+			echo "\t$file:\n";
+			foreach($entries as $alias=>$target) {
+				echo "\t$alias => $target\n";
+			}
+		}
+		echo "\n";
+	}
+
+	if(!empty($namespace_map[T_CONST])) {
+		$temp = "Namespace constant aliases";
+		echo $temp."\n".str_repeat("\u{00AF}", strlen($temp))."\n";
+		foreach($namespace_map[T_CONST] as $file=>$entries) {
+			echo "\t$file:\n";
+			foreach($entries as $alias=>$target) {
+				echo "\t$alias => $target\n";
 			}
 		}
 		echo "\n";

@@ -342,11 +342,11 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 					$func_name = $call->children[0];
 					$found = null;
 					if($call->flags & \ast\flags\NAME_NOT_FQ) {
-						if(!empty($namespace_map[T_FUNCTION][strtolower($namespace.$func_name)])) {
-							$cs = $namespace_map[T_FUNCTION][strtolower($namespace.$func_name)];
+						if(!empty($namespace_map[T_FUNCTION][$file][strtolower($namespace.$func_name)])) {
+							$cs = $namespace_map[T_FUNCTION][$file][strtolower($namespace.$func_name)];
 							$found = $functions[strtolower($cs)];
-						} else if(!empty($namespace_map[T_FUNCTION][strtolower($func_name)])) {
-							$cs = $namespace_map[T_FUNCTION][strtolower($func_name)];
+						} else if(!empty($namespace_map[T_FUNCTION][$file][strtolower($func_name)])) {
+							$cs = $namespace_map[T_FUNCTION][$file][strtolower($func_name)];
 							$found = $functions[strtolower($cs)];
 						} else if(!empty($functions[strtolower($namespace.$func_name)])) {
 							$cs = $namespace.$func_name;
@@ -1091,8 +1091,8 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 			if($node->children[0]->kind == \ast\AST_NAME) {
 				$func_name = $node->children[0]->children[0];
 				if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-					$func = $namespace_map[strtolower($namespace.$func_name)] ??
-					        $namespace_map[strtolower($func_name)] ??
+					$func = $namespace_map[T_FUNCTION][$file][strtolower($namespace.$func_name)] ??
+					        $namespace_map[T_FUNCTION][$file][strtolower($func_name)] ??
 					        $functions[strtolower($namespace.$func_name)] ??
 							$functions[strtolower($func_name)] ??
 					        null;

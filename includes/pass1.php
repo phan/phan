@@ -29,7 +29,7 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 					} else {
 						$alias = $elem->children[1];
 					}
-					$namespace_map[$ast->flags][strtolower($alias)] = $target;
+					$namespace_map[$ast->flags][$file][strtolower($alias)] = $target;
 				}
 				break;
 
@@ -45,7 +45,7 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 				if(!empty($ast->children[0])) {
 					$parent = $ast->children[0]->children[0];
 					if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-						$parent = $namespace_map[T_CLASS][strtolower($parent)] ?? $namespace.$parent;
+						$parent = $namespace_map[T_CLASS][$file][strtolower($parent)] ?? $namespace.$parent;
 					}
 				} else {
 					$parent = null;
