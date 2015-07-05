@@ -261,7 +261,7 @@ function parse_doc_comment(string $comment):array {
 	foreach($lines as $line) {
 		$line = strtolower($line);
 		if(($pos=strpos($line, '@param')) !== false) {
-			if(preg_match('/@param\s+(\S+)(?:\s+(\S+))*/', $line, $match)) {
+			if(preg_match('/@param\s+(\S+)\s*(?:(\S+))*/', $line, $match)) {
 
 				$result['params'][] = ['name'=>empty($match[2])?'':trim($match[2],'$'), 'type'=>$match[1]];
 			}
