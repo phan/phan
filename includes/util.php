@@ -246,7 +246,6 @@ function check_classes(&$classes) {
 			}
 		} else {
 			if($class['file']!=='internal') {
-				print_r($class);
 				$parents = [];
 				$temp = $class;
 				while(!empty($temp['parent'])) {
