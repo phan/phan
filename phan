@@ -21,6 +21,7 @@ $functions = [];
 $summary = [ 'classes'=>0, 'traits'=>0, 'methods'=>0, 'functions'=>0, 'closures'=>0, 'conditionals'=>0 ];
 $scope = [];
 $namespace = null;
+$namespace_map = [];
 
 // First add all the internal classes and functions
 add_internal($internal_classes);
@@ -38,7 +39,6 @@ foreach($files as $i=>$file) {
 }
 if($dump_ast) exit;
 
-// Check for any redefinitions
 check_classes($classes);
 check_functions($functions);
 

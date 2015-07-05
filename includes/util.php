@@ -6,8 +6,10 @@ function add_class($class_name, $flags) {
 
 	$lc = strtolower($class_name);
 	$class = new \ReflectionClass($class_name);
-	if($class->isFinal()) $flags |= \ast\flags\CLASS_FINAL;
-	if($class->isAbstract()) $flags |= \ast\flags\CLASS_ABSTRACT;
+	if($class->isFinal()) $flags = \ast\flags\CLASS_FINAL;
+	else if($class->isAbstract()) $flags = \ast\flags\CLASS_ABSTRACT;
+	else if($class->isInterface()) $flags = \ast\flags\CLASS_INTERFACE;
+	else if($class->isTrait()) $flags = \ast\flags\CLASS_TRAIT;
 
 	$classes[$lc] = ['file'=>'internal',
 					 'conditional'=>false,
@@ -16,7 +18,8 @@ function add_class($class_name, $flags) {
 					 'endLineno'=>0,
 					 'name'=>$class_name,
 					 'docComment'=>'', // Internal classes don't have docComments
-					 'traits'=>[]	   // Internal classes don't use traits
+					 'type'=>'',
+					 'traits'=>[]
 					];
 
 	foreach($class->getDefaultProperties() as $name=>$value) {
@@ -27,6 +30,24 @@ function add_class($class_name, $flags) {
 											'lineno'=> 0,
 											'value' => $value ];
 	}
+
+	$classes[$lc]['interfaces'] = $class->getInterfaceNames();
+	$classes[$lc]['traits'] = $class->getTraitNames();
+	$parents = [];
+	$parent = $class->getParentClass();
+	if($parent) {
+		$temp = $class;
+		while($parent = $temp->getParentClass()) {
+			$parents[] = $parent->getName();
+			$parents = array_merge($parents, $parent->getInterfaceNames());
+			$temp = $parent;
+		}
+	}
+
+	$types = [$class_name];
+	$types = array_merge($types, $classes[$lc]['interfaces']);
+	$types = array_merge($types, $parents);
+	$classes[$lc]['type'] = implode('|', array_unique($types));
 
 	foreach($class->getConstants() as $name=>$value) {
 		$classes[$lc]['constants'][strtolower($name)] = [	'name'  => $name,
@@ -202,7 +223,9 @@ function add_param_info($function_name) {
 	}
 }
 
-function check_classes($classes) {
+function check_classes(&$classes) {
+	global $namespace_map;
+
 	foreach($classes as $name=>$class) {
 		if(strpos($name, ':')!==false) {
 			list(,$class_name) = explode(':',$name,2);
@@ -219,6 +242,38 @@ function check_classes($classes) {
 				Log::err(Log::EREDEF, "{$class_str} {$class_name} defined at {$class['file']}:{$class['lineno']} was previously defined as {$orig_str} {$class_name} internally", $class['file'], $class['lineno']);
 			} else {
 				Log::err(Log::EREDEF, "{$class_str} {$class_name} defined at {$class['file']}:{$class['lineno']} was previously defined as {$orig_str} {$class_name} at {$orig['file']}:{$orig['lineno']}", $class['file'], $class['lineno']);
+			}
+		} else {
+			if($class['file']!=='internal') {
+				$parents = [];
+				$temp = $class;
+				while(!empty($temp['parent'])) {
+					if(empty($classes[strtolower($temp['parent'])])) {
+						Log::err(Log::EUNDEF, "Trying to inherit from unknown class {$temp['parent']}", $class['file'], $class['lineno']);
+						break;
+					}
+					$temp = $classes[strtolower($temp['parent'])];
+					$parents[] = $temp['name'];
+					if(!empty($temp['interfaces'])) $parents = array_merge($parents, $temp['interfaces']);
+				}
+				$types = [$class['name']];
+				if(!empty($class['interfaces'])) {
+					foreach($class['interfaces'] as $interface) {
+						$temp = $namespace_map[T_CLASS][strtolower($interface)] ?? $interface;
+						if(empty($classes[strtolower($temp)])) {
+							Log::err(Log::EUNDEF, "Trying to implement unknown interface {$temp}", $class['file'], $class['lineno']);
+						} else {
+							$found = $classes[strtolower($temp)];
+							if($found['flags'] != \ast\flags\CLASS_INTERFACE) {
+								Log::err(Log::ETYPE, "Trying to implement interface {$found['name']} which is not an interface", $class['file'], $class['lineno']);
+							}
+						}
+					}
+					$types = array_merge($types, $class['interfaces']);
+				}
+				if(!empty($parents)) $types = array_merge($types, $parents);
+				// Fill in type from inheritance tree and interfaces
+				$classes[$name]['type'] = implode('|', array_unique($types));
 			}
 		}
 	}
@@ -285,6 +340,7 @@ function dump_functions($type='user') {
 		if($entry['file']=='internal') continue;
 		$temp = "class ".$entry['name'];
 		if(!empty($entry['parent'])) $temp .= " extends {$entry['parent']}";
+		if(!empty($entry['type'])) $temp .= " types: {$entry['type']}";
 		echo $temp."\n".str_repeat("\u{00AF}", strlen($temp))."\n";
 
 		if(!empty($entry['methods'])) foreach($entry['methods'] as $func) {

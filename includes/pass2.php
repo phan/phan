@@ -5,7 +5,7 @@ namespace phan;
 // Pass 2 tries to keep track of variable types which are stored in $scope
 // It uses that info to check every call for anything that looks off
 function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=null, $current_function=null, $parent_scope=null) {
-	global $classes, $functions, $namespace, $scope, $tainted_by, $quick_mode;
+	global $classes, $functions, $namespace, $namespace_map, $scope, $tainted_by, $quick_mode;
 	static $next_node = 1;
 	$vars = [];
 
@@ -64,7 +64,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 						if(!array_key_exists('vars', $scope[$cs])) $scope[$cs]['vars'] = [];
 						$scope[$cs] = $scope["{$classes[$trait]['name']}::{$method['name']}"];
 						// And finally re-map $this to point to this class
-						$scope[$cs]['vars']['this']['type'] = 'object:'.$namespace.$ast->name;
+						$scope[$cs]['vars']['this']['type'] = $namespace.$ast->name;
 					}
 				}
 				break;
@@ -145,7 +145,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 				$obj = var_name($ast->children[0]);
 				$name = var_name($ast->children[1]);
 				if(!empty($name))
-					add_var_scope($current_scope, $name, 'object:'.$obj, true);
+					add_var_scope($current_scope, $name, $obj, true);
 				break;
 		}
 
@@ -337,13 +337,20 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 			case \ast\AST_CALL:
 				$found = false;
 				$call = $ast->children[0];
+
 				if($call->kind == \ast\AST_NAME) {
 					$func_name = $call->children[0];
 					$found = null;
 					if($call->flags & \ast\flags\NAME_NOT_FQ) {
-						if(!empty($functions[strtolower($namespace.$func_name)])) {
+						if(!empty($namespace_map[T_FUNCTION][strtolower($namespace.$func_name)])) {
+							$cs = $namespace_map[T_FUNCTION][strtolower($namespace.$func_name)];
+							$found = $functions[strtolower($cs)];
+						} else if(!empty($namespace_map[T_FUNCTION][strtolower($func_name)])) {
+							$cs = $namespace_map[T_FUNCTION][strtolower($func_name)];
+							$found = $functions[strtolower($cs)];
+						} else if(!empty($functions[strtolower($namespace.$func_name)])) {
 							$cs = $namespace.$func_name;
-							$found = $functions[strtolower($namespace.$func_name)];
+							$found = $functions[strtolower($cs)];
 						} else if(!empty($functions[strtolower($func_name)])) {
 							$cs = $func_name;
 							$found = $functions[strtolower($func_name)];
@@ -461,16 +468,12 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 			case \ast\AST_METHOD_CALL:
 				if(($ast->children[0] instanceof \ast\Node) && $ast->children[0]->kind == \ast\AST_VAR) {
 					if(!($ast->children[0]->children[0] instanceof \ast\Node)) {
-						if(empty($scope[$current_scope]['vars'][$ast->children[0]->children[0]]) ||
-						   strpos($scope[$current_scope]['vars'][$ast->children[0]->children[0]]['type'], ':')===false) {
+						if(empty($scope[$current_scope]['vars'][$ast->children[0]->children[0]])) {
 							// TODO: Something too dynamic is going on here - might be able to track stuff a bit better here
 							break;
 						}
 						$call = $scope[$current_scope]['vars'][$ast->children[0]->children[0]]['type'];
-						foreach(explode('|',$call) as $c) {
-							if(strpos($c,':')===false) continue;
-							list(,$class_name) = explode(':',$c);
-							if(!empty($class_name)) continue;
+						foreach(explode('|',$call) as $class_name) {
 							if(!empty($classes[strtolower($class_name)])) break;
 						}
 						if(empty($class_name)) break;
@@ -714,6 +717,7 @@ function arg_check(string $file, $ast, string $func_name, $func, string $current
 			}
 		}
 	}
+
 	if(!$varargs && $argcount > $func['required']+$func['optional']) {
 		$err = true;
 		$alt = 1;
@@ -811,8 +815,7 @@ function arglist_type_check($file, $arglist, $func, $current_scope):array {
 				}
 			}
 		}
-		// TODO: specific object checks here. this is turning object:name into just object
-        //       (and also callable:{closure n} into just callable
+        // turn callable:{closure n} into just callable
 		if(strpos($arg_type, ':') !== false) list($arg_type,) = explode(':',$arg_type,2);
 		if(!type_check($arg_type, $param['type'], $namespace)) {
 			if(!empty($param['name'])) $paramstr = '('.trim($param['name'],'&=').')';
@@ -844,8 +847,6 @@ function type_check($src, $dst, $namespace=''):bool {
 
 	$src = str_replace($typemap[0], $typemap[1], strtolower($src));
 	$dst = str_replace($typemap[0], $typemap[1], strtolower($dst));
-	$src = str_replace('object:','',$src);
-	$dst = str_replace('object:','',$dst);
 
 	// our own union types
 	foreach(explode('|',$src) as $s) {
@@ -931,8 +932,8 @@ function find_method(string $class_name, $method_name) {
 	}
 	if(!empty($classes[$class_name]['traits'])) {
 		foreach($classes[$class_name]['traits'] as $trait) {
-			if(!empty($classes[$trait]['methods'][$method_name])) {
-				return $classes[$trait]['methods'][$method_name];
+			if(!empty($classes[strtolower($trait)]['methods'][$method_name])) {
+				return $classes[strtolower($trait)]['methods'][$method_name];
 			}
 		}
 	}
@@ -1037,7 +1038,7 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 				case \ast\flags\TYPE_DOUBLE: $taint = false; return 'float'; break;
 				case \ast\flags\TYPE_STRING: return 'string'; break;
 				case \ast\flags\TYPE_ARRAY: return 'array'; break;
-				case \ast\flags\TYPE_OBJECT: return 'object:stdClass'; break;
+				case \ast\flags\TYPE_OBJECT: return 'stdClass'; break;
 				default: Log::err(Log::EFATAL, "Unknown type (".$node->flags.") in cast");
 			}
 		} else if($node->kind == \ast\AST_NEW) {
@@ -1047,16 +1048,18 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 					list($class,) = explode('::',$current_scope);
 					$name = $class;
 				}
+				$found = null;
 				if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
 					if(empty($classes[$namespace.strtolower($name)]) && empty($classes[strtolower($name)])) {
 						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
-					}
+					} else $found = $classes[$namespace.strtolower($name)] ?? $classes[strtolower($name)];
 				} else {
 					if(empty($classes[strtolower($name)])) {
 						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
-					}
+					} else $found = $classes[strtolower($name)];
 				}
-				return 'object:'.$name;
+				if($found) return $found['type'];
+				else return $name;
 			}
 			return 'object';
 
@@ -1088,7 +1091,11 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 			if($node->children[0]->kind == \ast\AST_NAME) {
 				$func_name = $node->children[0]->children[0];
 				if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-					$func = $functions[strtolower($namespace.$func_name)] ??  $functions[strtolower($func_name)] ?? null;
+					$func = $namespace_map[strtolower($namespace.$func_name)] ??
+					        $namespace_map[strtolower($func_name)] ??
+					        $functions[strtolower($namespace.$func_name)] ??
+							$functions[strtolower($func_name)] ??
+					        null;
 				} else {
 					$func = $functions[strtolower($func_name)] ?? null;
 				}

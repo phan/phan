@@ -3,7 +3,7 @@ namespace phan;
 
 // Pass 1 recursively finds all the class and function declarations and populates the appropriate globals
 function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $current_function=null) {
-	global $classes, $functions, $namespace, $summary;
+	global $classes, $functions, $namespace, $namespace_map, $summary;
 	$done = false;
 
 	if ($ast instanceof \ast\Node) {
@@ -15,6 +15,22 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 			case \ast\AST_IF:
 				$conditional = true;
 				$summary['conditionals']++;
+				break;
+
+			case \ast\AST_USE:
+				foreach($ast->children as $elem) {
+					$target = $elem->children[0];
+					if(empty($elem->children[1])) {
+						if(($pos=strrpos($target, '\\'))!==false) {
+							$alias = substr($target, $pos + 1);
+						} else {
+							$alias = $target;
+						}
+					} else {
+						$alias = $elem->children[1];
+					}
+					$namespace_map[$ast->flags][strtolower($alias)] = $target;
+				}
 				break;
 
 			case \ast\AST_CLASS:
@@ -29,10 +45,11 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 				if(!empty($ast->children[0])) {
 					$parent = $ast->children[0]->children[0];
 					if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-						$parent = $namespace.$parent;
+						$parent = $namespace_map[T_CLASS][strtolower($parent)] ?? $namespace.$parent;
 					}
+				} else {
+					$parent = null;
 				}
-				else $parent = null;
 				$classes[strtolower($current_class)] = [
 											'file'		 => $file,
 											'conditional'=> $conditional,
@@ -42,6 +59,7 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 											'name'		 => $namespace.$ast->name,
 											'docComment' => $ast->docComment,
 											'parent'	 => $parent,
+											'type'	     => '',
 											'properties' => [],
 											'constants'  => [],
 											'traits'	 => [],
@@ -67,7 +85,7 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 				}
 				$classes[strtolower($current_class)]['methods'][strtolower($method)] = node_func($file, $conditional, $ast, "{$current_class}::{$method}");
                 if(!($classes[strtolower($current_class)]['methods'][strtolower($method)]['flags'] & \ast\flags\MODIFIER_STATIC)) {
-                    add_var_scope("{$current_class}::{$method}", 'this', 'object:'.$current_class);
+                    add_var_scope("{$current_class}::{$method}", 'this', $current_class);
                 }
 
 				$summary['methods']++;
@@ -146,7 +164,7 @@ function node_namelist($node) {
 	$result = [];
 	if($node instanceof \ast\Node) {
 		foreach($node->children as $name_node) {
-			$result[] = strtolower((string)$name_node->children[0]);
+			$result[] = (string)$name_node->children[0];
 		}
 	}
 	return $result;
