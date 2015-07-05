@@ -45,7 +45,16 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 				if(!empty($ast->children[0])) {
 					$parent = $ast->children[0]->children[0];
 					if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+						if(($pos = strpos($parent,'\\')) !== false) {
+							// extends A\B
+							// check if we have a namespace alias for A
+							if(!empty($namespace_map[T_CLASS][$file][strtolower(substr($parent,0,$pos))])) {
+								$parent = $namespace_map[T_CLASS][$file][strtolower(substr($parent,0,$pos))] . substr($parent,$pos);
+								goto done;
+							}
+						}
 						$parent = $namespace_map[T_CLASS][$file][strtolower($parent)] ?? $namespace.$parent;
+						done:
 					}
 				} else {
 					$parent = null;
@@ -236,6 +245,9 @@ function node_func($file, $conditional, $node, $current_scope, $namespace='') {
 		} else {
 			// Check if the docComment has a return value specified
 			if(!empty($dc['return'])) {
+				if($dc['return'] == 'static' || $dc['return'] == 'self' || $dc['return'] == '$this') {
+					if(strpos($current_scope,'::')!==false) list($dc['return'],) = explode('::',$current_scope);
+				}
 				$result['oret'] = $dc['return'];
 				$result['ret'] = $dc['return'];
 			}

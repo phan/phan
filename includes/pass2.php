@@ -33,7 +33,17 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 			case \ast\AST_USE_TRAIT:
 				// We load up the trais in AST_CLASS, this part is just for pretty error messages
 				foreach($ast->children[0]->children as $trait) {
-					if(empty($classes[strtolower($trait->children[0])])) {
+					$name = $trait->children[0];
+					echo $trait->flags;
+					$lname = strtolower($name);
+					if(!empty($namespace_map[T_CLASS][$file][$lname])) {
+						$name = $namespace_map[T_CLASS][$file][$lname];
+					} else {
+						if($trait->flags & \ast\flags\NAME_NOT_FQ) {
+							$name = $namespace.$name;
+						}
+					}
+					if(empty($classes[strtolower($name)])) {
 						Log::err(Log::EUNDEF, "Undeclared trait {$trait->children[0]}", $file, $ast->lineno);
 					}
 				}
@@ -393,11 +403,23 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 			case \ast\AST_NEW:
 					if($ast->children[0]->kind == \ast\AST_NAME) {  //  non-dynamic new
 						$class_name = $ast->children[0]->children[0];
-						if($class_name == 'self' || $class_name == 'static') $class_name = $current_class['name'];
-						if($class_name == 'parent') $class_name = $current_class['parent'];
 						$use_ns = $namespace;
+						if($class_name == 'self' || $class_name == 'static') {
+							$class_name = $current_class['name'];
+							$use_ns = '';
+						}
+						if($class_name == 'parent') {
+							$class_name = $current_class['parent'];
+							$use_ns = '';
+						}
 						if($ast->children[0]->flags & \ast\flags\NAME_FQ) {
 							$use_ns = '';
+						}
+						if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+							if(!empty($namespace_map[T_CLASS][$file][ strtolower($class_name) ])) {
+								$class_name = $namespace_map[T_CLASS][$file][ strtolower($class_name) ];
+								$use_ns = '';
+							}
 						}
 						if(empty($classes[$use_ns.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
 							Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $ast->lineno);
@@ -431,18 +453,29 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 						$static_call_ok = true;
 					}
 					$use_ns = $namespace;
+					$lname = strtolower($class_name);
+					$found = false;
 					if($call->flags & \ast\flags\NAME_FQ) {
 						$use_ns = '';
+					} else if($call->flags & \ast\flags\NAME_NOT_FQ) {
+						if(!empty($namespace_map[T_CLASS][$file][$lname])) {
+							if(!empty($classes[strtolower($namespace_map[T_CLASS][$file][$lname] )])) {
+								$found = $classes[strtolower( $namespace_map[T_CLASS][$file][$lname])];
+								$use_ns = '';
+							}
+						}
+					}
+					if(!$found) {
+						$found = $classes[$use_ns.$lname] ?? $classes[$lname] ?? null;
 					}
 					// If the class doesn't exist
-					if(empty($classes[$use_ns.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
+					if(!$found) {
 						Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $ast->lineno);
 					} else {
 						// The class is declared, but does it have the method?
+						$class_name = $found['name'];
 						$method_name = $ast->children[1];
-						$method = find_method($use_ns.$class_name, $method_name);
-						if($method) $class_name = $use_ns.$class_name;
-						else $method = find_method($class_name, $method_name);
+						$method = find_method($class_name, $method_name);
 						if(is_array($method) && array_key_exists('avail', $method) && !$method['avail']) {
 							Log::err(Log::EAVAIL, "method {$class_name}::{$method_name}() is not compiled into this version of PHP", $file, $ast->lineno);
 						}
@@ -835,8 +868,6 @@ function arglist_type_check($file, $arglist, $func, $current_scope):array {
 // float->int is not
 function type_check($src, $dst, $namespace=''):bool {
 	global $classes;
-	static $typemap = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback' ],
-                        ['int',     'float',   'bool',    'bool',  'bool', 'callable' ]];
 
 	// Fast-track most common cases first
 	if($src===$dst) return true;
@@ -845,8 +876,8 @@ function type_check($src, $dst, $namespace=''):bool {
 	if(strpos("|$dst|", '|mixed|') !== false) return true;
 	if($src==='int' && $dst==='float') return true;
 
-	$src = str_replace($typemap[0], $typemap[1], strtolower($src));
-	$dst = str_replace($typemap[0], $typemap[1], strtolower($dst));
+	$src = type_map(strtolower($src));
+	$dst = type_map(strtolower($dst));
 
 	// our own union types
 	foreach(explode('|',$src) as $s) {
@@ -903,8 +934,8 @@ function type_scalar($type):bool {
 
 // Maps type names to consistent names
 function type_map(string $type):string {
-	static $repmaps = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback' ],
-                        ['int',     'float',   'bool',    'bool',  'bool', 'callable' ]];
+	static $repmaps = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback', 'closure'  ],
+                        ['int',     'float',   'bool',    'bool',  'bool', 'callable', 'callable' ]];
 	return str_replace($repmaps[0], $repmaps[1], $type);
 }
 
@@ -969,8 +1000,35 @@ function find_method_class(string $class_name, $method_name) {
 	return false;
 }
 
+// Find the class name gicen and AST_NAME node
+function find_class($node, $namespace, $nmap) {
+	global $classes;
+
+	if(!($node instanceof \ast\Node) || $node->kind != \ast\AST_NAME) {
+		Log::err(Log::EFATAL, "BUG: Bad node passed to find_class");
+		return null;
+	}
+	$name = strtolower(var_name($node->children[0]));
+
+	if($node->flags & \ast\flags\NAME_NOT_FQ) {
+		if(!empty($nmap[strtolower($name)])) {
+			if(!empty($classes[strtolower($nmap[$name] )])) {
+				return $classes[strtolower($nmap[$name])];
+			}
+		}
+		if(!empty($classes[$namespace.$name])) {
+			return $classes[$namespace.$name];
+		}
+	} else {
+		if(empty($classes[$name])) {
+			return null;
+		} else return $classes[$name];
+	}
+	return null;
+}
+
 function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists=true) {
-	global $classes, $functions, $namespace, $internal_arginfo;
+	global $classes, $functions, $namespace, $namespace_map, $internal_arginfo;
 
 	if(!($node instanceof \ast\Node)) {
 		if($node===null) return '';
@@ -1050,9 +1108,15 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 				}
 				$found = null;
 				if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-					if(empty($classes[$namespace.strtolower($name)]) && empty($classes[strtolower($name)])) {
+					if(!empty($namespace_map[T_CLASS][$file][strtolower($name)])) {
+						if(!empty($classes[strtolower($namespace_map[T_CLASS][$file][strtolower($name)] )])) {
+							$found = $classes[strtolower( $namespace_map[T_CLASS][$file][strtolower($name)])];
+						}
+					}
+					if(!$found && empty($classes[$namespace.strtolower($name)]) && empty($classes[strtolower($name)])) {
 						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
-					} else $found = $classes[$namespace.strtolower($name)] ?? $classes[strtolower($name)];
+					}
+					$found = $found ?? $classes[$namespace.strtolower($name)] ?? $classes[strtolower($name)] ?? null;
 				} else {
 					if(empty($classes[strtolower($name)])) {
 						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
@@ -1115,14 +1179,13 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 			if($call->kind == \ast\AST_NAME) {  // Simple static function call
 				$class_name = $call->children[0];
 				$method_name = $node->children[1];
-				if($call->flags & \ast\flags\NAME_NOT_FQ) {
-					$method = find_method($namespace.$class_name, $method_name);
-					if(!$method) find_method($class_name, $method_name);
-					if($method) return $method['ret'] ?? 'mixed';
-				} else {
-					$method = find_method($class_name, $method_name);
-					if($method) return $method['ret'] ?? 'mixed';
+				$class = find_class($call, $namespace, $namespace_map[T_CLASS][$file] ?? []);
+				if(!$class) {
+					Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $call->lineno);
+					return 'mixed';
 				}
+				$method = find_method($class['name'], $method_name);
+				if($method) return $method['ret'] ?? 'mixed';
 			} else {
 				// Weird dynamic static call - give up
 				return 'mixed';
