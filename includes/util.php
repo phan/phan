@@ -6,6 +6,7 @@ function add_class($class_name) {
 
 	$lc = strtolower($class_name);
 	$class = new \ReflectionClass($class_name);
+	$flags = 0;
 	if($class->isFinal()) $flags = \ast\flags\CLASS_FINAL;
 	else if($class->isInterface()) $flags = \ast\flags\CLASS_INTERFACE;
 	else if($class->isTrait()) $flags = \ast\flags\CLASS_TRAIT;
@@ -245,6 +246,7 @@ function check_classes(&$classes) {
 			}
 		} else {
 			if($class['file']!=='internal') {
+				print_r($class);
 				$parents = [];
 				$temp = $class;
 				while(!empty($temp['parent'])) {

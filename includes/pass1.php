@@ -65,12 +65,13 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 											'traits'	 => [],
 											'interfaces' => [],
 											'methods'	 => [] ];
-				$classes[strtolower($current_class)]['interfaces'] = array_merge($classes[strtolower($current_class)]['interfaces'], node_namelist($ast->children[1]));
+
+				$classes[strtolower($current_class)]['interfaces'] = array_merge($classes[strtolower($current_class)]['interfaces'], node_namelist($ast->children[1], $namespace));
 				$summary['classes']++;
 				break;
 
 			case \ast\AST_USE_TRAIT:
-				$classes[strtolower($current_class)]['traits'] = array_merge($classes[strtolower($current_class)]['traits'], node_namelist($ast->children[0]));
+				$classes[strtolower($current_class)]['traits'] = array_merge($classes[strtolower($current_class)]['traits'], node_namelist($ast->children[0], $namespace));
 				$summary['traits']++;
 				break;
 
@@ -160,11 +161,15 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 	}
 }
 
-function node_namelist($node) {
+function node_namelist($node, $namespace) {
 	$result = [];
 	if($node instanceof \ast\Node) {
 		foreach($node->children as $name_node) {
-			$result[] = (string)$name_node->children[0];
+			if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+				$result[] = $namespace.$name_node->children[0];
+			} else {
+				$result[] = $name_node->children[0];
+			}
 		}
 	}
 	return $result;
