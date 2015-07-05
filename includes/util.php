@@ -1,15 +1,15 @@
 <?php
 namespace phan;
 
-function add_class($class_name, $flags) {
+function add_class($class_name) {
 	global $classes, $internal_arginfo;
 
 	$lc = strtolower($class_name);
 	$class = new \ReflectionClass($class_name);
 	if($class->isFinal()) $flags = \ast\flags\CLASS_FINAL;
-	else if($class->isAbstract()) $flags = \ast\flags\CLASS_ABSTRACT;
 	else if($class->isInterface()) $flags = \ast\flags\CLASS_INTERFACE;
 	else if($class->isTrait()) $flags = \ast\flags\CLASS_TRAIT;
+	if($class->isAbstract()) $flags |= \ast\flags\CLASS_ABSTRACT;
 
 	$classes[$lc] = ['file'=>'internal',
 					 'conditional'=>false,
@@ -102,10 +102,10 @@ function add_internal($internal_classes) {
 		add_class($class_name, 0);
 	}
 	foreach(get_declared_interfaces() as $class_name) {
-		add_class($class_name, \ast\flags\CLASS_INTERFACE);
+		add_class($class_name);
 	}
 	foreach(get_declared_traits() as $class_name) {
-		add_class($class_name, \ast\flags\CLASS_TRAIT);
+		add_class($class_name);
 	}
 
 	foreach(get_defined_functions()['internal'] as $function_name) {
@@ -264,7 +264,7 @@ function check_classes(&$classes) {
 							Log::err(Log::EUNDEF, "Trying to implement unknown interface {$temp}", $class['file'], $class['lineno']);
 						} else {
 							$found = $classes[strtolower($temp)];
-							if($found['flags'] != \ast\flags\CLASS_INTERFACE) {
+							if(!($found['flags'] & \ast\flags\CLASS_INTERFACE)) {
 								Log::err(Log::ETYPE, "Trying to implement interface {$found['name']} which is not an interface", $class['file'], $class['lineno']);
 							}
 						}
