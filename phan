@@ -46,6 +46,7 @@ $scope['global'] = [ 'vars'=>['_GET'=>['type'=>'array', 'tainted'=>true, 'tainte
                               '_REQUEST'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
                               '_SERVER'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
                               '_FILES'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
+                              '_SESSION'=>['type'=>'array', 'tainted'=>false, 'tainted_by'=>''],
                               '_ENV'=>['type'=>'array', 'tainted'=>false, 'tainted_by'=>''],
                               'GLOBALS'=>['type'=>'array', 'tainted'=>false, 'tainted_by'=>''],
                               'argc'=>['type'=>'int', 'tainted'=>false, 'tainted_by'=>''],
