@@ -205,7 +205,7 @@ function node_paramlist($file, $node, &$req, &$opt, $dc, $namespace) {
 
 function node_param($file, $node, $dc, $i, $namespace) {
 	if($node instanceof \ast\Node) {
-		$type = ast_node_type($node->children[0], $namespace);
+		$type = ast_node_type($file, $node->children[0], $namespace);
 		if(empty($type) && !empty($dc['params'][$i]['type'])) $type = $dc['params'][$i]['type'];
 
 		$result = [
@@ -243,8 +243,8 @@ function node_func($file, $conditional, $node, $current_scope, $namespace='') {
 					'ast'=>$node->children[2]
 				  ];
 		if($node->children[3] !==null) {
-			$result['oret'] = ast_node_type($node->children[3], $namespace); // Original return type
-			$result['ret'] = ast_node_type($node->children[3], $namespace); // This one changes as we walk the tree
+			$result['oret'] = ast_node_type($file, $node->children[3], $namespace); // Original return type
+			$result['ret'] = ast_node_type($file, $node->children[3], $namespace); // This one changes as we walk the tree
 		} else {
 			// Check if the docComment has a return value specified
 			if(!empty($dc['return'])) {

@@ -227,6 +227,146 @@ function add_param_info($function_name) {
 	}
 }
 
+// Add a type to a scope
+function add_type(string $cs, string $var, $type) {
+	global $scope;
+	if(!empty($scope[$cs]['vars'][$var]) && $scope[$cs]['vars'][$var]['type'] != $type) {
+		foreach(explode('|',$type) as $t) {
+			if(strpos($scope[$cs]['vars'][$var]['type'], $t) === false) {
+				// add this new possible type if we haven't seen it before
+				$scope[$cs]['vars'][$var]['type'] = $scope[$cs]['vars'][$var]['type'] . '|' . $t;
+			}
+		}
+		$scope[$cs]['vars'][$var]['type'] = trim($scope[$cs]['vars'][$var]['type'],'|');
+	} else {
+		$scope[$cs]['vars'][$var]['type'] = $type;
+	}
+}
+
+// Finds the variable name
+function var_name($node) {
+	if(!$node instanceof \ast\Node) return $node;
+	$parent = $node;
+	while(($node instanceof \ast\Node) && ($node->kind != \ast\AST_VAR) && ($node->kind != \ast\AST_STATIC) &&($node->kind != \ast\AST_MAGIC_CONST)) {
+		$parent = $node;
+		$node = $node->children[0];
+	}
+	if(!$node instanceof \ast\Node) return $node;
+	if(empty($node->children[0])) return false;
+	return $node->children[0];
+}
+
+// Figures out the qualified name for an AST_NAME node
+function qualified_name(string $file, $node, string $namespace) {
+	global $namespace_map;
+
+	if(!($node instanceof \ast\Node) && $node->kind != \ast\AST_NAME) {
+		return var_name($node);
+	}
+	$name = $node->children[0];
+	$lname = strtolower($name);
+	if($node->flags & \ast\flags\NAME_NOT_FQ) {
+		// is it a simple native type name?
+		if(is_native_type($lname)) return $name;
+
+		// Not fully qualified, check if we have an exact namespace alias for it
+		if(!empty($namespace_map[T_CLASS][$file][$lname])) {
+			return $namespace_map[T_CLASS][$file][$lname];
+		}
+		// Check for a namespace-relative alias
+		if(($pos = strpos($lname, '\\'))!==false) {
+			$first_part = substr($lname, 0, $pos);
+			if(!empty($namespace_map[T_CLASS][$file][$first_part])) {
+				// Replace that first aliases part and return the full name
+				return $namespace_map[T_CLASS][$file][$first_part] . substr($name, $pos + 1);
+			}
+		}
+		// No aliasing, just prepend the namespace
+		return $namespace.$name;
+	} else {
+		// It is already fully qualified, just return it
+		return $name;
+	}
+}
+
+function is_native_type(string $type):bool {
+	return in_array($type, ['int','bool','float','string','callable','array']);
+}
+
+// Looks for any suspicious GPSC variables in the given node
+function var_taint_check($file, $node, string $current_scope):bool {
+	global $scope, $tainted_by;
+
+	static $tainted = ['_GET'=>'*', '_POST'=>'*', '_COOKIE'=>'*', '_REQUEST'=>'*', '_FILES'=>'*',
+					   '_SERVER'=>[	'QUERY_STRING', 'HTTP_HOST', 'HTTP_USER_AGENT',
+									'HTTP_ACCEPT_ENCODING', 'HTTP_ACCEPT_LANGUAGE',
+									'REQUEST_URI', 'PHP_SELF', 'argv'] ];
+
+	if(!$node instanceof \ast\Node) return false;
+	$parent = $node;
+	while(($node instanceof \ast\Node) && ($node->kind != \ast\AST_VAR) && ($node->kind != \ast\AST_MAGIC_CONST)) {
+		$parent = $node;
+		if(empty($node->children[0])) break;
+		$node = $node->children[0];
+	}
+
+	if($parent->kind == \ast\AST_DIM) {
+		if($node->children[0] instanceof \ast\Node) {
+			// $$var or something else dynamic is going on, not direct access to a suspivious var
+			return false;
+		}
+		foreach($tainted as $name=>$index) {
+			if($node->children[0] === $name) {
+				if($index=='*') return true;
+				if($parent->children[1] instanceof \ast\Node) {
+					// Dynamic index, give up
+					return false;
+				}
+				if(in_array($parent->children[1], $index, true)) {
+					return true;
+				}
+			}
+		}
+	} else if($parent->kind == \ast\AST_VAR && !($parent->children[0] instanceof \ast\Node)) {
+		if(empty($scope[$current_scope]['vars'][$parent->children[0]])) {
+			if(!superglobal($parent->children[0]))
+				Log::err(Log::EVAR, "Variable \${$parent->children[0]} is not defined", $file, $parent->lineno);
+		} else {
+			if(!empty($scope[$current_scope]['vars'][$parent->children[0]]['tainted'])) {
+				$tainted_by = $scope[$current_scope]['vars'][$parent->children[0]]['tainted_by'];
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+function add_var_scope(string $cs, string $name, string $type, $replace_type = false) {
+	global $scope;
+
+	if(!array_key_exists($cs, $scope)) $scope[$cs] = [];
+	if(!array_key_exists('vars', $scope[$cs])) $scope[$cs]['vars'] = [];
+	if(array_key_exists($name, $scope[$cs]['vars'])) {
+		if($replace_type) {
+			$scope[$cs]['vars'][$name]['type'] = $type;
+		} else {
+			// add to type list if it isn't there already
+				foreach(explode('|',$type) as $t) {
+					if(!empty($t) && strpos($scope[$cs]['vars'][$name]['type'], $t) === false) {
+						$scope[$cs]['vars'][$name]['type'] = $scope[$cs]['vars'][$name]['type'] . '|' . $t;
+					}
+				}
+				$scope[$cs]['vars'][$name]['type'] = trim($scope[$cs]['vars'][$name]['type'],'|');
+		}
+	} else {
+		$scope[$cs]['vars'][$name] = ['type'=>$type, 'tainted'=>false, 'tainted_by'=>''];
+	}
+}
+
+function superglobal(string $var):bool {
+	return in_array($var, ['_GET','_POST','_COOKIE','_REQUEST','_SERVER','_ENV','_FILES','GLOBALS']);
+}
+
 function check_classes(&$classes) {
 	global $namespace_map;
 
