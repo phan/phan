@@ -185,8 +185,7 @@ class MyClass
 	 MyClass->read():string
 ```
 
-The `$namespace` global contains the current namespace name. Since namespaces are file-scoped in PHP
-it is reset every time we iterate to the next file in the [main loop][mainloop].
+The `$namespace_map` global contains the per-file namespacing aliasing.
 
 The `$quick_mode` global is just a flag that tells Pass 2 whether or not to rescan every function, method
 and closure call with the current set of args. By default quick mode is off, but you might want to turn it

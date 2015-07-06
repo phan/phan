@@ -4,8 +4,8 @@ namespace phan;
 // Now it gets complicated
 // Pass 2 tries to keep track of variable types which are stored in $scope
 // It uses that info to check every call for anything that looks off
-function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=null, $current_function=null, $parent_scope=null) {
-	global $classes, $functions, $namespace, $namespace_map, $scope, $tainted_by, $quick_mode;
+function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $current_class=null, $current_function=null, $parent_scope=null) {
+	global $classes, $functions, $namespace_map, $scope, $tainted_by, $quick_mode;
 	static $next_node = 1;
 	$vars = [];
 
@@ -34,7 +34,6 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 				// We load up the trais in AST_CLASS, this part is just for pretty error messages
 				foreach($ast->children[0]->children as $trait) {
 					$name = $trait->children[0];
-					echo $trait->flags;
 					$lname = strtolower($name);
 					if(!empty($namespace_map[T_CLASS][$file][$lname])) {
 						$name = $namespace_map[T_CLASS][$file][$lname];
@@ -52,6 +51,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 			case \ast\AST_CLASS:
 				$lname = strtolower($namespace.$ast->name);
 				if(empty($classes[$lname])) {
+					dump_scope($scope);
 					Log::err(Log::EFATAL, "Can't find class {$namespace}{$ast->name} - aborting", $file, $ast->lineno);
 				}
 				$current_class = $classes[$lname];
@@ -161,12 +161,12 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 
 		// Depth-First for everything else
 		foreach($ast->children as $child) {
-			pass2($file, $child, $current_scope, $ast, $current_class, $current_function, $parent_scope);
+			$namespace = pass2($file, $namespace, $child, $current_scope, $ast, $current_class, $current_function, $parent_scope);
 		}
 		switch($ast->kind) {
 			case \ast\AST_ASSIGN:
 			case \ast\AST_ASSIGN_REF:
-				var_assign($file, $ast, $current_scope, $vars);
+				var_assign($file, $namespace, $ast, $current_scope, $vars);
 				foreach($vars as $k=>$v) {
 					if(empty($v)) $v = ['type'=>'mixed', 'tainted'=>false, 'tainted_by'=>''];
 					if(empty($v['type'])) $v['type'] = 'mixed';
@@ -188,7 +188,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 							if($depth==1) {
 								$taint = false;
 								$tainted_by = '';
-								$v['type'] = node_type($file, $ast->children[1], $current_scope, $taint);
+								$v['type'] = node_type($file, $namespace, $ast->children[1], $current_scope, $taint);
 								$v['tainted'] = $taint;
 								$v['tainted_by'] = $tainted_by;
 							} else {
@@ -228,7 +228,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 
 			case \ast\AST_FOREACH:
 				// check the array, the key,value part was checked on in the non-DPS part above
-				$type = node_type($file, $ast->children[0], $current_scope);
+				$type = node_type($file, $namespace, $ast->children[0], $current_scope);
 				if(type_scalar($type)) {
 					Log::err(Log::ETYPE, "$type passed to foreach instead of array", $file, $ast->lineno);
 				}
@@ -236,7 +236,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 
 			case \ast\AST_STATIC:
 				$name = var_name($ast);
-				$type = node_type($file, $ast->children[1], $current_scope, $taint);
+				$type = node_type($file, $namespace, $ast->children[1], $current_scope, $taint);
 				add_var_scope($current_scope, $name, $type);
 				$scope[$current_scope]['vars'][$name]['tainted'] = $taint;
 				$scope[$current_scope]['vars'][$name]['tainted_by'] = $tainted_by;
@@ -246,7 +246,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 			case \ast\AST_ECHO:
 				$taint = false;
 				$tainted_by = '';
-				$type = node_type($file, $ast->children[0], $current_scope, $taint);
+				$type = node_type($file, $namespace, $ast->children[0], $current_scope, $taint);
 				if($type == 'array') {
 					Log::err(Log::ETYPE, "array to string conversion", $file, $ast->lineno);
 				}
@@ -289,7 +289,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 					$ret = $ast->children[0];
 					if($ret instanceof \ast\Node) {
 						if($ast->children[0]->kind == \ast\AST_ARRAY) $ret_type='array';
-						else $ret_type = node_type($file, $ret, $current_scope);
+						else $ret_type = node_type($file, $namespace, $ret, $current_scope);
 					} else {
 						$ret_type = type_map(gettype($ret));
 						// This is distinct from returning actual NULL which doesn't hit this else since it is an AST_CONST node
@@ -309,7 +309,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 						Log::err(Log::ETYPE, "return $ret_type but {$current_function['name']}() is declared to return {$current_function['oret']}", $file, $ast->lineno);
 					}
 				} else {
-					$type = node_type($file, $ast->children[0], $current_scope);
+					$type = node_type($file, $namespace, $ast->children[0], $current_scope);
 					if(!empty($functions[$current_scope]['oret'])) { // The function has a return type declared
 						if(!type_check($type, $functions[$current_scope]['oret'], $namespace)) {
 							Log::err(Log::ETYPE, "return $type but {$functions[$current_scope]['name']}() is declared to return {$functions[$current_scope]['oret']}", $file, $ast->lineno);
@@ -375,11 +375,11 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 					else {
 						// Ok, the function exists, but are we calling it correctly?
 						if($found instanceof ReflectionType) echo "oops at $file:{$ast->lineno}\n";  // DEBUG
-						arg_check($file, $ast, $func_name, $found, $current_scope);
+						arg_check($file, $namespace, $ast, $func_name, $found, $current_scope);
 						if($found['file'] != 'internal') {
 							// re-check the function's ast with these args
 							// TODO: This could result in errors being shown twice depending on the order of the AST
-							if(!$quick_mode) pass2($found['file'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
+							if(!$quick_mode) pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
 						} else {
 							if(!$found['avail']) {
 								if(!$found) Log::err(Log::EAVAIL, "function {$func_name}() is not compiled into this version of PHP", $file, $ast->lineno);
@@ -393,8 +393,8 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 							$closure_id = (int)substr($scope[$current_scope]['vars'][$name]['type'], $pos+9);
 							$func_name = '{closure '.$closure_id.'}';
 							$found = $functions[$func_name];
-							arg_check($file, $ast, $func_name, $found, $current_scope);
-							if(!$quick_mode) pass2($found['file'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
+							arg_check($file, $namespace, $ast, $func_name, $found, $current_scope);
+							if(!$quick_mode) pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
 						}
 					}
 				}
@@ -421,7 +421,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 								$use_ns = '';
 							}
 						}
-						if(empty($classes[$use_ns.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
+						if(empty($classes[strtolower($use_ns.$class_name)]) && empty($classes[strtolower($class_name)])) {
 							Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $ast->lineno);
 						} else {
 							$method_name = '__construct';  // No type checking for PHP4-style constructors
@@ -429,10 +429,10 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 							if($method) $class_name = $use_ns.$class_name;
 							else $method = find_method($class_name, $method_name);
 							if($method) { // Found a constructor
-								arg_check($file, $ast, $method_name, $method, $current_scope, $class_name);
+								arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $class_name);
 								if($method['file'] != 'internal') {
 									// re-check the function's ast with these args
-									if(!$quick_mode) pass2($method['file'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
+									if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
 								}
 							}
 						}
@@ -488,10 +488,10 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 									Log::err(Log::ESTATIC, "static call to non-static method {$class_name}::{$method_name}() defined at {$method['file']}:{$method['lineno']}", $file, $ast->lineno);
 								}
 							}
-							arg_check($file, $ast, $method_name, $method, $current_scope, $class_name);
+							arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $class_name);
 							if($method['file'] != 'internal') {
 								// re-check the function's ast with these args
-								if(!$quick_mode) pass2($method['file'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
+								if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
 							}
 						}
 					}
@@ -528,10 +528,10 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 									// non-static calls to static methods are ok
 									// Log::err(Log::EUNDEF, "non-static call to static method {$class_name}->{$method_name}() defined at {$method['file']}:{$method['lineno']}", $file, $ast->lineno);
 								}
-								arg_check($file, $ast, $method_name, $method, $current_scope, $class_name);
+								arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $class_name);
 								if($method['file'] != 'internal') {
 									// re-check the function's ast with these args
-									if(!$quick_mode) pass2($method['file'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
+									if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
 								}
 							}
 						}
@@ -547,6 +547,7 @@ function pass2($file, $ast, $current_scope, $parent_node=null, $current_class=nu
 			}
 		}
 	}
+	return $namespace;
 }
 
 // Takes an AST_VAR node and tries to find the variable in the current scope and returns its likely type
@@ -574,8 +575,8 @@ function var_type($file, $node, $current_scope, &$taint, $check_var_exists=true)
 
 // Adds variable types to the current scope from the given node
 // It does a bit of simple taint checking as well and sets a tainted flag on each one
-function var_assign($file, $ast, $current_scope, &$vars) {
-	global $classes, $functions, $namespace, $scope;
+function var_assign($file, $namespace, $ast, $current_scope, &$vars) {
+	global $classes, $functions, $scope;
 
 	$left = $ast->children[0];
 	$right = $ast->children[1];
@@ -585,7 +586,7 @@ function var_assign($file, $ast, $current_scope, &$vars) {
 
 	// Deal with $a=$b=$c=1; and trickle the right-most value to the top through recursion
 	if(($right instanceof \ast\Node) && ($right->kind == \ast\AST_ASSIGN)) {
-		$right_type = var_assign($file, $right, $current_scope, $vars);
+		$right_type = var_assign($file, $namespace, $right, $current_scope, $vars);
 	}
 
 	if(($left instanceof \ast\Node) && ($left->kind != \ast\AST_VAR) && ($left->kind != \ast\AST_STATIC_PROP)) {
@@ -650,7 +651,7 @@ function var_assign($file, $ast, $current_scope, &$vars) {
 		$left_type = $right_type;
 	} else if(!$left_type) {
 		// We didn't figure out the type simply by looking at the left side of the assignment, check the right
-		$right_type = node_type($file, $right, $current_scope, $taint);
+		$right_type = node_type($file, $namespace, $right, $current_scope, $taint);
 		$left_type = $right_type;
 	}
 
@@ -664,7 +665,7 @@ function var_assign($file, $ast, $current_scope, &$vars) {
 	return $right_type;
 }
 
-function arg_check(string $file, $ast, string $func_name, $func, string $current_scope, string $class_name='') {
+function arg_check(string $file, $namespace, $ast, string $func_name, $func, string $current_scope, string $class_name='') {
 	global $internal_arginfo, $functions, $scope;
 
 	$ok = false;
@@ -683,13 +684,13 @@ function arg_check(string $file, $ast, string $func_name, $func, string $current
 		case 'join':
 		case 'implode': // (string glue, array pieces), (array pieces, string glue) or (array pieces)
 			if($argcount == 1) { // If we have just one arg it must be an array
-				if(($arg_type=node_type($file, $arglist->children[0], $current_scope)) != 'array') {
+				if(($arg_type=node_type($file, $namespace, $arglist->children[0], $current_scope)) != 'array') {
 					Log::err(Log::ETYPE, "arg#1(pieces) is $arg_type but {$func['name']}() takes array when passed only 1 arg", $file, $ast->lineno);
 				}
 				return;
 			} else if($argcount == 2) {
-				$arg1_type = node_type($file, $arglist->children[0], $current_scope);
-				$arg2_type = node_type($file, $arglist->children[1], $current_scope);
+				$arg1_type = node_type($file, $namespace, $arglist->children[0], $current_scope);
+				$arg2_type = node_type($file, $namespace, $arglist->children[1], $current_scope);
 				if($arg1_type == 'array') {
 					if(!type_check($arg2_type,'string')) {
 						Log::err(Log::ETYPE, "arg#2(glue) is $arg2_type but {$func['name']}() takes string when arg#1 is array", $file, $ast->lineno);
@@ -705,7 +706,7 @@ function arg_check(string $file, $ast, string $func_name, $func, string $current
 			break;
 		case 'strtok': // (string str, string token) or (string token)
 			if($argcount == 1) { // If we have just one arg it must be a string token
-				if(($arg_type=node_type($file, $arglist->children[0], $current_scope)) != 'string') {
+				if(($arg_type=node_type($file, $namespace, $arglist->children[0], $current_scope)) != 'string') {
 					Log::err(Log::ETYPE, "arg#1(token) is $arg_type but {$func['name']}() takes string when passed only one arg", $file, $ast->lineno);
 					return;
 				}
@@ -715,7 +716,7 @@ function arg_check(string $file, $ast, string $func_name, $func, string $current
 		case 'min':
 		case 'max':
 			if($argcount == 1) { // If we have just one arg it must be an array
-				if(($arg_type=node_type($file, $arglist->children[0], $current_scope)) != 'array') {
+				if(($arg_type=node_type($file, $namespace, $arglist->children[0], $current_scope)) != 'array') {
 					Log::err(Log::ETYPE, "arg#1(values) is $arg_type but {$func['name']}() takes array when passed only one arg", $file, $ast->lineno);
 					return;
 				}
@@ -774,19 +775,19 @@ function arg_check(string $file, $ast, string $func_name, $func, string $current
 	$errs = [];
 	$alt = 1;
 	while(!empty($functions["{$func['name']} $alt"])) {
-		$errs = arglist_type_check($file, $arglist, $functions["{$func['name']} $alt"], $current_scope);
+		$errs = arglist_type_check($file, $namespace, $arglist, $functions["{$func['name']} $alt"], $current_scope);
 		$alt++;
 		if(empty($errs)) break;
 	}
-	if($alt==1 || ($alt>1 && !empty($errs))) $errs = arglist_type_check($file, $arglist, $func, $current_scope);
+	if($alt==1 || ($alt>1 && !empty($errs))) $errs = arglist_type_check($file, $namespace, $arglist, $func, $current_scope);
 
 	foreach($errs as $err) {
 		Log::err(Log::ETYPE, $err, $file, $ast->lineno);
 	}
 }
 
-function arglist_type_check($file, $arglist, $func, $current_scope):array {
-	global $internal_arginfo, $scope, $tainted_by, $namespace;
+function arglist_type_check($file, $namespace, $arglist, $func, $current_scope):array {
+	global $internal_arginfo, $scope, $tainted_by;
 
 	$errs=[];
 	$fn = $func['scope'] ?? $func['name'];
@@ -812,14 +813,14 @@ function arglist_type_check($file, $arglist, $func, $current_scope):array {
 			}
 			// If it is by-ref link it back to the local variable name
 			if($param['flags'] & \ast\flags\PARAM_REF) {
-				$arg_type = node_type($file, $arg, $current_scope, $taint, false);
+				$arg_type = node_type($file, $namespace, $arg, $current_scope, $taint, false);
 				if(!empty($scope[$current_scope]['vars'][$arg_name])) {
 					$scope[$fn]['vars'][$param['name']] = &$scope[$current_scope]['vars'][$arg_name];
 				} else {
 					$scope[$fn]['vars'][$param['name']]['type'] = $arg_type;
 				}
 			} else {
-				$arg_type = node_type($file, $arg, $current_scope, $taint);
+				$arg_type = node_type($file, $namespace, $arg, $current_scope, $taint);
 				if(!empty($arg_type)) add_type($fn, $param['name'], $arg_type);
 			}
 			if($taint) {
@@ -830,7 +831,7 @@ function arglist_type_check($file, $arglist, $func, $current_scope):array {
 				$scope[$fn]['vars'][$param['name']]['tainted_by'] = '';
 			}
 		} else {
-			$arg_type = node_type($file, $arg, $current_scope, $taint, !($param['flags'] & \ast\flags\PARAM_REF));
+			$arg_type = node_type($file, $namespace, $arg, $current_scope, $taint, !($param['flags'] & \ast\flags\PARAM_REF));
 		}
 
 		// For all functions, add the param to the local scope if pass-by-ref
@@ -1027,8 +1028,8 @@ function find_class($node, $namespace, $nmap) {
 	return null;
 }
 
-function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists=true) {
-	global $classes, $functions, $namespace, $namespace_map, $internal_arginfo;
+function node_type($file, $namespace, $node, $current_scope, &$taint=null, $check_var_exists=true) {
+	global $classes, $functions, $namespace_map, $internal_arginfo;
 
 	if(!($node instanceof \ast\Node)) {
 		if($node===null) return '';
@@ -1043,12 +1044,12 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 				// Always a string from a concat
 				case \ast\flags\BINARY_CONCAT:
 					$temp_taint = false;
-					node_type($file, $node->children[0], $current_scope, $temp_taint);
+					node_type($file, $namespace, $node->children[0], $current_scope, $temp_taint);
 					if($temp_taint) {
 						$taint = true;
 						return 'string';
 					}
-					node_type($file, $node->children[1], $current_scope, $temp_taint);
+					node_type($file, $namespace, $node->children[1], $current_scope, $temp_taint);
 					if($temp_taint) {
 						$taint = true;
 					}
@@ -1067,8 +1068,8 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 					break;
 				// Everything else should be an int/float
 				default:
-					$left = type_map(node_type($file, $node->children[0], $current_scope));
-					$right = type_map(node_type($file, $node->children[1], $current_scope));
+					$left = type_map(node_type($file, $namespace, $node->children[0], $current_scope));
+					$right = type_map(node_type($file, $namespace, $node->children[1], $current_scope));
 
 					if($left == 'array' && $right == 'array') {
 						return 'array';
@@ -1113,10 +1114,11 @@ function node_type($file, $node, $current_scope, &$taint=null, $check_var_exists
 							$found = $classes[strtolower( $namespace_map[T_CLASS][$file][strtolower($name)])];
 						}
 					}
-					if(!$found && empty($classes[$namespace.strtolower($name)]) && empty($classes[strtolower($name)])) {
+
+					if(!$found && empty($classes[strtolower($namespace.$name)]) && empty($classes[strtolower($name)])) {
 						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
 					}
-					$found = $found ?? $classes[$namespace.strtolower($name)] ?? $classes[strtolower($name)] ?? null;
+					$found = $found ?? $classes[strtolower($namespace.$name)] ?? $classes[strtolower($name)] ?? null;
 				} else {
 					if(empty($classes[strtolower($name)])) {
 						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
@@ -1273,7 +1275,7 @@ function var_taint_check($file, $node, string $current_scope):bool {
 }
 
 function add_var_scope(string $cs, string $name, string $type, $replace_type = false) {
-	global $scope, $namespace;
+	global $scope;
 
 	if(!array_key_exists($cs, $scope)) $scope[$cs] = [];
 	if(!array_key_exists('vars', $scope[$cs])) $scope[$cs]['vars'] = [];

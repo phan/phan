@@ -20,7 +20,6 @@ $classes = [];
 $functions = [];
 $summary = [ 'classes'=>0, 'traits'=>0, 'methods'=>0, 'functions'=>0, 'closures'=>0, 'conditionals'=>0 ];
 $scope = [];
-$namespace = null;
 $namespace_map = [];
 
 // First add all the internal classes and functions
@@ -32,9 +31,8 @@ foreach($files as $i=>$file) {
 	$ast = \ast\parse_file($file);
 	if($dump_ast) echo $file."\n".str_repeat("\u{00AF}",strlen($file))."\n".ast_dump($ast)."\n";
 	else {
-		$namespace = null;	// Namespaces are file-scoped
 		if($progress_bar) progress("pass1", $i/$cnt);
-		pass1($file, false, $ast, 'global');
+		pass1($file, '', false, $ast, 'global');
 	}
 }
 if($dump_ast) exit;
@@ -57,9 +55,8 @@ $scope['global'] = [ 'vars'=>['_GET'=>['type'=>'array', 'tainted'=>true, 'tainte
 // The second pass looks at the execution blocks themselves
 foreach($files as $i=>$file) {
 	$ast = \ast\parse_file($file);
-	$namespace = null;	// Namespaces are file-scoped
 	if($progress_bar) progress("pass2", $i/$cnt);
-	pass2($file, $ast, 'global');
+	pass2($file, '', $ast, 'global');
 }
 
 if($progress_bar) echo "\n\n";

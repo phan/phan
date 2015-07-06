@@ -2,8 +2,8 @@
 namespace phan;
 
 // Pass 1 recursively finds all the class and function declarations and populates the appropriate globals
-function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $current_function=null) {
-	global $classes, $functions, $namespace, $namespace_map, $summary;
+function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_class=null, $current_function=null) {
+	global $classes, $functions, $namespace_map, $summary;
 	$done = false;
 
 	if ($ast instanceof \ast\Node) {
@@ -61,6 +61,7 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 				}
 				$classes[strtolower($current_class)] = [
 											'file'		 => $file,
+											'namespace'	 => $namespace,
 											'conditional'=> $conditional,
 											'flags'		 => $ast->flags,
 											'lineno'	 => $ast->lineno,
@@ -93,7 +94,7 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
 				} else {
 					$method = $ast->name;
 				}
-				$classes[strtolower($current_class)]['methods'][strtolower($method)] = node_func($file, $conditional, $ast, "{$current_class}::{$method}");
+				$classes[strtolower($current_class)]['methods'][strtolower($method)] = node_func($file, $conditional, $ast, "{$current_class}::{$method}", $namespace);
                 if(!($classes[strtolower($current_class)]['methods'][strtolower($method)]['flags'] & \ast\flags\MODIFIER_STATIC)) {
                     add_var_scope("{$current_class}::{$method}", 'this', $current_class);
                 }
@@ -165,9 +166,10 @@ function pass1($file, $conditional, $ast, $current_scope, $current_class=null, $
                 break;
 		}
 		if(!$done) foreach($ast->children as $child) {
-			pass1($file, $conditional, $child, $current_scope, $current_class, $current_function);
+			$namespace = pass1($file, $namespace, $conditional, $child, $current_scope, $current_class, $current_function);
 		}
 	}
+	return $namespace;
 }
 
 function node_namelist($node, $namespace) {
@@ -184,12 +186,12 @@ function node_namelist($node, $namespace) {
 	return $result;
 }
 
-function node_paramlist($file, $node, &$req, &$opt, $dc) {
+function node_paramlist($file, $node, &$req, &$opt, $dc, $namespace) {
 	if($node instanceof \ast\Node) {
 		$result = [];
 		$i = 0;
 		foreach($node->children as $param_node) {
-			$result[] = node_param($file, $param_node, $dc, $i);
+			$result[] = node_param($file, $param_node, $dc, $i, $namespace);
 			if($param_node->children[2]===null) {
 				if($opt) Log::err(Log::EPARAM, "required arg follows optional", $file, $node->lineno);
 				$req++;
@@ -201,9 +203,9 @@ function node_paramlist($file, $node, &$req, &$opt, $dc) {
 	assert(false, ast_dump($node)." was not an \\ast\\Node");
 }
 
-function node_param($file, $node, $dc, $i) {
+function node_param($file, $node, $dc, $i, $namespace) {
 	if($node instanceof \ast\Node) {
-		$type = ast_node_type($node->children[0]);
+		$type = ast_node_type($node->children[0], $namespace);
 		if(empty($type) && !empty($dc['params'][$i]['type'])) $type = $dc['params'][$i]['type'];
 
 		$result = [
@@ -227,6 +229,7 @@ function node_func($file, $conditional, $node, $current_scope, $namespace='') {
 		if(!empty($node->docComment)) $dc = parse_doc_comment($node->docComment);
 		$result = [
 					'file'=>$file,
+					'namespace'=>$namespace,
 					'scope'=>$current_scope,
 					'conditional'=>$conditional,
 					'flags'=>$node->flags,
@@ -234,14 +237,14 @@ function node_func($file, $conditional, $node, $current_scope, $namespace='') {
 					'endLineno'=>$node->endLineno,
 					'name'=>$namespace.$node->name,
 					'docComment'=>$node->docComment,
-					'params'=>node_paramlist($file, $node->children[0], $req, $opt, $dc),
+					'params'=>node_paramlist($file, $node->children[0], $req, $opt, $dc, $namespace),
 					'required'=>$req,
 					'optional'=>$opt,
 					'ast'=>$node->children[2]
 				  ];
 		if($node->children[3] !==null) {
-			$result['oret'] = ast_node_type($node->children[3]); // Original return type
-			$result['ret'] = ast_node_type($node->children[3]); // This one changes as we walk the tree
+			$result['oret'] = ast_node_type($node->children[3], $namespace); // Original return type
+			$result['ret'] = ast_node_type($node->children[3], $namespace); // This one changes as we walk the tree
 		} else {
 			// Check if the docComment has a return value specified
 			if(!empty($dc['return'])) {
@@ -268,7 +271,7 @@ function node_func($file, $conditional, $node, $current_scope, $namespace='') {
 					$scope[$current_scope]['vars'][$v['name']] = ['type'=>$v['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
 				}
 				if(array_key_exists('def', $v)) {
-					$type = node_type($file, $v['def'], $current_scope);
+					$type = node_type($file, $namespace, $v['def'], $current_scope);
 					if($type==="NULL") {
 						add_type($current_scope, $v['name'], $type);
 						if(!empty($result['params'][$k]['type'])) $result['params'][$k]['type'] .= '|NULL';

@@ -3,11 +3,15 @@ namespace phan;
 
 // ast_node_type() is for places where an actual type name appears. This returns that type name
 // node_type() instead to figure out the type of a node
-function ast_node_type($node) {
+function ast_node_type($node, $namespace) {
 	if($node instanceof \ast\Node) {
 		switch($node->kind) {
 			case \ast\AST_NAME:
-				$result = $node->children[0];
+				if($node->flags & \ast\flags\NAME_NOT_FQ) {
+					$result = $namespace.$node->children[0];
+				} else {
+					$result = $node->children[0];
+				}
 				break;
 			case \ast\AST_TYPE:
 				if($node->flags == \ast\flags\TYPE_CALLABLE) $result = 'callable';

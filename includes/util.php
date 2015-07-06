@@ -13,6 +13,7 @@ function add_class($class_name) {
 	if($class->isAbstract()) $flags |= \ast\flags\CLASS_ABSTRACT;
 
 	$classes[$lc] = ['file'=>'internal',
+					 'namespace'=>$class->getNamespaceName(),
 					 'conditional'=>false,
 					 'flags'=>$flags,
 					 'lineno'=>0,
@@ -63,6 +64,7 @@ function add_class($class_name) {
 		$lmname = strtolower($method->name);
 		$classes[$lc]['methods'][$lmname] = [
                                               'file'=>'internal',
+                                              'namespace'=>$class->getNamespaceName(),
                                               'conditional'=>false,
                                               'flags'=>$meth->getModifiers(),
                                               'lineno'=>0,
@@ -115,6 +117,7 @@ function add_internal($internal_classes) {
 		$optional = $function->getNumberOfParameters() - $required;
 		$functions[strtolower($function_name)] = [
 			 'file'=>'internal',
+			 'namespace'=>$function->getNamespaceName(),
 			 'avail'=>true,
 			 'conditional'=>false,
 			 'flags'=>0,
