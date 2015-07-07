@@ -643,17 +643,55 @@ function dump_gv($node) {
 		foreach($entry['interfaces'] as $v) {
 			if(empty($classes[strtolower($v)])) continue;
 			$fe = $classes[strtolower($v)];
-			$conns[$fe['namespace']][$fe['name']][] = $entry['name'];
+			if($entry['file']!='internal' || $fe['file']!='internal') {
+				$conns[$fe['namespace']][$fe['name']][] = $entry['name'];
+				$seen[$fe['name']] = true;
+				$seen[$entry['name']] = true;
+			}
 		}
 		foreach($entry['traits'] as $v) {
 			if(empty($classes[strtolower($v)])) continue;
 			$fe = $classes[strtolower($v)];
-			$conns[$fe['namespace']][$fe['name']][] = $entry['name'];
+			if($entry['file']!='internal' || $fe['file']!='internal') {
+				$conns[$fe['namespace']][$fe['name']][] = $entry['name'];
+				$seen[$fe['name']] = true;
+				$seen[$entry['name']] = true;
+			}
 		}
 		if(!empty($entry['parent'])) {
 			if(empty($classes[strtolower($entry['parent'])])) continue;
 			$fe = $classes[strtolower($entry['parent'])];
-			$conns[$fe['namespace']][$fe['name']][] = $entry['name'];
+			if($entry['file']!='internal' || $fe['file']!='internal') {
+				$conns[$fe['namespace']][$fe['name']][] = $entry['name'];
+				$seen[$fe['name']] = true;
+				$seen[$entry['name']] = true;
+			}
+		}
+	}
+
+	// Now get rid of anything internal that doesn't have a direct connection to something in user-space
+	$temp = $interfaces;
+	foreach($temp as $ns=>$vv) {
+		foreach($vv as $k => $vv) {
+			$entry = $classes[strtolower($vv)];
+			if($entry['file']=='internal' && empty($seen[$vv])) {
+				unset($interfaces[$ns][$k]);
+			}
+		}
+	}
+	$temp = $traits;
+	foreach($temp as $ns=>$vv) {
+		foreach($vv as $k => $vv) {
+			$entry = $classes[strtolower($vv)];
+			if($entry['file']=='internal' && empty($seen[$vv])) unset($traits[$ns][$k]);
+		}
+	}
+
+	$temp = $root;
+	foreach($temp as $ns=>$vv) {
+		foreach($vv as $k => $vv) {
+			$entry = $classes[strtolower($vv)];
+			if($entry['file']=='internal' && empty($seen[$vv])) unset($root[$ns][$k]);
 		}
 	}
 
