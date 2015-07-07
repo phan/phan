@@ -168,8 +168,8 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 			case \ast\AST_ASSIGN_REF:
 				var_assign($file, $namespace, $ast, $current_scope, $current_class, $vars);
 				foreach($vars as $k=>$v) {
-					if(empty($v)) $v = ['type'=>'mixed', 'tainted'=>false, 'tainted_by'=>''];
-					if(empty($v['type'])) $v['type'] = 'mixed';
+					if(empty($v)) $v = ['type'=>'', 'tainted'=>false, 'tainted_by'=>''];
+					if(empty($v['type'])) $v['type'] = '';
 					if(strpos($k, '::') === false) $cs = $current_scope;
 					else $cs = 'global';  // Put static properties in the global scope TODO: revisit
 
@@ -567,9 +567,9 @@ function var_type($file, $node, $current_scope, &$taint, $check_var_exists=true)
 			$tainted_by = $scope[$current_scope]['vars'][$node->children[0]]['tainted_by'];
 			$taint = true;
 		}
-		return $scope[$current_scope]['vars'][$node->children[0]]['type'] ?? 'mixed';
+		return $scope[$current_scope]['vars'][$node->children[0]]['type'] ?? '';
 	}
-	return 'mixed';
+	return '';
 }
 
 // Adds variable types to the current scope from the given node
@@ -853,7 +853,7 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 		if(!type_check($arg_type, $param['type'], $namespace)) {
 			if(!empty($param['name'])) $paramstr = '('.trim($param['name'],'&=').')';
 			else $paramstr = '';
-			if(empty($arg_type)) $arg_type = 'mixed';
+			if(empty($arg_type)) $arg_type = '';
 			if($func['file']=='internal') {
 				$errs[] = "arg#$argno{$paramstr} is $arg_type but {$func['name']}() takes {$param['type']}";
 			} else {
@@ -1081,10 +1081,10 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 						return 'array';
 					} else if($left == 'array' && !type_check($right, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: left operand is array and right is not", $file, $node->lineno);
-						return 'mixed';
+						return '';
 					} else if($right == 'array' && !type_check($left, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: right operand is array and left is not", $file, $node->lineno);
-						return 'mixed';
+						return '';
 					} else if($left=='int' && $right == 'int') {
 						return 'int';
 					} else if($left=='float' || $right=='float') {
