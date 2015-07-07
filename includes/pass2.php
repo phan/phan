@@ -855,7 +855,7 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 			else $paramstr = '';
 			if(empty($arg_type)) $arg_type = '';
 			if($func['file']=='internal') {
-				$errs[] = "arg#$argno{$paramstr} is $arg_type but {$func['name']}() takes {$param['type']}";
+				if(!($param['flags'] & \ast\flags\PARAM_REF)) $errs[] = "arg#$argno{$paramstr} is $arg_type but {$func['name']}() takes {$param['type']}";
 			} else {
 				$errs[] = "arg#$argno{$paramstr} is $arg_type but {$func['name']}() takes {$param['type']} defined at {$func['file']}:{$func['lineno']}";
 			}
