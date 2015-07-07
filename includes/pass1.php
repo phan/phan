@@ -237,6 +237,8 @@ function node_func($file, $conditional, $node, $current_scope, $current_class, $
 					'params'=>node_paramlist($file, $node->children[0], $req, $opt, $dc, $namespace),
 					'required'=>$req,
 					'optional'=>$opt,
+					'ret'=>'',
+					'oret'=>'',
 					'ast'=>$node->children[2]
 				  ];
 		if($node->children[3] !==null) {
