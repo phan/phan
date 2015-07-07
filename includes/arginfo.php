@@ -8048,7 +8048,7 @@ $internal_arginfo = [
 'UConverter::setSourceEncoding' => ['bool', 'encoding'=>'string'],
 'UConverter::setSubstChars' => ['bool', 'chars'=>'string'],
 'UConverter::transcode' => ['string', 'str'=>'string', 'toencoding'=>'string', 'fromencoding'=>'string', 'options'=>'array'],
-'ucwords' => ['string', 'str'=>'string'],
+'ucwords' => ['string', 'str'=>'string', 'delims='=>'string'],
 'udm_add_search_limit' => ['bool', 'agent'=>'', 'var'=>'int', 'val'=>'string'],
 'udm_alloc_agent_array' => ['resource', 'databases'=>'array'],
 'udm_alloc_agent' => ['resource', 'dbaddr'=>'string', 'dbmode='=>'string'],
