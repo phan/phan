@@ -5,10 +5,11 @@ error_reporting(-1);
 ini_set("memory_limit", -1);
 
 // Parse command line args
-$opts = getopt("f:m:o:hasuqpi");
+$opts = getopt("f:m:o:hasuqpig::");
 $pruneargv = array();
 $files = [];
-$dump_ast = $dump_scope = $dump_user_functions = $quick_mode = $progress_bar = false;
+$dump_ast = $dump_scope = $dump_user_functions = $quick_mode = $progress_bar = $gv = false;
+$gv_node = '';
 
 foreach($opts as $key=>$value) {
 	switch($key) {
@@ -45,6 +46,12 @@ foreach($opts as $key=>$value) {
 		case 'i':
 			Log::setOutputMask(Log::getOutputMask()^Log::EUNDEF);
 			break;
+		case 'g':
+			if(!empty($value)) $gv_node = $value;
+			else $gv_node = '';
+			$gv = true;
+			break;
+
 		default: usage("Unknown option '-$key'"); break;
 	}
 }
@@ -74,6 +81,7 @@ Usage: {$argv[0]} [options] [files...]
   -m <mode>       Output mode: verbose, short, json, csv
   -o <filename>   Output filename
   -p              Show progress bar
+  -g [node_name]  Output a graphviz (.gv) file of the class hierarchy
   -a              Dump AST of provides files (for debugging)
   -s              Dump scope tree (for debugging)
   -u              Dump user defined functions (for debugging)

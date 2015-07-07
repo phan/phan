@@ -551,6 +551,156 @@ function dump_functions($type='user') {
 		echo "\n";
 	}
 }
+
+function walk_up($nodes, $node) {
+	global $classes;
+	$nodes[] = $node;
+	$n = $classes[strtolower($node)];
+	if(!empty($n['interfaces'])) {
+		foreach($n['interfaces'] as $int) {
+			if(empty($classes[strtolower($int)])) continue;
+			$nodes = walk_up($nodes, $int);
+		}
+	}
+	if(!empty($n['traits'])) {
+		$nodes = array_merge($nodes, $n['traits']);
+	}
+	if(!empty($n['parent'])) {
+		$nodes = walk_up($nodes, $n['parent']);
+	}
+	return $nodes;
+}
+
+function walk_down($nodes, $node) {
+	global $classes;
+	if(empty($classes[strtolower($node)])) return $nodes;
+	$n = $classes[strtolower($node)];
+	// This could take a while...
+	foreach($classes as $k=>$c) {
+		if(!empty($c['traits'])) {
+			if(in_array($node, $c['traits'])) $nodes[] = $c['name'];
+		}
+		if(!empty($c['interfaces'])) {
+			if(in_array($node, $c['traits'])) {
+				$nodes[] = $c['name'];
+				$nodes = walk_down($nodes, $c['name']);
+			}
+		}
+		if(!empty($c['parent']) && $c['parent'] == $node) {
+			$nodes[] = $c['name'];
+			$nodes = walk_down($nodes, $c['name']);
+		}
+	}
+	return $nodes;
+}
+function dump_gv($node) {
+	global $classes;
+
+	$root = [];
+	$interfaces = [];
+	$traits = [];
+	$namespaces = [];
+	$all = [];
+	if($node) {
+		if(empty($classes[strtolower($node)])) Log::err(Log::EFATAL, "{$node} not found");
+		$nodes = [];
+		$nodes = walk_up($nodes, $node);
+		$nodes = walk_down($nodes, $node);
+		foreach($nodes as $cn) {
+			$all[] = $classes[strtolower($cn)];
+		}
+	} else {
+		$all = $classes;
+	}
+
+	foreach($all as $key=>$entry) {
+		$ns = empty($entry['namespace']) ? '' : $entry['namespace'];
+		// Classify the entries first so we can colour them appropriately later
+		if($entry['flags'] & \ast\flags\CLASS_INTERFACE) {
+			$interfaces[$ns][$key] = $entry['name'];
+			$namespaces[$ns]=true;
+		} else if($entry['flags'] & \ast\flags\CLASS_TRAIT) {
+			$traits[$ns][$key] = $entry['name'];
+			$namespaces[$ns]=true;
+		} else if(empty($entry['parent'])) {
+			$root[$ns][$key] = $entry['name'];
+			$namespaces[$ns]=true;
+		} else {
+			$nodes[$ns][$key] = $entry['name'];
+			$namespaces[$ns]=true;
+		}
+		// Then work out the connections
+		foreach($entry['interfaces'] as $v) {
+			if(empty($classes[strtolower($v)])) continue;
+			$fe = $classes[strtolower($v)];
+			$conns[$fe['namespace']][$fe['name']][] = $entry['name'];
+		}
+		foreach($entry['traits'] as $v) {
+			if(empty($classes[strtolower($v)])) continue;
+			$fe = $classes[strtolower($v)];
+			$conns[$fe['namespace']][$fe['name']][] = $entry['name'];
+		}
+		if(!empty($entry['parent'])) {
+			if(empty($classes[strtolower($entry['parent'])])) continue;
+			$fe = $classes[strtolower($entry['parent'])];
+			$conns[$fe['namespace']][$fe['name']][] = $entry['name'];
+		}
+	}
+
+	echo "digraph class_graph {
+	graph [ overlap=false, fontsize=6, size=\"80,60\"]
+	node  [ shape=box, style=filled, color=SandyBrown, fontcolor=Black, fontname=Utopia]\n\n";
+
+	foreach(array_keys($namespaces) as $i=>$ns) {
+		if($ns!='') {
+			// Each namespace is a subgraph
+			echo "subgraph cluster_$i {\n";
+			echo "label=\"".trim(str_replace('\\','\\\\',$ns), '\\')."\";\n";
+			echo "style=filled;\n";
+			echo "color=lightgrey;\n";
+		}
+		if(!empty($interfaces[$ns])) foreach($interfaces[$ns] as $v) {
+			echo ($v===$node) ? gv($v,"shape=doubleoctagon, color=Gold"):gv($v);
+		}
+		echo "\n";
+		echo "node [ shape=box, color=YellowGreen, fontcolor=Black, fontname=Utopia]\n";
+		if(!empty($traits[$ns])) foreach($traits[$ns] as $v) {
+			echo ($v===$node) ? gv($v,"shape=doubleoctagon, color=Gold"):gv($v);
+		}
+		echo "\n";
+		echo "node [ shape=box, color=Wheat, fontcolor=Black, fontname=\"Utopia-Bold\"]\n";
+		if(!empty($root[$ns])) foreach($root[$ns] as $v) {
+			echo ($v===$node) ? gv($v,"shape=doubleoctagon, color=Gold"):gv($v);
+		}
+		echo "\n";
+		echo "node [ shape=box, color=Wheat, fontcolor=Black, fontname=Utopia]\n";
+		if(!empty($nodes[$ns])) foreach($nodes[$ns] as $key=>$v) {
+			echo ($v===$node) ? gv($v,"shape=doubleoctagon, color=Gold"):gv($v);
+		}
+		echo "\n";
+
+		if(!empty($conns[$ns])) foreach($conns[$ns] as $key=>$nns) {
+			foreach($nns as $n) {
+				if($classes[strtolower($key)]['flags'] & \ast\flags\CLASS_INTERFACE) $style = 'dotted';
+				else if($classes[strtolower($key)]['flags'] & \ast\flags\CLASS_TRAIT) $style = 'dashed';
+				else $style = 'solid';
+				echo gvline($key, $n, $style);
+			}
+		}
+		if($ns!='') {
+			echo "}\n";
+		}
+	}
+	echo "}\n";
+}
+
+function gv($a, $style='') {
+	return '"'.str_replace('\\','\\\\',$a)."\"".($style?"[$style]":'').";\n";
+}
+
+function gvline($a,$b,$style='') {
+	return '"'.str_replace('\\','\\\\',$a).'"->"'.str_replace('\\','\\\\',$b).'" '.($style?"[style=\"$style\"]":'')."\n";
+}
 /*
  * Local variables:
  * tab-width: 4
@@ -558,4 +708,4 @@ function dump_functions($type='user') {
  * End:
  * vim600: sw=4 ts=4 fdm=marker
  * vim<600: sw=4 ts=4
- */
+*/

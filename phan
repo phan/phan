@@ -40,6 +40,11 @@ if($dump_ast) exit;
 check_classes($classes);
 check_functions($functions);
 
+if($gv) {
+	dump_gv($gv_node);
+	exit;
+}
+
 $scope['global'] = [ 'vars'=>['_GET'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
                               '_POST'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
                               '_COOKIE'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
