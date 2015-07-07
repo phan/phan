@@ -75,7 +75,7 @@ function add_class($class_name) {
                                               'optional'=>$optional,
                                               'ret'=>null
 		                                    ];
-		$arginfo = null;
+		$arginfo = [];
 
 		if(!empty($internal_arginfo["{$class_name}::{$method->name}"])) {
 			$arginfo = $internal_arginfo["{$class_name}::{$method->name}"];

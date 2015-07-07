@@ -7212,6 +7212,7 @@ $internal_arginfo = [
 'SplSubject::notify' => [''],
 'SplTempFileObject::__construct' => ['SplTempFileObject', 'max_memory'=>'int'],
 'sprintf' => ['string', 'format'=>'string', 'arg1='=>'', '...='=>''],
+'SQLite3::__construct' => ['SQLite3', 'filename'=>'string', 'flags='=>'int', 'encryption_key='=>'string'],
 'SQLite3::busyTimeout' => ['bool', 'msecs'=>'int'],
 'SQLite3::changes' => ['int'],
 'SQLite3::close' => ['bool'],

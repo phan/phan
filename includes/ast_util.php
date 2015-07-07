@@ -156,7 +156,7 @@ function ast_format_flags(int $kind, int $flags) : string {
             return implode(" | ", $names) . " ($flags)";
         }
     }
-    return $flags;
+    return (string)$flags;
 }
 
 /** Dumps abstract syntax tree - stolen from @nikic */
