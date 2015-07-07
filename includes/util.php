@@ -76,10 +76,20 @@ function add_class($class_name) {
                                               'ret'=>null
 		                                    ];
 		$arginfo = null;
+
 		if(!empty($internal_arginfo["{$class_name}::{$method->name}"])) {
 			$arginfo = $internal_arginfo["{$class_name}::{$method->name}"];
 			$classes[$lc]['methods'][$lmname]['ret'] = $arginfo[0];
+		} else if(!empty($parents)) {
+			foreach($parents as $parent_name) {
+				if(!empty($internal_arginfo["{$parent_name}::{$method->name}"])) {
+					$arginfo = $internal_arginfo["{$parent_name}::{$method->name}"];
+					$classes[$lc]['methods'][$lmname]['ret'] = $arginfo[0];
+					break;
+				}
+			}
 		}
+
 		foreach($method->getParameters() as $param) {
 			$flags = 0;
 			if($param->isPassedByReference()) $flags |= \ast\flags\PARAM_REF;
@@ -102,7 +112,7 @@ function add_internal($internal_classes) {
 	global $functions, $internal_arginfo;
 
 	foreach($internal_classes as $class_name) {
-		add_class($class_name, 0);
+		add_class($class_name);
 	}
 	foreach(get_declared_interfaces() as $class_name) {
 		add_class($class_name);

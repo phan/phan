@@ -94,7 +94,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				} else {
 					$method = $ast->name;
 				}
-				$classes[strtolower($current_class)]['methods'][strtolower($method)] = node_func($file, $conditional, $ast, "{$current_class}::{$method}", $namespace);
+				$classes[strtolower($current_class)]['methods'][strtolower($method)] = node_func($file, $conditional, $ast, "{$current_class}::{$method}", $current_class, $namespace);
                 if(!($classes[strtolower($current_class)]['methods'][strtolower($method)]['flags'] & \ast\flags\MODIFIER_STATIC)) {
                     add_var_scope("{$current_class}::{$method}", 'this', $current_class);
                 }
@@ -138,7 +138,8 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				} else {
 					$function = $namespace.$ast->name;
 				}
-				$functions[strtolower($function)] = node_func($file, $conditional, $ast, $function, $namespace);
+
+				$functions[strtolower($function)] = node_func($file, $conditional, $ast, $function, $current_class, $namespace);
 				$summary['functions']++;
 				$current_function = $function;
 				$current_scope = $function;
@@ -216,7 +217,7 @@ function node_param($file, $node, $dc, $i, $namespace) {
 	assert(false, "$node was not an \\ast\\Node");
 }
 
-function node_func($file, $conditional, $node, $current_scope, $namespace='') {
+function node_func($file, $conditional, $node, $current_scope, $current_class, $namespace='') {
 	global $scope;
 
 	if($node instanceof \ast\Node) {
@@ -267,7 +268,7 @@ function node_func($file, $conditional, $node, $current_scope, $namespace='') {
 					$scope[$current_scope]['vars'][$v['name']] = ['type'=>$v['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
 				}
 				if(array_key_exists('def', $v)) {
-					$type = node_type($file, $namespace, $v['def'], $current_scope);
+					$type = node_type($file, $namespace, $v['def'], $current_scope, $current_class);
 					if($type==="NULL") {
 						add_type($current_scope, $v['name'], $type);
 						if(!empty($result['params'][$k]['type'])) $result['params'][$k]['type'] .= '|NULL';
