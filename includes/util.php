@@ -379,11 +379,11 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 		switch($node->kind) {
 			case \ast\AST_NEW:
 				if(empty($classes[strtolower($class_name)])) {
-					Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $node->lineno);
+					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $node->lineno);
 				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_ABSTRACT) {
-					Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
+					if(!is_native_type($class_name)) Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
 				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_INTERFACE) {
-					Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
+					if(!is_native_type($class_name)) Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -391,7 +391,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 
 			case \ast\AST_STATIC_CALL:
 				if(empty($classes[strtolower($class_name)])) {
-					 Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $node->lineno);
+					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -399,7 +399,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 
 			case \ast\AST_METHOD_CALL:
 				if(empty($classes[strtolower($class_name)])) {
-					Log::err(Log::EUNDEF, "call to method on undeclared class {$class_name}", $file, $node->lineno);
+					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "call to method on undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -407,9 +407,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 
 			case \ast\AST_PROP:
 				if(empty($classes[strtolower($class_name)])) {
-					if(!is_native_type($class_name)) {
-						Log::err(Log::EUNDEF, "can't access property from undeclared class {$class_name}", $file, $node->lineno);
-					}
+					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "can't access property from undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -455,7 +453,34 @@ function qualified_name(string $file, $node, string $namespace) {
 }
 
 function is_native_type(string $type):bool {
-	return in_array(strtolower($type), ['int','bool','float','string','callable','array','null']);
+	return in_array(strtolower($type), ['int','bool','float','string','callable','array','null','object']);
+}
+
+// Checks if the types, and if a union, all types in the union, are scalar
+function type_scalar($type):bool {
+	static $typemap = ['integer'=>'int','double'=>'float','boolean'=>'bool','callback'=>'callable'];
+	if(empty($type) || $type=='mixed') return false;
+	$type = $typemap[$type] ?? $type;
+	if($type=='int' ||  $type=='float' || $type=='string') return true;
+	if(strpos("|$type|", '|mixed|') !== false) return false;
+	$type = type_map($type);
+
+	// our own union types
+	if(strpos($type,'|')) {
+		foreach(explode('|', $type) as $s) {
+			if($s!='int' &&  $s!='float' && $s!='string') return false;
+		}
+	} else {
+		return false;
+	}
+	return true;
+}
+
+// Maps type names to consistent names
+function type_map(string $type):string {
+	static $repmaps = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback', 'closure'  ],
+                        ['int',     'float',   'bool',    'bool',  'bool', 'callable', 'callable' ]];
+	return str_replace($repmaps[0], $repmaps[1], $type);
 }
 
 // Looks for any suspicious GPSC variables in the given node

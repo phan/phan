@@ -880,33 +880,6 @@ function type_check($src, $dst, $namespace=''):bool {
 	return false;
 }
 
-// Checks if the types, and if a union, all types in the union, are scalar
-function type_scalar($type):bool {
-	static $typemap = ['integer'=>'int','double'=>'float','boolean'=>'bool','callback'=>'callable'];
-	if(empty($type) || $type=='mixed') return false;
-	$type = $typemap[$type] ?? $type;
-	if($type=='int' ||  $type=='float' || $type=='string') return true;
-	if(strpos("|$type|", '|mixed|') !== false) return false;
-	$type = type_map($type);
-
-	// our own union types
-	if(strpos($type,'|')) {
-		foreach(explode('|', $type) as $s) {
-			if($s!='int' &&  $s!='float' && $s!='string') return false;
-		}
-	} else {
-		return false;
-	}
-	return true;
-}
-
-// Maps type names to consistent names
-function type_map(string $type):string {
-	static $repmaps = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback', 'closure'  ],
-                        ['int',     'float',   'bool',    'bool',  'bool', 'callable', 'callable' ]];
-	return str_replace($repmaps[0], $repmaps[1], $type);
-}
-
 function internal_varargs_check(string $func_name):bool  {
 	global $internal_arginfo;
 
