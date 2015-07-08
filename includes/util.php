@@ -266,6 +266,159 @@ function var_name($node) {
 	return $node->children[0];
 }
 
+function find_class_name(string $file, $node, string $namespace, $current_class, $current_scope, &$static_call_ok=false):string {
+	global $classes, $scope;
+
+	if(!$node instanceof \ast\Node) return $node;
+	$class_name = $return = '';
+
+	switch($node->kind) {
+		case \ast\AST_NEW:
+		case \ast\AST_STATIC_CALL:
+			if($node->children[0]->kind == \ast\AST_NAME) {
+				$class_name = $node->children[0]->children[0];
+				if($class_name == 'self' || $class_name == 'static' || $class_name == 'parent') {
+					if(!$current_class) {
+						Log::err(Log::ESTATIC, "Cannot access {$class_name}:: when no class scope is active", $file, $node->lineno);
+						return '';
+					}
+					if($class_name == 'self' || $class_name == 'static') $class_name = $current_class['name'];
+					else if($class_name == 'parent') $class_name = $current_class['parent'];
+					$static_call_ok = true;
+				} else {
+					$class_name = qualified_name($file, $node->children[0], $namespace);
+				}
+			}
+			break;
+
+		case \ast\AST_METHOD_CALL:
+			if($node->children[0]->kind == \ast\AST_VAR) {
+				if(!($node->children[0]->children[0] instanceof \ast\Node)) {
+					// $var->method()
+					if($node->children[0]->children[0] == 'this') {
+						if(!$current_class) {
+							Log::err(Log::ESTATIC, 'Using $this when not in object context', $file, $node->lineno);
+							return '';
+						}
+					}
+					if(empty($scope[$current_scope]['vars'][$node->children[0]->children[0]])) {
+						// Got lost, couldn't find the variable in the current scope
+						// If it really isn't defined, it will be caught by the undefined var error
+						return '';
+					}
+					$call = $scope[$current_scope]['vars'][$node->children[0]->children[0]]['type'];
+					// Hack - loop through the possible types of the var and assume first found class is correct
+					foreach(explode('|', $call) as $class_name) {
+						if(!empty($classes[strtolower($class_name)])) break;
+					}
+					if(empty($class_name)) return '';
+				}
+			} else if($node->children[0]->kind == \ast\AST_PROP) {
+				$prop = $node->children[0];
+				if($prop->children[0]->kind == \ast\AST_VAR && !($prop->children[0]->children[0] instanceof \ast\Node)) {
+					// $var->prop->method()
+					$var = $prop->children[0];
+					if($var->children[0] == 'this') {
+						if(!$current_class) {
+							Log::err(Log::ESTATIC, 'Using $this when not in object context', $file, $node->lineno);
+							return '';
+						}
+						if(!($prop->children[1] instanceof \ast\Node)) {
+							if(!empty($current_class['properties'][$prop->children[1]])) {
+								$prop = $current_class['properties'][$prop->children[1]];
+								foreach(explode('|', $prop['value']) as $class_name) {
+									 if(!empty($classes[strtolower($class_name)])) break;
+								}
+								if(empty($class_name)) return '';
+							}
+						} else {
+							// $this->$prop->method() - too dynamic, give up
+							return '';
+						}
+					}
+				}
+			}
+			break;
+
+		case \ast\AST_PROP:
+			$prop = $node;
+			if($prop->children[0]->kind == \ast\AST_VAR && !($prop->children[0]->children[0] instanceof \ast\Node)) {
+				$var = $prop->children[0];
+				if($var->children[0] == 'this') {
+					if(!$current_class) {
+						Log::err(Log::ESTATIC, 'Using $this when not in object context', $file, $node->lineno);
+						return '';
+					}
+					if(!($prop->children[1] instanceof \ast\Node)) {
+						if(!empty($current_class['properties'][$prop->children[1]])) {
+							$prop = $current_class['properties'][$prop->children[1]];
+							foreach(explode('|', $prop['value']) as $class_name) {
+								 if(!empty($classes[strtolower($class_name)])) break;
+							}
+							if(empty($class_name)) return '';
+						}
+					} else {
+						// $this->$prop->method() - too dynamic, give up
+						return '';
+					}
+				} else {
+					if(empty($scope[$current_scope]['vars'][$prop->children[0]->children[0]])) {
+						return '';
+					}
+					$call = $scope[$current_scope]['vars'][$prop->children[0]->children[0]]['type'];
+					foreach(explode('|', $call) as $class_name) {
+						if(!empty($classes[strtolower($class_name)])) break;
+					}
+					if(empty($class_name)) return '';
+				}
+			}
+			break;
+	}
+
+	if($class_name) {
+		switch($node->kind) {
+			case \ast\AST_NEW:
+				if(empty($classes[strtolower($class_name)])) {
+					Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $node->lineno);
+				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_ABSTRACT) {
+					Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
+				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_INTERFACE) {
+					Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
+				} else {
+					$return = $class_name;
+				}
+				break;
+
+			case \ast\AST_STATIC_CALL:
+				if(empty($classes[strtolower($class_name)])) {
+					 Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $node->lineno);
+				} else {
+					$return = $class_name;
+				}
+				break;
+
+			case \ast\AST_METHOD_CALL:
+				if(empty($classes[strtolower($class_name)])) {
+					Log::err(Log::EUNDEF, "call to method on undeclared class {$class_name}", $file, $node->lineno);
+				} else {
+					$return = $class_name;
+				}
+				break;
+
+			case \ast\AST_PROP:
+				if(empty($classes[strtolower($class_name)])) {
+					if(!is_native_type($class_name)) {
+						Log::err(Log::EUNDEF, "can't access property from undeclared class {$class_name}", $file, $node->lineno);
+					}
+				} else {
+					$return = $class_name;
+				}
+				break;
+		}
+	}
+	return $return;
+}
+
 // Figures out the qualified name for an AST_NAME node
 function qualified_name(string $file, $node, string $namespace) {
 	global $namespace_map;
@@ -302,7 +455,7 @@ function qualified_name(string $file, $node, string $namespace) {
 }
 
 function is_native_type(string $type):bool {
-	return in_array($type, ['int','bool','float','string','callable','array']);
+	return in_array(strtolower($type), ['int','bool','float','string','callable','array','null']);
 }
 
 // Looks for any suspicious GPSC variables in the given node
@@ -353,6 +506,19 @@ function var_taint_check($file, $node, string $current_scope):bool {
 	return false;
 }
 
+// Merges a new type string into an existing avoiding dupes
+function merge_type($current, $new):string {
+	if(empty($current)) return $new;
+	if(empty($new)) return $current;
+	foreach(explode('|',$new) as $t) {
+		if(!empty($t) && strpos($current, $t) === false) {
+			$current = $current . '|' . $t;
+		}
+		$current = trim($current, '|');
+	}
+	return $current;
+}
+
 function add_var_scope(string $cs, string $name, string $type, $replace_type = false) {
 	global $scope;
 
@@ -362,13 +528,7 @@ function add_var_scope(string $cs, string $name, string $type, $replace_type = f
 		if($replace_type) {
 			$scope[$cs]['vars'][$name]['type'] = $type;
 		} else {
-			// add to type list if it isn't there already
-				foreach(explode('|',$type) as $t) {
-					if(!empty($t) && strpos($scope[$cs]['vars'][$name]['type'], $t) === false) {
-						$scope[$cs]['vars'][$name]['type'] = $scope[$cs]['vars'][$name]['type'] . '|' . $t;
-					}
-				}
-				$scope[$cs]['vars'][$name]['type'] = trim($scope[$cs]['vars'][$name]['type'],'|');
+			$scope[$cs]['vars'][$name]['type'] = merge_type($scope[$cs]['vars'][$name]['type'], $type);
 		}
 	} else {
 		$scope[$cs]['vars'][$name] = ['type'=>$type, 'tainted'=>false, 'tainted_by'=>''];

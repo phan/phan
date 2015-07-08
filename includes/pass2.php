@@ -400,131 +400,63 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				break;
 
 			case \ast\AST_NEW:
-					if($ast->children[0]->kind == \ast\AST_NAME) {  //  non-dynamic new
-						$class_name = $ast->children[0]->children[0];
-						if($class_name == 'self' || $class_name == 'static') {
-							$class_name = $current_class['name'];
-						} else if($class_name == 'parent') {
-							$class_name = $current_class['parent'];
-						} else {
-							$class_name = qualified_name($file, $ast->children[0], $namespace);
-						}
-
-						if(empty($classes[strtolower($class_name)])) {
-							Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $ast->lineno);
-						} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_ABSTRACT) {
-							Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $ast->lineno);
-						} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_INTERFACE) {
-							Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $ast->lineno);
-						} else {
-							$method_name = '__construct';  // No type checking for PHP4-style constructors
-							$method = find_method($class_name, $method_name);
-							if($method) { // Found a constructor
-								arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
-								if($method['file'] != 'internal') {
-									// re-check the function's ast with these args
-									if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
-								}
-							}
+				$class_name = find_class_name($file, $ast, $namespace, $current_class, $current_scope);
+				if($class_name) {
+					$method_name = '__construct';  // No type checking for PHP4-style constructors
+					$method = find_method($class_name, $method_name);
+					if($method) { // Found a constructor
+						arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
+						if($method['file'] != 'internal') {
+							// re-check the function's ast with these args
+							if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
 						}
 					}
-					break;
+				}
+				break;
 
 			case \ast\AST_STATIC_CALL:
-				$found = $static_call_ok = false;
-				$call = $ast->children[0];
-				if($call->kind == \ast\AST_NAME) {  // Simple static function call
-					$class_name = $call->children[0];
-					if($class_name == 'self' || $class_name == 'static') {
-						$class_name = $current_class['name'];
-						$static_call_ok = true;
+				$static_call_ok = false;
+				$class_name = find_class_name($file, $ast, $namespace, $current_class, $current_scope, $static_call_ok);
+				if($class_name) {
+					// The class is declared, but does it have the method?
+					$method_name = $ast->children[1];
+					$method = find_method($class_name, $method_name);
+					if(is_array($method) && array_key_exists('avail', $method) && !$method['avail']) {
+						Log::err(Log::EAVAIL, "method {$class_name}::{$method_name}() is not compiled into this version of PHP", $file, $ast->lineno);
 					}
-					if($class_name == 'parent') {
-						$class_name = $current_class['parent'];
-						$static_call_ok = true;
-					}
-					$use_ns = $namespace;
-					$lname = strtolower($class_name);
-					$found = false;
-					if($call->flags & \ast\flags\NAME_FQ) {
-						$use_ns = '';
-					} else if($call->flags & \ast\flags\NAME_NOT_FQ) {
-						if(!empty($namespace_map[T_CLASS][$file][$lname])) {
-							if(!empty($classes[strtolower($namespace_map[T_CLASS][$file][$lname] )])) {
-								$found = $classes[strtolower( $namespace_map[T_CLASS][$file][$lname])];
-								$use_ns = '';
+					if($method === false) {
+						Log::err(Log::EUNDEF, "static call to undeclared method {$class_name}::{$method_name}()", $file, $ast->lineno);
+					} else if($method != 'dynamic') {
+						// Was it declared static?
+						if(!($method['flags'] & \ast\flags\MODIFIER_STATIC)) {
+							if(!$static_call_ok) {
+								Log::err(Log::ESTATIC, "static call to non-static method {$class_name}::{$method_name}() defined at {$method['file']}:{$method['lineno']}", $file, $ast->lineno);
 							}
 						}
-					}
-					if(!$found) {
-						$found = $classes[$use_ns.$lname] ?? $classes[$lname] ?? null;
-					}
-					// If the class doesn't exist
-					if(!$found) {
-						Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $ast->lineno);
-					} else {
-						// The class is declared, but does it have the method?
-						$class_name = $found['name'];
-						$method_name = $ast->children[1];
-						$method = find_method($class_name, $method_name);
-						if(is_array($method) && array_key_exists('avail', $method) && !$method['avail']) {
-							Log::err(Log::EAVAIL, "method {$class_name}::{$method_name}() is not compiled into this version of PHP", $file, $ast->lineno);
-						}
-						if($method === false) {
-							Log::err(Log::EUNDEF, "static call to undeclared method {$class_name}::{$method_name}()", $file, $ast->lineno);
-						} else if($method != 'dynamic') {
-							// Was it declared static?
-							if(!($method['flags'] & \ast\flags\MODIFIER_STATIC)) {
-								if(!$static_call_ok) {
-									Log::err(Log::ESTATIC, "static call to non-static method {$class_name}::{$method_name}() defined at {$method['file']}:{$method['lineno']}", $file, $ast->lineno);
-								}
-							}
-							arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
-							if($method['file'] != 'internal') {
-								// re-check the function's ast with these args
-								if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
-							}
+						arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
+						if($method['file'] != 'internal') {
+							// re-check the function's ast with these args
+							if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
 						}
 					}
 				}
 				break;
 
 			case \ast\AST_METHOD_CALL:
-				if(($ast->children[0] instanceof \ast\Node) && $ast->children[0]->kind == \ast\AST_VAR) {
-					if(!($ast->children[0]->children[0] instanceof \ast\Node)) {
-						if(empty($scope[$current_scope]['vars'][$ast->children[0]->children[0]])) {
-							// TODO: Something too dynamic is going on here - might be able to track stuff a bit better
-							break;
+				$class_name = find_class_name($file, $ast, $namespace, $current_class, $current_scope);
+				if($class_name) {
+					$method_name = $ast->children[1];
+					$method = find_method($class_name, $method_name);
+					if($method === false) {
+						Log::err(Log::EUNDEF, "call to undeclared method {$class_name}->{$method_name}()", $file, $ast->lineno);
+					} else if($method != 'dynamic') {
+						if(array_key_exists('avail', $method) && !$method['avail']) {
+							Log::err(Log::EAVAIL, "method {$class_name}::{$method_name}() is not compiled into this version of PHP", $file, $ast->lineno);
 						}
-						$call = $scope[$current_scope]['vars'][$ast->children[0]->children[0]]['type'];
-						foreach(explode('|',$call) as $class_name) {
-							if(!empty($classes[strtolower($class_name)])) break;
-						}
-						if(empty($class_name)) break;
-						if(empty($classes[$namespace.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
-							Log::err(Log::EUNDEF, "call to method on undeclared class {$class_name}", $file, $ast->lineno);
-						} else {
-							$method_name = $ast->children[1];
-							$method = find_method($namespace.$class_name, $method_name);
-							if($method) $class_name = $namespace.$class_name;
-							else $method = find_method($class_name, $method_name);
-							if($method === false) {
-								Log::err(Log::EUNDEF, "call to undeclared method {$class_name}->{$method_name}()", $file, $ast->lineno);
-							} else if($method != 'dynamic') {
-								if(array_key_exists('avail', $method) && !$method['avail']) {
-									Log::err(Log::EAVAIL, "method {$class_name}::{$method_name}() is not compiled into this version of PHP", $file, $ast->lineno);
-								}
-								// Was it declared static?
-								if($method['flags'] & \ast\flags\MODIFIER_STATIC) {
-									// non-static calls to static methods are ok
-									// Log::err(Log::EUNDEF, "non-static call to static method {$class_name}->{$method_name}() defined at {$method['file']}:{$method['lineno']}", $file, $ast->lineno);
-								}
-								arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
-								if($method['file'] != 'internal') {
-									// re-check the function's ast with these args
-									if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
-								}
-							}
+						arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
+						if($method['file'] != 'internal') {
+							// re-check the function's ast with these args
+							if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
 						}
 					}
 				}
@@ -588,9 +520,9 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 			 $left = $left->children[0];
 		}
 		// If we see $var[..] then we know $var is an array
-		if($parent->kind == \ast\AST_DIM) $left_type = 'array'; // TODO: unless it was already a string, then it is a string offset
-		else if($parent->kind == \ast\AST_LIST) $left_type = ''; // TODO: Properly handle list($a) = [$b]
-		else if($parent->kind == \ast\AST_PROP) $left_type = "object";
+#		if($parent->kind == \ast\AST_DIM) $left_type = 'array'; // TODO: unless it was already a string, then it is a string offset
+#		else if($parent->kind == \ast\AST_LIST) $left_type = ''; // TODO: Properly handle list($a) = [$b]
+#		else if($parent->kind == \ast\AST_PROP) { $left_type = "object"; }
 	}
 
 	if($left==null) {
@@ -638,12 +570,56 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 		return $right_type;
 	}
 
+
 	if(!$left_type && $right_type) {
 		$left_type = $right_type;
 	} else if(!$left_type) {
 		// We didn't figure out the type simply by looking at the left side of the assignment, check the right
 		$right_type = node_type($file, $namespace, $right, $current_scope, $current_class, $taint);
 		$left_type = $right_type;
+	}
+
+	// $var->prop = ...
+	if($parent->kind == \ast\AST_PROP && $left->kind == \ast\AST_VAR) {
+		// Check for $$var-> weirdness
+		if(!($left->children[0] instanceof \ast\Node)) {
+			$prop = $parent->children[1];
+			// Check for $var->$...
+			if(!($prop instanceof \ast\Node)) {
+				if($left->children[0] == 'this') {
+					// $this->prop =
+					$lclass = strtolower($current_class['name']);
+					if(empty($classes[$lclass]['properties'][$prop])) {
+						$classes[$lclass]['properties'][$prop] = [
+							'flags'=>\ast\flags\MODIFIER_PUBLIC,
+							'name'=>$prop,
+							'lineno'=>0,
+							'value'=>$right_type ];
+					} else {
+						$classes[$lclass]['properties'][$prop]['value'] = merge_type($classes[$lclass]['properties'][$prop]['value'], $right_type);
+					}
+					return $right_type;
+				} else {
+					// $var->prop =
+					$temp = node_type($file, $namespace, $left, $current_scope, $current_class, $taint);
+					if(!is_native_type($temp)) {
+						$lclass = strtolower($temp);
+						if(!empty($classes[$lclass])) {
+							if(empty($classes[$lclass]['properties'][$prop])) {
+								$classes[$lclass]['properties'][$prop] = [
+									'flags'=>\ast\flags\MODIFIER_PUBLIC,
+									'name'=>$prop,
+									'lineno'=>0,
+									'value'=>$right_type ];
+							} else {
+								$classes[$lclass]['properties'][$prop]['value'] = merge_type($classes[$lclass]['properties'][$prop]['value'], $right_type);
+							}
+							return $right_type;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	if($left_name instanceof \ast\Node) {
@@ -1099,24 +1075,8 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 				default: Log::err(Log::EFATAL, "Unknown type (".$node->flags.") in cast");
 			}
 		} else if($node->kind == \ast\AST_NEW) {
-			if($node->children[0]->kind == \ast\AST_NAME) {
-				$class_name = $node->children[0]->children[0];
-				if($class_name == 'self' || $class_name == 'static') {
-					$class_name = $current_class['name'];
-				} else if($class_name == 'parent') {
-					$class_name = $current_class['parent'];
-				} else {
-					$class_name = qualified_name($file, $node->children[0], $namespace);
-				}
-				if(empty($classes[strtolower($class_name)])) {
-						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $node->lineno);
-				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_ABSTRACT) {
-					Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
-				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_INTERFACE) {
-					Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
-				} else return $classes[strtolower($class_name)]['type'];
-				return $class_name;
-			}
+			$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+			if($class_name) return $classes[strtolower($class_name)]['type'];
 			return 'object';
 
 		} else if($node->kind == \ast\AST_DIM) {
@@ -1143,6 +1103,16 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 				}
 			}
 
+		} else if($node->kind == \ast\AST_PROP) {
+			if($node->children[0]->kind == \ast\AST_VAR) {
+				$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+				if($class_name && !($node->children[1] instanceof \ast\Node)) {
+					if(empty($classes[strtolower($class_name)]['properties'][$node->children[1]])) {
+						return '';
+					}
+					return $classes[strtolower($class_name)]['properties'][$node->children[1]]['value'];
+				}
+			}
 		} else if($node->kind == \ast\AST_CALL) {
 			if($node->children[0]->kind == \ast\AST_NAME) {
 				$func_name = $node->children[0]->children[0];
@@ -1165,71 +1135,21 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 			} else {
 				// TODO: Handle $func() and other cases that get here
 			}
-		} else if($node->kind == \ast\AST_STATIC_CALL) {
-			// If the called static method has a return type defined, use that
-			$call = $node->children[0];
-			if($call->kind == \ast\AST_NAME) {  // Simple static function call
-				$class_name = $call->children[0];
-				$method_name = $node->children[1];
-				if($class_name == 'self' || $class_name == 'static') {
-					$class_name = $current_class['name'];
-				}
-				if($class_name == 'parent') {
-					$class_name = $current_class['parent'];
-				}
 
-				$use_ns = $namespace;
-				$lname = strtolower($class_name);
-				$found = false;
-				if($call->flags & \ast\flags\NAME_FQ) {
-					$use_ns = '';
-				} else if($call->flags & \ast\flags\NAME_NOT_FQ) {
-					if(!empty($namespace_map[T_CLASS][$file][$lname])) {
-						if(!empty($classes[strtolower($namespace_map[T_CLASS][$file][$lname] )])) {
-							$found = $classes[strtolower( $namespace_map[T_CLASS][$file][$lname])];
-							$use_ns = '';
-						}
-					}
-				}
-				if(!$found) {
-					$found = $classes[$use_ns.$lname] ?? $classes[$lname] ?? null;
-				}
-				// If the class doesn't exist
-				if(!$found) {
-					Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $call->lineno);
-					return '';
-				}
-				$method = find_method($found['name'], $method_name);
-				if($method) return $method['ret'] ?? '';
-			} else {
-				// Weird dynamic static call - give up
-				return '';
-			}
+		} else if($node->kind == \ast\AST_STATIC_CALL) {
+			$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+			$method = find_method($class_name, $node->children[1]);
+			if($method) return $method['ret'] ?? '';
+
 		} else if($node->kind == \ast\AST_METHOD_CALL) {
-			if(($node->children[0] instanceof \ast\Node) && $node->children[0]->kind == \ast\AST_VAR) {
-				if(!($node->children[0]->children[0] instanceof \ast\Node)) {
-					if(empty($scope[$current_scope]['vars'][$node->children[0]->children[0]])) {
-							// TODO: Something too dynamic is going on here - might be able to track stuff a bit better
-						return '';
-					}
-					$call = $scope[$current_scope]['vars'][$node->children[0]->children[0]]['type'];
-					foreach(explode('|',$call) as $class_name) {
-						if(!empty($classes[strtolower($class_name)])) break;
-					}
-					if(empty($class_name)) return '';
-					if(empty($classes[$namespace.strtolower($class_name)]) && empty($classes[strtolower($class_name)])) {
-						Log::err(Log::EUNDEF, "call to method on undeclared class {$class_name}", $file, $node->lineno);
-					} else {
-						$method_name = $node->children[1];
-						$method = find_method($namespace.$class_name, $method_name);
-						if($method) $class_name = $namespace.$class_name;
-						else $method = find_method($class_name, $method_name);
-						if($method === false) {
-							Log::err(Log::EUNDEF, "call to undeclared method {$class_name}->{$method_name}()", $file, $node->lineno);
-						} else if($method != 'dynamic') {
-							return $method['ret'];
-						}
-					}
+			$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+			if($class_name) {
+				$method_name = $node->children[1];
+				$method = find_method($class_name, $method_name);
+				if($method === false) {
+					Log::err(Log::EUNDEF, "call to undeclared method {$class_name}->{$method_name}()", $file, $node->lineno);
+				} else if($method != 'dynamic') {
+					return $method['ret'];
 				}
 			}
 		}

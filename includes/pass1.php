@@ -108,11 +108,11 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				if(empty($current_class)) Log::err(Log::EFATAL, "Invalid property declaration", $file, $ast->lineno);
 
 				foreach($ast->children as $node) {
-					$classes[strtolower($current_class)]['properties'][strtolower($node->children[0])] = [
+					$classes[strtolower($current_class)]['properties'][$node->children[0]] = [
 																				   'flags'=>$ast->flags,
 																				   'name'=>$node->children[0],
 																				   'lineno'=>$node->lineno,
-																				   'value'=>$node->children[1] ];
+																				   'value'=>node_type($file, $namespace, $node->children[1], $current_scope, $current_class) ];
 				}
 				$done = true;
 				break;
@@ -121,7 +121,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				if(empty($current_class)) Log::err(Log::EFATAL, "Invalid constant declaration", $file, $ast->lineno);
 
 				foreach($ast->children as $node) {
-					$classes[strtolower($current_class)]['constants'][strtolower($node->children[0])] = [
+					$classes[strtolower($current_class)]['constants'][$node->children[0]] = [
 																				  'name'=>$node->children[0],
 																				  'lineno'=>$node->lineno,
 																				  'value'=>$node->children[1] ];
@@ -232,7 +232,7 @@ function node_func($file, $conditional, $node, $current_scope, $current_class, $
 					'flags'=>$node->flags,
 					'lineno'=>$node->lineno,
 					'endLineno'=>$node->endLineno,
-					'name'=>$namespace.$node->name,
+					'name'=>(strpos($current_scope,'::')===false) ? $namespace.$node->name : $node->name,
 					'docComment'=>$node->docComment,
 					'params'=>node_paramlist($file, $node->children[0], $req, $opt, $dc, $namespace),
 					'required'=>$req,
