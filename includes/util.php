@@ -283,14 +283,16 @@ function qualified_name(string $file, $node, string $namespace) {
 		if(!empty($namespace_map[T_CLASS][$file][$lname])) {
 			return $namespace_map[T_CLASS][$file][$lname];
 		}
+
 		// Check for a namespace-relative alias
 		if(($pos = strpos($lname, '\\'))!==false) {
 			$first_part = substr($lname, 0, $pos);
 			if(!empty($namespace_map[T_CLASS][$file][$first_part])) {
 				// Replace that first aliases part and return the full name
-				return $namespace_map[T_CLASS][$file][$first_part] . substr($name, $pos + 1);
+				return $namespace_map[T_CLASS][$file][$first_part] . '\\' . substr($name, $pos + 1);
 			}
 		}
+
 		// No aliasing, just prepend the namespace
 		return $namespace.$name;
 	} else {
@@ -405,6 +407,8 @@ function check_classes(&$classes) {
 					if(empty($classes[strtolower($temp['parent'])])) {
 						Log::err(Log::EUNDEF, "Trying to inherit from unknown class {$temp['parent']}", $class['file'], $class['lineno']);
 						break;
+					} else if(($classes[strtolower($temp['parent'])]['flags'] & \ast\flags\CLASS_FINAL)) {
+						Log::err(Log::ETYPE, "{$class['name']} may not inherit from final class {$classes[strtolower($temp['parent'])]['name']}", $class['file'], $class['lineno']);
 					}
 					$temp = $classes[strtolower($temp['parent'])];
 					$parents[] = $temp['name'];
@@ -413,18 +417,10 @@ function check_classes(&$classes) {
 				$types = [$class['name']];
 				if(!empty($class['interfaces'])) {
 					foreach($class['interfaces'] as $interface) {
-						if(($pos = strrpos($interface,'\\'))!==false) {
-							$temp = $namespace_map[T_CLASS][$class['file']][strtolower(substr($interface, $pos+1))] ?? $interface;
-						} else {
-							$temp = $namespace_map[T_CLASS][$class['file']][strtolower($interface)] ?? $interface;
-						}
-						if(empty($classes[strtolower($temp)])) {
-							Log::err(Log::EUNDEF, "Trying to implement unknown interface {$temp}", $class['file'], $class['lineno']);
-						} else {
-							$found = $classes[strtolower($temp)];
-							if(!($found['flags'] & \ast\flags\CLASS_INTERFACE)) {
-								Log::err(Log::ETYPE, "Trying to implement interface {$found['name']} which is not an interface", $class['file'], $class['lineno']);
-							}
+						if(empty($classes[strtolower($interface)])) {
+							Log::err(Log::EUNDEF, "Trying to implement unknown interface {$interface}", $class['file'], $class['lineno']);
+						} else if(!($classes[strtolower($interface)]['flags'] & \ast\flags\CLASS_INTERFACE)) {
+							Log::err(Log::ETYPE, "Trying to implement interface $interface which is not an interface", $class['file'], $class['lineno']);
 						}
 					}
 					$types = array_merge($types, $class['interfaces']);

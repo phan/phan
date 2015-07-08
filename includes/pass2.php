@@ -402,31 +402,23 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 			case \ast\AST_NEW:
 					if($ast->children[0]->kind == \ast\AST_NAME) {  //  non-dynamic new
 						$class_name = $ast->children[0]->children[0];
-						$use_ns = $namespace;
 						if($class_name == 'self' || $class_name == 'static') {
 							$class_name = $current_class['name'];
-							$use_ns = '';
-						}
-						if($class_name == 'parent') {
+						} else if($class_name == 'parent') {
 							$class_name = $current_class['parent'];
-							$use_ns = '';
+						} else {
+							$class_name = qualified_name($file, $ast->children[0], $namespace);
 						}
-						if($ast->children[0]->flags & \ast\flags\NAME_FQ) {
-							$use_ns = '';
-						}
-						if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-							if(!empty($namespace_map[T_CLASS][$file][ strtolower($class_name) ])) {
-								$class_name = $namespace_map[T_CLASS][$file][ strtolower($class_name) ];
-								$use_ns = '';
-							}
-						}
-						if(empty($classes[strtolower($use_ns.$class_name)]) && empty($classes[strtolower($class_name)])) {
+
+						if(empty($classes[strtolower($class_name)])) {
 							Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $ast->lineno);
+						} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_ABSTRACT) {
+							Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $ast->lineno);
+						} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_INTERFACE) {
+							Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $ast->lineno);
 						} else {
 							$method_name = '__construct';  // No type checking for PHP4-style constructors
-							$method = find_method($use_ns.$class_name, $method_name);
-							if($method) $class_name = $use_ns.$class_name;
-							else $method = find_method($class_name, $method_name);
+							$method = find_method($class_name, $method_name);
 							if($method) { // Found a constructor
 								arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
 								if($method['file'] != 'internal') {
@@ -1108,30 +1100,22 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 			}
 		} else if($node->kind == \ast\AST_NEW) {
 			if($node->children[0]->kind == \ast\AST_NAME) {
-				$name = var_name($node->children[0]);
-				if($name == 'self' || $name == 'static') {
-					list($class,) = explode('::',$current_scope);
-					$name = $class;
-				}
-				$found = null;
-				if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-					if(!empty($namespace_map[T_CLASS][$file][strtolower($name)])) {
-						if(!empty($classes[strtolower($namespace_map[T_CLASS][$file][strtolower($name)] )])) {
-							$found = $classes[strtolower( $namespace_map[T_CLASS][$file][strtolower($name)])];
-						}
-					}
-
-					if(!$found && empty($classes[strtolower($namespace.$name)]) && empty($classes[strtolower($name)])) {
-						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
-					}
-					$found = $found ?? $classes[strtolower($namespace.$name)] ?? $classes[strtolower($name)] ?? null;
+				$class_name = $node->children[0]->children[0];
+				if($class_name == 'self' || $class_name == 'static') {
+					$class_name = $current_class['name'];
+				} else if($class_name == 'parent') {
+					$class_name = $current_class['parent'];
 				} else {
-					if(empty($classes[strtolower($name)])) {
-						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$name}", $file, $node->lineno);
-					} else $found = $classes[strtolower($name)];
+					$class_name = qualified_name($file, $node->children[0], $namespace);
 				}
-				if($found) return $found['type'];
-				else return $name;
+				if(empty($classes[strtolower($class_name)])) {
+						Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $node->lineno);
+				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_ABSTRACT) {
+					Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
+				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_INTERFACE) {
+					Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
+				} else return $classes[strtolower($class_name)]['type'];
+				return $class_name;
 			}
 			return 'object';
 

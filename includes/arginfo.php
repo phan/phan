@@ -5342,7 +5342,7 @@ $internal_arginfo = [
 'openssl_private_encrypt' => ['bool', 'data'=>'string', '&crypted'=>'string', 'key'=>'', 'padding='=>'int'],
 'openssl_public_decrypt' => ['bool', 'data'=>'string', '&crypted'=>'string', 'key'=>'', 'padding='=>'int'],
 'openssl_public_encrypt' => ['bool', 'data'=>'string', '&crypted'=>'string', 'key'=>'', 'padding='=>'int'],
-'openssl_random_pseudo_bytes' => ['string', 'length'=>'integer', 'returned_strong_result='=>'&bool'],
+'openssl_random_pseudo_bytes' => ['string', 'length'=>'integer', '&returned_strong_result='=>'&bool'],
 'openssl_seal' => ['int', 'data'=>'string', '&sealdata'=>'string', '&ekeys'=>'array', 'pubkeys'=>'array', 'method='=>'string'],
 'openssl_sign' => ['bool', 'data'=>'string', '&signature'=>'string', 'key'=>'', 'method='=>''],
 'openssl_spki_export_challenge' => ['string', 'spki'=>'string'],
