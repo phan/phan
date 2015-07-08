@@ -849,7 +849,9 @@ function type_check($src, $dst, $namespace=''):bool {
 
 	// our own union types
 	foreach(explode('|',$src) as $s) {
+		if(empty($s)) continue;
 		foreach(explode('|',$dst) as $d) {
+			if(empty($d)) continue;
 			if(substr($s,0,9)=='callable:') $s = 'callable';
 			if(substr($d,0,9)=='callable:') $d = 'callable';
 			if($s[0]=='\\') $s = substr($s,1);
