@@ -386,14 +386,20 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 						}
 					}
 				} else if ($call->kind == \ast\AST_VAR) {
+					$name = var_name($call);
+					if($name instanceof \ast\Node) {
+						// $$var() - Ugh..
+						// TODO - something brilliant here
+					} else {
 					// $var() - hopefully a closure, otherwise we don't know
-					if(array_key_exists($name=var_name($call), $scope[$current_scope]['vars'])) {
-						if(($pos=strpos($scope[$current_scope]['vars'][$name]['type'], '{closure '))!==false) {
-							$closure_id = (int)substr($scope[$current_scope]['vars'][$name]['type'], $pos+9);
-							$func_name = '{closure '.$closure_id.'}';
-							$found = $functions[$func_name];
-							arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
-							if(!$quick_mode) pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
+						if(array_key_exists($name, $scope[$current_scope]['vars'])) {
+							if(($pos=strpos($scope[$current_scope]['vars'][$name]['type'], '{closure '))!==false) {
+								$closure_id = (int)substr($scope[$current_scope]['vars'][$name]['type'], $pos+9);
+								$func_name = '{closure '.$closure_id.'}';
+								$found = $functions[$func_name];
+								arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
+								if(!$quick_mode) pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
+							}
 						}
 					}
 				}
@@ -1011,8 +1017,8 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 					$taint = false;
 					return 'bool';
 					break;
-				// Everything else should be an int/float
-				default:
+				// Add is special because you can add arrays
+				case \ast\flags\BINARY_ADD:
 					$temp = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
 					if(!$temp) $left = '';
 					else $left = type_map($temp);
@@ -1027,6 +1033,30 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 						return '';
 					} else if($right == 'array' && !type_check($left, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: right operand is array and left is not", $file, $node->lineno);
+						return '';
+					} else if($left=='int' && $right == 'int') {
+						return 'int';
+					} else if($left=='float' || $right=='float') {
+						return 'float';
+					} else if($left=='array' || $right=='array') {
+						// If it is a '+' and we know one side is an array and the other is unknown, assume array
+						return 'array';
+					}
+					return 'int|float';
+					$taint = false;
+					break;
+
+				// Everything else should be an int/float
+				default:
+					$temp = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
+					if(!$temp) $left = '';
+					else $left = type_map($temp);
+					$temp = node_type($file, $namespace, $node->children[1], $current_scope, $current_class);
+					if(!$temp) $right = '';
+					else $right = type_map($temp);
+
+					if($left == 'array' || $right == 'array') {
+						Log::err(Log::ETYPE, "invalid array operator", $file, $node->lineno);
 						return '';
 					} else if($left=='int' && $right == 'int') {
 						return 'int';
