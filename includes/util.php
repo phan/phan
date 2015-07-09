@@ -553,6 +553,12 @@ function add_var_scope(string $cs, string $name, string $type, $replace_type = f
 		if($replace_type) {
 			$scope[$cs]['vars'][$name]['type'] = $type;
 		} else {
+			// If we previously have seen a specific type for this variable and now get a ''
+			// which means we don't know a type, we at least know it can be something else, so
+			// add in a 'mixed' here
+			if($type==='' && !empty($scope[$cs]['vars'][$name]['type'])) {
+				$type = 'mixed';
+			}
 			$scope[$cs]['vars'][$name]['type'] = merge_type($scope[$cs]['vars'][$name]['type'], $type);
 		}
 	} else {
