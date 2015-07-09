@@ -3,7 +3,7 @@ namespace phan;
 
 // Pass 1 recursively finds all the class and function declarations and populates the appropriate globals
 function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_class=null, $current_function=null) {
-	global $classes, $functions, $namespace_map, $summary;
+	global $classes, $functions, $namespace_map, $summary, $bc_checks;
 	$done = false;
 
 	if ($ast instanceof \ast\Node) {
@@ -15,6 +15,24 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 			case \ast\AST_IF:
 				$conditional = true;
 				$summary['conditionals']++;
+				break;
+
+			case \ast\AST_DIM:
+				if($bc_checks) {
+					if($ast->children[0] instanceof \ast\Node && $ast->children[0]->children[0] instanceof \ast\Node) {
+						// check for $$var[]
+						if($ast->children[0]->kind == \ast\AST_VAR && $ast->children[0]->children[0]->kind == \ast\AST_VAR) {
+							$temp = $ast->children[0]->children[0];
+							$depth = 1;
+							while($temp instanceof \ast\Node) {
+								$temp = $temp->children[0];
+								$depth++;
+							}
+							$dollars = str_repeat('$',$depth);
+							Log::err(Log::ECOMPAT, "{$dollars}{$temp}[] expression not compatible between PHP 5 and PHP 7", $file, $ast->lineno);
+						}
+					}
+				}
 				break;
 
 			case \ast\AST_USE:
@@ -161,6 +179,24 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 							$classes[strtolower($current_class)]['methods'][strtolower($current_function)]['optional'] = 999999;
 						} else {
 							$functions[strtolower($current_function)]['optional'] = 999999;
+						}
+					}
+				}
+
+				if($bc_checks) {
+					if( $ast->children[0] instanceof \ast\Node &&
+						$ast->children[0]->children[0] instanceof \ast\Node &&
+						$ast->children[0]->children[0]->children[0] instanceof \ast\Node) {
+						// Foo::$bar['baz']() or $foo->$bar['baz']()
+						if($ast->children[0]->kind == \ast\AST_DIM &&
+						   $ast->children[0]->children[0]->kind == \ast\AST_PROP &&
+						   $ast->children[0]->children[0]->children[0]->kind == \ast\AST_VAR) {
+								Log::err(Log::ECOMPAT, "expression not compatible between PHP 5 and PHP 7", $file, $ast->lineno);
+						}
+						if($ast->children[0]->kind == \ast\AST_DIM &&
+							$ast->children[0]->children[0]->kind == \ast\AST_STATIC_PROP &&
+							$ast->children[0]->children[0]->children[0]->kind == \ast\AST_NAME) {
+								Log::err(Log::ECOMPAT, "expression not compatible between PHP 5 and PHP 7", $file, $ast->lineno);
 						}
 					}
 				}

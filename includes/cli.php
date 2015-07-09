@@ -5,10 +5,10 @@ error_reporting(-1);
 ini_set("memory_limit", -1);
 
 // Parse command line args
-$opts = getopt("f:m:o:hasuqpig::");
+$opts = getopt("f:m:o:hasuqbpig::");
 $pruneargv = array();
 $files = [];
-$dump_ast = $dump_scope = $dump_user_functions = $quick_mode = $progress_bar = $gv = false;
+$dump_ast = $dump_scope = $dump_user_functions = $quick_mode = $progress_bar = $gv = $bc_checks = false;
 $gv_node = '';
 
 foreach($opts as $key=>$value) {
@@ -36,6 +36,9 @@ foreach($opts as $key=>$value) {
 			break;
 		case 'q':
 			$quick_mode = true;
+			break;
+		case 'b':
+			$bc_checks = true;
 			break;
 		case 'p':
 			$progress_bar = true;
@@ -77,6 +80,7 @@ function usage($msg='') {
 Usage: {$argv[0]} [options] [files...]
   -f <filename>   A file containing a list of PHP files to be analyzed
   -q              Quick mode - doesn't recurse into all function calls
+  -b              Check for potential PHP 5 -> PHP 7 BC issues
   -i              Ignore undeclared functions and classes
   -m <mode>       Output mode: verbose, short, json, csv
   -o <filename>   Output filename

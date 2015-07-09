@@ -73,6 +73,7 @@ To make sure it works you can run `phan` on itself with `phan -f filelist.txt` u
 * Checks for calls and instantiations of undeclared functions, methods, closures and classes
 * Checks types of all arguments and return values to/from functions, closures and methods
 * Supports [phpdoc][doctypes] comments including union and void/null types
+* Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
 * Undefined variable tracking
 * Supports namespaces, traits and variadics
 * Basic tainted data detection
@@ -84,15 +85,13 @@ See the [tests][tests] directory for some examples of the various checks.
 * [Obsolescence](#obsolescence)
 * Array element tracking (generics-like)
 * Class consts and properties
-* Namespace mapping
 * JSON, csv and possibly other output formats
 * Perhaps a genlist feature that will automatically figure out dependency files starting
   from a single entry point file
 
 ## Bugs
 
-There are plenty of them. The really problematic ones are around namespaces and traits. Especially
-when you combine namespaces and traits. Basic namespaces and basic traits work fine, for the most part.
+There are plenty of them. Especially related to assumptions made during variable tracking.
 
 When you find one, please take the time to create a tiny reproducing code snippet that illustrates
 the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to
@@ -247,3 +246,4 @@ and maybe the tests will likely surive long-term, but much of it probably won't.
   [pass2]: https://github.com/rlerdorf/phan/blob/master/includes/pass2.php
   [mainloop]: https://github.com/rlerdorf/phan/blob/master/phan
   [php7dev]: https://github.com/rlerdorf/php7dev
+  [uniform]: https://wiki.php.net/rfc/uniform_variable_syntax
