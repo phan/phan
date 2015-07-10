@@ -31,11 +31,13 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 							$dollars = str_repeat('$',$depth);
 							Log::err(Log::ECOMPAT, "{$dollars}{$temp}[] expression not compatible between PHP 5 and PHP 7", $file, $ast->lineno);
 						}
-						// $foo->$bar['baz'];
+						// $foo->$bar['baz']; - TODO: re-think this one due to false positives on $this->{$property}[]
+						/*
 						else if(($ast->children[0]->children[1] instanceof \ast\Node) && ($ast->children[0]->kind == \ast\AST_PROP) &&
 								  ($ast->children[0]->children[0]->kind == \ast\AST_VAR) && ($ast->children[0]->children[1]->kind == \ast\AST_VAR)) {
 							Log::err(Log::ECOMPAT, "expression not compatible between PHP 5 and PHP 7", $file, $ast->lineno);
 						}
+						*/
 					}
 				}
 				break;
