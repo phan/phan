@@ -934,6 +934,10 @@ function find_method(string $class_name, $method_name) {
 			}
 		}
 	}
+
+	// We don't chain constructors
+	if($method_name == '__construct') return false;
+
 	if(!empty($classes[$class_name]['parent'])) {
 		if(strtolower($classes[$class_name]['parent']) == $class_name) return $class_name;
 		else return find_method($classes[$class_name]['parent'], $method_name);
