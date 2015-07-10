@@ -1009,6 +1009,10 @@ function generics(string $str):string {
 		if(($pos=strpos($type,'[]'))===false) continue;
 		$ret[] = substr($type,0,$pos);
 	}
+
+	// If |array| is in there, then it can be any type
+	if(stripos("|$str|","|array|")!==false) $ret[] = 'mixed';
+
 	return implode('|',$ret);
 }
 
