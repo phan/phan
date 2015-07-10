@@ -883,7 +883,7 @@ function type_check($src, $dst, $namespace=''):bool {
 			if($d[0]=='\\') $d = substr($d,1);
 			if($s===$d) return true;
 			if($s==='int' && $d==='float') return true; // int->float is ok
-			if(($s==='array' || $s==='string') && $d==='callable') return true;
+			if(($s==='array' || $s==='string' || $s==='string[]') && $d==='callable') return true;
 			if($s === 'object' && !type_scalar($d) && $d!=='array') return true;
 			if($d === 'object' && !type_scalar($s) && $s!=='array') return true;
 			if(strpos($s,'[]')!==false && $d==='array') return true;
