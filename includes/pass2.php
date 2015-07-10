@@ -656,7 +656,6 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 	else  $arglist = $ast->children[2];
 
 	$argcount = count($arglist->children);
-
 	// Special common cases where we want slightly better multi-signature error messages
 	if($func['file']=='internal') {
 	  switch($func['name']) {
@@ -724,9 +723,9 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 		}
 		if($err) {
 			if($func['file']=='internal') {
-				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() that requires {$func['required']} arg(s)", $file, $ast->lineno);
+				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() which requires {$func['required']} arg(s)", $file, $ast->lineno);
 			} else {
-				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() that requires {$func['required']} arg(s) defined at {$func['file']}:{$func['lineno']}", $file, $ast->lineno);
+				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() which requires {$func['required']} arg(s) defined at {$func['file']}:{$func['lineno']}", $file, $ast->lineno);
 			}
 		}
 	}
@@ -742,9 +741,9 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 		if($err) {
 			$max = $func['required']+$func['optional'];
 			if($func['file']=='internal')
-				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() that only takes {$max} arg(s)", $file, $ast->lineno);
+				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() which only takes {$max} arg(s)", $file, $ast->lineno);
 			else
-				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() that only takes {$max} arg(s) defined at {$func['file']}:{$func['lineno']}", $file, $ast->lineno);
+				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() which only takes {$max} arg(s) defined at {$func['file']}:{$func['lineno']}", $file, $ast->lineno);
 		}
 	}
 

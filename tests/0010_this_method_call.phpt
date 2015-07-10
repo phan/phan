@@ -13,4 +13,4 @@ class B extends A {
 	}
 }
 --EXPECTF--
-%s:9 ParamError call with 0 arg(s) to testA() that requires 1 arg(s) defined at %s:3
+%s:9 ParamError call with 0 arg(s) to testA() which requires 1 arg(s) defined at %s:3
