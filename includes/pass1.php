@@ -31,6 +31,11 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 							$dollars = str_repeat('$',$depth);
 							Log::err(Log::ECOMPAT, "{$dollars}{$temp}[] expression not compatible between PHP 5 and PHP 7", $file, $ast->lineno);
 						}
+						// $foo->$bar['baz'];
+						else if(($ast->children[0]->children[1] instanceof \ast\Node) && ($ast->children[0]->kind == \ast\AST_PROP) &&
+								  ($ast->children[0]->children[0]->kind == \ast\AST_VAR) && ($ast->children[0]->children[1]->kind == \ast\AST_VAR)) {
+							Log::err(Log::ECOMPAT, "expression not compatible between PHP 5 and PHP 7", $file, $ast->lineno);
+						}
 					}
 				}
 				break;
@@ -187,12 +192,13 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 					if( $ast->children[0] instanceof \ast\Node &&
 						$ast->children[0]->children[0] instanceof \ast\Node &&
 						$ast->children[0]->children[0]->children[0] instanceof \ast\Node) {
-						// Foo::$bar['baz']() or $foo->$bar['baz']()
+						// $foo->$bar['baz']()
 						if($ast->children[0]->kind == \ast\AST_DIM &&
 						   $ast->children[0]->children[0]->kind == \ast\AST_PROP &&
 						   $ast->children[0]->children[0]->children[0]->kind == \ast\AST_VAR) {
 								Log::err(Log::ECOMPAT, "expression not compatible between PHP 5 and PHP 7", $file, $ast->lineno);
 						}
+						// Foo::$bar['baz']()
 						if($ast->children[0]->kind == \ast\AST_DIM &&
 							$ast->children[0]->children[0]->kind == \ast\AST_STATIC_PROP &&
 							$ast->children[0]->children[0]->children[0]->kind == \ast\AST_NAME) {
