@@ -766,7 +766,7 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 }
 
 function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, $current_class):array {
-	global $internal_arginfo, $scope, $tainted_by;
+	global $classes, $internal_arginfo, $scope, $tainted_by;
 
 	$errs=[];
 	$fn = $func['scope'] ?? $func['name'];
@@ -828,8 +828,17 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 				}
 			}
 		}
-        // turn callable:{closure n} into just callable
+
+		// turn callable:{closure n} into just callable
 		if(strpos($arg_type, ':') !== false) list($arg_type,) = explode(':',$arg_type,2);
+
+		// if we have a single non-native type, expand it
+		if(!is_native_type($arg_type)) {
+			if(!empty($classes[strtolower($arg_type)]['type'])) {
+				$arg_type = $classes[strtolower($arg_type)]['type'];
+			}
+		}
+
 		if(!type_check($arg_type, $param['type'], $namespace)) {
 			if(!empty($param['name'])) $paramstr = '('.trim($param['name'],'&=').')';
 			else $paramstr = '';
