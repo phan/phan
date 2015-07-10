@@ -247,7 +247,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				$taint = false;
 				$tainted_by = '';
 				$type = node_type($file, $namespace, $ast->children[0], $current_scope, $current_class, $taint);
-				if($type == 'array') {
+				if($type == 'array' || (strlen($type) > 2 && substr($type,-2)=='[]')) {
 					Log::err(Log::ETYPE, "array to string conversion", $file, $ast->lineno);
 				}
 				if($taint) {
@@ -288,8 +288,9 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				if(!empty($current_function['oret'])) {
 					$ret = $ast->children[0];
 					if($ret instanceof \ast\Node) {
-						if($ast->children[0]->kind == \ast\AST_ARRAY) $ret_type='array';
-						else $ret_type = node_type($file, $namespace, $ret, $current_scope, $current_class);
+					#	if($ast->children[0]->kind == \ast\AST_ARRAY) $ret_type='array';
+					#	else $ret_type = node_type($file, $namespace, $ret, $current_scope, $current_class);
+						$ret_type = node_type($file, $namespace, $ret, $current_scope, $current_class);
 					} else {
 						$ret_type = type_map(gettype($ret));
 						// This is distinct from returning actual NULL which doesn't hit this else since it is an AST_CONST node
@@ -1005,15 +1006,28 @@ function find_class($node, $namespace, $nmap) {
 function generics(string $str):string {
 	if((strpos($str,'[]'))===false) return '';
 	$ret = [];
-	foreach(explode('|',$str) as $type) {
-		if(($pos=strpos($type,'[]'))===false) continue;
-		$ret[] = substr($type,0,$pos);
+	foreach(explode('|', $str) as $type) {
+		if(($pos=strpos($type, '[]')) === false) continue;
+		$ret[] = substr($type, 0, $pos);
 	}
 
 	// If |array| is in there, then it can be any type
-	if(stripos("|$str|","|array|")!==false) $ret[] = 'mixed';
+	if(stripos("|$str|", "|array|") !== false) $ret[] = 'mixed';
 
-	return implode('|',$ret);
+	return implode('|', $ret);
+}
+
+// Takes "a|b" and returns "a[]|b[]"
+function  mkgenerics(string $str):string {
+	$ret = [];
+	foreach(explode('|', $str) as $type) {
+		if(empty($type)) continue;
+		if($type=='array') $ret[] = 'array';
+		else {
+			$ret[] = trim($type,'[]').'[]';
+		}
+	}
+	return implode('|', $ret);
 }
 
 function node_type($file, $namespace, $node, $current_scope, $current_class, &$taint=null, $check_var_exists=true) {
@@ -1024,6 +1038,14 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 		return(type_map(gettype($node)));
 	} else {
 		if($node->kind == \ast\AST_ARRAY) {
+			if(!empty($node->children) && $node->children[0] instanceof \ast\Node && $node->children[0]->kind == \ast\AST_ARRAY_ELEM) {
+				if($node->children[0]->children[0] instanceof \ast\Node) {
+					$type = node_type($file, $namespace, $node->children[0]->children[0], $current_scope, $current_class, $temp_taint);
+				} else {
+					$type = type_map(gettype($node->children[0]->children[0]));
+				}
+				if(!empty($type)) return mkgenerics($type);
+			}
 			return 'array';
 
 		} else if($node->kind == \ast\AST_BINARY_OP) {

@@ -4,4 +4,4 @@ Internal function arg
 <?php
 echo substr("abc", [1,2,3]);
 --EXPECTF--
-%s:2 TypeError arg#2(start) is array but substr() takes int
+%s:2 TypeError arg#2(start) is int[] but substr() takes int

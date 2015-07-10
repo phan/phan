@@ -18,5 +18,5 @@ namespace NS1\SubB {
 
 }
 --EXPECTF--
-%s:14 TypeError arg#1(arg) is array but test() takes string defined at %s:5
+%s:14 TypeError arg#1(arg) is int[] but test() takes string defined at %s:5
 

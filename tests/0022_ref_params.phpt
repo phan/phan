@@ -20,4 +20,4 @@ B::test2($arg1);
 test3($arg3);
 preg_match("/(a)/","a",$match);
 --EXPECTF--
-%s:15 TypeError arg#1(farg2) is array|float but test2() takes int defined at %s:8
+%s:15 TypeError arg#1(farg2) is int[]|float but test2() takes int defined at %s:8
