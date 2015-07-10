@@ -1022,7 +1022,7 @@ function  mkgenerics(string $str):string {
 	$ret = [];
 	foreach(explode('|', $str) as $type) {
 		if(empty($type)) continue;
-		if($type=='array') $ret[] = 'array';
+		if($type=='array' || $type=='mixed') $ret[] = 'array';
 		else {
 			$ret[] = trim($type,'[]').'[]';
 		}
