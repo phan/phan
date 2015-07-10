@@ -627,7 +627,11 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 								$classes[$lclass]['properties'][$prop]['value'] = merge_type($classes[$lclass]['properties'][$prop]['value'], $right_type);
 							}
 							return $right_type;
+						} else {
+							return '';
 						}
+					} else {
+						return '';
 					}
 				}
 			}
