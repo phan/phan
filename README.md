@@ -76,6 +76,7 @@ To make sure it works you can run `phan` on itself with `phan -f filelist.txt` u
 * Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
 * Undefined variable tracking
 * Supports namespaces, traits and variadics
+* Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
 * Basic tainted data detection
 
 See the [tests][tests] directory for some examples of the various checks.

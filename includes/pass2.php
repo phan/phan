@@ -525,10 +525,6 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 			 $parent = $left;
 			 $left = $left->children[0];
 		}
-		// If we see $var[..] then we know $var is an array
-#		if($parent->kind == \ast\AST_DIM) $left_type = 'array'; // TODO: unless it was already a string, then it is a string offset
-#		else if($parent->kind == \ast\AST_LIST) $left_type = ''; // TODO: Properly handle list($a) = [$b]
-#		else if($parent->kind == \ast\AST_PROP) { $left_type = "object"; }
 	}
 
 	if($left==null) {
@@ -576,7 +572,6 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 		return $right_type;
 	}
 
-
 	if(!$left_type && $right_type) {
 		$left_type = $right_type;
 	} else if(!$left_type) {
@@ -585,6 +580,17 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 		$left_type = $right_type;
 	}
 
+	if($parent->kind == \ast\AST_DIM && $left->kind == \ast\AST_VAR) {
+		// Generics check
+		if(!($left->children[0] instanceof \ast\Node)) {
+			$var_type = $scope[$current_scope]['vars'][$left->children[0]]['type'] ?? '';
+			if(!empty($var_type) && strpos($var_type, '[]') !== false) {
+				if(!type_check(generics($var_type), $right_type)) {
+					Log::err(Log::ETYPE, "Assigning {$right_type} to \${$left->children[0]} which is {$var_type}", $file, $ast->lineno);
+				}
+			}
+		}
+	}
 	// $var->prop = ...
 	if($parent->kind == \ast\AST_PROP && $left->kind == \ast\AST_VAR) {
 		// Check for $$var-> weirdness
@@ -977,6 +983,17 @@ function find_class($node, $namespace, $nmap) {
 		} else return $classes[$name];
 	}
 	return null;
+}
+
+// Takes "a|b[]|c|d[]|e" and returns "b|d"
+function generics(string $str):string {
+	if((strpos($str,'[]'))===false) return '';
+	$ret = [];
+	foreach(explode('|',$str) as $type) {
+		if(($pos=strpos($type,'[]'))===false) continue;
+		$ret[] = substr($type,0,$pos);
+	}
+	return implode('|',$ret);
 }
 
 function node_type($file, $namespace, $node, $current_scope, $current_class, &$taint=null, $check_var_exists=true) {
