@@ -584,11 +584,15 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 	if($parent->kind == \ast\AST_DIM && $left->kind == \ast\AST_VAR) {
 		// Generics check
 		if(!($left->children[0] instanceof \ast\Node)) {
+			if($right_type === "NULL") return ''; // You can assign null to any generic
 			$var_type = $scope[$current_scope]['vars'][$left->children[0]]['type'] ?? '';
-			if(!empty($var_type) && strpos($var_type, '[]') !== false) {
-				if(!type_check(generics($var_type), $right_type)) {
+			if(!empty($var_type) && !nongenerics($var_type) && strpos($var_type, '[]') !== false) {
+				if(!type_check($right_type, generics($var_type))) {
 					Log::err(Log::ETYPE, "Assigning {$right_type} to \${$left->children[0]} which is {$var_type}", $file, $ast->lineno);
+					return '';
 				}
+			} else  {
+				$left_type = mkgenerics($right_type);
 			}
 		}
 	}
@@ -1013,6 +1017,18 @@ function generics(string $str):string {
 
 	// If |array| is in there, then it can be any type
 	if(stripos("|$str|", "|array|") !== false) $ret[] = 'mixed';
+
+	return implode('|', $ret);
+}
+
+// Takes "a|b[]|c|d[]|e" and returns "a|c|e"
+function nongenerics(string $str):string {
+	if((strpos($str,'[]'))===false) return $str;
+	$ret = [];
+	foreach(explode('|', $str) as $type) {
+		if(($pos=strpos($type, '[]')) !== false) continue;
+		$ret[] = $type;
+	}
 
 	return implode('|', $ret);
 }
