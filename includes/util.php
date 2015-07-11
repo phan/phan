@@ -463,7 +463,7 @@ function qualified_name(string $file, $node, string $namespace) {
 }
 
 function is_native_type(string $type):bool {
-	return in_array(strtolower(str_replace('[]','',$type)), ['int','bool','float','string','callable','array','null','object','mixed']);
+	return in_array(strtolower(str_replace('[]','',$type)), ['int','bool','float','string','callable','array','null','object','resource','mixed']);
 }
 
 // Checks if the types, and if a union, all types in the union, are scalar
