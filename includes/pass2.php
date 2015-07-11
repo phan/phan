@@ -607,9 +607,9 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 							'flags'=>\ast\flags\MODIFIER_PUBLIC,
 							'name'=>$prop,
 							'lineno'=>0,
-							'value'=>$right_type ];
+							'type'=>$right_type ];
 					} else {
-						$classes[$lclass]['properties'][$prop]['value'] = merge_type($classes[$lclass]['properties'][$prop]['value'], $right_type);
+						$classes[$lclass]['properties'][$prop]['type'] = merge_type($classes[$lclass]['properties'][$prop]['type'], $right_type);
 					}
 					return $right_type;
 				} else {
@@ -623,9 +623,9 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 									'flags'=>\ast\flags\MODIFIER_PUBLIC,
 									'name'=>$prop,
 									'lineno'=>0,
-									'value'=>$right_type ];
+									'type'=>$right_type ];
 							} else {
-								$classes[$lclass]['properties'][$prop]['value'] = merge_type($classes[$lclass]['properties'][$prop]['value'], $right_type);
+								$classes[$lclass]['properties'][$prop]['type'] = merge_type($classes[$lclass]['properties'][$prop]['type'], $right_type);
 							}
 							return $right_type;
 						} else {
@@ -1167,6 +1167,21 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 				}
 			}
 
+		} else if($node->kind == \ast\AST_CLASS_CONST) {
+			if($node->children[1] == 'class') return 'string'; // class name fetch
+			$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+			if(!$class_name) return '';
+			$ltemp = strtolower($class_name);
+			while($ltemp && !array_key_exists($node->children[1], $classes[$ltemp]['constants'])) {
+				$ltemp = strtolower($classes[$ltemp]['parent']);
+				if(empty($classes[$ltemp])) return ''; // undeclared class - will be caught elsewhere
+			}
+			if(!$ltemp || !array_key_exists($node->children[1], $classes[$ltemp]['constants'])) {
+				Log::err(Log::EUNDEF, "can't access undeclared constant {$class_name}::{$node->children[1]}", $file, $node->lineno);
+				return '';
+			}
+			return $classes[$ltemp]['constants'][$node->children[1]]['type'];
+
 		} else if($node->kind == \ast\AST_PROP) {
 			if($node->children[0]->kind == \ast\AST_VAR) {
 				$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
@@ -1174,7 +1189,7 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 					if(empty($classes[strtolower($class_name)]['properties'][$node->children[1]])) {
 						return '';
 					}
-					return $classes[strtolower($class_name)]['properties'][$node->children[1]]['value'];
+					return $classes[strtolower($class_name)]['properties'][$node->children[1]]['type'];
 				}
 			}
 		} else if($node->kind == \ast\AST_CALL) {

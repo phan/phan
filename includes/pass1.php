@@ -147,7 +147,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 																				   'flags'=>$ast->flags,
 																				   'name'=>$node->children[0],
 																				   'lineno'=>$node->lineno,
-																				   'value'=>node_type($file, $namespace, $node->children[1], $current_scope, $current_class) ];
+																				   'type'=>node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[strtolower($current_class)]) ? null : $classes[strtolower($current_class)]) ];
 				}
 				$done = true;
 				break;
@@ -159,7 +159,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 					$classes[strtolower($current_class)]['constants'][$node->children[0]] = [
 																				  'name'=>$node->children[0],
 																				  'lineno'=>$node->lineno,
-																				  'value'=>$node->children[1] ];
+																				  'type'=>node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[strtolower($current_class)]) ? null : $classes[strtolower($current_class)]) ];
 				}
 				$done = true;
 				break;
@@ -284,7 +284,7 @@ function node_param($file, $node, $dc, $i, $namespace) {
 }
 
 function node_func($file, $conditional, $node, $current_scope, $current_class, $namespace='') {
-	global $scope;
+	global $scope, $classes;
 
 	if($node instanceof \ast\Node) {
 		$req = $opt = 0;
@@ -336,7 +336,7 @@ function node_func($file, $conditional, $node, $current_scope, $current_class, $
 					$scope[$current_scope]['vars'][$v['name']] = ['type'=>$v['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
 				}
 				if(array_key_exists('def', $v)) {
-					$type = node_type($file, $namespace, $v['def'], $current_scope, $current_class);
+					$type = node_type($file, $namespace, $v['def'], $current_scope, empty($current_class) ? null : $classes[strtolower($current_class)]);
 					if($type==="NULL") {
 						add_type($current_scope, $v['name'], $type);
 						if(!empty($result['params'][$k]['type'])) $result['params'][$k]['type'] .= '|NULL';

@@ -30,7 +30,7 @@ function add_class($class_name) {
 											'flags' => $prop->getModifiers(),
 											'name'  => $name,
 											'lineno'=> 0,
-											'value' => $value ];
+											'type' => type_map(gettype($value)) ];
 	}
 
 	$classes[$lc]['interfaces'] = $class->getInterfaceNames();
@@ -52,9 +52,9 @@ function add_class($class_name) {
 	$classes[$lc]['type'] = implode('|', array_unique($types));
 
 	foreach($class->getConstants() as $name=>$value) {
-		$classes[$lc]['constants'][strtolower($name)] = [	'name'  => $name,
-															'lineno'=> 0,
-															'value' => $value ];
+		$classes[$lc]['constants'][$name] = [	'name'  => $name,
+												'lineno'=> 0,
+												'type' => type_map(gettype($value)) ];
 	}
 
 	foreach($class->getMethods() as $method) {
@@ -275,6 +275,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 	switch($node->kind) {
 		case \ast\AST_NEW:
 		case \ast\AST_STATIC_CALL:
+		case \ast\AST_CLASS_CONST:
 			if($node->children[0]->kind == \ast\AST_NAME) {
 				$class_name = $node->children[0]->children[0];
 				if($class_name == 'self' || $class_name == 'static' || $class_name == 'parent') {
@@ -282,6 +283,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 						Log::err(Log::ESTATIC, "Cannot access {$class_name}:: when no class scope is active", $file, $node->lineno);
 						return '';
 					}
+					if(empty($current_class['name'])) { echo "$file:{$node->lineno}\n"; echo "*$current_class*\n"; debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS); }
 					if($class_name == 'self' || $class_name == 'static') $class_name = $current_class['name'];
 					else if($class_name == 'parent') $class_name = $current_class['parent'];
 					$static_call_ok = true;
@@ -326,7 +328,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 						if(!($prop->children[1] instanceof \ast\Node)) {
 							if(!empty($current_class['properties'][$prop->children[1]])) {
 								$prop = $current_class['properties'][$prop->children[1]];
-								foreach(explode('|', $prop['value']) as $class_name) {
+								foreach(explode('|', $prop['type']) as $class_name) {
 									 if(!empty($classes[strtolower($class_name)])) break;
 								}
 								if(empty($class_name)) return '';
@@ -352,7 +354,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 					if(!($prop->children[1] instanceof \ast\Node)) {
 						if(!empty($current_class['properties'][$prop->children[1]])) {
 							$prop = $current_class['properties'][$prop->children[1]];
-							foreach(explode('|', $prop['value']) as $class_name) {
+							foreach(explode('|', $prop['type']) as $class_name) {
 								 if(!empty($classes[strtolower($class_name)])) break;
 							}
 							if(empty($class_name)) return '';
@@ -384,6 +386,14 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 					if(!is_native_type($class_name)) Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
 				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_INTERFACE) {
 					if(!is_native_type($class_name)) Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
+				} else {
+					$return = $class_name;
+				}
+				break;
+
+			case \ast\AST_CLASS_CONST:
+				if(empty($classes[strtolower($class_name)])) {
+					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "can't access property from undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -688,6 +698,12 @@ function dump_functions($type='user') {
 		if(!empty($entry['type'])) $temp .= " types: {$entry['type']}";
 		echo $temp."\n".str_repeat("\u{00AF}", strlen($temp))."\n";
 
+		if(!empty($entry['constants'])) {
+			foreach($entry['constants'] as $const) {
+				echo "\t const {$const['name']} = {$const['type']}\n";
+			}
+			echo "\n";
+		}
 		if(!empty($entry['methods'])) foreach($entry['methods'] as $func) {
 			if($func['file'] != 'internal') {
 				if($func['flags'] & \ast\flags\MODIFIER_STATIC) {
