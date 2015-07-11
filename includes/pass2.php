@@ -674,7 +674,8 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 		case 'join':
 		case 'implode': // (string glue, array pieces), (array pieces, string glue) or (array pieces)
 			if($argcount == 1) { // If we have just one arg it must be an array
-				if(($arg_type=node_type($file, $namespace, $arglist->children[0], $current_scope, $current_class)) != 'array') {
+				$arg_type = node_type($file, $namespace, $arglist->children[0], $current_scope, $current_class);
+				if(!type_check($arg_type, 'array')) {
 					Log::err(Log::ETYPE, "arg#1(pieces) is $arg_type but {$func['name']}() takes array when passed only 1 arg", $file, $ast->lineno);
 				}
 				return;
@@ -696,7 +697,8 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 			break;
 		case 'strtok': // (string str, string token) or (string token)
 			if($argcount == 1) { // If we have just one arg it must be a string token
-				if(($arg_type=node_type($file, $namespace, $arglist->children[0], $current_scope, $current_class)) != 'string') {
+				$arg_type = node_type($file, $namespace, $arglist->children[0], $current_scope, $current_class);
+				if(!type_check($arg_type, 'string')) {
 					Log::err(Log::ETYPE, "arg#1(token) is $arg_type but {$func['name']}() takes string when passed only one arg", $file, $ast->lineno);
 					return;
 				}
@@ -706,7 +708,8 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 		case 'min':
 		case 'max':
 			if($argcount == 1) { // If we have just one arg it must be an array
-				if(($arg_type=node_type($file, $namespace, $arglist->children[0], $current_scope, $current_class)) != 'array') {
+				$arg_type = node_type($file, $namespace, $arglist->children[0], $current_scope, $current_class);
+				if(!type_check($arg_type, 'array')) {
 					Log::err(Log::ETYPE, "arg#1(values) is $arg_type but {$func['name']}() takes array when passed only one arg", $file, $ast->lineno);
 					return;
 				}
