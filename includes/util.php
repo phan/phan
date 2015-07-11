@@ -310,7 +310,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 					}
 					$call = $scope[$current_scope]['vars'][$node->children[0]->children[0]]['type'];
 					// Hack - loop through the possible types of the var and assume first found class is correct
-					foreach(explode('|', $call) as $class_name) {
+					foreach(explode('|', nongenerics($call)) as $class_name) {
 						if(!empty($classes[strtolower($class_name)])) break;
 					}
 					if(empty($class_name)) return '';
@@ -328,7 +328,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 						if(!($prop->children[1] instanceof \ast\Node)) {
 							if(!empty($current_class['properties'][$prop->children[1]])) {
 								$prop = $current_class['properties'][$prop->children[1]];
-								foreach(explode('|', $prop['type']) as $class_name) {
+								foreach(explode('|', nongenerics($prop['type'])) as $class_name) {
 									 if(!empty($classes[strtolower($class_name)])) break;
 								}
 								if(empty($class_name)) return '';
@@ -354,7 +354,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 					if(!($prop->children[1] instanceof \ast\Node)) {
 						if(!empty($current_class['properties'][$prop->children[1]])) {
 							$prop = $current_class['properties'][$prop->children[1]];
-							foreach(explode('|', $prop['type']) as $class_name) {
+							foreach(explode('|', nongenerics($prop['type'])) as $class_name) {
 								 if(!empty($classes[strtolower($class_name)])) break;
 							}
 							if(empty($class_name)) return '';
@@ -393,7 +393,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 
 			case \ast\AST_CLASS_CONST:
 				if(empty($classes[strtolower($class_name)])) {
-					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "can't access property from undeclared class {$class_name}", $file, $node->lineno);
+					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "can't access constant from undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -463,7 +463,7 @@ function qualified_name(string $file, $node, string $namespace) {
 }
 
 function is_native_type(string $type):bool {
-	return in_array(strtolower($type), ['int','bool','float','string','callable','array','null','object','mixed']);
+	return in_array(strtolower(str_replace('[]','',$type)), ['int','bool','float','string','callable','array','null','object','mixed']);
 }
 
 // Checks if the types, and if a union, all types in the union, are scalar

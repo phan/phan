@@ -582,7 +582,8 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 	}
 
 	if($parent->kind == \ast\AST_DIM && $left->kind == \ast\AST_VAR) {
-		// Generics check
+		// Generics check - can't really do this without some special hint forcing a strict generics type
+		/*
 		if(!($left->children[0] instanceof \ast\Node)) {
 			if($right_type === "NULL") return ''; // You can assign null to any generic
 			$var_type = $scope[$current_scope]['vars'][$left->children[0]]['type'] ?? '';
@@ -595,6 +596,8 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 				$left_type = mkgenerics($right_type);
 			}
 		}
+		*/
+		$left_type = mkgenerics($right_type);
 	}
 	// $var->prop = ...
 	if($parent->kind == \ast\AST_PROP && $left->kind == \ast\AST_VAR) {
@@ -887,7 +890,7 @@ function type_check($src, $dst, $namespace=''):bool {
 			if($d[0]=='\\') $d = substr($d,1);
 			if($s===$d) return true;
 			if($s==='int' && $d==='float') return true; // int->float is ok
-			if(($s==='array' || $s==='string' || $s==='string[]') && $d==='callable') return true;
+			if(($s==='array' || $s==='string' || (strpos($s,'[]')!==false)) && $d==='callable') return true;
 			if($s === 'object' && !type_scalar($d) && $d!=='array') return true;
 			if($d === 'object' && !type_scalar($s) && $s!=='array') return true;
 			if(strpos($s,'[]')!==false && $d==='array') return true;
