@@ -24,6 +24,7 @@ class Log {
 	const EAVAIL  =  1<<8;
 	const ETAINT  =  1<<9;
 	const ECOMPAT = 1<<10;
+	const EACCESS = 1<<11;
 
 	const ERRS    = [ self::EREDEF  => 'RedefineError',
 					  self::EUNDEF  => 'UndefError',
@@ -35,7 +36,8 @@ class Log {
 					  self::ESTATIC => 'StaticCallError',
 					  self::EAVAIL  => 'AvailError',
 					  self::ETAINT  => 'TaintError',
-					  self::ECOMPAT => 'CompatError'
+					  self::ECOMPAT => 'CompatError',
+					  self::EACCESS => 'AccessError'
 					];
 
 	const EFATAL = -1;

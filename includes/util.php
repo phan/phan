@@ -24,6 +24,10 @@ function add_class($class_name) {
 					 'traits'=>[]
 					];
 
+	$parent = $class->getParentClass();
+	if(!$parent) $classes[$lc]['parent'] = '';
+	else $classes[$lc]['parent'] = $parent->getName();
+
 	foreach($class->getDefaultProperties() as $name=>$value) {
 		$prop = new \ReflectionProperty($class_name, $name);
 		$classes[$lc]['properties'][strtolower($name)] = [
@@ -580,6 +584,27 @@ function superglobal(string $var):bool {
 	return in_array($var, ['_GET','_POST','_COOKIE','_REQUEST','_SERVER','_ENV','_FILES','_SESSION','GLOBALS']);
 }
 
+function modifiers(int $flags):string {
+	$result = '';
+	if($flags & \ast\flags\MODIFIER_PUBLIC) {
+		$result = 'public';
+	} else if(($flags & \ast\flags\MODIFIER_PROTECTED)) {
+		$result = 'protected';
+	} else if(($flags & \ast\flags\MODIFIER_PRIVATE)) {
+		$result = 'private';
+	}
+	if($flags & \ast\flags\MODIFIER_FINAL) {
+		$result .= ' final';
+	}
+	if($flags & \ast\flags\MODIFIER_ABSTRACT) {
+		$result .= ' abstract';
+	}
+	if($flags & \ast\flags\MODIFIER_STATIC) {
+		$result .= ' static';
+	}
+	return trim($result);
+}
+
 function check_classes(&$classes) {
 	global $namespace_map;
 
@@ -700,10 +725,19 @@ function dump_functions($type='user') {
 
 		if(!empty($entry['constants'])) {
 			foreach($entry['constants'] as $const) {
-				echo "\t const {$const['name']} = {$const['type']}\n";
+				echo "\tconst {$const['name']} = {$const['type']}\n";
 			}
 			echo "\n";
 		}
+
+		if(!empty($entry['properties'])) {
+			foreach($entry['properties'] as $prop) {
+				$mod = modifiers($prop['flags']);
+				echo "\t$mod \${$prop['name']} = {$prop['type']}\n";
+			}
+			echo "\n";
+		}
+
 		if(!empty($entry['methods'])) foreach($entry['methods'] as $func) {
 			if($func['file'] != 'internal') {
 				if($func['flags'] & \ast\flags\MODIFIER_STATIC) {

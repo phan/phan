@@ -606,42 +606,36 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 			$prop = $parent->children[1];
 			// Check for $var->$...
 			if(!($prop instanceof \ast\Node)) {
+				$lclass = '';
 				if($left->children[0] == 'this') {
 					// $this->prop =
-					$lclass = strtolower($current_class['name']);
-					if(empty($classes[$lclass]['properties'][$prop])) {
-						$classes[$lclass]['properties'][$prop] = [
-							'flags'=>\ast\flags\MODIFIER_PUBLIC,
-							'name'=>$prop,
-							'lineno'=>0,
-							'type'=>$right_type ];
-					} else {
-						$classes[$lclass]['properties'][$prop]['type'] = merge_type($classes[$lclass]['properties'][$prop]['type'], $right_type);
-					}
-					return $right_type;
+					$class_name = $current_class['name'];
 				} else {
-					// $var->prop =
-					$temp = node_type($file, $namespace, $left, $current_scope, $current_class, $taint);
-					if(!is_native_type($temp)) {
-						$lclass = strtolower($temp);
-						if(!empty($classes[$lclass])) {
-							if(empty($classes[$lclass]['properties'][$prop])) {
-								$classes[$lclass]['properties'][$prop] = [
-									'flags'=>\ast\flags\MODIFIER_PUBLIC,
-									'name'=>$prop,
-									'lineno'=>0,
-									'type'=>$right_type ];
-							} else {
-								$classes[$lclass]['properties'][$prop]['type'] = merge_type($classes[$lclass]['properties'][$prop]['type'], $right_type);
-							}
-							return $right_type;
-						} else {
-							return '';
-						}
-					} else {
-						return '';
-					}
+					$class_name = find_class_name($file, $parent, $namespace, $current_class, $current_scope);
 				}
+
+				$lclass = strtolower($class_name);
+				if(empty($lclass) || empty($classes[$lclass])) return '';
+
+				$ltemp = find_property($file, $ast, $class_name, $prop, $current_class);
+				if($ltemp === false) return $right_type;
+				if(!empty($ltemp)) $lclass = $ltemp;
+
+				if(empty($classes[$lclass]['properties'][$prop])) {
+					$classes[$lclass]['properties'][$prop] = [
+						'flags'=>\ast\flags\MODIFIER_PUBLIC,
+						'name'=>$prop,
+						'lineno'=>0,
+						'type'=>$right_type ];
+				} else {
+					if(!empty($classes[$lclass]['properties'][$prop]['dtype'])) {
+						if(!type_check($right_type, $classes[$lclass]['properties'][$prop]['dtype'])) {
+							Log::err(Log::ETYPE, "property is declared to be {$classes[$lclass]['properties'][$prop]['dtype']} but was assigned $right_type", $file, $ast->lineno);
+						}
+					}
+					$classes[$lclass]['properties'][$prop]['type'] = merge_type($classes[$lclass]['properties'][$prop]['type'], $right_type);
+				}
+				return $right_type;
 			}
 		}
 	}
@@ -929,6 +923,50 @@ function internal_varargs_check(string $func_name):bool  {
 }
 
 /**
+ * @return string|false False on illegal property access, empty string on legal but not found, otherwise
+ *                      class name where the property was found
+ */
+function find_property(string $file, $node, string $class_name, string $prop, array $current_class=null) {
+	global $classes;
+
+	$parents = [];
+	$lclass = strtolower($class_name);
+	$lcc = empty($current_class) ? '' : strtolower($current_class['name']);
+	while(!empty($lclass)) {
+		if(empty($classes[$lclass]['properties'][$prop]) ||
+			($lcc != $lclass) && ($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PRIVATE)) {
+
+			if(!empty($classes[$lclass]['traits'])) {
+				foreach($classes[$lclass]['traits'] as $t) {
+					if(!empty($classes[strtolower($t)]['properties'][$prop])) {
+						if(($lcc!=$lclass && $classes[strtolower($t)]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED) && !in_array($lcc, $parents)) {
+							Log::err(Log::EACCESS, "Cannot access protected property {$class_name}::\$$prop", $file, $node->lineno);
+							return false;
+						}
+						if(($lcc == $lclass) || ($classes[strtolower($t)]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PUBLIC) ||
+							(($classes[strtolower($t)]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED) && in_array($lcc, $parents))
+						) {
+							$lclass = strtolower($t);
+							break 2;
+						}
+					}
+				}
+			}
+		} else {
+			if($lcc != $lclass && ((!in_array($lcc, $parents)) &&
+			($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED))) {
+				Log::err(Log::EACCESS, "Cannot access protected property {$class_name}::\$$prop", $file, $node->lineno);
+				return false;
+			}
+			break;
+		}
+		$parents[] = $lclass;
+		$lclass = empty($classes[$lclass]) ? '' : strtolower($classes[$lclass]['parent']);
+	}
+	return empty($classes[$lclass]['properties'][$prop]) ? '' : $lclass;
+}
+
+/**
  * Walk the inheritance tree to find the method
  * @return array|string|false
  */
@@ -1157,7 +1195,7 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 				case \ast\flags\TYPE_DOUBLE: $taint = false; return 'float'; break;
 				case \ast\flags\TYPE_STRING: return 'string'; break;
 				case \ast\flags\TYPE_ARRAY: return 'array'; break;
-				case \ast\flags\TYPE_OBJECT: return 'stdClass'; break;
+				case \ast\flags\TYPE_OBJECT: return 'object'; break;
 				default: Log::err(Log::EFATAL, "Unknown type (".$node->flags.") in cast");
 			}
 		} else if($node->kind == \ast\AST_NEW) {

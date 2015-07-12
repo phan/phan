@@ -141,13 +141,28 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 
 			case \ast\AST_PROP_DECL:
 				if(empty($current_class)) Log::err(Log::EFATAL, "Invalid property declaration", $file, $ast->lineno);
+				$dc = null;
+				if(!empty($ast->docComment)) $dc = parse_doc_comment($ast->docComment);
 
-				foreach($ast->children as $node) {
-					$classes[strtolower($current_class)]['properties'][$node->children[0]] = [
-																				   'flags'=>$ast->flags,
-																				   'name'=>$node->children[0],
-																				   'lineno'=>$node->lineno,
-																				   'type'=>node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[strtolower($current_class)]) ? null : $classes[strtolower($current_class)]) ];
+				foreach($ast->children as $i=>$node) {
+					$lc = strtolower($current_class);
+					$classes[$lc]['properties'][$node->children[0]] = [ 'flags'=>$ast->flags,
+																	    'name'=>$node->children[0],
+																	    'lineno'=>$node->lineno];
+					$type = node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[$lc]) ? null : $classes[$lc]);
+					if(!empty($dc['vars'][$i]['type'])) {
+						if($type !=='NULL' && !type_check($type, $dc['vars'][$i]['type'])) {
+							Log::err(Log::ETYPE, "property is declared to be {$dc['vars'][$i]['type']} but was assigned $type", $file, $node->lineno);
+						}
+						$classes[$lc]['properties'][$node->children[0]]['dtype'] = $dc['vars'][$i]['type'];
+						$classes[$lc]['properties'][$node->children[0]]['type'] = $dc['vars'][$i]['type'];
+						if(!empty($type) && $type != $classes[$lc]['properties'][$node->children[0]]['type']) {
+							$classes[$lc]['properties'][$node->children[0]]['type'] .= '|'.strtolower($type);
+						}
+					} else {
+						$classes[$lc]['properties'][$node->children[0]]['dtype'] = '';
+						$classes[$lc]['properties'][$node->children[0]]['type'] = $type;
+					}
 				}
 				$done = true;
 				break;
@@ -367,6 +382,12 @@ function parse_doc_comment(string $comment):array {
 			if(preg_match('/@param\s+(\S+)\s*(?:(\S+))*/', $line, $match)) {
 
 				$result['params'][] = ['name'=>empty($match[2])?'':trim($match[2],'$'), 'type'=>$match[1]];
+			}
+		}
+		if(($pos=strpos($line, '@var')) !== false) {
+			if(preg_match('/@var\s+(\S+)\s*(?:(\S+))*/', $line, $match)) {
+
+				$result['vars'][] = ['name'=>empty($match[2])?'':trim($match[2],'$'), 'type'=>$match[1]];
 			}
 		}
 		if(($pos=strpos($line, '@return')) !== false) {
