@@ -131,7 +131,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				$current_scope = $current_class['name'].'::'.$ast->name;
 				break;
 
-			case \ast\AST_USE: // TODO: Figure out a clean way to map namespaces
+			case \ast\AST_USE:
 				break;
 
 			case \ast\AST_FOREACH: // Not doing depth-first here, because we need to declare the vars for the body of the loop
@@ -166,6 +166,17 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 		switch($ast->kind) {
 			case \ast\AST_ASSIGN:
 			case \ast\AST_ASSIGN_REF:
+				if($ast->children[0] instanceof \ast\Node && $ast->children[0]->kind == \ast\AST_LIST) {
+					// TODO: Very simplistic here - we can be smarter
+					$rtype = node_type($file, $namespace, $ast->children[1], $current_scope, $current_class, $taint);
+					$type = generics($rtype);
+					foreach($ast->children[0]->children as $c) {
+						$name = var_name($c);
+						if(!empty($name)) add_var_scope($current_scope, $name, $type);
+					}
+					break;
+				}
+
 				var_assign($file, $namespace, $ast, $current_scope, $current_class, $vars);
 				foreach($vars as $k=>$v) {
 					if(empty($v)) $v = ['type'=>'', 'tainted'=>false, 'tainted_by'=>''];
@@ -208,18 +219,13 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				break;
 
 			case \ast\AST_LIST:
-				// TODO: Very simplistic here - we can be smarter
-				foreach($ast->children as $c) {
-					$name = var_name($c);
-					if(!empty($name)) add_var_scope($current_scope, $name, '');
-				}
 				break;
 
 			case \ast\AST_GLOBAL:
 				if(!array_key_exists($current_scope, $scope)) $scope[$current_scope] = [];
 				if(!array_key_exists('vars', $scope[$current_scope])) $scope[$current_scope]['vars'] = [];
 				$name = var_name($ast);
-				if($name === false) break;
+				if(empty($name)) break;
 				if(!array_key_exists($name, $scope['global']['vars'])) {
 					add_var_scope('global', $name, '');
 				}
@@ -532,6 +538,10 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 		// No variable name for assignment??
 		// This is generally for something like list(,$var) = [1,2]
 		return $right_type;
+	}
+
+	if($left->kind == \ast\AST_LIST) {
+		return '';
 	}
 
 	if(!is_object($left)) {
@@ -1099,12 +1109,18 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 	} else {
 		if($node->kind == \ast\AST_ARRAY) {
 			if(!empty($node->children) && $node->children[0] instanceof \ast\Node && $node->children[0]->kind == \ast\AST_ARRAY_ELEM) {
-				if($node->children[0]->children[0] instanceof \ast\Node) {
-					$type = node_type($file, $namespace, $node->children[0]->children[0], $current_scope, $current_class, $temp_taint);
-				} else {
-					$type = type_map(gettype($node->children[0]->children[0]));
+				// Check the first 5 (completely arbitrary) elements and assume the rest are the same type
+				$etypes = [];
+				for($i=0; $i<5; $i++) {
+					if(empty($node->children[$i])) break;
+					if($node->children[$i]->children[0] instanceof \ast\Node) {
+						$etypes[] = node_type($file, $namespace, $node->children[$i]->children[0], $current_scope, $current_class, $temp_taint);
+					} else {
+						$etypes[] = type_map(gettype($node->children[$i]->children[0]));
+					}
 				}
-				if(!empty($type)) return mkgenerics($type);
+				$types = array_unique($etypes);
+				if(count($types) == 1 && !empty($types[0])) return mkgenerics($types[0]);
 			}
 			return 'array';
 

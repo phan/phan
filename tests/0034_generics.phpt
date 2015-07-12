@@ -13,7 +13,7 @@ function test($cnt) {
  * @return DateTime[]
  */
 function test2() {
-	return ["oops", new DateTime()];
+	return ["oops"];
 }
 $var = test(5);
 $var[7] = 'abc';

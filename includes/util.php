@@ -258,16 +258,16 @@ function add_type(string $cs, string $var, $type) {
 }
 
 // Finds the variable name
-function var_name($node) {
-	if(!$node instanceof \ast\Node) return $node;
+function var_name($node):string {
+	if(!$node instanceof \ast\Node) return (string)$node;
 	$parent = $node;
 	while(($node instanceof \ast\Node) && ($node->kind != \ast\AST_VAR) && ($node->kind != \ast\AST_STATIC) &&($node->kind != \ast\AST_MAGIC_CONST)) {
 		$parent = $node;
 		$node = $node->children[0];
 	}
-	if(!$node instanceof \ast\Node) return $node;
-	if(empty($node->children[0])) return false;
-	return $node->children[0];
+	if(!$node instanceof \ast\Node) return (string)$node;
+	if(empty($node->children[0])) return '';
+	return (string)$node->children[0];
 }
 
 function find_class_name(string $file, $node, string $namespace, $current_class, $current_scope, &$static_call_ok=false):string {
@@ -287,7 +287,6 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 						Log::err(Log::ESTATIC, "Cannot access {$class_name}:: when no class scope is active", $file, $node->lineno);
 						return '';
 					}
-					if(empty($current_class['name'])) { echo "$file:{$node->lineno}\n"; echo "*$current_class*\n"; debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS); }
 					if($class_name == 'self' || $class_name == 'static') $class_name = $current_class['name'];
 					else if($class_name == 'parent') $class_name = $current_class['parent'];
 					$static_call_ok = true;

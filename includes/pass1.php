@@ -6,7 +6,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 	global $classes, $functions, $namespace_map, $summary, $bc_checks;
 	$done = false;
 
-	$lc = strtolower($current_class);
+	$lc = strtolower((string)$current_class);
 
 	if ($ast instanceof \ast\Node) {
 		switch($ast->kind) {
