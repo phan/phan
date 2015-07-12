@@ -1042,7 +1042,7 @@ function find_class($node, $namespace, $nmap) {
 	$name = strtolower(var_name($node->children[0]));
 
 	if($node->flags & \ast\flags\NAME_NOT_FQ) {
-		if(!empty($nmap[strtolower($name)])) {
+		if(!empty($nmap[$name])) {
 			if(!empty($classes[strtolower($nmap[$name] )])) {
 				return $classes[strtolower($nmap[$name])];
 			}
