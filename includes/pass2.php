@@ -540,10 +540,6 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 		return $right_type;
 	}
 
-	if($left->kind == \ast\AST_LIST) {
-		return '';
-	}
-
 	if(!is_object($left)) {
 		if($left=="self") {
 			// TODO: Looks like a self::$var assignment - do something smart here
@@ -554,7 +550,7 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 		} else {
 			return $right_type;
 		}
-	}
+	} else if($left->kind == \ast\AST_LIST) return '';
 
 	// DEBUG
 	if(!($left instanceof \ast\Node)) {
