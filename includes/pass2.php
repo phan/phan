@@ -847,7 +847,7 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 		if(strpos($arg_type, ':') !== false) list($arg_type,) = explode(':',$arg_type,2);
 
 		// if we have a single non-native type, expand it
-		if(!is_native_type($arg_type)) {
+		if(!empty($arg_type) && !is_native_type($arg_type)) {
 			if(!empty($classes[strtolower($arg_type)]['type'])) {
 				$arg_type = $classes[strtolower($arg_type)]['type'];
 			}
