@@ -212,7 +212,7 @@ test.php:3 TypeError return string but `test()` is declared to return int
 ```
 
 The initial scan of the function's code block has no type information for `$arg`. It
-isn't until we see the call and re-execute test()'s code block that we can detect
+isn't until we see the call and rescan test()'s code block that we can detect
 that it is actually returning the passed in `string` instead of an `int` as declared.
 
 ## How you can help
