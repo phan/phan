@@ -19,10 +19,12 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 			$ast->id = $next_node++;
 		}
 		if(!empty($parent_node)) {
-			if(empty($ast->visited_from[$parent_node->id])) {
-				$ast->visited_from[$parent_node->id] = 1;
-			} else {
-				return $namespace;
+			if($parent_node->kind != \ast\AST_STMT_LIST) {
+				if(empty($ast->visited_from[$parent_node->id])) {
+					$ast->visited_from[$parent_node->id] = 1;
+				} else {
+					return $namespace;
+				}
 			}
 		}
 		switch($ast->kind) {

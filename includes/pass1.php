@@ -331,6 +331,7 @@ function node_func($file, $conditional, $node, $current_scope, $current_class, $
 		} else {
 			// Check if the docComment has a return value specified
 			if(!empty($dc['return'])) {
+				// We can't actually figure out 'static' at this point, but fill it in regardless. It will be partially correct
 				if($dc['return'] == 'static' || $dc['return'] == 'self' || $dc['return'] == '$this') {
 					if(strpos($current_scope,'::')!==false) list($dc['return'],) = explode('::',$current_scope);
 				}

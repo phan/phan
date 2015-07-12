@@ -287,7 +287,8 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 						Log::err(Log::ESTATIC, "Cannot access {$class_name}:: when no class scope is active", $file, $node->lineno);
 						return '';
 					}
-					if($class_name == 'self' || $class_name == 'static') $class_name = $current_class['name'];
+					if($class_name == 'static') $class_name = $current_class['name'];
+					if($class_name == 'self') list($class_name,) = explode('::', $current_scope);
 					else if($class_name == 'parent') $class_name = $current_class['parent'];
 					$static_call_ok = true;
 				} else {
