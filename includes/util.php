@@ -199,7 +199,7 @@ function add_param_info($function_name) {
 		$req = $opt = 0;
 		while(!empty($internal_arginfo["$function_name $alt"])) {
 			// Copy the main part
-			$functions["$lfn $alt"] = $functions[strtolower($function_name)];
+			$functions["$lfn $alt"] = $functions[$lfn];
 			$functions["$lfn $alt"]['params'] = [];
 			// Then parse the alternate signature
 			foreach($internal_arginfo["$function_name $alt"] as $k=>$v) {
@@ -382,13 +382,14 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 	}
 
 	if($class_name) {
+		$lc = strtolower($class_name);
 		switch($node->kind) {
 			case \ast\AST_NEW:
-				if(empty($classes[strtolower($class_name)])) {
+				if(empty($classes[$lc])) {
 					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $node->lineno);
-				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_ABSTRACT) {
+				} else if($classes[$lc]['flags'] & \ast\flags\CLASS_ABSTRACT) {
 					if(!is_native_type($class_name)) Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
-				} else if($classes[strtolower($class_name)]['flags'] & \ast\flags\CLASS_INTERFACE) {
+				} else if($classes[$lc]['flags'] & \ast\flags\CLASS_INTERFACE) {
 					if(!is_native_type($class_name)) Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
@@ -396,7 +397,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 				break;
 
 			case \ast\AST_CLASS_CONST:
-				if(empty($classes[strtolower($class_name)])) {
+				if(empty($classes[$lc])) {
 					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "can't access constant from undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
@@ -404,7 +405,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 				break;
 
 			case \ast\AST_STATIC_CALL:
-				if(empty($classes[strtolower($class_name)])) {
+				if(empty($classes[$lc])) {
 					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
@@ -412,7 +413,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 				break;
 
 			case \ast\AST_METHOD_CALL:
-				if(empty($classes[strtolower($class_name)])) {
+				if(empty($classes[$lc])) {
 					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "call to method on undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
@@ -420,7 +421,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 				break;
 
 			case \ast\AST_PROP:
-				if(empty($classes[strtolower($class_name)])) {
+				if(empty($classes[$lc])) {
 					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "can't access property from undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;

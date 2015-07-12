@@ -6,6 +6,8 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 	global $classes, $functions, $namespace_map, $summary, $bc_checks;
 	$done = false;
 
+	$lc = strtolower($current_class);
+
 	if ($ast instanceof \ast\Node) {
 		switch($ast->kind) {
 			case \ast\AST_NAMESPACE:
@@ -77,6 +79,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				} else {
 					$current_class = $namespace.$ast->name;
 				}
+				$lc = strtolower($current_class);
 				if(!empty($ast->children[0])) {
 					$parent = $ast->children[0]->children[0];
 					if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
@@ -94,43 +97,43 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				} else {
 					$parent = null;
 				}
-				$classes[strtolower($current_class)] = [
-											'file'		 => $file,
-											'namespace'	 => $namespace,
-											'conditional'=> $conditional,
-											'flags'		 => $ast->flags,
-											'lineno'	 => $ast->lineno,
-											'endLineno'  => $ast->endLineno,
-											'name'		 => $namespace.$ast->name,
-											'docComment' => $ast->docComment,
-											'parent'	 => $parent,
-											'type'	     => '',
-											'properties' => [],
-											'constants'  => [],
-											'traits'	 => [],
-											'interfaces' => [],
-											'methods'	 => [] ];
+				$classes[$lc] = [
+									'file'		 => $file,
+									'namespace'	 => $namespace,
+									'conditional'=> $conditional,
+									'flags'		 => $ast->flags,
+									'lineno'	 => $ast->lineno,
+									'endLineno'  => $ast->endLineno,
+									'name'		 => $namespace.$ast->name,
+									'docComment' => $ast->docComment,
+									'parent'	 => $parent,
+									'type'	     => '',
+									'properties' => [],
+									'constants'  => [],
+									'traits'	 => [],
+									'interfaces' => [],
+									'methods'	 => [] ];
 
-				$classes[strtolower($current_class)]['interfaces'] = array_merge($classes[strtolower($current_class)]['interfaces'], node_namelist($file, $ast->children[1], $namespace));
+				$classes[$lc]['interfaces'] = array_merge($classes[$lc]['interfaces'], node_namelist($file, $ast->children[1], $namespace));
 				$summary['classes']++;
 				break;
 
 			case \ast\AST_USE_TRAIT:
-				$classes[strtolower($current_class)]['traits'] = array_merge($classes[strtolower($current_class)]['traits'], node_namelist($file, $ast->children[0], $namespace));
+				$classes[$lc]['traits'] = array_merge($classes[$lc]['traits'], node_namelist($file, $ast->children[0], $namespace));
 				$summary['traits']++;
 				break;
 
 			case \ast\AST_METHOD:
-				if(!empty($classes[strtolower($current_class)]['methods'][strtolower($ast->name)])) {
+				if(!empty($classes[$lc]['methods'][strtolower($ast->name)])) {
 					for($i=1;;$i++) {
-						if(empty($classes[strtolower($current_class)]['methods'][$i.':'.strtolower($ast->name)])) break;
+						if(empty($classes[$lc]['methods'][$i.':'.strtolower($ast->name)])) break;
 					}
 					$method = $i.':'.$ast->name;
 				} else {
 					$method = $ast->name;
 				}
-				$classes[strtolower($current_class)]['methods'][strtolower($method)] = node_func($file, $conditional, $ast, "{$current_class}::{$method}", $current_class, $namespace);
-                if(!($classes[strtolower($current_class)]['methods'][strtolower($method)]['flags'] & \ast\flags\MODIFIER_STATIC)) {
+				$classes[$lc]['methods'][strtolower($method)] = node_func($file, $conditional, $ast, "{$current_class}::{$method}", $current_class, $namespace);
+                if(!($classes[$lc]['methods'][strtolower($method)]['flags'] & \ast\flags\MODIFIER_STATIC)) {
                     add_var_scope("{$current_class}::{$method}", 'this', $current_class);
                 }
 
@@ -145,7 +148,6 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				if(!empty($ast->docComment)) $dc = parse_doc_comment($ast->docComment);
 
 				foreach($ast->children as $i=>$node) {
-					$lc = strtolower($current_class);
 					$classes[$lc]['properties'][$node->children[0]] = [ 'flags'=>$ast->flags,
 																	    'name'=>$node->children[0],
 																	    'lineno'=>$node->lineno];
@@ -171,10 +173,11 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				if(empty($current_class)) Log::err(Log::EFATAL, "Invalid constant declaration", $file, $ast->lineno);
 
 				foreach($ast->children as $node) {
-					$classes[strtolower($current_class)]['constants'][$node->children[0]] = [
-																				  'name'=>$node->children[0],
-																				  'lineno'=>$node->lineno,
-																				  'type'=>node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[strtolower($current_class)]) ? null : $classes[strtolower($current_class)]) ];
+					$classes[$lc]['constants'][$node->children[0]] = [
+					  'name'=>$node->children[0],
+					  'lineno'=>$node->lineno,
+					  'type'=>node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[$lc]) ? null : $classes[$lc])
+					];
 				}
 				$done = true;
 				break;
@@ -208,7 +211,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 					$func_name = strtolower($call->children[0]);
 					if($func_name == 'func_get_args' || $func_name == 'func_get_arg' || $func_name == 'func_num_args') {
 						if(!empty($current_class)) {
-							$classes[strtolower($current_class)]['methods'][strtolower($current_function)]['optional'] = 999999;
+							$classes[$lc]['methods'][strtolower($current_function)]['optional'] = 999999;
 						} else {
 							$functions[strtolower($current_function)]['optional'] = 999999;
 						}
