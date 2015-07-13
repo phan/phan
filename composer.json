@@ -1,0 +1,16 @@
+{
+    "name": "rlerdorf/phan",
+    "description": "A simple static analyzer for PHP written in PHP",
+    "keywords": ["php", "static", "analyzer"],
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rasmus Lerdorf"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "ext-php-ast": "*"
+    }
+}
