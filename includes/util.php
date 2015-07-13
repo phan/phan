@@ -288,7 +288,10 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 						return '';
 					}
 					if($class_name == 'static') $class_name = $current_class['name'];
-					if($class_name == 'self') list($class_name,) = explode('::', $current_scope);
+					if($class_name == 'self') {
+						if($current_scope != 'global') list($class_name,) = explode('::', $current_scope);
+						else $class_name = $current_class['name'];
+					}
 					else if($class_name == 'parent') $class_name = $current_class['parent'];
 					$static_call_ok = true;
 				} else {
@@ -386,11 +389,11 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 		switch($node->kind) {
 			case \ast\AST_NEW:
 				if(empty($classes[$lc])) {
-					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $node->lineno);
+					if(!is_native_type(type_map($class_name))) Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $node->lineno);
 				} else if($classes[$lc]['flags'] & \ast\flags\CLASS_ABSTRACT) {
-					if(!is_native_type($class_name)) Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
+					if(!is_native_type(type_map($class_name))) Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
 				} else if($classes[$lc]['flags'] & \ast\flags\CLASS_INTERFACE) {
-					if(!is_native_type($class_name)) Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
+					if(!is_native_type(type_map($class_name))) Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -398,7 +401,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 
 			case \ast\AST_CLASS_CONST:
 				if(empty($classes[$lc])) {
-					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "can't access constant from undeclared class {$class_name}", $file, $node->lineno);
+					if(!is_native_type(type_map($class_name))) Log::err(Log::EUNDEF, "can't access constant from undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -406,7 +409,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 
 			case \ast\AST_STATIC_CALL:
 				if(empty($classes[$lc])) {
-					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $node->lineno);
+					if(!is_native_type(type_map($class_name))) Log::err(Log::EUNDEF, "static call to undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -414,7 +417,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 
 			case \ast\AST_METHOD_CALL:
 				if(empty($classes[$lc])) {
-					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "call to method on undeclared class {$class_name}", $file, $node->lineno);
+					if(!is_native_type(type_map($class_name))) Log::err(Log::EUNDEF, "call to method on undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -422,7 +425,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 
 			case \ast\AST_PROP:
 				if(empty($classes[$lc])) {
-					if(!is_native_type($class_name)) Log::err(Log::EUNDEF, "can't access property from undeclared class {$class_name}", $file, $node->lineno);
+					if(!is_native_type(type_map($class_name))) Log::err(Log::EUNDEF, "can't access property from undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
@@ -468,12 +471,12 @@ function qualified_name(string $file, $node, string $namespace) {
 }
 
 function is_native_type(string $type):bool {
-	return in_array(strtolower(str_replace('[]','',$type)), ['int','bool','float','string','callable','array','null','object','resource','mixed']);
+	return in_array(strtolower(str_replace('[]','',$type)), ['int','bool','true','string','callable','array','null','object','resource','mixed','void']);
 }
 
 // Checks if the types, and if a union, all types in the union, are scalar
 function type_scalar($type):bool {
-	static $typemap = ['integer'=>'int','double'=>'float','boolean'=>'bool','callback'=>'callable'];
+	static $typemap = ['integer'=>'int','double'=>'float','boolean'=>'bool','true'=>'bool','false'=>'bool','callback'=>'callable'];
 	if(empty($type) || $type=='mixed') return false;
 	$type = $typemap[$type] ?? $type;
 	if($type=='int' ||  $type=='float' || $type=='string') return true;
@@ -493,8 +496,8 @@ function type_scalar($type):bool {
 
 // Maps type names to consistent names
 function type_map(string $type):string {
-	static $repmaps = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback', 'closure'  ],
-                        ['int',     'float',   'bool',    'bool',  'bool', 'callable', 'callable' ]];
+	static $repmaps = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback' ],
+                        ['int',     'float',   'bool',    'bool',  'bool', 'callable' ]];
 	return str_replace($repmaps[0], $repmaps[1], $type);
 }
 
