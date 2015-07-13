@@ -350,7 +350,6 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 
 			case \ast\AST_CLASS_CONST_DECL:
 			case \ast\AST_PROP_DECL:
-				// TODO
 				break;
 
 			case \ast\AST_CALL:
@@ -607,6 +606,7 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 		*/
 		$left_type = mkgenerics($right_type);
 	}
+
 	// $var->prop = ...
 	if($parent->kind == \ast\AST_PROP && $left->kind == \ast\AST_VAR) {
 		// Check for $$var-> weirdness
@@ -637,6 +637,9 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 						'type'=>$right_type ];
 				} else {
 					if(!empty($classes[$lclass]['properties'][$prop]['dtype'])) {
+						if($ast->children[0]->kind == \ast\AST_DIM) {
+							$right_type = mkgenerics($right_type);
+						}
 						if(!type_check($right_type, $classes[$lclass]['properties'][$prop]['dtype'])) {
 							Log::err(Log::ETYPE, "property is declared to be {$classes[$lclass]['properties'][$prop]['dtype']} but was assigned $right_type", $file, $ast->lineno);
 						}
