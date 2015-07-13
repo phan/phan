@@ -20,7 +20,7 @@
  * '...=' indicates it is both variadic and optional.
  */
 
-$internal_arginfo = [
+return [
 'abs' => ['int|float', 'number'=>'int|float'],
 'accelerator_get_configuration' => ['array'],
 'accelerator_get_scripts' => ['array'],
