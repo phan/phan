@@ -331,16 +331,17 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 								$classes[$idx]['methods'][strtolower($method_name)]['ret'] = $type;
 							}
 						} else {
-							if(!empty($functions[$current_scope]['ret'])) {
+							$lcs = strtolower($current_scope);
+							if(!empty($functions[$lcs]['ret'])) {
 								foreach(explode('|',$type) as $t) {
-									if(!empty($t) && strpos($functions[$current_scope]['ret'], $t) === false) {
-										$functions[$current_scope]['ret'] = $functions[$current_scope]['ret'].'|'.$type;
+									if(!empty($t) && strpos($functions[$lcs]['ret'], $t) === false) {
+										$functions[$lcs]['ret'] = $functions[$current_scope]['ret'].'|'.$type;
 									}
 								}
-								$functions[$current_scope]['ret'] = trim($functions[$current_scope]['ret'],'|');
+								$functions[$lcs]['ret'] = trim($functions[$current_scope]['ret'],'|');
 							} else {
 								if($current_scope != 'global') {
-									$functions[$current_scope]['ret'] = $type;
+									$functions[$lcs]['ret'] = $type;
 								}
 							}
 						}
