@@ -669,7 +669,6 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 	$varargs = false;
 	$taint = false;
 
-	// Are we calling it with the right number of args?
 	if($ast->kind == \ast\AST_CALL || $ast->kind == \ast\AST_NEW) $arglist = $ast->children[1];
 	else  $arglist = $ast->children[2];
 
@@ -759,7 +758,10 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 			if($argcount > ($functions["{$func['name']} $alt"]['required']+$functions["{$func['name']} $alt"]['optional'])) $alt++;
 			else { $err = false; break; }
 		}
-		if($err) {
+		// For method calls, we have no way of knowing the actual signature.
+		// We may only have the base signature from an interface, for example
+		// and the actual called method could have extra optional args
+		if($err && $ast->kind != \ast\AST_METHOD_CALL) {
 			$max = $func['required']+$func['optional'];
 			if($func['file']=='internal')
 				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() which only takes {$max} arg(s)", $file, $ast->lineno);
