@@ -318,10 +318,11 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 						Log::err(Log::ETYPE, "return $ret_type but {$current_function['name']}() is declared to return {$current_function['oret']}", $file, $ast->lineno);
 					}
 				} else {
+					$lcs = strtolower($current_scope);
 					$type = node_type($file, $namespace, $ast->children[0], $current_scope, $current_class);
-					if(!empty($functions[$current_scope]['oret'])) { // The function has a return type declared
-						if(!type_check($type, $functions[$current_scope]['oret'], $namespace)) {
-							Log::err(Log::ETYPE, "return $type but {$functions[$current_scope]['name']}() is declared to return {$functions[$current_scope]['oret']}", $file, $ast->lineno);
+					if(!empty($functions[$lcs]['oret'])) { // The function has a return type declared
+						if(!type_check($type, $functions[$lcs]['oret'], $namespace)) {
+							Log::err(Log::ETYPE, "return $type but {$functions[$lcs]['name']}() is declared to return {$functions[$lcs]['oret']}", $file, $ast->lineno);
 						}
 					} else {
 						if(strpos($current_scope, '::') !== false) {
@@ -331,11 +332,10 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 								$classes[$idx]['methods'][strtolower($method_name)]['ret'] = $type;
 							}
 						} else {
-							$lcs = strtolower($current_scope);
 							if(!empty($functions[$lcs]['ret'])) {
 								foreach(explode('|',$type) as $t) {
 									if(!empty($t) && strpos($functions[$lcs]['ret'], $t) === false) {
-										$functions[$lcs]['ret'] = $functions[$current_scope]['ret'].'|'.$type;
+										$functions[$lcs]['ret'] = $functions[$lcs]['ret'].'|'.$type;
 									}
 								}
 								$functions[$lcs]['ret'] = trim($functions[$lcs]['ret'],'|');
