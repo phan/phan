@@ -641,7 +641,7 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 						if($ast->children[0]->kind == \ast\AST_DIM) {
 							$right_type = mkgenerics($right_type);
 						}
-						if(!type_check($right_type, $classes[$lclass]['properties'][$prop]['dtype'])) {
+						if(!type_check(all_types($right_type), all_types($classes[$lclass]['properties'][$prop]['dtype']))) {
 							Log::err(Log::ETYPE, "property is declared to be {$classes[$lclass]['properties'][$prop]['dtype']} but was assigned $right_type", $file, $ast->lineno);
 						}
 					}
@@ -871,6 +871,24 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 		}
 	}
 	return $errs;
+}
+
+// Takes int|ClassA|string|ClassB and expands it to all
+// types by finding parents and interfaces for any non-native types
+function all_types($type) {
+	global $classes;
+	$ret = [];
+	$types = explode('|',strtolower($type));
+	foreach($types as $t) {
+		if(is_native_type(type_map($t))) {
+			$ret[] = $t;
+			continue;
+		}
+		if(!empty($classes[$t])) {
+			$ret[] = $classes[$t]['type'];
+		}
+	}
+	return implode('|', array_unique($ret));
 }
 
 // int->float is allowed
