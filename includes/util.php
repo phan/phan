@@ -244,7 +244,7 @@ function add_param_info($function_name) {
 // Add a type to a scope
 function add_type(string $cs, string $var, $type) {
 	global $scope;
-	if(!empty($scope[$cs]['vars'][$var]) && $scope[$cs]['vars'][$var]['type'] != $type) {
+	if(!empty($scope[$cs]['vars'][$var]) && !empty($scope[$cs]['vars'][$var]['type'])) {
 		foreach(explode('|',$type) as $t) {
 			if(strpos($scope[$cs]['vars'][$var]['type'], $t) === false) {
 				// add this new possible type if we haven't seen it before
@@ -252,7 +252,7 @@ function add_type(string $cs, string $var, $type) {
 			}
 		}
 		$scope[$cs]['vars'][$var]['type'] = trim($scope[$cs]['vars'][$var]['type'],'|');
-	} else {
+	} else if($type!='NULL') { // Don't add null as the first type, leave it untyped
 		$scope[$cs]['vars'][$var]['type'] = $type;
 	}
 }

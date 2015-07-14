@@ -321,7 +321,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 					$lcs = strtolower($current_scope);
 					$type = node_type($file, $namespace, $ast->children[0], $current_scope, $current_class);
 					if(!empty($functions[$lcs]['oret'])) { // The function has a return type declared
-						if(!type_check($type, all_types($functions[$lcs]['oret'], $namespace))) {
+						if(!type_check($type, all_types($functions[$lcs]['oret']), $namespace)) {
 							Log::err(Log::ETYPE, "return $type but {$functions[$lcs]['name']}() is declared to return {$functions[$lcs]['oret']}", $file, $ast->lineno);
 						}
 					} else {
