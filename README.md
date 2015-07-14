@@ -33,7 +33,7 @@ where it is looking.
 phan *.php
 ```
 
-or give it a text file containing a list of files to scan:
+or give it a text file containing a list of files (but see the next section) to scan:
 
 ```
 phan -f filelist.txt
@@ -67,6 +67,20 @@ test3.php:14 TypeError arg#2(str) is int but explode() takes string
 
 To make sure it works you can run `phan` on itself with `phan -f filelist.txt` using
 `filelist.txt` provided here. But a better way to check is to run `./run-tests.php`.
+
+## Generating a file list
+
+This static analyzer does not track includes or try to figure out autoloader magic. It treats
+all the files you throw at it as one big application. For code encapsulated in classes this
+works well. For code running in the global scope it gets a bit tricky because order
+matters. If you have an `index.php` including a file that sets a bunch of global variables and
+you then try to access those after the include in `index.php` the static analyzer won't
+know anything about these.
+
+In practical terms this simply means that you should put your entry points and any files
+setting things in the global scope at the top of your file list. If you have a `config.php`
+that sets global variables that everything else needs put that first in the list followed by your
+various entry points, then all your library files containing your classes.
 
 ## Features
 
