@@ -799,10 +799,18 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 		$argno = $k+1;
 		$arg_name = false;
 		if($param['flags'] & \ast\flags\PARAM_REF) {
-			if((!$arg instanceof \ast\Node) || ($arg->kind != \ast\AST_VAR && $arg->kind != \ast\AST_DIM && $arg->kind != \ast\AST_PROP)) {
+			if((!$arg instanceof \ast\Node) ||
+				($arg->kind != \ast\AST_VAR && $arg->kind != \ast\AST_DIM && $arg->kind != \ast\AST_PROP &&
+				 $arg->kind != \ast\AST_STATIC_PROP)) {
+
 				$errs[] = "Only variables can be passed by reference at arg#$argno of $fn()";
 			} else {
 				$arg_name = var_name($arg);
+				if($arg->kind == \ast\AST_STATIC_PROP) {
+					if($arg_name == 'self' || $arg_name == 'static' || $arg_name == 'parent') {
+						Log::err(Log::ESTATIC, "Using {$arg_name}:: when not in object context", $file, $arg->lineno);
+					}
+				}
 			}
 		}
 		// For user functions, add the types of the args to the receiving function's scope
@@ -813,10 +821,36 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 			// If it is by-ref link it back to the local variable name
 			if($param['flags'] & \ast\flags\PARAM_REF) {
 				$arg_type = node_type($file, $namespace, $arg, $current_scope, $current_class, $taint, false);
-				if(!empty($scope[$current_scope]['vars'][$arg_name])) {
-					$scope[$fn]['vars'][$param['name']] = &$scope[$current_scope]['vars'][$arg_name];
+				if($arg->kind == \ast\AST_STATIC_PROP && $arg->children[0]->kind == \ast\AST_NAME) {
+					$class_name = $arg->children[0]->children[0];
+					if($class_name == 'self' || $class_name == 'static' || $class_name == 'parent') {
+						if($current_class) {
+							if($class_name == 'static') $class_name = $current_class['name'];
+							if($class_name == 'self') {
+								if($current_scope != 'global') list($class_name,) = explode('::', $current_scope);
+								else $class_name = $current_class['name'];
+							}
+							else if($class_name == 'parent') $class_name = $current_class['parent'];
+							$static_call_ok = true;
+						} else $class_name = '';
+					} else {
+						$class_name = qualified_name($file, $arg->children[0], $namespace);
+					}
+					if($class_name) {
+						if(!($arg->children[1] instanceof \ast\Node)) {
+							if(empty($classes[strtolower($class_name)]['properties'][$arg->children[1]])) {
+								Log::err(Log::ESTATIC, "Access to undeclared static property: {$class_name}::\${$arg->children[1]}", $file, $arg->lineno);
+							} else {
+								$scope[$fn]['vars'][$param['name']] = &$classes[strtolower($class_name)]['properties'][$arg->children[1]];
+							}
+						}
+					}
 				} else {
-					$scope[$fn]['vars'][$param['name']]['type'] = $arg_type;
+					if(!empty($scope[$current_scope]['vars'][$arg_name])) {
+						$scope[$fn]['vars'][$param['name']] = &$scope[$current_scope]['vars'][$arg_name];
+					} else {
+						$scope[$fn]['vars'][$param['name']]['type'] = $arg_type;
+					}
 				}
 			} else {
 				$arg_type = node_type($file, $namespace, $arg, $current_scope, $current_class, $taint);
@@ -1289,6 +1323,16 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 		} else if($node->kind == \ast\AST_PROP) {
 			if($node->children[0]->kind == \ast\AST_VAR) {
 				$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+				if($class_name && !($node->children[1] instanceof \ast\Node)) {
+					if(empty($classes[strtolower($class_name)]['properties'][$node->children[1]])) {
+						return '';
+					}
+					return $classes[strtolower($class_name)]['properties'][$node->children[1]]['type'];
+				}
+			}
+		} else if($node->kind == \ast\AST_STATIC_PROP) {
+			if($node->children[0]->kind == \ast\AST_NAME) {
+				$class_name = qualified_name($file, $node->children[0], $namespace);
 				if($class_name && !($node->children[1] instanceof \ast\Node)) {
 					if(empty($classes[strtolower($class_name)]['properties'][$node->children[1]])) {
 						return '';
