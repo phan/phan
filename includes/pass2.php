@@ -338,7 +338,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 										$functions[$lcs]['ret'] = $functions[$current_scope]['ret'].'|'.$type;
 									}
 								}
-								$functions[$lcs]['ret'] = trim($functions[$current_scope]['ret'],'|');
+								$functions[$lcs]['ret'] = trim($functions[$lcs]['ret'],'|');
 							} else {
 								if($current_scope != 'global') {
 									$functions[$lcs]['ret'] = $type;
