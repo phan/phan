@@ -1159,9 +1159,9 @@ function  mkgenerics(string $str):string {
 	$ret = [];
 	foreach(explode('|', $str) as $type) {
 		if(empty($type)) continue;
-		if($type=='array' || $type=='mixed') $ret[] = 'array';
+		if($type=='array' || $type=='mixed' || strpos($type,'[]')!==false) $ret[] = 'array';
 		else {
-			$ret[] = trim($type,'[]').'[]';
+			$ret[] = $type.'[]';
 		}
 	}
 	return implode('|', $ret);
