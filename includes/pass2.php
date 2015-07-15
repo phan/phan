@@ -1228,7 +1228,7 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 					if(!$temp) $right = '';
 					else $right = type_map($temp);
 
-					if($left == 'array' && $right == 'array') {
+					if(type_check($left, 'array') && type_check($right, 'array')) {
 						return 'array';
 					} else if($left == 'array' && !type_check($right, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: left operand is array and right is not", $file, $node->lineno);
