@@ -15,7 +15,7 @@ my [php7dev][php7dev] Vagrant image or one of the many Docker builds out there.
 
 Then compile [php-ast][phpast]. Something along these lines should do it:
 
-```
+```sh
 git clone https://github.com/nikic/php-ast.git
 cd php-ast
 phpize
@@ -29,19 +29,19 @@ where it is looking.
 
 ## Usage
 
-```
+```sh
 phan *.php
 ```
 
 or give it a text file containing a list of files (but see the next section) to scan:
 
-```
+```sh
 phan -f filelist.txt
 ```
 
 and it might generate output that looks like this:
 
-```
+```php
 Files scanned:	14
 Time:		0.21s
 Classes:	7
@@ -155,7 +155,7 @@ $data  = $stuff->read();
 
 then `phan -s test.php` will output:
 
-```
+```php
 MyClass::init
 ¯¯¯¯¯¯¯¯¯¯¯¯¯
  Variables:
@@ -192,7 +192,7 @@ The `$functions` hash contains all the known functions both internal and userspa
 that will let you dump user-defined classes and functions. For the previous example `test.php` if you run `phan -u test.php`
 you will get:
 
-```
+```php
 class MyClass
 ¯¯¯¯¯¯¯¯¯¯¯¯¯
 	 MyClass::init(string arg1, arg2):array
@@ -221,7 +221,7 @@ test("abc")
 
 This would normally generate:
 
-```
+```sh
 test.php:3 TypeError return string but `test()` is declared to return int
 ```
 
