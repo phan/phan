@@ -245,9 +245,6 @@ global
 	stuff: array
 	data: mixed
 ```
-Note that undefined variable checking in the global scope will depend on the order you scan the files in.
-So generally you will want to put any entry point files that do things in the global scope before all your
-library files.
 
 The `$classes` hash has a list of all classes, both internal and user-space. This is walked to figure out
 inheritance on calls by checking `$classes['class_name']['parent']`.
