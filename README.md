@@ -8,6 +8,26 @@ analyze with it can be written for any version of PHP, of course.
 It is nowhere near ready for production use. If you need a production-quality
 solution right now, you should probably look at [scrutinizer].
 
+## Features
+
+* Checks for calls and instantiations of undeclared functions, methods, closures and classes
+* Checks types of all arguments and return values to/from functions, closures and methods
+* Supports `@param`, `@return`, `@var` and `@deprecated` [phpdoc][doctypes] comments including union and void/null types
+* Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
+* Undefined variable tracking
+* Supports namespaces, traits and variadics
+* Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
+* Basic tainted data detection
+
+See the [tests][tests] directory for some examples of the various checks.
+
+## Planned
+
+* [Obsolescence](#obsolescence)
+* JSON, csv and possibly other output formats
+* Perhaps a genlist feature that will automatically figure out dependency files starting
+  from a single entry point file
+
 ## Getting it working
 
 If you already have PHP 7 somewhere, it should be trivial. If not, you could grab
@@ -82,27 +102,6 @@ setting things in the global scope at the top of your file list. If you have a `
 that sets global variables that everything else needs put that first in the list followed by your
 various entry points, then all your library files containing your classes.
 
-## Features
-
-* Checks for calls and instantiations of undeclared functions, methods, closures and classes
-* Checks types of all arguments and return values to/from functions, closures and methods
-* Supports `@param`, `@return`, `@var` and `@deprecated` [phpdoc][doctypes] comments including union and void/null types
-* Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
-* Undefined variable tracking
-* Supports namespaces, traits and variadics
-* Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
-* Basic tainted data detection
-
-See the [tests][tests] directory for some examples of the various checks.
-
-## Planned
-
-* [Obsolescence](#obsolescence)
-* Array element tracking (generics-like)
-* Class consts and properties
-* JSON, csv and possibly other output formats
-* Perhaps a genlist feature that will automatically figure out dependency files starting
-  from a single entry point file
 
 ## Bugs
 
