@@ -727,6 +727,9 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 			break;
 	  }
 	} else {
+		if(!empty($func['deprecated'])) {
+			Log::err(Log::EDEP, "Call to deprecated function {$func['name']}()", $file, $ast->lineno);
+		}
 		foreach($func['params'] as $param) {
 			if($param['flags'] & \ast\flags\PARAM_VARIADIC) $varargs = true;
 		}

@@ -325,6 +325,11 @@ function node_func($file, $conditional, $node, $current_scope, $current_class, $
 					'oret'=>'',
 					'ast'=>$node->children[2]
 				  ];
+
+		if(!empty($dc['deprecated'])) {
+			$result['deprecated'] = true;
+		}
+
 		if($node->children[3] !==null) {
 			$result['oret'] = ast_node_type($file, $node->children[3], $namespace); // Original return type
 			$result['ret'] = ast_node_type($file, $node->children[3], $namespace); // This one changes as we walk the tree
@@ -397,6 +402,11 @@ function parse_doc_comment(string $comment):array {
 		if(($pos=strpos($line, '@return')) !== false) {
 			if(preg_match('/@return\s+(\S+)/', $line, $match)) {
 				$result['return'] = $match[1];
+			}
+		}
+		if(($pos=strpos($line, '@deprecated')) !== false) {
+			if(preg_match('/@deprecated\b/', $line, $match)) {
+				$result['deprecated'] = true;
 			}
 		}
 		// TODO: add support for properties
