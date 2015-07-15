@@ -133,7 +133,7 @@ Just like in PHP, any type can be nulled in the function declaration which also
 means a null is allowed to be passed in for that parameter.
 
 By default, and completely arbitrarily, for things like `int[]` it checks the first 5
-elements. If the first 5 are of the same type, it assume the rest are as well. If it can't
+elements. If the first 5 are of the same type, it assumes the rest are as well. If it can't
 determine the array sub-type it just becomes `array` which will pass through most type
 checks. In practical terms, this means that `[1,2,'a']` is seen as `array` but `[1,2,3]`
 is `int[]` and `['a','b','c']` as `string[]`.
