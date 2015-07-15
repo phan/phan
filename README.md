@@ -86,7 +86,7 @@ various entry points, then all your library files containing your classes.
 
 * Checks for calls and instantiations of undeclared functions, methods, closures and classes
 * Checks types of all arguments and return values to/from functions, closures and methods
-* Supports [phpdoc][doctypes] comments including union and void/null types
+* Supports `@param`, `@return`, `@var` and `@deprecated` [phpdoc][doctypes] comments including union and void/null types
 * Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
 * Undefined variable tracking
 * Supports namespaces, traits and variadics
@@ -111,6 +111,71 @@ There are plenty of them. Especially related to assumptions made during variable
 When you find one, please take the time to create a tiny reproducing code snippet that illustrates
 the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to
 [tests][tests] then `./run-tests.php` and send me a PR with your fix and test.
+
+## More on phpdoc types
+
+All the [phpdoc][doctypes] types listed on that page should work. That means you can do:
+
+```php
+<?php
+/**
+ * MyFunc
+ * @param int                 $arg1
+ * @param int|string          $arg2
+ * @param int[]|int           $arg3
+ * @param Datetime|Datetime[] $arg4
+ * @return array|null
+ */
+function MyFunc($arg1, $arg2, $arg3, $arg4=null) {
+	return null;
+}
+```
+Just like in PHP, any type can be nulled in the function declaration which also
+means a null is allowed to be passed in for that parameter.
+
+By default, and completely arbitrarily, for things like `int[]` it checks the first 5
+elements. If the first 5 are of the same type, it assume the rest are as well. If it can't
+determine the array sub-type it just becomes `array` which will pass through most type
+checks. In practical terms, this means that `[1,2,'a']` is seen as `array` but `[1,2,3]`
+is `int[]` and `['a','b','c']` as `string[]`.
+
+## Dealing with dynamic code that confuses the analyzer
+
+There are times when there is just no way for the analyzer to get things right.
+For example:
+
+```php
+<?php
+function test() {
+	$var = 0;
+	$var = call_some_func_you_cant_hint();
+	if(is_string($var)) {
+		$pos = strpos($var, '|');
+	}
+}
+```
+
+Your best option is, of course, to go and add a `/** @return string|array */` comment to
+the `call_some_func_you_cant_hint()` function, but there are times when that is not an
+option. As far as the analyzer is concerned, `$var` is an int because all it sees is the
+`$var = 0;` assignment. It will complain about you passing an int to `strpos()`. You can
+help it out by adding a `@var` doc-type comment before the function:
+
+```php
+<?php
+/**
+ * @var string|array $var
+ */
+function test() {
+	...
+```
+
+This tells the analyzer that along with the `int` that it figures out on its own, `$var` can
+also be a string or an array inside that function. This is a departure from the normal use of the
+`@var` tag which is to give properties types, so I don't suggest making a habit of using this hack.
+But it can be handy to shut up the analyzer without having to refactor the code to not overload the
+same variable with many different types.
+
 
 ## How it works
 
