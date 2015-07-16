@@ -133,10 +133,6 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 					$method = $ast->name;
 				}
 				$classes[$lc]['methods'][strtolower($method)] = node_func($file, $conditional, $ast, "{$current_class}::{$method}", $current_class, $namespace);
-                if(!($classes[$lc]['methods'][strtolower($method)]['flags'] & \ast\flags\MODIFIER_STATIC)) {
-                    add_var_scope("{$current_class}::{$method}", 'this', $current_class);
-                }
-
 				$summary['methods']++;
 				$current_function = $method;
 				$current_scope = "{$current_class}::{$method}";

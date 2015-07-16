@@ -666,6 +666,12 @@ function check_classes(&$classes) {
 				if(!empty($parents)) $types = array_merge($types, $parents);
 				// Fill in type from inheritance tree and interfaces
 				$classes[$name]['type'] = implode('|', array_unique($types));
+
+				foreach($class['methods'] as $k=>$method) {
+					if(!($class['methods'][$k]['flags'] & \ast\flags\MODIFIER_STATIC)) {
+						add_var_scope("{$class['name']}::{$method['name']}", 'this', $classes[$name]['type']);
+					}
+				}
 			}
 		}
 	}

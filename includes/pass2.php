@@ -1314,7 +1314,6 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 
 		} else if($node->kind == \ast\AST_DIM) {
 			$taint = var_taint_check($file, $node->children[0], $current_scope);
-#			$type = var_type($file, $node->children[0], $current_scope, $taint, $check_var_exists);
 			$type = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
 			if(!empty($type)) {
 				$gen = generics($type);
