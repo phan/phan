@@ -241,20 +241,6 @@ function add_param_info($function_name) {
 	}
 }
 
-function type_merge($existing, $add) {
-	// short-circuit if we already have it
-	if(strpos("|$existing|","|$add|")!==false) return $existing;
-	// or it is empty
-	if(empty($existing)) return $add;
-
-	foreach(explode('|',$add) as $t) {
-		if(strpos("|$existing|", "|$t|") === false) {
-			$existing .= '|'.$t;
-		}
-	}
-	return $existing;
-}
-
 // Add a type to a scope
 function add_type(string $cs, string $var, $type) {
 	global $scope;
@@ -564,16 +550,19 @@ function var_taint_check($file, $node, string $current_scope):bool {
 }
 
 // Merges a new type string into an existing avoiding dupes
-function merge_type($current, $new):string {
-	if(empty($current)) return $new;
-	if(empty($new)) return $current;
-	foreach(explode('|',$new) as $t) {
-		if(!empty($t) && strpos($current, $t) === false) {
-			$current = $current . '|' . $t;
+function merge_type($existing, $add) {
+	// short-circuit if we already have it
+	if(strpos("|$existing|","|$add|")!==false) return $existing;
+	// or it is empty
+	if(empty($existing)) return $add;
+	if(empty($add)) return $existing;
+
+	foreach(explode('|',$add) as $t) {
+		if(!empty($t) && strpos("|$existing|", "|$t|") === false) {
+			$existing .= '|'.$t;
 		}
-		$current = trim($current, '|');
 	}
-	return $current;
+	return $existing;
 }
 
 function add_var_scope(string $cs, string $name, string $type, $replace_type = false) {

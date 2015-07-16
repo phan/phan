@@ -334,11 +334,11 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 							list($class_name,$method_name) = explode('::',$current_scope,2);
 							$idx = find_method_class($class_name, $method_name);
 							if($idx) {
-								$classes[$idx]['methods'][strtolower($method_name)]['ret'] = type_merge($classes[$idx]['methods'][strtolower($method_name)]['ret'], $type);
+								$classes[$idx]['methods'][strtolower($method_name)]['ret'] = merge_type($classes[$idx]['methods'][strtolower($method_name)]['ret'], $type);
 							}
 						} else {
 							if(!empty($functions[$lcs]['ret'])) {
-								$functions[$lcs]['ret'] = type_merge($functions[$lcs]['ret'], $type);
+								$functions[$lcs]['ret'] = merge_type($functions[$lcs]['ret'], $type);
 							} else {
 								if($current_scope != 'global') {
 									$functions[$lcs]['ret'] = $type;
