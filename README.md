@@ -113,7 +113,12 @@ the bug. And once you have done that, fix it. Then turn your code snippet into a
 
 ## More on phpdoc types
 
-All the [phpdoc][doctypes] types listed on that page should work. That means you can do:
+All the [phpdoc][doctypes] types listed on that page should work with one exception.
+It says that `(int|string)[]` would indicate an array of ints or strings. For phan, the syntax
+for that would be `int[]|string[]` simply because it is much easier to implement and I tend to
+think it is more consistent with the rest of the phpdoc typing too.
+
+That means you can do:
 
 ```php
 <?php
