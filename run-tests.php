@@ -1214,59 +1214,6 @@ TEST $file
 		return 'SKIPPED';
 	}
 
-	if (@count($section_text['REDIRECTTEST']) == 1) {
-		$test_files = array();
-
-		$IN_REDIRECT = eval($section_text['REDIRECTTEST']);
-		$IN_REDIRECT['via'] = "via [$shortname]\n\t";
-		$IN_REDIRECT['dir'] = realpath(dirname($file));
-		$IN_REDIRECT['prefix'] = trim($section_text['TEST']);
-
-		if (count($IN_REDIRECT['TESTS']) == 1) {
-
-			if (is_array($org_file)) {
-				$test_files[] = $org_file[1];
-			} else {
-				$GLOBALS['test_files'] = $test_files;
-				find_files($IN_REDIRECT['TESTS']);
-
-				foreach($GLOBALS['test_files'] as $f) {
-					$test_files[] = array($f, $file);
-				}
-			}
-			$test_cnt += @count($test_files) - 1;
-			$test_idx--;
-
-			show_redirect_start($IN_REDIRECT['TESTS'], $tested, $tested_file);
-
-			// set up environment
-			$redirenv = array_merge($environment, $IN_REDIRECT['ENV']);
-			$redirenv['REDIR_TEST_DIR'] = realpath($IN_REDIRECT['TESTS']) . DIRECTORY_SEPARATOR;
-
-			usort($test_files, "test_sort");
-			run_all_tests($test_files, $redirenv, $tested);
-
-			show_redirect_ends($IN_REDIRECT['TESTS'], $tested, $tested_file);
-
-			// a redirected test never fails
-			$IN_REDIRECT = false;
-
-			return 'REDIR';
-
-		} else {
-
-			$bork_info = "Redirect info must contain exactly one TEST string to be used as redirect directory.";
-			show_result("BORK", $bork_info, '', $temp_filenames);
-			$PHP_FAILED_TESTS['BORKED'][] = array (
-									'name' => $file,
-									'test_name' => '',
-									'output' => '',
-									'diff'   => '',
-									'info'   => "$bork_info [$file]",
-			);
-		}
-	}
-
 	if (is_array($org_file) || @count($section_text['REDIRECTTEST']) == 1) {
 
 		if (is_array($org_file)) {

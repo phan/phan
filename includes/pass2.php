@@ -223,6 +223,11 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 			case \ast\AST_LIST:
 				break;
 
+			case \ast\AST_IF_ELEM:
+				// Just to check for errors in a conditional
+				node_type($file, $namespace, $ast->children[0], $current_scope, $current_class, $taint);
+				break;
+
 			case \ast\AST_GLOBAL:
 				if(!array_key_exists($current_scope, $scope)) $scope[$current_scope] = [];
 				if(!array_key_exists('vars', $scope[$current_scope])) $scope[$current_scope]['vars'] = [];
@@ -852,7 +857,12 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 					}
 				} else {
 					if(!empty($scope[$current_scope]['vars'][$arg_name])) {
-						$scope[$fn]['vars'][$param['name']] = &$scope[$current_scope]['vars'][$arg_name];
+						if($arg->kind != \ast\AST_DIM) {
+							$scope[$fn]['vars'][$param['name']] = &$scope[$current_scope]['vars'][$arg_name];
+						} else {
+							// Not going to try to guess array sub-types here
+							$scope[$fn]['vars'][$param['name']]['type'] = '';
+						}
 					} else {
 						$scope[$fn]['vars'][$param['name']]['type'] = $arg_type;
 					}
@@ -1045,7 +1055,7 @@ function find_property(string $file, $node, string $class_name, string $prop, ar
 
 /**
  * Walk the inheritance tree to find the method
- * @return array|string|false
+ * @return array|string|bool
  */
 function find_method(string $class_name, $method_name) {
 	global $classes;
@@ -1129,15 +1139,14 @@ function find_class($node, $namespace, $nmap) {
 
 // Takes "a|b[]|c|d[]|e" and returns "b|d"
 function generics(string $str):string {
+	// If |array| is in there, then it can be any type
+	if(stripos("|$str|", "|array|") !== false) return 'mixed';
 	if((strpos($str,'[]'))===false) return '';
 	$ret = [];
 	foreach(explode('|', $str) as $type) {
 		if(($pos=strpos($type, '[]')) === false) continue;
 		$ret[] = substr($type, 0, $pos);
 	}
-
-	// If |array| is in there, then it can be any type
-	if(stripos("|$str|", "|array|") !== false) $ret[] = 'mixed';
 
 	return implode('|', $ret);
 }
@@ -1191,9 +1200,11 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 			}
 			return 'array';
 
-		} else if($node->kind == \ast\AST_BINARY_OP) {
+		} else if($node->kind == \ast\AST_BINARY_OP || $node->kind == \ast\AST_GREATER || $node->kind == \ast\AST_GREATER_EQUAL) {
+			if($node->kind == \ast\AST_BINARY_OP) $node_flags = $node->flags;
+			else $node_flags = $node->kind;
 			$taint = var_taint_check($file, $node, $current_scope);
-			switch($node->flags) {
+			switch($node_flags) {
 				// Always a string from a concat
 				case \ast\flags\BINARY_CONCAT:
 					$temp_taint = false;
@@ -1216,7 +1227,20 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 				case \ast\flags\BINARY_IS_NOT_EQUAL:
 				case \ast\flags\BINARY_IS_SMALLER:
 				case \ast\flags\BINARY_IS_SMALLER_OR_EQUAL:
+				case \ast\AST_GREATER:
+				case \ast\AST_GREATER_EQUAL:
+					$temp = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
+					if(!$temp) $left = '';
+					else $left = type_map($temp);
+					$temp = node_type($file, $namespace, $node->children[1], $current_scope, $current_class);
+					if(!$temp) $right = '';
+					else $right = type_map($temp);
 					$taint = false;
+					if(!empty(generics($left)) && !type_check($right, 'array') && !type_check($left,$right)) {
+						Log::err(Log::ETYPE, "array to $right comparison", $file, $node->lineno);
+					} else if(!empty(generics($right)) && !type_check($left, 'array') && !type_check($right,$left)) {
+						Log::err(Log::ETYPE, "$left to array comparison", $file, $node->lineno);
+					}
 					return 'bool';
 					break;
 				// Add is special because you can add arrays
@@ -1228,12 +1252,10 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 					if(!$temp) $right = '';
 					else $right = type_map($temp);
 
-					if(type_check($left, 'array') && type_check($right, 'array')) {
-						return 'array';
-					} else if($left == 'array' && !type_check($right, 'array')) {
+					if(!empty(generics($left)) && !type_check($right, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: left operand is array and right is not", $file, $node->lineno);
 						return '';
-					} else if($right == 'array' && !type_check($left, 'array')) {
+					} else if(!empty(generics($right)) && !type_check($left, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: right operand is array and left is not", $file, $node->lineno);
 						return '';
 					} else if($left=='int' && $right == 'int') {
@@ -1288,8 +1310,20 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 
 		} else if($node->kind == \ast\AST_DIM) {
 			$taint = var_taint_check($file, $node->children[0], $current_scope);
-			// TODO: Do something smart with array elements
-			return '';
+#			$type = var_type($file, $node->children[0], $current_scope, $taint, $check_var_exists);
+			$type = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
+			if(!empty($type)) {
+				$gen = generics($type);
+				if(empty($gen)) {
+					if(!type_check($type, 'string')) {  // array offsets work on strings, unfortunately
+						Log::err(Log::ETYPE, "Suspicious array access to $type", $file, $node->lineno);
+					}
+					return '';
+				}
+			} else {
+				return '';
+			}
+			return $gen;
 
 		} else if($node->kind == \ast\AST_VAR) {
 			return var_type($file, $node, $current_scope, $taint, $check_var_exists);
