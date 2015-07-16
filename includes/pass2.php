@@ -60,21 +60,22 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				$traits = $classes[$lname]['traits'];
 				// Copy the trait over into this class
 				foreach($traits as $trait) {
-					if(empty($classes[$trait])) {
+					$ltrait = strtolower($trait);
+					if(empty($classes[$ltrait])) {
 						continue;
 					}
 					// TODO: Implement the various trait aliasing mechanisms here
-					$classes[$lname]['properties'] = array_merge($classes[$lname]['properties'], $classes[$trait]['properties']);
-					$classes[$lname]['constants'] = array_merge($classes[$lname]['constants'], $classes[$trait]['constants']);
-					$classes[$lname]['methods'] = array_merge($classes[$lname]['methods'], $classes[$trait]['methods']);
+					$classes[$lname]['properties'] = array_merge($classes[$lname]['properties'], $classes[$ltrait]['properties']);
+					$classes[$lname]['constants'] = array_merge($classes[$lname]['constants'], $classes[$ltrait]['constants']);
+					$classes[$lname]['methods'] = array_merge($classes[$lname]['methods'], $classes[$ltrait]['methods']);
 
 					// Need the scope as well
-					foreach($classes[$trait]['methods'] as $k=>$method) {
-						if(empty($scope["{$classes[$trait]['name']}::{$method['name']}"])) continue;
+					foreach($classes[$ltrait]['methods'] as $k=>$method) {
+						if(empty($scope["{$classes[$ltrait]['name']}::{$method['name']}"])) continue;
 						$cs = $namespace.$ast->name.'::'.$method['name'];
 						if(!array_key_exists($cs, $scope)) $scope[$cs] = [];
 						if(!array_key_exists('vars', $scope[$cs])) $scope[$cs]['vars'] = [];
-						$scope[$cs] = $scope["{$classes[$trait]['name']}::{$method['name']}"];
+						$scope[$cs] = $scope["{$classes[$ltrait]['name']}::{$method['name']}"];
 						// And finally re-map $this to point to this class
 						$scope[$cs]['vars']['this']['type'] = $namespace.$ast->name;
 					}
