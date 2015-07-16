@@ -3750,7 +3750,7 @@ return [
 'join 1' => ['string', 'pieces'=>'array'],
 'join' => ['string', 'src'=>'array', 'glue'=>'string'],
 'jpeg2wbmp' => ['bool', 'jpegname'=>'string', 'wbmpname'=>'string', 'dest_height'=>'int', 'dest_width'=>'int', 'threshold'=>'int'],
-'json_decode' => ['', 'json'=>'string', 'assoc='=>'bool', 'depth='=>'int'],
+'json_decode' => ['mixed', 'json'=>'string', 'assoc='=>'bool', 'depth='=>'int'],
 'json_encode' => ['string', 'data'=>'', 'options='=>'int', 'depth='=>'int'],
 'json_last_error' => ['int'],
 'json_last_error_msg' => ['string'],

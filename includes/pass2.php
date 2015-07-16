@@ -513,6 +513,7 @@ function var_type($file, $node, $current_scope, &$taint, $check_var_exists=true)
 
 // Adds variable types to the current scope from the given node
 // It does a bit of simple taint checking as well and sets a tainted flag on each one
+// TODO: This whole function needs a complete refactoring!
 function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$vars) {
 	global $classes, $functions, $scope;
 
@@ -640,6 +641,9 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 					if(!empty($classes[$lclass]['properties'][$prop]['dtype'])) {
 						if($ast->children[0]->kind == \ast\AST_DIM) {
 							$right_type = mkgenerics($right_type);
+						} else if($ast->children[0]->kind == \ast\AST_PROP && $ast->children[0]->children[0]->kind == \ast\AST_PROP) {
+							// Not handling ->prop->prop assignments at all yet
+							return $right_type;
 						}
 						if(!type_check(all_types($right_type), all_types($classes[$lclass]['properties'][$prop]['dtype']))) {
 							Log::err(Log::ETYPE, "property is declared to be {$classes[$lclass]['properties'][$prop]['dtype']} but was assigned $right_type", $file, $ast->lineno);
