@@ -1315,7 +1315,7 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 			if(!empty($type)) {
 				$gen = generics($type);
 				if(empty($gen)) {
-					if(!type_check($type, 'string')) {  // array offsets work on strings, unfortunately
+					if(!type_check($type, 'string|ArrayAccess')) {  // array offsets work on strings, unfortunately
 						Log::err(Log::ETYPE, "Suspicious array access to $type", $file, $node->lineno);
 					}
 					return '';
