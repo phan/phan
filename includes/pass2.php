@@ -334,16 +334,11 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 							list($class_name,$method_name) = explode('::',$current_scope,2);
 							$idx = find_method_class($class_name, $method_name);
 							if($idx) {
-								$classes[$idx]['methods'][strtolower($method_name)]['ret'] = $type;
+								$classes[$idx]['methods'][strtolower($method_name)]['ret'] = type_merge($classes[$idx]['methods'][strtolower($method_name)]['ret'], $type);
 							}
 						} else {
 							if(!empty($functions[$lcs]['ret'])) {
-								foreach(explode('|',$type) as $t) {
-									if(!empty($t) && strpos($functions[$lcs]['ret'], $t) === false) {
-										$functions[$lcs]['ret'] = $functions[$lcs]['ret'].'|'.$type;
-									}
-								}
-								$functions[$lcs]['ret'] = trim($functions[$lcs]['ret'],'|');
+								$functions[$lcs]['ret'] = type_merge($functions[$lcs]['ret'], $type);
 							} else {
 								if($current_scope != 'global') {
 									$functions[$lcs]['ret'] = $type;
@@ -1238,9 +1233,11 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 					if(!$temp) $right = '';
 					else $right = type_map($temp);
 					$taint = false;
-					if(!empty(generics($left)) && !type_check($right, 'array') && !type_check($left,$right)) {
+					// If we have generics and no non-generics on the left and the right is not array-like ...
+					if(!empty(generics($left)) && empty(nongenerics($left)) && !type_check($right, 'array')) {
 						Log::err(Log::ETYPE, "array to $right comparison", $file, $node->lineno);
-					} else if(!empty(generics($right)) && !type_check($left, 'array') && !type_check($right,$left)) {
+					} else // and the same for the right side
+						if(!empty(generics($right)) && empty(nongenerics($right)) && !type_check($left, 'array')) {
 						Log::err(Log::ETYPE, "$left to array comparison", $file, $node->lineno);
 					}
 					return 'bool';
@@ -1253,18 +1250,19 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 					$temp = node_type($file, $namespace, $node->children[1], $current_scope, $current_class);
 					if(!$temp) $right = '';
 					else $right = type_map($temp);
+					// fast-track common cases
+					if($left=='int' && $right == 'int') return 'int';
+					if(($left=='int' || $left=='float') && ($right=='int' || $right=='float')) return 'float';
 
-					if(!empty(generics($left)) && !type_check($right, 'array')) {
+					$left_is_array = (!empty(generics($left)) && empty(nongenerics($left)));
+					$right_is_array = (!empty(generics($right)) && empty(nongenerics($right)));
+					if($left_is_array && !type_check($right, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: left operand is array and right is not", $file, $node->lineno);
 						return '';
-					} else if(!empty(generics($right)) && !type_check($left, 'array')) {
+					} else if($right_is_array && !type_check($left, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: right operand is array and left is not", $file, $node->lineno);
 						return '';
-					} else if($left=='int' && $right == 'int') {
-						return 'int';
-					} else if($left=='float' || $right=='float') {
-						return 'float';
-					} else if($left=='array' || $right=='array') {
+					} else if($left_is_array || $right_is_array) {
 						// If it is a '+' and we know one side is an array and the other is unknown, assume array
 						return 'array';
 					}

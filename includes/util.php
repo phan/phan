@@ -241,12 +241,26 @@ function add_param_info($function_name) {
 	}
 }
 
+function type_merge($existing, $add) {
+	// short-circuit if we already have it
+	if(strpos("|$existing|","|$add|")!==false) return $existing;
+	// or it is empty
+	if(empty($existing)) return $add;
+
+	foreach(explode('|',$add) as $t) {
+		if(strpos("|$existing|", "|$t|") === false) {
+			$existing .= '|'.$t;
+		}
+	}
+	return $existing;
+}
+
 // Add a type to a scope
 function add_type(string $cs, string $var, $type) {
 	global $scope;
 	if(!empty($scope[$cs]['vars'][$var]) && !empty($scope[$cs]['vars'][$var]['type'])) {
 		foreach(explode('|',$type) as $t) {
-			if(strpos($scope[$cs]['vars'][$var]['type'], $t) === false) {
+			if(strpos('|'.$scope[$cs]['vars'][$var]['type'].'|', '|'.$t.'|') === false) {
 				// add this new possible type if we haven't seen it before
 				$scope[$cs]['vars'][$var]['type'] = $scope[$cs]['vars'][$var]['type'] . '|' . $t;
 			}

@@ -159,7 +159,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 						$classes[$lc]['properties'][$node->children[0]]['dtype'] = $dc['vars'][$i]['type'];
 						$classes[$lc]['properties'][$node->children[0]]['type'] = $dc['vars'][$i]['type'];
 						if(!empty($type) && $type != $classes[$lc]['properties'][$node->children[0]]['type']) {
-							$classes[$lc]['properties'][$node->children[0]]['type'] .= '|'.strtolower($type);
+							$classes[$lc]['properties'][$node->children[0]]['type'] = type_merge($classes[$lc]['properties'][$node->children[0]]['type'], strtolower($type));
 						}
 					} else {
 						$classes[$lc]['properties'][$node->children[0]]['dtype'] = '';
