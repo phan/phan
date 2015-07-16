@@ -5708,7 +5708,7 @@ return [
 'PDO::cubrid_schema' => ['array', 'schema_type'=>'int', 'table_name='=>'string', 'col_name='=>'string'],
 'pdo_drivers' => ['array'],
 'PDO::errorCode' => ['string'],
-'PDO::errorInfo' => ['int'],
+'PDO::errorInfo' => ['array'],
 'PDO::exec' => ['int', 'query'=>'string'],
 'PDO::getAttribute' => ['', 'attribute'=>'int'],
 'PDO::getAvailableDrivers' => ['array'],

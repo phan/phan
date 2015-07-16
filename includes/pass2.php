@@ -888,6 +888,8 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 			if($func['file'] == 'internal') {
 				if(empty($scope[$current_scope]['vars'][$arg_name])) {
 					add_var_scope($current_scope, $arg_name, $arg_type);
+				} else {
+					add_type($current_scope, $arg_name, $param['type']);
 				}
 			} else {
 				if(empty($scope[$current_scope]['vars'][$arg_name])) {
