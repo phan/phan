@@ -16,4 +16,4 @@ class B implements ArrayAccess {
 $b = new B;
 if($b[1]) { }
 --EXPECTF--
-%s:4 TypeError Suspicious array access to A
+%s:4 TypeError Suspicious array access to a

@@ -214,7 +214,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 						}
 					}
 					if($k=='GLOBALS') break;
-					add_var_scope($cs, $k, $v['type']);
+					add_var_scope($cs, $k, strtolower($v['type']));
 					$scope[$cs]['vars'][$k]['tainted'] = $v['tainted'];
 					$scope[$cs]['vars'][$k]['tainted_by'] = $v['tainted_by'];
 				}
@@ -334,7 +334,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 							list($class_name,$method_name) = explode('::',$current_scope,2);
 							$idx = find_method_class($class_name, $method_name);
 							if($idx) {
-								$classes[$idx]['methods'][strtolower($method_name)]['ret'] = merge_type($classes[$idx]['methods'][strtolower($method_name)]['ret'], $type);
+								$classes[$idx]['methods'][strtolower($method_name)]['ret'] = merge_type($classes[$idx]['methods'][strtolower($method_name)]['ret'], strtolower($type));
 							}
 						} else {
 							if(!empty($functions[$lcs]['ret'])) {
@@ -864,7 +864,7 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 				}
 			} else {
 				$arg_type = node_type($file, $namespace, $arg, $current_scope, $current_class, $taint);
-				if(!empty($arg_type)) add_type($fn, $param['name'], $arg_type);
+				if(!empty($arg_type)) add_type($fn, $param['name'], strtolower($arg_type));
 			}
 			if($taint) {
 				$scope[$fn]['vars'][$param['name']]['tainted'] = true;
@@ -1315,7 +1315,7 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 			if(!empty($type)) {
 				$gen = generics($type);
 				if(empty($gen)) {
-					if(!type_check($type, 'string|ArrayAccess')) {  // array offsets work on strings, unfortunately
+					if($type!=='null' && !type_check($type, 'string|ArrayAccess')) {  // array offsets work on strings, unfortunately
 						Log::err(Log::ETYPE, "Suspicious array access to $type", $file, $node->lineno);
 					}
 					return '';

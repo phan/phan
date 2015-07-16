@@ -361,16 +361,17 @@ function node_func($file, $conditional, $node, $current_scope, $current_class, $
 				}
 				if(array_key_exists('def', $v)) {
 					$type = node_type($file, $namespace, $v['def'], $current_scope, empty($current_class) ? null : $classes[strtolower($current_class)]);
-					if($type==="NULL") {
-						add_type($current_scope, $v['name'], $type);
-						if(!empty($result['params'][$k]['type'])) $result['params'][$k]['type'] .= '|null';
-					} else {
-						if($scope[$current_scope]['vars'][$v['name']]['type'] !== '') {
-							// Does the default value match the declared type?
-							if(!type_check($type, $scope[$current_scope]['vars'][$v['name']]['type'])) {
-								Log::err(Log::ETYPE, "Default value for {$scope[$current_scope]['vars'][$v['name']]['type']} \${$v['name']} can't be $type", $file, $node->lineno);
-							}
+					if($scope[$current_scope]['vars'][$v['name']]['type'] !== '') {
+						// Does the default value match the declared type?
+						if($type!=='NULL' && !type_check($type, $scope[$current_scope]['vars'][$v['name']]['type'])) {
+							Log::err(Log::ETYPE, "Default value for {$scope[$current_scope]['vars'][$v['name']]['type']} \${$v['name']} can't be $type", $file, $node->lineno);
 						}
+					}
+					add_type($current_scope, $v['name'], strtolower($type));
+					// If we have no other type info about a parameter, just because it has a default value of null
+					// doesn't mean that is its type. Any type can default to null
+					if($type==='NULL' && !empty($result['params'][$k]['type'])) {
+						$result['params'][$k]['type'] = merge_type($result['params'][$k]['type'], strtolower($type));
 					}
 				}
 				$i++;

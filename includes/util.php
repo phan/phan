@@ -244,6 +244,7 @@ function add_param_info($function_name) {
 // Add a type to a scope
 function add_type(string $cs, string $var, $type) {
 	global $scope;
+
 	if(!empty($scope[$cs]['vars'][$var]) && !empty($scope[$cs]['vars'][$var]['type'])) {
 		foreach(explode('|',$type) as $t) {
 			if(strpos('|'.$scope[$cs]['vars'][$var]['type'].'|', '|'.$t.'|') === false) {
@@ -252,7 +253,7 @@ function add_type(string $cs, string $var, $type) {
 			}
 		}
 		$scope[$cs]['vars'][$var]['type'] = trim($scope[$cs]['vars'][$var]['type'],'|');
-	} else if($type!='NULL') { // Don't add null as the first type, leave it untyped
+	} else {
 		$scope[$cs]['vars'][$var]['type'] = $type;
 	}
 }
@@ -321,6 +322,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 						if(!empty($classes[strtolower($class_name)])) break;
 					}
 					if(empty($class_name)) return '';
+					$class_name = $classes[strtolower($class_name)]['name'] ?? $class_name;
 				}
 			} else if($node->children[0]->kind == \ast\AST_PROP) {
 				$prop = $node->children[0];
@@ -339,6 +341,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 									 if(!empty($classes[strtolower($class_name)])) break;
 								}
 								if(empty($class_name)) return '';
+								$class_name = $classes[strtolower($class_name)]['name'] ?? $class_name;
 							}
 						} else {
 							// $this->$prop->method() - too dynamic, give up
@@ -365,6 +368,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 								 if(!empty($classes[strtolower($class_name)])) break;
 							}
 							if(empty($class_name)) return '';
+							$class_name = $classes[strtolower($class_name)]['name'] ?? $class_name;
 						}
 					} else {
 						// $this->$prop->method() - too dynamic, give up
@@ -379,6 +383,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 						if(!empty($classes[strtolower($class_name)])) break;
 					}
 					if(empty($class_name)) return '';
+					$class_name = $classes[strtolower($class_name)]['name'] ?? $class_name;
 				}
 			}
 			break;
