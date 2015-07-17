@@ -1066,7 +1066,7 @@ return [
 'DateTime::__construct' => ['DateTime', 'time='=>'string', 'timezone='=>'datetimezone'],
 'DateTime::createFromFormat' => ['DateTime', 'format'=>'string', 'time'=>'string', 'timezone='=>'datetimezone'],
 'DateTime::diff' => ['DateInterval', 'datetime2'=>'datetime', 'absolute='=>'bool'],
-'DateTime::format' => ['DateTime', 'format'=>'string'],
+'DateTime::format' => ['string|bool', 'format'=>'string'],
 'DateTime::getLastErrors' => ['array'],
 'DateTime::getOffset' => ['int'],
 'DateTime::getTimestamp' => ['int'],
