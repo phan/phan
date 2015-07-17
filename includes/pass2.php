@@ -1332,7 +1332,18 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 				$gen = generics($type);
 				if(empty($gen)) {
 					if($type!=='null' && !type_check($type, 'string|ArrayAccess')) {  // array offsets work on strings, unfortunately
-						Log::err(Log::ETYPE, "Suspicious array access to $type", $file, $node->lineno);
+						// Double check that any classes in the type don't have ArrayAccess
+						$ok = false;
+						foreach(explode('|', $type) as $t) {
+							if(!empty($t) && !is_native_type($t)) {
+								if(!empty($classes[strtolower($t)]['type'])) {
+									if(strpos('|'.$classes[strtolower($t)]['type'].'|','|ArrayAccess|')!==false) {
+										$ok = true;
+									}
+								}
+							}
+						}
+						if(!$ok) Log::err(Log::ETYPE, "Suspicious array access to $type", $file, $node->lineno);
 					}
 					return '';
 				}
