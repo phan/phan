@@ -992,7 +992,7 @@ return [
 'CURLFile::setMimeType' => ['', 'mime'=>'string'],
 'CURLFile::setPostFilename' => ['', 'name'=>'string'],
 'CURLFile::__wakeup' => [''],
-'curl_getinfo' => ['array|string|bool', 'ch'=>'resource', 'option='=>'int'],
+'curl_getinfo' => ['mixed', 'ch'=>'resource', 'option='=>'int'],
 'curl_init' => ['resource', 'url='=>'string'],
 'curl_multi_add_handle' => ['int', 'mh'=>'resource', 'ch'=>''],
 'curl_multi_close' => ['', 'mh'=>'resource'],
