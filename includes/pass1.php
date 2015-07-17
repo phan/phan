@@ -395,19 +395,31 @@ function parse_doc_comment(string $comment):array {
 		$line = strtolower($line);
 		if(($pos=strpos($line, '@param')) !== false) {
 			if(preg_match('/@param\s+(\S+)\s*(?:(\S+))*/', $line, $match)) {
-
-				$result['params'][] = ['name'=>empty($match[2])?'':trim($match[2],'$'), 'type'=>$match[1]];
+				if(strpos($match[1],'\\')===0 && strpos($match[1],'\\',1)===false) {
+					$type = trim($match[1],'\\');
+				} else {
+					$type = $match[1];
+				}
+				$result['params'][] = ['name'=>empty($match[2])?'':trim($match[2],'$'), 'type'=>$type];
 			}
 		}
 		if(($pos=strpos($line, '@var')) !== false) {
 			if(preg_match('/@var\s+(\S+)\s*(?:(\S+))*/', $line, $match)) {
-
-				$result['vars'][] = ['name'=>empty($match[2])?'':trim($match[2],'$'), 'type'=>$match[1]];
+				if(strpos($match[1],'\\')===0 && strpos($match[1],'\\',1)===false) {
+					$type = trim($match[1],'\\');
+				} else {
+					$type = $match[1];
+				}
+				$result['vars'][] = ['name'=>empty($match[2])?'':trim($match[2],'$'), 'type'=>$type];
 			}
 		}
 		if(($pos=strpos($line, '@return')) !== false) {
 			if(preg_match('/@return\s+(\S+)/', $line, $match)) {
-				$result['return'] = $match[1];
+				if(strpos($match[1],'\\')===0 && strpos($match[1],'\\',1)===false) {
+					$result['return'] = trim($match[1],'\\');
+				} else {
+					$result['return'] = $match[1];
+				}
 			}
 		}
 		if(($pos=strpos($line, '@deprecated')) !== false) {
