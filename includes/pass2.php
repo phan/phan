@@ -76,6 +76,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 						if(!array_key_exists($cs, $scope)) $scope[$cs] = [];
 						if(!array_key_exists('vars', $scope[$cs])) $scope[$cs]['vars'] = [];
 						$scope[$cs] = $scope["{$classes[$ltrait]['name']}::{$method['name']}"];
+						$classes[$lname]['methods'][$k]['scope'] = "{$classes[$lname]['name']}::{$method['name']}";
 						// And finally re-map $this to point to this class
 						$scope[$cs]['vars']['this']['type'] = $namespace.$ast->name;
 					}
@@ -225,8 +226,16 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				break;
 
 			case \ast\AST_IF_ELEM:
-				// Just to check for errors in a conditional
+			case \ast\AST_WHILE:
+			case \ast\AST_SWITCH:
+			case \ast\AST_SWITCH_CASE:
+			case \ast\AST_EXPR_LIST:
+				// Just to check for errors in the expression
 				node_type($file, $namespace, $ast->children[0], $current_scope, $current_class, $taint);
+				break;
+
+			case \ast\AST_DO_WHILE:
+				node_type($file, $namespace, $ast->children[1], $current_scope, $current_class, $taint);
 				break;
 
 			case \ast\AST_GLOBAL:
@@ -298,6 +307,8 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				break;
 
 			case \ast\AST_RETURN:
+				// a return from within a trait context is meaningless
+				if($current_class['flags'] & \ast\flags\CLASS_TRAIT) break;
 				// Check if there is a return type on the current function
 				if(!empty($current_function['oret'])) {
 					$ret = $ast->children[0];
