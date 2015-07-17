@@ -114,9 +114,9 @@ the bug. And once you have done that, fix it. Then turn your code snippet into a
 ## More on phpdoc types
 
 All the [phpdoc][doctypes] types listed on that page should work with one exception.
-It says that `(int|string)[]` would indicate an array of ints or strings. For phan, the syntax
-for that would be `int[]|string[]` simply because it is much easier to implement and I tend to
-think it is more consistent with the rest of the phpdoc typing too.
+It says that `(int|string)[]` would indicate an array of ints or strings. phan doesn't support
+a mixed-type constraint like that. You can say `int[]|string[]` meaning that the array has to
+contain either all ints or all strings, but if you have mixed types, just use `array`.
 
 That means you can do:
 
@@ -304,7 +304,7 @@ almost no re-factoring and cleanup yet. Please give me a hand with that.
 Look through the code for `TODO` comments and see if you can tackle any of those.
 
 And this last one is something anyone can help with. The [arginfo.php][arginfo] file is not
-complete. It was generated and then hand-edited but with currently around 8500 entries, there
+complete. It was generated and then hand-edited but with currently around 10,500 entries, there
 are mistakes. Many of them even. You will notice them when you scan your own code. Please help me
 fix it. Hopefully the format is self-explanatory, especially if you read the comment at the top
 of the file.
