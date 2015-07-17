@@ -302,6 +302,7 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 			break;
 
 		case \ast\AST_METHOD_CALL:
+		case \ast\AST_PROP:
 			if($node->children[0]->kind == \ast\AST_VAR) {
 				if(!($node->children[0]->children[0] instanceof \ast\Node)) {
 					// $var->method()
@@ -348,42 +349,6 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 							return '';
 						}
 					}
-				}
-			}
-			break;
-
-		case \ast\AST_PROP:
-			$prop = $node;
-			if($prop->children[0]->kind == \ast\AST_VAR && !($prop->children[0]->children[0] instanceof \ast\Node)) {
-				$var = $prop->children[0];
-				if($var->children[0] == 'this') {
-					if(!$current_class) {
-						Log::err(Log::ESTATIC, 'Using $this when not in object context', $file, $node->lineno);
-						return '';
-					}
-					if(!($prop->children[1] instanceof \ast\Node)) {
-						if(!empty($current_class['properties'][$prop->children[1]])) {
-							$prop = $current_class['properties'][$prop->children[1]];
-							foreach(explode('|', nongenerics($prop['type'])) as $class_name) {
-								 if(!empty($classes[strtolower($class_name)])) break;
-							}
-							if(empty($class_name)) return '';
-							$class_name = $classes[strtolower($class_name)]['name'] ?? $class_name;
-						}
-					} else {
-						// $this->$prop->method() - too dynamic, give up
-						return '';
-					}
-				} else {
-					if(empty($scope[$current_scope]['vars'][$prop->children[0]->children[0]])) {
-						return '';
-					}
-					$call = $scope[$current_scope]['vars'][$prop->children[0]->children[0]]['type'];
-					foreach(explode('|', $call) as $class_name) {
-						if(!empty($classes[strtolower($class_name)])) break;
-					}
-					if(empty($class_name)) return '';
-					$class_name = $classes[strtolower($class_name)]['name'] ?? $class_name;
 				}
 			}
 			break;

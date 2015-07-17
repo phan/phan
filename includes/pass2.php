@@ -1155,10 +1155,10 @@ function generics(string $str):string {
 
 // Takes "a|b[]|c|d[]|e" and returns "a|c|e"
 function nongenerics(string $str):string {
-	if((strpos($str,'[]'))===false) return $str;
 	$ret = [];
 	foreach(explode('|', $str) as $type) {
 		if(($pos=strpos($type, '[]')) !== false) continue;
+		if($str=='array') continue;
 		$ret[] = $type;
 	}
 
@@ -1261,6 +1261,7 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 
 					$left_is_array = (!empty(generics($left)) && empty(nongenerics($left)));
 					$right_is_array = (!empty(generics($right)) && empty(nongenerics($right)));
+
 					if($left_is_array && !type_check($right, 'array')) {
 						Log::err(Log::ETYPE, "invalid operator: left operand is array and right is not", $file, $node->lineno);
 						return '';
