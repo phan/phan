@@ -9267,7 +9267,7 @@ return [
 'sys_getloadavg' => ['array'],
 'sys_get_temp_dir' => ['string'],
 'syslog' => ['bool', 'priority'=>'int', 'message'=>'string'],
-'system' => ['string', 'command'=>'string', 'return_value='=>'int'],
+'system' => ['string', 'command'=>'string', '&return_value='=>'int'],
 'taint' => ['bool', '&string'=>'string', '...='=>'string'],
 'tan' => ['float', 'number'=>'float'],
 'tanh' => ['float', 'number'=>'float'],
