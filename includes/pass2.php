@@ -1339,6 +1339,7 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 								if(!empty($classes[strtolower($t)]['type'])) {
 									if(strpos('|'.$classes[strtolower($t)]['type'].'|','|ArrayAccess|')!==false) {
 										$ok = true;
+										break;
 									}
 								}
 							}
