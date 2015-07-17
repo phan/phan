@@ -697,7 +697,7 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 			if($argcount == 1) { // If we have just one arg it must be an array
 				$arg_type = node_type($file, $namespace, $arglist->children[0], $current_scope, $current_class);
 				if(!type_check($arg_type, 'array')) {
-					Log::err(Log::ETYPE, "arg#1(pieces) is $arg_type but {$func['name']}() takes array when passed only 1 arg", $file, $ast->lineno);
+					Log::err(Log::EPARAM, "arg#1(pieces) is $arg_type but {$func['name']}() takes array when passed only 1 arg", $file, $ast->lineno);
 				}
 				return;
 			} else if($argcount == 2) {
@@ -705,22 +705,66 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 				$arg2_type = node_type($file, $namespace, $arglist->children[1], $current_scope, $current_class);
 				if($arg1_type == 'array') {
 					if(!type_check($arg2_type,'string')) {
-						Log::err(Log::ETYPE, "arg#2(glue) is $arg2_type but {$func['name']}() takes string when arg#1 is array", $file, $ast->lineno);
+						Log::err(Log::EPARAM, "arg#2(glue) is $arg2_type but {$func['name']}() takes string when arg#1 is array", $file, $ast->lineno);
 					}
 				} else if($arg1_type=='string') {
 					if(!type_check($arg2_type, 'array')) {
-						Log::err(Log::ETYPE, "arg#2(pieces) is $arg2_type but {$func['name']}() takes array when arg#1 is string", $file, $ast->lineno);
+						Log::err(Log::EPARAM, "arg#2(pieces) is $arg2_type but {$func['name']}() takes array when arg#1 is string", $file, $ast->lineno);
 					}
 				}
 				return;
 			}
 			// Any other arg counts we will let the regular checks handle
 			break;
+		case 'array_udiff':
+		case 'array_diff_assoc':
+		case 'array_uintersect_assoc':
+		case 'array_intersect_ukey':
+			if($argcount < 3) {
+				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() which requires {$func['required']} arg(s)", $file, $ast->lineno);
+				return;
+			}
+			// The last argument must be a callable and there can be a variable number of arrays before it
+			$arg_type = node_type($file, $namespace, $arglist->children[$argcount-1], $current_scope, $current_class);
+			if(!type_check($arg_type, 'callable')) {
+				Log::err(Log::EPARAM, "The last argument to {$func['name']} must be a callable", $file, $ast->lineno);
+			}
+			for($i=0; $i<($argcount-1); $i++) {
+				$arg_type = node_type($file, $namespace, $arglist->children[$i], $current_scope, $current_class);
+				if(!type_check($arg_type, 'array')) {
+					Log::err(Log::EPARAM, "arg#".($i+1)." is $arg_type but {$func['name']}() takes array", $file, $ast->lineno);
+				}
+			}
+			return;
+
+		case 'array_diff_uassoc':
+		case 'array_uintersect_uassoc':
+			if($argcount < 4) {
+				Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() which requires {$func['required']} arg(s)", $file, $ast->lineno);
+				return;
+			}
+			// The last 2 arguments must be a callable and there can be a variable number of arrays before it
+			$arg_type = node_type($file, $namespace, $arglist->children[$argcount-1], $current_scope, $current_class);
+			if(!type_check($arg_type, 'callable')) {
+				Log::err(Log::EPARAM, "The last argument to {$func['name']} must be a callable", $file, $ast->lineno);
+			}
+			$arg_type = node_type($file, $namespace, $arglist->children[$argcount-2], $current_scope, $current_class);
+			if(!type_check($arg_type, 'callable')) {
+				Log::err(Log::EPARAM, "The second last argument to {$func['name']} must be a callable", $file, $ast->lineno);
+			}
+			for($i=0; $i<($argcount-2); $i++) {
+				$arg_type = node_type($file, $namespace, $arglist->children[$i], $current_scope, $current_class);
+				if(!type_check($arg_type, 'array')) {
+					Log::err(Log::EPARAM, "arg#".($i+1)." is $arg_type but {$func['name']}() takes array", $file, $ast->lineno);
+				}
+			}
+			return;
+
 		case 'strtok': // (string str, string token) or (string token)
 			if($argcount == 1) { // If we have just one arg it must be a string token
 				$arg_type = node_type($file, $namespace, $arglist->children[0], $current_scope, $current_class);
 				if(!type_check($arg_type, 'string')) {
-					Log::err(Log::ETYPE, "arg#1(token) is $arg_type but {$func['name']}() takes string when passed only one arg", $file, $ast->lineno);
+					Log::err(Log::EPARAM, "arg#1(token) is $arg_type but {$func['name']}() takes string when passed only one arg", $file, $ast->lineno);
 					return;
 				}
 			}
@@ -731,7 +775,7 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 			if($argcount == 1) { // If we have just one arg it must be an array
 				$arg_type = node_type($file, $namespace, $arglist->children[0], $current_scope, $current_class);
 				if(!type_check($arg_type, 'array')) {
-					Log::err(Log::ETYPE, "arg#1(values) is $arg_type but {$func['name']}() takes array when passed only one arg", $file, $ast->lineno);
+					Log::err(Log::EPARAM, "arg#1(values) is $arg_type but {$func['name']}() takes array when passed only one arg", $file, $ast->lineno);
 					return;
 				}
 			}
