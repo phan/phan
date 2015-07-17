@@ -76,7 +76,7 @@ return [
 'APCIterator::valid' => [''],
 'apc_load_constants' => ['bool', 'key'=>'string', 'case_sensitive='=>'bool'],
 'apc_sma_info' => ['array', 'limited='=>'bool'],
-'apc_store' => ['array', 'key'=>'string', 'var'=>'', 'ttl='=>'int', 'values='=>'array', 'unused='=>''],
+'apc_store' => ['array|bool', 'key'=>'string', 'var'=>'', 'ttl='=>'int', 'values='=>'array', 'unused='=>''],
 'apd_breakpoint' => ['bool', 'debug_level'=>'int'],
 'apd_callstack' => ['array'],
 'apd_clunk' => ['', 'warning'=>'string', 'delimiter='=>'string'],
