@@ -319,7 +319,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 					} else {
 						$ret_type = type_map(gettype($ret));
 						// This is distinct from returning actual NULL which doesn't hit this else since it is an AST_CONST node
-						if($ret_type=='NULL') $ret_type='void';
+						if($ret_type=='null') $ret_type='void';
 					}
 					$check_type = $current_function['oret'];
 					if(strpos("|$check_type|",'|self|')!==false) {
@@ -1082,28 +1082,19 @@ function find_property(string $file, $node, string $class_name, string $prop, ar
 	global $classes;
 
 	$parents = [];
-	$lclass = strtolower($class_name);
+	$lclass = $oclass = strtolower($class_name);
 	$lcc = empty($current_class) ? '' : strtolower($current_class['name']);
 	while(!empty($lclass)) {
-		if(empty($classes[$lclass]['properties'][$prop]) ||
-			($lcc != $lclass) && ($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PRIVATE)) {
-
-			if(!empty($classes[$lclass]['traits'])) {
-				foreach($classes[$lclass]['traits'] as $t) {
-					if(!empty($classes[strtolower($t)]['properties'][$prop])) {
-						if(($lcc!=$lclass && $classes[strtolower($t)]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED) && !in_array($lcc, $parents)) {
-							Log::err(Log::EACCESS, "Cannot access protected property {$class_name}::\$$prop", $file, $node->lineno);
-							return false;
-						}
-						if(($lcc == $lclass) || ($classes[strtolower($t)]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PUBLIC) ||
-							(($classes[strtolower($t)]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED) && in_array($lcc, $parents))
-						) {
-							$lclass = strtolower($t);
-							break 2;
-						}
-					}
-				}
+		if(empty($classes[$lclass]['properties'][$prop])) {
+			$parents[] = $lclass;
+			$lclass = empty($classes[$lclass]) ? '' : strtolower($classes[$lclass]['parent']);
+		} else if(($lcc != $lclass) && ($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PRIVATE)) {
+			if($lclass == $oclass && $classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PRIVATE) {
+				Log::err(Log::EACCESS, "Cannot access private property {$class_name}::\$$prop", $file, $node->lineno);
+				return false;
 			}
+			$parents[] = $lclass;
+			$lclass = empty($classes[$lclass]) ? '' : strtolower($classes[$lclass]['parent']);
 		} else {
 			if($lcc != $lclass && ((!in_array($lcc, $parents)) &&
 			($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED))) {
@@ -1112,8 +1103,6 @@ function find_property(string $file, $node, string $class_name, string $prop, ar
 			}
 			break;
 		}
-		$parents[] = $lclass;
-		$lclass = empty($classes[$lclass]) ? '' : strtolower($classes[$lclass]['parent']);
 	}
 	return empty($classes[$lclass]['properties'][$prop]) ? '' : $lclass;
 }

@@ -466,8 +466,8 @@ function type_scalar($type):bool {
 
 // Maps type names to consistent names
 function type_map(string $type):string {
-	static $repmaps = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback', 'closure'],
-                        ['int',     'float',   'bool',    'bool',  'bool', 'callable', 'callable']];
+	static $repmaps = [ ['integer', 'double',  'boolean', 'false', 'true', 'callback', 'closure', 'NULL'],
+                        ['int',     'float',   'bool',    'bool',  'bool', 'callable', 'callable', 'null']];
 	return str_replace($repmaps[0], $repmaps[1], $type);
 }
 

@@ -149,10 +149,11 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 																	    'lineno'=>$node->lineno];
 					$type = node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[$lc]) ? null : $classes[$lc]);
 					if(!empty($dc['vars'][$i]['type'])) {
-						if($type !=='NULL' && !type_check($type, $dc['vars'][$i]['type'])) {
+						if($type !=='null' && !type_check($type, $dc['vars'][$i]['type'])) {
 							Log::err(Log::ETYPE, "property is declared to be {$dc['vars'][$i]['type']} but was assigned $type", $file, $node->lineno);
 						}
-						$classes[$lc]['properties'][$node->children[0]]['dtype'] = $dc['vars'][$i]['type'];
+						// Set the declarted type to the doc-comment type and add |null if the default value is null
+						$classes[$lc]['properties'][$node->children[0]]['dtype'] = $dc['vars'][$i]['type'] . (($type==='null')?'|null':'');
 						$classes[$lc]['properties'][$node->children[0]]['type'] = $dc['vars'][$i]['type'];
 						if(!empty($type) && $type != $classes[$lc]['properties'][$node->children[0]]['type']) {
 							$classes[$lc]['properties'][$node->children[0]]['type'] = merge_type($classes[$lc]['properties'][$node->children[0]]['type'], strtolower($type));
@@ -359,14 +360,14 @@ function node_func($file, $conditional, $node, $current_scope, $current_class, $
 					$type = node_type($file, $namespace, $v['def'], $current_scope, empty($current_class) ? null : $classes[strtolower($current_class)]);
 					if($scope[$current_scope]['vars'][$v['name']]['type'] !== '') {
 						// Does the default value match the declared type?
-						if($type!=='NULL' && !type_check($type, $scope[$current_scope]['vars'][$v['name']]['type'])) {
+						if($type!=='null' && !type_check($type, $scope[$current_scope]['vars'][$v['name']]['type'])) {
 							Log::err(Log::ETYPE, "Default value for {$scope[$current_scope]['vars'][$v['name']]['type']} \${$v['name']} can't be $type", $file, $node->lineno);
 						}
 					}
 					add_type($current_scope, $v['name'], strtolower($type));
 					// If we have no other type info about a parameter, just because it has a default value of null
 					// doesn't mean that is its type. Any type can default to null
-					if($type==='NULL' && !empty($result['params'][$k]['type'])) {
+					if($type==='null' && !empty($result['params'][$k]['type'])) {
 						$result['params'][$k]['type'] = merge_type($result['params'][$k]['type'], strtolower($type));
 					}
 				}
