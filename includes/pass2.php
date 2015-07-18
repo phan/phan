@@ -683,6 +683,7 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 
 	$ok = false;
 	$varargs = false;
+	$unpack = false;
 	$taint = false;
 
 	if($ast->kind == \ast\AST_CALL || $ast->kind == \ast\AST_NEW) $arglist = $ast->children[1];
@@ -790,13 +791,20 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 		if(!empty($func['deprecated'])) {
 			Log::err(Log::EDEP, "Call to deprecated function {$func['name']}() defined at {$func['file']}:{$func['lineno']}", $file, $ast->lineno);
 		}
+	}
+	if(array_key_exists('params', $func)) {
 		foreach($func['params'] as $param) {
 			if($param['flags'] & \ast\flags\PARAM_VARIADIC) $varargs = true;
 		}
 	}
+	foreach($arglist->children as $arg) {
+		if($arg instanceof \ast\Node && $arg->kind == \ast\AST_UNPACK) {
+			$unpack = true;
+		}
+	}
 
 	$fn = $func['scope'] ?? $func['name'];
-	if($argcount < $func['required']) {
+	if(!$unpack && $argcount < $func['required']) {
 		$err = true;
 		$alt = 1;
 		// Check if there is an alternate signature that is ok
