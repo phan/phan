@@ -214,37 +214,15 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 						}
 					}
 				}
+				if($bc_checks) bc_check($file, $ast);
+                break;
 
-				if($bc_checks) {
-					if( $ast->children[0] instanceof \ast\Node &&
-						$ast->children[0]->children[0] instanceof \ast\Node &&
-						$ast->children[0]->children[0]->children[0] instanceof \ast\Node) {
-						// $foo->$bar['baz']()
-						if($ast->children[0]->kind == \ast\AST_DIM &&
-						   $ast->children[0]->children[0]->kind == \ast\AST_PROP &&
-						   $ast->children[0]->children[0]->children[0]->kind == \ast\AST_VAR) {
-							$ftemp = new \SplFileObject($file);
-							$ftemp->seek($ast->lineno-1);
-							$line = $ftemp->current();
-							unset($ftemp);
-							if(strpos($line,'{') === false || strpos($line,'}') === false) {
-								Log::err(Log::ECOMPAT, "expression may not be PHP 7 compatible", $file, $ast->lineno);
-							}
-						}
-						// Foo::$bar['baz']()
-						if($ast->children[0]->kind == \ast\AST_DIM &&
-							$ast->children[0]->children[0]->kind == \ast\AST_STATIC_PROP &&
-							$ast->children[0]->children[0]->children[0]->kind == \ast\AST_NAME) {
-							$ftemp = new \SplFileObject($file);
-							$ftemp->seek($ast->lineno-1);
-							$line = $ftemp->current();
-							unset($ftemp);
-							if(strpos($line,'{') === false || strpos($line,'}') === false) {
-								Log::err(Log::ECOMPAT, "expression may not be PHP 7 compatible", $file, $ast->lineno);
-							}
-						}
-					}
-				}
+			case \ast\AST_RETURN:
+			case \ast\AST_PRINT:
+			case \ast\AST_ECHO:
+			case \ast\AST_STATIC_CALL:
+			case \ast\AST_METHOD_CALL:
+				if($bc_checks) bc_check($file, $ast);
                 break;
 		}
 		if(!$done) foreach($ast->children as $child) {
@@ -252,6 +230,32 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 		}
 	}
 	return $namespace;
+}
+
+function bc_check($file, $ast) {
+	if($ast->children[0] instanceof \ast\Node) {
+		if($ast->children[0]->kind == \ast\AST_DIM) {
+			$temp = $ast->children[0]->children[0];
+			$last = $temp;
+			if($temp->kind == \ast\AST_PROP || $temp->kind == \ast\AST_STATIC_PROP) {
+				while($temp instanceof \ast\Node && ($temp->kind == \ast\AST_PROP || $temp->kind == \ast\AST_STATIC_PROP)) {
+					$last = $temp;
+					$temp = $temp->children[0];
+				}
+				if($temp instanceof \ast\Node) {
+					if($temp->kind == \ast\AST_VAR || $temp->kind == \ast\AST_NAME) {
+						$ftemp = new \SplFileObject($file);
+						$ftemp->seek($ast->lineno-1);
+						$line = $ftemp->current();
+						unset($ftemp);
+						if(strpos($line,'}[') === false || strpos($line,']}') === false || strpos($line,'>{') === false) {
+							Log::err(Log::ECOMPAT, "expression may not be PHP 7 compatible", $file, $ast->lineno);
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 function node_namelist($file, $node, $namespace) {
