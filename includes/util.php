@@ -268,6 +268,7 @@ function var_name($node):string {
 	}
 	if(!$node instanceof \ast\Node) return (string)$node;
 	if(empty($node->children[0])) return '';
+	if($node->children[0] instanceof \ast\Node) return '';
 	return (string)$node->children[0];
 }
 
@@ -538,6 +539,7 @@ function merge_type($existing, $add) {
 function add_var_scope(string $cs, string $name, string $type, $replace_type = false) {
 	global $scope;
 
+	if(empty($name)) return;
 	if(!array_key_exists($cs, $scope)) $scope[$cs] = [];
 	if(!array_key_exists('vars', $scope[$cs])) $scope[$cs]['vars'] = [];
 	if(array_key_exists($name, $scope[$cs]['vars'])) {

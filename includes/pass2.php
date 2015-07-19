@@ -109,6 +109,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 							Log::err(Log::EVAR, "You can only have variables in a closure use() clause", $file, $ast->lineno);
 						} else {
 							$name = var_name($use->children[0]);
+							if(empty($name)) continue;
 							if($use->flags & \ast\flags\PARAM_REF) {
 								if(empty($parent_scope) || empty($scope[$parent_scope]['vars']) || empty($scope[$parent_scope]['vars'][$name])) {
 									add_var_scope($parent_scope, $name, '');
@@ -260,9 +261,11 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 			case \ast\AST_STATIC:
 				$name = var_name($ast);
 				$type = node_type($file, $namespace, $ast->children[1], $current_scope, $current_class, $taint);
-				add_var_scope($current_scope, $name, $type);
-				$scope[$current_scope]['vars'][$name]['tainted'] = $taint;
-				$scope[$current_scope]['vars'][$name]['tainted_by'] = $tainted_by;
+				if(!empty($name)) {
+					add_var_scope($current_scope, $name, $type);
+					$scope[$current_scope]['vars'][$name]['tainted'] = $taint;
+					$scope[$current_scope]['vars'][$name]['tainted_by'] = $tainted_by;
+				}
 				break;
 
 			case \ast\AST_PRINT:
@@ -408,10 +411,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 					}
 				} else if ($call->kind == \ast\AST_VAR) {
 					$name = var_name($call);
-					if($name instanceof \ast\Node) {
-						// $$var() - Ugh..
-						// TODO - something brilliant here
-					} else {
+					if(!empty($name)) {
 					// $var() - hopefully a closure, otherwise we don't know
 						if(array_key_exists($name, $scope[$current_scope]['vars'])) {
 							if(($pos=strpos($scope[$current_scope]['vars'][$name]['type'], '{closure '))!==false) {
@@ -1173,6 +1173,7 @@ function find_class($node, $namespace, $nmap) {
 		return null;
 	}
 	$name = strtolower(var_name($node->children[0]));
+	if(empty($name)) return null;
 
 	if($node->flags & \ast\flags\NAME_NOT_FQ) {
 		if(!empty($nmap[$name])) {
