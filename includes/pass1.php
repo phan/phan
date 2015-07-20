@@ -243,7 +243,7 @@ function bc_check($file, $ast) {
 					$temp = $temp->children[0];
 				}
 				if($temp instanceof \ast\Node) {
-					if($temp->kind == \ast\AST_VAR || $temp->kind == \ast\AST_NAME) {
+					if(($last->children[1] instanceof \ast\Node && $last->children[1]->kind == \ast\AST_VAR) && ($temp->kind == \ast\AST_VAR || $temp->kind == \ast\AST_NAME)) {
 						$ftemp = new \SplFileObject($file);
 						$ftemp->seek($ast->lineno-1);
 						$line = $ftemp->current();
