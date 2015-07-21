@@ -7064,7 +7064,7 @@ return [
 'preg_replace_callback_array' => ['string|array', 'pattern'=>'callable[]', 'subject'=>'array', 'limit='=>'int', '&count='=>'int'],
 'preg_replace_callback' => ['string|array', 'regex'=>'string|array', 'callback'=>'callable', 'subject'=>'string|array', 'limit='=>'int', '&count='=>'int'],
 'preg_replace' => ['string|array', 'regex'=>'string|array', 'replace'=>'string|array', 'subject'=>'string|array', 'limit='=>'int', '&count='=>'int'],
-'preg_split' => ['array', 'pattern'=>'string', 'subject'=>'string', 'limit='=>'int', 'flags='=>'int'],
+'preg_split' => ['array', 'pattern'=>'string', 'subject'=>'string', 'limit='=>'int|null', 'flags='=>'int'],
 'prev' => ['', 'array_arg'=>'array'],
 'printf' => ['int', 'format'=>'string', 'arg1='=>'', '...='=>''],
 'print' => ['int', 'arg'=>'string'],
