@@ -543,7 +543,7 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 	if(($left instanceof \ast\Node) && ($left->kind != \ast\AST_VAR) && ($left->kind != \ast\AST_STATIC_PROP)) {
 		// Walk multi-level arrays and chained stuff
 		// eg. $var->prop[1][2]->prop
-		while(($left instanceof \ast\Node) && ($left->kind != \ast\AST_VAR)) {
+		while(($left instanceof \ast\Node) && ($left->kind != \ast\AST_VAR) && ($left->kind != \ast\AST_METHOD_CALL)) {
 			 $parent = $left;
 			 $left = $left->children[0];
 		}
@@ -648,7 +648,7 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 						'flags'=>\ast\flags\MODIFIER_PUBLIC,
 						'name'=>$prop,
 						'lineno'=>0,
-						'type'=>$right_type ];
+						'type'=>strtolower($right_type) ];
 				} else {
 					if(!empty($classes[$lclass]['properties'][$prop]['dtype'])) {
 						if($ast->children[0]->kind == \ast\AST_DIM) {
@@ -661,7 +661,7 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 							Log::err(Log::ETYPE, "property is declared to be {$classes[$lclass]['properties'][$prop]['dtype']} but was assigned $right_type", $file, $ast->lineno);
 						}
 					}
-					$classes[$lclass]['properties'][$prop]['type'] = merge_type($classes[$lclass]['properties'][$prop]['type'], $right_type);
+					$classes[$lclass]['properties'][$prop]['type'] = merge_type($classes[$lclass]['properties'][$prop]['type'], strtolower($right_type));
 				}
 				return $right_type;
 			}
