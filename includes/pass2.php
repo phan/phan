@@ -1083,7 +1083,7 @@ function internal_varargs_check(string $func_name):bool  {
  * @return string|false False on illegal property access, empty string on legal but not found, otherwise
  *                      class name where the property was found
  */
-function find_property(string $file, $node, string $class_name, string $prop, array $current_class=null) {
+function find_property(string $file, $node, string $class_name, string $prop, array $current_class=null, bool $write_access=true) {
 	global $classes;
 
 	$parents = [];
@@ -1095,7 +1095,9 @@ function find_property(string $file, $node, string $class_name, string $prop, ar
 			$lclass = empty($classes[$lclass]) ? '' : strtolower($classes[$lclass]['parent']);
 		} else if(($lcc != $lclass) && ($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PRIVATE)) {
 			if($lclass == $oclass && $classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PRIVATE) {
-				Log::err(Log::EACCESS, "Cannot access private property {$class_name}::\$$prop", $file, $node->lineno);
+				if(find_method($lclass, ($write_access?'__set':'__get')) === false) {
+					Log::err(Log::EACCESS, "Cannot access private property {$class_name}::\$$prop", $file, $node->lineno);
+				}
 				return false;
 			}
 			$parents[] = $lclass;
@@ -1103,7 +1105,9 @@ function find_property(string $file, $node, string $class_name, string $prop, ar
 		} else {
 			if($lcc != $lclass && ((!in_array($lcc, $parents)) &&
 			($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED))) {
-				Log::err(Log::EACCESS, "Cannot access protected property {$class_name}::\$$prop", $file, $node->lineno);
+				if(find_method($lclass, ($write_access?'__set':'__get')) === false) {
+					Log::err(Log::EACCESS, "Cannot access protected property {$class_name}::\$$prop", $file, $node->lineno);
+				}
 				return false;
 			}
 			break;
@@ -1438,20 +1442,18 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 			if($node->children[0]->kind == \ast\AST_VAR) {
 				$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
 				if($class_name && !($node->children[1] instanceof \ast\Node)) {
-					if(empty($classes[strtolower($class_name)]['properties'][$node->children[1]])) {
-						return '';
-					}
-					return $classes[strtolower($class_name)]['properties'][$node->children[1]]['type'];
+					$ltemp = find_property($file, $node, $class_name, $node->children[1], $current_class, false);
+					if(empty($ltemp)) return '';
+					return $classes[$ltemp]['properties'][$node->children[1]]['type'];
 				}
 			}
 		} else if($node->kind == \ast\AST_STATIC_PROP) {
 			if($node->children[0]->kind == \ast\AST_NAME) {
 				$class_name = qualified_name($file, $node->children[0], $namespace);
 				if($class_name && !($node->children[1] instanceof \ast\Node)) {
-					if(empty($classes[strtolower($class_name)]['properties'][$node->children[1]])) {
-						return '';
-					}
-					return $classes[strtolower($class_name)]['properties'][$node->children[1]]['type'];
+					$ltemp = find_property($file, $node, $class_name, $node->children[1], $current_class, false);
+					if(empty($ltemp)) return '';
+					return $classes[$ltemp]['properties'][$node->children[1]]['type'];
 				}
 			}
 		} else if($node->kind == \ast\AST_CALL) {
