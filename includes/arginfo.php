@@ -750,7 +750,7 @@ return [
 'call_user_method_array' => ['', 'method_name'=>'string', 'obj'=>'object', 'params'=>'array'],
 'call_user_method' => ['', 'method_name'=>'string', 'obj'=>'object', 'parameter='=>'', '...='=>''],
 'cal_to_jd' => ['int', 'calendar'=>'int', 'month'=>'int', 'day'=>'int', 'year'=>'int'],
-'ceil' => ['float', 'number'=>'float'],
+'ceil' => ['float|int', 'number'=>'float'],
 'chdb::__construct' => ['', 'pathname'=>'string'],
 'chdb_create' => ['bool', 'pathname'=>'string', 'data'=>'array'],
 'chdb::get' => ['string', 'key'=>'string'],
