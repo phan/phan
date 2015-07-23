@@ -644,7 +644,7 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 				$lclass = strtolower($class_name);
 				if(empty($lclass) || empty($classes[$lclass])) return '';
 
-				$ltemp = find_property($file, $ast, $class_name, $prop, $current_class);
+				$ltemp = find_property($file, $ast, $class_name, $prop, $current_class['name']);
 				if($ltemp === false) return $right_type;
 				if(!empty($ltemp)) $lclass = $ltemp;
 
@@ -1083,12 +1083,12 @@ function internal_varargs_check(string $func_name):bool  {
  * @return string|false False on illegal property access, empty string on legal but not found, otherwise
  *                      class name where the property was found
  */
-function find_property(string $file, $node, string $class_name, string $prop, array $current_class=null, bool $write_access=true) {
+function find_property(string $file, $node, string $class_name, string $prop, string $current_class_name=null, bool $write_access=true) {
 	global $classes;
 
 	$parents = [];
 	$lclass = $oclass = strtolower($class_name);
-	$lcc = empty($current_class) ? '' : strtolower($current_class['name']);
+	$lcc = strtolower($current_class_name);
 	while(!empty($lclass)) {
 		if(empty($classes[$lclass]['properties'][$prop])) {
 			$parents[] = $lclass;
@@ -1106,6 +1106,7 @@ function find_property(string $file, $node, string $class_name, string $prop, ar
 			if($lcc != $lclass && ((!in_array($lcc, $parents)) &&
 			($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED))) {
 				if(find_method($lclass, ($write_access?'__set':'__get')) === false) {
+echo "HERE2";
 					Log::err(Log::EACCESS, "Cannot access protected property {$class_name}::\$$prop", $file, $node->lineno);
 				}
 				return false;
@@ -1442,7 +1443,7 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 			if($node->children[0]->kind == \ast\AST_VAR) {
 				$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
 				if($class_name && !($node->children[1] instanceof \ast\Node)) {
-					$ltemp = find_property($file, $node, $class_name, $node->children[1], $current_class, false);
+					$ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
 					if(empty($ltemp)) return '';
 					return $classes[$ltemp]['properties'][$node->children[1]]['type'];
 				}
@@ -1451,7 +1452,7 @@ function node_type($file, $namespace, $node, $current_scope, $current_class, &$t
 			if($node->children[0]->kind == \ast\AST_NAME) {
 				$class_name = qualified_name($file, $node->children[0], $namespace);
 				if($class_name && !($node->children[1] instanceof \ast\Node)) {
-					$ltemp = find_property($file, $node, $class_name, $node->children[1], $current_class, false);
+					$ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
 					if(empty($ltemp)) return '';
 					return $classes[$ltemp]['properties'][$node->children[1]]['type'];
 				}
