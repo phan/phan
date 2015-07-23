@@ -1106,7 +1106,6 @@ function find_property(string $file, $node, string $class_name, string $prop, st
 			if($lcc != $lclass && ((!in_array($lcc, $parents)) &&
 			($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED))) {
 				if(find_method($lclass, ($write_access?'__set':'__get')) === false) {
-echo "HERE2";
 					Log::err(Log::EACCESS, "Cannot access protected property {$class_name}::\$$prop", $file, $node->lineno);
 				}
 				return false;
