@@ -289,8 +289,9 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 						Log::err(Log::ESTATIC, "Cannot access {$class_name}:: when no class scope is active", $file, $node->lineno);
 						return '';
 					}
-					if($class_name == 'static') $class_name = $current_class['name'];
-					if($class_name == 'self') {
+					if($class_name == 'static') {
+						$class_name = $current_class['name'];
+					} else if($class_name == 'self') {
 						if($current_scope != 'global') list($class_name,) = explode('::', $current_scope);
 						else $class_name = $current_class['name'];
 					}
@@ -362,7 +363,12 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 				if(empty($classes[$lc])) {
 					if(!is_native_type(type_map($class_name))) Log::err(Log::EUNDEF, "Trying to instantiate undeclared class {$class_name}", $file, $node->lineno);
 				} else if($classes[$lc]['flags'] & \ast\flags\CLASS_ABSTRACT) {
-					if(!is_native_type(type_map($class_name))) Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
+					if(!is_native_type(type_map($class_name))) {
+						if($current_scope != 'global') list($scope_class,) = explode('::', $current_scope);
+						else $scope_class = '';
+						$lsc = strtolower($scope_class);
+						if(($lc != $lsc) || ($lc == $lsc && strtolower($current_class['name']) != $lsc)) Log::err(Log::ETYPE, "Cannot instantiate abstract class {$class_name}", $file, $node->lineno);
+					}
 				} else if($classes[$lc]['flags'] & \ast\flags\CLASS_INTERFACE) {
 					if(!is_native_type(type_map($class_name))) Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
 				} else {
