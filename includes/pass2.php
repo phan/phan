@@ -1093,8 +1093,9 @@ function find_property(string $file, $node, string $class_name, string $prop, st
 		if(empty($classes[$lclass]['properties'][$prop])) {
 			$parents[] = $lclass;
 			$lclass = empty($classes[$lclass]) ? '' : strtolower($classes[$lclass]['parent']);
-		} else if(($lcc != $lclass) && ($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PRIVATE)) {
-			if($lclass == $oclass && $classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PRIVATE) {
+		} else if(($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PRIVATE) && ($lcc != $lclass)) {
+			if((empty($lcc) && $lclass == $oclass) ||
+			   (!empty($lcc) && $lcc != $oclass)) {
 				if(find_method($lclass, ($write_access?'__set':'__get')) === false) {
 					Log::err(Log::EACCESS, "Cannot access private property {$class_name}::\$$prop", $file, $node->lineno);
 				}
@@ -1103,8 +1104,9 @@ function find_property(string $file, $node, string $class_name, string $prop, st
 			$parents[] = $lclass;
 			$lclass = empty($classes[$lclass]) ? '' : strtolower($classes[$lclass]['parent']);
 		} else {
-			if($lcc != $lclass && ((!in_array($lcc, $parents)) &&
-			($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED))) {
+			if(($classes[$lclass]['properties'][$prop]['flags'] & \ast\flags\MODIFIER_PROTECTED) && (
+			   (!empty($lcc) && ($lcc != $lclass) && (stripos('|'.$classes[$lcc]['type'].'|', $lclass)===false)) ||
+               (empty($lcc) && ($lcc != $lclass) && (!in_array($lcc, $parents))))) {
 				if(find_method($lclass, ($write_access?'__set':'__get')) === false) {
 					Log::err(Log::EACCESS, "Cannot access protected property {$class_name}::\$$prop", $file, $node->lineno);
 				}
