@@ -315,7 +315,7 @@ I don't actually want to write, nor maintain a static analyzer. This is a placeh
 proof-of-concept designed to inspire and enourage others to write something better. We need
 a practical and pragmatic analyzer that we can just point at a bunch of code and have it
 tell us about any issues in it. Bits and pieces of this, especially [arginfo.php][arginfo]
-and maybe the tests will likely surive long-term, but much of it probably won't.
+and maybe the tests will likely survive long-term, but much of it probably won't.
 
   [phpast]: https://github.com/nikic/php-ast
   [scrutinizer]: https://scrutinizer-ci.com/docs/guides/php/automated-code-reviews
