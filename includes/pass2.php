@@ -513,6 +513,10 @@ function var_type($file, $node, $current_scope, &$taint, $check_var_exists=true)
 	if(($node->children[0] instanceof \ast\Node) && ($node->children[0]->kind == \ast\AST_VAR || $node->children[0]->kind == \ast\AST_BINARY_OP)) {
 		return "mixed";
 	}
+	if($node->children[0] instanceof \ast\Node) {
+		// stuff like ${"abc_{$baz}_def"} ends up here
+		return '';
+	}
 	if(empty($scope[$current_scope]['vars'][$node->children[0]])) {
 		if($check_var_exists) {
 			if(!superglobal($node->children[0]))
