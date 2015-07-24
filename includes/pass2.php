@@ -71,12 +71,16 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 					// symbols take priority. The trait version would need to be aliased in
 					$classes[$lname]['properties'] = array_merge($classes[$ltrait]['properties'], $classes[$lname]['properties']);
 					$classes[$lname]['constants'] = array_merge($classes[$ltrait]['constants'], $classes[$lname]['constants']);
-					$classes[$lname]['methods'] = array_merge($classes[$ltrait]['methods'], $classes[$lname]['methods']);
-
-					// Need the scope as well
+					$tocopy = [];
 					foreach($classes[$ltrait]['methods'] as $k=>$method) {
-						if(empty($scope["{$classes[$ltrait]['name']}::{$method['name']}"])) continue;
 						if(!empty($classes[$lname]['methods'][$k])) continue; // We already have this method, skip it
+						$tocopy[$k] = $method;
+					}
+
+					$classes[$lname]['methods'] = array_merge($classes[$ltrait]['methods'], $classes[$lname]['methods']);
+					// Need the scope as well
+					foreach($tocopy as $k=>$method) {
+						if(empty($scope["{$classes[$ltrait]['name']}::{$method['name']}"])) continue;
 						$cs = $namespace.$ast->name.'::'.$method['name'];
 						if(!array_key_exists($cs, $scope)) $scope[$cs] = [];
 						if(!array_key_exists('vars', $scope[$cs])) $scope[$cs]['vars'] = [];
@@ -85,6 +89,7 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 						// And finally re-map $this to point to this class
 						$scope[$cs]['vars']['this']['type'] = $namespace.$ast->name;
 					}
+
 				}
 				break;
 

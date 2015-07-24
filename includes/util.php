@@ -642,7 +642,12 @@ function check_classes(&$classes) {
 
 				foreach($class['methods'] as $k=>$method) {
 					if(!($class['methods'][$k]['flags'] & \ast\flags\MODIFIER_STATIC)) {
-						add_var_scope("{$class['name']}::{$method['name']}", 'this', $classes[$name]['type']);
+						if($class['flags'] & \ast\flags\CLASS_TRAIT) {
+							// We don't know the type yet for methods in a trait
+							add_var_scope("{$class['name']}::{$method['name']}", 'this', '');
+						} else {
+							add_var_scope("{$class['name']}::{$method['name']}", 'this', $classes[$name]['type']);
+						}
 					}
 				}
 			}
