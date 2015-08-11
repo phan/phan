@@ -732,7 +732,7 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 			// Any other arg counts we will let the regular checks handle
 			break;
 		case 'array_udiff':
-		case 'array_diff_assoc':
+		case 'array_diff_uassoc':
 		case 'array_uintersect_assoc':
 		case 'array_intersect_ukey':
 			if($argcount < 3) {
