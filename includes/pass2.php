@@ -1216,6 +1216,8 @@ function find_class($node, $namespace, $nmap) {
 function generics(string $str):string {
 	// If |array| is in there, then it can be any type
 	if(stripos("|$str|", "|array|") !== false) return 'mixed';
+	// same for |mixed|
+	if(stripos("|$str|", "|mixed|") !== false) return 'mixed';
 	if((strpos($str,'[]'))===false) return '';
 	$ret = [];
 	foreach(explode('|', $str) as $type) {
