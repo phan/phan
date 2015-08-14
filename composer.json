@@ -11,6 +11,6 @@
     ],
     "require": {
         "php": ">=7.0",
-        "ext-php-ast": "*"
+        "ext-ast": "*"
     }
 }
