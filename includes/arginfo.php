@@ -4081,7 +4081,7 @@ return [
 'imap_reopen' => ['bool', 'stream_id'=>'', 'mailbox'=>'string', 'options='=>'int', 'n_retries='=>'int'],
 'imap_rfc822_parse_adrlist' => ['array', 'address_string'=>'string', 'default_host'=>'string'],
 'imap_rfc822_parse_headers' => ['object', 'headers'=>'string', 'default_host='=>'string'],
-'imap_rfc822_write_address' => ['string', 'mailbox'=>'string', 'host'=>'string', 'personal'=>'string'],
+'imap_rfc822_write_address' => ['string', 'mailbox'=>'string|null', 'host'=>'string|null', 'personal'=>'string|null'],
 'imap_savebody' => ['bool', 'stream_id'=>'', 'file'=>'string|resource', 'msg_no'=>'int', 'section='=>'string', 'options='=>'int'],
 'imap_search' => ['array', 'stream_id'=>'', 'criteria'=>'string', 'options='=>'int', 'charset='=>'string'],
 'imap_setacl' => ['bool', 'stream_id'=>'', 'mailbox'=>'string', 'id'=>'string', 'rights'=>'string'],
