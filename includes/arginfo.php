@@ -4147,7 +4147,7 @@ return [
 'ini_get_all' => ['array', 'extension='=>'string', 'details='=>'bool'],
 'ini_get' => ['string|bool', 'varname'=>'string'],
 'ini_restore' => ['', 'varname'=>'string'],
-'ini_set' => ['string|bool', 'varname'=>'string', 'newvalue'=>'string'],
+'ini_set' => ['string|bool', 'varname'=>'string', 'newvalue'=>'string|int|float|bool'],
 'inotify_add_watch' => ['int', 'inotify_instance'=>'', 'pathname'=>'string', 'mask'=>'int'],
 'inotify_init' => ['resource'],
 'inotify_queue_len' => ['int', 'inotify_instance'=>''],
