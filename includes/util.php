@@ -2,7 +2,7 @@
 namespace phan;
 
 function add_class($class_name) {
-	global $classes, $internal_arginfo;
+	global $classes, $internal_arginfo, $internal_classvars;
 
 	$lc = strtolower($class_name);
 	$class = new \ReflectionClass($class_name);
@@ -29,6 +29,8 @@ function add_class($class_name) {
 	else $classes[$lc]['parent'] = $parent->getName();
 
 	foreach($class->getDefaultProperties() as $name=>$value) {
+		$type = $internal_classvars[strtolower($class_name)]['properties'][$name] ?? type_map(gettype($value));
+#		echo "{$class_name}::{$name} = ($type) $value\n";
 		$prop = new \ReflectionProperty($class_name, $name);
 		$classes[$lc]['properties'][strtolower($name)] = [
 											'flags' => $prop->getModifiers(),

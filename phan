@@ -16,6 +16,7 @@ require __DIR__.'/includes/ast_util.php';
 
 // Globals where we store everything
 $internal_arginfo = require __DIR__.'/includes/arginfo.php';
+$internal_classvars = require __DIR__.'/includes/class_vars.php';
 $classes = [];
 $functions = [];
 $summary = [ 'classes'=>0, 'traits'=>0, 'methods'=>0, 'functions'=>0, 'closures'=>0, 'conditionals'=>0 ];
