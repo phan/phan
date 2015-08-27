@@ -156,6 +156,9 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				if($ast->children[1]->kind == \ast\AST_LIST) {
 					add_var_scope($current_scope, var_name($ast->children[1]->children[0]), '', true);
 					add_var_scope($current_scope, var_name($ast->children[1]->children[1]), '', true);
+					if(!empty($ast->children[2])) {
+						add_var_scope($current_scope, var_name($ast->children[2]), '', true);
+					}
 				} else {
 					// value
 					add_var_scope($current_scope, var_name($ast->children[1]), '', true);
