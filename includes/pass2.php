@@ -455,6 +455,10 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				}
 				break;
 
+			case \ast\AST_INSTANCEOF:
+				$class_name = find_class_name($file, $ast, $namespace, $current_class, $current_scope);
+				break;
+
 			case \ast\AST_STATIC_CALL:
 				$static_call_ok = false;
 				$class_name = find_class_name($file, $ast, $namespace, $current_class, $current_scope, $static_call_ok);

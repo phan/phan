@@ -305,6 +305,12 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 			}
 			break;
 
+		case \ast\AST_INSTANCEOF:
+			if($node->children[1]->kind == \ast\AST_NAME) {
+				$class_name = qualified_name($file, $node->children[1], $namespace);
+			}
+			break;
+
 		case \ast\AST_METHOD_CALL:
 		case \ast\AST_PROP:
 			if($node->children[0]->kind == \ast\AST_VAR) {
@@ -373,6 +379,14 @@ function find_class_name(string $file, $node, string $namespace, $current_class,
 					}
 				} else if($classes[$lc]['flags'] & \ast\flags\CLASS_INTERFACE) {
 					if(!is_native_type(type_map($class_name))) Log::err(Log::ETYPE, "Cannot instantiate interface {$class_name}", $file, $node->lineno);
+				} else {
+					$return = $class_name;
+				}
+				break;
+
+			case \ast\AST_INSTANCEOF:
+				if(empty($classes[$lc])) {
+					if(!is_native_type(type_map($class_name))) Log::err(Log::EUNDEF, "instanceof called on undeclared class {$class_name}", $file, $node->lineno);
 				} else {
 					$return = $class_name;
 				}
