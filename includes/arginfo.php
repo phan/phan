@@ -1572,7 +1572,7 @@ return [
 'ErrorException::__toString' => ['string'],
 'Error::getCode' => ['int'],
 'Error::getFile' => ['string'],
-'error_get_last' => ['array'],
+'error_get_last' => ['array|null'],
 'Error::getLine' => ['int'],
 'Error::getMessage' => ['string'],
 'Error::getPrevious' => ['Throwable|Error'],
