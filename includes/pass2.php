@@ -701,7 +701,7 @@ function var_assign($file, $namespace, $ast, $current_scope, $current_class, &$v
 }
 
 function arg_check(string $file, $namespace, $ast, string $func_name, $func, string $current_scope, $current_class, string $class_name='') {
-	global $internal_arginfo, $functions, $scope;
+	global $internal_arginfo, $classes, $functions, $scope;
 
 	$ok = false;
 	$varargs = false;
@@ -868,10 +868,21 @@ function arg_check(string $file, $namespace, $ast, string $func_name, $func, str
 	// Checking the alternates before the main to make the final error messages, if any, refer to the main signature
 	$errs = [];
 	$alt = 1;
-	while(!empty($functions["{$func['name']} $alt"])) {
-		$errs = arglist_type_check($file, $namespace, $arglist, $functions["{$func['name']} $alt"], $current_scope, $current_class);
-		$alt++;
-		if(empty($errs)) break;
+	if($class_name) {
+		$lc = strtolower($class_name);
+		$lfn = strtolower($func['name']);
+		$func['name'] = $class_name.'::'.$func['name'];
+		while(!empty($classes[$lc]['methods']["$lfn $alt"])) {
+			$errs = arglist_type_check($file, $namespace, $arglist, $classes[$lc]['methods']["$lfn $alt"], $current_scope, $current_class);
+			$alt++;
+			if(empty($errs)) break;
+		}
+	} else {
+		while(!empty($functions["{$func['name']} $alt"])) {
+			$errs = arglist_type_check($file, $namespace, $arglist, $functions["{$func['name']} $alt"], $current_scope, $current_class);
+			$alt++;
+			if(empty($errs)) break;
+		}
 	}
 	if($alt==1 || ($alt>1 && !empty($errs))) $errs = arglist_type_check($file, $namespace, $arglist, $func, $current_scope, $current_class);
 
@@ -885,6 +896,7 @@ function arglist_type_check($file, $namespace, $arglist, $func, $current_scope, 
 
 	$errs=[];
 	$fn = $func['scope'] ?? $func['name'];
+
 	foreach($arglist->children as $k=>$arg) {
 		$taint = false;
 		$tainted_by = '';

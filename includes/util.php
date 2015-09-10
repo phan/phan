@@ -82,21 +82,35 @@ function add_class($class_name) {
                                               'ret'=>null
 		                                    ];
 		$arginfo = [];
+		$alt = 1;
 
 		if(!empty($internal_arginfo["{$class_name}::{$method->name}"])) {
 			$arginfo = $internal_arginfo["{$class_name}::{$method->name}"];
 			$classes[$lc]['methods'][$lmname]['ret'] = $arginfo[0];
+			while(!empty($internal_arginfo["{$class_name}::{$method->name} $alt"])) {
+				$classes[$lc]['methods']["$lmname $alt"] = $classes[$lc]['methods'][$lmname];
+				${"arginfo{$alt}"} = $internal_arginfo["{$class_name}::{$method->name} $alt"];
+				$classes[$lc]['methods']["$lmname $alt"]['ret'] = ${"arginfo{$alt}"}[0];
+				$alt++;
+			}
 		} else if(!empty($parents)) {
 			foreach($parents as $parent_name) {
 				if(!empty($internal_arginfo["{$parent_name}::{$method->name}"])) {
+					$classes[$lc]['methods']["$lmname $alt"] = $classes[$lc]['methods'][$lmname];
 					$arginfo = $internal_arginfo["{$parent_name}::{$method->name}"];
 					$classes[$lc]['methods'][$lmname]['ret'] = $arginfo[0];
+					while(!empty($internal_arginfo["{$parent_name}::{$method->name} $alt"])) {
+						${"arginfo{$alt}"} = $internal_arginfo["{$parent_name}::{$method->name} $alt"];
+						$classes[$lc]['methods']["$lmname $alt"]['ret'] = ${"arginfo{$alt}"}[0];
+						$alt++;
+					}
 					break;
 				}
 			}
 		}
 
 		foreach($method->getParameters() as $param) {
+			$alt = 1;
 			$flags = 0;
 			if($param->isPassedByReference()) $flags |= \ast\flags\PARAM_REF;
 			if($param->isVariadic()) $flags |= \ast\flags\PARAM_VARIADIC;
@@ -109,7 +123,19 @@ function add_class($class_name) {
 				   'type'=>(empty($arginfo) ? null : next($arginfo)),
 				   'def'=>null
 				 ];
+			while(!empty(${"arginfo{$alt}"})) {
+				$classes[$lc]['methods'][strtolower($method->name).' '.$alt]['params'][] =
+					 [ 'file'=>'internal',
+					   'flags'=>$flags,
+					   'lineno'=>0,
+					   'name'=>$param->name,
+#					   'type'=>$param->getType(),
+					   'type'=>(empty(${"arginfo{$alt}"}) ? null : next(${"arginfo{$alt}"})),
+					   'def'=>null
+					 ];
 
+				$alt++;
+			}
 		}
 	}
 }

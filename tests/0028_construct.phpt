@@ -9,4 +9,4 @@ class A {
 }
 $a = new A("wrong");
 --EXPECTF--
-%s:7 TypeError arg#1(arg) is string but __construct() takes int defined at %s:3
+%s:7 TypeError arg#1(arg) is string but A::__construct() takes int defined at %s:3
