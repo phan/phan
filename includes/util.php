@@ -82,6 +82,7 @@ function add_class($class_name) {
                                               'ret'=>null
 		                                    ];
 		$arginfo = [];
+		unset(${"arginfo1"});
 		$alt = 1;
 
 		if(!empty($internal_arginfo["{$class_name}::{$method->name}"])) {
@@ -90,6 +91,7 @@ function add_class($class_name) {
 			while(!empty($internal_arginfo["{$class_name}::{$method->name} $alt"])) {
 				$classes[$lc]['methods']["$lmname $alt"] = $classes[$lc]['methods'][$lmname];
 				${"arginfo{$alt}"} = $internal_arginfo["{$class_name}::{$method->name} $alt"];
+				unset(${"arginfo".($alt+1)});
 				$classes[$lc]['methods']["$lmname $alt"]['ret'] = ${"arginfo{$alt}"}[0];
 				$alt++;
 			}
@@ -101,6 +103,7 @@ function add_class($class_name) {
 					$classes[$lc]['methods'][$lmname]['ret'] = $arginfo[0];
 					while(!empty($internal_arginfo["{$parent_name}::{$method->name} $alt"])) {
 						${"arginfo{$alt}"} = $internal_arginfo["{$parent_name}::{$method->name} $alt"];
+						unset(${"arginfo".($alt+1)});
 						$classes[$lc]['methods']["$lmname $alt"]['ret'] = ${"arginfo{$alt}"}[0];
 						$alt++;
 					}
