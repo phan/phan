@@ -107,6 +107,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 									'name'		 => $namespace.$ast->name,
 									'docComment' => $ast->docComment,
 									'parent'	 => $parent,
+									'pc_called'  => true,
 									'type'	     => '',
 									'properties' => [],
 									'constants'  => [],
@@ -136,6 +137,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				$summary['methods']++;
 				$current_function = $method;
 				$current_scope = "{$current_class}::{$method}";
+				if($method == '__construct') $classes[$lc]['pc_called'] = false;
 				break;
 
 			case \ast\AST_PROP_DECL:
@@ -216,6 +218,19 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				}
 				if($bc_checks) bc_check($file, $ast);
                 break;
+
+			case \ast\AST_STATIC_CALL: // Indicate whether a class calls its parent constructor
+				$call = $ast->children[0];
+				if($call->kind == \ast\AST_NAME) {
+					$func_name = strtolower($call->children[0]);
+					if($func_name == 'parent') {
+						$meth = strtolower($ast->children[1]);
+						if($meth == '__construct') {
+							$classes[strtolower($current_class)]['pc_called'] = true;
+						}
+					}
+				}
+				break;
 
 			case \ast\AST_RETURN:
 			case \ast\AST_PRINT:

@@ -5,11 +5,12 @@ error_reporting(-1);
 ini_set("memory_limit", -1);
 
 // Parse command line args
-$opts = getopt("f:m:o:hasuqbpig::");
+$opts = getopt("f:m:o:c:hasuqbpig::");
 $pruneargv = array();
 $files = [];
 $dump_ast = $dump_scope = $dump_user_functions = $quick_mode = $progress_bar = $gv = $bc_checks = false;
 $gv_node = '';
+$pc_required = [];
 
 foreach($opts as $key=>$value) {
 	switch($key) {
@@ -27,6 +28,9 @@ foreach($opts as $key=>$value) {
 			break;
 		case 'a':
 			$dump_ast = true;
+			break;
+		case 'c':
+			$pc_required = explode(',',$value);
 			break;
 		case 's':
 			$dump_scope = true;
@@ -82,6 +86,7 @@ Usage: {$argv[0]} [options] [files...]
   -q              Quick mode - doesn't recurse into all function calls
   -b              Check for potential PHP 5 -> PHP 7 BC issues
   -i              Ignore undeclared functions and classes
+  -c              Comma-separated list of classes that require parent::__construct() to be called
   -m <mode>       Output mode: verbose, short, json, csv
   -o <filename>   Output filename
   -p              Show progress bar

@@ -38,7 +38,7 @@ foreach($files as $i=>$file) {
 }
 if($dump_ast) exit;
 
-check_classes($classes);
+check_classes($classes, $pc_required);
 check_functions($functions);
 
 if($gv) {
