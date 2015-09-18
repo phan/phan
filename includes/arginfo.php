@@ -154,7 +154,7 @@ return [
 'array_map' => ['array', 'callback'=>'callable', 'input1'=>'array', '...='=>'array'],
 'array_merge' => ['array', 'arr1'=>'array', '...='=>'array'],
 'array_merge_recursive' => ['array', 'arr1'=>'array', '...='=>'array'],
-'array_multisort' => ['bool', 'array1'=>'array', 'array1_sort_order='=>'int', 'array1_sort_flags='=>'int', '...='=>'array'],
+'array_multisort' => ['bool', 'array1'=>'array', 'array1_sort_order='=>'array|int', 'array1_sort_flags='=>'array|int', '...='=>'array|int'],
 'ArrayObject::append' => ['', 'value'=>''],
 'ArrayObject::asort' => [''],
 'ArrayObject::__construct' => ['ArrayObject', 'input='=>'', 'flags='=>'int', 'iterator_class='=>'string'],
