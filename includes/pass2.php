@@ -465,7 +465,12 @@ function pass2($file, $namespace, $ast, $current_scope, $parent_node=null, $curr
 				if($class_name) {
 					// The class is declared, but does it have the method?
 					$method_name = $ast->children[1];
-					$method = find_method($class_name, $method_name);
+					$static_class = '';
+					if($ast->children[0]->kind == \ast\AST_NAME) {
+						$static_class = $ast->children[0]->children[0];
+					}
+
+					$method = find_method($class_name, $method_name, $static_class);
 					if(is_array($method) && array_key_exists('avail', $method) && !$method['avail']) {
 						Log::err(Log::EAVAIL, "method {$class_name}::{$method_name}() is not compiled into this version of PHP", $file, $ast->lineno);
 					}
@@ -1151,7 +1156,7 @@ function find_property(string $file, $node, string $class_name, string $prop, st
  * Walk the inheritance tree to find the method
  * @return array|string|bool
  */
-function find_method(string $class_name, $method_name) {
+function find_method(string $class_name, $method_name, $static_class = '') {
 	global $classes;
 
 	if($method_name instanceof \ast\Node) return 'dynamic';
@@ -1169,8 +1174,8 @@ function find_method(string $class_name, $method_name) {
 		}
 	}
 
-	// We don't chain constructors
-	if($method_name == '__construct') return false;
+	// We don't chain constructors unless chaining is explicitly requested with parent::__construct
+	if($method_name == '__construct' && $static_class != 'parent') return false;
 
 	if(!empty($classes[$class_name]['parent'])) {
 		if(strtolower($classes[$class_name]['parent']) == $class_name) return $class_name;
