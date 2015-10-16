@@ -683,7 +683,7 @@ function check_classes(&$classes, $pc_required = []) {
 				}
 				if(!empty($parents)) $types = array_merge($types, $parents);
 				// Fill in type from inheritance tree and interfaces
-				$classes[$name]['type'] = implode('|', array_unique($types));
+				$classes[$name]['type'] = merge_type($classes[$name]['type'], implode('|', array_unique($types)));
 				foreach($pc_required as $c) {
 					if($class['name'] != $c && in_array($c, $types)) {
 						if(!$class['pc_called']) Log::err(Log::ETYPE, "{$class['name']} extends $c but doesn't call parent::__construct()", $class['file'], $class['lineno']);

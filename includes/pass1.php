@@ -138,6 +138,7 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				$current_function = $method;
 				$current_scope = "{$current_class}::{$method}";
 				if($method == '__construct') $classes[$lc]['pc_called'] = false;
+				if($method == '__invoke') $classes[$lc]['type'] = merge_type($classes[$lc]['type'], 'callable');
 				break;
 
 			case \ast\AST_PROP_DECL:
