@@ -6217,7 +6217,7 @@ return [
 'ob_end_flush' => ['bool'],
 'ob_etaghandler' => ['string', 'data'=>'string', 'mode'=>'int'],
 'ob_flush' => ['bool'],
-'ob_get_clean' => ['bool'],
+'ob_get_clean' => ['string|bool'],
 'ob_get_contents' => ['string|bool'],
 'ob_get_flush' => ['string|bool'],
 'ob_get_length' => ['int|bool'],
