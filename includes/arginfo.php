@@ -7851,6 +7851,7 @@ return [
 'session_save_path' => ['string', 'newname='=>'string'],
 'session_set_cookie_params' => ['', 'lifetime'=>'int', 'path='=>'string', 'domain='=>'string', 'secure='=>'bool', 'httponly='=>'bool'],
 'session_set_save_handler' => ['bool', 'open'=>'string', 'close'=>'string', 'read'=>'string', 'write'=>'string', 'destroy'=>'string', 'gc'=>'string', 'create_sid='=>'string'],
+'session_set_save_handler 1' => ['bool', 'sessionhandler'=>'SessionHandlerInterface', 'register_shutdown'=>'bool'],
 'session_start' => ['bool', 'options='=>'array'],
 'session_status' => ['int'],
 'session_unregister' => ['bool', 'name'=>'string'],
