@@ -188,7 +188,7 @@ return [
 'array_reverse' => ['array', 'input'=>'array', 'preserve='=>'bool'],
 'array_search' => ['', 'needle'=>'', 'haystack'=>'array', 'strict='=>'bool'],
 'array_shift' => ['', 'stack'=>'array'],
-'array_slice' => ['array', 'input'=>'array', 'offset'=>'int', 'length='=>'int', 'preserve_keys='=>'bool'],
+'array_slice' => ['array', 'input'=>'array', 'offset'=>'int', 'length='=>'int|null', 'preserve_keys='=>'bool'],
 'array_splice' => ['array', 'input'=>'array', 'offset'=>'int', 'length='=>'int', 'replacement='=>'array'],
 'array_sum' => ['', 'input'=>'array'],
 'array_udiff' => ['array', 'arr1'=>'array', 'arr2'=>'array', '...='=>'array', 'data_comp_func='=>'callable'],
