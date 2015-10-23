@@ -2,18 +2,19 @@
 declare(strict_types=1);
 namespace phan\language\element;
 
+require_once(__DIR__.'/../Type.php');
+require_once(__DIR__.'/../Context.php');
 require_once(__DIR__.'/Constant.php');
+require_once(__DIR__.'/Comment.php');
 require_once(__DIR__.'/Method.php');
 require_once(__DIR__.'/Property.php');
 require_once(__DIR__.'/TypedStructuralElement.php');
 
-/**
- * Static data defining type names for builtin classes
- */
-$INTERNAL_CLASS_VARS =
-    require(__DIR__.'/../constants/BuiltinClassTypes.php');
+use \phan\language\Context;
+use \phan\language\Type;
+use \phan\language\element\Comment;
 
-class Class extends TypedStructuralElement {
+class Clazz extends TypedStructuralElement {
 
     /**
      * @var \phan\language\FQSEN
@@ -72,8 +73,8 @@ class Class extends TypedStructuralElement {
      * a certain kind has a meaningful flags value.
      */
     public function __construct(
-        \phan\Context $context,
-        CommentElement $comment
+        Context $context,
+        Comment $comment,
         string $name,
         Type $type,
         int $flags
@@ -92,7 +93,7 @@ class Class extends TypedStructuralElement {
      * The name of a builtin class to build a new Class structural
      * element from.
      *
-     * @return Class
+     * @return Clazz
      * A Class structural element representing the given named
      * builtin.
      */
@@ -106,7 +107,7 @@ class Class extends TypedStructuralElement {
      * @param ReflectionClass $class
      * A reflection class representing a builtin class.
      *
-     * @return Class
+     * @return Clazz
      * A Class structural element representing the given named
      * builtin.
      */
@@ -127,12 +128,14 @@ class Class extends TypedStructuralElement {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
 
+        $context = Context::none();
+
         // Build a base class element
-        $class_element = new Class(
-            \phan\language\Context::none(),
+        $class_element = new Clazz(
+            $context,
             Comment::none(),
             $class->getName(),
-            new Type($class->getName()),
+            new Type([$class->getName()]),
             $flags
         );
 
@@ -151,25 +154,27 @@ class Class extends TypedStructuralElement {
              */
 
 
+            /*
             $type =
                 $INTERNAL_CLASS_VARS[strtolower($class->getName())]['properties'][$name]
                 ?? self::typeMap(gettype($value));
+             */
 
             $property =
                 new \ReflectionProperty($class->getName(), $name);
 
-            $class_element->property_map[strtolower($name)] =
-                new PropertyElement(
-                    'internal',
-                    '',
-                    0,
-                    0,
-                    '',
-                    false,
-                    $property->getModifiers(),
+            $property_element =
+                new Property(
+                    $context->withClassFQSEN($class_element->getFQSEN()),
+                    Comment::none(),
                     $name,
-                    self::typeMap(gettype($value))
+                    Type::typeForObject($value),
+                    0
                 );
+
+            $class_element->property_map[
+                $property_element->getFQSEN()->__toString()
+            ] = $property_element;
         }
 
         $class_element->interface_list =
@@ -193,23 +198,20 @@ class Class extends TypedStructuralElement {
 
         foreach($class->getConstants() as $name => $value) {
             $class_element->constant_map[$name] =
-                new ConstantElement(
-                    'internal',
-                    '',
-                    0,
-                    0,
-                    '',
-                    false,
-                    0,
+                new Constant(
+                    $context,
+                    Comment::none(),
                     $name,
-                    self::typeMap(gettype($value))
+                    Type::typeForObject($value),
+                    0
                 );
         }
 
         foreach($class->getMethods() as $method) {
             $class_element->method_map = array_merge(
                 $class_element->method_map,
-                MethodElement::mapFromReflectionClassAndMethod(
+                Method::mapFromReflectionClassAndMethod(
+                    $context->withClassFQSEN($class_element->getFQSEN()),
                     $class,
                     $method,
                     $parents

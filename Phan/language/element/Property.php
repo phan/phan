@@ -1,8 +1,15 @@
 <?php
 declare(strict_types=1);
-namespace phan\element;
+namespace phan\language\element;
 
+require_once(__DIR__.'/../Context.php');
+require_once(__DIR__.'/../Type.php');
+require_once(__DIR__.'/Comment.php');
 require_once(__DIR__.'/TypedStructuralElement.php');
+
+use \phan\language\Context;
+use \phan\language\Type;
+use \phan\language\element\Comment;
 
 class Property extends TypedStructuralElement {
 
@@ -13,24 +20,28 @@ class Property extends TypedStructuralElement {
     private $def;
 
     /**
-     * @param string $file
-     * The path to the file in which the class is defined
+     * @param \phan\Context $context
+     * The context in which the structural element lives
      *
-     * @param string $namespace,
-     * The namespace of the class
-     *
-     * @param int $line_number_start,
-     * The starting line number of the class within the $file
-     *
-     * @param int $line_number_end,
-     * The ending line number of the class within the $file
-     *
-     * @param string $comment,
+     * @param CommentElement $comment,
      * Any comment block associated with the class
+     *
+     * @param string $name,
+     * The name of the typed structural element
+     *
+     * @param Type $type,
+     * A '|' delimited set of types satisfyped by this
+     * typed structural element.
+     *
+     * @param int $flags,
+     * The flags property contains node specific flags. It is
+     * always defined, but for most nodes it is always zero.
+     * ast\kind_uses_flags() can be used to determine whether
+     * a certain kind has a meaningful flags value.
      */
     public function __construct(
-        \phan\Context $context,
-        CommentElement $comment
+        Context $context,
+        Comment $comment,
         string $name,
         Type $type,
         int $flags
@@ -45,7 +56,7 @@ class Property extends TypedStructuralElement {
     }
 
     /**
-     * @param \phan\language\Context $context
+     * @param Context $context
      * The context in which the property appears
      *
      * @param \ReflectionProperty $reflection_property
@@ -57,14 +68,13 @@ class Property extends TypedStructuralElement {
      * in a given context
      */
     public static function fromReflectionProperty(
-        \phan\language\Context $context,
+        Context $context,
         \ReflectionProperty $reflection_property
     ) : Property {
 
         $type =
             $INTERNAL_CLASS_VARS[strtolower($class->getName())]['properties'][$name]
             ?? self::typeMap(gettype($value));
-
 
         $property = new Property(
             $context,

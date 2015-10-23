@@ -2,6 +2,16 @@
 declare(strict_types=1);
 namespace phan;
 
+require_once(__DIR__.'/language/Context.php');
+require_once(__DIR__.'/language/element/Method.php');
+require_once(__DIR__.'/language/element/Comment.php');
+require_once(__DIR__.'/language/element/Clazz.php');
+
+use \phan\language\Context;
+use \phan\language\element\Clazz;
+use \phan\language\element\Comment;
+use \phan\language\element\Method;
+
 class CodeBase {
 
     private $class_map = [];
@@ -30,13 +40,13 @@ class CodeBase {
         ];
     }
 
-    public function addClassElement(ClassElement $class_element) {
-        $this->class_map[$class_element->getCanonicalName()]
+    public function addClass(Clazz $class_element) {
+        $this->class_map[$class_element->getFQSEN()->__toString()]
             = $class_element;
     }
 
-    public function addMethodElement(MethodElement $method_element) {
-        $this->method_map[$method_element->getCanonicalName()] =
+    public function addMethod(Method $method_element) {
+        $this->method_map[$method_element->getFQSEN()->__tostring()] =
             $method_element;
     }
 
@@ -46,7 +56,7 @@ class CodeBase {
     private function addClassesByNames(array $class_name_list) {
         foreach ($class_name_list as $i => $class_name) {
             $this->class_map[$class_name] =
-                \phan\element\ClassElement::fromClassName($class_name);
+                language\element\Clazz::fromClassName($class_name);
         }
     }
 

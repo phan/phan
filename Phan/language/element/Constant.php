@@ -1,49 +1,50 @@
 <?php
 declare(strict_types=1);
-namespace phan\element;
+namespace phan\language\element;
+
+require_once(__DIR__.'/TypedStructuralElement.php');
+
+use \phan\language\Context;
+use \phan\language\Type;
 
 /**
  *
  */
-class ConstantElement extends TypedStructuralElement {
+class Constant extends TypedStructuralElement {
 
     /**
-     * @param string $file
-     * The path to the file in which the class is defined
+     * @param \phan\Context $context
+     * The context in which the structural element lives
      *
-     * @param string $namespace,
-     * The namespace of the class
-     *
-     * @param int $line_number_start,
-     * The starting line number of the class within the $file
-     *
-     * @param int $line_number_end,
-     * The ending line number of the class within the $file
-     *
-     * @param string $comment,
+     * @param CommentElement $comment,
      * Any comment block associated with the class
+     *
+     * @param string $name,
+     * The name of the typed structural element
+     *
+     * @param Type $type,
+     * A '|' delimited set of types satisfyped by this
+     * typed structural element.
+     *
+     * @param int $flags,
+     * The flags property contains node specific flags. It is
+     * always defined, but for most nodes it is always zero.
+     * ast\kind_uses_flags() can be used to determine whether
+     * a certain kind has a meaningful flags value.
      */
     public function __construct(
-        string $file,
-        string $namespace,
-        int $line_number_start,
-        int $line_number_end,
-        string $comment,
-        bool $is_conditional,
-        int $flags,
+        Context $context,
+        Comment $comment,
         string $name,
-        string $type
+        Type $type,
+        int $flags
     ) {
         parent::__construct(
-            $file,
-            $namespace,
-            $line_number_start,
-            $line_number_end,
+            $context,
             $comment,
-            $is_conditional,
-            $flags,
             $name,
-            $type
+            $type,
+            $flags
         );
     }
 }

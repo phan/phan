@@ -1,11 +1,20 @@
 <?php
 declare(strict_types=1);
-namespace phan;
+namespace phan\language;
 
-require_once(__DIR__.'/CodeBase.php');
-require_once(__DIR__.'/Options.php');
-require_once(__DIR__.'/State.php');
-require_once(__DIR__.'/element/MethodElement.php');
+require_once(__DIR__.'/../Log.php');
+require_once(__DIR__.'/../CodeBase.php');
+require_once(__DIR__.'/../Options.php');
+require_once(__DIR__.'/Context.php');
+require_once(__DIR__.'/element/Method.php');
+require_once(__DIR__.'/element/Comment.php');
+require_once(__DIR__.'/element/Clazz.php');
+
+use \phan\Log;
+use \phan\CodeBase;
+use \phan\language\element\Clazz;
+use \phan\language\element\Method;
+use \phan\language\element\Comment;
 
 class File {
 
@@ -43,33 +52,33 @@ class File {
     public function passOne() {
         return $this->passOneRecursive(
             $this->ast,
-            new State()
+            new Context()
         );
     }
 
     /**
      * @param \ast\Node $ast
      *
-     * @param State $state
+     * @param Context $context
      *
      * @return string
      * The namespace of the file
      */
     public function passOneRecursive(
         \ast\Node $ast,
-        State $state
-    ) : State {
+        Context $context
+    ) : Context {
         $done = false;
 
         switch($ast->kind) {
             case \ast\AST_NAMESPACE:
-                $state->setNamespace(
+                $context->withNamespace(
                     (string)$ast->children[0].'\\'
                 );
                 break;
 
             case \ast\AST_IF:
-                $state->setIsConditional(true);
+                $context->setIsConditional(true);
                 $this->code_base->incrementConditionals();
                 break;
 
@@ -143,26 +152,26 @@ class File {
                         $alias = $elem->children[1];
                     }
 
-                    $state->setNamespaceMap(
-                        $ast->flags, $file, $alias, $target
+                    $context->withNamespaceMap(
+                        $ast->flags, $alias, $target
                     );
                 }
                 break;
 
             case \ast\AST_CLASS:
-                if(!empty($classes[strtolower($namespace.$ast->name)])) {
+                if(!empty($classes[strtolower($context->getNamespace().$ast->name)])) {
                     for($i=1;;$i++) {
                         if(empty($classes[$i.":".strtolower($namespace.$ast->name)])) break;
                     }
-                    $state->setClassName(
+                    $context->setClassName(
                         $i.":".$namespace.$ast->name
                     );
                 } else {
-                    $state->setClassName(
-                        $current_class = $namespace.$ast->name
+                    $context->withClassFQSEN(
+                        new FQSEN([], $context->getNamespace(), $ast->name)
                     );
                 }
-                $lc = $state->getCanonicalClassName();
+                $lc = $context->getClassFQSEN();
                 if(!empty($ast->children[0])) {
                     $parent = $ast->children[0]->children[0];
                     if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
@@ -181,20 +190,17 @@ class File {
                     $parent = null;
                 }
 
-                $class_element = new ClassElement(
-                    $this->file, // or $state->getFile()
-                    $state->getNamespace(),
-                    $ast->lineno,
-                    $ast->endLineno,
-                    $ast->docComment,
-                    $state->getIsConditional(),
-                    $ast->flags,
-                    $state->getNamespace() . $ast->name,
-                    '',
-                    []
+                $class_element = new Clazz(
+                    $context
+                        ->withLineNumberStart($ast->lineno)
+                        ->withLineNumberEnd($ast->endLineno),
+                    Comment::fromString($ast->docComment ?: ''),
+                    $ast->name,
+                    new Type([$ast->name]),
+                    $ast->flags
                 );
 
-                $this->code_base->addClassElement($class_element);
+                $this->code_base->addClass($class_element);
 
                 /*
                 $classes[$lc] = [
@@ -215,12 +221,14 @@ class File {
                     'interfaces' => [],
                     'methods'	 => []
                 ];
-                 */
+                */
 
+                /*
                 $classes[$lc]['interfaces'] = array_merge(
                     $classes[$lc]['interfaces'],
                     node_namelist($file, $ast->children[1], $namespace)
                 );
+                 */
 
                 $this->code_base->incrementClasses();
 
@@ -258,7 +266,14 @@ class File {
                 break;
 
             case \ast\AST_PROP_DECL:
-                if(empty($current_class)) Log::err(Log::EFATAL, "Invalid property declaration", $file, $ast->lineno);
+                if(empty($context->getClassFQSEN())) {
+                    Log::err(
+                        Log::EFATAL,
+                        "Invalid property declaration",
+                        $context->getFile(),
+                        $ast->lineno
+                    );
+                }
                 $dc = null;
                 if(!empty($ast->docComment)) $dc = parse_doc_comment($ast->docComment);
 
@@ -299,7 +314,7 @@ class File {
                 break;
 
             case \ast\AST_FUNC_DECL:
-                $function_name = strtolower($state->getNamespace() . $ast->name);
+                $function_name = strtolower($context->getNamespace() . $ast->name);
                 if(!empty($functions[$function_name])) {
                     for($i=1;;$i++) {
                         if(empty($functions[$i.":".$function_name])) break;
@@ -310,11 +325,11 @@ class File {
                 $this->code_base->addMethodElement(
                     element\MethodElement::fromAST(
                         $this->file,
-                        $state->getIsConditional(),
+                        $context->getIsConditional(),
                         $ast,
-                        $state->getScope(),
-                        $state->getClassName(),
-                        $state->getNamespace()
+                        $context->getScope(),
+                        $context->getClassName(),
+                        $context->getNamespace()
                     )
                 );
 
@@ -331,8 +346,8 @@ class File {
                  */
 
                 $this->code_base->incrementFunctions();
-                $state->setFunctionName($function_name);
-                $state->setScope($function_name);
+                $context->setFunctionName($function_name);
+                $context->setScope($function_name);
 
                 // Not $done=true here since nested function declarations are allowed
                 break;
@@ -385,18 +400,20 @@ class File {
         if(!$done) {
             foreach($ast->children as $child) {
                 if ($child instanceof \ast\Node) {
-                    $child_state =
+                    $child_context =
                         $this->passOneRecursive(
                             $child,
-                            $state
+                            $context
                         );
 
-                    $state->setNamespace($child_state->getNamespace());
+                    $context->withNamespace(
+                        $child_context->getNamespace()
+                    );
                 }
             }
         }
 
-        return $state;
+        return $context;
     }
 
 }

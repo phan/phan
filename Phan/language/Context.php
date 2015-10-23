@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace phan\langauge;
+namespace phan\language;
 
 /**
  * An object representing the context in which any
@@ -39,32 +39,47 @@ class Context {
     private $line_number_end = 0;
 
     /**
-     * @var string
+     * @var FQSEN
      * A fully-qualified structural element name describing
      * the current scope.
      */
-    private $scope_fqsen = '';
+    private $scope_fqsen = null;
 
     /**
-     * @var string
+     * @var FQSEN
      * A fully-qualified structural element name describing
      * the current class or the empty-string if we are not
      * in a class scope.
      */
-    private $class_fqsen = '';
+    private $class_fqsen = null;
 
     /**
-     * @var string
+     * @var FQSEN
      * A fully-qualified structural element name describing
      * the current function or method or the empty-string if
      * we are not in a function or method scope.
      */
-    private $method_fqsen = '';
+    private $method_fqsen = null;
 
     /**
      * @var bool
      */
     private $is_conditional = false;
+
+    /**
+     *
+     */
+    public function __construct() {
+        $this->file = '';
+        $this->namespace = '';
+        $this->namespace_map = [];
+        $this->line_number_start = 0;
+        $this->line_number_end = 0;
+        $this->scope_fqsen = new FQSEN();
+        $this->class_fqsen = new FQSEN();
+        $this->method_fqsen = new FQSEN();
+        $this->is_conditional = false;
+    }
 
     /**
      * @return Context
@@ -194,19 +209,19 @@ class Context {
      *
      * @return Context
      */
-    public function withClassFQSEN(string $fqsen) {
-        $this->class_name = $class_name;
+    public function withClassFQSEN(FQSEN $fqsen) {
+        $this->class_fqsen = $fqsen;
         return $this;
     }
 
     /**
-     * @return string
+     * @return FQSEN
      * A fully-qualified structural element name describing
      * the current class or the empty-string if we are not
      * in a class scope.
      */
-    public function getClassName() {
-        return $this->class_name;
+    public function getClassFQSEN() : FQSEN {
+        return $this->class_fqsen;
     }
 
     /*
@@ -228,7 +243,7 @@ class Context {
      * the current function or method or the empty-string if
      * we are not in a function or method scope.
      */
-    public function getMethodFQSEN() : string {
+    public function getMethodFQSEN() : FQSEN {
         return $this->method_fqsen;
     }
 

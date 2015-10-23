@@ -1,17 +1,20 @@
 <?php
 declare(strict_types=1);
-namespace phan\element;
+namespace phan\language\element;
 
-require_once(__DIR__.'/CommentElement.php');
-require_once(__DIR__.'/ParameterElement.php');
+require_once(__DIR__.'/../Context.php');
+require_once(__DIR__.'/../Type.php');
+require_once(__DIR__.'/Comment.php');
+require_once(__DIR__.'/Parameter.php');
+require_once(__DIR__.'/Property.php');
 require_once(__DIR__.'/TypedStructuralElement.php');
 
-/**
- *
- */
-$INTERNAL_ARG_INFO = require __DIR__.'/../constants/ArgInfo.php';
+use \phan\language\Context;
+use \phan\language\Type;
+use \phan\language\element\Comment;
+use \phan\language\element\Parameter;
 
-class MethodElement extends TypedStructuralElement {
+class Method extends TypedStructuralElement {
 
     /**
      * @var int
@@ -28,72 +31,60 @@ class MethodElement extends TypedStructuralElement {
      */
     private $parameter_list;
 
-    /**
-     * @var string
-     */
-    private $scope;
 
     /**
-     * @param string $file
-     * The path to the file in which the class is defined
+     * @param \phan\Context $context
+     * The context in which the structural element lives
      *
-     * @param string $namespace,
-     * The namespace of the class
-     *
-     * @param int $line_number_start,
-     * The starting line number of the class within the $file
-     *
-     * @param int $line_number_end,
-     * The ending line number of the class within the $file
-     *
-     * @param string $comment,
+     * @param CommentElement $comment,
      * Any comment block associated with the class
      *
-     * @param bool $is_conditional,
+     * @param string $name,
+     * The name of the typed structural element
+     *
+     * @param Type $type,
+     * A '|' delimited set of types satisfyped by this
+     * typed structural element.
      *
      * @param int $flags,
-     *
-     * @param string $name,
-     *
-     * @param string $type,
+     * The flags property contains node specific flags. It is
+     * always defined, but for most nodes it is always zero.
+     * ast\kind_uses_flags() can be used to determine whether
+     * a certain kind has a meaningful flags value.
      *
      * @param int $number_of_required_paramters
      *
      * @param int $number_of_optional_parameters
      */
     public function __construct(
-        string $file,
-        string $namespace,
-        int $line_number_start,
-        int $line_number_end,
-        string $comment,
-        bool $is_conditional,
-        int $flags,
+        Context $context,
+        Comment $comment,
         string $name,
-        string $type,
+        Type $type,
+        int $flags,
         int $number_of_required_parameters,
         int $number_of_optional_parameters
     ) {
         parent::__construct(
-            $file,
-            $namespace,
-            $line_number_start,
-            $line_number_end,
+            $context,
             $comment,
-            $is_conditional,
-            $flags,
             $name,
-            $type
+            $type,
+            $flags
         );
 
-        $this->number_of_required_parameters = $number_of_required_parameters;
-        $this->number_of_optional_parameters = $number_of_optional_parameters;
+        $this->number_of_required_parameters =
+            $number_of_required_parameters;
+
+        $this->number_of_optional_parameters =
+            $number_of_optional_parameters;
     }
 
     /**
-     * @return map[string,MethodInof];
+     * @return map[string,Method];
      */
     public static function mapFromReflectionClassAndMethod(
+        Context $context,
         \ReflectionClass $class,
         \ReflectionMethod $method,
         array $parents
@@ -108,32 +99,43 @@ class MethodElement extends TypedStructuralElement {
             $reflection_method->getNumberOfParameters()
             - $number_of_required_parameters;
 
-        $canonical_method_name = strtolower($method->name);
+        $canonical_method_name =
+            strtolower($method->name);
 
-        $method_info = new MethodElement(
-            'internal',
-            $class->getNamespaceName(),
-            0,
-            0,
-            '',
-            false,
-            $reflection_method->getModifiers(),
+        $method_element = new Method(
+            $context,
+            Comment::none(),
             $method->name,
-            '',
+            Type::none(),
+            $reflection_method->getModifiers(),
             $number_of_required_parameters,
             $number_of_optional_parameters
         );
 
-        $arginfo = [];
-        unset(${"arginfo1"});
-        $alt = 1;
-
-        $fqsen = "{$class->getName()}::{$method->name}";
+        $fqsen = $method_element->getFQSEN();
+        // $fqsen = "{$class->getName()}::{$method->name}";
 
         $name_method_info_map = [
-            $canonical_method_name => $method_info
+            $fqsen->__toString() => $method_element
         ];
 
+        // Populate multiple-dispatch alternate method
+        foreach ($fqsen->alternateFQSENInfiniteList() as $alt_fqsen) {
+            if (!Type::builtinExists($alt_fqsen)) {
+                break;
+            }
+
+            $alt_method_element = $method_element;
+            $alt_method_element->withName(
+                $method->name . ' ' . $alt_fqsen->getAlternateId()
+            );
+
+            $name_method_info_map = array_merge($name_method_info_map, [
+                $alt_fqsen->__toString() => $alt_method_element,
+            ]);
+        }
+
+        /*
         global $INTERNAL_ARG_INFO;
         if(!empty($INTERNAL_ARG_INFO[$fqsen])) {
             $arginfo =
@@ -164,7 +166,10 @@ class MethodElement extends TypedStructuralElement {
                     "{$class->getName()}::{$method->name} $alt";
 
             }
-        } else if(!empty($parents)) {
+         */
+
+        /*
+        if(!empty($parents)) {
             foreach($parents as $parent_name) {
                 $parent_fqsen = "{$parent_name}::{$method->name}";
                 if(!empty($INTERNAL_ARG_INFO[$parent_fqsen])) {
@@ -203,6 +208,7 @@ class MethodElement extends TypedStructuralElement {
                 }
             }
         }
+         */
 
         foreach($method->getParameters() as $param) {
             $alt = 1;
@@ -216,17 +222,12 @@ class MethodElement extends TypedStructuralElement {
             }
 
             $name_method_info_map[strtolower($method->name)]->parameter_list[] =
-                new ParameterElement(
-                    'internal',
-                    '',
-                    0,
-                    0,
-                    '',
-                    false,
-                    $flags,
+                new Parameter(
+                    $context,
+                    Comment::none(),
                     $param->name,
-                    (empty($arginfo) ? '' : (next($arginfo) ?: '') ),
-                    null
+                    new Type([(empty($arginfo) ? '' : (next($arginfo) ?: ''))]),
+                    $flags
                 );
 
             while(!empty(${"arginfo{$alt}"})) {

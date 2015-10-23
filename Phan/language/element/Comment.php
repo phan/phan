@@ -1,14 +1,13 @@
 <?php
 declare(strict_types=1);
-namespace phan\element;
+namespace phan\language\element;
 
-require_once(__DIR__.'/ParameterElement.php');
+require_once(__DIR__.'/Parameter.php');
 require_once(__DIR__.'/TypedStructuralElement.php');
 
 /**
- * ...
  */
-class CommentElement {
+class Comment {
 
     /**
      * @var bool
@@ -53,8 +52,8 @@ class CommentElement {
     /**
      *
      */
-    public static function none() : CommentElement {
-        return new CommentElement(
+    public static function none() : Comment {
+        return new Comment(
             false, [], [], ''
         );
     }
@@ -64,7 +63,7 @@ class CommentElement {
      */
     public static function fromString(
         string $comment
-    ) : CommentElement {
+    ) : Comment {
 
         $is_deprecated = false;
         $var_list = [];
@@ -124,7 +123,7 @@ class CommentElement {
 
             // TODO: add support for properties
 
-            return new CommentElement(
+            return new Comment(
                 $is_deprecated,
                 $var_list,
                 $param_list,

@@ -1,10 +1,17 @@
 <?php
 declare(strict_types=1);
-namespace phan\element;
+namespace phan\language\element;
 
+require_once(__DIR__.'/../Context.php');
+require_once(__DIR__.'/../Type.php');
+require_once(__DIR__.'/Comment.php');
 require_once(__DIR__.'/StructuralElement.php');
 
-abstract class TypedStructuralElement extends StructuralElement {
+use \phan\language\Context;
+use \phan\language\Type;
+use \phan\language\element\Comment;
+
+class TypedStructuralElement extends StructuralElement {
 
     /**
      * @var name
@@ -49,8 +56,8 @@ abstract class TypedStructuralElement extends StructuralElement {
      * a certain kind has a meaningful flags value.
      */
     public function __construct(
-        \phan\Context $context,
-        CommentElement $comment
+        Context $context,
+        Comment $comment,
         string $name,
         Type $type,
         int $flags
@@ -77,7 +84,11 @@ abstract class TypedStructuralElement extends StructuralElement {
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : \phan\language\FQSEN;
+    public function getFQSEN() : \phan\language\FQSEN {
+        return \phan\language\FQSEN::fromContext(
+            $this->getContext()
+        );
+    }
 
     /**
      * @return string

@@ -1,6 +1,12 @@
 <?php
 declare(strict_types=1);
-namespace phan\element;
+namespace phan\language\element;
+
+require_once(__DIR__.'/../Context.php');
+require_once(__DIR__.'/Comment.php');
+
+use \phan\language\Context;
+use \phan\language\element\Comment;
 
 /**
  *
@@ -14,24 +20,41 @@ class StructuralElement {
     private $context = null;
 
     /**
-     * @var CommentElement
+     * @var Comment
      * Any comment block associated with the structural
      * element
      */
-    private $comment_element = null;
+    private $comment = null;
 
     /**
-     * @param \phan\Context $context
+     * @param Context $context
      * The context in which the structural element lives
      *
-     * @param CommentElement $comment,
+     * @param Comment $comment,
      * Any comment block associated with the class
      */
     public function __construct(
-        \phan\Context $context,
-        CommentElement $comment_element
+        Context $context,
+        Comment $comment
     ) {
         $this->context = $context;
-        $this->comment = $comment_element;
+        $this->comment = $comment;
+    }
+
+    /**
+     * @return Context
+     * The context in which this structural element exists
+     */
+    public function getContext() : Context {
+        return $this->context;
+    }
+
+    /**
+     * @return Comment
+     * A possibly null comment associated with this structural
+     * element.
+     */
+    public function getComment() : Comment {
+        return $this->comment;
     }
 }

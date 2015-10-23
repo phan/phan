@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace phan\language;
 
+require_once(__DIR__.'/FQSEN.php');
+
 /**
  * Static data defining type names for builtin classes
  */
@@ -29,43 +31,79 @@ class Type {
     public function __construct(array $type_name_list) {
         $this->type_name_list = array_map(function(string $type_name) {
             return $this->toCanonicalName($type_name);
-        }, $type_name_list;
+        }, $type_name_list);
     }
 
     public function __toString() : string {
         return implode('|', $this->type_name_list);
     }
 
-    public static function typeForBuiltinClassProperty(
+    /**
+     * Get a Type specifying that there are no
+     * known types on a thing.
+     */
+    public static function none() : Type {
+        return new Type([]);
+    }
+
+    /**
+     * @return Type
+     * A Type for the given object
+     */
+    public static function typeForObject($object) {
+        return new Type([gettype($object)]);
+    }
+
+    public static function builtinClassPropertyType(
         string $class_name,
         string $property_name
     ) : Type {
-
         $class_property_type_map =
             $BUILTIN_CLASS_TYPES[strtolower($class_name)]['properties'];
 
         $property_type_name =
             $class_property_type_map[$property_name];
 
-
+        return new Type($property_type_name);
     }
-
 
     /**
      * @return Type[]
      * A list of types for parameters associated with the
      * given builtin function with the given name
      */
-    public static function typeListForParametersForBuiltinFunctionWithName(
-        string $function_name
+    public static function builtinFunctionPropertyNameTypeMap(
+        FQSEN $function_fqsen
     ) : array {
+        $type_name_struct =
+            $BUILTIN_FUNCTION_ARGUMENT_TYPES[$function_fqsen->__toString()];
 
-        $type_name_list =
-            $BUILTIN_FUNCTION_ARGUMENT_TYPES[$function_name];
+        if (!$type_name_struct) {
+            return [];
+        }
 
-        return array_map(function(string $type_name) {
-            return new Type($type_name);
-        }, $type_name_list);
+        $type_return = array_shift($type_name_struct);
+        $name_type_name_map = $type_name_struct;
+
+        $property_name_type_map = [];
+
+        foreach ($name_type_name_map as $name => $type_name) {
+            $property_name_type_map[$name] =
+                new Type($type_name);
+        }
+
+        return $property_name_type_map;
+    }
+
+    /**
+     * @return bool
+     * True if a builtin with the given FQSEN exists, else
+     * flase.
+     */
+    public static function builtinExists(FQSEN $fqsen) : bool {
+        return !empty(
+            $BUILTIN_FUNCTION_ARGUMENT_TYPES[$fqsen->__toString()]
+        );
     }
 
     /**
@@ -102,7 +140,7 @@ class Type {
         return str_replace(
             $repmaps[0],
             $repmaps[1],
-            $type
+            $type_name
         );
     }
 }

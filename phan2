@@ -10,13 +10,16 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-require_once(__DIR__.'/Phan/CLI.php');
 require_once(__DIR__.'/Phan/CodeBase.php');
-require_once(__DIR__.'/Phan/File.php');
 require_once(__DIR__.'/Phan/Log.php');
-require_once(__DIR__.'/Phan/element/ClassElement.php');
+require_once(__DIR__.'/Phan/deprecated/CLI.php');
+require_once(__DIR__.'/Phan/language/File.php');
+require_once(__DIR__.'/Phan/language/element/Clazz.php');
 
-$code_base = new phan\CodeBase(
+use phan\language\File;
+use phan\CodeBase;
+
+$code_base = new CodeBase(
     $internal_class_name_list,
     $internal_interface_name_list,
     $internal_trait_name_list,
@@ -26,7 +29,7 @@ $code_base = new phan\CodeBase(
 $cnt = count($files);
 
 foreach($files as $i => $file) {
-    $file = new phan\File(
+    $file = new File(
         $code_base,
         $file
     );
