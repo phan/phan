@@ -2,6 +2,10 @@
 declare(strict_types=1);
 namespace phan\language;
 
+require_once(__DIR__.'/context/Scope.php');
+
+use \phan\language\context\Scope;
+
 /**
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
@@ -67,6 +71,11 @@ class Context {
     private $is_conditional = false;
 
     /**
+     * @var Scope
+     */
+    private $scope = null;
+
+    /**
      *
      */
     public function __construct() {
@@ -79,6 +88,7 @@ class Context {
         $this->class_fqsen = new FQSEN();
         $this->method_fqsen = new FQSEN();
         $this->is_conditional = false;
+        $this->scope = new Scope();
     }
 
     /**
@@ -266,6 +276,15 @@ class Context {
      */
     public function getIsConditional() : bool {
         return $this->is_conditional;
+    }
+
+    /**
+     * @return Scope
+     * An object describing the contents of the current
+     * scope.
+     */
+    public function getScope() : Scope {
+        return $this->scope;
     }
 
 }

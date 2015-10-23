@@ -45,6 +45,13 @@ class CodeBase {
             = $class_element;
     }
 
+    /**
+     * @return Clazz
+     */
+    public function getClassByFQSEN(FQSEN $fqsen) : Clazz {
+        return $this->class_map[$fqsen->__toString()];
+    }
+
     public function addMethod(Method $method_element) {
         $this->method_map[$method_element->getFQSEN()->__tostring()] =
             $method_element;

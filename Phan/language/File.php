@@ -278,10 +278,39 @@ class File {
                 if(!empty($ast->docComment)) $dc = parse_doc_comment($ast->docComment);
 
                 foreach($ast->children as $i=>$node) {
-                    $classes[$lc]['properties'][$node->children[0]] = [ 'flags'=>$ast->flags,
-                                                                        'name'=>$node->children[0],
-                                                                        'lineno'=>$node->lineno];
-                    $type = node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[$lc]) ? null : $classes[$lc]);
+
+                    $type =
+                        node_type(
+                            $file,
+                            $namespace,
+                            $node->children[1],
+                            $current_scope,
+                            empty($classes[$lc]) ? null : $classes[$lc]
+                        );
+
+                    $clazz =
+                        $code_base->getClassByFQSEN($context->getClassFQSEN());
+
+                    $clazz->addProperty(
+                        new Property(
+                            $context
+                                ->withLineNumberStart($node->lineno)
+                                ->withLineNubmerEnd($node->endLineno),
+                            Comment::fromString($node->docComment),
+                            $node->children[0],
+                            $type,
+                            $ast->flags
+                        )
+                    );
+
+                    /*
+                    $classes[$lc]['properties'][$node->children[0]] = [
+                            'flags'=>$ast->flags,
+                            'name'=>$node->children[0],
+                            'lineno'=>$node->lineno
+                        ];
+                     */
+
                     if(!empty($dc['vars'][$i]['type'])) {
                         if($type !=='null' && !type_check($type, $dc['vars'][$i]['type'])) {
                             Log::err(Log::ETYPE, "property is declared to be {$dc['vars'][$i]['type']} but was assigned $type", $file, $node->lineno);

@@ -221,4 +221,11 @@ class Clazz extends TypedStructuralElement {
 
         return $class_element;
     }
+
+    /**
+     * @return void
+     */
+    public function addProperty(Property $property) {
+        $this->property_map[$property->getName()] = $property;
+    }
 }
