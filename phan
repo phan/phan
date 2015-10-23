@@ -1,5 +1,6 @@
-#!/usr/bin/env php
+#!/home/amorrison/sandbox/php-7.0.0RC5/package/bin/php
 <?php
+declare(strict_types=1);
 namespace phan;
 
 $time_start = microtime(true);
@@ -7,16 +8,20 @@ $time_start = microtime(true);
 // Grab these before we define our own classes
 $internal_classes = get_declared_classes();
 
-require __DIR__.'/includes/log.php';
-require __DIR__.'/includes/cli.php';
-require __DIR__.'/includes/util.php';
-require __DIR__.'/includes/pass1.php';
-require __DIR__.'/includes/pass2.php';
-require __DIR__.'/includes/ast_util.php';
+require __DIR__.'/Phan/Log.php';
+require __DIR__.'/Phan/CLI.php';
+require __DIR__.'/Phan/Util.php';
+require __DIR__.'/Phan/Pass1.php';
+require __DIR__.'/Phan/Pass2.php';
+require __DIR__.'/Phan/AST.php';
 
 // Globals where we store everything
-$internal_arginfo = require __DIR__.'/includes/arginfo.php';
-$internal_classvars = require __DIR__.'/includes/class_vars.php';
+$internal_arginfo =
+    require __DIR__.'/Phan/constants/ArgInfo.php';
+
+$internal_classvars =
+    require __DIR__.'/Phan/constants/ClassVars.php';
+
 $classes = [];
 $functions = [];
 $summary = [ 'classes'=>0, 'traits'=>0, 'methods'=>0, 'functions'=>0, 'closures'=>0, 'conditionals'=>0 ];

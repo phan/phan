@@ -1,6 +1,9 @@
 <?php
 namespace phan;
 
+require __DIR__.'/element/ClassElement.php';
+use phan\element;
+
 function add_class($class_name) {
 	global $classes, $internal_arginfo, $internal_classvars;
 
@@ -11,6 +14,11 @@ function add_class($class_name) {
 	else if($class->isInterface()) $flags = \ast\flags\CLASS_INTERFACE;
 	else if($class->isTrait()) $flags = \ast\flags\CLASS_TRAIT;
 	if($class->isAbstract()) $flags |= \ast\flags\CLASS_ABSTRACT;
+
+    // TODO
+    global $clazzes;
+    $clazzes[$lc] =
+        \phan\element\ClassElement::fromClassName($class_name);
 
 	$classes[$lc] = ['file'=>'internal',
 					 'namespace'=>$class->getNamespaceName(),

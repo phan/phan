@@ -1,7 +1,10 @@
 <?php
 namespace phan;
 
-// Pass 1 recursively finds all the class and function declarations and populates the appropriate globals
+/**
+ * Pass 1 recursively finds all the class and function
+ * declarations and populates the appropriate globals
+ */
 function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_class=null, $current_function=null) {
 	global $classes, $functions, $namespace_map, $summary, $bc_checks;
 	$done = false;
@@ -98,22 +101,23 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 					$parent = null;
 				}
 				$classes[$lc] = [
-									'file'		 => $file,
-									'namespace'	 => $namespace,
-									'conditional'=> $conditional,
-									'flags'		 => $ast->flags,
-									'lineno'	 => $ast->lineno,
-									'endLineno'  => $ast->endLineno,
-									'name'		 => $namespace.$ast->name,
-									'docComment' => $ast->docComment,
-									'parent'	 => $parent,
-									'pc_called'  => true,
-									'type'	     => '',
-									'properties' => [],
-									'constants'  => [],
-									'traits'	 => [],
-									'interfaces' => [],
-									'methods'	 => [] ];
+                    'file'		 => $file,
+                    'namespace'	 => $namespace,
+                    'conditional'=> $conditional,
+                    'flags'		 => $ast->flags,
+                    'lineno'	 => $ast->lineno,
+                    'endLineno'  => $ast->endLineno,
+                    'name'		 => $namespace.$ast->name,
+                    'docComment' => $ast->docComment,
+                    'parent'	 => $parent,
+                    'pc_called'  => true,
+                    'type'	     => '',
+                    'properties' => [],
+                    'constants'  => [],
+                    'traits'	 => [],
+                    'interfaces' => [],
+                    'methods'	 => []
+                ];
 
 				$classes[$lc]['interfaces'] = array_merge($classes[$lc]['interfaces'], node_namelist($file, $ast->children[1], $namespace));
 				$summary['classes']++;

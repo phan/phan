@@ -1,4 +1,6 @@
 <?php
+namespace phan;
+
 /**
  * Format
  *

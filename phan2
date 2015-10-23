@@ -1,0 +1,41 @@
+#!/home/amorrison/sandbox/php-7.0.0RC5/package/bin/php
+<?php
+declare(strict_types=1);
+
+$time_start = microtime(true);
+
+// Grab these before we define our own classes
+$internal_class_name_list = get_declared_classes();
+$internal_interface_name_list = get_declared_interfaces();
+$internal_trait_name_list = get_declared_traits();
+$internal_function_name_list = get_defined_functions()['internal'];
+
+require_once(__DIR__.'/Phan/CLI.php');
+require_once(__DIR__.'/Phan/CodeBase.php');
+require_once(__DIR__.'/Phan/File.php');
+require_once(__DIR__.'/Phan/Log.php');
+require_once(__DIR__.'/Phan/element/ClassElement.php');
+
+$code_base = new phan\CodeBase(
+    $internal_class_name_list,
+    $internal_interface_name_list,
+    $internal_trait_name_list,
+    $internal_function_name_list
+);
+
+$cnt = count($files);
+
+foreach($files as $i => $file) {
+    $file = new phan\File(
+        $code_base,
+        $file
+    );
+    $file->passOne();
+    /*
+	$ast = \ast\parse_file($file);
+	else {
+		pass1($file, '', false, $ast, 'global');
+	}
+     */
+}
+

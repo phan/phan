@@ -1,4 +1,4 @@
-#!/usr/bin/env php
+#!/home/amorrison/sandbox/php-7.0.0RC5/package/bin/php
 <?php
 /*
    +----------------------------------------------------------------------+

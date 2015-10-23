@@ -1,8 +1,11 @@
 <?php
 namespace phan;
 
-// ast_node_type() is for places where an actual type name appears. This returns that type name
-// node_type() instead to figure out the type of a node
+/**
+ * ast_node_type() is for places where an actual type name appears.
+ * This returns that type name node_type() instead to figure out the
+ * type of a node
+ */
 function ast_node_type($file, $node, $namespace) {
 	global $namespace_map;
 
@@ -26,6 +29,9 @@ function ast_node_type($file, $node, $namespace) {
 	return $result;
 }
 
+/**
+ *
+ */
 function ast_get_flag_info() : array {
     static $exclusive, $combinable;
     if ($exclusive !== null) {
