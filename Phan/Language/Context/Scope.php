@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace phan\language\context;
+namespace Phan\Language\Context;
 
 class Scope {
     /**
@@ -9,6 +9,10 @@ class Scope {
     private $variable_list = [];
 
     public function __construct() {
+    }
+
+    public function hasVariableName(string $name) : bool {
+
     }
 
 }

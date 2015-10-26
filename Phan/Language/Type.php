@@ -1,20 +1,18 @@
 <?php
 declare(strict_types=1);
-namespace phan\language;
-
-require_once(__DIR__.'/FQSEN.php');
+namespace Phan\Language;
 
 /**
  * Static data defining type names for builtin classes
  */
 $BUILTIN_CLASS_TYPES =
-    require(__DIR__.'/type/BuiltinClassTypes.php');
+    require(__DIR__.'/Type/BuiltinClassTypes.php');
 
 /**
  * Static data defining types for builtin functions
  */
 $BUILTIN_FUNCTION_ARGUMENT_TYPES =
-    require(__DIR__.'/type/BuiltinFunctionArgumentTypes.php');
+    require(__DIR__.'/Type/BuiltinFunctionArgumentTypes.php');
 
 class Type {
 
@@ -103,26 +101,52 @@ class Type {
                 ) {
                     return self::mkgenerics($types[0]);
                 }
-			}
+            }
+
 			return new Type(['array']);
 
-		} else if($node->kind == \ast\AST_BINARY_OP || $node->kind == \ast\AST_GREATER || $node->kind == \ast\AST_GREATER_EQUAL) {
-			if($node->kind == \ast\AST_BINARY_OP) $node_flags = $node->flags;
-			else $node_flags = $node->kind;
+        } else if($node->kind == \ast\AST_BINARY_OP
+            || $node->kind == \ast\AST_GREATER
+            || $node->kind == \ast\AST_GREATER_EQUAL
+        ) {
+            if($node->kind == \ast\AST_BINARY_OP) {
+                $node_flags = $node->flags;
+            } else {
+                $node_flags = $node->kind;
+            }
+
 			$taint = var_taint_check($file, $node, $current_scope);
+
 			switch($node_flags) {
 				// Always a string from a concat
 				case \ast\flags\BINARY_CONCAT:
 					$temp_taint = false;
-					node_type($file, $namespace, $node->children[0], $current_scope, $current_class, $temp_taint);
+
+                    node_type(
+                        $file,
+                        $namespace,
+                        $node->children[0],
+                        $current_scope,
+                        $current_class,
+                        $temp_taint
+                    );
 					if($temp_taint) {
 						$taint = true;
 						return 'string';
 					}
-					node_type($file, $namespace, $node->children[1], $current_scope, $current_class, $temp_taint);
+                    node_type(
+                        $file,
+                        $namespace,
+                        $node->children[1],
+                        $current_scope,
+                        $current_class,
+                        $temp_taint
+                    );
+
 					if($temp_taint) {
 						$taint = true;
 					}
+
 					return 'string';
 					break;
 
@@ -338,45 +362,104 @@ class Type {
 				}
 			}
 		}
+
+        return '';
 	}
-	return '';
 
+    /**
+     * Looks for any suspicious GPSC variables in the given node
+     *
+     * @return bool
+     */
+    private function isTainted(
+        Context $context,
+        $node,
+        string $current_scope
+    ) : bool {
 
+        // global $scope, $tainted_by;
 
+        static $tainted = [
+            '_GET' => '*',
+            '_POST' => '*',
+            '_COOKIE' => '*',
+            '_REQUEST' => '*',
+            '_FILES' => '*',
+            '_SERVER' => [
+                'QUERY_STRING',
+                'HTTP_HOST',
+                'HTTP_USER_AGENT',
+                'HTTP_ACCEPT_ENCODING',
+                'HTTP_ACCEPT_LANGUAGE',
+                'REQUEST_URI',
+                'PHP_SELF',
+                'argv'
+            ]
+        ];
 
+        if(!$node instanceof \ast\Node) {
+            return false;
+        }
 
+        $parent = $node;
+        while(($node instanceof \ast\Node)
+            && ($node->kind != \ast\AST_VAR)
+            && ($node->kind != \ast\AST_MAGIC_CONST)
+        ) {
+            $parent = $node;
+            if(empty($node->children[0])) {
+                break;
+            }
+            $node = $node->children[0];
+        }
 
+        if($parent->kind == \ast\AST_DIM) {
+            if($node->children[0] instanceof \ast\Node) {
+                // $$var or something else dynamic is going on, not direct access to a suspivious var
+                return false;
+            }
+            foreach($tainted as $name=>$index) {
+                if($node->children[0] === $name) {
+                    if($index=='*') {
+                        return true;
+                    }
+                    if($parent->children[1] instanceof \ast\Node) {
+                        // Dynamic index, give up
+                        return false;
+                    }
+                    if(in_array($parent->children[1], $index, true)) {
+                        return true;
+                    }
+                }
+            }
+        } else if($parent->kind == \ast\AST_VAR
+            && !($parent->children[0] instanceof \ast\Node)
+        ) {
+            $variable_name = $parent->children[0];
+            if (empty($context->getScope()->getVariableNameList()[$variable_name])) {
+            }
 
+            if(empty($scope[$current_scope]['vars'][$parent->children[0]])) {
+                if(!superglobal($parent->children[0]))
+                    Log::err(
+                        Log::EVAR,
+                        "Variable \${$parent->children[0]} is not defined",
+                        $file,
+                        $parent->lineno
+                    );
+            } else {
+                if(!empty($scope[$current_scope]['vars'][$parent->children[0]]['tainted'])
+                ) {
+                    $tainted_by =
+                        $scope[$current_scope]['vars'][$parent->children[0]]['tainted_by'];
+                    return true;
+                }
+            }
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return false;
     }
+
 
     public static function builtinClassPropertyType(
         string $class_name,

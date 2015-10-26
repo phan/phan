@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace phan\language;
+namespace Phan\Language;
 
 /**
  * A Fully-Qualified Structural Element Name

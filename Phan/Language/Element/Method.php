@@ -1,18 +1,11 @@
 <?php
 declare(strict_types=1);
-namespace phan\language\element;
+namespace Phan\Language\Element;
 
-require_once(__DIR__.'/../Context.php');
-require_once(__DIR__.'/../Type.php');
-require_once(__DIR__.'/Comment.php');
-require_once(__DIR__.'/Parameter.php');
-require_once(__DIR__.'/Property.php');
-require_once(__DIR__.'/TypedStructuralElement.php');
-
-use \phan\language\Context;
-use \phan\language\Type;
-use \phan\language\element\Comment;
-use \phan\language\element\Parameter;
+use \Phan\Language\Context;
+use \Phan\Language\Type;
+use \Phan\Language\Element\Comment;
+use \Phan\Language\Element\Parameter;
 
 class Method extends TypedStructuralElement {
 

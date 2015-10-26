@@ -1,15 +1,10 @@
 <?php
 declare(strict_types=1);
-namespace phan\language\element;
+namespace Phan\Language\Element;
 
-require_once(__DIR__.'/../Context.php');
-require_once(__DIR__.'/../Type.php');
-require_once(__DIR__.'/Comment.php');
-require_once(__DIR__.'/StructuralElement.php');
-
-use \phan\language\Context;
-use \phan\language\Type;
-use \phan\language\element\Comment;
+use \Phan\Language\Context;
+use \Phan\Language\Type;
+use \Phan\Language\Element\Comment;
 
 class TypedStructuralElement extends StructuralElement {
 

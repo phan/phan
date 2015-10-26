@@ -1,14 +1,10 @@
 <?php
 declare(strict_types=1);
-namespace phan\language\element;
+namespace Phan\Language\Element;
 
-require_once(__DIR__.'/../../deprecated/AST.php');
-require_once(__DIR__.'/../Context.php');
-require_once(__DIR__.'/../Type.php');
-require_once(__DIR__.'/TypedStructuralElement.php');
-
-use \phan\language\Context;
-use \phan\language\Type;
+use \Phan\Language\Context;
+use \Phan\Language\Type;
+// use \phan\language\element\TypedStructuralElement;
 
 class Parameter extends TypedStructuralElement {
 

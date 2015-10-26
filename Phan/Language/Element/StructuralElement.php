@@ -1,12 +1,9 @@
 <?php
 declare(strict_types=1);
-namespace phan\language\element;
+namespace phan\Language\Element;
 
-require_once(__DIR__.'/../Context.php');
-require_once(__DIR__.'/Comment.php');
-
-use \phan\language\Context;
-use \phan\language\element\Comment;
+use \Phan\Language\Context;
+use \Phan\Language\Element\Comment;
 
 /**
  *

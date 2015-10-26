@@ -1,4 +1,5 @@
 <?php
+namespace Phan\Language\Type;
 
 return [
 	'mysqli' => [

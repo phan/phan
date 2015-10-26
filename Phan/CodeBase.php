@@ -1,16 +1,12 @@
 <?php
 declare(strict_types=1);
-namespace phan;
+namespace Phan;
 
-require_once(__DIR__.'/language/Context.php');
-require_once(__DIR__.'/language/element/Method.php');
-require_once(__DIR__.'/language/element/Comment.php');
-require_once(__DIR__.'/language/element/Clazz.php');
-
-use \phan\language\Context;
-use \phan\language\element\Clazz;
-use \phan\language\element\Comment;
-use \phan\language\element\Method;
+use \Phan\Language\Context;
+use \Phan\Language\FQSEN;
+use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Comment;
+use \Phan\Language\Element\Method;
 
 class CodeBase {
 
@@ -52,6 +48,14 @@ class CodeBase {
         return $this->class_map[$fqsen->__toString()];
     }
 
+    /**
+     * @return bool
+     * True if the exlass exists else false
+     */
+    public function classExists(FQSEN $fqsen) : bool {
+        return !empty($this->getClassByFQSEN($fqsen));
+    }
+
     public function addMethod(Method $method_element) {
         $this->method_map[$method_element->getFQSEN()->__tostring()] =
             $method_element;
@@ -63,7 +67,7 @@ class CodeBase {
     private function addClassesByNames(array $class_name_list) {
         foreach ($class_name_list as $i => $class_name) {
             $this->class_map[$class_name] =
-                language\element\Clazz::fromClassName($class_name);
+                Clazz::fromClassName($class_name);
         }
     }
 

@@ -1,9 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace phan\language\element;
-
-require_once(__DIR__.'/Parameter.php');
-require_once(__DIR__.'/TypedStructuralElement.php');
+namespace Phan\Language\Element;
 
 /**
  */

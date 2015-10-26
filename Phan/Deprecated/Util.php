@@ -1,8 +1,6 @@
 <?php
-namespace phan;
-
-require __DIR__.'/element/ClassElement.php';
-use phan\element;
+declare(strict_types=1);
+namespace Phan\Deprecated;
 
 function add_class($class_name) {
 	global $classes, $internal_arginfo, $internal_classvars;

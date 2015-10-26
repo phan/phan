@@ -10,14 +10,13 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-require_once(__DIR__.'/Phan/CodeBase.php');
-require_once(__DIR__.'/Phan/Log.php');
-require_once(__DIR__.'/Phan/deprecated/CLI.php');
-require_once(__DIR__.'/Phan/language/File.php');
-require_once(__DIR__.'/Phan/language/element/Clazz.php');
+require_once(__DIR__.'/Phan/Bootstrap.php');
+require_once(__DIR__.'/Phan/Deprecated/CLI.php');
+require_once(__DIR__.'/Phan/Deprecated/Util.php');
+require_once(__DIR__.'/Phan/Deprecated/AST.php');
 
-use phan\language\File;
-use phan\CodeBase;
+use Phan\Language\File;
+use Phan\CodeBase;
 
 $code_base = new CodeBase(
     $internal_class_name_list,

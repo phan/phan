@@ -1,10 +1,8 @@
 <?php
 declare(strict_types=1);
-namespace phan\language;
+namespace Phan\Language;
 
-require_once(__DIR__.'/context/Scope.php');
-
-use \phan\language\context\Scope;
+use \Phan\Language\Context\Scope;
 
 /**
  * An object representing the context in which any

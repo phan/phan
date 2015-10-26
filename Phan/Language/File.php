@@ -1,20 +1,12 @@
 <?php
 declare(strict_types=1);
-namespace phan\language;
+namespace Phan\Language;
 
-require_once(__DIR__.'/../Log.php');
-require_once(__DIR__.'/../CodeBase.php');
-require_once(__DIR__.'/../Options.php');
-require_once(__DIR__.'/Context.php');
-require_once(__DIR__.'/element/Method.php');
-require_once(__DIR__.'/element/Comment.php');
-require_once(__DIR__.'/element/Clazz.php');
-
-use \phan\Log;
-use \phan\CodeBase;
-use \phan\language\element\Clazz;
-use \phan\language\element\Method;
-use \phan\language\element\Comment;
+use \Phan\Log;
+use \Phan\CodeBase;
+use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Comment;
 
 class File {
 
@@ -279,6 +271,20 @@ class File {
 
                 foreach($ast->children as $i=>$node) {
 
+                    $clazz =
+                        $this->code_base->getClassByFQSEN(
+                            $context->getClassFQSEN()
+                        );
+
+                    // @var Type
+                    $type = Type::typeForASTNode(
+                        $context,
+                        $node->children[1],
+                        $clazz,
+                        $temp_taint
+                    );
+
+                    /*
                     $type =
                         node_type(
                             $file,
@@ -287,9 +293,7 @@ class File {
                             $current_scope,
                             empty($classes[$lc]) ? null : $classes[$lc]
                         );
-
-                    $clazz =
-                        $code_base->getClassByFQSEN($context->getClassFQSEN());
+                     */
 
                     $clazz->addProperty(
                         new Property(
