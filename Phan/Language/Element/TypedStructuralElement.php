@@ -3,8 +3,9 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
-use \Phan\Language\Type;
 use \Phan\Language\Element\Comment;
+use \Phan\Language\FQSEN;
+use \Phan\Language\Type;
 
 class TypedStructuralElement extends StructuralElement {
 
@@ -31,7 +32,7 @@ class TypedStructuralElement extends StructuralElement {
     private $flags = 0;
 
     /**
-     * @param \phan\Context $context
+     * @param Context $context
      * The context in which the structural element lives
      *
      * @param CommentElement $comment,
@@ -75,12 +76,12 @@ class TypedStructuralElement extends StructuralElement {
     }
 
     /**
-     * @return \phan\language\FQSEN
+     * @return FQSEN
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : \phan\language\FQSEN {
-        return \phan\language\FQSEN::fromContext(
+    public function getFQSEN() : FQSEN {
+        return FQSEN::fromContext(
             $this->getContext()
         );
     }
@@ -92,6 +93,14 @@ class TypedStructuralElement extends StructuralElement {
      */
     public function getFQSENString() : string {
         return $this->getFQSEN()->__toString();
+    }
+
+    /**
+     * @return Type
+     * Get the type of this structural element
+     */
+    public function getType() : Type {
+        return $this->type;
     }
 
 }

@@ -13,11 +13,6 @@ use \Phan\Language\Element\Clazz;
 class Context {
 
     /**
-     * The code base for which this context operates on
-     */
-    private $code_base;
-
-    /**
      * @var string
      * The path to the file in which this element is defined
      */
@@ -83,30 +78,17 @@ class Context {
     /**
      *
      */
-    public function __construct(
-        CodeBase $code_base
-    ) {
-        $this->code_base = $code_base;
-
+    public function __construct() {
         $this->file = '';
         $this->namespace = '';
         $this->namespace_map = [];
         $this->line_number_start = 0;
         $this->line_number_end = 0;
-        $this->scope_fqsen = new FQSEN();
-        $this->class_fqsen = new FQSEN();
-        $this->method_fqsen = new FQSEN();
+        $this->scope_fqsen = null;
+        $this->class_fqsen = null;
+        $this->method_fqsen = null;
         $this->is_conditional = false;
         $this->scope = new Scope();
-    }
-
-    /**
-     * @return Context
-     * An empty context such as for builtin functions and
-     * classes.
-     */
-    public static function none() {
-        return new Context();
     }
 
     /**
@@ -114,10 +96,12 @@ class Context {
      * The path to the file in which this element is defined
      *
      * @return Context
+     * A clone of this context with the given value is returned
      */
-    public function withFile(string $file) {
-        $this->file = $file;
-        return $this;
+    public function withFile(string $file) : Context {
+        $context = clone($this);
+        $context->file = $file;
+        return $context;
     }
 
     /**
@@ -133,10 +117,21 @@ class Context {
      * The namespace of the file
      *
      * @return Context
+     * A clone of this context with the given value is returned
      */
-    public function withNamespace(string $namespace) {
-        $this->namespace = $namespace;
-        return $this;
+    public function withNamespace(string $namespace) : Context {
+        $context = clone($this);
+        $context->namespace = $namespace;
+        return $context;
+    }
+
+    /**
+     * @return bool
+     * True if a namespace is defined in this context, else
+     * false.
+     */
+    public function hasNamespace() : bool {
+        return !empty($this->namespace);
     }
 
     /**
@@ -148,17 +143,26 @@ class Context {
     }
 
     /**
+     * @return array
+     */
+    public function getNamespaceMap() : array {
+        return $this->namespace_map;
+    }
+
+    /**
      * ...
      *
      * @return Context
+     * A clone of this context with the given value is returned
      */
     public function withNamespaceMap(
         int $flags,
         string $alias,
         string  $target
-    ) {
-        $this->namespace_map[$flags][strtolower($alias)] = $target;
-        return $this;
+    ) : Context {
+        $context = clone($this);
+        $context->namespace_map[$flags][strtolower($alias)] = $target;
+        return $context;
     }
 
     /**
@@ -166,10 +170,12 @@ class Context {
      * The starting line number of the element within the file
      *
      * @return Context
+     * A clone of this context with the given value is returned
      */
-    public function withLineNumberStart(int $line_number) {
-        $this->line_number_start = $line_number;
-        return $this;
+    public function withLineNumberStart(int $line_number) : Context {
+        $context = clone($this);
+        $context->line_number_start = $line_number;
+        return $context;
     }
 
     /*
@@ -185,10 +191,12 @@ class Context {
      * The ending line number of the element within the $file
      *
      * @return Context
+     * A clone of this context with the given value is returned
      */
-    public function withLineNumberEnd(int $line_number) {
-        $this->line_number_end = $line_number;
-        return $this;
+    public function withLineNumberEnd(int $line_number) : Context {
+        $context = clone($this);
+        $context->line_number_end = $line_number;
+        return $context;
     }
 
     /**
@@ -205,10 +213,12 @@ class Context {
      * the current scope.
      *
      * @return Context
+     * A clone of this context with the given value is returned
      */
-    public function withScopeFQSEN(string $fqsen) {
-        $this->scope_fqsen = $fqsen;
-        return $this;
+    public function withScopeFQSEN(string $fqsen) : Context {
+        $context = clone($this);
+        $context->scope_fqsen = $fqsen;
+        return $context;
     }
 
     /**
@@ -227,10 +237,20 @@ class Context {
      * in a class scope.
      *
      * @return Context
+     * A clone of this context with the given value is returned
      */
-    public function withClassFQSEN(FQSEN $fqsen) {
-        $this->class_fqsen = $fqsen;
-        return $this;
+    public function withClassFQSEN(FQSEN $fqsen) : Context {
+        $context = clone($this);
+        $context->class_fqsen = $fqsen;
+        return $context;
+    }
+
+    /**
+     * @return bool
+     * True if a class fqsen is defined within this context.
+     */
+    public function hasClassFQSEN() : bool {
+        return !empty($this->class_fqsen);
     }
 
     /**
@@ -244,11 +264,12 @@ class Context {
     }
 
     /**
-     * @return Clazz
-     * Get the current class
+     * @return bool
+     * True if this context is currently within a class
+     * scope, else false.
      */
-    public function getClass() : Clazz {
-        return $this->code_base->getClassByFQSEN($this->getClassFQSEN());
+    public function isInClassScope() : bool {
+        return !empty($this->class_fqsen);
     }
 
     /*
@@ -258,10 +279,20 @@ class Context {
      * we are not in a function or method scope.
      *
      * @return Context
+     * A clone of this context with the given value is returned
      */
-    public function withMethodFQSEN(string $fqsen) {
-        $this->method_fqsen = $fqsen;
-        return $this;
+    public function withMethodFQSEN(FQSEN $fqsen) : Context {
+        $context = clone($this);
+        $context->method_fqsen = $fqsen;
+        return $context;
+    }
+
+    /**
+     * @return bool
+     * True if a method FQSEN is defined, else false.
+     */
+    public function hasMethodFQSEN() : bool {
+        return !empty($this->method_fqsen);
     }
 
     /*
@@ -280,10 +311,12 @@ class Context {
      * else false.
      *
      * @return Context
+     * A clone of this context with the given value is returned
      */
-    public function withIsConditional(bool $is_conditional) {
-        $this->is_conditional = $is_conditional;
-        return $this;
+    public function withIsConditional(bool $is_conditional) : Context {
+        $context = clone($this);
+        $context->is_conditional = $is_conditional;
+        return $context;
     }
 
     /**

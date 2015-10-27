@@ -55,6 +55,8 @@ class File {
      *
      * @param Context $context
      *
+     * @param CodeBase $code_base
+     *
      * @return string
      * The namespace of the file
      */
@@ -64,11 +66,15 @@ class File {
     ) : Context {
         $done = false;
 
-        $current_clazz = $context->getClass();
+        $current_clazz = $context->isInClassScope()
+            ? $this->code_base->getClassByFQSEN(
+                $context->getClassFQSEN()
+            )
+            : null;
 
         switch($ast->kind) {
             case \ast\AST_NAMESPACE:
-                $context->withNamespace(
+                $context = $context->withNamespace(
                     (string)$ast->children[0].'\\'
                 );
                 break;
@@ -148,7 +154,7 @@ class File {
                         $alias = $elem->children[1];
                     }
 
-                    $context->withNamespaceMap(
+                    $context = $context->withNamespaceMap(
                         $ast->flags, $alias, $target
                     );
                 }
@@ -159,12 +165,21 @@ class File {
                     for($i=1;;$i++) {
                         if(empty($classes[$i.":".strtolower($namespace.$ast->name)])) break;
                     }
-                    $context->setClassName(
-                        $i.":".$namespace.$ast->name
+                    $context = $context->withClassFQSEN(
+                        (new FQSEN(
+                            [],
+                            $context->getNamespace(),
+                            $ast->name,
+                            ''
+                        ))->withAlternateId($i)
                     );
                 } else {
-                    $context->withClassFQSEN(
-                        new FQSEN([], $context->getNamespace(), $ast->name)
+                    $context = $context->withClassFQSEN(
+                        new FQSEN(
+                            [],
+                            $context->getNamespace(),
+                            $ast->name,
+                            '')
                     );
                 }
                 if(!empty($ast->children[0])) {
@@ -185,7 +200,7 @@ class File {
                     $parent = null;
                 }
 
-                $clazz = new Clazz(
+                $current_clazz = new Clazz(
                     $context
                         ->withLineNumberStart($ast->lineno)
                         ->withLineNumberEnd($ast->endLineno ?: -1),
@@ -195,7 +210,8 @@ class File {
                     $ast->flags
                 );
 
-                $this->code_base->addClass($clazz);
+                $this->code_base->addClass($current_clazz);
+                $this->code_base->incrementClasses();
 
                 /*
                 $lc = $context->getClassFQSEN();
@@ -226,18 +242,94 @@ class File {
                 );
                  */
 
-                $this->code_base->incrementClasses();
 
                 break;
 
             case \ast\AST_USE_TRAIT:
+
+                $trait_name_list =
+                    node_namelist(
+                        $context->getFile(),
+                        $ast->children[0],
+                        $context->getNamespace()
+                    );
+
+                foreach ($trait_name_list as $trait_name) {
+                    $current_clazz->addTraintFQSEN(
+                        FQSEN::fromContext(
+                            $context
+                        )->withClassName($trait_name)
+                    );
+                }
+
+                /*
                 $classes[$lc]['traits'] =
-                    array_merge($classes[$lc]['traits'], node_namelist($file, $ast->children[0], $namespace));
+                    array_merge(
+                        $classes[$lc]['traits'],
+                        node_namelist(
+                            $file,
+                            $ast->children[0],
+                            $namespace
+                        )
+                    );
+                 */
+
                 $this->code_base->incrementTraits();
                 break;
 
             case \ast\AST_METHOD:
-                if(!empty($classes[$lc]['methods'][strtolower($ast->name)])) {
+                $method_name = $ast->name;
+
+                $method_fqsen = FQSEN::fromContext(
+                    $context
+                )->withMethodName($method_name);
+
+                // Hunt for an available alternate ID if necessary
+                $alternate_id = 0;
+                while($current_clazz->hasMethodWithFQSEN($method_fqsen)) {
+                    $method_fqsen = $method_fqsen->withAlternateId(
+                        ++$alternate_id
+                    );
+                }
+
+                $method =
+                    new Method(
+                        $context
+                            ->withLineNumberStart($ast->lineno ?: 0)
+                            ->withLineNumberEnd($ast->endLineno ?? -1),
+                        Comment::fromString($ast->docComment ?: ''),
+                        $method_name,
+                        Type::none(),
+                        0, // flags
+                        0, // number_of_required_parameters
+                        0  // number_of_optional_parameters
+                    );
+
+                $current_clazz->addMethod($method);
+                $this->code_base->incrementMethods();
+
+                $context = $context->withMethodFQSEN(
+                    $method->getFQSEN()
+                );
+
+                if ('__construct' == $method_name) {
+                    $current_clazz->setIsParentConstructorCalled(false);
+                }
+
+                if ('__invoke' == $method_name) {
+                    $current_clazz->getType()->addTypeName('callable');
+                }
+
+                /*
+                if($method == '__construct')
+                    $classes[$lc]['pc_called'] = false;
+                if($method == '__invoke')
+                    $classes[$lc]['type'] =
+                        merge_type($classes[$lc]['type'], 'callable');
+                 */
+
+                /*
+                // if(!empty($classes[$lc]['methods'][strtolower($ast->name)])) {
                     for($i=1;;$i++) {
                         if(empty($classes[$lc]['methods'][$i.':'.strtolower($ast->name)])) break;
                     }
@@ -260,6 +352,7 @@ class File {
                 if($method == '__construct') $classes[$lc]['pc_called'] = false;
                 if($method == '__invoke') $classes[$lc]['type'] = merge_type($classes[$lc]['type'], 'callable');
                 break;
+                 */
 
             case \ast\AST_PROP_DECL:
                 if(empty($context->getClassFQSEN())) {
@@ -270,17 +363,18 @@ class File {
                         $ast->lineno
                     );
                 }
+
+                /*
                 $dc = null;
-                if(!empty($ast->docComment)) $dc = parse_doc_comment($ast->docComment);
+                if(!empty($ast->docComment)) {
+                    $dc = parse_doc_comment($ast->docComment);
+                }
+                 */
 
                 foreach($ast->children as $i=>$node) {
 
-                    $clazz =
-                        $this->code_base->getClassByFQSEN(
-                            $context->getClassFQSEN()
-                        );
-
                     $temp_taint = false;
+
                     // @var Type
                     $type = Type::typeForASTNode(
                         $context,
@@ -299,13 +393,20 @@ class File {
                         );
                      */
 
-                    $clazz->addProperty(
+                    $property_name = $node->children[0];
+
+                    assert(is_string($property_name),
+                        'Property name must be a string. Got ' . print_r($property_name, true));
+
+                    $current_clazz->addProperty(
                         new Property(
                             $context
                                 ->withLineNumberStart($node->lineno)
                                 ->withLineNumberEnd($node->endLineno ?? -1),
                             Comment::fromString($node->docComment ?? ''),
-                            $node->children[0],
+                            is_string($node->children[0])
+                                ? $node->children[0]
+                                : '_error_',
                             $type,
                             $ast->flags
                         )
@@ -331,13 +432,19 @@ class File {
                         }
                     } else {
 
-                        $clazz->getProperty($node->children[0])->setDType(Type::none());
-                        $clazz->getProperty($node->children[0])->setType($type);
+                        $property_name = $node->children[0];
 
-                        /*
-                        $classes[$lc]['properties'][$node->children[0]]['dtype'] = '';
-                        $classes[$lc]['properties'][$node->children[0]]['type'] = $type;
-                         */
+                        if ($current_clazz->hasPropertyWithName($property_name)) {
+                            $property =
+                                $current_clazz->getPropertyWithName($property_name);
+                            $property->setDType(Type::none());
+                            $property->setType($type);
+
+                            /*
+                            $classes[$lc]['properties'][$node->children[0]]['dtype'] = '';
+                            $classes[$lc]['properties'][$node->children[0]]['type'] = $type;
+                            */
+                        }
                     }
                 }
                 $done = true;
@@ -454,7 +561,7 @@ class File {
                             $context
                         );
 
-                    $context->withNamespace(
+                    $context = $context->withNamespace(
                         $child_context->getNamespace()
                     );
                 }

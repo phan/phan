@@ -62,10 +62,13 @@ class FQSEN {
      */
     public static function fromContext(Context $context) : FQSEN {
         return new FQSEN(
-            [],
-            $context->getNamespace(),
-            $context->getClassFQSEN()->getClassName(),
-            $context->getMethodFQSEN()->getMethodName()
+            $context->getNamespaceMap(),
+            $context->hasNamespace()
+                ? $context->getNamespace() : '',
+            $context->hasClassFQSEN()
+                ? $context->getClassFQSEN()->getClassName() : '',
+            $context->hasMethodFQSEN()
+                ? $context->getMethodFQSEN()->getMethodName() : ''
         );
     }
 
@@ -87,11 +90,12 @@ class FQSEN {
 
     /**
      * @return FQSEN
-     * This FQSEN with the given namespace
+     * A clone of this FQSEN with the given namespace
      */
     public function withNamespace(string $namespace) : FQSEN {
-        $this->namespace = $namespace;
-        return $this;
+        $fqsen = clone($this);
+        $fqsen->namespace = $namespace;
+        return $fqsen;
     }
 
     /**
@@ -105,11 +109,12 @@ class FQSEN {
 
     /**
      * @return FQSEN
-     * This FQSEN with the given class name
+     * A clone of this FQSEN with the given class name
      */
-    public function withClassName(string $class_name) : string {
-        $this->class_name = $class_name;
-        return $this;
+    public function withClassName(string $class_name) : FQSEN {
+        $fqsen = clone($this);
+        $fqsen->class_name = $class_name;
+        return $fqsen;
     }
 
     /**
@@ -123,11 +128,12 @@ class FQSEN {
 
     /**
      * @return FQSEN
-     * This FQSEN with the given method name
+     * A clone of this FQSEN with the given method name
      */
     public function withMethodName(string $method_name) : FQSEN {
-        $this->method_name = $method_name;
-        return $this;
+        $fqsen = clone($this);
+        $fqsen->method_name = $method_name;
+        return $fqsen;
     }
 
     /**
@@ -143,9 +149,10 @@ class FQSEN {
      * @return FQSEN
      * A new FQSEN with the given alternate_id set
      */
-    public function withAlternateId(int $alternate_id) {
-        $this->alternate_id = $alternate_id;
-        return $this;
+    public function withAlternateId(int $alternate_id) : FQSEN {
+        $fqsen = clone($this);
+        $fqsen->alternate_id = $alternate_id;
+        return $fqsen;
     }
 
     /**
@@ -179,6 +186,9 @@ class FQSEN {
         if ($this->alternate_id) {
             $fqsen_string .= ' ' . $this->alternate_id;
         }
+
+        assert(!empty($fqsen_string),
+            "FQSENs should be non-empty" );
 
         return $fqsen_string;
     }

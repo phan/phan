@@ -4,7 +4,6 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
 use \Phan\Language\Type;
-// use \phan\language\element\TypedStructuralElement;
 
 class Parameter extends TypedStructuralElement {
 

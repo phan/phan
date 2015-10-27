@@ -3,9 +3,10 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
-use \Phan\Language\Type;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Parameter;
+use \Phan\Language\FQSEN;
+use \Phan\Language\Type;
 
 class Method extends TypedStructuralElement {
 
@@ -354,6 +355,15 @@ class Method extends TypedStructuralElement {
         }
 
         return $result;
+    }
+
+    /**
+     * @return FQSEN
+     */
+    public function getFQSEN() : FQSEN {
+        return FQSEN::fromContext(
+            $this->getContext()
+        )->withMethodName($this->getName());
     }
 
 }

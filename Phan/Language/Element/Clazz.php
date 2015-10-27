@@ -3,25 +3,26 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
-use \Phan\Language\Type;
 use \Phan\Language\Element\Comment;
+use \Phan\Language\FQSEN;
+use \Phan\Language\Type;
 
 class Clazz extends TypedStructuralElement {
 
     /**
-     * @var \phan\language\FQSEN
+     * @var \Phan\Language\FQSEN
      */
     private $parent_class_fqsen = null;
 
     /**
-     * @var \phan\language\FQSEN[]
+     * @var \Phan\Language\FQSEN[]
      * A possibly empty list of interfaces implemented
      * by this class
      */
     private $interface_fqsen_list = [];
 
     /**
-     * @var \phan\language\FQSEN[]
+     * @var \Phan\Language\FQSEN[]
      * A possibly empty list of traits used by this class
      */
     private $trait_fqsen_list = [];
@@ -45,7 +46,14 @@ class Clazz extends TypedStructuralElement {
     private $method_map = [];
 
     /**
-     * @param \phan\Context $context
+     * @var bool
+     * True if this class's constructor calls it's
+     * parent constructor.
+     */
+    private $is_parent_constructor_called = true;
+
+    /**
+     * @param Context $context
      * The context in which the structural element lives
      *
      * @param CommentElement $comment,
@@ -120,10 +128,10 @@ class Clazz extends TypedStructuralElement {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
 
-        $context = Context::none();
+        $context = new Context();
 
         // Build a base class element
-        $class_element = new Clazz(
+        $clazz = new Clazz(
             $context,
             Comment::none(),
             $class->getName(),
@@ -134,7 +142,7 @@ class Clazz extends TypedStructuralElement {
         // If this class has a parent class, add it to the
         // class info
         if(($parent_class = $class->getParentClass())) {
-            $class_element->parent_class_name =
+            $clazz->parent_class_name =
                 $parent_class->getName();
         }
 
@@ -157,22 +165,22 @@ class Clazz extends TypedStructuralElement {
 
             $property_element =
                 new Property(
-                    $context->withClassFQSEN($class_element->getFQSEN()),
+                    $context->withClassFQSEN($clazz->getFQSEN()),
                     Comment::none(),
                     $name,
                     Type::typeForObject($value),
                     0
                 );
 
-            $class_element->property_map[
+            $clazz->property_map[
                 $property_element->getFQSEN()->__toString()
             ] = $property_element;
         }
 
-        $class_element->interface_list =
+        $clazz->interface_list =
             $class->getInterfaceNames();
 
-        $class_element->trait_list =
+        $clazz->trait_list =
             $class->getTraitNames();
 
         $parents = [];
@@ -184,12 +192,12 @@ class Clazz extends TypedStructuralElement {
         }
 
         $types = [$class->getName()];
-        $types = array_merge($types, $class_element->interface_list);
+        $types = array_merge($types, $clazz->interface_list);
         $types = array_merge($types, $parents);
-        $class_element->type = implode('|', array_unique($types));
+        $clazz->type = implode('|', array_unique($types));
 
         foreach($class->getConstants() as $name => $value) {
-            $class_element->constant_map[$name] =
+            $clazz->constant_map[$name] =
                 new Constant(
                     $context,
                     Comment::none(),
@@ -200,10 +208,10 @@ class Clazz extends TypedStructuralElement {
         }
 
         foreach($class->getMethods() as $method) {
-            $class_element->method_map = array_merge(
-                $class_element->method_map,
+            $clazz->method_map = array_merge(
+                $clazz->method_map,
                 Method::mapFromReflectionClassAndMethod(
-                    $context->withClassFQSEN($class_element->getFQSEN()),
+                    $context->withClassFQSEN($clazz->getFQSEN()),
                     $class,
                     $method,
                     $parents
@@ -211,7 +219,7 @@ class Clazz extends TypedStructuralElement {
             );
         }
 
-        return $class_element;
+        return $clazz;
     }
 
     /**
@@ -222,9 +230,69 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
+     * @return bool
+     */
+    public function hasPropertyWithName(string $name) : bool {
+        return !empty($this->property_map[$name]);
+    }
+
+    /**
      * @return Property
      */
-    public function getProperty($name) : Property {
+    public function getPropertyWithName(string $name) : Property {
         return $this->property_map[$name];
+    }
+
+    /**
+     * @return null
+     */
+    public function addMethod(Method $method) {
+        $this->method_map[$method->getFQSEN()->__toString()] = $method;
+    }
+
+    /**
+     *
+     */
+    public function hasMethodWithFQSEN(FQSEN $fqsen) : bool {
+        return !empty($this->method_map[$fqsen->__toString()]);
+    }
+
+    /**
+     *
+     */
+    public function getMethodWithName(string $method_name) : Method {
+        return $this->method_map[$fqsen->__toString()];
+    }
+
+    /**
+     * @return null
+     */
+    public function addTraitFQSEN(FQSEN $trait) {
+        $this->trait_fqsen_list[] = $trait;
+    }
+
+    /**
+     * @return FQSEN
+     */
+    public function getFQSEN() : FQSEN {
+        return FQSEN::fromContext(
+            $this->getContext()
+        )->withClassName($this->getName());
+    }
+
+    /**
+     * @return bool
+     * True if this class calls its parent constructor
+     */
+    public function getIsParentConstructorCalled() : bool {
+        return $this->is_parent_constructor_called;
+    }
+
+    /**
+     * @return null
+     */
+    public function setIsParentConstructorCalled(bool $is_parent_constructor_called) {
+        $this->is_parent_constructor_called =
+            $is_parent_constructor_called;
     }
 }

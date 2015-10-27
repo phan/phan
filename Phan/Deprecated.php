@@ -31,4 +31,36 @@ class Deprecated {
         }
     }
 
+    public static function node_namelist($file, $node, $namespace) : array {
+        $result = [];
+        if($node instanceof \ast\Node) {
+            foreach($node->children as $name_node) {
+                $result[] = qualified_name($file, $name_node, $namespace);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @return
+     * Takes "a|b" and returns "a[]|b[]"
+     */
+    private static function mkgenerics(string $str) : string {
+        $ret = [];
+        foreach(explode('|', $str) as $type) {
+            if(empty($type)) continue;
+            if($type=='array'
+                || $type=='mixed'
+                || strpos($type,'[]')!==false
+            ) {
+                $ret[] = 'array';
+            }
+            else {
+                $ret[] = $type.'[]';
+            }
+        }
+
+        return implode('|', $ret);
+    }
+
 }
