@@ -2,11 +2,13 @@
 declare(strict_types=1);
 namespace Phan\Language;
 
-use \Phan\Log;
 use \Phan\CodeBase;
+use \Phan\Configuration;
 use \Phan\Language\Element\Clazz;
-use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Comment;
+use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Property;
+use \Phan\Log;
 
 class File {
 
@@ -62,6 +64,8 @@ class File {
     ) : Context {
         $done = false;
 
+        $current_clazz = $context->getClass();
+
         switch($ast->kind) {
             case \ast\AST_NAMESPACE:
                 $context->withNamespace(
@@ -75,7 +79,7 @@ class File {
                 break;
 
             case \ast\AST_DIM:
-                if (!Options::instance()->isEnabledBCChecks()) {
+                if (!Configuration::instance()->bc_checks) {
                     break;
                 }
 
@@ -163,7 +167,6 @@ class File {
                         new FQSEN([], $context->getNamespace(), $ast->name)
                     );
                 }
-                $lc = $context->getClassFQSEN();
                 if(!empty($ast->children[0])) {
                     $parent = $ast->children[0]->children[0];
                     if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
@@ -182,19 +185,20 @@ class File {
                     $parent = null;
                 }
 
-                $class_element = new Clazz(
+                $clazz = new Clazz(
                     $context
                         ->withLineNumberStart($ast->lineno)
-                        ->withLineNumberEnd($ast->endLineno),
+                        ->withLineNumberEnd($ast->endLineno ?: -1),
                     Comment::fromString($ast->docComment ?: ''),
                     $ast->name,
                     new Type([$ast->name]),
                     $ast->flags
                 );
 
-                $this->code_base->addClass($class_element);
+                $this->code_base->addClass($clazz);
 
                 /*
+                $lc = $context->getClassFQSEN();
                 $classes[$lc] = [
                     'file'		 => $file,
                     'namespace'	 => $namespace,
@@ -276,11 +280,11 @@ class File {
                             $context->getClassFQSEN()
                         );
 
+                    $temp_taint = false;
                     // @var Type
                     $type = Type::typeForASTNode(
                         $context,
                         $node->children[1],
-                        $clazz,
                         $temp_taint
                     );
 
@@ -299,8 +303,8 @@ class File {
                         new Property(
                             $context
                                 ->withLineNumberStart($node->lineno)
-                                ->withLineNubmerEnd($node->endLineno),
-                            Comment::fromString($node->docComment),
+                                ->withLineNumberEnd($node->endLineno ?? -1),
+                            Comment::fromString($node->docComment ?? ''),
                             $node->children[0],
                             $type,
                             $ast->flags
@@ -326,8 +330,14 @@ class File {
                             $classes[$lc]['properties'][$node->children[0]]['type'] = merge_type($classes[$lc]['properties'][$node->children[0]]['type'], strtolower($type));
                         }
                     } else {
+
+                        $clazz->getProperty($node->children[0])->setDType(Type::none());
+                        $clazz->getProperty($node->children[0])->setType($type);
+
+                        /*
                         $classes[$lc]['properties'][$node->children[0]]['dtype'] = '';
                         $classes[$lc]['properties'][$node->children[0]]['type'] = $type;
+                         */
                     }
                 }
                 $done = true;
@@ -403,7 +413,12 @@ class File {
                         }
                     }
                 }
-                if($bc_checks) bc_check($file, $ast);
+                if(Configuration::instance()->bc_checks) {
+                    \Phan\Deprecated::bc_check(
+                        $context->getFile(),
+                        $ast
+                    );
+                }
                 break;
 
             case \ast\AST_STATIC_CALL: // Indicate whether a class calls its parent constructor

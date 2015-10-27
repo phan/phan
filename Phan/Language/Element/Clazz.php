@@ -220,4 +220,11 @@ class Clazz extends TypedStructuralElement {
     public function addProperty(Property $property) {
         $this->property_map[$property->getName()] = $property;
     }
+
+    /**
+     * @return Property
+     */
+    public function getProperty($name) : Property {
+        return $this->property_map[$name];
+    }
 }

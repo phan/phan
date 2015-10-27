@@ -2,13 +2,20 @@
 declare(strict_types=1);
 namespace Phan\Language;
 
+use \Phan\CodeBase;
 use \Phan\Language\Context\Scope;
+use \Phan\Language\Element\Clazz;
 
 /**
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
  */
 class Context {
+
+    /**
+     * The code base for which this context operates on
+     */
+    private $code_base;
 
     /**
      * @var string
@@ -76,7 +83,11 @@ class Context {
     /**
      *
      */
-    public function __construct() {
+    public function __construct(
+        CodeBase $code_base
+    ) {
+        $this->code_base = $code_base;
+
         $this->file = '';
         $this->namespace = '';
         $this->namespace_map = [];
@@ -230,6 +241,14 @@ class Context {
      */
     public function getClassFQSEN() : FQSEN {
         return $this->class_fqsen;
+    }
+
+    /**
+     * @return Clazz
+     * Get the current class
+     */
+    public function getClass() : Clazz {
+        return $this->code_base->getClassByFQSEN($this->getClassFQSEN());
     }
 
     /*

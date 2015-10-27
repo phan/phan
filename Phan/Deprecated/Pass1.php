@@ -1,5 +1,5 @@
 <?php
-namespace phan;
+namespace Phan\Deprecated;
 
 /**
  * Pass 1 recursively finds all the class and function

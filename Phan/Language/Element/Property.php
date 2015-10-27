@@ -15,6 +15,18 @@ class Property extends TypedStructuralElement {
     private $def;
 
     /**
+     * @var Type
+     * ...
+     */
+    private $type;
+
+    /**
+     * @var Type
+     * ...
+     */
+    private $dtype;
+
+    /**
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
@@ -80,6 +92,22 @@ class Property extends TypedStructuralElement {
         );
 
         return $property;
+    }
+
+    public function getType() : Type {
+        return $this->type;
+    }
+
+    public function setType(Type $type) {
+        $this->type = $type;
+    }
+
+    public function getDType() : Type {
+        return $this->dtype;
+    }
+
+    public function setDtype(Type $type) {
+        $this->dtype = $type;
     }
 
 }

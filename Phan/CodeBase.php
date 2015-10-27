@@ -4,9 +4,7 @@ namespace Phan;
 
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
-use \Phan\Language\Element\Clazz;
-use \Phan\Language\Element\Comment;
-use \Phan\Language\Element\Method;
+use \Phan\Language\Element\{Clazz, Element, Method};
 
 class CodeBase {
 
