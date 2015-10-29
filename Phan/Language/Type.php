@@ -240,19 +240,11 @@ class Type {
                         node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
                      */
 
-                    $temp =
+                    $left =
                         self::typeFromNode($context, $node->chilren[0]);
 
-                    $left = !$temp->hasAnyType()
-                        ? ''
-                        : self::toCanonicalName((string)$temp);
-
-                    $temp =
+                    $right =
                         self::typeFromNode($context, $node->chilren[1]);
-
-                    $right = !$temp->hasAnyType()
-                        ? ''
-                        : self::toCanonicalName((string)$temp);
 
                     /*
                     if(!$temp) {
@@ -264,7 +256,6 @@ class Type {
                     $temp =
                         node_type($file, $namespace, $node->children[1], $current_scope, $current_class);
                      */
-
 
                     /*
                     if(!$temp) {
@@ -303,12 +294,24 @@ class Type {
 
 				// Add is special because you can add arrays
 				case \ast\flags\BINARY_ADD:
-					$temp = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
+                    $left =
+                        self::typeFromNode($context, $node->children[0]);
+
+                    $right =
+                        self::typeFromNode($context, $node->chilren[1]);
+
+                    /*
+                    $temp =
+                        node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
+
 					if(!$temp) $left = '';
 					else $left = type_map($temp);
+
 					$temp = node_type($file, $namespace, $node->children[1], $current_scope, $current_class);
 					if(!$temp) $right = '';
 					else $right = type_map($temp);
+                     */
+
 					// fast-track common cases
                     if($left=='int' && $right == 'int') {
                         return new Type(['int']);
@@ -321,10 +324,22 @@ class Type {
 					$right_is_array = (!empty(generics($right)) && empty(nongenerics($right)));
 
 					if($left_is_array && !type_check($right, 'array')) {
-						Log::err(Log::ETYPE, "invalid operator: left operand is array and right is not", $file, $node->lineno);
+                        Log::err(
+                            Log::ETYPE,
+                            "invalid operator: left operand is array and right is not",
+                            $context->getFile(),
+                            $node->lineno
+                        );
 						return Type::none();
-					} else if($right_is_array && !type_check($left, 'array')) {
-						Log::err(Log::ETYPE, "invalid operator: right operand is array and left is not", $file, $node->lineno);
+                    } else if($right_is_array
+                        && !type_check($left, 'array')
+                    ) {
+                        Log::err(
+                            Log::ETYPE,
+                            "invalid operator: right operand is array and left is not",
+                            $file,
+                            $node->lineno
+                        );
 						return Type::none();
 					} else if($left_is_array || $right_is_array) {
 						// If it is a '+' and we know one side is an array and the other is unknown, assume array
@@ -336,13 +351,42 @@ class Type {
 
 				// Everything else should be an int/float
 				default:
+                    /*
 					$temp = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
 					if(!$temp) $left = '';
 					else $left = type_map($temp);
 					$temp = node_type($file, $namespace, $node->children[1], $current_scope, $current_class);
 					if(!$temp) $right = '';
 					else $right = type_map($temp);
+                     */
 
+                    $left =
+                        self::typeFromNode($context, $node->children[0]);
+
+                    $right =
+                        self::typeFromNode($context, $node->children[1]);
+
+                    if ($left->hasTypeName('array')
+                        || $right->hasTypeName('array')
+                    ) {
+                        Log::err(
+                            Log::ETYPE,
+                            "invalid array operator",
+                            $context->getFile(),
+                            $node->lineno
+                        );
+						return Type::none();
+                    } else if ($left->hasTypeName('int')
+                        && $right->hasTypeName('int')
+                    ) {
+						return new Type(['int']);
+                    } else if ($left->hasTypeName('float')
+                        && $right->hasTypeName('float')
+                    ) {
+						return new Type(['float']);
+                    }
+
+                    /*
 					if($left == 'array' || $right == 'array') {
 						Log::err(Log::ETYPE, "invalid array operator", $file, $node->lineno);
 						return Type::none();
@@ -351,12 +395,16 @@ class Type {
 					} else if($left=='float' || $right=='float') {
 						return new Type(['float']);
 					}
+                     */
+
 					return new Type(['int', 'float']);
 					$taint = false;
 					break;
 			}
 		} else if($node->kind == \ast\AST_CAST) {
-			$taint = var_taint_check($file, $node->children[0], $current_scope);
+            $taint =
+                var_taint_check($file, $node->children[0], $current_scope);
+
 			switch($node->flags) {
 				case \ast\flags\TYPE_NULL: return new Type(['null']); break;
 				case \ast\flags\TYPE_BOOL: $taint = false; return new Type(['bool']); break;
@@ -376,17 +424,27 @@ class Type {
 			return new Type(['object']);
 
 		} else if($node->kind == \ast\AST_DIM) {
-			$taint = var_taint_check($file, $node->children[0], $current_scope);
-			$type = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
-			if(!empty($type)) {
+            $taint =
+                var_taint_check($file, $node->children[0], $current_scope);
+
+			// $type = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
+            $type = self::typeFromNode($context, $node->children[0]);
+
+			// if(!empty($type)) {
+            if ($type->hasAnyType()) {
 				$gen = generics($type);
 				if(empty($gen)) {
-					if($type!=='null' && !type_check($type, 'string|ArrayAccess')) {  // array offsets work on strings, unfortunately
+                    if($type!=='null'
+                        && !type_check($type, 'string|ArrayAccess')
+                    ) {
+                        // array offsets work on strings, unfortunately
 						// Double check that any classes in the type don't have ArrayAccess
 						$ok = false;
 						foreach(explode('|', $type) as $t) {
 							if(!empty($t) && !is_native_type($t)) {
+                                // TODO
 								if(!empty($classes[strtolower($t)]['type'])) {
+                                    // TODO
 									if(strpos('|'.$classes[strtolower($t)]['type'].'|','|ArrayAccess|')!==false) {
 										$ok = true;
 										break;
@@ -394,7 +452,14 @@ class Type {
 								}
 							}
 						}
-						if(!$ok) Log::err(Log::ETYPE, "Suspicious array access to $type", $file, $node->lineno);
+                        if(!$ok) {
+                            Log::err(
+                                Log::ETYPE,
+                                "Suspicious array access to $type",
+                                $context->getFile(),
+                                $node->lineno
+                            );
+                        }
 					}
 					return Type::none();
 				}
@@ -405,12 +470,20 @@ class Type {
 
 		} else if($node->kind == \ast\AST_VAR) {
             // TODO
-			return var_type($file, $node, $current_scope, $taint, $check_var_exists);
+            return var_type(
+                $file,
+                $node,
+                $current_scope,
+                $taint,
+                $check_var_exists
+            );
 
 		} else if($node->kind == \ast\AST_ENCAPS_LIST) {
 			foreach($node->children as $encap) {
 				if($encap instanceof Node) {
-					if(var_taint_check($file, $encap, $current_scope)) $taint = true;
+                    if(var_taint_check($file, $encap, $current_scope)) {
+                        $taint = true;
+                    }
 				}
 			}
 			return new Type(['string']);
@@ -419,9 +492,8 @@ class Type {
 			if($node->children[0]->kind == \ast\AST_NAME) {
                 if(defined($node->children[0]->children[0])) {
                     // return type_map(gettype(constant($node->children[0]->children[0])));
-                    // TODO
                     return new Type([
-                        self::toCanonicalName(gettype(constant($node->children[0]->children[0])))
+                        gettype(constant($node->children[0]->children[0]))
                     ]);
                 }
 				else {
@@ -438,14 +510,30 @@ class Type {
                 return Type::none();
             }
 			$ltemp = strtolower($class_name);
-			while($ltemp && !array_key_exists($node->children[1], $classes[$ltemp]['constants'])) {
+            while($ltemp
+                && !array_key_exists($node->children[1],
+                    // TODO
+                    $classes[$ltemp]['constants'])
+            ) {
+                // TODO
 				$ltemp = strtolower($classes[$ltemp]['parent']);
+                // TODO
                 if(empty($classes[$ltemp])) {
-                    return Type::none(); // undeclared class - will be caught elsewhere
+                    // undeclared class - will be caught elsewhere
+                    return Type::none();
                 }
 			}
-			if(!$ltemp || !array_key_exists($node->children[1], $classes[$ltemp]['constants'])) {
-				Log::err(Log::EUNDEF, "can't access undeclared constant {$class_name}::{$node->children[1]}", $file, $node->lineno);
+            if(!$ltemp
+                || !array_key_exists($node->children[1],
+                    // TODO
+                    $classes[$ltemp]['constants'])
+            ) {
+                Log::err(
+                    Log::EUNDEF,
+                    "can't access undeclared constant {$class_name}::{$node->children[1]}",
+                    $context->getFile(),
+                    $node->lineno
+                );
 				return Type::none();
 			}
             // TODO
@@ -513,7 +601,12 @@ class Type {
 				$method_name = $node->children[1];
 				$method = find_method($class_name, $method_name);
 				if($method === false) {
-					Log::err(Log::EUNDEF, "call to undeclared method {$class_name}->{$method_name}()", $file, $node->lineno);
+                    Log::err(
+                        Log::EUNDEF,
+                        "call to undeclared method {$class_name}->{$method_name}()",
+                        $context->getFile(),
+                        $node->lineno
+                    );
 				} else if($method != 'dynamic') {
                     // TODO
 					return $method['ret'];
@@ -725,6 +818,21 @@ class Type {
      */
     public function hasTypeName(string $type_name) : bool {
         return in_array($type_name, $this->type_name_list);
+    }
+
+    /**
+     * @return bool
+     * True if this union type contains any of the given
+     * named types
+     */
+    public function hasAnyTypeName(array $type_name_list) : bool {
+        return array_reduce(
+            $type_name_list,
+            function(bool $carry, string $type_name)  {
+                return $carry || $this->hasTypeName($type_name);
+            },
+            false
+        );
     }
 
     /**
