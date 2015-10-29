@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan\Language;
 
 use \Phan\CodeBase;
@@ -11,6 +10,11 @@ use \Phan\Language\Element\Clazz;
  * structural element (such as a class or method) lives.
  */
 class Context {
+
+    /**
+     * @var CodeBase
+     */
+    private $code_base;
 
     /**
      * @var string
@@ -76,9 +80,12 @@ class Context {
     private $scope = null;
 
     /**
-     *
+     * @param CodeBase $code_base
+     * A reference to the entire code base in which this
+     * context exists
      */
-    public function __construct() {
+    public function __construct(CodeBase $code_base) {
+        $this->code_base = $code_base;
         $this->file = '';
         $this->namespace = '';
         $this->namespace_map = [];

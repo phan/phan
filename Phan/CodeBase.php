@@ -65,16 +65,16 @@ class CodeBase {
     private function addClassesByNames(array $class_name_list) {
         foreach ($class_name_list as $i => $class_name) {
             $this->class_map[$class_name] =
-                Clazz::fromClassName($class_name);
+                Clazz::fromClassName($this, $class_name);
         }
     }
-
 
     /**
      *
      */
     private function addFunctionsByNames($function_name_list) {
         // TODO
+        throw new Exception('not implemented');
     }
 
     /**

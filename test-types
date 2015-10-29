@@ -1,6 +1,13 @@
 #!/home/amorrison/sandbox/php-7.0.0RC5/package/bin/php
 <?php declare(strict_types=1);
 
+// Grab these before we define our own classes
+$internal_class_name_list = get_declared_classes();
+$internal_interface_name_list = get_declared_interfaces();
+$internal_trait_name_list = get_declared_traits();
+$internal_function_name_list = get_defined_functions()['internal'];
+
+// Make sure we have the ast.so module loaded
 if (!extension_loaded('ast')) {
 	echo <<<NO_AST_ERROR
 Please install php-ast
@@ -16,35 +23,45 @@ use \Phan\Language\Type;
 use \Phan\Language\Context;
 use \Phan\Debug;
 
-function typeStringFromCode(string $code) : string {
+$code_base = new CodeBase(
+    $internal_class_name_list,
+    $internal_interface_name_list,
+    $internal_trait_name_list,
+    $internal_function_name_list
+);
+
+function typeStringFromCode(CodeBase $code_base, string $code) : string {
     return Type::typeFromNode(
-        new Context(),
+        new Context($code_base),
         \ast\parse_code($code)
         ->children[0]
     )->__toString();
 }
 
-assert('int' === typeStringFromCode(
+assert('int' === typeStringFromCode($code_base,
     '<?php 42; '
 ), 'int');
 
-assert('string' === typeStringFromCode(
+assert('string' === typeStringFromCode($code_base,
     '<?php "a string"; '
 ), 'string');
 
-assert('int[]' === typeStringFromCode(
+assert('int[]' === typeStringFromCode($code_base,
     '<?php [1, 2, 3];'
 ), 'array of uniform type');
 
-assert('array' === typeStringFromCode(
+assert('array' === typeStringFromCode($code_base,
+    '<?php [1, "string"];'
+), 'array of mixed type');
+
+assert('array' === typeStringFromCode($code_base,
     '<?php [];'
 ), 'array empty');
 
-assert('array' === typeStringFromCode(
+assert('array' === typeStringFromCode($code_base,
     '<?php [];'
 ), 'array empty');
 
-assert('SplStack' === typeStringFromCode(
+assert('SplStack' === typeStringFromCode($code_base,
     '<?php new SplStack();'
 ), 'Object');
-

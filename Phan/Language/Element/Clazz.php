@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\FQSEN;
@@ -89,6 +90,10 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
+     * @param CodeBase $code_base
+     * A reference to the entire code base in which this
+     * context exists
+     *
      * @param string $class_name
      * The name of a builtin class to build a new Class structural
      * element from.
@@ -97,13 +102,21 @@ class Clazz extends TypedStructuralElement {
      * A Class structural element representing the given named
      * builtin.
      */
-    public static function fromClassName(string $class_name) {
+    public static function fromClassName(
+        CodeBase $code_base,
+        string $class_name
+    ) : Clazz {
         return self::fromReflectionClass(
+            $code_base,
             new \ReflectionClass($class_name)
         );
     }
 
     /**
+     * @param CodeBase $code_base
+     * A reference to the entire code base in which this
+     * context exists
+     *
      * @param ReflectionClass $class
      * A reflection class representing a builtin class.
      *
@@ -112,6 +125,7 @@ class Clazz extends TypedStructuralElement {
      * builtin.
      */
     public static function fromReflectionClass(
+        CodeBase $code_base,
         \ReflectionClass $class
     ) {
         // Build a set of flags based on the constitution
@@ -128,7 +142,7 @@ class Clazz extends TypedStructuralElement {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
 
-        $context = new Context();
+        $context = new Context($code_base);
 
         // Build a base class element
         $clazz = new Clazz(
