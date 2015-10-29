@@ -9,17 +9,23 @@ use \ast\Node;
 class Debug {
 
     /**
+     * @param string|Node|null $node
+     * An AST node
+     *
      * Print an AST node
      *
      * @return null
      */
-    public static function printNode(Node $node) {
+    public static function printNode($node) {
         print self::nodeToString($node);
     }
 
     /**
      * @param string|Node|null $node
      * An AST node
+     *
+     * @param int $indent
+     * The indentation level for the string
      *
      * @return string
      * A string representation of an AST node
@@ -30,18 +36,22 @@ class Debug {
     ) : string {
         $string = str_repeat("\t", $indent);
 
-        if (!$node) {
-            return $string . 'null' . "\n";
-        }
-
         if (is_string($node)) {
             return $string . $node . "\n";
         }
 
-        $string .= self::$AST_KIND_ID_NAME_MAP[$node->kind];
-        $string .= ' [' . self::astFlagDescription($node->flags) . ']';
+        if (!$node) {
+            return $string . 'null' . "\n";
+        }
 
-        if ($node->lineno) {
+        if (!isset($node->kind)) {
+            print_r($node);
+        }
+
+        $string .= self::$AST_KIND_ID_NAME_MAP[$node->kind ?? -1] ?? '_NOT_FOUND_';
+        $string .= ' [' . self::astFlagDescription($node->flags ?? 0) . ']';
+
+        if (isset($node->lineno)) {
             $string .= ' #' . $node->lineno;
         }
 
@@ -49,11 +59,12 @@ class Debug {
             $string .= ':' . $node->endLineno;
         }
 
-        foreach ($node->children as $child_node) {
-            $string .= "\n" . self::nodeToString($child_node, $indent + 1);
+        $string .= "\n";
+
+        foreach ($node->children ?? [] as $child_node) {
+            $string .= self::nodeToString($child_node, $indent + 1);
         }
 
-        $string .= "\n";
 
         return $string;
     }

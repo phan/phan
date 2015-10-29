@@ -41,9 +41,10 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             && $node->children[0] instanceof Node
             && $node->children[0]->kind == \ast\AST_ARRAY_ELEM
         ) {
+            $element_types = [];
+
             // Check the first 5 (completely arbitrary) elements
             // and assume the rest are the same type
-            $element_types = [];
             for($i=0; $i<5; $i++) {
                 // Check to see if we're out of elements
                 if(empty($node->children[$i])) {
@@ -58,11 +59,12 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                         );
                 } else {
                     $element_types[] =
-                        new Type([$node->children[$i]->children[0]]);
+                        new Type([gettype($node->children[$i]->children[0])]);
                 }
             }
 
-           $element_types = array_values(array_unique($element_types));
+            $element_types =
+                array_values(array_unique($element_types));
 
             if(count($element_types) == 1) {
                 return Type::typeFromString(
