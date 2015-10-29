@@ -427,7 +427,7 @@ class File {
                     // @var Type
                     $type = Type::typeFromNode(
                         $context,
-                        $node->children[1],
+                        $node->children[1]
                     );
 
                     /*

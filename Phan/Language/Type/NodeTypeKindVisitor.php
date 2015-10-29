@@ -1,8 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use \Phan\Deprecated;
+use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Type;
+use \Phan\Language\Context;
+use \Phan\Log;
 use \ast\Node;
 
 class NodeTypeKindVisitor extends KindVisitorImplementation {
@@ -21,38 +25,48 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $this->context = $context;
     }
 
+    /**
+     * Default visitor for node kinds that do not have
+     * an overriding method
+     */
     public function visit(Node $node) : Type {
         return Type::none();
     }
 
-    public function visitArray(Node $node) {
+    /**
+     * Visit a node with kind `\ast\AST_ARRAY`
+     */
+    public function visitArray(Node $node) : Type {
         if(!empty($node->children)
             && $node->children[0] instanceof Node
             && $node->children[0]->kind == \ast\AST_ARRAY_ELEM
         ) {
             // Check the first 5 (completely arbitrary) elements
             // and assume the rest are the same type
-            $etypes = [];
+            $element_types = [];
             for($i=0; $i<5; $i++) {
-                if(empty($node->children[$i])) break;
+                // Check to see if we're out of elements
+                if(empty($node->children[$i])) {
+                    break;
+                }
+
                 if($node->children[$i]->children[0] instanceof Node) {
-                    $temp_taint = false;
-                    $etypes[] =
-                        self::typeFromNode(
-                            $context,
-                            $node->children[$i]->children[0],
-                            $temp_taint
+                    $element_types[] =
+                        Type::typeFromNode(
+                            $this->context,
+                            $node->children[$i]->children[0]
                         );
                 } else {
-                    $etypes[] =
+                    $element_types[] =
                         new Type([$node->children[$i]->children[0]]);
                 }
             }
-            $types = array_unique($etypes);
-            if(count($types) == 1 && !empty($types[0])
-            ) {
+
+           $element_types = array_values(array_unique($element_types));
+
+            if(count($element_types) == 1) {
                 return Type::typeFromString(
-                    Deprecated::mkgenerics($types[0]->__toString())
+                    Deprecated::mkgenerics((string)$element_types[0])
                 );
             }
         }
@@ -60,6 +74,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         return new Type(['array']);
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_BINARY_OP`
+     */
     public function visitBinaryOp(Node $node) {
         if($node->kind == \ast\AST_BINARY_OP) {
             $node_flags = $node->flags;
@@ -67,7 +84,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $node_flags = $node->kind;
         }
 
-        $taint = var_taint_check($file, $node, $current_scope);
+        // $taint = var_taint_check($file, $node, $current_scope);
 
         return
             (new Element($node))->acceptFlagVisitor(
@@ -75,51 +92,88 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             );
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_GREATER`
+     */
     public function visitGreater(Node $node) {
         return $this->visitBinaryOp($node);
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_GREATER_EQUAL`
+     */
     public function visitGreaterEqual(Node $node) {
         return $this->visitBinaryOp($node);
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_CAST`
+     */
     public function visitCast(Node $node) {
-        $taint =
-            var_taint_check($file, $node->children[0], $current_scope);
+        // $taint = var_taint_check($file, $node->children[0], $current_scope);
 
         switch($node->flags) {
-        case \ast\flags\TYPE_NULL: return new Type(['null']); break;
-        case \ast\flags\TYPE_BOOL: $taint = false; return new Type(['bool']); break;
-        case \ast\flags\TYPE_LONG: $taint = false; return new Type(['int']); break;
-        case \ast\flags\TYPE_DOUBLE: $taint = false; return new Type(['float']); break;
-        case \ast\flags\TYPE_STRING: return new Type(['string']); break;
-        case \ast\flags\TYPE_ARRAY: return new Type(['array']); break;
-        case \ast\flags\TYPE_OBJECT: return new Type(['object']); break;
-        default: Log::err(Log::EFATAL, "Unknown type (".$node->flags.") in cast");
+        case \ast\flags\TYPE_NULL:
+            return new Type(['null']);
+        case \ast\flags\TYPE_BOOL:
+            // $taint = false;
+            return new Type(['bool']);
+        case \ast\flags\TYPE_LONG:
+            // $taint = false;
+            return new Type(['int']);
+        case \ast\flags\TYPE_DOUBLE:
+            // $taint = false;
+            return new Type(['float']);
+        case \ast\flags\TYPE_STRING:
+            return new Type(['string']);
+        case \ast\flags\TYPE_ARRAY:
+            return new Type(['array']);
+        case \ast\flags\TYPE_OBJECT:
+            return new Type(['object']);
+        default:
+            Log::err(
+                Log::EFATAL,
+                "Unknown type (".$node->flags.") in cast"
+            );
         }
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_NEW`
+     */
     public function visitNew(Node $node) {
-        $class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+        // TODO
+        $class_name =
+            find_class_name(
+                $file,
+                $node,
+                $namespace,
+                $current_class,
+                $current_scope
+            );
+
         if($class_name) {
             // TODO
             return $classes[strtolower($class_name)]['type'];
         }
+
         return new Type(['object']);
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_DIM`
+     */
     public function visitDim(Node $node) {
-        $taint =
-            var_taint_check($file, $node->children[0], $current_scope);
+        // $taint = var_taint_check($file, $node->children[0], $current_scope);
 
-        // $type = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
-        $type = self::typeFromNode($context, $node->children[0]);
+        $type = self::typeFromNode($this->context, $node->children[0]);
 
-        // if(!empty($type)) {
         if ($type->hasAnyType()) {
+            // TODO
             $gen = generics($type);
             if(empty($gen)) {
                 if($type!=='null'
+                    // TODO
                     && !type_check($type, 'string|ArrayAccess')
                 ) {
                     // array offsets work on strings, unfortunately
@@ -141,7 +195,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                         Log::err(
                             Log::ETYPE,
                             "Suspicious array access to $type",
-                            $context->getFile(),
+                            $this->context->getFile(),
                             $node->lineno
                         );
                     }
@@ -154,17 +208,22 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         return new Type([$gen]);
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_VAR`
+     */
     public function visitVar(Node $node) : Type {
         return var_type(
             $file,
             $node,
             $current_scope,
-            $taint,
-            $check_var_exists
+            $taint
         );
     }
 
-    public function visitEncapsList(Node $node) : Type) {
+    /**
+     * Visit a node with kind `\ast\AST_ENCAPS_LIST`
+     */
+    public function visitEncapsList(Node $node) : Type {
 			foreach($node->children as $encap) {
 				if($encap instanceof Node) {
                     if(var_taint_check($file, $encap, $current_scope)) {
@@ -175,6 +234,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 			return new Type(['string']);
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_CONST`
+     */
     public function visitConst(Node $node) : Type {
         if($node->children[0]->kind == \ast\AST_NAME) {
             if(defined($node->children[0]->children[0])) {
@@ -189,6 +251,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         }
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_CLASS_CONST`
+     */
     public function visitClassConst(Node $node) : Type {
         if($node->children[1] == 'class') {
             return new Type(['string']); // class name fetch
@@ -219,7 +284,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             Log::err(
                 Log::EUNDEF,
                 "can't access undeclared constant {$class_name}::{$node->children[1]}",
-                $context->getFile(),
+                $this->context->getFile(),
                 $node->lineno
             );
             return Type::none();
@@ -228,6 +293,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         return $classes[$ltemp]['constants'][$node->children[1]]['type'];
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_PROP`
+     */
     public function visitProp(Node $node) : Type {
         if($node->children[0]->kind == \ast\AST_VAR) {
             $class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
@@ -242,7 +310,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         }
     }
 
-
+    /**
+     * Visit a node with kind `\ast\AST_STATIC_PROP`
+     */
     public function visitStaticProp(Node $node) : Type {
         if($node->children[0]->kind == \ast\AST_NAME) {
             $class_name = qualified_name($file, $node->children[0], $namespace);
@@ -258,6 +328,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     }
 
 
+    /**
+     * Visit a node with kind `\ast\AST_CALL`
+     */
     public function visitCall(Node $node) : Type {
         if($node->children[0]->kind == \ast\AST_NAME) {
             $func_name = $node->children[0]->children[0];
@@ -282,6 +355,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         }
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_STATIC_CALL`
+     */
     public function visitStaticCall(Node $node) : Type {
         $class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
         $method = find_method($class_name, $node->children[1]);
@@ -291,6 +367,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         }
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_METHOD_CALL`
+     */
     public function visitMethodCall(Node $node) : Type {
         $class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
         if($class_name) {
@@ -300,7 +379,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 Log::err(
                     Log::EUNDEF,
                     "call to undeclared method {$class_name}->{$method_name}()",
-                    $context->getFile(),
+                    $this->context->getFile(),
                     $node->lineno
                 );
             } else if($method != 'dynamic') {
@@ -309,4 +388,5 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             }
         }
     }
+
 }

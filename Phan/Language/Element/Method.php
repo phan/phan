@@ -375,7 +375,7 @@ class Method extends TypedStructuralElement {
                 }
 
                 if ($parameter->hasDef()) {
-                    $type =
+                    $type = 0; // TODO
                 }
 
                 if(array_key_exists('def', $v)) {

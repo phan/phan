@@ -12,15 +12,7 @@ class Element {
      * Any AST node.
      */
     public function __construct(Node $node) {
-        $$this->node = $node;
-    }
-
-    public function __construct(string $node) {
-        // Legal?
-    }
-
-    public function __construct($node) {
-        // How do I accept null nodes?
+        $this->node = $node;
     }
 
     /**
@@ -30,7 +22,7 @@ class Element {
      * @return null
      */
     public function acceptKindVisitor(KindVisitor $visitor) {
-        switch ($$this->node->kind) {
+        switch ($this->node->kind) {
         case \ast\AST_ARRAY:
             return $visitor->visitArray($this->node);
         case \ast\AST_ARRAY_ELEM:
