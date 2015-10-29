@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace Phan\Language;
 
+require_once(__DIR__.'/../Deprecated/AST.php');
+
 use \Phan\CodeBase;
 use \Phan\Configuration;
 use \Phan\Language\Element\Clazz;
@@ -46,7 +48,10 @@ class File {
     public function passOne() {
         return $this->passOneRecursive(
             $this->ast,
-            new Context()
+            (new Context())
+                ->withFile($this->file)
+                ->withLineNumberStart($this->ast->lineno ?? 0)
+                ->withLineNumberEnd($this->ast->endLineno ?? 0)
         );
     }
 
@@ -161,6 +166,24 @@ class File {
                 break;
 
             case \ast\AST_CLASS:
+                // Get an FQSEN for this class
+                $class_name = $ast->name;
+                $class_fqsen = FQSEN::fromContext($context)
+                    ->withClassName($class_name);
+
+                // Hunt for an available alternate ID if necessary
+                $alternate_id = 0;
+                while($this->code_base->classExists($class_fqsen)) {
+                    $class_fqsen = $class_fqsen->withAlternateId(
+                        ++$alternate_id
+                    );
+                }
+
+                // Update the context to signal that we're now
+                // within a class context.
+                $context = $context->withClassFQSEN($class_fqsen);
+
+                /*
                 if(!empty($classes[strtolower($context->getNamespace().$ast->name)])) {
                     for($i=1;;$i++) {
                         if(empty($classes[$i.":".strtolower($namespace.$ast->name)])) break;
@@ -182,6 +205,29 @@ class File {
                             '')
                     );
                 }
+                 */
+
+                if(!empty($ast->children[0])) {
+                    $parent_class_name = $ast->children[0]->children[0];
+
+                    if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+                        if(($pos = strpos($parent,'\\')) !== false) {
+
+                            if ($context->hasNamespaceMapFor(
+                                T_CLASS,
+                                substr($parent, 0, $pos)
+                            )) {
+                                $parent_class_name =
+                                    $context->getNamespaceMapfor(
+                                        T_CLASS,
+                                        substr($parent, 0, $pos)
+                                    );
+                            }
+                        }
+                    }
+                }
+
+
                 if(!empty($ast->children[0])) {
                     $parent = $ast->children[0]->children[0];
                     if($ast->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
@@ -364,6 +410,7 @@ class File {
                     );
                 }
 
+                $comment = Comment::fromString($ast->docComment ?? '');
                 /*
                 $dc = null;
                 if(!empty($ast->docComment)) {
@@ -372,14 +419,15 @@ class File {
                  */
 
                 foreach($ast->children as $i=>$node) {
-
-                    $temp_taint = false;
+                    // Ignore children which are not property elements
+                    if (!$node || $node->kind != \ast\AST_PROP_ELEM) {
+                        continue;
+                    }
 
                     // @var Type
-                    $type = Type::typeForASTNode(
+                    $type = Type::typeFromNode(
                         $context,
                         $node->children[1],
-                        $temp_taint
                     );
 
                     /*
@@ -396,7 +444,11 @@ class File {
                     $property_name = $node->children[0];
 
                     assert(is_string($property_name),
-                        'Property name must be a string. Got ' . print_r($property_name, true));
+                        'Property name must be a string. '
+                        . 'Got '
+                        . print_r($property_name, true)
+                        . ' at '
+                        . $context);
 
                     $current_clazz->addProperty(
                         new Property(
@@ -433,6 +485,9 @@ class File {
                     } else {
 
                         $property_name = $node->children[0];
+
+                        assert(is_string($property_name),
+                            'Property name must be a string. Got ' . print_r($property_name, true) . ' at ' . $context->__toString());
 
                         if ($current_clazz->hasPropertyWithName($property_name)) {
                             $property =
@@ -472,14 +527,12 @@ class File {
                     $function_name = $i.':'.$function_name;
                 }
 
-                $this->code_base->addMethodElement(
-                    element\MethodElement::fromAST(
-                        $this->file,
-                        $context->getIsConditional(),
-                        $ast,
-                        $context->getScope(),
-                        $context->getClassName(),
-                        $context->getNamespace()
+                $this->code_base->addMethod(
+                    Method::fromAST(
+                        $context
+                            ->withLineNumberStart($ast->lineno ?? 0)
+                            ->withLineNumberEnd($ast->endLineno ?? 0),
+                        $ast
                     )
                 );
 

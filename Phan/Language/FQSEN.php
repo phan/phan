@@ -259,4 +259,13 @@ class FQSEN {
             new FQSEN($namespace, $class_name, $method_name)
         )->__toString();
     }
+
+    /**
+     * @return Type
+     * A string representing this fully-qualified structural
+     * element name.
+     */
+    public function asType() : Type {
+        return new Type([$this->__toString()]);
+    }
 }

@@ -103,4 +103,14 @@ class TypedStructuralElement extends StructuralElement {
         return $this->type;
     }
 
+    /**
+     * @param Type $type
+     * Set the type of this element
+     *
+     * @return null
+     */
+    public function setType(Type $type) {
+        $this->type = $type;
+    }
+
 }

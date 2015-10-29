@@ -13,18 +13,27 @@ class Method extends TypedStructuralElement {
     /**
      * @var int
      */
-    private $number_of_required_parameters;
+    private $number_of_required_parameters = 0;
 
     /**
      * @var int
      */
-    private $number_of_optional_parameters;
+    private $number_of_optional_parameters = 0;
 
     /**
      * @var
      */
-    private $parameter_list;
+    private $parameter_list = [];
 
+    /**
+     * @var ?
+     */
+    private $original_return_type = null;
+
+    /**
+     * @var ?
+     */
+    private $ret = null;
 
     /**
      * @param \phan\Context $context
@@ -96,7 +105,7 @@ class Method extends TypedStructuralElement {
         $canonical_method_name =
             strtolower($method->name);
 
-        $method_element = new Method(
+        $method = new Method(
             $context,
             Comment::none(),
             $method->name,
@@ -106,11 +115,11 @@ class Method extends TypedStructuralElement {
             $number_of_optional_parameters
         );
 
-        $fqsen = $method_element->getFQSEN();
+        $fqsen = $method->getFQSEN();
         // $fqsen = "{$class->getName()}::{$method->name}";
 
         $name_method_info_map = [
-            $fqsen->__toString() => $method_element
+            $fqsen->__toString() => $method
         ];
 
         // Populate multiple-dispatch alternate method
@@ -119,13 +128,13 @@ class Method extends TypedStructuralElement {
                 break;
             }
 
-            $alt_method_element = $method_element;
-            $alt_method_element->withName(
+            $alt_method = clone($method);
+            $alt_method->withName(
                 $method->name . ' ' . $alt_fqsen->getAlternateId()
             );
 
             $name_method_info_map = array_merge($name_method_info_map, [
-                $alt_fqsen->__toString() => $alt_method_element,
+                $alt_fqsen->__toString() => $alt_method,
             ]);
         }
 
@@ -204,7 +213,7 @@ class Method extends TypedStructuralElement {
         }
          */
 
-        foreach($method->getParameters() as $param) {
+        foreach($method->getParameterList() as $param) {
             $alt = 1;
             $flags = 0;
             if($param->isPassedByReference()) {
@@ -252,68 +261,165 @@ class Method extends TypedStructuralElement {
      *
      */
     public static function fromAST(
-        string $file,
-        bool $is_conditional,
-        \ast\Node $node,
-        $current_scope,
-        $current_class,
-        string $namespace
+        Context $context,
+        \ast\Node $node
     ) : MethodElement {
         $number_of_required_parameters = 0;
         $number_of_optional_parameters = 0;
 
-        $comment_element = CommentElement::none();
-        if(!empty($node->docComment)) {
-            $comment_element = CommentElement::fromString($node->docComment);
-        }
+        $comment =
+            Comment::fromString($node->docComment ?? '');
 
-        $method_element = new MethodElement(
-            $file,
-            $namespace,
-            $node->lineno,
-            $node->endLineno,
-            $node->docComment,
-            $is_conditional,
+        $method_name = $node->name;
+
+        $method = new Method(
+            $context,
+            $comment,
+            $method_name,
+            Type::none(),
             $node->flags,
-            (strpos($current_scope,'::')===false) ? $namespace.$node->name : $node->name,
-            '',
             $number_of_required_parameters,
             $number_of_optional_parameters
         );
 
-        $method_element->scope = $current_scope;
-
-        $method_element->parameter_list =
-            ParameterElement::listFromAST($state, $node->children[0]);
+        $method->parameter_list =
+            Parameter::listFromAST($context, $node->children[0]);
             // node_paramlist($file, $node->children[0], $req, $opt, $dc, $namespace);
 
-
+        /*
         $result = [
             'oret'=>'',
             'ast'=>$node->children[2]
         ];
+         */
 
-        if($comment_element->isDeprecated()) {
-            $result['deprecated'] = true;
-        }
+        $method->setIsDeprecated($comment->isDeprecated());
 
         if($node->children[3] !== null) {
-            $result['oret'] = ast_node_type($file, $node->children[3], $namespace); // Original return type
-            $result['ret'] = ast_node_type($file, $node->children[3], $namespace); // This one changes as we walk the tree
-        } else {
+            // Original return type
+            $method->original_return_type =
+                Type::typeFromSimpleNode(
+                    $context,
+                    $node->children[3]
+                );
+
+            // This one changes as we walk the tree
+            $method->setType(
+                Type::typeFromSimpleNode(
+                    $context,
+                    $node->children[3]
+                )
+            );
+
+            /*
+            $result['oret'] =
+                ast_node_type($file, $node->children[3], $namespace); // Original return type
+            $result['ret'] =
+                ast_node_type($file, $node->children[3], $namespace); // This one changes as we walk the tree
+             */
+        } else if ($comment->hasReturnType()) {
+
+            $type = $comment->getReturnType();
+            if ($type->hasTypeName('static')
+                || $type->hasTypeName('self')
+                || $type->hasTypeName('$this')
+            ) {
+                // We can't actually figure out 'static' at this
+                // point, but fill it in regardless. It will be partially
+                // correct
+                if ($context->hasClassFQSEN()) {
+                    $type = $context->getClassFQSEN()->asType();
+                }
+            }
+
+            $method->original_return_type = $type;
+            $method->setType($type);
+
+            /*
             // Check if the docComment has a return value specified
             if(!empty($dc['return'])) {
                 // We can't actually figure out 'static' at this point, but fill it in regardless. It will be partially correct
-                if($dc['return'] == 'static' || $dc['return'] == 'self' || $dc['return'] == '$this') {
-                    if(strpos($current_scope,'::')!==false) list($dc['return'],) = explode('::',$current_scope);
+                if($dc['return'] == 'static'
+                    || $dc['return'] == 'self'
+                    || $dc['return'] == '$this'
+                ) {
+                    if(strpos($current_scope,'::')!==false)
+                        list($dc['return'],) = explode('::',$current_scope);
                 }
+
                 $result['oret'] = $dc['return'];
                 $result['ret'] = $dc['return'];
             }
+             */
         }
+
         // Add params to local scope for user functions
-        if($file != 'internal') {
+        if($context->getFile() != 'internal') {
             $i = 1;
+
+            foreach ($method->parameter_list as $i => $parameter) {
+                if (!$parameter->getType()->hasAnyType()) {
+                    // If there is no type specified in PHP, check
+                    // for a docComment. We assume order in the
+                    // docComment matches the parameter order in the
+                    // code
+                    if (!empty($comment->getParameterList()[$i])) {
+                        // ...
+                        // $scope[$current_scope]['vars'][$v['name']] = ['type'=>$dc['params'][$k]['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
+                    } else {
+                        // ...
+                        // $scope[$current_scope]['vars'][$v['name']] = ['type'=>'', 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
+                    }
+                } else {
+                    // $scope[$current_scope]['vars'][$v['name']] = ['type'=>$v['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
+                }
+
+                if ($parameter->hasDef()) {
+                    $type =
+                }
+
+                if(array_key_exists('def', $v)) {
+                    $type =
+                        node_type(
+                            $file,
+                            $namespace,
+                            $v['def'],
+                            $current_scope,
+                            empty($current_class)
+                                ? null
+                                : $classes[strtolower($current_class)]
+                        );
+
+                    if($scope[$current_scope]['vars'][$v['name']]['type'] !== '') {
+                        // Does the default value match the declared type?
+                        if($type!=='null' && !type_check($type, $scope[$current_scope]['vars'][$v['name']]['type'])) {
+                            Log::err(Log::ETYPE, "Default value for {$scope[$current_scope]['vars'][$v['name']]['type']} \${$v['name']} can't be $type", $file, $node->lineno);
+                        }
+                    }
+
+                    add_type(
+                        $current_scope,
+                        $v['name'],
+                        strtolower($type)
+                    );
+
+                    // If we have no other type info about a parameter, just because it has a default value of null
+                    // doesn't mean that is its type. Any type can default to null
+                    if($type==='null' && !empty($result['params'][$k]['type'])) {
+                        $result['params'][$k]['type'] =
+                            merge_type(
+                                $result['params'][$k]['type'],
+                                strtolower($type)
+                            );
+                    }
+                }
+                $i++;
+
+
+            }
+
+
+            /*
             foreach($result['params'] as $k=>$v) {
                 if(empty($v['type'])) {
                     // If there is no type specified in PHP, check for a docComment
@@ -343,6 +449,9 @@ class Method extends TypedStructuralElement {
                 }
                 $i++;
             }
+             */
+
+
             if(!empty($dc['vars'])) {
                 foreach($dc['vars'] as $var) {
                     if(empty($scope[$current_scope]['vars'][$var['name']])) {
@@ -355,6 +464,10 @@ class Method extends TypedStructuralElement {
         }
 
         return $result;
+    }
+
+    public function getParameterList() : array {
+        return $this->parameter_list;
     }
 
     /**

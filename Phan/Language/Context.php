@@ -149,6 +149,18 @@ class Context {
         return $this->namespace_map;
     }
 
+    public function hasNamespaceMapFor(int $flags, string $name) : bool {
+        return !empty($this->namespace_map[$flags][strtolower($name)]);
+    }
+
+    /**
+     * @return string
+     * The namespace mapped name for the given flags and name
+     */
+    public function getNamespaceMapFor(int $flags, string $name) : string {
+        return $this->namespace_map[$flags][strtolower($name)];
+    }
+
     /**
      * ...
      *
@@ -335,6 +347,22 @@ class Context {
      */
     public function getScope() : Scope {
         return $this->scope;
+    }
+
+    /**
+     * Get a string representation of the context
+     *
+     * @return string
+     */
+    public function __toString() : string {
+        return 'Context: '
+            . $this->file
+            . ':' . $this->line_number_start
+            . ':' . $this->line_number_end
+            . ' ' . $this->class_fqsen
+            . ':' . $this->method_fqsen
+            . "\n"
+            ;
     }
 
 }

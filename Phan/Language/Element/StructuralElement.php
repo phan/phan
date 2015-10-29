@@ -24,6 +24,12 @@ class StructuralElement {
     private $comment = null;
 
     /**
+     * @var bool
+     * True if this element is marked as deprecated
+     */
+    private $is_deprecated = false;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -53,5 +59,23 @@ class StructuralElement {
      */
     public function getComment() : Comment {
         return $this->comment;
+    }
+
+    /**
+     * @return bool
+     * True if this element is marked as deprecated
+     */
+    public function isDeprecated() : bool {
+        return $this->is_deprecated;
+    }
+
+    /**
+     * @param bool $is_deprecated
+     * Set this element as deprecated
+     *
+     * @return null
+     */
+    public function setIsDeprecated(bool $is_deprecated) {
+        $this->is_deprecated = $is_deprecated;
     }
 }

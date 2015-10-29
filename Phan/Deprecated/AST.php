@@ -1,5 +1,7 @@
 <?php
-namespace phan;
+namespace Phan\Deprecated;
+
+use \Phan\Log;
 
 /**
  * ast_node_type() is for places where an actual type name appears.

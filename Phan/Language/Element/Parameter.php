@@ -49,25 +49,45 @@ class Parameter extends TypedStructuralElement {
     }
 
     /**
+     * @param string $def
+     * ?
      *
+     * @return null
      */
     public function setDef(string $def) {
         $this->def = $def;
     }
 
     /**
+     * @return bool
+     * True if 'def' is defined.
+     */
+    public function hasDef() : bool {
+        return !empty($this->def);
+    }
+
+    /**
+     * @return string
+     * The 'def' paramter
+     */
+    public function getDef() : string {
+        return $this->def;
+    }
+
+    /**
      * @return ParameterElement[]
      */
     public static function listFromAST(
-        \phan\State $state,
+        Context $context,
         \ast\Node $node
     ) : array {
+
         if(!$node instanceof \ast\Node) {
             assert(false, ast_dump($node)." was not an \\ast\\Node");
         }
 
-        return array_map(function(\ast\Node $child) use ($state) {
-            return ParameterElement::fromAST($state, $child);
+        return array_map(function(\ast\Node $child) use ($context) {
+            return Parameter::fromAST($context, $child);
         }, $node->children);
     }
 
@@ -75,9 +95,9 @@ class Parameter extends TypedStructuralElement {
      *
      */
     public static function fromAST(
-        \phan\State $state,
+        Context $context,
         \ast\Node $node
-    ) : ParameterElement {
+    ) : Parameter {
         /*
         $result[] = node_param($file, $param_node, $dc, $i, $namespace);
         if($param_node->children[2]===null) {
@@ -89,15 +109,22 @@ class Parameter extends TypedStructuralElement {
         $i++;
          */
 
+        assert($node instanceof \ast\Node,
+            "node was not an \\ast\\Node");
 
-        if($node instanceof \ast\Node) {
-            assert(false, "$node was not an \\ast\\Node");
-        }
-
+        /*
         $type = ast_node_type(
             $file,
             $node->children[0],
-            $namespace
+            $context->getNamespace()
+        );
+         */
+
+        $taint = false;
+        $type = Type::typeFromSimpleNode(
+            $context,
+            $node->children[0],
+            $taint
         );
 
         if(empty($type)
@@ -106,25 +133,21 @@ class Parameter extends TypedStructuralElement {
             $type = $dc['params'][$i]['type'];
         }
 
-        $parameter_element = new ParameterElement(
-            $state->getFile(),
-            $state->getNamespace(),
-            $ast->lineno,
-            $ast->endLineno,
-            $ast->docComment,
-            $state->getIsConditional(),
-            $ast->flags,
+        $parameter = new Parameter(
+            $context,
+            Comment::fromString($node->docComment ?? ''),
             (string)$node->children[1],
-            $type
+            $type,
+            $node->flags
         );
 
         if($node->children[2]!==null) {
-            $parameter_element->setDef(
+            $parameter->setDef(
                 $node->children[2]
             );
         }
 
-        return $parameter_element;
+        return $parameter;
     }
 
 }

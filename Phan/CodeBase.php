@@ -51,7 +51,7 @@ class CodeBase {
      * True if the exlass exists else false
      */
     public function classExists(FQSEN $fqsen) : bool {
-        return !empty($this->getClassByFQSEN($fqsen));
+        return !empty($this->class_map[$fqsen->__toString()]);
     }
 
     public function addMethod(Method $method_element) {

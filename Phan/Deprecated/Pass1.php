@@ -146,15 +146,22 @@ function pass1($file, $namespace, $conditional, $ast, $current_scope, $current_c
 				break;
 
 			case \ast\AST_PROP_DECL:
-				if(empty($current_class)) Log::err(Log::EFATAL, "Invalid property declaration", $file, $ast->lineno);
+                if(empty($current_class))
+                    Log::err(Log::EFATAL, "Invalid property declaration", $file, $ast->lineno);
+
 				$dc = null;
-				if(!empty($ast->docComment)) $dc = parse_doc_comment($ast->docComment);
+                if(!empty($ast->docComment)) $dc =
+                    parse_doc_comment($ast->docComment);
 
 				foreach($ast->children as $i=>$node) {
-					$classes[$lc]['properties'][$node->children[0]] = [ 'flags'=>$ast->flags,
-																	    'name'=>$node->children[0],
-																	    'lineno'=>$node->lineno];
-					$type = node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[$lc]) ? null : $classes[$lc]);
+                    $classes[$lc]['properties'][$node->children[0]] = [
+                        'flags'=>$ast->flags,
+                        'name'=>$node->children[0],
+                        'lineno'=>$node->lineno
+                    ];
+
+                    $type =
+                        node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[$lc]) ? null : $classes[$lc]);
 					if(!empty($dc['vars'][$i]['type'])) {
 						if($type !=='null' && !type_check($type, $dc['vars'][$i]['type'])) {
 							Log::err(Log::ETYPE, "property is declared to be {$dc['vars'][$i]['type']} but was assigned $type", $file, $node->lineno);

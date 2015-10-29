@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Phan\Language;
 
 use \Phan\Deprecated;
+use \ast\Node;
 
 /**
  * Static data defining type names for builtin classes
@@ -50,43 +51,88 @@ class Type {
      * @return Type
      * A Type for the given object
      */
-    public static function typeForObject($object) {
+    public static function typeForObject($object) : Type {
         return new Type([gettype($object)]);
     }
 
     /**
-     * Add a type name to the list of types
+     * @param string $type_string
+     * A '|' delimited string representing a type in the form
+     * 'int|string|null|ClassName'.
      *
-     * @return void
+     * @return Type
      */
-    public function addTypeName($type_name) {
-        $type_name_list[] = $type_name;
+    public static function typeFromString(string $type_string) : Type {
+        return new Type(explode('|', $type_string));
+    }
+
+    /**
+     * ast_node_type() is for places where an actual type
+     * name appears. This returns that type name. Use node_type()
+     * instead to figure out the type of a node
+     *
+     * @see \Phan\Deprecated\AST::ast_node_type
+     */
+    public static function typeFromSimpleNode(
+        Context $context,
+        Node $node
+    ) : Type {
+        // global $namespace_map;
+
+        if($node instanceof \ast\Node) {
+            switch($node->kind) {
+            case \ast\AST_NAME:
+                $result = qualified_name($file, $node, $namespace);
+                break;
+            case \ast\AST_TYPE:
+                if($node->flags == \ast\flags\TYPE_CALLABLE) {
+                    $result = 'callable';
+                } else if($node->flags == \ast\flags\TYPE_ARRAY) {
+                    $result = 'array';
+                }
+                else assert(false, "Unknown type: {$node->flags}");
+                break;
+            default:
+                Log::err(
+                    Log::EFATAL,
+                    "ast_node_type: unknown node type: "
+                    . \ast\get_kind_name($node->kind)
+                );
+                break;
+            }
+        } else {
+            $result = (string)$node;
+        }
+        return Type::typeFromString($result);
     }
 
     /**
      * @param Context $context
-     * @param \ast\Node|string $node
+     * @param Node|string $node
      * @param bool $taint
+     * @param bool $check_var_exists
      *
      * @return Type
+     *
+     * @see \Phan\Deprecated\Pass2::node_type
      */
-    public static function typeForASTNode(
+    public static function typeFromNode(
         Context $context,
-        $node,
-        bool &$taint
+        Node $node,
+        bool &$taint = null,
+        bool $check_var_exists = false
     ) : Type {
 
-        if(!($node instanceof \ast\Node)) {
+        if(!($node instanceof Node)) {
             if($node === null) {
                 return Type::none();
             }
             return self::typeForObject($node);
         }
 
-
 		if($node->kind == \ast\AST_ARRAY) {
             if(!empty($node->children)
-                && $node->children[0] instanceof \ast\Node
+                && $node->children[0] instanceof Node
                 && $node->children[0]->kind == \ast\AST_ARRAY_ELEM
             ) {
                 // Check the first 5 (completely arbitrary) elements
@@ -94,9 +140,10 @@ class Type {
 				$etypes = [];
 				for($i=0; $i<5; $i++) {
 					if(empty($node->children[$i])) break;
-					if($node->children[$i]->children[0] instanceof \ast\Node) {
+					if($node->children[$i]->children[0] instanceof Node) {
+                        $temp_taint = false;
                         $etypes[] =
-                            self::typeForASTNode(
+                            self::typeFromNode(
                                 $context,
                                 $node->children[$i]->children[0],
                                 $temp_taint
@@ -107,11 +154,10 @@ class Type {
 					}
 				}
 				$types = array_unique($etypes);
-                if(count($types) == 1
-                    && !empty($types[0])
+                if(count($types) == 1 && !empty($types[0])
                 ) {
-                    return new Type(
-                        explode('|', Deprecated::mkgenerics($types[0]))
+                    return Type::typeFromString(
+                        Deprecated::mkgenerics($types[0]->__toString())
                     );
                 }
             }
@@ -135,6 +181,13 @@ class Type {
 				case \ast\flags\BINARY_CONCAT:
 					$temp_taint = false;
 
+                    self::typeFromNode(
+                        $context,
+                        $node->children[0],
+                        $temp_taint
+                    );
+
+                    /*
                     node_type(
                         $file,
                         $namespace,
@@ -143,10 +196,19 @@ class Type {
                         $current_class,
                         $temp_taint
                     );
+                     */
 					if($temp_taint) {
 						$taint = true;
 						return new Type(['string']);
 					}
+
+                    self::typeFromNode(
+                        $context,
+                        $node->children[1],
+                        $temp_taint
+                    );
+
+                    /*
                     node_type(
                         $file,
                         $namespace,
@@ -155,6 +217,7 @@ class Type {
                         $current_class,
                         $temp_taint
                     );
+                     */
 
 					if($temp_taint) {
 						$taint = true;
@@ -172,22 +235,72 @@ class Type {
 				case \ast\flags\BINARY_IS_SMALLER_OR_EQUAL:
 				case \ast\AST_GREATER:
 				case \ast\AST_GREATER_EQUAL:
-					$temp = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
-					if(!$temp) $left = '';
-					else $left = type_map($temp);
-					$temp = node_type($file, $namespace, $node->children[1], $current_scope, $current_class);
-					if(!$temp) $right = '';
-					else $right = type_map($temp);
+                    /*
+                    $temp =
+                        node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
+                     */
+
+                    $temp =
+                        self::typeFromNode($context, $node->chilren[0]);
+
+                    $left = !$temp->hasAnyType()
+                        ? ''
+                        : self::toCanonicalName((string)$temp);
+
+                    $temp =
+                        self::typeFromNode($context, $node->chilren[1]);
+
+                    $right = !$temp->hasAnyType()
+                        ? ''
+                        : self::toCanonicalName((string)$temp);
+
+                    /*
+                    if(!$temp) {
+                        $left = '';
+                    } else {
+                        $left = self::toCanonicalName($temp);
+                    }
+
+                    $temp =
+                        node_type($file, $namespace, $node->children[1], $current_scope, $current_class);
+                     */
+
+
+                    /*
+                    if(!$temp) {
+                        $right = '';
+                    } else {
+                        $right = type_map($temp);
+                    }
+                     */
+
 					$taint = false;
 					// If we have generics and no non-generics on the left and the right is not array-like ...
-					if(!empty(generics($left)) && empty(nongenerics($left)) && !type_check($right, 'array')) {
-						Log::err(Log::ETYPE, "array to $right comparison", $file, $node->lineno);
-					} else // and the same for the right side
-						if(!empty(generics($right)) && empty(nongenerics($right)) && !type_check($left, 'array')) {
-						Log::err(Log::ETYPE, "$left to array comparison", $file, $node->lineno);
-					}
-					return new Type(['bool']);
+
+                    if(!empty(generics($left))
+                        && empty(nongenerics($left))
+                        && !type_check($right, 'array')
+                    ) {
+                        Log::err(
+                            Log::ETYPE,
+                            "array to $right comparison",
+                            $context->getFile(),
+                            $node->lineno
+                        );
+					} else if(!empty(generics($right))
+                            && empty(nongenerics($right))
+                            && !type_check($left, 'array')
+                    ) {
+                        // and the same for the right side  Log::err(
+                        Log::ETYPE,
+                            "$left to array comparison",
+                            $context->getFile(),
+                            $node->lineno
+                        );
+                    }
+                    return new Type(['bool']);
 					break;
+
 				// Add is special because you can add arrays
 				case \ast\flags\BINARY_ADD:
 					$temp = node_type($file, $namespace, $node->children[0], $current_scope, $current_class);
@@ -296,7 +409,7 @@ class Type {
 
 		} else if($node->kind == \ast\AST_ENCAPS_LIST) {
 			foreach($node->children as $encap) {
-				if($encap instanceof \ast\Node) {
+				if($encap instanceof Node) {
 					if(var_taint_check($file, $encap, $current_scope)) $taint = true;
 				}
 			}
@@ -305,8 +418,11 @@ class Type {
 		} else if($node->kind == \ast\AST_CONST) {
 			if($node->children[0]->kind == \ast\AST_NAME) {
                 if(defined($node->children[0]->children[0])) {
+                    // return type_map(gettype(constant($node->children[0]->children[0])));
                     // TODO
-                    return type_map(gettype(constant($node->children[0]->children[0])));
+                    return new Type([
+                        self::toCanonicalName(gettype(constant($node->children[0]->children[0])))
+                    ]);
                 }
 				else {
 					// Todo: user-defined constant
@@ -338,7 +454,7 @@ class Type {
 		} else if($node->kind == \ast\AST_PROP) {
 			if($node->children[0]->kind == \ast\AST_VAR) {
 				$class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
-				if($class_name && !($node->children[1] instanceof \ast\Node)) {
+				if($class_name && !($node->children[1] instanceof Node)) {
 					$ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
                     if(empty($ltemp)) {
                         return Type::none();
@@ -350,7 +466,7 @@ class Type {
 		} else if($node->kind == \ast\AST_STATIC_PROP) {
 			if($node->children[0]->kind == \ast\AST_NAME) {
 				$class_name = qualified_name($file, $node->children[0], $namespace);
-				if($class_name && !($node->children[1] instanceof \ast\Node)) {
+				if($class_name && !($node->children[1] instanceof Node)) {
 					$ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
                     if(empty($ltemp)) {
                         return Type::none();
@@ -439,12 +555,12 @@ class Type {
             ]
         ];
 
-        if(!$node instanceof \ast\Node) {
+        if(!$node instanceof Node) {
             return false;
         }
 
         $parent = $node;
-        while(($node instanceof \ast\Node)
+        while(($node instanceof Node)
             && ($node->kind != \ast\AST_VAR)
             && ($node->kind != \ast\AST_MAGIC_CONST)
         ) {
@@ -456,7 +572,7 @@ class Type {
         }
 
         if($parent->kind == \ast\AST_DIM) {
-            if($node->children[0] instanceof \ast\Node) {
+            if($node->children[0] instanceof Node) {
                 // $$var or something else dynamic is going on, not direct access to a suspivious var
                 return false;
             }
@@ -465,7 +581,7 @@ class Type {
                     if($index=='*') {
                         return true;
                     }
-                    if($parent->children[1] instanceof \ast\Node) {
+                    if($parent->children[1] instanceof Node) {
                         // Dynamic index, give up
                         return false;
                     }
@@ -475,7 +591,7 @@ class Type {
                 }
             }
         } else if($parent->kind == \ast\AST_VAR
-            && !($parent->children[0] instanceof \ast\Node)
+            && !($parent->children[0] instanceof Node)
         ) {
             $variable_name = $parent->children[0];
             if (empty($context->getScope()->getVariableNameList()[$variable_name])) {
@@ -591,6 +707,32 @@ class Type {
             $repmaps[1],
             $type_name
         );
+    }
+
+    /**
+     * Add a type name to the list of types
+     *
+     * @return void
+     */
+    public function addTypeName($type_name) {
+        $type_name_list[] = $type_name;
+    }
+
+    /**
+     * @return bool
+     * True if this union type contains the given named
+     * type.
+     */
+    public function hasTypeName(string $type_name) : bool {
+        return in_array($type_name, $this->type_name_list);
+    }
+
+    /**
+     * @return bool
+     * True if this union type contains any types.
+     */
+    public function hasAnyType() : bool {
+        return empty($this->type_name_list);
     }
 
 }

@@ -1,5 +1,5 @@
 <?php
-namespace phan;
+namespace Phan\Deprecated;
 
 // Now it gets complicated
 // Pass 2 tries to keep track of variable types which are stored in $scope
