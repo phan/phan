@@ -116,7 +116,7 @@ class Type {
 
     /**
      * @param Context $context
-     * @param Node|string $node
+     * @param Node|string|null $node
      *
      * @return Type
      *
@@ -124,7 +124,7 @@ class Type {
      */
     public static function typeFromNode(
         Context $context,
-        Node $node
+        $node
     ) : Type {
         if(!($node instanceof Node)) {
             if($node === null) {

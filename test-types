@@ -1,0 +1,50 @@
+#!/home/amorrison/sandbox/php-7.0.0RC5/package/bin/php
+<?php declare(strict_types=1);
+
+if (!extension_loaded('ast')) {
+	echo <<<NO_AST_ERROR
+Please install php-ast
+NO_AST_ERROR;
+exit;
+}
+
+require_once(__DIR__.'/Phan/Bootstrap.php');
+
+use \Phan\CodeBase;
+use \Phan\Language\File;
+use \Phan\Language\Type;
+use \Phan\Language\Context;
+use \Phan\Debug;
+
+function typeStringFromCode(string $code) : string {
+    return Type::typeFromNode(
+        new Context(),
+        \ast\parse_code($code)
+        ->children[0]
+    )->__toString();
+}
+
+assert('int' === typeStringFromCode(
+    '<?php 42; '
+), 'int');
+
+assert('string' === typeStringFromCode(
+    '<?php "a string"; '
+), 'string');
+
+assert('int[]' === typeStringFromCode(
+    '<?php [1, 2, 3];'
+), 'array of uniform type');
+
+assert('array' === typeStringFromCode(
+    '<?php [];'
+), 'array empty');
+
+assert('array' === typeStringFromCode(
+    '<?php [];'
+), 'array empty');
+
+assert('SplStack' === typeStringFromCode(
+    '<?php new SplStack();'
+), 'Object');
+
