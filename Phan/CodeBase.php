@@ -54,9 +54,9 @@ class CodeBase {
         return !empty($this->class_map[$fqsen->__toString()]);
     }
 
-    public function addMethod(Method $method_element) {
-        $this->method_map[$method_element->getFQSEN()->__tostring()] =
-            $method_element;
+    public function addMethod(Method $method) {
+        $this->method_map[$method->getFQSEN()->__tostring()] =
+            $method;
     }
 
     /**
@@ -64,8 +64,9 @@ class CodeBase {
      */
     private function addClassesByNames(array $class_name_list) {
         foreach ($class_name_list as $i => $class_name) {
-            $this->class_map[$class_name] =
-                Clazz::fromClassName($this, $class_name);
+            $clazz = Clazz::fromClassName($this, $class_name);
+            $this->class_map[$clazz->getFQSEN()->__toString()] =
+                $clazz;
         }
     }
 
@@ -73,8 +74,10 @@ class CodeBase {
      *
      */
     private function addFunctionsByNames($function_name_list) {
-        // TODO
-        throw new Exception('not implemented');
+        foreach ($function_name_list as $i => $function_name) {
+            $method = Method::fromFunctionName($this, $function_name);
+            $this->method_map[$function_name] = $method;
+        }
     }
 
     /**

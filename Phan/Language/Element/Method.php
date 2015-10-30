@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Parameter;
@@ -84,6 +85,53 @@ class Method extends TypedStructuralElement {
     }
 
     /**
+     *
+     */
+    public static function fromFunctionName(
+        CodeBase $code_base,
+        string $function_name
+    ) : Method {
+
+        $reflection_function =
+            new \ReflectionFunction($function_name);
+
+        return self::fromReflectionFunction(
+            $code_base,
+            $reflection_function
+        );
+    }
+
+    /**
+     *
+     */
+    public static function fromReflectionFunction(
+        CodeBase $code_base,
+        \ReflectionFunction $reflection_function
+    ) : Method {
+
+        $number_of_required_parameters =
+            $reflection_function->getNumberOfRequiredParameters();
+
+        $number_of_optional_parameters =
+            $reflection_function->getNumberOfParameters()
+            - $number_of_required_parameters;
+
+        $context = new Context($code_base);
+
+        $method = new Method(
+            $context,
+            Comment::none(),
+            $reflection_function->getName(),
+            Type::none(),
+            0,
+            $number_of_required_parameters,
+            $number_of_optional_parameters
+        );
+
+        return $method;
+    }
+
+    /**
      * @return map[string,Method];
      */
     public static function mapFromReflectionClassAndMethod(
@@ -91,7 +139,7 @@ class Method extends TypedStructuralElement {
         \ReflectionClass $class,
         \ReflectionMethod $method,
         array $parents
-    ) {
+    ) : array {
         $reflection_method =
             new \ReflectionMethod($class->getName(), $method->name);
 
