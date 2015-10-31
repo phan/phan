@@ -44,12 +44,16 @@ class Debug {
             return $string . 'null' . "\n";
         }
 
-        if (!isset($node->kind)) {
-            print_r($node);
+        if (!is_object($node)) {
+            return $string . $node . "\n";
         }
 
-        $string .= self::$AST_KIND_ID_NAME_MAP[$node->kind ?? -1] ?? '_NOT_FOUND_';
-        $string .= ' [' . self::astFlagDescription($node->flags ?? 0) . ']';
+        $string .= self::$AST_KIND_ID_NAME_MAP[$node->kind ?? -1]
+            ?? 'UNKNOWN(' . $node->kind . ')';
+
+        $string .= ' ['
+            . self::astFlagDescription($node->flags ?? 0)
+            . ']';
 
         if (isset($node->lineno)) {
             $string .= ' #' . $node->lineno;

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\AST;
 
+use \Phan\Debug;
 use \ast\Node;
 
 class Element {
@@ -135,6 +136,10 @@ class Element {
             return $visitor->visitVar($this->node);
         case \ast\AST_WHILE:
             return $visitor->visitWhile($this->node);
+        default:
+            Debug::printNode($this->node);
+            assert(false, 'All node kinds must match');
+            break;
         }
     }
 
@@ -262,6 +267,10 @@ class Element {
             return $visitor->visitUnary_bitwise_not($this->node);
         case \ast\flags\UNARY_BOOL_NOT:
             return $visitor->visitUnary_bool_not($this->node);
+        default:
+            Debug::printNode($this->node);
+            assert(false, 'All flags must match');
+            break;
         }
     }
 

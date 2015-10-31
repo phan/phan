@@ -7,6 +7,8 @@ use \Phan\Log;
  * ast_node_type() is for places where an actual type name appears.
  * This returns that type name node_type() instead to figure out the
  * type of a node
+ *
+ * @see \Phan\Language\Type::typeFromSimpleNode
  */
 function ast_node_type($file, $node, $namespace) {
 	global $namespace_map;

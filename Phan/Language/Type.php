@@ -79,14 +79,15 @@ class Type {
      * name appears. This returns that type name. Use node_type()
      * instead to figure out the type of a node
      *
+     * @param Context $context
+     * @param null|string|Node $node
+     *
      * @see \Phan\Deprecated\AST::ast_node_type
      */
     public static function typeFromSimpleNode(
         Context $context,
-        Node $node
+        $node
     ) : Type {
-        // global $namespace_map;
-
         if($node instanceof \ast\Node) {
             switch($node->kind) {
             case \ast\AST_NAME:
@@ -144,6 +145,7 @@ class Type {
      * @return Type
      *
      * @see \Phan\Deprecated\Pass2::node_type
+     * Formerly 'function node_type'
      */
     public static function typeFromNode(
         Context $context,
@@ -414,6 +416,155 @@ class Type {
      */
     public function typeNameList() : array {
         return $this->type_name_list;
+    }
+
+    /**
+     * @param Type $target_type
+     * A type to check to see if this can cast to it
+     *
+     * @param Context $context
+     * The context in which we'd like to perform the
+     * cast
+     *
+     * @return bool
+     * True if this type is allowed to cast to the given type
+     * i.e. int->float is allowed  while float->int is not.
+     *
+     * @see \Phan\Deprecated\Pass2::type_check
+     * Formerly 'function type_check'
+     */
+    public function canCastToTypeInContext(
+        Type $type_target,
+        Context $context
+    ) : bool {
+        $type_name_source = (string)$this;
+        $type_name_target = (string)$type_target;
+
+        // Fast-track most common cases first
+        if($type_name_source === $type_name_target) {
+            return true;
+        }
+
+        // If either type is unknown, we can't call it
+        // a failure
+        if(empty($type_name_source) || empty($type_name_target)) {
+            return true;
+        }
+
+        if(strpos("|$type_name_source|", '|mixed|') !== false) {
+            return true;
+        }
+
+        if(strpos("|$type_name_target|", '|mixed|') !== false) {
+            return true;
+        }
+
+        if($type_name_source ==='int' && $type_name_target === 'float') {
+            return true;
+        }
+
+        // $src = type_map(strtolower($src));
+        // $dst = type_map(strtolower($dst));
+
+        // our own union types
+        foreach($this->type_name_list as $s) {
+            if(empty($s)) {
+                continue;
+            }
+
+            foreach($type_target->type_name_list as $d) {
+                if(empty($d)) {
+                    continue;
+                }
+
+                if(substr($s,0,9)=='callable:') {
+                    $s = 'callable';
+                }
+
+                if(substr($d,0,9)=='callable:') {
+                    $d = 'callable';
+                }
+
+                if($s[0]=='\\') {
+                    $s = substr($s,1);
+                }
+
+                if($d[0]=='\\') {
+                    $d = substr($d,1);
+                }
+
+                if($s===$d) {
+                    return true;
+                }
+
+                if($s==='int' && $d==='float') {
+                    return true; // int->float is ok
+                }
+
+                if(($s==='array'
+                    || $s==='string'
+                    || (strpos($s,'[]')!==false))
+                    && $d==='callable'
+                ) {
+                    return true;
+                }
+                if($s === 'object'
+                    && !type_scalar($d)
+                    && $d!=='array'
+                ) {
+                    return true;
+                }
+
+                if($d === 'object' &&
+                    !type_scalar($s)
+                    && $s!=='array'
+                ) {
+                    return true;
+                }
+
+                if(strpos($s,'[]') !== false
+                    && $d==='array'
+                ) {
+                    return true;
+                }
+
+                if(strpos($d,'[]') !== false
+                    && $s==='array'
+                ) {
+                    return true;
+                }
+
+                if(($pos=strrpos($d,'\\'))!==false) {
+                    if ($context->hasNamespace()) {
+                        if(trim(strtolower($context->getNamespace().'\\'.$s),
+                            '\\') == $d
+                        ) {
+                            return true;
+                        }
+                    } else {
+                        if(substr($d, $pos+1) === $s) {
+                            return true; // Lazy hack, but...
+                        }
+                    }
+                }
+
+                if(($pos=strrpos($s,'\\'))!==false) {
+                    if ($context->hasNamespace()) {
+                        if(trim(strtolower($context->getNamespace().'\\'.$d),
+                            '\\') == $s
+                        ) {
+                            return true;
+                        }
+                    } else {
+                        if(substr($s, $pos+1) === $d) {
+                            return true; // Lazy hack, but...
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
 }

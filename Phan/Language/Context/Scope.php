@@ -29,4 +29,13 @@ class Scope {
         return $this->variable_map[$name];
     }
 
+    /**
+     * @return Scope;
+     */
+    public function withVarible(Variable $variable) : Scope {
+        $scope = clone($this);
+        $scope->variable_map[$variable->getName()] = $variable;
+        return $scope;
+    }
+
 }

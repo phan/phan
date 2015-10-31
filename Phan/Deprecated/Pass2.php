@@ -1054,6 +1054,8 @@ function all_types($type) {
 
 // int->float is allowed
 // float->int is not
+//
+// @see \Phan\Language\Type::canCastToTypeInContext
 function type_check($src, $dst, $namespace=''):bool {
 	global $classes;
 
@@ -1278,6 +1280,9 @@ function  mkgenerics(string $str):string {
 	return implode('|', $ret);
 }
 
+/**
+ * @see \Phan\Language\Type::typeFromNode
+ */
 function node_type($file, $namespace, $node, $current_scope, $current_class, &$taint=null, $check_var_exists=true) {
 	global $classes, $functions, $scope, $namespace_map, $internal_arginfo;
 

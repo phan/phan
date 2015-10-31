@@ -333,6 +333,16 @@ class Context {
     }
 
     /**
+     * @return Context
+     * A new context with the given scope
+     */
+    public function withScope(Scope $scope) : Context {
+        $context = clone($this);
+        $context->scope = $scope;
+        return $context;
+    }
+
+    /**
      * @param string $fqsen
      * A fully-qualified structural element name describing
      * the current scope.

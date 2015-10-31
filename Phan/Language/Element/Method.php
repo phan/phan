@@ -284,6 +284,7 @@ class Method extends TypedStructuralElement {
             while(!empty(${"arginfo{$alt}"})) {
                 $name_alt = strtolower($method->name).' '.$alt;
 
+                // TODO
                 $name_method_info_map[$name_alt]->parameter_list[] =
                     new ParameterElement(
                         'internal',
@@ -306,7 +307,8 @@ class Method extends TypedStructuralElement {
     }
 
     /**
-     *
+     * @see \Phan\Deprecated\Pass1::node_func
+     * Formerly 'function node_func'
      */
     public static function fromAST(
         Context $context,
@@ -332,14 +334,6 @@ class Method extends TypedStructuralElement {
 
         $method->parameter_list =
             Parameter::listFromAST($context, $node->children[0]);
-            // node_paramlist($file, $node->children[0], $req, $opt, $dc, $namespace);
-
-        /*
-        $result = [
-            'oret'=>'',
-            'ast'=>$node->children[2]
-        ];
-         */
 
         $method->setIsDeprecated($comment->isDeprecated());
 
@@ -358,13 +352,6 @@ class Method extends TypedStructuralElement {
                     $node->children[3]
                 )
             );
-
-            /*
-            $result['oret'] =
-                ast_node_type($file, $node->children[3], $namespace); // Original return type
-            $result['ret'] =
-                ast_node_type($file, $node->children[3], $namespace); // This one changes as we walk the tree
-             */
         } else if ($comment->hasReturnType()) {
 
             $type = $comment->getReturnType();
@@ -382,28 +369,11 @@ class Method extends TypedStructuralElement {
 
             $method->original_return_type = $type;
             $method->setType($type);
-
-            /*
-            // Check if the docComment has a return value specified
-            if(!empty($dc['return'])) {
-                // We can't actually figure out 'static' at this point, but fill it in regardless. It will be partially correct
-                if($dc['return'] == 'static'
-                    || $dc['return'] == 'self'
-                    || $dc['return'] == '$this'
-                ) {
-                    if(strpos($current_scope,'::')!==false)
-                        list($dc['return'],) = explode('::',$current_scope);
-                }
-
-                $result['oret'] = $dc['return'];
-                $result['ret'] = $dc['return'];
-            }
-             */
         }
 
         // Add params to local scope for user functions
         if($context->getFile() != 'internal') {
-            $i = 1;
+            $parameter_offset = 1;
 
             foreach ($method->parameter_list as $i => $parameter) {
                 if (!$parameter->getType()->hasAnyType()) {
@@ -423,91 +393,66 @@ class Method extends TypedStructuralElement {
                 }
 
                 if ($parameter->hasDef()) {
-                    $type = 0; // TODO
-                }
-
-                if(array_key_exists('def', $v)) {
                     $type =
-                        node_type(
-                            $file,
-                            $namespace,
-                            $v['def'],
-                            $current_scope,
-                            empty($current_class)
-                                ? null
-                                : $classes[strtolower($current_class)]
+                        Type::typeFromNode(
+                            $context,
+                            $parameter->getDef()
                         );
 
-                    if($scope[$current_scope]['vars'][$v['name']]['type'] !== '') {
-                        // Does the default value match the declared type?
-                        if($type!=='null' && !type_check($type, $scope[$current_scope]['vars'][$v['name']]['type'])) {
-                            Log::err(Log::ETYPE, "Default value for {$scope[$current_scope]['vars'][$v['name']]['type']} \${$v['name']} can't be $type", $file, $node->lineno);
+                    if ($context->getScope()->hasVariableWithName($parameter->getName())) {
+                        $variable =
+                            $context->getScope()->getVariableWithName($parameter->getName());
+
+                        $variable_type = $variable->getType();
+
+                        if (!$type->hasTypeName('null')
+                            && !$type->canCastToTypeInContext($variable_type)
+                        ) {
+                            Log::err(
+                                Log::ETYPE,
+                                "Default value for {$variable_type} \${$paramter->getName()} can't be $type",
+                                $context->getFile(),
+                                $node->lineno
+                            );
                         }
                     }
 
-                    add_type(
-                        $current_scope,
-                        $v['name'],
-                        strtolower($type)
+                    // Get a new context with the new scope with the
+                    // new variable.
+                    $context = $context->withScope(
+                        $context->getScope()->withVariable(
+                            new Variable(
+                                $context,
+                                Comment::none(),
+                                $parameter->getName(),
+                                $parameter->getType(),
+                                0
+                            )
+                        )
                     );
 
-                    // If we have no other type info about a parameter, just because it has a default value of null
-                    // doesn't mean that is its type. Any type can default to null
-                    if($type==='null' && !empty($result['params'][$k]['type'])) {
-                        $result['params'][$k]['type'] =
-                            merge_type(
-                                $result['params'][$k]['type'],
-                                strtolower($type)
-                            );
+                    // If we have no other type info about a parameter,
+                    // just because it has a default value of null
+                    // doesn't mean that is its type. Any type can default
+                    // to null
+                    if ((string)$type === 'null'
+                        && $parameter->getType()->hasAnyTypeName()
+                    ) {
+                        $parameter->getType()->addType($type);
                     }
                 }
-                $i++;
-
-
+                $parameter_offset++;
             }
 
-
-            /*
-            foreach($result['params'] as $k=>$v) {
-                if(empty($v['type'])) {
-                    // If there is no type specified in PHP, check for a docComment
-                    // We assume order in the docComment matches the parameter order in the code
-                    if(!empty($dc['params'][$k]['type'])) {
-                        $scope[$current_scope]['vars'][$v['name']] = ['type'=>$dc['params'][$k]['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
-                    } else {
-                        $scope[$current_scope]['vars'][$v['name']] = ['type'=>'', 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
-                    }
+            foreach ($comment->getParameterList() as $comment_parameter) {
+                // TODO
+                /*
+                if(empty($scope[$current_scope]['vars'][$var['name']])) {
+                    $scope[$current_scope]['vars'][$var['name']] = ['type'=>$var['type'], 'tainted'=>false, 'tainted_by'=>''];
                 } else {
-                    $scope[$current_scope]['vars'][$v['name']] = ['type'=>$v['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
+                    add_type($current_scope, $var['name'], $var['type']);
                 }
-                if(array_key_exists('def', $v)) {
-                    $type = node_type($file, $namespace, $v['def'], $current_scope, empty($current_class) ? null : $classes[strtolower($current_class)]);
-                    if($scope[$current_scope]['vars'][$v['name']]['type'] !== '') {
-                        // Does the default value match the declared type?
-                        if($type!=='null' && !type_check($type, $scope[$current_scope]['vars'][$v['name']]['type'])) {
-                            Log::err(Log::ETYPE, "Default value for {$scope[$current_scope]['vars'][$v['name']]['type']} \${$v['name']} can't be $type", $file, $node->lineno);
-                        }
-                    }
-                    add_type($current_scope, $v['name'], strtolower($type));
-                    // If we have no other type info about a parameter, just because it has a default value of null
-                    // doesn't mean that is its type. Any type can default to null
-                    if($type==='null' && !empty($result['params'][$k]['type'])) {
-                        $result['params'][$k]['type'] = merge_type($result['params'][$k]['type'], strtolower($type));
-                    }
-                }
-                $i++;
-            }
-             */
-
-
-            if(!empty($dc['vars'])) {
-                foreach($dc['vars'] as $var) {
-                    if(empty($scope[$current_scope]['vars'][$var['name']])) {
-                        $scope[$current_scope]['vars'][$var['name']] = ['type'=>$var['type'], 'tainted'=>false, 'tainted_by'=>''];
-                    } else {
-                        add_type($current_scope, $var['name'], $var['type']);
-                    }
-                }
+                 */
             }
         }
 
