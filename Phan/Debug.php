@@ -48,8 +48,7 @@ class Debug {
             return $string . $node . "\n";
         }
 
-        $string .= self::$AST_KIND_ID_NAME_MAP[$node->kind ?? -1]
-            ?? 'UNKNOWN(' . $node->kind . ')';
+        $string .= \ast\get_kind_name($node->kind);
 
         $string .= ' ['
             . self::astFlagDescription($node->flags ?? 0)
@@ -69,7 +68,6 @@ class Debug {
             $string .= self::nodeToString($child_node, $indent + 1);
         }
 
-
         return $string;
     }
 
@@ -88,65 +86,6 @@ class Debug {
 
         return implode('|', $flag_names);
     }
-
-    private static $AST_KIND_ID_NAME_MAP = [
-        \ast\AST_ARRAY => 'AST_ARRAY',
-        \ast\AST_ARRAY_ELEM => 'AST_ARRAY_ELEM',
-        \ast\AST_ASSIGN => 'AST_ASSIGN',
-        \ast\AST_ASSIGN_OP => 'AST_ASSIGN_OP',
-        \ast\AST_ASSIGN_REF => 'AST_ASSIGN_REF',
-        \ast\AST_BINARY_OP => 'AST_BINARY_OP',
-        \ast\AST_CALL => 'AST_CALL',
-        \ast\AST_CAST => 'AST_CAST',
-        \ast\AST_CATCH => 'AST_CATCH',
-        \ast\AST_CLASS => 'AST_CLASS',
-        \ast\AST_CLASS_CONST => 'AST_CLASS_CONST',
-        \ast\AST_CLASS_CONST_DECL => 'AST_CLASS_CONST_DECL',
-        \ast\AST_CLOSURE => 'AST_CLOSURE',
-        \ast\AST_CLOSURE_USES => 'AST_CLOSURE_USES',
-        \ast\AST_CLOSURE_VAR => 'AST_CLOSURE_VAR',
-        \ast\AST_CONST => 'AST_CONST',
-        \ast\AST_DIM => 'AST_DIM',
-        \ast\AST_DO_WHILE => 'AST_DO_WHILE',
-        \ast\AST_ECHO => 'AST_ECHO',
-        \ast\AST_ENCAPS_LIST => 'AST_ENCAPS_LIST',
-        \ast\AST_EXPR_LIST => 'AST_EXPR_LIST',
-        \ast\AST_FOREACH => 'AST_FOREACH',
-        \ast\AST_FUNC_DECL => 'AST_FUNC_DECL',
-        \ast\AST_GLOBAL => 'AST_GLOBAL',
-        \ast\AST_GREATER => 'AST_GREATER',
-        \ast\AST_GREATER_EQUAL => 'AST_GREATER_EQUAL',
-        \ast\AST_GROUP_USE => 'AST_GROUP_USE',
-        \ast\AST_IF => 'AST_IF',
-        \ast\AST_IF_ELEM => 'AST_IF_ELEM',
-        \ast\AST_INSTANCEOF => 'AST_INSTANCEOF',
-        \ast\AST_LIST => 'AST_LIST',
-        \ast\AST_MAGIC_CONST => 'AST_MAGIC_CONST',
-        \ast\AST_METHOD => 'AST_METHOD',
-        \ast\AST_METHOD_CALL => 'AST_METHOD_CALL',
-        \ast\AST_NAME => 'AST_NAME',
-        \ast\AST_NAMESPACE => 'AST_NAMESPACE',
-        \ast\AST_NEW => 'AST_NEW',
-        \ast\AST_PARAM => 'AST_PARAM',
-        \ast\AST_PRINT => 'AST_PRINT',
-        \ast\AST_PROP => 'AST_PROP',
-        \ast\AST_PROP_DECL => 'AST_PROP_DECL',
-        \ast\AST_PROP_ELEM => 'AST_PROP_ELEM',
-        \ast\AST_RETURN => 'AST_RETURN',
-        \ast\AST_STATIC => 'AST_STATIC',
-        \ast\AST_STATIC_CALL => 'AST_STATIC_CALL',
-        \ast\AST_STATIC_PROP => 'AST_STATIC_PROP',
-        \ast\AST_STMT_LIST => 'AST_STMT_LIST',
-        \ast\AST_SWITCH => 'AST_SWITCH',
-        \ast\AST_SWITCH_CASE => 'AST_SWITCH_CASE',
-        \ast\AST_TYPE => 'AST_TYPE',
-        \ast\AST_UNARY_OP => 'AST_UNARY_OP',
-        \ast\AST_USE => 'AST_USE',
-        \ast\AST_USE_ELEM => 'AST_USE_ELEM',
-        \ast\AST_USE_TRAIT => 'AST_USE_TRAIT',
-        \ast\AST_VAR => 'AST_VAR',
-        \ast\AST_WHILE => 'AST_WHILE',
-    ];
 
     private static $AST_FLAG_ID_NAME_MAP = [
         \ast\flags\ASSIGN_ADD => 'ASSIGN_ADD',

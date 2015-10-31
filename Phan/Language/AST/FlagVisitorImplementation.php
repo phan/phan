@@ -9,11 +9,7 @@ use \ast\Node;
  */
 abstract class FlagVisitorImplementation implements FlagVisitor {
 
-    abstract public function visit(Node $node) {}
-
-    public function visitBinaryAdd(Node $node) {
-        return $this->visit($node);
-    }
+    public function visit(Node $node) {}
 
     public function visitAssignAdd(Node $node) {
         return $this->visit($node);

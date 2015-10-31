@@ -11,6 +11,11 @@ interface KindVisitor {
     /**
      * Visit a node with kind `\ast\AST_ARRAY`
      */
+    public function visitArgList(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_ARRAY`
+     */
     public function visitArray(Node $node);
 
     /**
@@ -37,6 +42,11 @@ interface KindVisitor {
      * Visit a node with kind `\ast\AST_BINARY_OP`
      */
     public function visitBinaryOp(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_BINARY_OP`
+     */
+    public function visitBreak(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_CALL`
@@ -89,6 +99,21 @@ interface KindVisitor {
     public function visitConst(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_CONST_DECL`
+     */
+    public function visitConstDecl(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_CONST_ELEM`
+     */
+    public function visitConstElem(Node $node);
+
+    /**
+     * Visit a nod ewith kind `\ast\AST_DECLARE`
+     */
+    public function visitDeclare(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_DIM`
      */
     public function visitDim(Node $node);
@@ -102,11 +127,21 @@ interface KindVisitor {
      * Visit a node with kind `\ast\AST_ECHO`
      */
     public function visitEcho(Node $node);
+    /**
+     *
+     * Visit a node with kind `\ast\AST_EMPTY`
+     */
+    public function visitEmpty(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_ENCAPS_LIST`
      */
     public function visitEncapsList(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_EXIT`
+     */
+    public function visitExit(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_EXPR_LIST`
@@ -199,6 +234,11 @@ interface KindVisitor {
     public function visitParam(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_PARAM_LIST`
+     */
+    public function visitParamList(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_PRINT`
      */
     public function visitPrint(Node $node);
@@ -254,9 +294,19 @@ interface KindVisitor {
     public function visitSwitchCase(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_SWITCH_LIST`
+     */
+    public function visitSwitchList(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_TYPE`
      */
     public function visitType(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_UNARY_MINUS`
+     */
+    public function visitUnaryMinus(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_UNARY_OP`

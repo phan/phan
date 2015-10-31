@@ -5,6 +5,9 @@ namespace Phan\Language\Element;
 use \Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
+use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
 
@@ -255,6 +258,33 @@ class Clazz extends TypedStructuralElement {
      */
     public function getPropertyWithName(string $name) : Property {
         return $this->property_map[$name];
+    }
+
+    /**
+     * Add a class constant
+     *
+     * @return null;
+     */
+    public function addConstant(Constant $constant) {
+        $this->constant_map[$constant->getName()] =
+            $constant;
+    }
+
+    /**
+     * @return bool
+     * True if a constant with the given name is defined
+     * on this class.
+     */
+    public function hasConstantWithName(string $name) : bool {
+        return !empty($this->constant_map[$constant->getName()]);
+    }
+
+    /**
+     * @return Constant
+     * The class constant with the given name.
+     */
+    public function getConstantWithName(string $name) : Constant {
+        return $this->constant_map[$constant->getName()];
     }
 
     /**

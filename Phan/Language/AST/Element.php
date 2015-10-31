@@ -24,6 +24,8 @@ class Element {
      */
     public function acceptKindVisitor(KindVisitor $visitor) {
         switch ($this->node->kind) {
+        case \ast\AST_ARG_LIST:
+            return $visitor->visitArgList($this->node);
         case \ast\AST_ARRAY:
             return $visitor->visitArray($this->node);
         case \ast\AST_ARRAY_ELEM:
@@ -36,6 +38,8 @@ class Element {
             return $visitor->visitAssignRef($this->node);
         case \ast\AST_BINARY_OP:
             return $visitor->visitBinaryOp($this->node);
+        case \ast\AST_BREAK:
+            return $visitor->visitBreak($this->node);
         case \ast\AST_CALL:
             return $visitor->visitCall($this->node);
         case \ast\AST_CAST:
@@ -47,7 +51,7 @@ class Element {
         case \ast\AST_CLASS_CONST:
             return $visitor->visitClassConst($this->node);
         case \ast\AST_CLASS_CONST_DECL:
-            return $visitor->visitClassConstDec($this->node);
+            return $visitor->visitClassConstDecl($this->node);
         case \ast\AST_CLOSURE:
             return $visitor->visitClosure($this->node);
         case \ast\AST_CLOSURE_USES:
@@ -56,14 +60,24 @@ class Element {
             return $visitor->visitClosureVar($this->node);
         case \ast\AST_CONST:
             return $visitor->visitConst($this->node);
+        case \ast\AST_CONST_DECL:
+            return $visitor->visitConstDecl($this->node);
+        case \ast\AST_CONST_ELEM:
+            return $visitor->visitConstElem($this->node);
+        case \ast\AST_DECLARE:
+            return $visitor->visitDeclare($this->node);
         case \ast\AST_DIM:
             return $visitor->visitDim($this->node);
         case \ast\AST_DO_WHILE:
             return $visitor->visitDoWhile($this->node);
         case \ast\AST_ECHO:
             return $visitor->visitEcho($this->node);
+        case \ast\AST_EMPTY:
+            return $visitor->visitEmpty($this->node);
         case \ast\AST_ENCAPS_LIST:
             return $visitor->visitEncapsList($this->node);
+        case \ast\AST_EXIT:
+            return $visitor->visitExit($this->node);
         case \ast\AST_EXPR_LIST:
             return $visitor->visitExprList($this->node);
         case \ast\AST_FOREACH:
@@ -100,6 +114,8 @@ class Element {
             return $visitor->visitNew($this->node);
         case \ast\AST_PARAM:
             return $visitor->visitParam($this->node);
+        case \ast\AST_PARAM_LIST:
+            return $visitor->visitParamList($this->node);
         case \ast\AST_PRINT:
             return $visitor->visitPrint($this->node);
         case \ast\AST_PROP:
@@ -122,8 +138,12 @@ class Element {
             return $visitor->visitSwitch($this->node);
         case \ast\AST_SWITCH_CASE:
             return $visitor->visitSwitchCase($this->node);
+        case \ast\AST_SWITCH_LIST:
+            return $visitor->visitSwitchList($this->node);
         case \ast\AST_TYPE:
             return $visitor->visitType($this->node);
+        case \ast\AST_UNARY_MINUS:
+            return $visitor->visitUnaryMinus($this->node);
         case \ast\AST_UNARY_OP:
             return $visitor->visitUnaryOp($this->node);
         case \ast\AST_USE:
@@ -150,123 +170,123 @@ class Element {
      * @return null
      */
     public function acceptFlagVisitor(FlagVisitor $visitor) {
-        switch ($$this->node->flag) {
+        switch ($this->node->flags) {
         case \ast\flags\ASSIGN_ADD:
-            return $visitor->visitAssign_add($this->node);
+            return $visitor->visitAssignAdd($this->node);
         case \ast\flags\ASSIGN_BITWISE_AND:
-            return $visitor->visitAssign_bitwise_and($this->node);
+            return $visitor->visitAssignBitwiseAnd($this->node);
         case \ast\flags\ASSIGN_BITWISE_OR:
-            return $visitor->visitAssign_bitwise_or($this->node);
+            return $visitor->visitAssignBitwiseOr($this->node);
         case \ast\flags\ASSIGN_BITWISE_XOR:
-            return $visitor->visitAssign_bitwise_xor($this->node);
+            return $visitor->visitAssign_bitwiseXor($this->node);
         case \ast\flags\ASSIGN_CONCAT:
-            return $visitor->visitAssign_concat($this->node);
+            return $visitor->visitAssignConcat($this->node);
         case \ast\flags\ASSIGN_DIV:
-            return $visitor->visitAssign_div($this->node);
+            return $visitor->visitAssignDiv($this->node);
         case \ast\flags\ASSIGN_MOD:
-            return $visitor->visitAssign_mod($this->node);
+            return $visitor->visitAssignMod($this->node);
         case \ast\flags\ASSIGN_MUL:
-            return $visitor->visitAssign_mul($this->node);
+            return $visitor->visitAssignMul($this->node);
         case \ast\flags\ASSIGN_POW:
-            return $visitor->visitAssign_pow($this->node);
+            return $visitor->visitAssignPow($this->node);
         case \ast\flags\ASSIGN_SHIFT_LEFT:
-            return $visitor->visitAssign_shift_left($this->node);
+            return $visitor->visitAssignShiftLeft($this->node);
         case \ast\flags\ASSIGN_SHIFT_RIGHT:
-            return $visitor->visitAssign_shift_right($this->node);
+            return $visitor->visitAssignShiftRight($this->node);
         case \ast\flags\ASSIGN_SUB:
-            return $visitor->visitAssign_sub($this->node);
+            return $visitor->visitAssignSub($this->node);
         case \ast\flags\BINARY_ADD:
-            return $visitor->visitBinary_add($this->node);
+            return $visitor->visitBinaryAdd($this->node);
         case \ast\flags\BINARY_BITWISE_AND:
-            return $visitor->visitBinary_bitwise_and($this->node);
+            return $visitor->visitBinaryBitwiseAnd($this->node);
         case \ast\flags\BINARY_BITWISE_OR:
-            return $visitor->visitBinary_bitwise_or($this->node);
+            return $visitor->visitBinaryBitwiseOr($this->node);
         case \ast\flags\BINARY_BITWISE_XOR:
-            return $visitor->visitBinary_bitwise_xor($this->node);
+            return $visitor->visitBinaryBitwiseXor($this->node);
         case \ast\flags\BINARY_BOOL_XOR:
-            return $visitor->visitBinary_bool_xor($this->node);
+            return $visitor->visitBinaryBoolXor($this->node);
         case \ast\flags\BINARY_CONCAT:
-            return $visitor->visitBinary_concat($this->node);
+            return $visitor->visitBinaryConcat($this->node);
         case \ast\flags\BINARY_DIV:
-            return $visitor->visitBinary_div($this->node);
+            return $visitor->visitBinaryDiv($this->node);
         case \ast\flags\BINARY_IS_EQUAL:
-            return $visitor->visitBinary_is_equal($this->node);
+            return $visitor->visitBinaryIsEqual($this->node);
         case \ast\flags\BINARY_IS_IDENTICAL:
-            return $visitor->visitBinary_is_identical($this->node);
+            return $visitor->visitBinaryIsIdentical($this->node);
         case \ast\flags\BINARY_IS_NOT_EQUAL:
-            return $visitor->visitBinary_is_not_equal($this->node);
+            return $visitor->visitBinaryIsNotEqual($this->node);
         case \ast\flags\BINARY_IS_NOT_IDENTICAL:
-            return $visitor->visitBinary_is_not_identical($this->node);
+            return $visitor->visitBinaryIsNotIdentical($this->node);
         case \ast\flags\BINARY_IS_SMALLER:
-            return $visitor->visitBinary_is_smaller($this->node);
+            return $visitor->visitBinaryIsSmaller($this->node);
         case \ast\flags\BINARY_IS_SMALLER_OR_EQUAL:
-            return $visitor->visitBinary_is_smaller_or_equal($this->node);
+            return $visitor->visitBinaryIsSmallerOrEqual($this->node);
         case \ast\flags\BINARY_MOD:
-            return $visitor->visitBinary_mod($this->node);
+            return $visitor->visitBinaryMod($this->node);
         case \ast\flags\BINARY_MUL:
-            return $visitor->visitBinary_mul($this->node);
+            return $visitor->visitBinaryMul($this->node);
         case \ast\flags\BINARY_POW:
-            return $visitor->visitBinary_pow($this->node);
+            return $visitor->visitBinaryPow($this->node);
         case \ast\flags\BINARY_SHIFT_LEFT:
-            return $visitor->visitBinary_shift_left($this->node);
+            return $visitor->visitBinaryShiftLeft($this->node);
         case \ast\flags\BINARY_SHIFT_RIGHT:
-            return $visitor->visitBinary_shift_right($this->node);
+            return $visitor->visitBinaryShiftRight($this->node);
         case \ast\flags\BINARY_SPACESHIP:
-            return $visitor->visitBinary_spaceship($this->node);
+            return $visitor->visitBinarySpaceship($this->node);
         case \ast\flags\BINARY_SUB:
-            return $visitor->visitBinary_sub($this->node);
+            return $visitor->visitBinarySub($this->node);
         case \ast\flags\CLASS_ABSTRACT:
-            return $visitor->visitClass_abstract($this->node);
+            return $visitor->visitClassAbstract($this->node);
         case \ast\flags\CLASS_FINAL:
-            return $visitor->visitClass_final($this->node);
+            return $visitor->visitClassFinal($this->node);
         case \ast\flags\CLASS_INTERFACE:
-            return $visitor->visitClass_interface($this->node);
+            return $visitor->visitClassInterface($this->node);
         case \ast\flags\CLASS_TRAIT:
-            return $visitor->visitClass_trait($this->node);
+            return $visitor->visitClassTrait($this->node);
         case \ast\flags\MODIFIER_ABSTRACT:
-            return $visitor->visitModifier_abstract($this->node);
+            return $visitor->visitModifierAbstract($this->node);
         case \ast\flags\MODIFIER_FINAL:
-            return $visitor->visitModifier_final($this->node);
+            return $visitor->visitModifierFinal($this->node);
         case \ast\flags\MODIFIER_PRIVATE:
-            return $visitor->visitModifier_private($this->node);
+            return $visitor->visitModifierPrivate($this->node);
         case \ast\flags\MODIFIER_PROTECTED:
-            return $visitor->visitModifier_protected($this->node);
+            return $visitor->visitModifierProtected($this->node);
         case \ast\flags\MODIFIER_PUBLIC:
-            return $visitor->visitModifier_public($this->node);
+            return $visitor->visitModifierPublic($this->node);
         case \ast\flags\MODIFIER_STATIC:
-            return $visitor->visitModifier_static($this->node);
+            return $visitor->visitModifierStatic($this->node);
         case \ast\flags\NAME_FQ:
-            return $visitor->visitName_fq($this->node);
+            return $visitor->visitNameFq($this->node);
         case \ast\flags\NAME_NOT_FQ:
-            return $visitor->visitName_not_fq($this->node);
+            return $visitor->visitNameNotFq($this->node);
         case \ast\flags\NAME_RELATIVE:
-            return $visitor->visitName_relative($this->node);
+            return $visitor->visitNameRelative($this->node);
         case \ast\flags\PARAM_REF:
-            return $visitor->visitParam_ref($this->node);
+            return $visitor->visitParamRef($this->node);
         case \ast\flags\PARAM_VARIADIC:
-            return $visitor->visitParam_variadic($this->node);
+            return $visitor->visitParamVariadic($this->node);
         case \ast\flags\RETURNS_REF:
-            return $visitor->visitReturns_ref($this->node);
+            return $visitor->visitReturnsRef($this->node);
         case \ast\flags\TYPE_ARRAY:
-            return $visitor->visitType_array($this->node);
+            return $visitor->visitTypeArray($this->node);
         case \ast\flags\TYPE_BOOL:
-            return $visitor->visitType_bool($this->node);
+            return $visitor->visitTypeBool($this->node);
         case \ast\flags\TYPE_CALLABLE:
-            return $visitor->visitType_callable($this->node);
+            return $visitor->visitTypeCallable($this->node);
         case \ast\flags\TYPE_DOUBLE:
-            return $visitor->visitType_double($this->node);
+            return $visitor->visitTypeDouble($this->node);
         case \ast\flags\TYPE_LONG:
-            return $visitor->visitType_long($this->node);
+            return $visitor->visitTypeLong($this->node);
         case \ast\flags\TYPE_NULL:
-            return $visitor->visitType_null($this->node);
+            return $visitor->visitTypeNull($this->node);
         case \ast\flags\TYPE_OBJECT:
-            return $visitor->visitType_object($this->node);
+            return $visitor->visitTypeObject($this->node);
         case \ast\flags\TYPE_STRING:
-            return $visitor->visitType_string($this->node);
+            return $visitor->visitTypeString($this->node);
         case \ast\flags\UNARY_BITWISE_NOT:
-            return $visitor->visitUnary_bitwise_not($this->node);
+            return $visitor->visitUnaryBitwiseNot($this->node);
         case \ast\flags\UNARY_BOOL_NOT:
-            return $visitor->visitUnary_bool_not($this->node);
+            return $visitor->visitUnaryBoolNot($this->node);
         default:
             Debug::printNode($this->node);
             assert(false, 'All flags must match');

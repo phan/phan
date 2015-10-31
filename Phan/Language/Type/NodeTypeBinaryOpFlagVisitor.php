@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
-use \Phan\Language\AST\KindVisitorImplementation;
+use \Phan\Language\AST\FlagVisitorImplementation;
+use \Phan\Language\Context;
 use \Phan\Language\Type;
 use \ast\Node;
 
@@ -22,8 +23,8 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
     public function visitBinaryConcat(Node $node) {
         $temp_taint = false;
 
-        self::typeFromNode(
-            $context,
+        Type::typeFromNode(
+            $this->context,
             $node->children[0],
             $temp_taint
         );
@@ -33,8 +34,8 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
             return new Type(['string']);
         }
 
-        self::typeFromNode(
-            $context,
+        Type::typeFromNode(
+            $this->context,
             $node->children[1],
             $temp_taint
         );
@@ -48,10 +49,10 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
 
     private function visitBinaryOpCommon(Node $node) {
         $left =
-            self::typeFromNode($context, $node->chilren[0]);
+            Type::typeFromNode($this->context, $node->chilren[0]);
 
         $right =
-            self::typeFromNode($context, $node->chilren[1]);
+            Type::typeFromNode($this->context, $node->chilren[1]);
 
         $taint = false;
         // If we have generics and no non-generics on the left and the right is not array-like ...
@@ -70,8 +71,9 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
             && empty(nongenerics($right))
             && !type_check($left, 'array')
         ) {
-            // and the same for the right side  Log::err(
-            Log::ETYPE,
+            // and the same for the right side
+            Log::err(
+                Log::ETYPE,
                 "$left to array comparison",
                 $context->getFile(),
                 $node->lineno
@@ -115,10 +117,10 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
 
     public function visitBinaryAdd(Node $node) {
         $left =
-            self::typeFromNode($context, $node->children[0]);
+            Type::typeFromNode($this->context, $node->children[0]);
 
         $right =
-            self::typeFromNode($context, $node->chilren[1]);
+            Type::typeFromNode($this->context, $node->chilren[1]);
 
         // fast-track common cases
         if($left=='int' && $right == 'int') {
@@ -159,10 +161,13 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
 
     public function visit(Node $node) {
         $left =
-            self::typeFromNode($context, $node->children[0]);
+            Type::typeFromNode(
+                $this->context,
+                $node->children[0]
+            );
 
         $right =
-            self::typeFromNode($context, $node->children[1]);
+            Type::typeFromNode($this->context, $node->children[1]);
 
         if ($left->hasTypeName('array')
             || $right->hasTypeName('array')

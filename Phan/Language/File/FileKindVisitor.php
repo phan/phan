@@ -7,6 +7,11 @@ use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
+use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Comment;
+use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
 use \Phan\Log;
@@ -48,8 +53,9 @@ class FileKindVisitor extends KindVisitorImplementation {
     }
 
     public function visitIf(Node $node) : Context {
-        $this->context->setIsConditional(true);
-        $this->context->getCodeBase()->incrementConditionals();
+        $context = $this->context->withIsConditional(true);
+        $context->getCodeBase()->incrementConditionals();
+        return $context;
     }
 
     public function visitDim(Node $node) : Context {
@@ -148,7 +154,7 @@ class FileKindVisitor extends KindVisitorImplementation {
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while($this->code_base->classExists($class_fqsen)) {
+        while($this->context->getCodeBase()->classExists($class_fqsen)) {
             $class_fqsen = $class_fqsen->withAlternateId(
                 ++$alternate_id
             );
@@ -206,8 +212,8 @@ class FileKindVisitor extends KindVisitorImplementation {
             $node->flags
         );
 
-        $this->code_base->addClass($current_clazz);
-        $this->code_base->incrementClasses();
+        $this->context->getCodeBase()->addClass($current_clazz);
+        $this->context->getCodeBase()->incrementClasses();
 
         return $context;
     }
@@ -247,7 +253,7 @@ class FileKindVisitor extends KindVisitorImplementation {
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while($current_clazz->hasMethodWithFQSEN($method_fqsen)) {
+        while($clazz->hasMethodWithFQSEN($method_fqsen)) {
             $method_fqsen = $method_fqsen->withAlternateId(
                 ++$alternate_id
             );
@@ -255,16 +261,16 @@ class FileKindVisitor extends KindVisitorImplementation {
 
         $method =
             new Method(
-                $context
-                ->withLineNumberStart($node->lineno ?: 0)
-                ->withLineNumberEnd($node->endLineno ?? -1),
-                    Comment::fromString($node->docComment ?: ''),
-                    $method_name,
-                    Type::none(),
-                    0, // flags
-                    0, // number_of_required_parameters
-                    0  // number_of_optional_parameters
-                );
+                $this->context
+                    ->withLineNumberStart($node->lineno ?: 0)
+                    ->withLineNumberEnd($node->endLineno ?? -1),
+                Comment::fromString($node->docComment ?: ''),
+                $method_name,
+                Type::none(),
+                0, // flags
+                0, // number_of_required_parameters
+                0  // number_of_optional_parameters
+            );
 
         $clazz->addMethod($method);
         $this->context->getCodeBase()->incrementMethods();
@@ -304,7 +310,7 @@ class FileKindVisitor extends KindVisitorImplementation {
 
             // @var Type
             $type = Type::typeFromNode(
-                $context,
+                $this->context,
                 $node->children[1]
             );
 
@@ -315,7 +321,7 @@ class FileKindVisitor extends KindVisitorImplementation {
                 . 'Got '
                 . print_r($property_name, true)
                 . ' at '
-                . $context);
+                . $this->context);
 
             $clazz = $this->getContextClass();
 
@@ -348,11 +354,14 @@ class FileKindVisitor extends KindVisitorImplementation {
                 $property_name = $node->children[0];
 
                 assert(is_string($property_name),
-                    'Property name must be a string. Got ' . print_r($property_name, true) . ' at ' . $context->__toString());
+                    'Property name must be a string. Got '
+                    . print_r($property_name, true)
+                    . ' at '
+                    . $this->context->__toString());
 
                 if ($clazz->hasPropertyWithName($property_name)) {
                     $property =
-                        $current_clazz->getPropertyWithName($property_name);
+                        $clazz->getPropertyWithName($property_name);
                     $property->setDType(Type::none());
                     $property->setType($type);
                 }
@@ -366,18 +375,32 @@ class FileKindVisitor extends KindVisitorImplementation {
     }
 
     public function visitClassConstDecl(Node $node) : Context {
-        // TODO
-        if(empty($current_class)) {
-            Log::err(Log::EFATAL, "Invalid constant declaration", $file, $node->lineno);
+        if(!$this->context->hasClassFQSEN()) {
+            Log::err(
+                Log::EFATAL,
+                "Invalid constant declaration",
+                $this->context->getFile(),
+                $node->lineno
+            );
         }
 
-        // TODO
+        $clazz = $this->getContextClass();
+
         foreach($node->children as $node) {
-            $classes[$lc]['constants'][$node->children[0]] = [
-                'name'=>$node->children[0],
-                'lineno'=>$node->lineno,
-                'type'=>node_type($file, $namespace, $node->children[1], $current_scope, empty($classes[$lc]) ? null : $classes[$lc])
-            ];
+            $clazz->addConstant(
+                new Constant(
+                    $this->context
+                        ->withLineNumberStart($node->lineno ?? 0)
+                        ->withLineNumberEnd($node->endLineno ?? 0),
+                    Comment::fromString($node->docComment ?? ''),
+                    $node->children[0],
+                    Type::typeFromNode(
+                        $this->context,
+                        $node->children[1]
+                    ),
+                    0
+                )
+            );
         }
 
         // TODO

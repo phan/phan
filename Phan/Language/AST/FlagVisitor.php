@@ -9,12 +9,6 @@ use \ast\Node;
 interface FlagVisitor {
 
     /**
-     * Visit a node with flag \ast\flags\BINARY_ADD
-     */
-    public function visitBinaryAdd(Node $node);
-
-
-    /**
      * Visit a node with flag `\ast\flags\ASSIGN_ADD`
      */
     public function visitAssignAdd(Node $node);

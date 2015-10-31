@@ -11,6 +11,10 @@ abstract class KindVisitorImplementation implements KindVisitor {
 
     abstract public function visit(Node $node);
 
+    public function visitArgList(Node $node) {
+        return $this->visit($node);
+    }
+
     public function visitArray(Node $node) {
         return $this->visit($node);
     }
@@ -32,6 +36,10 @@ abstract class KindVisitorImplementation implements KindVisitor {
     }
 
     public function visitBinaryOp(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitBreak(Node $node) {
         return $this->visit($node);
     }
 
@@ -75,6 +83,18 @@ abstract class KindVisitorImplementation implements KindVisitor {
         return $this->visit($node);
     }
 
+    public function visitConstDecl(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitConstElem(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitDeclare(Node $node) {
+        return $this->visit($node);
+    }
+
     public function visitDim(Node $node) {
         return $this->visit($node);
     }
@@ -87,7 +107,15 @@ abstract class KindVisitorImplementation implements KindVisitor {
         return $this->visit($node);
     }
 
+    public function visitEmpty(Node $node) {
+        return $this->visit($node);
+    }
+
     public function visitEncapsList(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitExit(Node $node) {
         return $this->visit($node);
     }
 
@@ -163,6 +191,10 @@ abstract class KindVisitorImplementation implements KindVisitor {
         return $this->visit($node);
     }
 
+    public function visitParamList(Node $node) {
+        return $this->visit($node);
+    }
+
     public function visitPrint(Node $node) {
         return $this->visit($node);
     }
@@ -207,7 +239,15 @@ abstract class KindVisitorImplementation implements KindVisitor {
         return $this->visit($node);
     }
 
+    public function visitSwitchList(Node $node) {
+        return $this->visit($node);
+    }
+
     public function visitType(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUnaryMinus(Node $node) {
         return $this->visit($node);
     }
 
