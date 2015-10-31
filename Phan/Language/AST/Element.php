@@ -58,6 +58,8 @@ class Element {
             return $visitor->visitClosureUses($this->node);
         case \ast\AST_CLOSURE_VAR:
             return $visitor->visitClosureVar($this->node);
+        case \ast\AST_COALESCE:
+            return $visitor->visitCoalesce($this->node);
         case \ast\AST_CONST:
             return $visitor->visitConst($this->node);
         case \ast\AST_CONST_DECL:
@@ -84,6 +86,8 @@ class Element {
             return $visitor->visitForeach($this->node);
         case \ast\AST_FUNC_DECL:
             return $visitor->visitFuncDecl($this->node);
+        case \ast\AST_ISSET:
+            return $visitor->visitIsset($this->node);
         case \ast\AST_GLOBAL:
             return $visitor->visitGlobal($this->node);
         case \ast\AST_GREATER:
@@ -116,6 +120,8 @@ class Element {
             return $visitor->visitParam($this->node);
         case \ast\AST_PARAM_LIST:
             return $visitor->visitParamList($this->node);
+        case \ast\AST_PRE_INC:
+            return $visitor->visitPreInc($this->node);
         case \ast\AST_PRINT:
             return $visitor->visitPrint($this->node);
         case \ast\AST_PROP:

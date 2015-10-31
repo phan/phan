@@ -94,6 +94,11 @@ interface KindVisitor {
     public function visitClosureVar(Node $node);
 
     /**
+     * Visit a node with kind `\ast\AST_COALESCE`
+     */
+    public function visitCoalesce(Node $node);
+
+    /**
      * Visit a node with kind `\ast\AST_CONST`
      */
     public function visitConst(Node $node);
@@ -157,6 +162,11 @@ interface KindVisitor {
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      */
     public function visitFuncDecl(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_ISSET`
+     */
+    public function visitIsset(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_GLOBAL`
@@ -237,6 +247,11 @@ interface KindVisitor {
      * Visit a node with kind `\ast\AST_PARAM_LIST`
      */
     public function visitParamList(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_PRE_INC`
+     */
+    public function visitPreInc(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_PRINT`

@@ -79,6 +79,10 @@ abstract class KindVisitorImplementation implements KindVisitor {
         return $this->visit($node);
     }
 
+    public function visitCoalesce(Node $node) {
+        return $this->visit($node);
+    }
+
     public function visitConst(Node $node) {
         return $this->visit($node);
     }
@@ -128,6 +132,10 @@ abstract class KindVisitorImplementation implements KindVisitor {
     }
 
     public function visitFuncDecl(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitIsset(Node $node) {
         return $this->visit($node);
     }
 
@@ -192,6 +200,10 @@ abstract class KindVisitorImplementation implements KindVisitor {
     }
 
     public function visitParamList(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitPreInc(Node $node) {
         return $this->visit($node);
     }
 
