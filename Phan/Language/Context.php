@@ -353,7 +353,17 @@ class Context {
      * the current scope.
      */
     public function getScopeFQSEN() : FQSEN {
-        return FQSEN::fromContext($this);
+        // return FQSEN::fromContext($this);
+
+        if ($this->hasMethodFQSEN()) {
+            return $this->getMethodFQSEN();
+        }
+
+        if ($this->hasClassFQSEN()) {
+            return $this->getClassFQSEN();
+        }
+
+        return new FQSEN();
     }
 
     /**
@@ -362,7 +372,10 @@ class Context {
      * i.e. Not within a class
      */
     public function isGlobalScope() : bool {
-        return empty($this->class_name);
+        return (
+            empty($this->class_fqsen)
+            && empty($this->method_fqsen)
+        );
     }
 
     /**

@@ -61,15 +61,7 @@ class FQSEN {
      * the given Context.
      */
     public static function fromContext(Context $context) : FQSEN {
-        return new FQSEN(
-            $context->getNamespaceMap(),
-            $context->hasNamespace()
-                ? $context->getNamespace() : '',
-            $context->hasClassFQSEN()
-                ? $context->getClassFQSEN()->getClassName() : '',
-            $context->hasMethodFQSEN()
-                ? $context->getMethodFQSEN()->getMethodName() : ''
-        );
+        return $context->getScopeFQSEN();
     }
 
     /**
@@ -213,6 +205,10 @@ class FQSEN {
         $fqsen_string .= $this->namespace ?: '';
 
         if ($this->class_name) {
+            if ($fqsen_string) {
+                $fqsen_string .= '\\';
+            }
+
             $fqsen_string .= strtolower($this->class_name);
         }
 
