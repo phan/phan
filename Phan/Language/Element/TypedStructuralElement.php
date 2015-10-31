@@ -113,4 +113,19 @@ class TypedStructuralElement extends StructuralElement {
         $this->type = $type;
     }
 
+    /**
+     * @return int
+     */
+    public function getFlags() : int {
+        return $this->flags;
+    }
+
+    /**
+     * @param int $flags
+     * @return null
+     */
+    public function setFlags(int $flags) {
+        $this->flags = $flags;
+    }
+
 }

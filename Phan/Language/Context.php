@@ -35,25 +35,6 @@ class Context {
     private $namespace_map = [];
 
     /**
-     * @var int
-     * The starting line number of the element within the $file
-     */
-    private $line_number_start = 0;
-
-    /**
-     * @var int
-     * The ending line number of the element within the $file
-     */
-    private $line_number_end = 0;
-
-    /**
-     * @var FQSEN
-     * A fully-qualified structural element name describing
-     * the current scope.
-     */
-    private $scope_fqsen = null;
-
-    /**
      * @var FQSEN
      * A fully-qualified structural element name describing
      * the current class or the empty-string if we are not
@@ -75,6 +56,18 @@ class Context {
     private $is_conditional = false;
 
     /**
+     * @var int
+     * The starting line number of the element within the $file
+     */
+    private $line_number_start = 0;
+
+    /**
+     * @var int
+     * The ending line number of the element within the $file
+     */
+    private $line_number_end = 0;
+
+    /**
      * @var Scope
      */
     private $scope = null;
@@ -89,13 +82,21 @@ class Context {
         $this->file = '';
         $this->namespace = '';
         $this->namespace_map = [];
-        $this->line_number_start = 0;
-        $this->line_number_end = 0;
         $this->scope_fqsen = null;
         $this->class_fqsen = null;
         $this->method_fqsen = null;
         $this->is_conditional = false;
+        $this->line_number_start = 0;
+        $this->line_number_end = 0;
         $this->scope = new Scope();
+    }
+
+    /**
+     * @return CodeBase
+     * The code base in which this context exists
+     */
+    public function getCodeBase() : CodeBase {
+        return $this->code_base;
     }
 
     /**
@@ -169,8 +170,6 @@ class Context {
     }
 
     /**
-     * ...
-     *
      * @return Context
      * A clone of this context with the given value is returned
      */
@@ -224,29 +223,6 @@ class Context {
      */
     public function getLineNumberEnd() : int {
         return $this->line_number_end;
-    }
-
-    /**
-     * @param string $fqsen
-     * A fully-qualified structural element name describing
-     * the current scope.
-     *
-     * @return Context
-     * A clone of this context with the given value is returned
-     */
-    public function withScopeFQSEN(string $fqsen) : Context {
-        $context = clone($this);
-        $context->scope_fqsen = $fqsen;
-        return $context;
-    }
-
-    /**
-     * @return string
-     * A fully-qualified structural element name describing
-     * the current scope.
-     */
-    public function getScopeFQSEN() : string {
-        return $this->scope_fqsen;
     }
 
     /**
@@ -357,6 +333,39 @@ class Context {
     }
 
     /**
+     * @param string $fqsen
+     * A fully-qualified structural element name describing
+     * the current scope.
+     *
+     * @return Context
+     * A clone of this context with the given value is returned
+     */
+    public function withScopeFQSEN(FQSEN $fqsen) : Context {
+        return clone($this)
+            ->withNamespace($fqsen->getNamespace())
+            ->withClassName($fqsen->getClassName())
+            ->withMethodName($fqsen->getMethodName());
+    }
+
+    /**
+     * @return string
+     * A fully-qualified structural element name describing
+     * the current scope.
+     */
+    public function getScopeFQSEN() : FQSEN {
+        return FQSEN::fromContext($this);
+    }
+
+    /**
+     * @return bool
+     * True if we are currently within the global scope
+     * i.e. Not within a class
+     */
+    public function isGlobalScope() : bool {
+        return empty($this->class_name);
+    }
+
+    /**
      * Get a string representation of the context
      *
      * @return string
@@ -371,5 +380,4 @@ class Context {
             . "\n"
             ;
     }
-
 }

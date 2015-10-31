@@ -73,6 +73,43 @@ class FQSEN {
     }
 
     /**
+     * @param Context $context
+     * The context in which the FQSEN string was found
+     *
+     * @param $fqsen_string
+     * An FQSEN string like '\Namespace\Class::method' or
+     * 'Class' or 'Class::method'.
+     *
+     * @return FQSEN
+     */
+    public static function fromContextAndString(
+        Context $context,
+        string $fqsen_string
+    ) : FQSEN {
+        $elements =
+            explode('::', $fqsen_string);
+
+        $fq_class_name = $elements[0] ?? '';
+        $method_name = $elements[1] ?? '';
+
+        $fq_class_name_elements =
+            explode('\\', $fq_class_name);
+
+        $class_name =
+            array_pop($fq_class_name_elements);
+
+        $namespace =
+            implode('\\', $fq_class_name_elements);
+
+        return new FQSEN(
+            $context->getNamespaceMap(),
+            $namespace ?: '',
+            $class_name ?: '',
+            $method_name ?: ''
+        );
+    }
+
+    /**
      * @return FQSEN[]
      * An infinite list of alternative FQSENs
      */

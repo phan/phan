@@ -2,17 +2,31 @@
 declare(strict_types=1);
 namespace Phan\Language\Context;
 
+use \Phan\Language\Element\Variable;
+
 class Scope {
     /**
-     * @var string[]
+     * @var Variable[]
      */
-    private $variable_list = [];
+    private $variable_map = [];
 
     public function __construct() {
     }
 
-    public function hasVariableName(string $name) : bool {
+    /**
+     * @return bool
+     * True if a variable with the given name is defined
+     * within this scope
+     */
+    public function hasVariableWithName(string $name) : bool {
+        return !empty($this->variable_map[$name]);
+    }
 
+    /**
+     * @return Variable
+     */
+    public function getVariableWithName(string $name) : Variable {
+        return $this->variable_map[$name];
     }
 
 }

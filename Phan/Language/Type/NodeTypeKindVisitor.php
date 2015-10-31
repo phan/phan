@@ -4,15 +4,19 @@ namespace Phan\Language\Type;
 use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
-use \Phan\Language\Type;
 use \Phan\Language\Context;
+use \Phan\Language\FQSEN;
+use \Phan\Language\Type;
 use \Phan\Log;
 use \ast\Node;
 
 class NodeTypeKindVisitor extends KindVisitorImplementation {
+    use \Phan\Language\AST;
 
     /**
      * @var Context
+     * The context in which the node we're going to be looking
+     * at exits.
      */
     private $context;
 
@@ -79,7 +83,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     /**
      * Visit a node with kind `\ast\AST_BINARY_OP`
      */
-    public function visitBinaryOp(Node $node) {
+    public function visitBinaryOp(Node $node) : Type {
         if($node->kind == \ast\AST_BINARY_OP) {
             $node_flags = $node->flags;
         } else {
@@ -97,21 +101,21 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     /**
      * Visit a node with kind `\ast\AST_GREATER`
      */
-    public function visitGreater(Node $node) {
+    public function visitGreater(Node $node) : Type {
         return $this->visitBinaryOp($node);
     }
 
     /**
      * Visit a node with kind `\ast\AST_GREATER_EQUAL`
      */
-    public function visitGreaterEqual(Node $node) {
+    public function visitGreaterEqual(Node $node) : Type {
         return $this->visitBinaryOp($node);
     }
 
     /**
      * Visit a node with kind `\ast\AST_CAST`
      */
-    public function visitCast(Node $node) {
+    public function visitCast(Node $node) : Type {
         // $taint = var_taint_check($file, $node->children[0], $current_scope);
 
         switch($node->flags) {
@@ -143,20 +147,22 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     /**
      * Visit a node with kind `\ast\AST_NEW`
      */
-    public function visitNew(Node $node) {
-        // TODO
+    public function visitNew(Node $node) : Type {
+
         $class_name =
-            find_class_name(
-                $file,
-                $node,
-                $namespace,
-                $current_class,
-                $current_scope
-            );
+            $this->astClassNameFromNode($this->context, $node);
 
         if($class_name) {
-            // TODO
-            return $classes[strtolower($class_name)]['type'];
+            $class_fqsen = FQSEN::fromContextAndString(
+                $this->context,
+                $class_name
+            );
+
+            if ($this->context->getCodeBase()->classExists($class_fqsen)) {
+                return $this->context->getCodeBase()->getClassByFQSEN(
+                    $class_fqsen
+                )->getType();
+            }
         }
 
         return new Type(['object']);
@@ -165,7 +171,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     /**
      * Visit a node with kind `\ast\AST_DIM`
      */
-    public function visitDim(Node $node) {
+    public function visitDim(Node $node) : Type {
         // $taint = var_taint_check($file, $node->children[0], $current_scope);
 
         $type = self::typeFromNode($this->context, $node->children[0]);
@@ -260,7 +266,10 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         if($node->children[1] == 'class') {
             return new Type(['string']); // class name fetch
         }
-        $class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+
+        $class_name =
+            $this->astClassNameFromNode($context, $node);
+
         if(!$class_name) {
             return Type::none();
         }
@@ -300,7 +309,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      */
     public function visitProp(Node $node) : Type {
         if($node->children[0]->kind == \ast\AST_VAR) {
-            $class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+            $class_name =
+                $this->astClassNameFromNode($context, $node);
+
             if($class_name && !($node->children[1] instanceof Node)) {
                 $ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
                 if(empty($ltemp)) {
@@ -361,7 +372,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_STATIC_CALL`
      */
     public function visitStaticCall(Node $node) : Type {
-        $class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+        $class_name =
+            $this->astClassNameFromNode($context, $node);
+
         $method = find_method($class_name, $node->children[1]);
         if($method) {
             // TODO
@@ -373,7 +386,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_METHOD_CALL`
      */
     public function visitMethodCall(Node $node) : Type {
-        $class_name = find_class_name($file, $node, $namespace, $current_class, $current_scope);
+        $class_name =
+            $this->astClassNameFromNode($context, $node);
+
         if($class_name) {
             $method_name = $node->children[1];
             $method = find_method($class_name, $method_name);

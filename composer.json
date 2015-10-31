@@ -1,16 +1,22 @@
 {
-    "name": "rlerdorf/phan",
-    "description": "A simple static analyzer for PHP written in PHP",
+    "name": "morria/phan",
+    "description": "A static analyzer for PHP",
     "keywords": ["php", "static", "analyzer"],
     "type": "project",
     "license": "MIT",
     "authors": [
         {
             "name": "Rasmus Lerdorf"
+        },
+        {
+            "name": "Andrew S. Morrison"
         }
     ],
     "require": {
         "php": ">=7.0",
         "ext-ast": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "5.0.*"
     }
 }

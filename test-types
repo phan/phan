@@ -64,5 +64,5 @@ assert('array' === typeStringFromCode($code_base,
 
 assert('SplStack' === typeStringFromCode($code_base,
     '<?php new SplStack();'
-), 'Object');
+), 'Internal Object');
 

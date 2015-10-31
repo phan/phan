@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Language\Type;
+namespace Phan\Language\AST\Visitor;
 
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -13,6 +13,7 @@ use \ast\Node;
  * types of nodes
  */
 class ClassNameKindVisitor extends KindVisitorImplementation {
+    use \Phan\Language\AST;
 
     /**
      * @var $context
@@ -33,7 +34,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
      * an overriding method
      */
     public function visit(Node $node) : string {
-        return ''
+        return '';
     }
 
     public function visitNew(Node $node) : string {
@@ -64,11 +65,18 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                         $class_name = (string)$this->context->getClassFQSEN();
                         // $class_name = $current_class['name'];
                     }
+                } else if($class_name == 'parent') {
+                    $class_name = $current_class['parent'];
                 }
-                else if($class_name == 'parent') $class_name = $current_class['parent'];
+
                 $static_call_ok = true;
             } else {
-                $class_name = qualified_name($file, $node->children[0], $namespace);
+                $class_name =
+                    $this->astQualifiedName(
+                        $this->context,
+                        $node->children[0]
+                    );
+                    // qualified_name($file, $node->children[0], $namespace);
             }
         }
 

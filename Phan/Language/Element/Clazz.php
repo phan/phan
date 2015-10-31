@@ -309,4 +309,24 @@ class Clazz extends TypedStructuralElement {
         $this->is_parent_constructor_called =
             $is_parent_constructor_called;
     }
+
+    /**
+     * @return bool
+     * True if this is an abstract class
+     */
+    public function isAbstract() : bool {
+        return (bool)(
+            $this->getFlags() & \ast\flags\CLASS_ABSTRACT
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this is an interface
+     */
+    public function isInterface() : bool {
+        return (bool)(
+            $this->getFlags() & \ast\flags\CLASS_INTERFACE
+        );
+    }
 }

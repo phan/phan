@@ -115,6 +115,29 @@ class Type {
     }
 
     /**
+     * @return bool
+     * True if this is a native type (like int, string, etc.)
+     */
+    public function isNativeType() : bool {
+        return in_array(
+            str_replace('[]', '', (string)$this), [
+                'int',
+                'float',
+                'bool',
+                'true',
+                'string',
+                'callable',
+                'array',
+                'null',
+                'object',
+                'resource',
+                'mixed',
+                'void'
+            ]
+        );
+    }
+
+    /**
      * @param Context $context
      * @param Node|string|null $node
      *
