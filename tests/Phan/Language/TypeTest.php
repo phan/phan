@@ -7,8 +7,9 @@ $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
 use \Phan\CodeBase;
-use \Phan\Language\Type;
+use \Phan\Configuration;
 use \Phan\Language\Context;
+use \Phan\Language\Type;
 
 class TypeTest extends \PHPUnit_Framework_TestCase {
 
@@ -104,7 +105,10 @@ class TypeTest extends \PHPUnit_Framework_TestCase {
     private function typeStringFromCode(string $code) : string {
         return Type::typeFromNode(
             $this->context,
-            \ast\parse_code($code, $version = 10)
+            \ast\parse_code(
+                $code,
+                Configuration::instance()->ast_version
+            )
             ->children[0]
         )->__toString();
     }

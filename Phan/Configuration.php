@@ -13,6 +13,9 @@ class Configuration {
     private $configuration = [
         // Backwards Compatibility Checking
         'bc_checks' => true,
+
+        // The vesion of the AST we're using
+        'ast_version' => 10,
     ];
 
     /**
@@ -35,11 +38,11 @@ class Configuration {
         return $instance;
     }
 
-    public function __get(string $name) : bool {
+    public function __get(string $name) {
         return $this->configuration[$name];
     }
 
-    public function __set(string $name, bool $value) {
+    public function __set(string $name, $value) {
         $this->configuration[$name] = $value;
     }
 }

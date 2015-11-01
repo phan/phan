@@ -11,8 +11,8 @@ use \Phan\Language\Context;
 use \Phan\Analyzer;
 use \Phan\Language\Type;
 
-define('TEST_FILE_DIR', __DIR__ . '/../../files/src');
-define('EXPECTED_DIR', __DIR__ . '/../../files/expected');
+define('TEST_FILE_DIR', __DIR__ . '/../files/src');
+define('EXPECTED_DIR', __DIR__ . '/../files/expected');
 
 class PhanTest extends \PHPUnit_Framework_TestCase {
 

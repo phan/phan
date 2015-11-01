@@ -154,7 +154,7 @@ class FileKindVisitor extends KindVisitorImplementation {
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while($this->context->getCodeBase()->classExists($class_fqsen)) {
+        while($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
             $class_fqsen = $class_fqsen->withAlternateId(
                 ++$alternate_id
             );

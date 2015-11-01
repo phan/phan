@@ -158,7 +158,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 $class_name
             );
 
-            if ($this->context->getCodeBase()->classExists($class_fqsen)) {
+            if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
                 return $this->context->getCodeBase()->getClassByFQSEN(
                     $class_fqsen
                 )->getType();

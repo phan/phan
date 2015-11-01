@@ -74,7 +74,10 @@ class Analyzer {
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
         // of this method
-        $node = \ast\parse_file($file_path, 10);
+        $node = \ast\parse_file(
+            $file_path,
+            Configuration::instance()->ast_version
+        );
 
         return $this->parseNode(
             (new Context($code_base))
@@ -99,7 +102,7 @@ class Analyzer {
      * @return Context
      * The context from within the node is returned
      */
-    private function parseNode(
+    public function parseNode(
         Context $context,
         Node $node
     ) : Context {

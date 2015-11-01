@@ -212,7 +212,7 @@ class ClassNameValidationVisitor
      */
     private function classExists() : bool {
         return
-            $this->context->getCodeBase()->classExists(
+            $this->context->getCodeBase()->hasClassWithFQSEN(
                 $this->class_fqsen
             );
     }

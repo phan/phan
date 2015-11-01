@@ -79,10 +79,14 @@ class CodeBase {
      * @return bool
      * True if the exlass exists else false
      */
-    public function classExists(FQSEN $fqsen) : bool {
+    public function hasClassWithFQSEN(FQSEN $fqsen) : bool {
         return !empty($this->class_map[$fqsen->__toString()]);
     }
 
+    /**
+     * @param Method $method
+     * A method to add to the code base
+     */
     public function addMethod(Method $method) {
         $this->method_map[$method->getFQSEN()->__tostring()] =
             $method;
