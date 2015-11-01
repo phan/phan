@@ -6,3 +6,4 @@
 /tests/src/*.sh
 .hhconfig
 vendor
+deprecated
