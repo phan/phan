@@ -12,13 +12,10 @@ use \Phan\Language\Context;
 
 class TypeTest extends \PHPUnit_Framework_TestCase {
 
+    /** @var Context */
     protected $context = null;
 
-    public function __construct() {
-    }
-
     protected function setUp() {
-
         global $internal_class_name_list;
         global $internal_interface_name_list;
         global $internal_trait_name_list;
