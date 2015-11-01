@@ -22,4 +22,5 @@
     "autoload": {
         "psr-4": {"Phan\\": "Phan/"}
     }
+    "bin" ["phan"]
 }
