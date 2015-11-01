@@ -146,6 +146,7 @@ class FileKindVisitor extends KindVisitorImplementation {
     }
 
     public function visitClass(Node $node) : Context {
+
         // Get an FQSEN for this class
         $class_name = $node->name;
 

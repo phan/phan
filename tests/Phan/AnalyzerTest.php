@@ -15,46 +15,74 @@ use \Phan\Language\FQSEN;
 
 class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
-    /** @var CodeBase */
-    private $code_base = null;
+    private $class_name_list;
+    private $interface_name_list;
+    private $trait_name_list;
+    private $function_name_list;
 
     protected function setUp() {
         global $internal_class_name_list;
         global $internal_interface_name_list;
         global $internal_trait_name_list;
         global $internal_function_name_list;
-
-        $this->code_base = new CodeBase(
-            $internal_class_name_list,
-            $internal_interface_name_list,
-            $internal_trait_name_list,
-            $internal_function_name_list
-        );
+        $this->class_name_list = $internal_class_name_list;
+        $this->interface_name_list = $internal_interface_name_list;
+        $this->trait_name_list = $internal_trait_name_list;
+        $this->function_name_list = $internal_function_name_list;
     }
 
     public function tearDown() {
-        $this->code_base = null;
+    }
+
+    public function testClassInCodeBase() {
+        $context =
+            $this->contextForCode("
+                Class A {}
+            ");
+
+        $this->assertTrue(
+            $context->getCodeBase()->hasClassWithFQSEN(
+                FQSEN::fromString('A')
+            )
+        );
+    }
+
+    public function testNamespaceClassInCodeBase() {
+        $context =
+            $this->contextForCode("
+                namespace A;
+                Class B {}
+            ");
+
+        $this->assertTrue(
+            $context->getCodeBase()->hasClassWithFQSEN(
+                FQSEN::fromString('\A\b')
+            )
+        );
     }
 
     /**
+     * Get a Context after parsing the given
+     * bit of code.
      */
-    public function testCodeBase() {
-        $context = new Context($this->code_base);
+    private function contextForCode(
+        string $code_stub
+    ) : Context {
 
-        (new Analyzer)->parseNode(
-            $context,
-            \ast\parse_code(
-                '<?php Class A {}',
-                Configuration::instance()->ast_version
-            )
+        $code_base = new CodeBase(
+            [], // $this->class_name_list,
+            [], // $this->interface_name_list,
+            [], // $this->trait_name_list,
+            []  // $this->function_name_list
         );
 
-        $this->assertTrue(
-            $this->code_base->hasClassWithFQSEN(
-                FQSEN::fromContextAndString($context, 'A')
-            )
-        );
-
-
+        return
+            (new Analyzer)->parseNode(
+                new Context($code_base),
+                \ast\parse_code(
+                    '<?php ' . $code_stub,
+                    Configuration::instance()->ast_version
+                )
+            );
     }
 }

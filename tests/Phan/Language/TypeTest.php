@@ -36,10 +36,6 @@ class TypeTest extends \PHPUnit_Framework_TestCase {
         $this->context = null;
     }
 
-    public function testToString() {
-        $this->assertEquals(0, 0);
-    }
-
     public function testInt() {
         $this->assertTypeStringEqual('42', 'int');
     }
@@ -91,8 +87,8 @@ class TypeTest extends \PHPUnit_Framework_TestCase {
         string $type_name)
     {
         $this->assertEquals(
-            $this->typeStringFromCode('<?php ' . $code_stub . ';'),
-            $type_name
+            $type_name,
+            $this->typeStringFromCode('<?php ' . $code_stub . ';')
         );
     }
 

@@ -1,6 +1,7 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan\Language;
+
+use \Phan\CodeBase;
 
 /**
  * A Fully-Qualified Structural Element Name
@@ -8,25 +9,30 @@ namespace Phan\Language;
 class FQSEN {
 
     /**
-     * ...
+     * @var array
+     * A map from flag (like T_CLASS) to a name
+     * to a new name. These are read from 'use'
+     * clauses in the global scope.
      */
     private $namespace_map = [];
 
     /**
      * @var string
-     * ...
+     * The namespace in an object's scope
      */
-    private $namespace = '';
+    private $namespace = '\\';
 
     /**
      * @var string
-     * ...
+     * A class name if one is in scope or the empty
+     * string otherwise.
      */
     private $class_name = '';
 
     /**
      * @var string
-     * ...
+     * A method name if one is in scope or the empty
+     * string otherwise.
      */
     private $method_name = '';
 
@@ -39,18 +45,29 @@ class FQSEN {
 
     /**
      * @param array $namespace_map
+     * A map from flag (like T_CLASS) to a name
+     * to a new name. These are read from 'use'
+     * clauses in the global scope.
+     *
      * @param string $namespace
+     * The namespace in an object's scope
+     *
      * @param string $class_name
+     * A class name if one is in scope or the empty
+     * string otherwise.
+     *
      * @param string $method_name
+     * A method name if one is in scope or the empty
+     * string otherwise.
      */
     public function __construct(
         array $namespace_map = null,
-        string $namespace = '',
+        string $namespace = '\\',
         string $class_name = '',
         string $method_name = ''
     ) {
         $this->namespace_map = $namespace_map;
-        $this->namespace = $namespace;
+        $this->namespace = self::cleanNamespace($namespace);
         $this->class_name = $class_name;
         $this->method_name = $method_name;
     }
@@ -85,19 +102,33 @@ class FQSEN {
         $method_name = $elements[1] ?? '';
 
         $fq_class_name_elements =
-            explode('\\', $fq_class_name);
+            array_filter(explode('\\', $fq_class_name));
 
         $class_name =
             array_pop($fq_class_name_elements);
 
         $namespace =
-            implode('\\', $fq_class_name_elements);
+            '\\' . implode('\\', $fq_class_name_elements);
 
         return new FQSEN(
             $context->getNamespaceMap(),
-            $namespace ?: '',
+            $namespace ?: '\\',
             $class_name ?: '',
             $method_name ?: ''
+        );
+    }
+
+    /**
+     * @param $fqsen_string
+     * An FQSEN string like '\Namespace\Class::method' or
+     * 'Class' or 'Class::method'.
+     *
+     * @return FQSEN
+     */
+    public static function fromString(string $fqsen_string) : FQSEN {
+        return self::fromContextAndString(
+            new Context(new CodeBase([], [], [], [])),
+            $fqsen_string
         );
     }
 
@@ -123,7 +154,10 @@ class FQSEN {
      */
     public function withNamespace(string $namespace) : FQSEN {
         $fqsen = clone($this);
-        $fqsen->namespace = $namespace;
+
+        $fqsen->namespace =
+            self::cleanNamespace($namespace);
+
         return $fqsen;
     }
 
@@ -200,22 +234,25 @@ class FQSEN {
      * structural element name.
      */
     public function __toString() : string {
-        $fqsen_string = '';
+        // Append the namespace
+        $fqsen_string = $this->namespace;
 
-        $fqsen_string .= $this->namespace ?: '';
-
+        // If we have a class name, append it
         if ($this->class_name) {
-            if ($fqsen_string) {
+            if ($fqsen_string && $fqsen_string !== '\\') {
                 $fqsen_string .= '\\';
             }
 
             $fqsen_string .= strtolower($this->class_name);
         }
 
+        // If there's a method, append it
         if ($this->method_name) {
             $fqsen_string .= '::' . $this->method_name;
         }
 
+        // Append an alternate ID if we need to disambiguate
+        // multiple definitions
         if ($this->alternate_id) {
             $fqsen_string .= ' ' . $this->alternate_id;
         }
@@ -300,5 +337,36 @@ class FQSEN {
      */
     public function asType() : Type {
         return new Type([$this->__toString()]);
+    }
+
+    /**
+     * @param string|null $namespace
+     *
+     * @return string
+     * A cleaned version of the given namespace such that
+     * its always prefixed with a '\' and never ends in a
+     * '\', and is the string "\" if there is no namespace.
+     */
+    private static function cleanNamespace($namespace) : string {
+        if (!$namespace
+            || empty($namespace)
+            || $namespace === '\\'
+        ) {
+            return '\\';
+        }
+
+        // Ensure that the first character of the namespace
+        // is always a '\'
+        if ($namespace[0] !== '\\') {
+            $namespace = '\\' . $namespace;
+        }
+
+        // Ensure that we don't have a trailing '\' on the
+        // namespace
+        if ('\\' === substr($namespace, -1)) {
+            $namespace = substr($namespace, 0, -1);
+        }
+
+        return $namespace;
     }
 }

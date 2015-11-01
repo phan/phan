@@ -363,17 +363,31 @@ class Context {
      * the current scope.
      */
     public function getScopeFQSEN() : FQSEN {
-        // return FQSEN::fromContext($this);
 
+        // If we're in a method, return it's FQSEN
         if ($this->hasMethodFQSEN()) {
             return $this->getMethodFQSEN();
         }
 
+        // If we're in a class, return it's FQSEN
         if ($this->hasClassFQSEN()) {
             return $this->getClassFQSEN();
         }
 
-        return new FQSEN();
+        // If we have a namespace defined, return a
+        // partial FQSEN
+        if ($this->hasNamespace()) {
+            return new FQSEN(
+                $this->namespace_map,
+                $this->getNamespace()
+            );
+        }
+
+        // Otherwise, pass the current namespace map
+        // along
+        return new FQSEN(
+            $this->namespace_map
+        );
     }
 
     /**

@@ -68,10 +68,11 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
             // Start reading everything sent to STDOUT
             // and compare it to the expected value once
             // the analzyer finishes running
-            ob_start(function($output) use ($expected_output) {
+            ob_start(function($output) use ($test_file_path, $expected_output) {
                 $this->assertEquals(
                     trim($output),
-                    trim($expected_output)
+                    trim($expected_output),
+                    "Unexpected output in $test_file_path"
                 );
             });
 

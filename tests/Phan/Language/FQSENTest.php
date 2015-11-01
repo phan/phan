@@ -38,7 +38,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
     public function testSimple() {
         $this->assertFQSENEqual(
             new FQSEN([], '', 'A'),
-            'a'
+            '\a'
         );
     }
 
@@ -72,7 +72,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         FQSEN $fqsen,
         string $string
     ) {
-        $this->assertEquals((string)$fqsen, $string);
+        $this->assertEquals($string, (string)$fqsen);
     }
 
 }
