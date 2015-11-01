@@ -59,7 +59,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                     $class_name = (string)$this->context->getClassFQSEN();
                 } else if($class_name == 'self') {
                     // TODO
-                    if($current_scope != 'global') {
+                    if ($this->context->isGlobalScope()) {
                         list($class_name,) = explode('::', $current_scope);
                     } else {
                         $class_name = (string)$this->context->getClassFQSEN();

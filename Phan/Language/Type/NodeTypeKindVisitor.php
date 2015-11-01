@@ -268,7 +268,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         }
 
         $class_name =
-            $this->astClassNameFromNode($context, $node);
+            $this->astClassNameFromNode($this->context, $node);
 
         if(!$class_name) {
             return Type::none();
@@ -310,7 +310,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     public function visitProp(Node $node) : Type {
         if($node->children[0]->kind == \ast\AST_VAR) {
             $class_name =
-                $this->astClassNameFromNode($context, $node);
+                $this->astClassNameFromNode($this->context, $node);
 
             if($class_name && !($node->children[1] instanceof Node)) {
                 $ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
@@ -373,7 +373,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      */
     public function visitStaticCall(Node $node) : Type {
         $class_name =
-            $this->astClassNameFromNode($context, $node);
+            $this->astClassNameFromNode($this->context, $node);
 
         $method = find_method($class_name, $node->children[1]);
         if($method) {
@@ -387,7 +387,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      */
     public function visitMethodCall(Node $node) : Type {
         $class_name =
-            $this->astClassNameFromNode($context, $node);
+            $this->astClassNameFromNode($this->context, $node);
 
         if($class_name) {
             $method_name = $node->children[1];

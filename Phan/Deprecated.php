@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Phan;
 
+use \Phan\Log;
+
 class Deprecated {
     use \Phan\Language\AST;
 

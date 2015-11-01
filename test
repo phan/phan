@@ -1,0 +1,6 @@
+#!/bin/sh
+./vendor/bin/phpunit \
+    --bootstrap Phan/Bootstrap.php \
+    --colors=auto \
+    --strict-global-state \
+    tests/Phan/Language/TypeTest

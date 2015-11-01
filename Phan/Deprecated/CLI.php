@@ -1,6 +1,8 @@
 <?php
 namespace Phan\Deprecated;
 
+use \Phan\Log;
+
 error_reporting(-1);
 ini_set("memory_limit", -1);
 

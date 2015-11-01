@@ -1,84 +1,43 @@
-#!/home/amorrison/development/php-src/package/bin/php
+#!/usr/bin/env php
 <?php
 declare(strict_types=1);
-namespace phan;
 
 $time_start = microtime(true);
 
 // Grab these before we define our own classes
-$internal_classes = get_declared_classes();
+$internal_class_name_list = get_declared_classes();
+$internal_interface_name_list = get_declared_interfaces();
+$internal_trait_name_list = get_declared_traits();
+$internal_function_name_list = get_defined_functions()['internal'];
 
-require __DIR__.'/Phan/Log.php';
-require __DIR__.'/Phan/CLI.php';
-require __DIR__.'/Phan/Util.php';
-require __DIR__.'/Phan/Pass1.php';
-require __DIR__.'/Phan/Pass2.php';
-require __DIR__.'/Phan/AST.php';
+require_once(__DIR__.'/Phan/Bootstrap.php');
+require_once(__DIR__.'/Phan/Deprecated/CLI.php');
+require_once(__DIR__.'/Phan/Deprecated/Util.php');
+require_once(__DIR__.'/Phan/Deprecated/AST.php');
 
-// Globals where we store everything
-$internal_arginfo =
-    require __DIR__.'/Phan/constants/ArgInfo.php';
+use Phan\Language\File;
+use Phan\CodeBase;
 
-$internal_classvars =
-    require __DIR__.'/Phan/constants/ClassVars.php';
-
-$classes = [];
-$functions = [];
-$summary = [ 'classes'=>0, 'traits'=>0, 'methods'=>0, 'functions'=>0, 'closures'=>0, 'conditionals'=>0 ];
-$scope = [];
-$namespace_map = [];
-
-// First add all the internal classes and functions
-add_internal($internal_classes);
+$code_base = new CodeBase(
+    $internal_class_name_list,
+    $internal_interface_name_list,
+    $internal_trait_name_list,
+    $internal_function_name_list
+);
 
 $cnt = count($files);
-// Then the user-defined
-foreach($files as $i=>$file) {
+
+foreach($files as $i => $file) {
+    $file = new File(
+        $code_base,
+        $file
+    );
+    $file->passOne();
+    /*
 	$ast = \ast\parse_file($file, $version = 10);
-	if($dump_ast) echo $file."\n".str_repeat("\u{00AF}",strlen($file))."\n".ast_dump($ast)."\n";
 	else {
-		if($progress_bar) progress("pass1", $i/$cnt);
 		pass1($file, '', false, $ast, 'global');
 	}
-}
-if($dump_ast) exit;
-
-check_classes($classes, $pc_required);
-check_functions($functions);
-
-if($gv) {
-	dump_gv($gv_node);
-	exit;
-}
-
-$scope['global'] = [ 'vars'=>['_GET'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
-                              '_POST'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
-                              '_COOKIE'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
-                              '_REQUEST'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
-                              '_SERVER'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
-                              '_FILES'=>['type'=>'array', 'tainted'=>true, 'tainted_by'=>''],
-                              '_SESSION'=>['type'=>'array', 'tainted'=>false, 'tainted_by'=>''],
-                              '_ENV'=>['type'=>'array', 'tainted'=>false, 'tainted_by'=>''],
-                              'GLOBALS'=>['type'=>'array', 'tainted'=>false, 'tainted_by'=>''],
-                              'argc'=>['type'=>'int', 'tainted'=>false, 'tainted_by'=>''],
-                              'argv'=>['type'=>'array', 'tainted'=>false, 'tainted_by'=>''] ] ];
-
-
-// The second pass looks at the execution blocks themselves
-foreach($files as $i=>$file) {
-	$ast = \ast\parse_file($file, $version = 10);
-	if($progress_bar) progress("pass2", $i/$cnt);
-	pass2($file, '', $ast, 'global');
-}
-
-if($progress_bar) echo "\n\n";
-
-if($dump_scope) dump_scope($scope);
-else if($dump_user_functions) dump_functions('user');
-else {
-	$summary['time'] = (microtime(true)-$time_start);
-	$summary['total_files'] = $cnt;
-
-	Log::display($summary);
+     */
 }
 
