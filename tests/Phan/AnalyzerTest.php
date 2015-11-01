@@ -61,6 +61,34 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
         );
     }
 
+    public function testMethodInCodeBase() {
+        $context =
+            $this->contextForCode("
+                namespace A;
+                Class B {
+                    public function c() {
+                        return 42;
+                    }
+                }
+            ");
+
+        $class_fqsen = FQSEN::fromString('\A\b');
+
+        $this->assertTrue(
+            $context->getCodeBase()->hasClassWithFQSEN($class_fqsen)
+        );
+
+        $clazz =
+            $context->getCodeBase()->getClassByFQSEN($class_fqsen);
+
+        $this->assertTrue(
+            $clazz->hasMethodWithFQSEN(
+                FQSEN::fromString('\A\b::c')
+            )
+        );
+
+    }
+
     /**
      * Get a Context after parsing the given
      * bit of code.

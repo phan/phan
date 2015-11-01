@@ -164,19 +164,6 @@ class Clazz extends TypedStructuralElement {
         }
 
         foreach($class->getDefaultProperties() as $name => $value) {
-            /*
-            $property = Property::fromReflectionProperty(
-                new \ReflectionProperty($class->getName(), $name);
-            );
-             */
-
-
-            /*
-            $type =
-                $INTERNAL_CLASS_VARS[strtolower($class->getName())]['properties'][$name]
-                ?? self::typeMap(gettype($value));
-             */
-
             $property =
                 new \ReflectionProperty($class->getName(), $name);
 
@@ -225,14 +212,17 @@ class Clazz extends TypedStructuralElement {
         }
 
         foreach($class->getMethods() as $method) {
-            $clazz->method_map = array_merge(
-                $clazz->method_map,
+            $method_map =
                 Method::mapFromReflectionClassAndMethod(
                     $context->withClassFQSEN($clazz->getFQSEN()),
                     $class,
                     $method,
                     $parents
-                )
+                );
+
+            $clazz->method_map = array_merge(
+                $clazz->method_map,
+                $method_map
             );
         }
 
@@ -291,7 +281,7 @@ class Clazz extends TypedStructuralElement {
      * @return null
      */
     public function addMethod(Method $method) {
-        $this->method_map[$method->getFQSEN()->__toString()] = $method;
+        $this->method_map[(string)$method->getFQSEN()] = $method;
     }
 
     /**

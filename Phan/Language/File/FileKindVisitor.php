@@ -295,11 +295,11 @@ class FileKindVisitor extends KindVisitorImplementation {
             $method->getFQSEN()
         );
 
-        if ('__construct' == $method_name) {
+        if ('__construct' === $method_name) {
             $clazz->setIsParentConstructorCalled(false);
         }
 
-        if ('__invoke' == $method_name) {
+        if ('__invoke' === $method_name) {
             $clazz->getType()->addTypeName('callable');
         }
 
