@@ -2,8 +2,6 @@
 declare(strict_types=1);
 namespace Phan\Language;
 
-require_once(__DIR__.'/../Deprecated/AST.php');
-
 use \Phan\CodeBase;
 use \Phan\Configuration;
 use \Phan\Debug;
