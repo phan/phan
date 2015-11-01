@@ -89,12 +89,10 @@ class TypeTest extends \PHPUnit_Framework_TestCase {
         string $code_stub,
         string $type_name)
     {
-        /*
         $this->assertEquals(
-            $this->typeStringFromCode('<?php ' . $code_stub),
+            $this->typeStringFromCode('<?php ' . $code_stub . ';'),
             $type_name
         );
-         */
     }
 
     /**
@@ -110,5 +108,4 @@ class TypeTest extends \PHPUnit_Framework_TestCase {
             ->children[0]
         )->__toString();
     }
-
 }

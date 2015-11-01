@@ -6,6 +6,35 @@ use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\Element\{Clazz, Element, Method};
 
+/**
+ * A CodeBase represents the known state of a code base
+ * we're analyzing.
+ *
+ * In order to understand internal classes, interfaces,
+ * traits and functions, a CodeBase needs to be
+ * initialized with the list of those elements begotten
+ * before any classes are loaded.
+ *
+ * # Example
+ * ```
+ * // Grab these before we define our own classes
+ * $internal_class_name_list = get_declared_classes();
+ * $internal_interface_name_list = get_declared_interfaces();
+ * $internal_trait_name_list = get_declared_traits();
+ * $internal_function_name_list = get_defined_functions()['internal'];
+ *
+ * // Load any required code ...
+ *
+ * $code_base = new CodeBase(
+ *     $internal_class_name_list,
+ *     $internal_interface_name_list,
+ *     $internal_trait_name_list,
+ *     $internal_function_name_list
+ *  );
+ *
+ *  // Do stuff ...
+ * ```
+ */
 class CodeBase {
 
     private $class_map = [];

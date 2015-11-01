@@ -1,8 +1,5 @@
 #!/usr/bin/env php
-<?php
-declare(strict_types=1);
-
-$time_start = microtime(true);
+<?php declare(strict_types=1);
 
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();
@@ -13,31 +10,15 @@ $internal_function_name_list = get_defined_functions()['internal'];
 require_once(__DIR__.'/Phan/Bootstrap.php');
 require_once(__DIR__.'/Phan/Deprecated/CLI.php');
 require_once(__DIR__.'/Phan/Deprecated/Util.php');
-// require_once(__DIR__.'/Phan/Deprecated/AST.php');
 
-use Phan\Language\File;
 use Phan\CodeBase;
+use Phan\Analyzer;
 
-$code_base = new CodeBase(
-    $internal_class_name_list,
-    $internal_interface_name_list,
-    $internal_trait_name_list,
-    $internal_function_name_list
+(new Analyzer())->analyze(
+    new CodeBase(
+        $internal_class_name_list,
+        $internal_interface_name_list,
+        $internal_trait_name_list,
+        $internal_function_name_list
+    ), $files
 );
-
-$cnt = count($files);
-
-foreach($files as $i => $file) {
-    $file = new File(
-        $code_base,
-        $file
-    );
-    $file->passOne();
-    /*
-	$ast = \ast\parse_file($file, $version = 10);
-	else {
-		pass1($file, '', false, $ast, 'global');
-	}
-     */
-}
-
