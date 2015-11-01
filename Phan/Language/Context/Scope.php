@@ -32,7 +32,7 @@ class Scope {
     /**
      * @return Scope;
      */
-    public function withVarible(Variable $variable) : Scope {
+    public function withVariable(Variable $variable) : Scope {
         $scope = clone($this);
         $scope->variable_map[$variable->getName()] = $variable;
         return $scope;

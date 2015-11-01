@@ -22,7 +22,7 @@ trait AST {
      * @see \Phan\Deprecated\Util::find_class_name
      * Formerly `function find_class_name`
      */
-    protected function astClassNameFromNode(
+    protected static function astClassNameFromNode(
         Context $context,
         $node
     ) : string {
@@ -47,12 +47,29 @@ trait AST {
     }
 
     /**
+     * @see \Phan\Deprecated\node_namelist
+     * Formerly `function node_namelist`
+     */
+    protected static function astQualifiedNameList(
+        Context $context,
+        $node
+    ) : array {
+        if(!($node instanceof Node)) {
+            return [];
+        }
+
+        return array_map(function($name_node) use ($context) {
+            return self::astQualifiedName($context, $name_node);
+        }, $node->children);
+    }
+
+    /**
      * @return string
      *
      * @see \Phan\Deprecated\Util::qualified_name
      * From `function qualified_name`
      */
-    protected function astQualifiedName(
+    protected static function astQualifiedName(
         Context $context,
         $node
     ) : string {
@@ -61,7 +78,7 @@ trait AST {
         if(!($node instanceof \ast\Node)
             && $node->kind != \ast\AST_NAME
         ) {
-            return $this->astVarName($context, $node);
+            return self::astVarType($context, $node);
         }
 
         $name = $node->children[0];
@@ -120,10 +137,10 @@ trait AST {
      * @see \Phan\Deprecated\Pass2::var_type
      * From `function var_type`
      */
-    protected function astVarType(
+    protected static function astVarType(
         Context $context,
         $node
-    ) {
+    ) : Type {
         // global $scope, $tainted_by;
 
         // Check for $$var or ${...} (whose idea was that anyway?)

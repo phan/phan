@@ -313,7 +313,7 @@ class Method extends TypedStructuralElement {
     public static function fromAST(
         Context $context,
         \ast\Node $node
-    ) : MethodElement {
+    ) : Method {
         $number_of_required_parameters = 0;
         $number_of_optional_parameters = 0;
 
@@ -436,7 +436,7 @@ class Method extends TypedStructuralElement {
                     // doesn't mean that is its type. Any type can default
                     // to null
                     if ((string)$type === 'null'
-                        && $parameter->getType()->hasAnyTypeName()
+                        && $parameter->getType()->hasAnyType()
                     ) {
                         $parameter->getType()->addType($type);
                     }
@@ -456,7 +456,7 @@ class Method extends TypedStructuralElement {
             }
         }
 
-        return $result;
+        return $method;
     }
 
     public function getParameterList() : array {

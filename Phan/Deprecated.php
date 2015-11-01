@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Phan;
 
 class Deprecated {
+    use \Phan\Language\AST;
 
     public static function bc_check($file, $ast) {
         if($ast->children[0] instanceof \ast\Node) {
@@ -31,7 +32,11 @@ class Deprecated {
         }
     }
 
-    public static function node_namelist($file, $node, $namespace) : array {
+    public static function node_namelist_deprecated(
+        $file,
+        $node,
+        $namespace
+    ) : array {
         $result = [];
         if($node instanceof \ast\Node) {
             foreach($node->children as $name_node) {

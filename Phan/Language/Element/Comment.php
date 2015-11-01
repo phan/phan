@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\Language\Comment\Paramter as CommentParamter;
+use \Phan\Language\Element\Comment\Parameter as CommentParameter;
 use \Phan\Language\Type;
 
 /**
@@ -23,7 +23,7 @@ class Comment {
     private $variable_list = [];
 
     /**
-     * @var CommentParamter[]
+     * @var CommentParameter[]
      * A list of CommentParameters from @param declarations
      */
     private $parameter_list = [];

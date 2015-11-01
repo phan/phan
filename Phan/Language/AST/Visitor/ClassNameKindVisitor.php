@@ -72,7 +72,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                 $static_call_ok = true;
             } else {
                 $class_name =
-                    $this->astQualifiedName(
+                    self::astQualifiedName(
                         $this->context,
                         $node->children[0]
                     );

@@ -287,4 +287,120 @@ abstract class KindVisitorImplementation implements KindVisitor {
         return $this->visit($node);
     }
 
+
+    public function visitAnd(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitCatchList(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitClone(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitConditional(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitContinue(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitFor(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitGoto(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitHaltCompiler(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitIncludeOrEval(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitLabel(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitMethodReference(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitNameList(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitOr(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitPostDec(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitPostInc(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitPreDec(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitRef(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitShellExec(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitSilence(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitThrow(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitTraitAdaptations(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitTraitAlias(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitTraitPrecedence(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitTry(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUnaryPlus(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUnpack(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUnset(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitYield(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitYieldFrom(Node $node) {
+        return $this->visit($node);
+    }
 }

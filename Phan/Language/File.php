@@ -42,7 +42,7 @@ class File {
     ) {
         $this->code_base = $code_base;
         $this->file = $file;
-        $this->ast = \ast\parse_file($file);
+        $this->ast = \ast\parse_file($file, $version = 10);
     }
 
     /**

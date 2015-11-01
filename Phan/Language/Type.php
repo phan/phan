@@ -20,6 +20,7 @@ $BUILTIN_FUNCTION_ARGUMENT_TYPES =
     require(__DIR__.'/Type/BuiltinFunctionArgumentTypes.php');
 
 class Type {
+    use \Phan\Language\AST;
 
     /**
      * @var string[]
@@ -91,7 +92,7 @@ class Type {
         if($node instanceof \ast\Node) {
             switch($node->kind) {
             case \ast\AST_NAME:
-                $result = qualified_name($file, $node, $namespace);
+                $result = static::astQualifiedName($context, $node);
                 break;
             case \ast\AST_TYPE:
                 if($node->flags == \ast\flags\TYPE_CALLABLE) {

@@ -353,4 +353,148 @@ interface KindVisitor {
      */
     public function visitWhile(Node $node);
 
+    /**
+     * Visit a node with kind `\ast\AST_AND`
+     */
+    public function visitAnd(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_CATCH_LIST`
+     */
+    public function visitCatchList(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_CLONE`
+     */
+    public function visitClone(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_CONDITIONAL`
+     */
+    public function visitConditional(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_CONTINUE`
+     */
+    public function visitContinue(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_FOR`
+     */
+    public function visitFor(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_GOTO`
+     */
+    public function visitGoto(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_HALT_COMPILER`
+     */
+    public function visitHaltCompiler(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_INCLUDE_OR_EVAL`
+     */
+    public function visitIncludeOrEval(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_LABEL`
+     */
+    public function visitLabel(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_METHOD_REFERENCE`
+     */
+    public function visitMethodReference(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_NAME_LIST`
+     */
+    public function visitNameList(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_OR`
+     */
+    public function visitOr(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_POST_DEC`
+     */
+    public function visitPostDec(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_POST_INC`
+     */
+    public function visitPostInc(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_PRE_DEC`
+     */
+    public function visitPreDec(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_REF`
+     */
+    public function visitRef(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_SHELL_EXEC`
+     */
+    public function visitShellExec(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_SILENCE`
+     */
+    public function visitSilence(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_THROW`
+     */
+    public function visitThrow(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_TRAIT_ADAPTATIONS`
+     */
+    public function visitTraitAdaptations(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_TRAIT_ALIAS`
+     */
+    public function visitTraitAlias(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_TRAIT_PRECEDENCE`
+     */
+    public function visitTraitPrecedence(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_TRY`
+     */
+    public function visitTry(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_UNARY_PLUS`
+     */
+    public function visitUnaryPlus(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_UNPACK`
+     */
+    public function visitUnpack(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_UNSET`
+     */
+    public function visitUnset(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_YIELD`
+     */
+    public function visitYield(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_YIELD_FROM`
+     */
+    public function visitYieldFrom(Node $node);
 }

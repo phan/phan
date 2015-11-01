@@ -162,6 +162,64 @@ class Element {
             return $visitor->visitVar($this->node);
         case \ast\AST_WHILE:
             return $visitor->visitWhile($this->node);
+        case \ast\AST_AND:
+            return $visitor->visitAnd($this->node);
+        case \ast\AST_CATCH_LIST:
+            return $visitor->visitCatchList($this->node);
+        case \ast\AST_CLONE:
+            return $visitor->visitClone($this->node);
+        case \ast\AST_CONDITIONAL:
+            return $visitor->visitConditional($this->node);
+        case \ast\AST_CONTINUE:
+            return $visitor->visitContinue($this->node);
+        case \ast\AST_FOR:
+            return $visitor->visitFor($this->node);
+        case \ast\AST_GOTO:
+            return $visitor->visitGoto($this->node);
+        case \ast\AST_HALT_COMPILER:
+            return $visitor->visitHaltCompiler($this->node);
+        case \ast\AST_INCLUDE_OR_EVAL:
+            return $visitor->visitIncludeOrEval($this->node);
+        case \ast\AST_LABEL:
+            return $visitor->visitLabel($this->node);
+        case \ast\AST_METHOD_REFERENCE:
+            return $visitor->visitMethodReference($this->node);
+        case \ast\AST_NAME_LIST:
+            return $visitor->visitNameList($this->node);
+        case \ast\AST_OR:
+            return $visitor->visitOr($this->node);
+        case \ast\AST_POST_DEC:
+            return $visitor->visitPostDec($this->node);
+        case \ast\AST_POST_INC:
+            return $visitor->visitPostInc($this->node);
+        case \ast\AST_PRE_DEC:
+            return $visitor->visitPreDec($this->node);
+        case \ast\AST_REF:
+            return $visitor->visitRef($this->node);
+        case \ast\AST_SHELL_EXEC:
+            return $visitor->visitShellExec($this->node);
+        case \ast\AST_SILENCE:
+            return $visitor->visitSilence($this->node);
+        case \ast\AST_THROW:
+            return $visitor->visitThrow($this->node);
+        case \ast\AST_TRAIT_ADAPTATIONS:
+            return $visitor->visitTraitAdaptations($this->node);
+        case \ast\AST_TRAIT_ALIAS:
+            return $visitor->visitTraitAlias($this->node);
+        case \ast\AST_TRAIT_PRECEDENCE:
+            return $visitor->visitTraitPrecedence($this->node);
+        case \ast\AST_TRY:
+            return $visitor->visitTry($this->node);
+        case \ast\AST_UNARY_PLUS:
+            return $visitor->visitUnaryPlus($this->node);
+        case \ast\AST_UNPACK:
+            return $visitor->visitUnpack($this->node);
+        case \ast\AST_UNSET:
+            return $visitor->visitUnset($this->node);
+        case \ast\AST_YIELD:
+            return $visitor->visitYield($this->node);
+        case \ast\AST_YIELD_FROM:
+            return $visitor->visitYieldFrom($this->node);
         default:
             Debug::printNode($this->node);
             assert(false, 'All node kinds must match');

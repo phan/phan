@@ -168,16 +168,16 @@ class FileKindVisitor extends KindVisitorImplementation {
             $parent_class_name = $node->children[0]->children[0];
 
             if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-                if(($pos = strpos($parent,'\\')) !== false) {
+                if(($pos = strpos($parent_class_name,'\\')) !== false) {
 
                     if ($context->hasNamespaceMapFor(
                         T_CLASS,
-                        substr($parent, 0, $pos)
+                        substr($parent_class_name, 0, $pos)
                     )) {
                         $parent_class_name =
                             $context->getNamespaceMapfor(
                                 T_CLASS,
-                                substr($parent, 0, $pos)
+                                substr($parent_class_name, 0, $pos)
                             );
                     }
                 }
@@ -195,7 +195,16 @@ class FileKindVisitor extends KindVisitorImplementation {
                         goto done;
                     }
                 }
-                $parent = $namespace_map[T_CLASS][$file][strtolower($parent)] ?? $namespace.$parent;
+                if ($this->context->hasNamespaceMapFor(T_CLASS, $parent)) {
+                    $parent =
+                        $this->context->getNamespaceMapFor(
+                            T_CLASS, $parent
+                        );
+                } else {
+                    $parent = $this->context->getNamespace()
+                        . '\\' . $parent;
+                }
+
                 done:
             }
         } else {
@@ -223,14 +232,20 @@ class FileKindVisitor extends KindVisitorImplementation {
 
         // TODO
         $trait_name_list =
-            node_namelist(
+            static::astQualifiedNameList(
+                $this->context,
+                $node->children[0]
+            );
+        /*
+            Deprecated::node_namelist(
                 $this->context->getFile(),
                 $node->children[0],
                 $this->context->getNamespace()
             );
+         */
 
         foreach ($trait_name_list as $trait_name) {
-            $clazz->addTraintFQSEN(
+            $clazz->addTraitFQSEN(
                 FQSEN::fromContext(
                     $this->context
                 )->withClassName($trait_name)
@@ -423,7 +438,7 @@ class FileKindVisitor extends KindVisitorImplementation {
 
         $this->context->getCodeBase()->addMethod(
             Method::fromAST(
-                $context
+                $this->context
                     ->withLineNumberStart($node->lineno ?? 0)
                     ->withLineNumberEnd($node->endLineno ?? 0),
                 $node
@@ -438,7 +453,7 @@ class FileKindVisitor extends KindVisitorImplementation {
 
         // Not $done=true here since nested function declarations are allowed
 
-        return $context;
+        return $this->context;
     }
 
     public function visitClosure(Node $node) : Context {
@@ -475,12 +490,15 @@ class FileKindVisitor extends KindVisitorImplementation {
 
     public function visitStaticCall(Node $node) : Context {
         $call = $node->children[0];
+
         if($call->kind == \ast\AST_NAME) {
             $func_name = strtolower($call->children[0]);
             if($func_name == 'parent') {
                 $meth = strtolower($node->children[1]);
+
                 if($meth == '__construct') {
-                    $classes[strtolower($current_class)]['pc_called'] = true;
+                    $clazz = $this->getContextClass();
+                    $clazz->setIsParentConstructorCalled(true);
                 }
             }
         }

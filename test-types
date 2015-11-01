@@ -1,4 +1,4 @@
-#!/home/amorrison/sandbox/php-7.0.0RC5/package/bin/php
+#!/home/amorrison/development/php-src/package/bin/php
 <?php declare(strict_types=1);
 
 // Grab these before we define our own classes
@@ -33,7 +33,7 @@ $code_base = new CodeBase(
 function typeStringFromCode(CodeBase $code_base, string $code) : string {
     return Type::typeFromNode(
         new Context($code_base),
-        \ast\parse_code($code)
+        \ast\parse_code($code, $version = 10)
         ->children[0]
     )->__toString();
 }

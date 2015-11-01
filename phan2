@@ -1,4 +1,4 @@
-#!/home/amorrison/sandbox/php-7.0.0RC5/package/bin/php
+#!/home/amorrison/development/php-src/package/bin/php
 <?php
 declare(strict_types=1);
 
@@ -34,7 +34,7 @@ foreach($files as $i => $file) {
     );
     $file->passOne();
     /*
-	$ast = \ast\parse_file($file);
+	$ast = \ast\parse_file($file, $version = 10);
 	else {
 		pass1($file, '', false, $ast, 'global');
 	}

@@ -54,7 +54,7 @@ class Parameter extends TypedStructuralElement {
      *
      * @return null
      */
-    public function setDef(string $def) {
+    public function setDef($def) {
         $this->def = $def;
     }
 
@@ -70,7 +70,7 @@ class Parameter extends TypedStructuralElement {
      * @return string
      * The 'def' paramter
      */
-    public function getDef() : string {
+    public function getDef() {
         return $this->def;
     }
 
@@ -141,7 +141,7 @@ class Parameter extends TypedStructuralElement {
             $node->flags
         );
 
-        if($node->children[2]!==null) {
+        if($node->children[2] !== null) {
             $parameter->setDef(
                 $node->children[2]
             );

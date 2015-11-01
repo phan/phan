@@ -1,4 +1,4 @@
-#!/home/amorrison/sandbox/php-7.0.0RC5/package/bin/php
+#!/home/amorrison/development/php-src/package/bin/php
 <?php declare(strict_types=1);
 
 // Grab these before we define our own classes
