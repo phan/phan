@@ -360,7 +360,7 @@ class FileKindVisitor extends KindVisitorImplementation {
                 if($type !=='null' && !type_check($type, $dc['vars'][$i]['type'])) {
                     Log::err(Log::ETYPE, "property is declared to be {$dc['vars'][$i]['type']} but was assigned $type", $file, $node->lineno);
                 }
-                // Set the declarted type to the doc-comment type and add |null if the default value is null
+                // Set the declared type to the doc-comment type and add |null if the default value is null
                 $classes[$lc]['properties'][$node->children[0]]['dtype'] = $dc['vars'][$i]['type'] . (($type==='null')?'|null':'');
                 $classes[$lc]['properties'][$node->children[0]]['type'] = $dc['vars'][$i]['type'];
                 if(!empty($type) && $type != $classes[$lc]['properties'][$node->children[0]]['type']) {
