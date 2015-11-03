@@ -6,7 +6,7 @@ use \Phan\Configuration;
 use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\Context;
-use \Phan\Language\File\FileKindVisitor;
+use \Phan\Language\ParseVisitor;
 use \ast\Node;
 
 /**
@@ -113,7 +113,7 @@ class Analyzer {
         // given node
         $context =
             (new Element($node))->acceptKindVisitor(
-                new FileKindVisitor($context)
+                new ParseVisitor($context)
             );
 
         assert(!empty($context), 'Context cannot be null');
