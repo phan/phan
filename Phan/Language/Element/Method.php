@@ -8,6 +8,7 @@ use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
+use \ast\Node;
 
 class Method extends TypedStructuralElement {
 
@@ -25,11 +26,6 @@ class Method extends TypedStructuralElement {
      * @var
      */
     private $parameter_list = [];
-
-    /**
-     * @var ?
-     */
-    private $original_return_type = null;
 
     /**
      * @var ?
@@ -66,8 +62,8 @@ class Method extends TypedStructuralElement {
         string $name,
         Type $type,
         int $flags,
-        int $number_of_required_parameters,
-        int $number_of_optional_parameters
+        int $number_of_required_parameters = 0,
+        int $number_of_optional_parameters = 0
     ) {
         parent::__construct(
             $context,
@@ -164,7 +160,6 @@ class Method extends TypedStructuralElement {
         );
 
         $fqsen = $method->getFQSEN();
-        // $fqsen = "{$class->getName()}::{$method->name}";
 
         $name_method_info_map = [
             $fqsen->__toString() => $method
@@ -307,46 +302,53 @@ class Method extends TypedStructuralElement {
     }
 
     /**
+     * @param Context $context
+     * The context in which the node appears
+     *
+     * @param Node $node
+     * An AST node representing a method
+     *
+     * @return Method
+     * A Method representing the AST node in the
+     * given context
+     *
+     *
      * @see \Phan\Deprecated\Pass1::node_func
      * Formerly 'function node_func'
      */
-    public static function fromAST(
+    public static function fromNode(
         Context $context,
-        \ast\Node $node
+        Node $node
     ) : Method {
-        $number_of_required_parameters = 0;
-        $number_of_optional_parameters = 0;
 
+        // Parse the comment above the method to get
+        // extra meta information about the method.
         $comment =
             Comment::fromString($node->docComment ?? '');
 
-        $method_name = $node->name;
-
+        // Create the skeleton method object from what
+        // we know so far
         $method = new Method(
             $context,
             $comment,
-            $method_name,
+            $node->name,
             Type::none(),
-            $node->flags,
-            $number_of_required_parameters,
-            $number_of_optional_parameters
+            $node->flags ?? 0
         );
 
+        // @var Parameter[]
+        // The list of parameters specified on the
+        // method
         $method->parameter_list =
-            Parameter::listFromAST($context, $node->children[0]);
+            Parameter::listFromNode($context, $node->children[0]);
 
+        // Check to see if the comment specifies that the
+        // method is deprecated
         $method->setIsDeprecated($comment->isDeprecated());
 
+        // Take a look at method return types
         if($node->children[3] !== null) {
-            // Original return type
-            $method->original_return_type =
-                Type::typeFromSimpleNode(
-                    $context,
-                    $node->children[3]
-                );
-
-            // This one changes as we walk the tree
-            $method->setType(
+            $method->getType()->addType(
                 Type::typeFromSimpleNode(
                     $context,
                     $node->children[3]
@@ -354,11 +356,10 @@ class Method extends TypedStructuralElement {
             );
         } else if ($comment->hasReturnType()) {
 
+            // See if we have a return type specified in the comment
             $type = $comment->getReturnType();
-            if ($type->hasTypeName('static')
-                || $type->hasTypeName('self')
-                || $type->hasTypeName('$this')
-            ) {
+
+            if ($type->hasSelfType()) {
                 // We can't actually figure out 'static' at this
                 // point, but fill it in regardless. It will be partially
                 // correct
@@ -367,8 +368,7 @@ class Method extends TypedStructuralElement {
                 }
             }
 
-            $method->original_return_type = $type;
-            $method->setType($type);
+            $method->getType()->addType($type);
         }
 
         // Add params to local scope for user functions
@@ -381,61 +381,36 @@ class Method extends TypedStructuralElement {
                     // for a docComment. We assume order in the
                     // docComment matches the parameter order in the
                     // code
-                    if (!empty($comment->getParameterList()[$i])) {
-                        // ...
-                        // $scope[$current_scope]['vars'][$v['name']] = ['type'=>$dc['params'][$k]['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
-                    } else {
-                        // ...
-                        // $scope[$current_scope]['vars'][$v['name']] = ['type'=>'', 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
+                    if (!empty($comment->getParameterList()[$parameter_offset])) {
+                        $parameter->getType()->addType(
+                            $comment->getParameterList()[$parameter_offset]->getType()
+                        );
                     }
-                } else {
-                    // $scope[$current_scope]['vars'][$v['name']] = ['type'=>$v['type'], 'tainted'=>false, 'tainted_by'=>'', 'param'=>$i];
                 }
 
-                if ($parameter->hasDef()) {
-                    $type =
-                        Type::typeFromNode(
-                            $context,
-                            $parameter->getDef()
+                // If there's a default value on the parameter, check to
+                // see if the type of the default is cool with the
+                // specified type.
+                if ($parameter->hasDefaultValueType()) {
+                    $default_type = $parameter->getDefaultValueType();
+
+                    if (!$default_type->canCastToTypeInContext(
+                        $parameter->getType(),
+                        $context
+                    )) {
+                        Log::err(
+                            Log::ETYPE,
+                            "Default value for {$default_type} \${$paramter->getName()} can't be {$parameter->getType()}",
+                            $context->getFile(),
+                            $node->lineno
                         );
-
-                    if ($context->getScope()->hasVariableWithName($parameter->getName())) {
-                        $variable =
-                            $context->getScope()->getVariableWithName($parameter->getName());
-
-                        $variable_type = $variable->getType();
-
-                        if (!$type->hasTypeName('null')
-                            && !$type->canCastToTypeInContext($variable_type)
-                        ) {
-                            Log::err(
-                                Log::ETYPE,
-                                "Default value for {$variable_type} \${$paramter->getName()} can't be $type",
-                                $context->getFile(),
-                                $node->lineno
-                            );
-                        }
                     }
-
-                    // Get a new context with the new scope with the
-                    // new variable.
-                    $context = $context->withScope(
-                        $context->getScope()->withVariable(
-                            new Variable(
-                                $context,
-                                Comment::none(),
-                                $parameter->getName(),
-                                $parameter->getType(),
-                                0
-                            )
-                        )
-                    );
 
                     // If we have no other type info about a parameter,
                     // just because it has a default value of null
                     // doesn't mean that is its type. Any type can default
                     // to null
-                    if ((string)$type === 'null'
+                    if ((string)$default_type === 'null'
                         && $parameter->getType()->hasAnyType()
                     ) {
                         $parameter->getType()->addType($type);
@@ -443,22 +418,15 @@ class Method extends TypedStructuralElement {
                 }
                 $parameter_offset++;
             }
-
-            foreach ($comment->getParameterList() as $comment_parameter) {
-                // TODO
-                /*
-                if(empty($scope[$current_scope]['vars'][$var['name']])) {
-                    $scope[$current_scope]['vars'][$var['name']] = ['type'=>$var['type'], 'tainted'=>false, 'tainted_by'=>''];
-                } else {
-                    add_type($current_scope, $var['name'], $var['type']);
-                }
-                 */
-            }
         }
 
         return $method;
     }
 
+    /**
+     * @return Parameter[]
+     * A list of parameters on the method
+     */
     public function getParameterList() : array {
         return $this->parameter_list;
     }

@@ -140,6 +140,20 @@ class Type {
     }
 
     /**
+     * @return bool
+     * True if this type has a type referencing the
+     * class context in which it exists such as 'static'
+     * or 'self'.
+     */
+    public function hasSelfType() : bool {
+        return (
+            $this->hasTypeName('static')
+            || $this->hasTypeName('self')
+            || $this->hasTypeName('$this')
+        );
+    }
+
+    /**
      * @param Context $context
      * @param Node|string|null $node
      *

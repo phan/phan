@@ -4,13 +4,21 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
 use \Phan\Language\Type;
+use \ast\Node;
 
 class Parameter extends TypedStructuralElement {
 
     /**
-     * @var $def
+     * @var \mixed
+     * The default value for a parameter
      */
-    private $def = '';
+    private $default_value = null;
+
+    /**
+     * @var Type
+     * The type of the default value if any
+     */
+    private $default_value_type = null;
 
     /**
      * @param \phan\Context $context
@@ -49,90 +57,92 @@ class Parameter extends TypedStructuralElement {
     }
 
     /**
-     * @param string $def
-     * ?
+     * @param \mixed $default_value
+     * The default value for the parameter
      *
      * @return null
      */
-    public function setDef($def) {
-        $this->def = $def;
+    public function setDefaultValue($default_value) {
+        $this->default_value = $default_value;
     }
 
     /**
      * @return bool
-     * True if 'def' is defined.
+     * True if this parameter has a default value
      */
-    public function hasDef() : bool {
-        return !empty($this->def);
+    public function hasDefaultValue() : bool {
+        return null !== $this->default_value;
     }
 
     /**
-     * @return string
-     * The 'def' paramter
+     * @return \mixed
+     * The default value for the parameter if one
+     * exists
      */
-    public function getDef() {
-        return $this->def;
+    public function getDefaultValue() {
+        return $this->default_value;
     }
 
     /**
-     * @return ParameterElement[]
+     * @param Type $type
+     * The type of the default value for this parameter
+     *
+     * @return null
      */
-    public static function listFromAST(
+    public function setDefaultValueType(Type $type) {
+        $this->default_value_type = $type;
+    }
+
+    /**
+     * @return bool
+     * True if this parameter has a type for its
+     * default value
+     */
+    public function hasDefaultValueType() : bool {
+        return !empty($this->default_value_type);
+    }
+
+    /**
+     * @return Type
+     * The type of the default value for this parameter
+     * if it exists
+     */
+    public function getDefaultValueType() : Type {
+        return $this->default_value_type;
+    }
+
+    /**
+     * @return Parameter[]
+     * A list of parameters from an AST node.
+     */
+    public static function listFromNode(
         Context $context,
-        \ast\Node $node
+        Node $node
     ) : array {
+        assert($node instanceof Node, "node was not an \\ast\\Node");
 
-        if(!$node instanceof \ast\Node) {
-            assert(false, ast_dump($node)." was not an \\ast\\Node");
-        }
-
-        return array_map(function(\ast\Node $child) use ($context) {
-            return Parameter::fromAST($context, $child);
+        return array_map(function(Node $child) use ($context) {
+            return Parameter::fromNode($context, $child);
         }, $node->children);
     }
 
     /**
      *
      */
-    public static function fromAST(
+    public static function fromNode(
         Context $context,
-        \ast\Node $node
+        Node $node
     ) : Parameter {
-        /*
-        $result[] = node_param($file, $param_node, $dc, $i, $namespace);
-        if($param_node->children[2]===null) {
-            if($opt) {
-                Log::err(Log::EPARAM, "required arg follows optional", $file, $node->lineno);
-            }
-            $req++;
-        } else $opt++;
-        $i++;
-         */
 
-        assert($node instanceof \ast\Node,
-            "node was not an \\ast\\Node");
+        assert($node instanceof Node, "node was not an \\ast\\Node");
 
-        /*
-        $type = ast_node_type(
-            $file,
-            $node->children[0],
-            $context->getNamespace()
-        );
-         */
-
-        $taint = false;
+        // Get the type of the parameter
         $type = Type::typeFromSimpleNode(
             $context,
-            $node->children[0],
-            $taint
+            $node->children[0]
         );
 
-        if(empty($type)
-            && !empty($dc['params'][$i]['type'])
-        ) {
-            $type = $dc['params'][$i]['type'];
-        }
-
+        // Create the skeleton parameter from what we know so far
         $parameter = new Parameter(
             $context,
             Comment::fromString($node->docComment ?? ''),
@@ -141,9 +151,17 @@ class Parameter extends TypedStructuralElement {
             $node->flags
         );
 
-        if($node->children[2] !== null) {
-            $parameter->setDef(
-                $node->children[2]
+        // If there is a default value, store it and its type
+        if ($node->children[2] != null) {
+            // Set the node as the value
+            $parameter->setDefaultValue($node->children[2]);
+
+            // Set the type
+            $parameter->setDefaultValueType(
+                Type::typeFromNode(
+                    $context,
+                    $node->children[2]
+                )
             );
         }
 

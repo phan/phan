@@ -438,7 +438,7 @@ class FileKindVisitor extends KindVisitorImplementation {
         }
 
         $this->context->getCodeBase()->addMethod(
-            Method::fromAST(
+            Method::fromNode(
                 $this->context
                     ->withLineNumberStart($node->lineno ?? 0)
                     ->withLineNumberEnd($node->endLineno ?? 0),
