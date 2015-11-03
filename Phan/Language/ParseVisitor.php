@@ -17,6 +17,20 @@ use \Phan\Language\Type;
 use \Phan\Log;
 use \ast\Node;
 
+/**
+ * The class is a visitor for AST nodes that does parsing. Each
+ * visitor populates the $context->getCodeBase() with any
+ * globally accessible structural elements and will return a
+ * possibly new context as modified by the given node.
+ *
+ * # Example Usage
+ * ```
+ * $context =
+ *     (new Element($node))->acceptKindVisitor(
+ *         new ParseVisitor($context)
+ *     );
+ * ```
+ */
 class ParseVisitor extends KindVisitorImplementation {
     use \Phan\Language\AST;
 
@@ -39,32 +53,69 @@ class ParseVisitor extends KindVisitorImplementation {
     /**
      * Default visitor for node kinds that do not have
      * an overriding method
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
      */
-    public function visit(Node $node) {
+    public function visit(Node $node) : Context {
         // Many nodes don't change the context and we
         // don't need to read them.
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_NAMESPACE`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitNamespace(Node $node) : Context {
         return $this->context->withNamespace(
             (string)$node->children[0].'\\'
         );
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_IF`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitIf(Node $node) : Context {
         $context = $this->context->withIsConditional(true);
         $context->getCodeBase()->incrementConditionals();
         return $context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_DIM`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitDim(Node $node) : Context {
         if (!Configuration::instance()->bc_checks) {
             return $this->context;
         }
 
-        if(!($node->children[0] instanceof \ast\Node
-            && $node->children[0]->children[0] instanceof \ast\Node)
+        if(!($node->children[0] instanceof Node
+            && $node->children[0]->children[0] instanceof Node)
         ) {
             return $this->context;
         }
@@ -75,7 +126,7 @@ class ParseVisitor extends KindVisitorImplementation {
         ) {
             $temp = $node->children[0]->children[0];
             $depth = 1;
-            while($temp instanceof \ast\Node) {
+            while($temp instanceof Node) {
                 $temp = $temp->children[0];
                 $depth++;
             }
@@ -98,7 +149,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
         // $foo->$bar['baz'];
         else if(!empty($node->children[0]->children[1])
-            && ($node->children[0]->children[1] instanceof \ast\Node)
+            && ($node->children[0]->children[1] instanceof Node)
             && ($node->children[0]->kind == \ast\AST_PROP)
             && ($node->children[0]->children[0]->kind == \ast\AST_VAR)
             && ($node->children[0]->children[1]->kind == \ast\AST_VAR)
@@ -122,6 +173,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_USE`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitUse(Node $node) : Context {
         $context = $this->context;
 
@@ -145,6 +206,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_CLASS`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitClass(Node $node) : Context {
 
         // Get an FQSEN for this class
@@ -228,6 +299,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_USE_TRAIT`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitUseTrait(Node $node) : Context {
         $clazz = $this->getContextClass();
 
@@ -258,6 +339,9 @@ class ParseVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_METHOD_REFERENCE`
+     */
     public function visitMethod(Node $node) : Context {
         $clazz = $this->getContextClass();
 
@@ -306,6 +390,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_PROP_DECL`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitPropDecl(Node $node) : Context {
         if(!$this->context->hasClassFQSEN()) {
             Log::err(
@@ -390,6 +484,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_CLASS_CONST_DECL`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitClassConstDecl(Node $node) : Context {
         if(!$this->context->hasClassFQSEN()) {
             Log::err(
@@ -425,6 +529,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_FUNC_DECL`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitFuncDecl(Node $node) : Context {
         $function_name =
             strtolower($this->context->getNamespace() . $node->name);
@@ -457,6 +571,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_CLOSURE`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitClosure(Node $node) : Context {
         $this->context->getCodeBase()->incrementClosures();
 
@@ -466,6 +590,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_CALL`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitCall(Node $node) : Context {
         $found = false;
         $call = $node->children[0];
@@ -489,6 +623,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_STATIC_CALL`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitStaticCall(Node $node) : Context {
         $call = $node->children[0];
 
@@ -507,6 +651,16 @@ class ParseVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_RETURN`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitReturn(Node $node) : Context {
         if (Configuration::instance()->bc_checks) {
             Deprecated::bc_check($this->context->getFile(), $node);
@@ -515,14 +669,44 @@ class ParseVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_PRINT`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitPrint(Node $node) : Context {
         return $this->visitReturn($node);
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_ECHO`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitEcho(Node $node) : Context {
         return $this->visitReturn($node);
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_METHOD_CALL`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitMethodCall(Node $node) : Context {
         return $this->visitReturn($node);
     }
