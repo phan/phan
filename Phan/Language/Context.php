@@ -403,6 +403,14 @@ class Context {
     }
 
     /**
+     * @return bool
+     * True if we're within a method scope
+     */
+    public function isMethodScope() : bool {
+        return !empty($this->method_fqsen);
+    }
+
+    /**
      * Get a string representation of the context
      *
      * @return string

@@ -230,6 +230,32 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
+     * @param FQSEN $fqsen
+     * The parent class to associate with this class
+     *
+     * @return null
+     */
+    public function setParentClassFQSEN(FQSEN $fqsen) {
+        $this->parent_class_fqsen = $fqsen;
+    }
+
+    /**
+     * @return bool
+     * True if this class has a parent class
+     */
+    public function hasParentClassFQSEN() : bool {
+        return !empty($this->parent_class_fqsen);
+    }
+
+    /**
+     * @return FQSEN
+     * The parent class of this class if one exists
+     */
+    public function getParentClassFQSEN() : FQSEN {
+        return $this->parent_class_fqsen;
+    }
+
+    /**
      * @return void
      */
     public function addProperty(Property $property) {

@@ -200,4 +200,11 @@ class Comment {
     public function getParameterList() : array {
         return $this->parameter_list;
     }
+
+    /**
+     * @return CommentParameter[]
+     */
+    public function getVariableList() : array {
+        return $this->variable_list;
+    }
 }

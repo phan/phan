@@ -378,9 +378,9 @@ class Method extends TypedStructuralElement {
             foreach ($method->parameter_list as $i => $parameter) {
                 if (!$parameter->getType()->hasAnyType()) {
                     // If there is no type specified in PHP, check
-                    // for a docComment. We assume order in the
-                    // docComment matches the parameter order in the
-                    // code
+                    // for a docComment with @param declarations. We
+                    // assume order in the docComment matches the
+                    // parameter order in the code
                     if (!empty($comment->getParameterList()[$parameter_offset])) {
                         $parameter->getType()->addType(
                             $comment->getParameterList()[$parameter_offset]->getType()

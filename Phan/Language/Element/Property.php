@@ -9,22 +9,10 @@ use \Phan\Language\element\Comment;
 class Property extends TypedStructuralElement {
 
     /**
-     * @var $def
-     * No idea
-     */
-    private $def;
-
-    /**
      * @var Type
-     * ...
+     * The declared type of the property
      */
-    private $type;
-
-    /**
-     * @var Type
-     * ...
-     */
-    private $dtype;
+    private $declared_type;
 
     /**
      * @param \phan\Context $context
@@ -94,20 +82,22 @@ class Property extends TypedStructuralElement {
         return $property;
     }
 
-    public function getType() : Type {
-        return $this->type;
+    /**
+     * @return Type
+     * Get the declared type of the property
+     */
+    public function getDeclaredType() : Type {
+        return $this->declared_type;
     }
 
-    public function setType(Type $type) {
-        $this->type = $type;
-    }
-
-    public function getDType() : Type {
-        return $this->dtype;
-    }
-
-    public function setDtype(Type $type) {
-        $this->dtype = $type;
+    /**
+     * @param Type $type
+     * Set the declared type of the property
+     *
+     * @return null
+     */
+    public function setDeclaredType(Type $type) {
+        $this->declared_type = $type;
     }
 
 }

@@ -7,11 +7,7 @@ use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
-use \Phan\Language\Element\Clazz;
-use \Phan\Language\Element\Comment;
-use \Phan\Language\Element\Constant;
-use \Phan\Language\Element\Method;
-use \Phan\Language\Element\Property;
+use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
 use \Phan\Log;
@@ -79,7 +75,7 @@ class ParseVisitor extends KindVisitorImplementation {
      */
     public function visitNamespace(Node $node) : Context {
         return $this->context->withNamespace(
-            (string)$node->children[0].'\\'
+            (string)$node->children[0]
         );
     }
 
@@ -145,10 +141,9 @@ class ParseVisitor extends KindVisitorImplementation {
                     $node->lineno
                 );
             }
-        }
 
         // $foo->$bar['baz'];
-        else if(!empty($node->children[0]->children[1])
+        } else if(!empty($node->children[0]->children[1])
             && ($node->children[0]->children[1] instanceof Node)
             && ($node->children[0]->kind == \ast\AST_PROP)
             && ($node->children[0]->children[0]->kind == \ast\AST_VAR)
@@ -175,6 +170,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_USE`
+     * such as `use \ast\Node;`.
      *
      * @param Node $node
      * A node to parse
@@ -232,59 +228,9 @@ class ParseVisitor extends KindVisitorImplementation {
             );
         }
 
-        // Update the context to signal that we're now
-        // within a class context.
-        $context = $this->context->withClassFQSEN($class_fqsen);
-
-        if(!empty($node->children[0])) {
-            $parent_class_name = $node->children[0]->children[0];
-
-            if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-                if(($pos = strpos($parent_class_name,'\\')) !== false) {
-
-                    if ($context->hasNamespaceMapFor(
-                        T_CLASS,
-                        substr($parent_class_name, 0, $pos)
-                    )) {
-                        $parent_class_name =
-                            $context->getNamespaceMapfor(
-                                T_CLASS,
-                                substr($parent_class_name, 0, $pos)
-                            );
-                    }
-                }
-            }
-        }
-
-        if(!empty($node->children[0])) {
-            $parent = $node->children[0]->children[0];
-            if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-                if(($pos = strpos($parent,'\\')) !== false) {
-                    // extends A\B
-                    // check if we have a namespace alias for A
-                    if(!empty($namespace_map[T_CLASS][$file][strtolower(substr($parent,0,$pos))])) {
-                        $parent = $namespace_map[T_CLASS][$file][strtolower(substr($parent,0,$pos))] . substr($parent,$pos);
-                        goto done;
-                    }
-                }
-                if ($this->context->hasNamespaceMapFor(T_CLASS, $parent)) {
-                    $parent =
-                        $this->context->getNamespaceMapFor(
-                            T_CLASS, $parent
-                        );
-                } else {
-                    $parent = $this->context->getNamespace()
-                        . '\\' . $parent;
-                }
-
-                done:
-            }
-        } else {
-            $parent = null;
-        }
-
-        $current_clazz = new Clazz(
-            $context
+        // Build the class from what we know so far
+        $clazz = new Clazz(
+            $this->context
                 ->withLineNumberStart($node->lineno)
                 ->withLineNumberEnd($node->endLineno ?: -1),
             Comment::fromString($node->docComment ?: ''),
@@ -293,8 +239,46 @@ class ParseVisitor extends KindVisitorImplementation {
             $node->flags
         );
 
-        $this->context->getCodeBase()->addClass($current_clazz);
+        // Add the class to the code base as a globally
+        // accessible object
+        $this->context->getCodeBase()->addClass($clazz);
         $this->context->getCodeBase()->incrementClasses();
+
+        // Look to see if we have a parent class
+        if(!empty($node->children[0])) {
+            $parent_class_name =
+                $node->children[0]->children[0];
+
+            if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+                if(($pos = strpos($parent_class_name,'\\')) !== false) {
+
+                    if ($this->context->hasNamespaceMapFor(
+                        T_CLASS,
+                        substr($parent_class_name, 0, $pos)
+                    )) {
+                        $parent_class_name =
+                            $this->context->getNamespaceMapfor(
+                                T_CLASS,
+                                substr($parent_class_name, 0, $pos)
+                            );
+                    }
+                }
+            }
+
+            // Set the parent for the class
+            $clazz->setParentClassFQSEN(
+                FQSEN::fromContextAndString(
+                    $this->context,
+                    $parent_class_name
+                )
+            );
+        }
+
+        // Update the context to signal that we're now
+        // within a class context.
+        $context = $clazz->getContext()->withClassFQSEN(
+            $class_fqsen
+        );
 
         return $context;
     }
@@ -310,22 +294,16 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitUseTrait(Node $node) : Context {
+        // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
-        // TODO
         $trait_name_list =
             static::astQualifiedNameList(
                 $this->context,
                 $node->children[0]
             );
-        /*
-            Deprecated::node_namelist(
-                $this->context->getFile(),
-                $node->children[0],
-                $this->context->getNamespace()
-            );
-         */
 
+        // Add each trait to the class
         foreach ($trait_name_list as $trait_name) {
             $clazz->addTraitFQSEN(
                 FQSEN::fromContext(
@@ -343,6 +321,7 @@ class ParseVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_METHOD_REFERENCE`
      */
     public function visitMethod(Node $node) : Context {
+        // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
         $method_name = $node->name;
@@ -367,17 +346,11 @@ class ParseVisitor extends KindVisitorImplementation {
                 Comment::fromString($node->docComment ?: ''),
                 $method_name,
                 Type::none(),
-                0, // flags
-                0, // number_of_required_parameters
-                0  // number_of_optional_parameters
+                0 // flags
             );
 
         $clazz->addMethod($method);
         $this->context->getCodeBase()->incrementMethods();
-
-        $context = $this->context->withMethodFQSEN(
-            $method->getFQSEN()
-        );
 
         if ('__construct' === $method_name) {
             $clazz->setIsParentConstructorCalled(false);
@@ -386,6 +359,11 @@ class ParseVisitor extends KindVisitorImplementation {
         if ('__invoke' === $method_name) {
             $clazz->getType()->addTypeName('callable');
         }
+
+        // Send the context into the method
+        $context = $this->context->withMethodFQSEN(
+            $method->getFQSEN()
+        );
 
         return $context;
     }
@@ -401,20 +379,16 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitPropDecl(Node $node) : Context {
-        if(!$this->context->hasClassFQSEN()) {
-            Log::err(
-                Log::EFATAL,
-                "Invalid property declaration",
-                $this->context->getFile(),
-                $node->lineno
-            );
-        }
+        // Bomb out if we're not in a class context
+        $clazz = $this->getContextClass();
 
+        // Get a comment on the property declaration
         $comment = Comment::fromString($node->docComment ?? '');
 
         foreach($node->children as $i=>$node) {
             // Ignore children which are not property elements
-            if (!$node || $node->kind != \ast\AST_PROP_ELEM) {
+            if (!$node
+                || $node->kind != \ast\AST_PROP_ELEM) {
                 continue;
             }
 
@@ -433,9 +407,7 @@ class ParseVisitor extends KindVisitorImplementation {
                 . ' at '
                 . $this->context);
 
-            $clazz = $this->getContextClass();
-
-            $clazz->addProperty(
+            $property =
                 new Property(
                     $this->context
                         ->withLineNumberStart($node->lineno)
@@ -446,40 +418,39 @@ class ParseVisitor extends KindVisitorImplementation {
                     : '_error_',
                     $type,
                     $node->flags
-                )
-            );
+                );
 
-            // TODO
-            if(!empty($dc['vars'][$i]['type'])) {
-                if($type !=='null' && !type_check($type, $dc['vars'][$i]['type'])) {
-                    Log::err(Log::ETYPE, "property is declared to be {$dc['vars'][$i]['type']} but was assigned $type", $file, $node->lineno);
-                }
-                // Set the declared type to the doc-comment type and add |null if the default value is null
-                $classes[$lc]['properties'][$node->children[0]]['dtype'] = $dc['vars'][$i]['type'] . (($type==='null')?'|null':'');
-                $classes[$lc]['properties'][$node->children[0]]['type'] = $dc['vars'][$i]['type'];
-                if(!empty($type) && $type != $classes[$lc]['properties'][$node->children[0]]['type']) {
-                    $classes[$lc]['properties'][$node->children[0]]['type'] = merge_type($classes[$lc]['properties'][$node->children[0]]['type'], strtolower($type));
-                }
-            } else {
-                $property_name = $node->children[0];
+            // Set the node type to be the declared type. This may
+            // be overridden if a @var sets the type
+            $property->setDeclaredType($type);
 
-                assert(is_string($property_name),
-                    'Property name must be a string. Got '
-                    . print_r($property_name, true)
-                    . ' at '
-                    . $this->context->__toString());
+            // Add the property to the class
+            $clazz->addProperty($property);
 
-                if ($clazz->hasPropertyWithName($property_name)) {
-                    $property =
-                        $clazz->getPropertyWithName($property_name);
-                    $property->setDType(Type::none());
-                    $property->setType($type);
+            // Look for any @var declarations
+            foreach ($comment->getVariableList() as $i => $variable) {
+                if ((string)$type != 'null'
+                    && !$type->canCastToTypeInContext($variable->getType())
+                ) {
+                    Log::err(Log::ETYPE,
+                        "property is declared to be {$variable->getType()} but was assigned $type",
+                        $context->getFile(),
+                        $node->lineno
+                    );
                 }
+
+                // Set the declared type to the doc-comment type and add
+                // |null if the default value is null
+
+                $property->getType()->addType(
+                    $variable->getType()
+                );
+
+                $property->setDeclaredType(
+                    $variable->getType()
+                );
             }
         }
-
-        // TODO
-        $done = true;
 
         return $this->context;
     }
