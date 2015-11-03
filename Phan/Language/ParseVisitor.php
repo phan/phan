@@ -466,15 +466,6 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitClassConstDecl(Node $node) : Context {
-        if(!$this->context->hasClassFQSEN()) {
-            Log::err(
-                Log::EFATAL,
-                "Invalid constant declaration",
-                $this->context->getFile(),
-                $node->lineno
-            );
-        }
-
         $clazz = $this->getContextClass();
 
         foreach($node->children as $node) {
@@ -489,13 +480,10 @@ class ParseVisitor extends KindVisitorImplementation {
                         $this->context,
                         $node->children[1]
                     ),
-                    0
+                    $node->flags ?? 0
                 )
             );
         }
-
-        // TODO
-        $done = true;
 
         return $this->context;
     }
@@ -511,35 +499,35 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitFuncDecl(Node $node) : Context {
-        $function_name =
-            strtolower($this->context->getNamespace() . $node->name);
+        $function_name = $node->name;
 
-        // TODO
-        if(!empty($functions[$function_name])) {
-            for($i=1;;$i++) {
-                if(empty($functions[$i.":".$function_name])) break;
-            }
-            $function_name = $i.':'.$function_name;
+        $function_fqsen =
+            FQSEN::fromContextAndString(
+                $this->context,
+                $function_name
+            );
+
+        // Hunt for an un-taken alternate ID
+        $alternate_id = 1;
+        while($this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
+            $function_fqsen =
+                $function_fqsen->withAlternateId($alternate_id);
         }
 
-        $this->context->getCodeBase()->addMethod(
-            Method::fromNode(
-                $this->context
-                    ->withLineNumberStart($node->lineno ?? 0)
-                    ->withLineNumberEnd($node->endLineno ?? 0),
-                $node
-            )
+        $method = Method::fromNode(
+            $this->context
+                ->withLineNumberStart($node->lineno ?? 0)
+                ->withLineNumberEnd($node->endLineno ?? 0),
+            $node
         );
 
+        $this->context->getCodeBase()->addMethod($method);
         $this->context->getCodeBase()->incrementFunctions();
 
-        // TODO
-        // $context->setFunctionName($function_name);
-        // $context->setScope($function_name);
+        $context =
+            $this->context->withMethodFQSEN($function_fqsen);
 
-        // Not $done=true here since nested function declarations are allowed
-
-        return $this->context;
+        return $context;
     }
 
     /**
@@ -557,6 +545,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
         // TODO
         $current_scope = "{closure}";
+        assert(false, "Fill this in");
 
         return $this->context;
     }

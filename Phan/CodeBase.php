@@ -93,6 +93,14 @@ class CodeBase {
     }
 
     /**
+     * @return bool
+     * True if a method exists with the given FQSEN
+     */
+    public function hasMethodWithFQSEN(FQSEN $fqsen) : bool {
+        return !empty($this->method_map[(string)$fqsen]);
+    }
+
+    /**
      *
      */
     private function addClassesByNames(array $class_name_list) {
