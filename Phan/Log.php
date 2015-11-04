@@ -149,6 +149,9 @@ class Log {
 				break;
 			// TODO: json and csv
 		}
+
+        $log->msgs = [];
+
         if ($fp) {
             fclose($fp);
         }

@@ -1,0 +1,2 @@
+%s:16 TypeError Default value for int $b can't be bool
+%s:16 TypeError Default value for string $c can't be int

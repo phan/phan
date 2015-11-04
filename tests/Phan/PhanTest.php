@@ -79,6 +79,8 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
 
             $output = ob_get_clean();
 
+            $output = str_replace($test_file_path, '%s', $output);
+
             $this->assertEquals(
                 trim($output),
                 trim($expected_output),
