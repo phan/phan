@@ -543,11 +543,12 @@ class ParseVisitor extends KindVisitorImplementation {
     public function visitClosure(Node $node) : Context {
         $this->context->getCodeBase()->incrementClosures();
 
-        // TODO
-        $current_scope = "{closure}";
-        assert(false, "Fill this in");
-
-        return $this->context;
+        return
+            $this->context->withClosureFQSEN(
+                $this->context->getScopeFQSEN()->withClosureName(
+                    'closure'
+                )
+            );
     }
 
     /**

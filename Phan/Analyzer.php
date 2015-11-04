@@ -79,32 +79,33 @@ class Analyzer {
             Configuration::instance()->ast_version
         );
 
-        return $this->parseNode(
+        return $this->parseAndGetContextForNodeInContext(
+            $node,
             (new Context($code_base))
                 ->withFile($file_path)
                 ->withLineNumberStart($node->lineno ?? 0)
-                ->withLineNumberEnd($node->endLineno ?? 0),
-            $node
+                ->withLineNumberEnd($node->endLineno ?? 0)
         );
     }
 
     /**
-     * This first pass parses code and looks for the subset
-     * of issues that can be found without having to have
-     * an understanding of the entire code base.
-     *
-     * @param Context $context
-     * The context in which this node exists
+     * Parse the given node in the given context populating
+     * the code base within the context as a side effect. The
+     * returned context is the new context from within the
+     * given node.
      *
      * @param Node $node
      * A node to parse and scan for errors
      *
+     * @param Context $context
+     * The context in which this node exists
+     *
      * @return Context
      * The context from within the node is returned
      */
-    public function parseNode(
-        Context $context,
-        Node $node
+    public function parseAndGetContextForNodeInContext(
+        Node $node,
+        Context $context
     ) : Context {
 
         // Visit the given node populating the code base
@@ -120,14 +121,21 @@ class Analyzer {
 
         // Recurse into each child node
         foreach($node->children as $child_node) {
-            if (!($child_node instanceof \ast\Node)) {
+
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
                 continue;
             }
 
             // Step into each child node and get an
             // updated context for the node
             $child_context =
-                $this->parseNode($context, $child_node);
+                $this->parseAndGetContextForNodeInContext(
+                    $child_node,
+                    $context
+                );
+
+            assert(!empty($context), 'Context cannot be null');
 
             // Pass the context on to subsequent sibling
             // nodes

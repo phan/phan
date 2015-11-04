@@ -20,7 +20,7 @@ class Context {
      * @var string
      * The path to the file in which this element is defined
      */
-    private $file = '';
+    private $file = 'internal';
 
     /**
      * @var string
@@ -51,6 +51,14 @@ class Context {
     private $method_fqsen = null;
 
     /**
+     * @var FQSEN
+     * A fully-qualified structural element name describing
+     * the current closure we're in or null if we're not
+     * in a closure.
+     */
+    private $closure_fqsen = null;
+
+    /**
      * @var bool
      */
     private $is_conditional = false;
@@ -79,12 +87,13 @@ class Context {
      */
     public function __construct(CodeBase $code_base) {
         $this->code_base = $code_base;
-        $this->file = '';
+        $this->file = 'internal';
         $this->namespace = '';
         $this->namespace_map = [];
         $this->scope_fqsen = null;
         $this->class_fqsen = null;
         $this->method_fqsen = null;
+        $this->closure_fqsen = null;
         $this->is_conditional = false;
         $this->line_number_start = 0;
         $this->line_number_end = 0;
@@ -226,10 +235,9 @@ class Context {
     }
 
     /**
-     * @param string $fqsen
+     * @param FQSEN $fqsen
      * A fully-qualified structural element name describing
-     * the current class or the empty-string if we are not
-     * in a class scope.
+     * the current class in scope.
      *
      * @return Context
      * A clone of this context with the given value is returned
@@ -251,8 +259,7 @@ class Context {
     /**
      * @return FQSEN
      * A fully-qualified structural element name describing
-     * the current class or the empty-string if we are not
-     * in a class scope.
+     * the current class in scope.
      */
     public function getClassFQSEN() : FQSEN {
         return $this->class_fqsen;
@@ -268,10 +275,9 @@ class Context {
     }
 
     /*
-     * @param string $fqsen
+     * @param FQSEN $fqsen
      * A fully-qualified structural element name describing
-     * the current function or method or the empty-string if
-     * we are not in a function or method scope.
+     * the current function or method in scope.
      *
      * @return Context
      * A clone of this context with the given value is returned
@@ -291,13 +297,43 @@ class Context {
     }
 
     /*
-     * @return string
+     * @return FQSEN
      * A fully-qualified structural element name describing
-     * the current function or method or the empty-string if
-     * we are not in a function or method scope.
+     * the current function or method in scope.
      */
     public function getMethodFQSEN() : FQSEN {
         return $this->method_fqsen;
+    }
+
+    /*
+     * @param FQSEN $fqsen
+     * A fully-qualified structural element name describing
+     * the current closure in scope.
+     *
+     * @return Context
+     * A clone of this context with the given value is returned
+     */
+    public function withClosureFQSEN(FQSEN $fqsen) : Context {
+        $context = clone($this);
+        $context->closure_fqsen = $fqsen;
+        return $context;
+    }
+
+    /**
+     * @return bool
+     * True if a closure FQSEN is defined, else false.
+     */
+    public function hasClosureFQSEN() : bool {
+        return !empty($this->closure_fqsen);
+    }
+
+    /*
+     * @return FQSEN
+     * A fully-qualified structural element name describing
+     * the current closure in scope
+     */
+    public function getClosureFQSEN() : FQSEN {
+        return $this->closure_fqsen;
     }
 
     /**
@@ -343,7 +379,7 @@ class Context {
     }
 
     /**
-     * @param string $fqsen
+     * @param FQSEN $fqsen
      * A fully-qualified structural element name describing
      * the current scope.
      *
@@ -354,7 +390,8 @@ class Context {
         return clone($this)
             ->withNamespace($fqsen->getNamespace())
             ->withClassName($fqsen->getClassName())
-            ->withMethodName($fqsen->getMethodName());
+            ->withMethodName($fqsen->getMethodName())
+            ->withClosureName($fqsen->getClosureName());
     }
 
     /**
@@ -363,7 +400,6 @@ class Context {
      * the current scope.
      */
     public function getScopeFQSEN() : FQSEN {
-
         // If we're in a method, return it's FQSEN
         if ($this->hasMethodFQSEN()) {
             return $this->getMethodFQSEN();
@@ -385,9 +421,22 @@ class Context {
 
         // Otherwise, pass the current namespace map
         // along
-        return new FQSEN(
+         return new FQSEN(
             $this->namespace_map
         );
+
+        /*
+        return new FQSEN(
+            $this->namespace_map,
+            $this->namespace,
+            $this->hasClassFQSEN()
+                ? $this->getClassFQSEN()->getClassName() : '',
+            $this->hasMethodFQSEN()
+                ? $this->getMethodFQSEN()->getMethodName() : '',
+            $this->hasClosureFQSEN()
+                ? $this->getClosureFQSEN()->getClosureName() : ''
+        );
+         */
     }
 
     /**
@@ -418,11 +467,11 @@ class Context {
     public function __toString() : string {
         return 'Context: '
             . $this->file
-            . ':' . $this->line_number_start
-            . ':' . $this->line_number_end
-            . ' ' . $this->class_fqsen
-            . ':' . $this->method_fqsen
-            . "\n"
+            . ':' . (string)$this->line_number_start
+            . ':' . (string)$this->line_number_end
+            . ' ' . (string)$this->class_fqsen
+            . ':' . (string)$this->method_fqsen
+            . ' ' . (string)$this->getScopeFQSEN()
             ;
     }
 }

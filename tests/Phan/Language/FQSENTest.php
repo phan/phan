@@ -65,6 +65,26 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         );
     }
 
+    public function testFromString() {
+        $tests = [
+            '\a',
+            '\A\b',
+            '\A\b::c',
+            '\A\B\c',
+            '\A\B\c::d',
+            '\A\B\c::d{e}',
+            '\d{e}',
+            '\A\d{e}',
+        ];
+
+        foreach ($tests as $test) {
+            $this->assertEquals(
+                $test,
+                (string)FQSEN::fromString($test)
+            );
+        }
+    }
+
     /**
      * Asserts that a given FQSEN produces the given string
      */

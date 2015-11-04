@@ -35,6 +35,13 @@ class FQSEN {
      * string otherwise.
      */
     private $method_name = '';
+    /**
+     *
+     * @var string
+     * A closure name if one is in scope or the empty
+     * string otherwise.
+     */
+    private $closure_name = '';
 
     /**
      * @var int
@@ -59,17 +66,23 @@ class FQSEN {
      * @param string $method_name
      * A method name if one is in scope or the empty
      * string otherwise.
+     *
+     * @param string $closure_name
+     * A closure name if one is in scope or the empty
+     * string otherwise.
      */
     public function __construct(
         array $namespace_map = null,
         string $namespace = '\\',
         string $class_name = '',
-        string $method_name = ''
+        string $method_name = '',
+        string $closure_name = ''
     ) {
         $this->namespace_map = $namespace_map;
         $this->namespace = self::cleanNamespace($namespace);
         $this->class_name = $class_name;
         $this->method_name = $method_name;
+        $this->closure_name = $closure_name;
     }
 
     /**
@@ -99,7 +112,14 @@ class FQSEN {
             explode('::', $fqsen_string);
 
         $fq_class_name = $elements[0] ?? '';
-        $method_name = $elements[1] ?? '';
+
+        $method_elements = $elements[1] ?? '';
+
+        $matches = [];
+        preg_match('/^([^{]*)({(.*)})?$/', $method_elements, $matches);
+
+        $method_name = $matches[1] ?? '';
+        $closure_name = $matches[3] ?? '';
 
         $fq_class_name_elements =
             array_filter(explode('\\', $fq_class_name));
@@ -114,7 +134,8 @@ class FQSEN {
             $context->getNamespaceMap(),
             $namespace ?: '\\',
             $class_name ?: '',
-            $method_name ?: ''
+            $method_name ?: '',
+            $closure_name ?: ''
         );
     }
 
@@ -210,6 +231,25 @@ class FQSEN {
 
     /**
      * @return FQSEN
+     * A clone of this FQSEN with the given closure
+     */
+    public function withClosureName(string $closure_name) : FQSEN {
+        $fqsen = clone($this);
+        $fqsen->closure_name = $closure_name;
+        return $fqsen;
+    }
+
+    /**
+     * @return string
+     * The closure name associated with this FQSEN
+     * or null if not defined.
+     */
+    public function getClosureName() : string {
+        return $this->closure_name;
+    }
+
+    /**
+     * @return FQSEN
      * A new FQSEN with the given alternate_id set
      */
     public function withAlternateId(int $alternate_id) : FQSEN {
@@ -247,8 +287,16 @@ class FQSEN {
         }
 
         // If there's a method, append it
-        if ($this->method_name) {
-            $fqsen_string .= '::' . $this->method_name;
+        if ($this->method_name || $this->closure_name) {
+            $fqsen_string .= '::';
+
+            if ($this->method_name) {
+                $fqsen_string .= $this->method_name;
+            }
+
+            if ($this->closure_name) {
+                $fqsen_string .= '{' . $this->closure_name . '}';
+            }
         }
 
         // Append an alternate ID if we need to disambiguate

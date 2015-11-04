@@ -86,7 +86,6 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
                 FQSEN::fromString('\A\b::c')
             )
         );
-
     }
 
     /**
@@ -105,12 +104,12 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
         );
 
         return
-            (new Analyzer)->parseNode(
-                new Context($code_base),
+            (new Analyzer)->parseAndGetContextForNodeInContext(
                 \ast\parse_code(
                     '<?php ' . $code_stub,
                     Configuration::instance()->ast_version
-                )
+                ),
+                new Context($code_base)
             );
     }
 }
