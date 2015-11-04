@@ -48,6 +48,9 @@ class Comment {
      * Set to true if the comment contains a @deprecated
      * directive.
      *
+     * @param string $string
+     * The raw string of the comment
+     *
      * @param array $variable_list
      * @param array $parameter_list
      * @param Type $return
@@ -56,12 +59,14 @@ class Comment {
         bool $is_deprecated,
         array $variable_list,
         array $parameter_list,
-        Type $return
+        Type $return,
+        string $string
     ) {
         $this->deprecated = $is_deprecated;
         $this->variable_list = $variable_list;
         $this->parameter_list = $parameter_list;
         $this->return = $return;
+        $this->string = $string;
     }
 
     /**
@@ -70,7 +75,7 @@ class Comment {
      */
     public static function none() : Comment {
         return new Comment(
-            false, [], [], Type::none()
+            false, [], [], Type::none(), ''
         );
     }
 
@@ -91,33 +96,27 @@ class Comment {
         $lines = explode("\n",$comment);
 
         foreach($lines as $line) {
-            $line = strtolower($line);
 
             if(($pos=strpos($line, '@param')) !== false) {
-                if(preg_match('/@param\s+(\S+)\s*(?:(\S+))*/', $line, $match)) {
-                    if(strpos($match[1],'\\')===0
-                        && strpos($match[1],'\\',1)===false) {
-                        $type = trim($match[1],'\\');
+                if(preg_match('/@param\s+(\S+)\s+(?:(\$\S+))*/', $line, $match)) {
+                    if(stripos($match[1],'\\') === 0
+                        && strpos($match[1],'\\', 1) === false) {
+                        $type = trim($match[1], '\\');
                     } else {
                         $type = $match[1];
                     }
 
-                    $parameter_list[] = new CommentParameter(
-                        empty($match[2])?'':trim($match[2],'$'),
+                    $comment_parameter = new CommentParameter(
+                        empty($match[2]) ? '' : trim($match[2], '$'),
                         Type::typeFromString($type),
-                        ''
+                        $line
                     );
 
-                    /*
-                    $parameter_list[] = [
-                        'name' => empty($match[2])?'':trim($match[2],'$'),
-                        'type' => $type
-                    ];
-                     */
+                    $parameter_list[] = $comment_parameter;
                 }
             }
 
-            if(($pos=strpos($line, '@var')) !== false) {
+            if(($pos=stripos($line, '@var')) !== false) {
                 if(preg_match('/@var\s+(\S+)\s*(?:(\S+))*/', $line, $match)) {
                     if(strpos($match[1],'\\')===0 && strpos($match[1],'\\',1)===false) {
                         $type = trim($match[1],'\\');
@@ -131,17 +130,10 @@ class Comment {
                         Type::typeFromString($type),
                         ''
                     );
-
-                    /*
-                    $var_list[] = [
-                        'name' => empty($match[2])?'':trim($match[2],'$'),
-                        'type' => $type
-                    ];
-                     */
                 }
             }
 
-            if(($pos=strpos($line, '@return')) !== false) {
+            if(($pos=stripos($line, '@return')) !== false) {
                 if(preg_match('/@return\s+(\S+)/', $line, $match)) {
                     if(strpos($match[1],'\\')===0 && strpos($match[1],'\\',1)===false) {
                         $return = trim($match[1],'\\');
@@ -151,21 +143,21 @@ class Comment {
                 }
             }
 
-            if(($pos=strpos($line, '@deprecated')) !== false) {
+            if(($pos=stripos($line, '@deprecated')) !== false) {
                 if(preg_match('/@deprecated\b/', $line, $match)) {
                     $is_deprecated = true;
                 }
             }
 
-            // TODO: add support for properties
-
-            return new Comment(
-                $is_deprecated,
-                $variable_list,
-                $parameter_list,
-                Type::typeFromString($return ?: '')
-            );
         }
+
+        return new Comment(
+            $is_deprecated,
+            $variable_list,
+            $parameter_list,
+            Type::typeFromString($return ?: ''),
+            $comment
+        );
     }
 
     /**
@@ -202,9 +194,30 @@ class Comment {
     }
 
     /**
+     * @return bool
+     * True if we have a parameter at the given offset
+     */
+    public function hasParameterAtOffset(int $offset) : bool {
+        return !empty($this->parameter_list[$offset]);
+    }
+
+    /**
+     * @return CommentParameter
+     * The paramter at the given offset
+     */
+    public function getParameterAtOffset(int $offset) : CommentParameter {
+        return $this->parameter_list[$offset];
+    }
+
+    /**
      * @return CommentParameter[]
      */
     public function getVariableList() : array {
         return $this->variable_list;
     }
+
+    public function __toString() : string {
+        return $this->string;
+    }
+
 }

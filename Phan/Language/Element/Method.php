@@ -182,81 +182,6 @@ class Method extends TypedStructuralElement {
             ]);
         }
 
-        /*
-        global $INTERNAL_ARG_INFO;
-        if(!empty($INTERNAL_ARG_INFO[$fqsen])) {
-            $arginfo =
-                $INTERNAL_ARG_INFO[$fqsen];
-
-            $method_info->type = $arginfo[0];
-
-
-            $alt_fqsen =
-                "{$class->getName()}::{$method->name} $alt";
-            while(!empty($INTERNAL_ARG_INFO[$alt_fqsen])) {
-
-                $method_info_alt = $method_info;
-
-                ${"arginfo{$alt}"} = $INTERNAL_ARG_INFO[$alt_fqsen];
-                unset(${"arginfo".($alt+1)});
-
-                $method_info_alt->type =
-                    ${"arginfo{$alt}"}[0];
-
-                $name_method_info_map = array_merge($name_method_info_map, [
-                    "$canonical_method_name $alt" => $method_info_alt
-                ]);
-
-                $alt++;
-
-                $alt_fqsen =
-                    "{$class->getName()}::{$method->name} $alt";
-
-            }
-         */
-
-        /*
-        if(!empty($parents)) {
-            foreach($parents as $parent_name) {
-                $parent_fqsen = "{$parent_name}::{$method->name}";
-                if(!empty($INTERNAL_ARG_INFO[$parent_fqsen])) {
-
-                    $alt_name = "$canonical_method_name $alt";
-                    $method_info_alt = $method_info;
-
-                    $name_method_info_map =
-                        array_merge($name_method_info_map, [
-                            $alt_name => $method_info_alt
-                        ]);
-
-                    $arginfo =
-                        $INTERNAL_ARG_INFO[$parent_fqsen];
-
-                    $method_info_alt->type = $arginfo[0];
-
-                    $parent_fqsen_alt =
-                        "{$parent_name}::{$method->name} $alt";
-
-                    while(!empty($INTERNAL_ARG_INFO[$parent_fqsen_alt])) {
-                        ${"arginfo{$alt}"} =
-                            $INTERNAL_ARG_INFO[$parent_fqsen_alt];
-
-                        unset(${"arginfo".($alt+1)});
-
-                        $name_method_info_map[$alt_name]->type =
-                            ${"arginfo{$alt}"}[0];
-
-                        $alt++;
-
-                        $parent_fqsen_alt =
-                            "{$parent_name}::{$method->name} $alt";
-                    }
-                    break;
-                }
-            }
-        }
-         */
-
         foreach($method->getParameterList() as $param) {
             $alt = 1;
             $flags = 0;
@@ -277,6 +202,7 @@ class Method extends TypedStructuralElement {
                     $flags
                 );
 
+            // TODO
             while(!empty(${"arginfo{$alt}"})) {
                 $name_alt = strtolower($method->name).' '.$alt;
 
@@ -374,18 +300,21 @@ class Method extends TypedStructuralElement {
 
         // Add params to local scope for user functions
         if($context->getFile() != 'internal') {
-            $parameter_offset = 1;
 
+            $parameter_offset = 0;
             foreach ($method->parameter_list as $i => $parameter) {
                 if (!$parameter->getType()->hasAnyType()) {
                     // If there is no type specified in PHP, check
                     // for a docComment with @param declarations. We
                     // assume order in the docComment matches the
                     // parameter order in the code
-                    if (!empty($comment->getParameterList()[$parameter_offset])) {
-                        $parameter->getType()->addType(
-                            $comment->getParameterList()[$parameter_offset]->getType()
-                        );
+                    if ($comment->hasParameterAtOffset($parameter_offset)) {
+                        $comment_type =
+                            $comment->getParameterAtOffset(
+                                $parameter_offset
+                            )->getType();
+
+                        $parameter->getType()->addType($comment_type);
                     }
                 }
 
@@ -401,7 +330,7 @@ class Method extends TypedStructuralElement {
                     )) {
                         Log::err(
                             Log::ETYPE,
-                            "Default value for {$default_type} \${$parameter->getName()} can't be {$parameter->getType()}",
+                            "Default value for {$parameter->getType()} \${$parameter->getName()} can't be {$default_type}",
                             $context->getFile(),
                             $node->lineno
                         );
@@ -417,8 +346,10 @@ class Method extends TypedStructuralElement {
                         $parameter->getType()->addType($type);
                     }
                 }
-                $parameter_offset++;
+
+                ++$parameter_offset;
             }
+
         }
 
         return $method;
@@ -429,6 +360,7 @@ class Method extends TypedStructuralElement {
      * The number of optional parameters on this method
      */
     public function getNumberOfOptionalParameters() : int {
+        return $this->number_of_optional_parameters;
     }
 
     /**

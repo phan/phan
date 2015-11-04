@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use \Phan\Debug;
 use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -443,6 +444,10 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 return $method['ret'];
             }
         }
+    }
+
+    public function visitUnaryMinus(Node $node) : Type {
+        return Type::typeForObject($node->children[0]);
     }
 
 }

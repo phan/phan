@@ -169,10 +169,13 @@ class Parameter extends TypedStructuralElement {
             $node->children[0]
         );
 
+        $comment =
+            Comment::fromString($node->docComment ?? '');
+
         // Create the skeleton parameter from what we know so far
         $parameter = new Parameter(
             $context,
-            Comment::fromString($node->docComment ?? ''),
+            $comment,
             (string)$node->children[1],
             $type,
             $node->flags
@@ -204,6 +207,18 @@ class Parameter extends TypedStructuralElement {
             $this->hasDefaultValueType()
             || $this->hasDefaultValue()
         );
+    }
+
+    public function __toString() : string {
+        $string = '';
+
+        if ($this->getType()->hasAnyType()) {
+            $string .= (string)$this->getType() . ' ';
+        }
+
+        $string .= $this->getName();
+
+        return $string;
     }
 
 }

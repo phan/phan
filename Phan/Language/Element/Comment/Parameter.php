@@ -68,4 +68,16 @@ class Parameter {
         return $this->comment;
     }
 
+    public function __toString() : string {
+        $string = '';
+
+        if ($this->type->hasAnyType()) {
+            $string .= (string)$this->type . ' ';
+        }
+
+        $string .= $this->name;
+
+        return $string;
+    }
+
 }

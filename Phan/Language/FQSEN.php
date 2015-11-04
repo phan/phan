@@ -72,7 +72,7 @@ class FQSEN {
      * string otherwise.
      */
     public function __construct(
-        array $namespace_map = null,
+        array $namespace_map = [],
         string $namespace = '\\',
         string $class_name = '',
         string $method_name = '',
@@ -324,7 +324,7 @@ class FQSEN {
      * namespace and class_name
      */
     public static function fqsenStringForClassName(
-        string $namespace = null,
+        string $namespace,
         string $class_name
     ) : string {
         return (
@@ -345,7 +345,7 @@ class FQSEN {
      * namespace and function
      */
     public static function fqsenStringForFunctionName(
-        string $namespace = null,
+        string $namespace,
         string $function_name
     ) {
         return (

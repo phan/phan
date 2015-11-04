@@ -39,9 +39,9 @@ class Type {
      * A list of type names
      */
     public function __construct(array $type_name_list) {
-        $this->type_name_list = array_map(function(string $type_name) {
+        $this->type_name_list = array_filter(array_map(function(string $type_name) {
             return $this->toCanonicalName($type_name);
-        }, $type_name_list);
+        }, $type_name_list));
     }
 
     public function __toString() : string {
@@ -367,15 +367,24 @@ class Type {
     }
 
     /**
+     * @return string[]
+     * The list of types in this union type
+     */
+    public function getTypeNameList() : array {
+        return $this->type_name_list;
+    }
+
+    /**
      * Add a type name to the list of types
      *
      * @return null
      */
     public function addTypeName($type_name) {
-        $type_name_list[] = $type_name;
+        $this->type_name_list[] = $type_name;
 
         // Only allow unique elements
-        $type_name_list = array_unique($type_name_list);
+        $this->type_name_list =
+            array_filter(array_unique($this->type_name_list));
     }
 
     /**
@@ -384,7 +393,7 @@ class Type {
      * @return null
      */
     public function addType(Type $type) {
-        foreach ($type->type_name_list as $i => $type_name) {
+        foreach ($type->getTypeNameList() as $i => $type_name) {
             $this->addTypeName($type_name);
         }
     }
@@ -418,7 +427,7 @@ class Type {
      * True if this union type contains any types.
      */
     public function hasAnyType() : bool {
-        return empty($this->type_name_list);
+        return !empty($this->type_name_list);
     }
 
     /**
@@ -464,8 +473,13 @@ class Type {
         }
 
         // If either type is unknown, we can't call it
-        // a failure
+        // a success
         if(empty($type_name_source) || empty($type_name_target)) {
+            return true;
+        }
+
+        // TODO: Can we assume nulls cast to anything?
+        if('null' === $type_name_source || 'null' === $type_name_target) {
             return true;
         }
 
