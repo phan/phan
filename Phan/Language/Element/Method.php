@@ -425,6 +425,39 @@ class Method extends TypedStructuralElement {
     }
 
     /**
+     * @return int
+     * The number of optional parameters on this method
+     */
+    public function getNumberOfOptionalParameters() : int {
+    }
+
+    /**
+     * The number of optional parameters
+     *
+     * @return null
+     */
+    public function setNumberOfOptionalParameters(int $number) {
+        $this->number_of_optional_parameters = $number;
+    }
+
+    /**
+     * @return int
+     * The number of required parameters on this method
+     */
+    public function getNumberOfRequiredParametrs() : int {
+        return $this->number_of_required_parameters;
+    }
+    /**
+     *
+     * The number of required parameters
+     *
+     * @return null
+     */
+    public function setNumberOfRequiredParameters(int $number) {
+        $this->number_of_required_parameters = $number;
+    }
+
+    /**
      * @return Parameter[]
      * A list of parameters on the method
      */

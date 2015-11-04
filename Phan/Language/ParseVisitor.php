@@ -572,17 +572,54 @@ class ParseVisitor extends KindVisitorImplementation {
      */
     public function visitCall(Node $node) : Context {
         $found = false;
-        $call = $node->children[0];
-        if($call->kind == \ast\AST_NAME) {
-            $func_name = strtolower($call->children[0]);
-            if($func_name == 'func_get_args' || $func_name == 'func_get_arg' || $func_name == 'func_num_args') {
-                if(!empty($current_class)) {
-                    $classes[$lc]['methods'][strtolower($current_function)]['optional'] = 999999;
+        $call_node = $node->children[0];
+
+        if($call_node->kind == \ast\AST_NAME) {
+
+            $function_name = $call_node->children[0];
+
+            $method_fqsen =
+                $this->context->getScopeFQSEN()->withMethodName($function_name);
+
+            if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
+                $method_fqsen
+            )) {
+                // TODO: There are missing methods like 'apache_note'
+                //       that we'll want to do something with other
+                //       than ignoring.
+                // assert(false, "Method with FQSEN $method_fqsen not found.");
+                return $this->context;
+            }
+
+            // Get the current method in scope or fail real hard
+            // if we're in an impossible state
+            $method = $this->context->getCodeBase()->getMethodByFQSEN(
+                $method_fqsen
+            );
+
+            // if($func_name == 'func_get_args' || $func_name == 'func_get_arg' || $func_name == 'func_num_args') {
+            if (in_array($function_name, [
+                'func_get_args',
+                'func_get_arg',
+                'func_num_args'
+            ])) {
+
+                // TODO: We don't actually have to check the class
+                //       scope. Scoped methods can be method or
+                //       functions.
+
+                // if(!empty($current_class)) {
+                if ($this->context->isClassScope()) {
+                    $method->setNumberOfOptionalParameters(999999);
+                    // $classes[$lc]['methods'][strtolower($current_function)]['optional'] = 999999;
+
                 } else {
-                    $functions[strtolower($current_function)]['optional'] = 999999;
+                    $method->setNumberOfOptionalParameters(999999);
+                    // $functions[strtolower($current_function)]['optional'] = 999999;
                 }
             }
         }
+
         if(Configuration::instance()->bc_checks) {
             \Phan\Deprecated::bc_check(
                 $this->context->getFile(),
@@ -683,9 +720,16 @@ class ParseVisitor extends KindVisitorImplementation {
 
     /**
      * @return Clazz
-     * Get the class on this scope, or fail real hard
+     * Get the class on this scope or fail real hard
      */
     private function getContextClass() : Clazz {
         return $this->context->getClassInScope();
+    }
+
+    /**
+     * @return Method
+     * Get the method on this scope or fail real hard
+     */
+    private function getContextMethod() : Method {
     }
 }

@@ -16,11 +16,11 @@ set_include_path(get_include_path().PATH_SEPARATOR.CLASS_DIR);
 // Include the composer autoloader
 require_once(__DIR__.'/../vendor/autoload.php');
 
+/*
 use \Phan\Log;
 
 // Display all errors collected when shutting down
 register_shutdown_function(function () {
     Log::display();
 });
-
-
+*/

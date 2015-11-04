@@ -492,11 +492,11 @@ class Context {
 
     /**
      * @return Method
-     * Get the method in this scope, or fail real hard
+     * Get the method in this scope or fail real hard
      */
     public function getMethodInScope() : Method {
         assert($this->isMethodScope(),
-            "Must be in method scope to get class");
+            "Must be in method scope to get class. Actually in {$this}");
 
         return $this->getCodeBase()->getMethodByFQSEN(
             $this->getMethodFQSEN()

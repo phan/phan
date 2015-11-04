@@ -72,7 +72,6 @@ class CodeBase {
      * @return Clazz
      */
     public function getClassByFQSEN(FQSEN $fqsen) : Clazz {
-
         assert(isset($this->class_map[(string)$fqsen]),
             "Class with fqsen $fqsen not found");
 
@@ -92,8 +91,7 @@ class CodeBase {
      * A method to add to the code base
      */
     public function addMethod(Method $method) {
-        $this->method_map[$method->getFQSEN()->__tostring()] =
-            $method;
+        $this->method_map[(string)$method->getFQSEN()] = $method;
     }
 
     /**
@@ -102,6 +100,14 @@ class CodeBase {
      */
     public function hasMethodWithFQSEN(FQSEN $fqsen) : bool {
         return !empty($this->method_map[(string)$fqsen]);
+    }
+
+    /**
+     * @return Method
+     * Get the method with the given FQSEN
+     */
+    public function getMethodByFQSEN(FQSEN $fqsen) : Method {
+        return $this->method_map[(string)$fqsen];
     }
 
     /**
@@ -121,7 +127,7 @@ class CodeBase {
     private function addFunctionsByNames($function_name_list) {
         foreach ($function_name_list as $i => $function_name) {
             $method = Method::fromFunctionName($this, $function_name);
-            $this->method_map[$function_name] = $method;
+            $this->addMethod($method);
         }
     }
 

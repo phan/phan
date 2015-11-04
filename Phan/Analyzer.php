@@ -156,10 +156,12 @@ class Analyzer {
                 $child_context->getNamespace()
             );
 
+            /*
             // Stop parsing once we get into a method
             if ($context->isMethodScope()) {
                 break;
             }
+             */
         }
 
         // Pass the context back up to our parent
