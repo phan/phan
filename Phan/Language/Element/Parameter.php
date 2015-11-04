@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\Debug;
 use \Phan\Language\Context;
 use \Phan\Language\Type;
 use \Phan\Log;
@@ -131,15 +132,15 @@ class Parameter extends TypedStructuralElement {
             $parameter =
                 Parameter::fromNode($context, $child_node);
 
-            if ($parameter->isOptional()) {
-                $is_optional_seen = true;
-            } else if ($is_optional_seen) {
+            if (!$parameter->isOptional() && $is_optional_seen) {
                 Log::err(
                     Log::EPARAM,
                     "required arg follows optional",
                     $context->getFile(),
                     $child_node->lineno
                 );
+            } else if ($parameter->isOptional()) {
+                $is_optional_seen = true;
             }
 
             $parameter_list[] = $parameter;
@@ -178,7 +179,7 @@ class Parameter extends TypedStructuralElement {
         );
 
         // If there is a default value, store it and its type
-        if ($node->children[2] != null) {
+        if ($node->children[2] !== null) {
             // Set the node as the value
             $parameter->setDefaultValue($node->children[2]);
 
@@ -199,14 +200,9 @@ class Parameter extends TypedStructuralElement {
      * True if this is an optional parameter
      */
     public function isOptional() : bool {
-        if (!$this->hasDefaultValueType()) {
-            return false;
-        }
-
-        $type = $this->getDefaultValueType();
-
         return (
-            'null' === (string)$type
+            $this->hasDefaultValueType()
+            || $this->hasDefaultValue()
         );
     }
 
