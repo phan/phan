@@ -68,7 +68,7 @@ class TypeTest extends \PHPUnit_Framework_TestCase {
     }
     public function testInternalObject() {
         $this->assertTypeStringEqual(
-            'new SplStack();', 'SplStack'
+            'new SplStack();', 'splstack'
         );
     }
 

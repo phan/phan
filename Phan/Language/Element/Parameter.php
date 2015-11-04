@@ -137,7 +137,8 @@ class Parameter extends TypedStructuralElement {
                     Log::EPARAM,
                     "required arg follows optional",
                     $context->getFile(),
-                    $child_node->lineno
+                    // TODO: switch to $child_node->lineno
+                    $node->lineno
                 );
             } else if ($parameter->isOptional()) {
                 $is_optional_seen = true;

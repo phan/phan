@@ -309,7 +309,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         // Climb the parent tree to find the definition of the
         // constant
         while(!$defining_clazz->hasConstantWithName($constant_name)) {
-
             // Make sure the class has a parent
             if (!$defining_clazz->hasParentClassFQSEN()) {
                 return Type::none();
@@ -328,7 +327,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         }
 
         if (!$defining_clazz
-            || $defining_clazz->hasConstantWithName($constant_name)
+            || !$defining_clazz->hasConstantWithName($constant_name)
         ) {
             Log::err(
                 Log::EUNDEF,

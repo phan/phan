@@ -45,4 +45,8 @@ class Constant extends TypedStructuralElement {
             $flags
         );
     }
+
+    public function __toString() : string {
+        return 'const ' . $this->getName();
+    }
 }

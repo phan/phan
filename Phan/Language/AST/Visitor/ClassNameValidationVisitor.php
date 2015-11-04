@@ -157,6 +157,7 @@ class ClassNameValidationVisitor
                     $this->context->getFile(),
                     $node->lineno
                 );
+                assert(false, "nope");
                 return false;
             }
         }

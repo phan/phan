@@ -57,22 +57,20 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
 
                 if($class_name == 'static') {
                     $class_name =
-                        (string)$this->context->getClassFQSEN();
+                        (string)$this->context->getClassFQSEN()->getClassName();
                 } else if($class_name == 'self') {
                     // TODO
                     if ($this->context->isGlobalScope()) {
                         list($class_name,) = explode('::', $current_scope);
                     } else {
                         $class_name =
-                            (string)$this->context->getClassFQSEN();
-                        // $class_name = $current_class['name'];
+                            (string)$this->context->getClassFQSEN()->getClassName();
                     }
                 } else if($class_name == 'parent') {
                     $clazz =
                         $this->context->getClassInScope();
 
                     $class_name = (string)$clazz->getParentClassFQSEN();
-                    // $class_name = $current_class['parent'];
                 }
 
                 // TODO

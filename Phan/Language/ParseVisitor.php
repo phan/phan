@@ -470,20 +470,20 @@ class ParseVisitor extends KindVisitorImplementation {
         $clazz = $this->getContextClass();
 
         foreach($node->children as $node) {
-            $clazz->addConstant(
-                new Constant(
-                    $this->context
-                        ->withLineNumberStart($node->lineno ?? 0)
-                        ->withLineNumberEnd($node->endLineno ?? 0),
-                    Comment::fromString($node->docComment ?? ''),
-                    $node->children[0],
-                    Type::typeFromNode(
-                        $this->context,
-                        $node->children[1]
-                    ),
-                    $node->flags ?? 0
-                )
+            $constant = new Constant(
+                $this->context
+                    ->withLineNumberStart($node->lineno ?? 0)
+                    ->withLineNumberEnd($node->endLineno ?? 0),
+                Comment::fromString($node->docComment ?? ''),
+                $node->children[0],
+                Type::typeFromNode(
+                    $this->context,
+                    $node->children[1]
+                ),
+                $node->flags ?? 0
             );
+
+            $clazz->addConstant($constant);
         }
 
         return $this->context;

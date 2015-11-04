@@ -300,7 +300,7 @@ class Clazz extends TypedStructuralElement {
      * The class constant with the given name.
      */
     public function getConstantWithName(string $name) : Constant {
-        return $this->constant_map[$constant->getName()];
+        return $this->constant_map[$name];
     }
 
     /**

@@ -124,7 +124,6 @@ class Comment {
                         $type = $match[1];
                     }
 
-
                     $variable_list[] = new CommentParameter(
                         empty($match[2])?'':trim($match[2],'$'),
                         Type::typeFromString($type),

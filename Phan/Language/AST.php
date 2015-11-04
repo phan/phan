@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\Visitor\ClassNameKindVisitor;
 use \Phan\Language\AST\Visitor\ClassNameValidationVisitor;
@@ -26,7 +27,6 @@ trait AST {
         Context $context,
         $node
     ) : string {
-
         // Extract the class name
         $class_name = (new Element($node))->acceptKindVisitor(
             new ClassNameKindVisitor($context)
