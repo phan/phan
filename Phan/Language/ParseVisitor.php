@@ -342,15 +342,7 @@ class ParseVisitor extends KindVisitorImplementation {
         }
 
         $method =
-            new Method(
-                $this->context
-                    ->withLineNumberStart($node->lineno ?: 0)
-                    ->withLineNumberEnd($node->endLineno ?? -1),
-                Comment::fromString($node->docComment ?: ''),
-                $method_name,
-                Type::none(),
-                0 // flags
-            );
+            Method::fromNode($this->context, $node);
 
         // Override the FQSEN with the found alternate ID
         $method->setFQSEN($method_fqsen);

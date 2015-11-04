@@ -4,6 +4,7 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
 use \Phan\Language\Type;
+use \Phan\Log;
 use \ast\Node;
 
 class Parameter extends TypedStructuralElement {
@@ -114,6 +115,9 @@ class Parameter extends TypedStructuralElement {
     /**
      * @return Parameter[]
      * A list of parameters from an AST node.
+     *
+     * @see \Phan\Deprecated\Pass1::node_paramlist
+     * Formerly `function node_paramlist`
      */
     public static function listFromNode(
         Context $context,
@@ -121,13 +125,35 @@ class Parameter extends TypedStructuralElement {
     ) : array {
         assert($node instanceof Node, "node was not an \\ast\\Node");
 
-        return array_map(function(Node $child) use ($context) {
-            return Parameter::fromNode($context, $child);
-        }, $node->children);
+        $parameter_list = [];
+        $is_optional_seen = false;
+        foreach ($node->children as $i => $child_node) {
+            $parameter =
+                Parameter::fromNode($context, $child_node);
+
+            if ($parameter->isOptional()) {
+                $is_optional_seen = true;
+            } else if ($is_optional_seen) {
+                Log::err(
+                    Log::EPARAM,
+                    "required arg follows optional",
+                    $context->getFile(),
+                    $child_node->lineno
+                );
+            }
+
+            $parameter_list[] = $parameter;
+        }
+
+        return $parameter_list;
     }
 
     /**
+     * @return Parameter
+     * A parameter built from a node
      *
+     * @see \Phan\Deprecated\Pass1::node_param
+     * Formerly `function node_param`
      */
     public static function fromNode(
         Context $context,
@@ -166,6 +192,22 @@ class Parameter extends TypedStructuralElement {
         }
 
         return $parameter;
+    }
+
+    /**
+     * @return bool
+     * True if this is an optional parameter
+     */
+    public function isOptional() : bool {
+        if (!$this->hasDefaultValueType()) {
+            return false;
+        }
+
+        $type = $this->getDefaultValueType();
+
+        return (
+            'null' === (string)$type
+        );
     }
 
 }
