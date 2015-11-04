@@ -18,13 +18,13 @@ class Comment {
 
     /**
      * @var CommentParameter[]
-     * A list of CommentParameters from @var declarations
+     * A list of CommentParameters from var declarations
      */
     private $variable_list = [];
 
     /**
      * @var CommentParameter[]
-     * A list of CommentParameters from @param declarations
+     * A list of CommentParameters from param declarations
      */
     private $parameter_list = [];
 

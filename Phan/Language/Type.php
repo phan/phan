@@ -362,7 +362,7 @@ class Type {
         return str_replace(
             $repmaps[0],
             $repmaps[1],
-            $type_name
+            strtolower($type_name)
         );
     }
 
@@ -500,11 +500,15 @@ class Type {
 
         // our own union types
         foreach($this->type_name_list as $s) {
+            $s_type = Type::typeFromString($s);
+
             if(empty($s)) {
                 continue;
             }
 
             foreach($type_target->type_name_list as $d) {
+                $d_type = Type::typeFromString($d);
+
                 if(empty($d)) {
                     continue;
                 }
@@ -541,14 +545,14 @@ class Type {
                     return true;
                 }
                 if($s === 'object'
-                    && !type_scalar($d)
+                    && !$d_type->isScalar()
                     && $d!=='array'
                 ) {
                     return true;
                 }
 
                 if($d === 'object' &&
-                    !type_scalar($s)
+                    !$s_type->isScalar()
                     && $s!=='array'
                 ) {
                     return true;
@@ -597,6 +601,36 @@ class Type {
         }
 
         return false;
+    }
+
+    /**
+     * @return bool
+     * True if all types in this union are scalars
+     *
+     * @see \Phan\Deprecated\Util::type_scalar
+     * Formerly `function type_scalar`
+     */
+    public function isScalar() : bool {
+        static $native_scalar_type_list = [
+                'int',
+                'float',
+                'bool',
+                'true',
+                'string',
+                'null'
+        ];
+
+        if (!$this->hasAnyType() || 'mixed' === (string)$this) {
+            return false;
+        }
+
+        foreach ($this->type_name_list as $type_name) {
+            if (!in_array($type_name, $native_scalar_type_list)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }
