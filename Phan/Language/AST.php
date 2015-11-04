@@ -47,6 +47,10 @@ trait AST {
     }
 
     /**
+     * Get a list of fully qualified names from a node
+     *
+     * @return string[]
+     *
      * @see \Phan\Deprecated\node_namelist
      * Formerly `function node_namelist`
      */
@@ -64,6 +68,8 @@ trait AST {
     }
 
     /**
+     * Get a fully qualified name form a node
+     *
      * @return string
      *
      * @see \Phan\Deprecated\Util::qualified_name
@@ -73,8 +79,6 @@ trait AST {
         Context $context,
         $node
     ) : string {
-        // global $namespace_map;
-
         if(!($node instanceof \ast\Node)
             && $node->kind != \ast\AST_NAME
         ) {
@@ -83,7 +87,6 @@ trait AST {
 
         $name = $node->children[0];
 
-        // $lname = strtolower($name);
         $type = new Type([$name]);
 
         if($node->flags & \ast\flags\NAME_NOT_FQ) {
@@ -117,10 +120,9 @@ trait AST {
             }
 
             // No aliasing, just prepend the namespace
-            return $context->getNamespace().$name;
+            return $context->getNamespace() . '\\' . $name;
         } else {
-            // It is already fully qualified, just return it
-            return (string)$type;
+            return $name;
         }
     }
 
@@ -141,18 +143,16 @@ trait AST {
         Context $context,
         $node
     ) : Type {
-        // global $scope, $tainted_by;
 
         // Check for $$var or ${...} (whose idea was that anyway?)
         if(($node->children[0] instanceof Node)
             && ($node->children[0]->kind == \ast\AST_VAR
                 || $node->children[0]->kind == \ast\AST_BINARY_OP)
         ) {
-            return new Type('mixed');
+            return new Type(['mixed']);
         }
 
         if($node->children[0] instanceof Node) {
-            // stuff like ${"abc_{$baz}_def"} ends up here
             return Type::none();
         }
 

@@ -237,6 +237,13 @@ class Clazz extends TypedStructuralElement {
      */
     public function setParentClassFQSEN(FQSEN $fqsen) {
         $this->parent_class_fqsen = $fqsen;
+
+        // Add the parent to the union type of this
+        // class
+        $this->getType()->addType(
+            Type::typeFromString((string)$fqsen)
+        );
+
     }
 
     /**
@@ -253,6 +260,31 @@ class Clazz extends TypedStructuralElement {
      */
     public function getParentClassFQSEN() : FQSEN {
         return $this->parent_class_fqsen;
+    }
+
+    /**
+     * @param FQSEN $fqsen
+     * Add the given FQSEN to the list of implemented
+     * interfaces for this class
+     *
+     * @return null
+     */
+    public function addInterfaceClassFQSEN(FQSEN $fqsen) {
+        $this->interface_fqsen_list[] = $fqsen;
+
+        // Add the interface to the union type of this
+        // class
+        $this->getType()->addType(
+            Type::typeFromString((string)$fqsen)
+        );
+    }
+
+    /**
+     * @return FQSEN[]
+     * Get the list of interfaces implemented by this class
+     */
+    public function getInterfaceClassFQSENList() : array {
+        return $this->interface_fqsen_list;
     }
 
     /**
@@ -332,6 +364,14 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
+     * @return FQSEN[]
+     * A list of FQSEN's for included traits
+     */
+    public function getTraitFQSENList() : array {
+        return $this->trait_fqsen_list;
+    }
+
+    /**
      * @return bool
      * True if this class calls its parent constructor
      */
@@ -374,5 +414,4 @@ class Clazz extends TypedStructuralElement {
         return parent::getFQSEN()
             ->withClassName($this->getName());
     }
-
 }

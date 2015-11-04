@@ -69,6 +69,14 @@ class CodeBase {
     }
 
     /**
+     * Get a map from FQSEN strings to the class it
+     * represents for all known classes.
+     */
+    public function getClassMap() : array {
+        return $this->class_map;
+    }
+
+    /**
      * @return Clazz
      */
     public function getClassByFQSEN(FQSEN $fqsen) : Clazz {
@@ -84,6 +92,14 @@ class CodeBase {
      */
     public function hasClassWithFQSEN(FQSEN $fqsen) : bool {
         return !empty($this->class_map[$fqsen->__toString()]);
+    }
+
+    /**
+     * Get a map from FQSEN strings to the method it
+     * represents for all known methods.
+     */
+    public function getMethodMap() : array {
+        return $this->method_map;
     }
 
     /**

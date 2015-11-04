@@ -6,6 +6,7 @@ use \Phan\Configuration;
 use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\Context;
+use \Phan\Language\FQSEN;
 use \Phan\Language\ParseVisitor;
 use \ast\Node;
 
@@ -13,6 +14,9 @@ use \ast\Node;
  * This class is the entry point into the static analyzer.
  */
 class Analyzer {
+    use \Phan\Analyze\DuplicateClass;
+    use \Phan\Analyze\ParentClassExists;
+    use \Phan\Analyze\ParentConstructorCalled;
 
     public function __construct() {
     }
@@ -44,6 +48,16 @@ class Analyzer {
         foreach ($file_path_list as $file_path) {
             $this->parseFile($code_base, $file_path);
         }
+
+        // Take a pass over all classes verifying various
+        // states now that we have the whole state in
+        // memory
+        $this->analyzeClasses($code_base);
+
+        // Take a pass over all functions verifying
+        // various states now that we have the whole
+        // state in memory
+        $this->analyzeFunctions($code_base);
 
         // Once we know what the universe looks like we
         // can scan for more complicated issues.
@@ -166,6 +180,29 @@ class Analyzer {
 
         // Pass the context back up to our parent
         return $context;
+    }
+
+    /**
+     * Take a pass over all classes verifying various
+     * states.
+     *
+     * @return null
+     */
+    private function analyzeClasses(CodeBase $code_base) {
+        foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
+            self::analyzeDuplicateClass($code_base, $clazz);
+            self::analyzeParentClassExists($code_base, $clazz);
+            self::analyzeParentConstructorCalled($code_base, $clazz);
+        }
+    }
+
+    /**
+     * Take a pass over all functions verifying various
+     * states.
+     *
+     * @return null
+     */
+    private function analyzeFunctions(CodeBase $code_base) {
     }
 
     /**

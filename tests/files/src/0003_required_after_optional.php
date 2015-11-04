@@ -15,5 +15,4 @@ class A {
 
     public function delta($a, $b = null, $c = '') {
     }
-
 }

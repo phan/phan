@@ -78,4 +78,14 @@ class StructuralElement {
     public function setIsDeprecated(bool $is_deprecated) {
         $this->is_deprecated = $is_deprecated;
     }
+
+
+    /**
+     * @return bool
+     * True if this was an internal PHP object
+     */
+    public function isInternal() : bool {
+        return 'internal' === $this->getContext()->getFile();
+    }
+
 }

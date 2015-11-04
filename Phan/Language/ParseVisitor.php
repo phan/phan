@@ -252,9 +252,10 @@ class ParseVisitor extends KindVisitorImplementation {
             $parent_class_name =
                 $node->children[0]->children[0];
 
+            // Check to see if the name isn't fully qualified
             if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-                if(($pos = strpos($parent_class_name,'\\')) !== false) {
-
+                // check to see if we have a '\' anywhere in there
+                if(($pos = strpos($parent_class_name, '\\')) !== false) {
                     if ($this->context->hasNamespaceMapFor(
                         T_CLASS,
                         substr($parent_class_name, 0, $pos)
@@ -266,15 +267,20 @@ class ParseVisitor extends KindVisitorImplementation {
                             );
                     }
                 }
+            } else {
+                // The name is fully qualified. Make sure it looks
+                // like it is
+                if(0 !== strpos($parent_class_name, '\\')) {
+                    $parent_class_name = '\\' . $parent_class_name;
+                }
             }
 
+            $parent_fqsen =
+                $this->context->getScopeFQSEN()
+                ->withClassName($parent_class_name);
+
             // Set the parent for the class
-            $clazz->setParentClassFQSEN(
-                FQSEN::fromContextAndString(
-                    $this->context,
-                    $parent_class_name
-                )
-            );
+            $clazz->setParentClassFQSEN($parent_fqsen);
         }
 
         // Update the context to signal that we're now
@@ -300,19 +306,21 @@ class ParseVisitor extends KindVisitorImplementation {
         // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
-        $trait_name_list =
+        $trait_fqsen_string_list =
             static::astQualifiedNameList(
                 $this->context,
                 $node->children[0]
             );
 
         // Add each trait to the class
-        foreach ($trait_name_list as $trait_name) {
-            $clazz->addTraitFQSEN(
-                FQSEN::fromContext(
-                    $this->context
-                )->withClassName($trait_name)
-            );
+        foreach ($trait_fqsen_string_list as $trait_fqsen_string) {
+            $trait_fqsen =
+                FQSEN::fromContextAndString(
+                    $clazz->getContext(),
+                    $trait_fqsen_string
+                );
+
+            $clazz->addTraitFQSEN($trait_fqsen);
         }
 
         $this->context->getCodeBase()->incrementTraits();

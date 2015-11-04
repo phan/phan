@@ -73,7 +73,7 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
 
             // Run the analyzer
             (new Analyzer())->analyze(
-                $this->code_base,
+                clone($this->code_base),
                 [$test_file_path]
             );
 

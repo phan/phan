@@ -197,7 +197,23 @@ class FQSEN {
      */
     public function withClassName(string $class_name) : FQSEN {
         $fqsen = clone($this);
+
+        // Check to see if this is a qualified class name
+        if(0 === strpos($class_name, '\\')) {
+            $fq_class_name_elements =
+                array_filter(explode('\\', $class_name));
+
+            $class_name =
+                array_pop($fq_class_name_elements);
+
+            $namespace =
+                '\\' . implode('\\', $fq_class_name_elements);
+
+            $fqsen = $fqsen->withNamespace($namespace);
+        }
+
         $fqsen->class_name = $class_name;
+
         return $fqsen;
     }
 
