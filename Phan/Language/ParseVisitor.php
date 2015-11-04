@@ -149,7 +149,7 @@ class ParseVisitor extends KindVisitorImplementation {
             && ($node->children[0]->children[0]->kind == \ast\AST_VAR)
             && ($node->children[0]->children[1]->kind == \ast\AST_VAR)
         ) {
-            $ftemp = new \SplFileObject($file);
+            $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
             unset($ftemp);
@@ -159,7 +159,7 @@ class ParseVisitor extends KindVisitorImplementation {
                 Log::err(
                     Log::ECOMPAT,
                     "expression may not be PHP 7 compatible",
-                    $file,
+                    $this->context->getFile(),
                     $node->lineno
                 );
             }
@@ -238,6 +238,9 @@ class ParseVisitor extends KindVisitorImplementation {
             new Type([$node->name]),
             $node->flags
         );
+
+        // Override the FQSEN with the found alternate ID
+        $clazz->setFQSEN($class_fqsen);
 
         // Add the class to the code base as a globally
         // accessible object
@@ -349,6 +352,9 @@ class ParseVisitor extends KindVisitorImplementation {
                 0 // flags
             );
 
+        // Override the FQSEN with the found alternate ID
+        $method->setFQSEN($method_fqsen);
+
         $clazz->addMethod($method);
         $this->context->getCodeBase()->incrementMethods();
 
@@ -430,11 +436,14 @@ class ParseVisitor extends KindVisitorImplementation {
             // Look for any @var declarations
             foreach ($comment->getVariableList() as $i => $variable) {
                 if ((string)$type != 'null'
-                    && !$type->canCastToTypeInContext($variable->getType())
+                    && !$type->canCastToTypeInContext(
+                        $variable->getType(),
+                        $this->context
+                    )
                 ) {
                     Log::err(Log::ETYPE,
                         "property is declared to be {$variable->getType()} but was assigned $type",
-                        $context->getFile(),
+                        $this->context->getFile(),
                         $node->lineno
                     );
                 }
@@ -677,15 +686,6 @@ class ParseVisitor extends KindVisitorImplementation {
      * Get the class on this scope, or fail real hard
      */
     private function getContextClass() : Clazz {
-        assert($this->context->hasClassFQSEN(),
-            "Must be in class context to use a trait");
-
-        $class_fqsen = $this->context->getClassFQSEN();
-
-        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
-            $class_fqsen
-        );
-
-        return $clazz;
+        return $this->context->getClassInScope();
     }
 }

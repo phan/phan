@@ -32,6 +32,12 @@ class TypedStructuralElement extends StructuralElement {
     private $flags = 0;
 
     /**
+     * @var FQSEN
+     * The fully-qualified structural element name
+     */
+    private $fqsen = null;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -81,6 +87,12 @@ class TypedStructuralElement extends StructuralElement {
      * structural element
      */
     public function getFQSEN() : FQSEN {
+        // Get the stored FQSEN if it exists
+        if ($this->fqsen) {
+            return $this->fqsen;
+        }
+
+        // else generate it
         return FQSEN::fromContext(
             $this->getContext()
         );
@@ -92,7 +104,18 @@ class TypedStructuralElement extends StructuralElement {
      * element name of this structural element.
      */
     public function getFQSENString() : string {
-        return $this->getFQSEN()->__toString();
+        return (string)$this->getFQSEN();
+    }
+
+    /**
+     * @param FQSEN $fqsen
+     * A fully qualified structural element name to set on
+     * this element
+     *
+     * @return null
+     */
+    public function setFQSEN(FQSEN $fqsen) {
+        $this->fqsen = $fqsen;
     }
 
     /**

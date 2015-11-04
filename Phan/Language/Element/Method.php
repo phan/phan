@@ -8,6 +8,7 @@ use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
+use \Phan\Log;
 use \ast\Node;
 
 class Method extends TypedStructuralElement {
@@ -52,7 +53,7 @@ class Method extends TypedStructuralElement {
      * ast\kind_uses_flags() can be used to determine whether
      * a certain kind has a meaningful flags value.
      *
-     * @param int $number_of_required_paramters
+     * @param int $number_of_required_parameters
      *
      * @param int $number_of_optional_parameters
      */
@@ -400,7 +401,7 @@ class Method extends TypedStructuralElement {
                     )) {
                         Log::err(
                             Log::ETYPE,
-                            "Default value for {$default_type} \${$paramter->getName()} can't be {$parameter->getType()}",
+                            "Default value for {$default_type} \${$parameter->getName()} can't be {$parameter->getType()}",
                             $context->getFile(),
                             $node->lineno
                         );
@@ -435,9 +436,8 @@ class Method extends TypedStructuralElement {
      * @return FQSEN
      */
     public function getFQSEN() : FQSEN {
-        return FQSEN::fromContext(
-            $this->getContext()
-        )->withMethodName($this->getName());
+        return parent::getFQSEN()
+            ->withMethodName($this->getName());
     }
 
 }

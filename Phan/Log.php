@@ -75,17 +75,33 @@ class Log {
 		$log->output_mask = $mask;
 	}
 
-	public static function err(int $etype, string $msg, string $file='', int $lineno=0) {
+    public static function err(
+        int $etype,
+        string $msg,
+        string $file = '',
+        int $lineno = 0
+    ) {
 		$log = self::getInstance();
+
 		if($etype == self::EFATAL) {
 			self::display();
 			// Something went wrong - abort
-			if($file) die("$file:$lineno $msg\n");
-			else die($msg."\n");
+            if($file) {
+                die("$file:$lineno $msg\n");
+            }
+            else {
+                die($msg."\n");
+            }
 		}
+
 		if($etype & $log->output_mask) {
 			$ukey = md5($file.$lineno.$etype.$msg);
-			$log->msgs[$ukey] = ['file'=>$file, 'lineno' => $lineno, 'etype'=>$etype, 'msg' => $msg];
+            $log->msgs[$ukey] = [
+                'file' => $file,
+                'lineno' => $lineno,
+                'etype' => $etype,
+                'msg' => $msg
+            ];
 		}
 	}
 
@@ -97,8 +113,19 @@ class Log {
 	public static function display(array $summary=[]) {
 		$log = self::getInstance();
 		$out = '';
-		if(!empty($log->output_filename)) $fp = fopen($log->output_filename, "w");
-		else $fp = fopen("php://stdout","w");
+
+        $print_closure = function($message) {
+            print $message;
+        };
+
+        $fp = null;
+        if(!empty($log->output_filename)) {
+            $fp = fopen($log->output_filename, "w");
+            $print_closure = function($message) use ($fp) {
+                fputs($fp, $message);
+            };
+        }
+
 		switch($log->output_mode) {
 			case 'verbose':
 				if(!empty($summary)) {
@@ -112,21 +139,23 @@ class Log {
 					$out .= "Traits:		{$summary['traits']}\n";
 					$out .= "Conditionals:	{$summary['conditionals']}\n";
 					$out .= "Issues found:	".count($log->msgs)."\n\n";
-					fputs($fp, $out);
+                    $print_closure($out);
 				}
 				// Fall-through
 			case 'short':
 				foreach($log->msgs as $e) {
-					fputs($fp, "{$e['file']}:{$e['lineno']} ".self::ERRS[$e['etype']]." {$e['msg']}\n");
+					$print_closure("{$e['file']}:{$e['lineno']} ".self::ERRS[$e['etype']]." {$e['msg']}\n");
 				}
 				break;
 			// TODO: json and csv
 		}
-		fclose($fp);
+        if ($fp) {
+            fclose($fp);
+        }
 	}
 }
 
-set_error_handler('\\phan\\Log::errorHandler',-1);
+set_error_handler('\\phan\\Log::errorHandler', -1);
 /*
  * Local variables:
  * tab-width: 4

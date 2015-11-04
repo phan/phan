@@ -72,7 +72,11 @@ class CodeBase {
      * @return Clazz
      */
     public function getClassByFQSEN(FQSEN $fqsen) : Clazz {
-        return $this->class_map[$fqsen->__toString()];
+
+        assert(isset($this->class_map[(string)$fqsen]),
+            "Class with fqsen $fqsen not found");
+
+        return $this->class_map[(string)$fqsen];
     }
 
     /**

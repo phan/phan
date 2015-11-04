@@ -254,16 +254,21 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 ]);
             }
             else {
-                // Todo: user-defined constant
+                // TODO: user-defined constant
+                return Type::none();
             }
         }
+
+        return Type::none();
     }
 
     /**
      * Visit a node with kind `\ast\AST_CLASS_CONST`
      */
     public function visitClassConst(Node $node) : Type {
-        if($node->children[1] == 'class') {
+        $constant_name = $node->children[1];
+
+        if($constant_name == 'class') {
             return new Type(['string']); // class name fetch
         }
 
@@ -271,37 +276,71 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $this->astClassNameFromNode($this->context, $node);
 
         if(!$class_name) {
+            Log::err(
+                Log::EUNDEF,
+                "Can't access undeclared constant {$class_name}::{$constant_name}",
+                $this->context->getFile(),
+                $node->lineno
+            );
+
             return Type::none();
         }
-        $ltemp = strtolower($class_name);
-        while($ltemp
-            && !array_key_exists($node->children[1],
-                // TODO
-                $classes[$ltemp]['constants'])
-        ) {
-            // TODO
-            $ltemp = strtolower($classes[$ltemp]['parent']);
-            // TODO
-            if(empty($classes[$ltemp])) {
-                // undeclared class - will be caught elsewhere
+
+        $class_fqsen =
+            $this->context->getScopeFQSEN()->withClassName($class_name);
+
+        // Make sure the class exists
+        if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+            Log::err(
+                Log::EUNDEF,
+                "Can't access undeclared constant {$class_name}::{$constant_name}",
+                $this->context->getFile(),
+                $node->lineno
+            );
+
+            return Type::none();
+        }
+
+        // Get a reference to the class defining the constant
+        $defining_clazz =
+            $this->context->getCodeBase()->getClassByFQSEN($class_fqsen);
+
+        // Climb the parent tree to find the definition of the
+        // constant
+        while(!$defining_clazz->hasConstantWithName($constant_name)) {
+
+            // Make sure the class has a parent
+            if (!$defining_clazz->hasParentClassFQSEN()) {
                 return Type::none();
             }
+
+            // Make sure that parent exists
+            if (!$this->context->getCodeBase()->hasClassWithFQSEN(
+                $defining_clazz->getParentClassFQSEN()
+            )) {
+                return Type::none();
+            }
+
+            // Climb to that parent
+            $defining_clazz = $this->context->getCodeBase()
+                ->getClassByFQSEN($defining_clazz->getParentClassFQSEN());
         }
-        if(!$ltemp
-            || !array_key_exists($node->children[1],
-                // TODO
-                $classes[$ltemp]['constants'])
+
+        if (!$defining_clazz
+            || $defining_clazz->hasConstantWithName($constant_name)
         ) {
             Log::err(
                 Log::EUNDEF,
-                "can't access undeclared constant {$class_name}::{$node->children[1]}",
+                "Can't access undeclared constant {$class_name}::{$constant_name}",
                 $this->context->getFile(),
                 $node->lineno
             );
             return Type::none();
         }
-        // TODO
-        return $classes[$ltemp]['constants'][$node->children[1]]['type'];
+
+        return $defining_clazz
+            ->getConstantWithName($constant_name)
+            ->getType();
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Phan\Language;
 use \Phan\CodeBase;
 use \Phan\Language\Context\Scope;
 use \Phan\Language\Element\Clazz;
+use \Phan\Log;
 
 /**
  * An object representing the context in which any
@@ -453,10 +454,53 @@ class Context {
 
     /**
      * @return bool
+     * True if we're currently within a class scope
+     */
+    public function isClassScope() : bool {
+        return $this->hasClassFQSEN();
+    }
+
+    /**
+     * @return Clazz
+     * Get the class in this scope, or fail real hard
+     */
+    public function getClassInScope() : Clazz {
+        assert($this->isClassScope(),
+            "Must be in class scope to get class");
+
+        if (!$this->getCodeBase()->hasClassWithFQSEN($this->getClassFQSEN())) {
+            Log::err(
+                Log::EFATAL,
+                "Cannot find class with FQSEN {$this->getClassFQSEN()} in context {$this}",
+                $this->getFile(),
+                0
+            );
+        }
+
+        return $this->getCodeBase()->getClassByFQSEN(
+            $this->getClassFQSEN()
+        );
+    }
+
+    /**
+     * @return bool
      * True if we're within a method scope
      */
     public function isMethodScope() : bool {
         return !empty($this->method_fqsen);
+    }
+
+    /**
+     * @return Method
+     * Get the method in this scope, or fail real hard
+     */
+    public function getMethodInScope() : Method {
+        assert($this->isMethodScope(),
+            "Must be in method scope to get class");
+
+        return $this->getCodeBase()->getMethodByFQSEN(
+            $this->getMethodFQSEN()
+        );
     }
 
     /**

@@ -68,16 +68,7 @@ class ClassNameValidationVisitor
 
     public function visitNew(Node $node) : bool {
         if (!$this->classExists()) {
-            if(!is_native_type(type_map($this->class_name))) {
-                Log::err(
-                    Log::EUNDEF,
-                    "Trying to instantiate undeclared class {$this->class_name}",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-                return false;
-            }
-            return true;
+            return $this->classExistsOrIsNative($node);
         }
 
         $clazz =
@@ -86,7 +77,7 @@ class ClassNameValidationVisitor
             );
 
         if ($clazz->isAbstract()) {
-            if(!is_native_type(type_map($this->class_name))) {
+            if (!Type::typeFromString($this->class_name)::isNativeType()) {
                 if ($this->context->isGlobalScope()) {
                     // TODO: ?
                     list($scope_class,) = explode('::', $current_scope);
@@ -112,7 +103,7 @@ class ClassNameValidationVisitor
         }
 
         if ($clazz->isInterface()) {
-            if(!is_native_type(type_map($this->class_name))) {
+            if (!Type::typeFromString($this->class_name)::isNativeType()) {
                 Log::err(
                     Log::ETYPE,
                     "Cannot instantiate interface {$this->class_name}",
@@ -127,40 +118,39 @@ class ClassNameValidationVisitor
     }
 
     public function visitInstanceOf(Node $node) : bool {
-        if (!$this->classExists()) {
-            if(!is_native_type(type_map($this->class_name))) {
-                Log::err(
-                    Log::EUNDEF,
-                    "instanceof called on undeclared class {$this->class_name}",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-                return false;
-            }
-        }
-
-        return true;
+        return $this->classExistsOrIsNative($node);
     }
 
     public function visitClassConst(Node $node) : bool {
-        if (!$this->classExists()) {
-            if(!is_native_type(type_map($this->class_name))) {
-                Log::err(
-                    Log::EUNDEF,
-                    "can't access constant from undeclared class {$this->class_name}",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-                return false;
-            }
-        }
-
-        return true;
+        return $this->classExistsOrIsNative($node);
     }
 
     public function visitStaticCall(Node $node) : bool {
+        return $this->classExistsOrIsNative($node);
+    }
+
+    public function visitMethodCall(Node $node) : bool {
+        return $this->classExistsOrIsNative($node);
+    }
+
+    public function visitProp(Node $node) : bool {
+        return $this->classExistsOrIsNative($node);
+    }
+
+    private function classExists() : bool {
+        return
+            $this->context->getCodeBase()->hasClassWithFQSEN(
+                $this->class_fqsen
+            );
+    }
+
+    /**
+     * @return bool
+     * False if the class name doesn't point to a known class
+     */
+    private function classExistsOrIsNative(Node $node) : bool {
         if (!$this->classExists()) {
-            if(!is_native_type(type_map($this->class_name))) {
+            if (!Type::typeFromString($this->class_name)->isNativeType()) {
                 Log::err(
                     Log::EUNDEF,
                     "static call to undeclared class {$this->class_name}",
@@ -172,49 +162,6 @@ class ClassNameValidationVisitor
         }
 
         return true;
-    }
-
-    public function visitMethodCall(Node $node) : bool {
-        if (!$this->classExists()) {
-            if(!is_native_type(type_map($this->class_name))) {
-                Log::err(
-                    Log::EUNDEF,
-                    "call to method on undeclared class {$this->class_name}",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public function visitProp(Node $node) : bool {
-        if (!$this->classExists()) {
-            if(!is_native_type(type_map($this->class_name))) {
-                Log::err(
-                    Log::EUNDEF,
-                    "can't access property from undeclared class {$this->class_name}",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * @return bool
-     * False if the class name doesn't point to a known class
-     */
-    private function classExists() : bool {
-        return
-            $this->context->getCodeBase()->hasClassWithFQSEN(
-                $this->class_fqsen
-            );
     }
 
 }

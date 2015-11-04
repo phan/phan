@@ -6,10 +6,11 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
+use \Phan\Analyzer;
 use \Phan\CodeBase;
 use \Phan\Language\Context;
-use \Phan\Analyzer;
 use \Phan\Language\Type;
+use \Phan\Log;
 
 define('TEST_FILE_DIR', __DIR__ . '/../files/src');
 define('EXPECTED_DIR', __DIR__ . '/../files/expected');
@@ -68,13 +69,7 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
             // Start reading everything sent to STDOUT
             // and compare it to the expected value once
             // the analzyer finishes running
-            ob_start(function($output) use ($test_file_path, $expected_output) {
-                $this->assertEquals(
-                    trim($output),
-                    trim($expected_output),
-                    "Unexpected output in $test_file_path"
-                );
-            });
+            ob_start();
 
             // Run the analyzer
             (new Analyzer())->analyze(
@@ -82,8 +77,13 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
                 [$test_file_path]
             );
 
-            // Compare the output to the expected output
-            ob_end_clean();
+            $output = ob_get_flush();
+
+            $this->assertEquals(
+                trim($output),
+                trim($expected_output),
+                "Unexpected output in $test_file_path"
+            );
         }
     }
 }

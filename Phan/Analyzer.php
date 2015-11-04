@@ -50,6 +50,9 @@ class Analyzer {
         foreach ($file_path_list as $file_path) {
             $this->passTwo($code_base, $file_path);
         }
+
+        // Emit all log messages
+        Log::display();
     }
 
 
@@ -79,13 +82,23 @@ class Analyzer {
             Configuration::instance()->ast_version
         );
 
-        return $this->parseAndGetContextForNodeInContext(
-            $node,
+        $context =
             (new Context($code_base))
                 ->withFile($file_path)
                 ->withLineNumberStart($node->lineno ?? 0)
-                ->withLineNumberEnd($node->endLineno ?? 0)
-        );
+                ->withLineNumberEnd($node->endLineno ?? 0);
+
+        if (empty($node)) {
+            Log::err(
+                Log::EUNDEF,
+                "Empty or missing file  {$file_path}",
+                $file_path,
+                0
+            );
+            return $context;
+        }
+
+        return $this->parseAndGetContextForNodeInContext($node, $context);
     }
 
     /**

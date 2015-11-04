@@ -11,8 +11,9 @@ require_once(__DIR__.'/Phan/Bootstrap.php');
 require_once(__DIR__.'/Phan/Deprecated/CLI.php');
 require_once(__DIR__.'/Phan/Deprecated/Util.php');
 
-use Phan\CodeBase;
 use Phan\Analyzer;
+use Phan\CodeBase;
+use Phan\Log;
 
 (new Analyzer())->analyze(
     new CodeBase(
@@ -22,3 +23,5 @@ use Phan\Analyzer;
         $internal_function_name_list
     ), $files
 );
+
+Log::display();

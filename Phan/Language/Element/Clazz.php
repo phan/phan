@@ -292,7 +292,7 @@ class Clazz extends TypedStructuralElement {
      * on this class.
      */
     public function hasConstantWithName(string $name) : bool {
-        return !empty($this->constant_map[$constant->getName()]);
+        return !empty($this->constant_map[$name]);
     }
 
     /**
@@ -332,15 +332,6 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
-     * @return FQSEN
-     */
-    public function getFQSEN() : FQSEN {
-        return FQSEN::fromContext(
-            $this->getContext()
-        )->withClassName($this->getName());
-    }
-
-    /**
      * @return bool
      * True if this class calls its parent constructor
      */
@@ -375,4 +366,13 @@ class Clazz extends TypedStructuralElement {
             $this->getFlags() & \ast\flags\CLASS_INTERFACE
         );
     }
+
+    /**
+     * @return FQSEN
+     */
+    public function getFQSEN() : FQSEN {
+        return parent::getFQSEN()
+            ->withClassName($this->getName());
+    }
+
 }

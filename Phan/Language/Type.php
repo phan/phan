@@ -119,6 +119,9 @@ class Type {
     /**
      * @return bool
      * True if this is a native type (like int, string, etc.)
+     *
+     * @see \Phan\Deprecated\Util::is_native_type
+     * Formerly `function is_native_type`
      */
     public function isNativeType() : bool {
         return in_array(
