@@ -39,16 +39,22 @@ trait DuplicateFunction {
             if ($method->getContext()->getIsConditional()) {
                 return;
             }
+
+            // TODO: lowercasing so that we're compatible with the output we're
+            //       comparing against. Feel free to not do this in the
+            //       future.
+            $method_name = strtolower($method->getName());
+
             Log::err(
                 Log::EREDEF,
-                "Function {$method->getName()} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()} was previously defined internally",
+                "Function {$method_name} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()} was previously defined internally",
                 $method->getContext()->getFile(),
                 $method->getContext()->getLineNumberStart()
             );
         } else {
             Log::err(
                 Log::EREDEF,
-                "Function {$method->getName()} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()} was previously defined at {$original_method->getContext()->getFile()}:{$original_method->getContext()->getLineNumberStart()}",
+                "Function {$method_name} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()} was previously defined at {$original_method->getContext()->getFile()}:{$original_method->getContext()->getLineNumberStart()}",
                 $method->getContext()->getFile(),
                 $method->getContext()->getLineNumberStart()
             );
