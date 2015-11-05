@@ -26,7 +26,6 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
      * The context of the current execution
      */
     public function __construct(Context $context) {
-        parent::__construct();
         $this->context = $context;
     }
 

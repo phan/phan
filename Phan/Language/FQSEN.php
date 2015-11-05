@@ -119,13 +119,13 @@ class FQSEN {
             // Check for a class name map
             if ($context->hasNamespaceMapFor(T_CLASS, $class_name)) {
                 $namespace =
-                    $context->getNamespaceMapFor(T_CLASS, $class_name);
+                    (string)$context->getNamespaceMapFor(T_CLASS, $class_name);
             }
 
             // Check for a method map
             if ($context->hasNamespaceMapFor(T_FUNCTION, $method_name)) {
                 $namespace =
-                    $context->getNamespaceMapFor(T_FUNCTION, $method_name);
+                    (string)$context->getNamespaceMapFor(T_FUNCTION, $method_name);
             }
         }
 
@@ -370,7 +370,7 @@ class FQSEN {
      * its always prefixed with a '\' and never ends in a
      * '\', and is the string "\" if there is no namespace.
      */
-    private static function cleanNamespace($namespace) : string {
+    private static function cleanNamespace(string $namespace) : string {
         if (!$namespace
             || empty($namespace)
             || $namespace === '\\'
