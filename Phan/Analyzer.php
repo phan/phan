@@ -15,11 +15,9 @@ use \ast\Node;
  */
 class Analyzer {
     use \Phan\Analyze\DuplicateClass;
+    use \Phan\Analyze\DuplicateFunction;
     use \Phan\Analyze\ParentClassExists;
     use \Phan\Analyze\ParentConstructorCalled;
-
-    public function __construct() {
-    }
 
     /**
      * Analyze the given set of files and emit any issues
@@ -180,7 +178,9 @@ class Analyzer {
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
             self::analyzeDuplicateClass($code_base, $clazz);
             self::analyzeParentClassExists($code_base, $clazz);
-            self::analyzeParentConstructorCalled($code_base, $clazz);
+
+            // TODO: too much noise
+            // self::analyzeParentConstructorCalled($code_base, $clazz);
         }
     }
 
@@ -191,6 +191,9 @@ class Analyzer {
      * @return null
      */
     private function analyzeFunctions(CodeBase $code_base) {
+        foreach ($code_base->getMethodMap() as $fqsen_string => $method) {
+            self::analyzeDuplicateFunction($code_base, $method);
+        }
     }
 
     /**

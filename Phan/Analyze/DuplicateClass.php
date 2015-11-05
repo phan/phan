@@ -19,22 +19,16 @@ trait DuplicateClass {
     ) {
         // Determine if its a duplicate by looking to see if
         // the FQSEN is suffixed with an alternate ID.
-        $matches = [];
-        if (!preg_match(
-                '/^([^ ]*) [0-9]+$/',
-                (string)$clazz->getFQSEN(),
-                $matches
-            )
-        ) {
+
+        if (!$clazz->getFQSEN()->isAlternate()) {
             return;
         }
 
-        // Get the original FQSEN
-        $fqsen = $matches[1];
+        $original_fqsen = $clazz->getFQSEN()->getCanonicalFQSEN();
 
         // Get the original class
         $original_class = $code_base->getClassByFQSEN(
-            FQSEN::fromFullyQualifiedString($fqsen)
+            $original_fqsen
         );
 
         // Check to see if the original definition was from

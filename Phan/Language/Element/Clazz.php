@@ -346,14 +346,23 @@ class Clazz extends TypedStructuralElement {
      *
      */
     public function hasMethodWithFQSEN(FQSEN $fqsen) : bool {
-        return !empty($this->method_map[$fqsen->__toString()]);
+        return !empty($this->method_map[(string)$fqsen]);
     }
 
     /**
-     *
+     * @return Method
+     * The method with the given name
      */
-    public function getMethodWithName(string $method_name) : Method {
-        return $this->method_map[$fqsen->__toString()];
+    public function getMethodByFQSEN(FQSEN $fqsen) : Method {
+        return $this->method_map[(string)$fqsen];
+    }
+
+    /**
+     * @return Method[]
+     * A list of methods on this class
+     */
+    public function getMethodMap() : array {
+        return $this->method_map;
     }
 
     /**

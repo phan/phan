@@ -241,7 +241,7 @@ class FQSEN {
      * @return FQSEN
      * A clone of this FQSEN with the given method name
      */
-    public function withMethodName(
+    public function withFunctionName(
         Context $context,
         string $method_name
     ) : FQSEN {
@@ -257,8 +257,36 @@ class FQSEN {
             }
         }
 
+        // Check again to see if its fully qualified, and if so
+        // extract the namespace
+        if(0 == strpos($method_name, '\\')) {
+            $fq_method_name_elements =
+                array_filter(explode('\\', $method_name));
+
+            $method_name =
+                array_pop($fq_method_name_elements);
+
+            $namespace =
+                '\\' . implode('\\', $fq_method_name_elements);
+
+            $fqsen = $fqsen->withNamespace($namespace);
+        }
+
         $fqsen->method_name = $method_name;
 
+        return $fqsen;
+    }
+
+    /**
+     * @return FQSEN
+     * A clone of this FQSEN with the given method name
+     */
+    public function withMethodName(
+        Context $context,
+        string $method_name
+    ) : FQSEN {
+        $fqsen = clone($this);
+        $fqsen->method_name = $method_name;
         return $fqsen;
     }
 
@@ -360,6 +388,28 @@ class FQSEN {
      */
     public function asType() : Type {
         return new Type([$this->__toString()]);
+    }
+
+    /**
+     * @return bool
+     * True if this FQSEN is an alternate FQSEN
+     */
+    public function isAlternate() : bool {
+        return (bool)$this->alternate_id;
+    }
+
+    /**
+     * @return FQSEN
+     * Get the canonical (non-alternate) FQSEN for
+     * this FQSEN or this FQSEN if it is not an
+     * alternate.
+     */
+    public function getCanonicalFQSEN() : FQSEN {
+        if ($this->isAlternate()) {
+            return clone($this)->withAlternateId(0);
+        }
+
+        return $this;
     }
 
     /**

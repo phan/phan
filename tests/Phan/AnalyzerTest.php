@@ -72,10 +72,12 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
                 }
             ");
 
-        $class_fqsen = FQSEN::fromFullyQualifiedString('\A\b');
+        $class_fqsen =
+            FQSEN::fromFullyQualifiedString('\A\b');
 
         $this->assertTrue(
-            $context->getCodeBase()->hasClassWithFQSEN($class_fqsen)
+            $context->getCodeBase()->hasClassWithFQSEN($class_fqsen),
+            "Class with FQSEN $class_fqsen not found"
         );
 
         $clazz =
@@ -84,7 +86,8 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue(
             $clazz->hasMethodWithFQSEN(
                 FQSEN::fromFullyQualifiedString('\A\b::c')
-            )
+            ),
+            "Method with FQSEN not found"
         );
     }
 

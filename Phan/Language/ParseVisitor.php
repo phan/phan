@@ -223,9 +223,7 @@ class ParseVisitor extends KindVisitorImplementation {
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
         while($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
-            $class_fqsen = $class_fqsen->withAlternateId(
-                ++$alternate_id
-            );
+            $class_fqsen = $class_fqsen->withAlternateId(++$alternate_id);
         }
 
         // Build the class from what we know so far
@@ -340,16 +338,16 @@ class ParseVisitor extends KindVisitorImplementation {
 
         $method_name = $node->name;
 
-        $method_fqsen = FQSEN::fromContext(
-            $this->context
-        )->withMethodName($this->context, $method_name);
+        $method_fqsen =
+            $this->context->getScopeFQSEN()->withMethodName(
+                $this->context,
+                $method_name
+            );
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
         while($clazz->hasMethodWithFQSEN($method_fqsen)) {
-            $method_fqsen = $method_fqsen->withAlternateId(
-                ++$alternate_id
-            );
+            $method_fqsen = $method_fqsen->withAlternateId(++$alternate_id);
         }
 
         $method =
@@ -514,16 +512,16 @@ class ParseVisitor extends KindVisitorImplementation {
         $function_name = $node->name;
 
         $function_fqsen =
-            FQSEN::fromContextAndString(
+            $this->context->getScopeFQSEN()->withFunctionName(
                 $this->context,
                 $function_name
             );
 
         // Hunt for an un-taken alternate ID
-        $alternate_id = 1;
+        $alternate_id = 0;
         while($this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
             $function_fqsen =
-                $function_fqsen->withAlternateId($alternate_id);
+                $function_fqsen->withAlternateId(++$alternate_id);
         }
 
         $method = Method::fromNode(
@@ -532,6 +530,8 @@ class ParseVisitor extends KindVisitorImplementation {
                 ->withLineNumberEnd($node->endLineno ?? 0),
             $node
         );
+
+        $method->setFQSEN($function_fqsen);
 
         $this->context->getCodeBase()->addMethod($method);
         $this->context->getCodeBase()->incrementFunctions();
@@ -583,7 +583,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
             $method_fqsen =
                 $this->context->getScopeFQSEN()
-                ->withMethodName($this->context, $function_name);
+                ->withFunctionName($this->context, $function_name);
 
             if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
                 $method_fqsen
