@@ -37,21 +37,21 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
 
     public function testSimple() {
         $this->assertFQSENEqual(
-            new FQSEN([], '', 'A'),
+            new FQSEN('', 'A'),
             '\a'
         );
     }
 
     public function testNamespace() {
         $this->assertFQSENEqual(
-            new FQSEN([], '\A', 'B'),
+            new FQSEN('\A', 'B'),
             '\A\b'
         );
     }
 
     public function testMethod() {
         $this->assertFQSENEqual(
-            new FQSEN([], '\A', 'B', 'C'),
+            new FQSEN('\A', 'B', 'C'),
             '\A\b::C'
         );
     }
@@ -59,7 +59,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
     public function testFromContext() {
         $this->assertFQSENEqual(
             FQSEN::fromContext(
-                $this->context->withClassFQSEN(new FQSEN([], '\A', 'B'))
+                $this->context->withClassFQSEN(new FQSEN('\A', 'B'))
             ),
             '\A\b'
         );
@@ -80,7 +80,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         foreach ($tests as $test) {
             $this->assertEquals(
                 $test,
-                (string)FQSEN::fromString($test)
+                (string)FQSEN::fromFullyQualifiedString($test)
             );
         }
     }

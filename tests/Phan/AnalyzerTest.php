@@ -42,7 +42,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertTrue(
             $context->getCodeBase()->hasClassWithFQSEN(
-                FQSEN::fromString('A')
+                FQSEN::fromFullyQualifiedString('A')
             )
         );
     }
@@ -56,7 +56,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertTrue(
             $context->getCodeBase()->hasClassWithFQSEN(
-                FQSEN::fromString('\A\b')
+                FQSEN::fromFullyQualifiedString('\A\b')
             )
         );
     }
@@ -72,7 +72,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
                 }
             ");
 
-        $class_fqsen = FQSEN::fromString('\A\b');
+        $class_fqsen = FQSEN::fromFullyQualifiedString('\A\b');
 
         $this->assertTrue(
             $context->getCodeBase()->hasClassWithFQSEN($class_fqsen)
@@ -83,7 +83,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertTrue(
             $clazz->hasMethodWithFQSEN(
-                FQSEN::fromString('\A\b::c')
+                FQSEN::fromFullyQualifiedString('\A\b::c')
             )
         );
     }

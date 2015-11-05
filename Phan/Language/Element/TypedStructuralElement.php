@@ -93,9 +93,7 @@ class TypedStructuralElement extends StructuralElement {
         }
 
         // else generate it
-        return FQSEN::fromContext(
-            $this->getContext()
-        );
+        return $this->getContext()->getScopeFQSEN();
     }
 
     /**

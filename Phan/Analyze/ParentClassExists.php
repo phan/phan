@@ -57,6 +57,7 @@ trait ParentClassExists {
         CodeBase $code_base,
         Clazz $clazz
     ) : bool {
+
         if (!$code_base->hasClassWithFQSEN($fqsen)) {
             Log::err(
                 Log::EUNDEF,

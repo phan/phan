@@ -402,7 +402,7 @@ class Method extends TypedStructuralElement {
      */
     public function getFQSEN() : FQSEN {
         return parent::getFQSEN()
-            ->withMethodName($this->getName());
+            ->withMethodName($this->getContext(), $this->getName());
     }
 
 }

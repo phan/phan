@@ -34,7 +34,7 @@ trait DuplicateClass {
 
         // Get the original class
         $original_class = $code_base->getClassByFQSEN(
-            FQSEN::fromString($fqsen)
+            FQSEN::fromFullyQualifiedString($fqsen)
         );
 
         // Check to see if the original definition was from

@@ -45,12 +45,12 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
 
         $context_class =
             $context_namespace->withClassFQSEN(
-                new FQSEN([], '\A', 'B')
+                new FQSEN('\A', 'B')
             );
 
         $context_method =
             $context_namespace->withMethodFQSEN(
-                new FQSEN([], '\A', 'B', 'c')
+                new FQSEN('\A', 'B', 'c')
             );
 
         $this->assertTrue(!empty($context));

@@ -167,6 +167,10 @@ class Context {
         return $this->namespace_map;
     }
 
+    /**
+     * @return bool
+     * True if we have a mapped NS for the given named element
+     */
     public function hasNamespaceMapFor(int $flags, string $name) : bool {
         return !empty($this->namespace_map[$flags][strtolower($name)]);
     }
@@ -401,6 +405,7 @@ class Context {
      * the current scope.
      */
     public function getScopeFQSEN() : FQSEN {
+
         // If we're in a method, return it's FQSEN
         if ($this->hasMethodFQSEN()) {
             return $this->getMethodFQSEN();
@@ -414,30 +419,12 @@ class Context {
         // If we have a namespace defined, return a
         // partial FQSEN
         if ($this->hasNamespace()) {
-            return new FQSEN(
-                $this->namespace_map,
-                $this->getNamespace()
-            );
+            return new FQSEN($this->getNamespace());
         }
 
         // Otherwise, pass the current namespace map
         // along
-         return new FQSEN(
-            $this->namespace_map
-        );
-
-        /*
-        return new FQSEN(
-            $this->namespace_map,
-            $this->namespace,
-            $this->hasClassFQSEN()
-                ? $this->getClassFQSEN()->getClassName() : '',
-            $this->hasMethodFQSEN()
-                ? $this->getMethodFQSEN()->getMethodName() : '',
-            $this->hasClosureFQSEN()
-                ? $this->getClosureFQSEN()->getClosureName() : ''
-        );
-         */
+        return new FQSEN();
     }
 
     /**

@@ -48,6 +48,7 @@ class ClassNameValidationVisitor
         // Compute the FQSEN based on the current context
         $this->class_fqsen =
             $this->context->getScopeFQSEN()->withClassName(
+                $this->context,
                 $this->class_name
             );
     }

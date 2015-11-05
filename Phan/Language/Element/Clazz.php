@@ -412,6 +412,6 @@ class Clazz extends TypedStructuralElement {
      */
     public function getFQSEN() : FQSEN {
         return parent::getFQSEN()
-            ->withClassName($this->getName());
+            ->withClassName($this->getContext(), $this->getName());
     }
 }

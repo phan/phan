@@ -218,7 +218,7 @@ class ParseVisitor extends KindVisitorImplementation {
         $class_name = $node->name;
 
         $class_fqsen = FQSEN::fromContext($this->context)
-            ->withClassName($class_name);
+            ->withClassName($this->context, $class_name);
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
@@ -277,7 +277,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
             $parent_fqsen =
                 $this->context->getScopeFQSEN()
-                ->withClassName($parent_class_name);
+                ->withClassName($this->context, $parent_class_name);
 
             // Set the parent for the class
             $clazz->setParentClassFQSEN($parent_fqsen);
@@ -339,7 +339,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
         $method_fqsen = FQSEN::fromContext(
             $this->context
-        )->withMethodName($method_name);
+        )->withMethodName($this->context, $method_name);
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
@@ -579,7 +579,8 @@ class ParseVisitor extends KindVisitorImplementation {
             $function_name = $call_node->children[0];
 
             $method_fqsen =
-                $this->context->getScopeFQSEN()->withMethodName($function_name);
+                $this->context->getScopeFQSEN()
+                ->withMethodName($this->context, $function_name);
 
             if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
                 $method_fqsen

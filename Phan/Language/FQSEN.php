@@ -7,15 +7,6 @@ use \Phan\CodeBase;
  * A Fully-Qualified Structural Element Name
  */
 class FQSEN {
-
-    /**
-     * @var array
-     * A map from flag (like T_CLASS) to a name
-     * to a new name. These are read from 'use'
-     * clauses in the global scope.
-     */
-    private $namespace_map = [];
-
     /**
      * @var string
      * The namespace in an object's scope
@@ -51,11 +42,6 @@ class FQSEN {
     private $alternate_id = 0;
 
     /**
-     * @param array $namespace_map
-     * A map from flag (like T_CLASS) to a name
-     * to a new name. These are read from 'use'
-     * clauses in the global scope.
-     *
      * @param string $namespace
      * The namespace in an object's scope
      *
@@ -72,13 +58,11 @@ class FQSEN {
      * string otherwise.
      */
     public function __construct(
-        array $namespace_map = [],
         string $namespace = '\\',
         string $class_name = '',
         string $method_name = '',
         string $closure_name = ''
     ) {
-        $this->namespace_map = $namespace_map;
         $this->namespace = self::cleanNamespace($namespace);
         $this->class_name = $class_name;
         $this->method_name = $method_name;
@@ -130,8 +114,25 @@ class FQSEN {
         $namespace =
             '\\' . implode('\\', $fq_class_name_elements);
 
+        // If we're not fully qualified, check to see if its mapped
+        if (0 !== strpos('\\', $fqsen_string)) {
+            // Check for a class name map
+            if ($context->hasNamespaceMapFor(T_CLASS, $class_name)) {
+                $namespace =
+                    $context->getNamespaceMapFor(T_CLASS, $class_name);
+            }
+
+            // Check for a method map
+            if ($context->hasNamespaceMapFor(T_FUNCTION, $method_name)) {
+                $namespace =
+                    $context->getNamespaceMapFor(T_FUNCTION, $method_name);
+            }
+        }
+
+        // Clean it on up
+        $namespace = self::cleanNamespace($namespace);
+
         return new FQSEN(
-            $context->getNamespaceMap(),
             $namespace ?: '\\',
             $class_name ?: '',
             $method_name ?: '',
@@ -146,7 +147,7 @@ class FQSEN {
      *
      * @return FQSEN
      */
-    public static function fromString(string $fqsen_string) : FQSEN {
+    public static function fromFullyQualifiedString(string $fqsen_string) : FQSEN {
         return self::fromContextAndString(
             new Context(new CodeBase([], [], [], [])),
             $fqsen_string
@@ -161,7 +162,6 @@ class FQSEN {
         $i = 0;
         while(true) {
             yield (new FQSEN(
-                $this->namespace_map,
                 $this->namespace,
                 $this->class_name,
                 $this->method_name
@@ -195,7 +195,10 @@ class FQSEN {
      * @return FQSEN
      * A clone of this FQSEN with the given class name
      */
-    public function withClassName(string $class_name) : FQSEN {
+    public function withClassName(
+        Context $context,
+        string $class_name
+    ) : FQSEN {
         $fqsen = clone($this);
 
         // Check to see if this is a qualified class name
@@ -210,8 +213,16 @@ class FQSEN {
                 '\\' . implode('\\', $fq_class_name_elements);
 
             $fqsen = $fqsen->withNamespace($namespace);
+
+        // If its not fully qualified already, see if we have
+        // a mapped NS for it.
+        } else if ($context->hasNamespaceMapFor(T_CLASS, $class_name)) {
+            $fqsen = $fqsen->withNamespace(
+                $context->getNamespaceMapFor(T_CLASS, $class_name)
+            );
         }
 
+        // Set the class name
         $fqsen->class_name = $class_name;
 
         return $fqsen;
@@ -230,9 +241,24 @@ class FQSEN {
      * @return FQSEN
      * A clone of this FQSEN with the given method name
      */
-    public function withMethodName(string $method_name) : FQSEN {
+    public function withMethodName(
+        Context $context,
+        string $method_name
+    ) : FQSEN {
         $fqsen = clone($this);
+
+        // If its not fully qualified already, see if we have
+        // a mapped NS for it.
+        if(0 !== strpos($method_name, '\\')) {
+            if ($context->hasNamespaceMapFor(T_FUNCTION, $method_name)) {
+                $fqsen = $fqsen->withNamespace(
+                    $context->getNamespaceMapFor(T_FUNCTION, $method_name)
+                );
+            }
+        }
+
         $fqsen->method_name = $method_name;
+
         return $fqsen;
     }
 
@@ -325,73 +351,6 @@ class FQSEN {
             "FQSENs should be non-empty" );
 
         return $fqsen_string;
-    }
-
-    /**
-     * @param string $namespace
-     * A possibly null namespace within which the class
-     * exits
-     *
-     * @param string $class_name
-     * The name of a class to get an FQSEN string for
-     *
-     * @return string
-     * An FQSEN string representing the given
-     * namespace and class_name
-     */
-    public static function fqsenStringForClassName(
-        string $namespace,
-        string $class_name
-    ) : string {
-        return (
-            new FQSEN($namespace, $class_name, null)
-        )->__toString();
-    }
-
-    /**
-     * @param string $namespace
-     * A possibly null namespace within which the class
-     * exits
-     *
-     * @param string $function_name
-     * The name of a function to get an FQSEN string for
-     *
-     * @return string
-     * An FQSEN string representing the given
-     * namespace and function
-     */
-    public static function fqsenStringForFunctionName(
-        string $namespace,
-        string $function_name
-    ) {
-        return (
-            new FQSEN($namespace, null, $function_name)
-        )->__toString();
-    }
-
-    /**
-     * @param string $namespace
-     * A possibly null namespace within which the class
-     * exits
-     *
-     * @param string $class_name
-     * The name of a class to get an FQSEN string for
-     *
-     * @param string $method_name
-     * The name of a method to get an FQSEN string for
-     *
-     * @return string
-     * An FQSEN string representing the given
-     * namespace and class_name
-     */
-    public static function fqsenStringForClassAndMethodName(
-        string $namespace,
-        string $class_name,
-        string $method_name
-    ) {
-        return (
-            new FQSEN($namespace, $class_name, $method_name)
-        )->__toString();
     }
 
     /**
