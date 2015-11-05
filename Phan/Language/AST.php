@@ -100,7 +100,7 @@ trait AST {
             // namespace alias for it
             if ($context->hasNamespaceMapFor(T_CLASS, (string)$type)) {
                 return
-                    $context->getNamespaceMapFor(T_CLASS, (string)$type);
+                    (string)$context->getNamespaceMapFor(T_CLASS, (string)$type);
             }
 
             // Check for a namespace-relative alias
@@ -110,7 +110,7 @@ trait AST {
 
                 if ($context->hasNamespaceMapFor(T_CLASS, $first_part)) {
                     $qualified_first_part =
-                        $context->getNamespaceMapFor(T_CLASS, $first_part);
+                        (string)$context->getNamespaceMapFor(T_CLASS, $first_part);
 
                     // Replace that first aliases part and return the full name
                     return $qualified_first_part

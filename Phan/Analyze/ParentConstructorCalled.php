@@ -41,7 +41,9 @@ trait ParentConstructorCalled {
             $clazz->getParentClassFQSEN()
         );
 
-        if (!$clazz->getIsParentConstructorCalled()) {
+        if (!$parent_clazz->isAbstract()
+            && !$clazz->getIsParentConstructorCalled()
+        ) {
             Log::err(
                 Log::ETYPE,
                 "{$clazz->getFQSEN()} extends {$parent_clazz->getFQSEN()} but doesn't call parent::__construct()",

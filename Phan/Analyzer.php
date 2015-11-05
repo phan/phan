@@ -147,6 +147,7 @@ class Analyzer {
         assert(!empty($context), 'Context cannot be null');
 
         // Recurse into each child node
+        $child_context = $context;
         foreach($node->children as $child_node) {
 
             // Skip any non Node children.
@@ -159,23 +160,10 @@ class Analyzer {
             $child_context =
                 $this->parseAndGetContextForNodeInContext(
                     $child_node,
-                    $context
+                    $child_context
                 );
 
             assert(!empty($context), 'Context cannot be null');
-
-            // Pass the context on to subsequent sibling
-            // nodes
-            $context = $context->withNamespace(
-                $child_context->getNamespace()
-            );
-
-            /*
-            // Stop parsing once we get into a method
-            if ($context->isMethodScope()) {
-                break;
-            }
-             */
         }
 
         // Pass the context back up to our parent

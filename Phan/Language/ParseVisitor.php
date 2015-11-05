@@ -254,30 +254,33 @@ class ParseVisitor extends KindVisitorImplementation {
 
             // Check to see if the name isn't fully qualified
             if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-                // check to see if we have a '\' anywhere in there
-                if(($pos = strpos($parent_class_name, '\\')) !== false) {
-                    if ($this->context->hasNamespaceMapFor(
-                        T_CLASS,
-                        substr($parent_class_name, 0, $pos)
-                    )) {
-                        $parent_class_name =
-                            $this->context->getNamespaceMapfor(
-                                T_CLASS,
-                                substr($parent_class_name, 0, $pos)
-                            );
-                    }
-                }
-            } else {
-                // The name is fully qualified. Make sure it looks
-                // like it is
-                if(0 !== strpos($parent_class_name, '\\')) {
-                    $parent_class_name = '\\' . $parent_class_name;
+                if ($this->context->hasNamespaceMapFor(
+                    T_CLASS,
+                    $parent_class_name
+                )) {
+                    // Get a fully-qualified name
+                    $parent_class_name =
+                        (string)$this->context->getNamespaceMapfor(
+                            T_CLASS,
+                            $parent_class_name
+                        );
+                } else {
+                    $parent_class_name =
+                        $this->context->getNamespace() . '\\' . $parent_class_name;
                 }
             }
 
+            // The name is fully qualified. Make sure it looks
+            // like it is
+            if(0 !== strpos($parent_class_name, '\\')) {
+                $parent_class_name = '\\' . $parent_class_name;
+            }
+
             $parent_fqsen =
-                $this->context->getScopeFQSEN()
-                ->withClassName($this->context, $parent_class_name);
+                $this->context->getScopeFQSEN()->withClassName(
+                    $this->context,
+                    $parent_class_name
+                );
 
             // Set the parent for the class
             $clazz->setParentClassFQSEN($parent_fqsen);

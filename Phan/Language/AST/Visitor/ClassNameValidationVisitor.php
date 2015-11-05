@@ -42,6 +42,8 @@ class ClassNameValidationVisitor
         Context $context,
         string $class_name
     ) {
+        parent::__construct();
+
         $this->context = $context;
         $this->class_name = $class_name;
 

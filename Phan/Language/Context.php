@@ -179,8 +179,12 @@ class Context {
      * @return string
      * The namespace mapped name for the given flags and name
      */
-    public function getNamespaceMapFor(int $flags, string $name) : string {
-        return $this->namespace_map[$flags][strtolower($name)];
+    public function getNamespaceMapFor(int $flags, string $name) : FQSEN {
+        if (!empty($this->namespace_map[$flags][strtolower($name)])) {
+            return $this->namespace_map[$flags][strtolower($name)];
+        }
+
+        return '';
     }
 
     /**
@@ -193,7 +197,10 @@ class Context {
         string  $target
     ) : Context {
         $context = clone($this);
-        $context->namespace_map[$flags][strtolower($alias)] = $target;
+
+        $context->namespace_map[$flags][strtolower($alias)] =
+            FQSEN::fromFullyQualifiedString($target);
+
         return $context;
     }
 
