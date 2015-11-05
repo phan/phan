@@ -217,6 +217,14 @@ class ParseVisitor extends KindVisitorImplementation {
         // Get an FQSEN for this class
         $class_name = $node->name;
 
+        if (!$class_name) {
+            print $this->context . "\n";
+            return $this->context;
+        }
+
+        assert(!empty($class_name), "Class name cannot be null");
+
+
         $class_fqsen = FQSEN::fromContext($this->context)
             ->withClassName($this->context, $class_name);
 
@@ -728,12 +736,5 @@ class ParseVisitor extends KindVisitorImplementation {
      */
     private function getContextClass() : Clazz {
         return $this->context->getClassInScope();
-    }
-
-    /**
-     * @return Method
-     * Get the method on this scope or fail real hard
-     */
-    private function getContextMethod() : Method {
     }
 }

@@ -8,6 +8,8 @@ use \Phan\Language\AST\Element;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\ParseVisitor;
+use \Phan\Language\ParsePass2Visitor;
+use \Phan\Language\ParsePass2BVisitor;
 use \ast\Node;
 
 /**
@@ -66,7 +68,6 @@ class Analyzer {
         // Emit all log messages
         Log::display();
     }
-
 
     /**
      * This first pass parses code and looks for the subset
@@ -214,6 +215,88 @@ class Analyzer {
         CodeBase $code_base,
         string $file_path
     ) {
-        // TODO
+        // Convert the file to an Abstract Syntax Tree
+        // before passing it on to the recursive version
+        // of this method
+        $node = \ast\parse_file(
+            $file_path,
+            Configuration::instance()->ast_version
+        );
+
+        $context =
+            (new Context($code_base))
+                ->withFile($file_path)
+                ->withLineNumberStart($node->lineno ?? 0)
+                ->withLineNumberEnd($node->endLineno ?? 0);
+
+        if (empty($node)) {
+            Log::err(
+                Log::EUNDEF,
+                "Empty or missing file  {$file_path}",
+                $file_path,
+                0
+            );
+            return $context;
+        }
+
+        return $this->parseAndGetContextForNodeInContextPass2(
+            $node,
+            $context
+        );
     }
+
+
+    /**
+     * @param Node $node
+     * A node to parse and scan for errors
+     *
+     * @param Context $context
+     * The context in which this node exists
+     *
+     * @return Context
+     * The context from within the node is returned
+     */
+    public function parseAndGetContextForNodeInContextPass2(
+        Node $node,
+        Context $context
+    ) : Context {
+        // Visit the given node populating the code base
+        // with anything we learn and get a new context
+        // indicating the state of the world within the
+        // given node
+        $context =
+            (new Element($node))->acceptKindVisitor(
+                new ParsePass2Visitor($context)
+            );
+
+        assert(!empty($context), 'Context cannot be null');
+
+
+		// Depth-First for everything else
+        $child_context = $context;
+		foreach($node->children as $child_node) {
+
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+
+            // Step into each child node and get an
+            // updated context for the node
+            $child_context =
+                $this->parseAndGetContextForNodeInContextPass2(
+                    $child_node,
+                    $child_context
+                );
+		}
+
+        $context =
+            (new Element($node))->acceptKindVisitor(
+                new ParsePass2BVisitor($context)
+            );
+
+        // Pass the context back up to our parent
+        return $context;
+    }
+
 }

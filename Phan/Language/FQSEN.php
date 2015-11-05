@@ -251,9 +251,11 @@ class FQSEN {
         // a mapped NS for it.
         if(0 !== strpos($method_name, '\\')) {
             if ($context->hasNamespaceMapFor(T_FUNCTION, $method_name)) {
-                $fqsen = $fqsen->withNamespace(
-                    $context->getNamespaceMapFor(T_FUNCTION, $method_name)
-                );
+                return
+                    $context->getNamespaceMapFor(
+                        T_FUNCTION,
+                        $method_name
+                    );
             }
         }
 

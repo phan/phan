@@ -35,7 +35,7 @@ class Clazz extends TypedStructuralElement {
      * @var Constant[]
      * A list of constants defined on this class
      */
-    private $constant_map;
+    private $constant_map = [];
 
     /**
      * @var Property[]
@@ -309,6 +309,14 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
+     * @return Property[]
+     * The list of properties on this class
+     */
+    public function getPropertyMap() : array {
+        return $this->property_map;
+    }
+
+    /**
      * Add a class constant
      *
      * @return null;
@@ -333,6 +341,14 @@ class Clazz extends TypedStructuralElement {
      */
     public function getConstantWithName(string $name) : Constant {
         return $this->constant_map[$name];
+    }
+
+    /**
+     * @return Constant[]
+     * The constants associated with this class
+     */
+    public function getConstantMap() : array {
+        return $this->constant_map;
     }
 
     /**
