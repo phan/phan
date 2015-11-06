@@ -79,6 +79,14 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         );
     }
 
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitUseTrait(Node $node) : Context {
         return $this->context;
     }
@@ -269,7 +277,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitClosure(Node $node) : Context {
-
         $closure_name = 'closure_' . $node->lineno;
 
         $closure_fqsen =
@@ -303,11 +310,15 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                         $node->lineno
                     );
                 } else {
-                    $name = Deprecated::var_name($use->children[0]);
-                    if(empty($name)) {
+                    $variable_name = Deprecated::var_name($use->children[0]);
+
+                    if(empty($variable_name)) {
                         continue;
                     }
+
                     if($use->flags & \ast\flags\PARAM_REF) {
+                        assert(false, "TODO");
+                        /*
                         if(empty($parent_scope)
                             || empty($scope[$parent_scope]['vars'])
                             || empty($scope[$parent_scope]['vars'][$name])
@@ -316,20 +327,17 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                         }
                         $scope[$current_scope]['vars'][$name] =
                             &$scope[$parent_scope]['vars'][$name];
+                         */
                     } else {
-                        if(empty($parent_scope)
-                            || empty($scope[$parent_scope]['vars'])
-                            || empty($scope[$parent_scope]['vars'][$name])
-                        ) {
+                        if (!$this->context->getScope()->hasVariableWithName(
+                            $variable_name
+                        )) {
                             Log::err(
                                 Log::EVAR,
-                                "Variable \${$name} is not defined",
+                                "Variable \${$variable_name} is not defined",
                                 $this->context->getFile(),
                                 $node->lineno
                             );
-                        } else {
-                            $scope[$current_scope]['vars'][$name] =
-                                $scope[$parent_scope]['vars'][$name];
                         }
                     }
                 }
@@ -339,43 +347,70 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         return $closure->getContext()->withClosureFQSEN(
             $closure_fqsen
         );
-
-        /*
-        $closure_name = '{closure '.$ast->id.'}';
-        $functions[$closure_name] = node_func($file, false, $ast, $closure_name, '');
-        $current_function = $closure_name;
-        $parent_scope = $current_scope;
-        $current_scope = $closure_name;
-        if(!empty($scope[$parent_scope]['vars']['this'])) {
-            // TODO: check for a static closure
-            add_var_scope($current_scope, 'this', $scope[$parent_scope]['vars']['this']['type']);
-        }
-        if(!empty($ast->children[1]) && $ast->children[1]->kind == \ast\AST_CLOSURE_USES) {
-            $uses = $ast->children[1];
-            foreach($uses->children as $use) {
-                if($use->kind != \ast\AST_CLOSURE_VAR) {
-                    Log::err(Log::EVAR, "You can only have variables in a closure use() clause", $file, $ast->lineno);
-                } else {
-                    $name = var_name($use->children[0]);
-                    if(empty($name)) continue;
-                    if($use->flags & \ast\flags\PARAM_REF) {
-                        if(empty($parent_scope) || empty($scope[$parent_scope]['vars']) || empty($scope[$parent_scope]['vars'][$name])) {
-                            add_var_scope($parent_scope, $name, '');
-                        }
-                        $scope[$current_scope]['vars'][$name] = &$scope[$parent_scope]['vars'][$name];
-                    } else {
-                        if(empty($parent_scope) || empty($scope[$parent_scope]['vars']) || empty($scope[$parent_scope]['vars'][$name])) {
-                            Log::err(Log::EVAR, "Variable \${$name} is not defined", $file, $ast->lineno);
-                        } else {
-                            $scope[$current_scope]['vars'][$name] = $scope[$parent_scope]['vars'][$name];
-                        }
-                    }
-                }
-            }
-        }
-        */
     }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitForeach(Node $node) : Context {
+        if(($node->children[2] instanceof \ast\Node)
+            && ($node->children[2]->kind == \ast\AST_LIST)
+        ) {
+            Log::err(
+                Log::EFATAL,
+                "Can't use list() as a key element - aborting",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
+
+        $context = $this->context;
+
+        if($node->children[1]->kind == \ast\AST_LIST) {
+            foreach($node->children[1]->children as $child_node) {
+                $variable_name = Deprecated::var_name($child_node);
+
+                print $variable_name . "\n";
+
+                $variable =
+                    new Variable(
+                        $context
+                            ->withLineNumberStart($child_node->lineno ?? 0)
+                            ->withLineNumberEnd($child_node->endLineno ?? 0),
+                        Comment::fromString($child_node->docComment ?? ''),
+                        $variable_name,
+                        Type::none(),
+                        $node->flags
+                    );
+
+                $context = $this->context->withScopeVariable($variable);
+                // add_var_scope($current_scope, var_name($node), '', true);
+            }
+            if(!empty($node->children[2])) {
+
+
+
+                // add_var_scope($current_scope, var_name($ast->children[2]), '', true);
+            }
+        } else {
+            /*
+            // value
+            add_var_scope($current_scope, var_name($ast->children[1]), '', true);
+            // key
+            if(!empty($ast->children[2])) {
+                add_var_scope($current_scope, var_name($ast->children[2]), '', true);
+            }
+             */
+        }
+
+
+
+
         /*
         if(($ast->children[2] instanceof \ast\Node) && ($ast->children[2]->kind == \ast\AST_LIST)) {
             Log::err(Log::EFATAL, "Can't use list() as a key element - aborting", $file, $ast->lineno);
@@ -399,6 +434,14 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitCatch(Node $node) : Context {
         /*
         $obj = var_name($ast->children[0]);

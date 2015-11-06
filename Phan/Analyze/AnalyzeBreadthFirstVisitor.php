@@ -7,7 +7,14 @@ use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
-use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
+use \Phan\Language\Element\{
+    Clazz,
+    Comment,
+    Constant,
+    Method,
+    Property,
+    Variable
+};
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
 use \Phan\Log;
@@ -73,19 +80,59 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitAssign(Node $node) : Context {
 
-        /*
-        if($ast->children[0] instanceof \ast\Node && $ast->children[0]->kind == \ast\AST_LIST) {
-            // TODO: Very simplistic here - we can be smarter
-            $rtype = node_type($file, $namespace, $ast->children[1], $current_scope, $current_class, $taint);
-            $type = generics($rtype);
-            foreach($ast->children[0]->children as $c) {
-                $name = var_name($c);
-                if(!empty($name)) add_var_scope($current_scope, $name, $type);
+        $context = $this->context;
+
+        if($node->children[0] instanceof \ast\Node
+            && $node->children[0]->kind == \ast\AST_LIST
+        ) {
+            $right_type =
+                Type::typeFromNode($context, $node);
+
+            $type = $right_type->generics();
+
+            foreach($node->children[0]->children as $child_node) {
+                $variable_name = Deprecated::var_name($child_node);
+
+                if(empty($variable_name)) {
+                    continue;
+                }
+
+                $variable =
+                    new Variable(
+                        $context
+                            ->withLineNumberStart($child_node->lineno ?? 0)
+                            ->withLineNumberEnd($child_node->endLineno ?? 0),
+                        Comment::fromString($child_node->docComment ?? ''),
+                        $variable_name,
+                        Type::none(),
+                        $child_node->flags
+                    );
+
+                $context =
+                    $this->context->withScopeVariable($variable);
             }
-            break;
         }
 
-        var_assign($file, $namespace, $ast, $current_scope, $current_class, $vars);
+        // var_assign($file, $namespace, $ast, $current_scope, $current_class, $vars);
+
+        $variable_name = Deprecated::var_name($node->children[0]);
+
+        $variable =
+            new Variable(
+                $context
+                    ->withLineNumberStart($node->lineno ?? 0)
+                    ->withLineNumberEnd($node->endLineno ?? 0),
+                Comment::fromString($node->docComment ?? ''),
+                $variable_name,
+                Type::none(),
+                $node->flags
+            );
+
+        $context = $context->withScopeVariable($variable);
+
+        return $context;
+
+        /*
         foreach($vars as $k=>$v) {
             if(empty($v)) $v = ['type'=>'', 'tainted'=>false, 'tainted_by'=>''];
             if(empty($v['type'])) $v['type'] = '';
@@ -125,8 +172,6 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             $scope[$cs]['vars'][$k]['tainted_by'] = $v['tainted_by'];
         }
         */
-
-        return $this->context;
     }
 
     /**

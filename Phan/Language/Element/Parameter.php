@@ -8,7 +8,7 @@ use \Phan\Language\Type;
 use \Phan\Log;
 use \ast\Node;
 
-class Parameter extends TypedStructuralElement {
+class Parameter extends Variable {
 
     /**
      * @var \mixed

@@ -633,4 +633,37 @@ class Type {
         return true;
     }
 
+    /**
+     * Takes "a|b[]|c|d[]|e" and returns "b|d"
+     *
+     * @return Type
+     * The subset of types in this
+     */
+    public function generics() : Type {
+        $str = (string)$this;
+
+        // If array is in there, then it can be any type
+        // Same for |mixed|
+        if ($this->hasTypeName('array')
+            || $this->hasTypeName('mixed')
+        ) {
+            return new Type(['mixed']);
+        }
+
+        if ($this->hasTypeName('array')) {
+            return Type::none();
+        }
+
+        $type_names = [];
+        foreach(explode('|', (string)$this) as $type_name) {
+            if(($pos = strpos($type_name, '[]')) === false) {
+                continue;
+            }
+
+            $type_names[] = substr($type_name, 0, $pos);
+        }
+
+        return new Type($type_names);
+    }
+
 }

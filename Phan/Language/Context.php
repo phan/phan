@@ -2,8 +2,9 @@
 namespace Phan\Language;
 
 use \Phan\CodeBase;
-use \Phan\Language\Scope;
 use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Variable;
+use \Phan\Language\Scope;
 use \Phan\Log;
 
 /**
@@ -388,6 +389,23 @@ class Context {
         $context = clone($this);
         $context->scope = $scope;
         return $context;
+    }
+
+    /**
+     * @param Variable $variable
+     * A variable to add to the scope for the new
+     * context
+     *
+     * @return Context
+     * A new context based on this with a variable
+     * as defined by the parameters in scope
+     */
+    public function withScopeVariable(
+        Variable $variable
+    ) : Context {
+        return $this->withScope(
+            $this->getScope()->withVariable($variable)
+        );
     }
 
     /**
