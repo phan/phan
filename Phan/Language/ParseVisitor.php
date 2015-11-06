@@ -365,6 +365,7 @@ class ParseVisitor extends KindVisitorImplementation {
         $method->setFQSEN($method_fqsen);
 
         $clazz->addMethod($method);
+        $this->context->getCodeBase()->addMethod($method);
         $this->context->getCodeBase()->incrementMethods();
 
         if ('__construct' === $method_name) {

@@ -153,12 +153,11 @@ class ParsePass2Visitor extends KindVisitorImplementation {
 
             // Copy methods
             foreach ($trait->getMethodMap() as $method) {
-                // TODO: if the method is already there, ton't add
+                // TODO: if the method is already there, don't add
                 $clazz->addMethod($method);
             }
 
         }
-
 
         /*
         foreach($traits as $trait) {
@@ -182,22 +181,45 @@ class ParsePass2Visitor extends KindVisitorImplementation {
             }
         }
          */
-        return $this->context;
+        return $clazz->getContext()->withClassFQSEN(
+            $clazz->getFQSEN()
+        );
     }
 
     /**
      * Visit a node with kind `\ast\AST_METHOD_REFERENCE`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
      */
     public function visitMethod(Node $node) : Context {
-        /*
-        if(empty($current_class['methods'][strtolower($ast->name)])) {
-            Log::err(Log::EFATAL, "Can't find method {$current_class['name']}:{$ast->name} - aborting", $file, $ast->lineno);
+        $method_name = $node->name;
+
+        $method_fqsen =
+            $this->context->getScopeFQSEN()->withMethodName(
+                $this->context, $method_name
+            );
+
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
+            Log::err(
+                Log::EFATAL,
+                "Can't find method {$method_fqsen} - aborting",
+                $this->context->getFile(),
+                $node->lineno
+            );
         }
-        $current_function = $current_class['methods'][strtolower($ast->name)];
-        $parent_scope = $current_scope;
-        $current_scope = $current_class['name'].'::'.$ast->name;
-         */
-        return $this->context;
+
+        $method = $this->context->getCodeBase()->getMethodByFQSEN(
+            $method_fqsen
+        );
+
+        return $method->getContext()->withMethodFQSEN(
+            $method_fqsen
+        );
     }
 
     /**
@@ -211,14 +233,30 @@ class ParsePass2Visitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitFuncDecl(Node $node) : Context {
-        /*
-        if(empty($functions[strtolower($namespace.$ast->name)])) {
-            Log::err(Log::EFATAL, "Can't find function {$namespace}{$ast->name} - aborting", $file, $ast->lineno);
+        $function_name = $node->name;
+
+        $function_fqsen =
+            $this->context->getScopeFQSEN()->withFunctionName(
+                $this->context, $function_name
+            );
+
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
+            Log::err(
+                Log::EFATAL,
+                "Can't find function {$function_fqsen} - aborting",
+                $this->context->getFile(),
+                $node->lineno
+            );
         }
-        $current_function = $functions[strtolower($namespace.$ast->name)];
-        $parent_scope = $current_scope;
-        $current_scope = $namespace.$ast->name;
-         */
+
+        $method = $this->context->getCodeBase()->getMethodByFQSEN(
+            $function_fqsen
+        );
+
+        return $method->getContext()->withMethodFQSEN(
+            $function_fqsen
+        );
+
         return $this->context;
     }
 
@@ -233,6 +271,7 @@ class ParsePass2Visitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitClosure(Node $node) : Context {
+
         /*
         $closure_name = '{closure '.$ast->id.'}';
         $functions[$closure_name] = node_func($file, false, $ast, $closure_name, '');
