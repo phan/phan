@@ -2,8 +2,10 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\Deprecated;
 use \Phan\Language\Context;
 use \Phan\Language\Type;
+use \ast\Node;
 
 class Variable extends TypedStructuralElement {
 
@@ -40,6 +42,28 @@ class Variable extends TypedStructuralElement {
             $name,
             $type,
             $flags
+        );
+    }
+
+    /**
+     * @return Variable
+     * A variable begotten from a node
+     */
+    public static function fromNodeInContext(
+        Node $node,
+        Context $context
+    ) : Variable {
+
+        $variable_name = Deprecated::var_name($node);
+
+        return new Variable(
+            $context
+                ->withLineNumberStart($node->lineno ?? 0)
+                ->withLineNumberEnd($node->endLineno ?? 0),
+            Comment::fromString($node->docComment ?? ''),
+            $variable_name,
+            Type::none(),
+            $node->flags
         );
     }
 }

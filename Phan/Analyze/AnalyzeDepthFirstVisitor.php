@@ -370,26 +370,11 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         }
 
         $context = $this->context;
-
         if($node->children[1]->kind == \ast\AST_LIST) {
             foreach($node->children[1]->children as $child_node) {
-                $variable_name = Deprecated::var_name($child_node);
-
-                print $variable_name . "\n";
-
-                $variable =
-                    new Variable(
-                        $context
-                            ->withLineNumberStart($child_node->lineno ?? 0)
-                            ->withLineNumberEnd($child_node->endLineno ?? 0),
-                        Comment::fromString($child_node->docComment ?? ''),
-                        $variable_name,
-                        Type::none(),
-                        $node->flags
-                    );
-
-                $context = $this->context->withScopeVariable($variable);
-                // add_var_scope($current_scope, var_name($node), '', true);
+                $context = $this->context->withScopeVariable(
+                    Variable::fromNodeInContext($child_node, $context)
+                );
             }
             if(!empty($node->children[2])) {
 

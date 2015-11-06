@@ -91,44 +91,19 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             $type = $right_type->generics();
 
             foreach($node->children[0]->children as $child_node) {
-                $variable_name = Deprecated::var_name($child_node);
-
-                if(empty($variable_name)) {
+                if (!$child_node) {
                     continue;
                 }
 
-                $variable =
-                    new Variable(
-                        $context
-                            ->withLineNumberStart($child_node->lineno ?? 0)
-                            ->withLineNumberEnd($child_node->endLineno ?? 0),
-                        Comment::fromString($child_node->docComment ?? ''),
-                        $variable_name,
-                        Type::none(),
-                        $child_node->flags
-                    );
-
-                $context =
-                    $this->context->withScopeVariable($variable);
+                $context = $this->context->withScopeVariable(
+                    Variable::fromNodeInContext($child_node, $context)
+                );
             }
         }
 
-        // var_assign($file, $namespace, $ast, $current_scope, $current_class, $vars);
-
-        $variable_name = Deprecated::var_name($node->children[0]);
-
-        $variable =
-            new Variable(
-                $context
-                    ->withLineNumberStart($node->lineno ?? 0)
-                    ->withLineNumberEnd($node->endLineno ?? 0),
-                Comment::fromString($node->docComment ?? ''),
-                $variable_name,
-                Type::none(),
-                $node->flags
-            );
-
-        $context = $context->withScopeVariable($variable);
+        $context = $context->withScopeVariable(
+            Variable::fromNodeInContext($node, $context)
+        );
 
         return $context;
 
