@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Language;
+namespace Phan\Analyze;
 
 use \Phan\Configuration;
 use \Phan\Debug;

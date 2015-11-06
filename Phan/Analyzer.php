@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use \Phan\Analyze\AnalyzeBreadthFirstVisitor;
+use \Phan\Analyze\AnalyzeDepthFirstVisitor;
+use \Phan\Analyze\ParseVisitor;
 use \Phan\CodeBase;
 use \Phan\Configuration;
 use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
-use \Phan\Language\ParseVisitor;
-use \Phan\Language\ParsePass2Visitor;
-use \Phan\Language\ParsePass2BVisitor;
 use \ast\Node;
 
 /**
@@ -62,7 +62,7 @@ class Analyzer {
         // Once we know what the universe looks like we
         // can scan for more complicated issues.
         foreach ($file_path_list as $file_path) {
-            $this->passTwo($code_base, $file_path);
+            $this->analyzeCode($code_base, $file_path);
         }
 
         // Emit all log messages
@@ -211,7 +211,7 @@ class Analyzer {
      *
      * @return null
      */
-    public function passTwo(
+    public function analyzeCode(
         CodeBase $code_base,
         string $file_path
     ) {
@@ -239,7 +239,7 @@ class Analyzer {
             return $context;
         }
 
-        return $this->parseAndGetContextForNodeInContextPass2(
+        return $this->analyzeNodeInContext(
             $node,
             $context
         );
@@ -256,7 +256,7 @@ class Analyzer {
      * @return Context
      * The context from within the node is returned
      */
-    public function parseAndGetContextForNodeInContextPass2(
+    public function analyzeNodeInContext(
         Node $node,
         Context $context
     ) : Context {
@@ -266,11 +266,10 @@ class Analyzer {
         // given node
         $context =
             (new Element($node))->acceptKindVisitor(
-                new ParsePass2Visitor($context)
+                new AnalyzeDepthFirstVisitor($context)
             );
 
         assert(!empty($context), 'Context cannot be null');
-
 
 		// Depth-First for everything else
         $child_context = $context;
@@ -284,7 +283,7 @@ class Analyzer {
             // Step into each child node and get an
             // updated context for the node
             $child_context =
-                $this->parseAndGetContextForNodeInContextPass2(
+                $this->analyzeNodeInContext(
                     $child_node,
                     $child_context
                 );
@@ -292,7 +291,7 @@ class Analyzer {
 
         $context =
             (new Element($node))->acceptKindVisitor(
-                new ParsePass2BVisitor($context)
+                new AnalyzeBreadthFirstVisitor($context)
             );
 
         // Pass the context back up to our parent

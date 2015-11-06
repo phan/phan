@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Language;
+namespace Phan\Analyze;
 
 use \Phan\Configuration;
 use \Phan\Debug;
@@ -27,7 +27,7 @@ use \ast\Node;
  *     );
  * ```
  */
-class ParsePass2BVisitor extends KindVisitorImplementation {
+class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
     use \Phan\Language\AST;
 
     /**
