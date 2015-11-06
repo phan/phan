@@ -12,7 +12,7 @@ use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
-use \Phan\Language\ParseVisitor;
+use \Phan\Analyze\ParseVisitor;
 
 class ContextTest extends \PHPUnit_Framework_TestCase {
 

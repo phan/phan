@@ -87,10 +87,10 @@ class Log {
 			self::display();
 			// Something went wrong - abort
             if($file) {
-                die("$file:$lineno $msg\n");
+                throw new \Exception("$file:$lineno $msg\n");
             }
             else {
-                die($msg."\n");
+                throw new \Exception($msg."\n");
             }
 		}
 

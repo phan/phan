@@ -45,6 +45,7 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
      * `tests/files/expected`
      */
     public function testFiles() {
+
         foreach (scandir(TEST_FILE_DIR) as $test_file_name) {
             // Skip '.' and '..'
             if (empty($test_file_name)
@@ -64,26 +65,36 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
 
             // Read the expected output
             $expected_output =
-                file_get_contents($expected_file_path);
+                trim(file_get_contents($expected_file_path));
 
             // Start reading everything sent to STDOUT
             // and compare it to the expected value once
             // the analzyer finishes running
             ob_start();
 
-            // Run the analyzer
-            (new Analyzer())->analyze(
-                clone($this->code_base),
-                [$test_file_path]
-            );
+            try {
+                // Run the analyzer
+                (new Analyzer())->analyze(
+                    clone($this->code_base),
+                    [$test_file_path]
+                );
+            } catch (Exception $exception) {
+                // TODO: inexplicably bad things happen here
+                // print "\n" . $exception->getMessage() . "\n";
+            }
 
-            $output = ob_get_clean();
+            $output = trim(ob_get_clean());
 
             $output = str_replace($test_file_path, '%s', $output);
 
+            if ($output !== $expected_output) {
+                print "\n>==" . $output . "==<\n";
+                print "\n+==" . $expected_output . "==-\n";
+            }
+
             $this->assertEquals(
-                trim($output),
-                trim($expected_output),
+                $output,
+                $expected_output,
                 "Unexpected output in $test_file_path"
             );
         }
