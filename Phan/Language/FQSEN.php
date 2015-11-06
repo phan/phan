@@ -305,7 +305,10 @@ class FQSEN {
      * @return FQSEN
      * A clone of this FQSEN with the given closure
      */
-    public function withClosureName(string $closure_name) : FQSEN {
+    public function withClosureName(
+        Context $context,
+        string $closure_name
+    ) : FQSEN {
         $fqsen = clone($this);
         $fqsen->closure_name = $closure_name;
         return $fqsen;

@@ -35,7 +35,7 @@ class TypedStructuralElement extends StructuralElement {
      * @var FQSEN
      * The fully-qualified structural element name
      */
-    private $fqsen = null;
+    protected $fqsen = null;
 
     /**
      * @param Context $context

@@ -48,24 +48,35 @@ class CodeBase {
         array $internal_trait_name_list,
         array $internal_function_name_list
     ) {
+        $this->resetSummary();
         $this->addClassesByNames($internal_class_name_list);
         $this->addClassesByNames($internal_interface_name_list);
         $this->addClassesByNames($internal_trait_name_list);
         $this->addFunctionsByNames($internal_function_name_list);
+        $this->resetSummary();
+    }
 
+    /**
+     * Reset summary statistics
+     *
+     * @return null
+     */
+    private function resetSummary() {
         $this->summary = [
             'conditionals' => 0,
-            'classes' => 0,
-            'traits' => 0,
-            'methods' => 0,
-            'functions' => 0,
-            'closures' => 0,
+            'classes'      => 0,
+            'traits'       => 0,
+            'methods'      => 0,
+            'functions'    => 0,
+            'closures'     => 0,
         ];
+
     }
 
     public function addClass(Clazz $class_element) {
         $this->class_map[$class_element->getFQSEN()->__toString()]
             = $class_element;
+        $this->incrementClasses();
     }
 
     /**
@@ -108,6 +119,26 @@ class CodeBase {
      */
     public function addMethod(Method $method) {
         $this->method_map[(string)$method->getFQSEN()] = $method;
+        $this->incrementMethods();
+    }
+
+    /**
+     * @param Method $method
+     * A method to add to the code base
+     */
+    public function addFunction(Method $method) {
+        $this->method_map[(string)$method->getFQSEN()] = $method;
+        $this->incrementFunctions();
+    }
+
+
+    /**
+     * @param Method $method
+     * A method to add to the code base
+     */
+    public function addClosure(Method $method) {
+        $this->method_map[(string)$method->getFQSEN()] = $method;
+        $this->incrementClosures();
     }
 
     /**
@@ -151,27 +182,27 @@ class CodeBase {
      *
      */
     public function incrementConditionals() {
-        ++$this->summary['conditionals'];
+        $this->summary['conditionals']++;
     }
 
     public function incrementClasses() {
-        ++$this->summary['classes'];
+        $this->summary['classes']++;
     }
 
     public function incrementTraits() {
-        ++$this->summary['traits'];
+        $this->summary['traits']++;
     }
 
     public function incrementMethods() {
-        ++$this->summary['methods'];
+        $this->summary['methods']++;
     }
 
     public function incrementFunctions() {
-        ++$this->summary['functions'];
+        $this->summary['functions']++;
     }
 
     public function incrementClosures() {
-        ++$this->summary['closures'];
+        $this->summary['closures']++;
     }
 
 }

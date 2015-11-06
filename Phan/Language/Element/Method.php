@@ -401,8 +401,16 @@ class Method extends TypedStructuralElement {
      * @return FQSEN
      */
     public function getFQSEN() : FQSEN {
-        return parent::getFQSEN()
-            ->withMethodName($this->getContext(), $this->getName());
+        // Allow overrides
+        if ($this->fqsen) {
+            return $this->fqsen;
+        }
+
+        // Otherwise, construct it
+        return parent::getFQSEN()->withMethodName(
+            $this->getContext(),
+            $this->getName()
+        );
     }
 
 }

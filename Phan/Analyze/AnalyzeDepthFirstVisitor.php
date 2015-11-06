@@ -256,8 +256,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         return $method->getContext()->withMethodFQSEN(
             $function_fqsen
         );
-
-        return $this->context;
     }
 
     /**
@@ -271,6 +269,76 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitClosure(Node $node) : Context {
+
+        $closure_name = 'closure_' . $node->lineno;
+
+        $closure_fqsen =
+            $this->context->getScopeFQSEN()->withClosureName(
+                $this->context,
+                $closure_name
+            );
+
+        $closure = $this->context->getCodeBase()->getMethodByFQSEN(
+            $closure_fqsen
+        );
+
+        /*
+        if(!empty($scope[$parent_scope]['vars']['this'])) {
+            // TODO: check for a static closure
+            add_var_scope($current_scope, 'this', $scope[$parent_scope]['vars']['this']['type']);
+        }
+         */
+
+        if(!empty($node->children[1])
+            && $node->children[1]->kind == \ast\AST_CLOSURE_USES
+        ) {
+            $uses = $node->children[1];
+
+            foreach($uses->children as $use) {
+                if($use->kind != \ast\AST_CLOSURE_VAR) {
+                    Log::err(
+                        Log::EVAR,
+                        "You can only have variables in a closure use() clause",
+                        $this->context->getFile(),
+                        $node->lineno
+                    );
+                } else {
+                    $name = Deprecated::var_name($use->children[0]);
+                    if(empty($name)) {
+                        continue;
+                    }
+                    if($use->flags & \ast\flags\PARAM_REF) {
+                        if(empty($parent_scope)
+                            || empty($scope[$parent_scope]['vars'])
+                            || empty($scope[$parent_scope]['vars'][$name])
+                        ) {
+                            add_var_scope($parent_scope, $name, '');
+                        }
+                        $scope[$current_scope]['vars'][$name] =
+                            &$scope[$parent_scope]['vars'][$name];
+                    } else {
+                        if(empty($parent_scope)
+                            || empty($scope[$parent_scope]['vars'])
+                            || empty($scope[$parent_scope]['vars'][$name])
+                        ) {
+                            Log::err(
+                                Log::EVAR,
+                                "Variable \${$name} is not defined",
+                                $this->context->getFile(),
+                                $node->lineno
+                            );
+                        } else {
+                            $scope[$current_scope]['vars'][$name] =
+                                $scope[$parent_scope]['vars'][$name];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $closure->getContext()->withClosureFQSEN(
+            $closure_fqsen
+        );
 
         /*
         $closure_name = '{closure '.$ast->id.'}';
@@ -306,7 +374,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             }
         }
         */
-        return $this->context;
     }
     public function visitForeach(Node $node) : Context {
         /*

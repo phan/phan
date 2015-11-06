@@ -251,7 +251,6 @@ class ParseVisitor extends KindVisitorImplementation {
         // Add the class to the code base as a globally
         // accessible object
         $this->context->getCodeBase()->addClass($clazz);
-        $this->context->getCodeBase()->incrementClasses();
 
         // Look to see if we have a parent class
         if(!empty($node->children[0])) {
@@ -366,7 +365,6 @@ class ParseVisitor extends KindVisitorImplementation {
 
         $clazz->addMethod($method);
         $this->context->getCodeBase()->addMethod($method);
-        $this->context->getCodeBase()->incrementMethods();
 
         if ('__construct' === $method_name) {
             $clazz->setIsParentConstructorCalled(false);
@@ -542,8 +540,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
         $method->setFQSEN($function_fqsen);
 
-        $this->context->getCodeBase()->addMethod($method);
-        $this->context->getCodeBase()->incrementFunctions();
+        $this->context->getCodeBase()->addFunction($method);
 
         $context =
             $this->context->withMethodFQSEN($function_fqsen);
@@ -562,13 +559,25 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitClosure(Node $node) : Context {
-        $this->context->getCodeBase()->incrementClosures();
+        $closure_name = 'closure_' . $node->lineno;
+
+        $closure_fqsen =
+            $this->context->getScopeFQSEN()->withClosureName(
+                $this->context,
+                $closure_name
+            );
+
+        $method =
+            Method::fromNode($this->context, $node);
+
+        // Override the FQSEN with the found alternate ID
+        $method->setFQSEN($closure_fqsen);
+
+        $this->context->getCodeBase()->addClosure($method);
 
         return
             $this->context->withClosureFQSEN(
-                $this->context->getScopeFQSEN()->withClosureName(
-                    'closure'
-                )
+                $closure_fqsen
             );
     }
 

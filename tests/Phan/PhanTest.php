@@ -83,14 +83,10 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
                 // print "\n" . $exception->getMessage() . "\n";
             }
 
-            $output = trim(ob_get_clean());
-
-            $output = str_replace($test_file_path, '%s', $output);
-
-            if ($output !== $expected_output) {
-                print "\n>==" . $output . "==<\n";
-                print "\n+==" . $expected_output . "==-\n";
-            }
+            $output = str_replace(
+                $test_file_path, '%s',
+                trim(ob_get_clean())
+            );
 
             $this->assertEquals(
                 $output,
