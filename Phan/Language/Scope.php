@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Phan\Language\Context;
+namespace Phan\Language;
 
 use \Phan\Language\Element\Variable;
 
@@ -9,9 +9,6 @@ class Scope {
      * @var Variable[]
      */
     private $variable_map = [];
-
-    public function __construct() {
-    }
 
     /**
      * @return bool

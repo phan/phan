@@ -2,7 +2,7 @@
 namespace Phan\Language;
 
 use \Phan\CodeBase;
-use \Phan\Language\Context\Scope;
+use \Phan\Language\Scope;
 use \Phan\Language\Element\Clazz;
 use \Phan\Log;
 
