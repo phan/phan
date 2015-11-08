@@ -219,9 +219,7 @@ class FQSEN {
         // If its not fully qualified already, see if we have
         // a mapped NS for it.
         } else if ($context->hasNamespaceMapFor(T_CLASS, $class_name)) {
-            $fqsen = $fqsen->withNamespace(
-                $context->getNamespaceMapFor(T_CLASS, $class_name)
-            );
+            $fqsen = $context->getNamespaceMapFor(T_CLASS, $class_name);
         }
 
         // Set the class name

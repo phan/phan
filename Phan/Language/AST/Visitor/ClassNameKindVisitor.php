@@ -103,6 +103,8 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
     }
 
     public function visitMethodCall(Node $node) : string {
+        $class_name = '';
+
         if($node->children[0]->kind == \ast\AST_VAR) {
             if(!($node->children[0]->children[0] instanceof \ast\Node)) {
                 // $var->method()
@@ -168,19 +170,51 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                 // $var->prop->method()
                 $var = $prop->children[0];
                 if($var->children[0] == 'this') {
-                    if(!$current_class) {
-                        Log::err(Log::ESTATIC, 'Using $this when not in object context', $file, $node->lineno);
+                    if(!$this->context->isClassScope()) {
+                        Log::err(
+                            Log::ESTATIC,
+                            'Using $this when not in object context',
+                            $this->context->getFile(),
+                            $node->lineno
+                        );
+
                         return '';
                     }
-                    if(!($prop->children[1] instanceof \ast\Node)) {
+
+                    $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+                        $this->context->getClassFQSEN()
+                    );
+
+                    if(!($prop->children[1] instanceof Node)) {
+                        $property_name = $prop->children[1];
+                        if ($clazz->hasPropertyWithName($property_name)) {
+                            $property =
+                                $clazz->getPropertyWithName($property_name);
+
+                            // Find the first viable property type
+                            foreach ($property->getUnionType()->nongenerics() as $class_name) {
+                                if ($this->context->getCodeBase()->hasClassWithFQSEN(
+                                    $this->context->getScopeFQSEN()->withClassName(
+                                        $this->context,
+                                        $class_name
+                                    )
+                                )) {
+                                    break;
+                                }
+                            }
+                        }
+
+                        /*
                         if(!empty($current_class['properties'][$prop->children[1]])) {
                             $prop = $current_class['properties'][$prop->children[1]];
                             foreach(explode('|', nongenerics($prop['type'])) as $class_name) {
-                                if(!empty($classes[strtolower($class_name)])) break;
+                                if(!empty($classes[strtolower($class_name)]))
+                                    break;
                             }
                             if(empty($class_name)) return '';
                             $class_name = $classes[strtolower($class_name)]['name'] ?? $class_name;
                         }
+                         */
                     } else {
                         // $this->$prop->method() - too dynamic, give up
                         return '';
