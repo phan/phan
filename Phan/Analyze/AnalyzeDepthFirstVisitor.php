@@ -448,7 +448,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             self::astClassNameFromNode($this->context, $node);
 
         if (!$class_name) {
-            print "AnalyzeDepthFirstVisitor> empty\n";
             Debug::printNode($node);
         }
 

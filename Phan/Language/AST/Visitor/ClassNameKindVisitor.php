@@ -104,7 +104,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
         $class_name = null;
 
         if($node->children[0]->kind == \ast\AST_VAR) {
-            if(!($node->children[0]->children[0] instanceof \ast\Node)) {
+            if(!($node->children[0]->children[0] instanceof Node)) {
                 // $var->method()
                 if($node->children[0]->children[0] == 'this') {
                     if(!$this->context->isClassScope()) {

@@ -260,6 +260,7 @@ trait ArgumentType {
             }
         }
 
+        /*
         if(!$varargs
             && $argcount > $method->getNumberOfParameters()) {
             $err = true;
@@ -290,6 +291,7 @@ trait ArgumentType {
                     );
             }
         }
+        */
 
         // Are the types right?
         // Check if we have any alternate arginfo signatures

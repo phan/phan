@@ -262,6 +262,19 @@ class Method extends TypedStructuralElement {
                 $context
             );
 
+        // @var Parameter[]
+        // The list of parameters specified on the
+        // method
+        $parameter_list =
+            Parameter::listFromNode($context, $node->children[0]);
+
+        // Add each parameter to the scope of the function
+        foreach ($parameter_list as $parameter) {
+            $context = $context->withScopeVariable(
+                $parameter
+            );
+        }
+
         // Create the skeleton method object from what
         // we know so far
         $method = new Method(
@@ -272,11 +285,8 @@ class Method extends TypedStructuralElement {
             $node->flags ?? 0
         );
 
-        // @var Parameter[]
-        // The list of parameters specified on the
-        // method
-        $method->parameter_list =
-            Parameter::listFromNode($context, $node->children[0]);
+        $method->parameter_list = $parameter_list;
+
 
         // Check to see if the comment specifies that the
         // method is deprecated
