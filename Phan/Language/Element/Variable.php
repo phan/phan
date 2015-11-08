@@ -59,7 +59,7 @@ class Variable extends TypedStructuralElement {
         $variable_name = self::astVariableName($node);
 
         // Get the type of the assignment
-        $type =
+        $union_type =
             UnionType::fromNode($context, $node);
 
         return new Variable(
@@ -71,7 +71,7 @@ class Variable extends TypedStructuralElement {
                         $context
                     ),
             $variable_name,
-            $type,
+            $union_type,
             $node->flags
         );
     }

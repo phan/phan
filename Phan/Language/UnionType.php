@@ -89,9 +89,13 @@ class UnionType extends \ArrayObject  {
         }
 
         return new UnionType(
-            array_map(function(string $type_name) use ($context, $type_string) {
-                assert(!empty($type_name), "Type cannot be empty. $type_string given.");
-                return Type::fromStringInContext($type_name, $context);
+            array_map(function(string $type_name) use ($context) {
+                assert(!empty($type_name),
+                    "Type cannot be empty. $type_name given.");
+                return Type::fromStringInContext(
+                    $type_name,
+                    $context
+                );
             }, explode('|', $type_string))
         );
     }

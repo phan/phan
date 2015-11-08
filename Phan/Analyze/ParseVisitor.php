@@ -75,9 +75,9 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitNamespace(Node $node) : Context {
-        return $this->context->withNamespace(
-            (string)$node->children[0]
-        );
+        $namespace = '\\' . (string)$node->children[0];
+
+        return $this->context->withNamespace($namespace);
     }
 
     /**

@@ -50,8 +50,14 @@ class Type {
     ) {
         assert(!empty($name), "Type name cannot be empty");
 
-        $this->name = self::canonicalNameFromName($name);
+        if (!$namespace || '\\' !== $namespace[0]) {
+            throw new \Exception("Namespace must be fully qualified");
+        }
 
+        assert(!empty($namespace), "Namespace cannot be empty");
+        assert('\\' === $namespace[0], "Namespace must be fully qualified");
+
+        $this->name = self::canonicalNameFromName($name);
         $this->namespace = $namespace ?? '\\';
     }
 
@@ -154,16 +160,9 @@ class Type {
 
         // Extract the namespace if the type string is
         // fully-qualified
-        if ('//' === $string[0]) {
-            list($namespace, $type_name) =
-                self::namespaceAndTypeFromString(
-                    $fully_qualified_string
-                );
-
-            if (!empty($namespace)) {
-                $namespace =
-                    '\\' . implode('\\', $namespace_elements);
-            }
+        if ('\\' === $string[0]) {
+            list($namespace, $string) =
+                self::namespaceAndTypeFromString($string);
         }
 
         $type_name =
@@ -171,7 +170,7 @@ class Type {
 
         // If we have a namespace, we're all set
         if (!empty($namespace)) {
-            return new Type($namespace, $string);
+            return new Type($type_name, $namespace);
         }
 
         // Check to see if its a builtin type
@@ -213,7 +212,8 @@ class Type {
         }
 
         // Attach the context's namespace to the type name
-        return new Type($type_name, $context->getNamespace());
+        return new Type($type_name,
+            $context->getNamespace() ?: '\\');
     }
 
     /**
@@ -450,7 +450,7 @@ class Type {
             return $this->name;
         }
 
-        if ('\\' == $this->namespace) {
+        if ('\\' === $this->namespace) {
             return '\\' . $this->name;
         }
 

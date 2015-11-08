@@ -434,6 +434,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             ->withClassName($this->context, $class_name)
             ->withMethodName($this->context, $method_name);
 
+
         if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
             $method_fqsen
         )) {
@@ -489,6 +490,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 $this->context->getFile(),
                 $node->lineno
             );
+            return new UnionType();
         }
 
         $method = $this->context->getCodeBase()->getMethodByFQSEN(

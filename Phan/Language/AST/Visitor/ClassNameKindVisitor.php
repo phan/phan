@@ -74,12 +74,10 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                 // TODO
                 $static_call_ok = true;
             } else {
-                // qualified_name($file, $node->children[0], $namespace);
-                $class_name =
-                    self::astQualifiedName(
-                        $this->context,
-                        $node->children[0]
-                    );
+                $class_name = self::astQualifiedName(
+                    $this->context,
+                    $node->children[0]
+                );
             }
         }
 
@@ -103,7 +101,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
     }
 
     public function visitMethodCall(Node $node) : string {
-        $class_name = '';
+        $class_name = null;
 
         if($node->children[0]->kind == \ast\AST_VAR) {
             if(!($node->children[0]->children[0] instanceof \ast\Node)) {
@@ -162,7 +160,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                         $this->context->getCodeBase()->getClassByFQSEN($class_fqsen)->getName();
                 }
 
-                return $class_name;
+                return (string)$class_name;
             }
         } else if($node->children[0]->kind == \ast\AST_PROP) {
             $prop = $node->children[0];
@@ -192,29 +190,17 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                                 $clazz->getPropertyWithName($property_name);
 
                             // Find the first viable property type
-                            foreach ($property->getUnionType()->nongenerics() as $class_name) {
+                            foreach ($property->getUnionType()->nonGenericTypes() as $class_name) {
                                 if ($this->context->getCodeBase()->hasClassWithFQSEN(
                                     $this->context->getScopeFQSEN()->withClassName(
                                         $this->context,
-                                        $class_name
+                                        (string)$class_name
                                     )
                                 )) {
                                     break;
                                 }
                             }
                         }
-
-                        /*
-                        if(!empty($current_class['properties'][$prop->children[1]])) {
-                            $prop = $current_class['properties'][$prop->children[1]];
-                            foreach(explode('|', nongenerics($prop['type'])) as $class_name) {
-                                if(!empty($classes[strtolower($class_name)]))
-                                    break;
-                            }
-                            if(empty($class_name)) return '';
-                            $class_name = $classes[strtolower($class_name)]['name'] ?? $class_name;
-                        }
-                         */
                     } else {
                         // $this->$prop->method() - too dynamic, give up
                         return '';
@@ -223,7 +209,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
             }
         }
 
-        return $class_name;
+        return (string)$class_name;
     }
 
     public function visitProp(Node $node) : string {
