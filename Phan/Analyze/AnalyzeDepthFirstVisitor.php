@@ -447,12 +447,10 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         $class_name =
             self::astClassNameFromNode($this->context, $node);
 
-        if (!$class_name) {
-            Debug::printNode($node);
-        }
-
+        /*
         assert(!empty($class_name),
             'Class name cannot be empty');
+         */
 
         $class_fqsen =
             $this->context->getScopeFQSEN()->withClassName(

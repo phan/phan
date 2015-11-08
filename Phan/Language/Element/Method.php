@@ -318,6 +318,9 @@ class Method extends TypedStructuralElement {
             $method->getUnionType()->addUnionType($union_type);
         }
 
+        // assert(!$method->getUnionType()->isEmpty(),
+        //     "Method {$method->getFQSEN()} must have a type");
+
         // Add params to local scope for user functions
         if($context->getFile() != 'internal') {
 
