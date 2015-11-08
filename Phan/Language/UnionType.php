@@ -112,32 +112,6 @@ class UnionType {
 
     /**
      * @return bool
-     * True if this is a native type (like int, string, etc.)
-     *
-     * @see \Phan\Deprecated\Util::is_native_type
-     * Formerly `function is_native_type`
-     */
-    public function isNativeType() : bool {
-        return in_array(
-            str_replace('[]', '', (string)$this), [
-                'int',
-                'float',
-                'bool',
-                'true',
-                'string',
-                'callable',
-                'array',
-                'null',
-                'object',
-                'resource',
-                'mixed',
-                'void'
-            ]
-        );
-    }
-
-    /**
-     * @return bool
      * True if this type has a type referencing the
      * class context in which it exists such as 'static'
      * or 'self'.
@@ -270,7 +244,7 @@ class UnionType {
     }
 
 
-    public static function builtinClassPropertyUnionType(
+    public static function builtinClassPropertyType(
         string $class_name,
         string $property_name
     ) : UnionType {
@@ -280,7 +254,7 @@ class UnionType {
         $property_type_name =
             $class_property_type_map[$property_name];
 
-        return new UnionType($property_type_name);
+        return new UnionType([$property_type_name]);
     }
 
     /**
@@ -288,7 +262,7 @@ class UnionType {
      * A list of types for parameters associated with the
      * given builtin function with the given name
      */
-    public static function builtinFunctionPropertyNameUnionTypeMap(
+    public static function builtinFunctionPropertyNameTypeMap(
         FQSEN $function_fqsen
     ) : array {
         $type_name_struct =
@@ -305,7 +279,7 @@ class UnionType {
 
         foreach ($name_type_name_map as $name => $type_name) {
             $property_name_type_map[$name] =
-                new UnionType($type_name);
+                new UnionType([$type_name]);
         }
 
         return $property_name_type_map;
@@ -318,7 +292,7 @@ class UnionType {
      */
     public static function builtinExists(FQSEN $fqsen) : bool {
         return !empty(
-            $BUILTIN_FUNCTION_ARGUMENT_TYPES[$fqsen->__toString()]
+            $BUILTIN_FUNCTION_ARGUMENT_TYPES[(string)$fqsen]
         );
     }
 
