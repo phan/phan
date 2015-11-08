@@ -44,26 +44,26 @@ trait ArgumentType {
                 // (array pieces, string glue) or
                 // (array pieces)
                 if($argcount == 1) {
-                    self::analyzeNodeTypeCast(
+                    self::analyzeNodeUnionTypeCast(
                         $arglist->children[0],
                         $method->getContext(),
-                        new Type(['array']),
+                        new UnionType(['array']),
                         "arg#1(pieces) is %s but {$method->getName()}() takes array when passed only 1 arg"
                     );
                     return;
                 } else if($argcount == 2) {
-                    $arg1_type = Type::typeFromNode(
+                    $arg1_type = UnionType::typeFromNode(
                         $method->getContext(),
                         $arglist->children[0]
                     );
 
-                    $arg2_type = Type::typeFromNode(
+                    $arg2_type = UnionType::typeFromNode(
                         $method->getContext(),
                         $arglist->children[1]
                     );
 
                     if((string)$arg1_type == 'array') {
-                        if (!$arg1_type->canCastToTypeInContext('string', $method->getContext())) {
+                        if (!$arg1_type->canCastToUnionTypeInContext('string', $method->getContext())) {
                             Log::err(
                                 Log::EPARAM,
                                 "arg#2(glue) is $arg2_type but {$method->getName()}() takes string when arg#1 is array",
@@ -72,7 +72,7 @@ trait ArgumentType {
                             );
                         }
                     } else if((string)$arg1_type == 'string') {
-                        if (!$arg1_type->canCastToTypeInContext('array', $method->getContext())) {
+                        if (!$arg1_type->canCastToUnionTypeInContext('array', $method->getContext())) {
                             Log::err(
                                 Log::EPARAM,
                                 "arg#2(pieces) is $arg2_type but {$method->getName()}() takes array when arg#1 is string",
@@ -102,18 +102,18 @@ trait ArgumentType {
                     return;
                 }
 
-                self::analyzeNodeTypeCast(
+                self::analyzeNodeUnionTypeCast(
                     $arglist->children[$argcount - 1],
                     $method->getContext(),
-                    new Type(['callable']),
+                    new UnionType(['callable']),
                     "The last argument to {$method->getName()} must be a callable"
                 );
 
                 for ($i=0; $i < ($argcount - 1); $i++) {
-                    self::analyzeNodeTypeCast(
+                    self::analyzeNodeUnionTypeCast(
                         $arglist->children[$i],
                         $method->getContext(),
-                        new Type(['callable']),
+                        new UnionType(['callable']),
                         "arg#".($i+1)." is %s but {$method->getName()}() takes array"
                     );
                 }
@@ -133,25 +133,25 @@ trait ArgumentType {
 
                 // The last 2 arguments must be a callable and there
                 // can be a variable number of arrays before it
-                self::analyzeNodeTypeCast(
+                self::analyzeNodeUnionTypeCast(
                     $arglist->children[$argcount - 1],
                     $method->getContext(),
-                    new Type(['callable']),
+                    new UnionType(['callable']),
                     "The last argument to {$method->getName()} must be a callable"
                 );
 
-                self::analyzeNodeTypeCast(
+                self::analyzeNodeUnionTypeCast(
                     $arglist->children[$argcount - 2],
                     $method->getContext(),
-                    new Type(['callable']),
+                    new UnionType(['callable']),
                     "The second last argument to {$method->getName()} must be a callable"
                 );
 
                 for($i=0; $i < ($argcount-2); $i++) {
-                    self::analyzeNodeTypeCast(
+                    self::analyzeNodeUnionTypeCast(
                         $arglist->children[$i],
                         $method->getContext(),
-                        new Type(['array']),
+                        new UnionType(['array']),
                         "arg#".($i+1)." is %s but {$method->getName()}() takes array"
                     );
                 }
@@ -161,10 +161,10 @@ trait ArgumentType {
                 // (string str, string token) or (string token)
                 if($argcount == 1) {
                     // If we have just one arg it must be a string token
-                    self::analyzeNodeTypeCast(
+                    self::analyzeNodeUnionTypeCast(
                         $arglist->children[0],
                         $method->getContext(),
-                        new Type(['array']),
+                        new UnionType(['array']),
                         "arg#1(token) is %s but {$method->getName()}() takes string when passed only one arg"
                     );
                 }
@@ -174,10 +174,10 @@ trait ArgumentType {
             case 'max':
                 if($argcount == 1) {
                     // If we have just one arg it must be an array
-                    if (!self::analyzeNodeTypeCast(
+                    if (!self::analyzeNodeUnionTypeCast(
                         $arglist->children[0],
                         $method->getContext(),
-                        new Type(['array']),
+                        new UnionType(['array']),
                         "arg#1(values) is %s but {$method->getName()}() takes array when passed only one arg"
                     )) {
                         return;
@@ -351,20 +351,20 @@ trait ArgumentType {
      * @return bool
      * True if the cast is possible, else false
      */
-    private static function analyzeNodeTypeCast(
+    private static function analyzeNodeUnionTypeCast(
         Node $node,
         Context $context,
-        Type $cast_type,
+        UnionType $cast_type,
         string $log_message
     ) : bool {
         // Get the type of the node
-        $node_type = Type::typeFromNode(
+        $node_type = UnionType::typeFromNode(
             $context,
             $node
         );
 
         // See if it can be cast to the given type
-        $can_cast = $arg_type->canCastToTypeInContext(
+        $can_cast = $arg_type->canCastToUnionTypeInContext(
             $cast_type,
             $context
         );

@@ -52,7 +52,7 @@ class Deprecated {
     }
 
     /**
-     * TODO: Move to Type
+     * TODO: Move to UnionType
      *
      * @return
      * Takes "a|b" and returns "a[]|b[]"

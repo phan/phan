@@ -7,7 +7,7 @@ use \Phan\Language\AST\Visitor\ClassNameKindVisitor;
 use \Phan\Language\AST\Visitor\ClassNameValidationVisitor;
 use \Phan\Language\Element\Variable;
 use \Phan\Log;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \ast\Node;
 
 /**
@@ -84,11 +84,11 @@ trait AST {
         if(!($node instanceof \ast\Node)
             && $node->kind != \ast\AST_NAME
         ) {
-            return self::astVarType($context, $node);
+            return self::astVarUnionType($context, $node);
         }
 
         $name = $node->children[0];
-        $type = new Type([$name]);
+        $type = new UnionType([$name]);
 
         if($node->flags & \ast\flags\NAME_NOT_FQ) {
 
@@ -135,26 +135,26 @@ trait AST {
      * @param Context $context
      * @param null|string\Node $node
      *
-     * @return Type
+     * @return UnionType
      *
      * @see \Phan\Deprecated\Pass2::var_type
      * From `function var_type`
      */
-    protected static function astVarType(
+    protected static function astVarUnionType(
         Context $context,
         $node
-    ) : Type {
+    ) : UnionType {
 
         // Check for $$var or ${...} (whose idea was that anyway?)
         if(($node->children[0] instanceof Node)
             && ($node->children[0]->kind == \ast\AST_VAR
                 || $node->children[0]->kind == \ast\AST_BINARY_OP)
         ) {
-            return new Type(['mixed']);
+            return new UnionType(['mixed']);
         }
 
         if($node->children[0] instanceof Node) {
-            return Type::none();
+            return UnionType::none();
         }
 
         $variable_name = $node->children[0];
@@ -172,7 +172,7 @@ trait AST {
             $variable =
                 $context->getScope()->getVariableWithName($variable_name);
 
-            return $variable->getType();
+            return $variable->getUnionType();
 
             /*
             if(!empty($scope[$current_scope]['vars'][$node->children[0]]['tainted'])
@@ -184,7 +184,7 @@ trait AST {
             */
         }
 
-        return Type::none();
+        return UnionType::none();
     }
 
     /**

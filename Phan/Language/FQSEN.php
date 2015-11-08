@@ -390,12 +390,12 @@ class FQSEN {
     }
 
     /**
-     * @return Type
+     * @return UnionType
      * A string representing this fully-qualified structural
      * element name.
      */
-    public function asType() : Type {
-        return new Type([$this->__toString()]);
+    public function asUnionType() : Type {
+        return new UnionType([$this->__toString()]);
     }
 
     /**

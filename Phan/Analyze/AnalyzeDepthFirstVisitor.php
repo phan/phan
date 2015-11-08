@@ -16,7 +16,7 @@ use \Phan\Language\Element\{
     Variable
 };
 use \Phan\Language\FQSEN;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 

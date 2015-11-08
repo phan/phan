@@ -4,7 +4,7 @@ namespace Phan\Language\Element;
 
 use \Phan\Debug;
 use \Phan\Language\Context;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
@@ -17,7 +17,7 @@ class Parameter extends Variable {
     private $default_value = null;
 
     /**
-     * @var Type
+     * @var UnionType
      * The type of the default value if any
      */
     private $default_value_type = null;
@@ -32,7 +32,7 @@ class Parameter extends Variable {
      * @param string $name,
      * The name of the typed structural element
      *
-     * @param Type $type,
+     * @param UnionType $type,
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
@@ -46,7 +46,7 @@ class Parameter extends Variable {
         Context $context,
         Comment $comment,
         string $name,
-        Type $type,
+        UnionType $type,
         int $flags
     ) {
         parent::__construct(
@@ -86,12 +86,12 @@ class Parameter extends Variable {
     }
 
     /**
-     * @param Type $type
+     * @param UnionType $type
      * The type of the default value for this parameter
      *
      * @return null
      */
-    public function setDefaultValueType(Type $type) {
+    public function setDefaultValueUnionType(UnionType $type) {
         $this->default_value_type = $type;
     }
 
@@ -100,16 +100,16 @@ class Parameter extends Variable {
      * True if this parameter has a type for its
      * default value
      */
-    public function hasDefaultValueType() : bool {
+    public function hasDefaultValueUnionType() : bool {
         return !empty($this->default_value_type);
     }
 
     /**
-     * @return Type
+     * @return UnionType
      * The type of the default value for this parameter
      * if it exists
      */
-    public function getDefaultValueType() : Type {
+    public function getDefaultValueType() : UnionType {
         return $this->default_value_type;
     }
 
@@ -165,7 +165,7 @@ class Parameter extends Variable {
         assert($node instanceof Node, "node was not an \\ast\\Node");
 
         // Get the type of the parameter
-        $type = Type::typeFromSimpleNode(
+        $type = UnionType::typeFromSimpleNode(
             $context,
             $node->children[0]
         );
@@ -188,8 +188,8 @@ class Parameter extends Variable {
             $parameter->setDefaultValue($node->children[2]);
 
             // Set the type
-            $parameter->setDefaultValueType(
-                Type::typeFromNode(
+            $parameter->setDefaultValueUnionType(
+                UnionType::typeFromNode(
                     $context,
                     $node->children[2]
                 )
@@ -205,7 +205,7 @@ class Parameter extends Variable {
      */
     public function isOptional() : bool {
         return (
-            $this->hasDefaultValueType()
+            $this->hasDefaultValueUnionType()
             || $this->hasDefaultValue()
         );
     }
@@ -219,8 +219,8 @@ class Parameter extends Variable {
     public function __toString() : string {
         $string = '';
 
-        if ($this->getType()->hasAnyType()) {
-            $string .= (string)$this->getType() . ' ';
+        if ($this->getUnionType()->hasAnyType()) {
+            $string .= (string)$this->getUnionType() . ' ';
         }
 
         $string .= $this->getName();

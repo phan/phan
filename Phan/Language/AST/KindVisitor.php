@@ -316,7 +316,7 @@ interface KindVisitor {
     /**
      * Visit a node with kind `\ast\AST_TYPE`
      */
-    public function visitType(Node $node);
+    public function visitUnionType(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_UNARY_MINUS`

@@ -147,7 +147,7 @@ class Element {
         case \ast\AST_SWITCH_LIST:
             return $visitor->visitSwitchList($this->node);
         case \ast\AST_TYPE:
-            return $visitor->visitType($this->node);
+            return $visitor->visitUnionType($this->node);
         case \ast\AST_UNARY_MINUS:
             return $visitor->visitUnaryMinus($this->node);
         case \ast\AST_UNARY_OP:
@@ -332,21 +332,21 @@ class Element {
         case \ast\flags\RETURNS_REF:
             return $visitor->visitReturnsRef($this->node);
         case \ast\flags\TYPE_ARRAY:
-            return $visitor->visitTypeArray($this->node);
+            return $visitor->visitUnionTypeArray($this->node);
         case \ast\flags\TYPE_BOOL:
-            return $visitor->visitTypeBool($this->node);
+            return $visitor->visitUnionTypeBool($this->node);
         case \ast\flags\TYPE_CALLABLE:
-            return $visitor->visitTypeCallable($this->node);
+            return $visitor->visitUnionTypeCallable($this->node);
         case \ast\flags\TYPE_DOUBLE:
-            return $visitor->visitTypeDouble($this->node);
+            return $visitor->visitUnionTypeDouble($this->node);
         case \ast\flags\TYPE_LONG:
-            return $visitor->visitTypeLong($this->node);
+            return $visitor->visitUnionTypeLong($this->node);
         case \ast\flags\TYPE_NULL:
-            return $visitor->visitTypeNull($this->node);
+            return $visitor->visitUnionTypeNull($this->node);
         case \ast\flags\TYPE_OBJECT:
-            return $visitor->visitTypeObject($this->node);
+            return $visitor->visitUnionTypeObject($this->node);
         case \ast\flags\TYPE_STRING:
-            return $visitor->visitTypeString($this->node);
+            return $visitor->visitUnionTypeString($this->node);
         case \ast\flags\UNARY_BITWISE_NOT:
             return $visitor->visitUnaryBitwiseNot($this->node);
         case \ast\flags\UNARY_BOOL_NOT:

@@ -5,7 +5,7 @@ namespace Phan\Language\Element;
 use \Phan\Debug;
 use \Phan\Deprecated;
 use \Phan\Language\Context;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \ast\Node;
 
 class Variable extends TypedStructuralElement {
@@ -21,7 +21,7 @@ class Variable extends TypedStructuralElement {
      * @param string $name,
      * The name of the typed structural element
      *
-     * @param Type $type,
+     * @param UnionType $type,
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
@@ -35,7 +35,7 @@ class Variable extends TypedStructuralElement {
         Context $context,
         Comment $comment,
         string $name,
-        Type $type,
+        UnionType $type,
         int $flags
     ) {
         parent::__construct(
@@ -60,7 +60,7 @@ class Variable extends TypedStructuralElement {
 
         // Get the type of the assignment
         $type =
-            Type::typeFromNode($context, $node);
+            UnionType::typeFromNode($context, $node);
 
         return new Variable(
             $context
@@ -95,7 +95,7 @@ class Variable extends TypedStructuralElement {
     }
 
     public function __toString() : string {
-        return "{$this->getType()} {$this->getName()}";
+        return "{$this->getUnionType()} {$this->getName()}";
     }
 
 }

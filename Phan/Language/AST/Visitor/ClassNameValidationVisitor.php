@@ -3,7 +3,7 @@ namespace Phan\Language\AST\Visitor;
 
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \Phan\Language\Context;
 use \Phan\Log;
 use \ast\Node;
@@ -78,7 +78,7 @@ class ClassNameValidationVisitor
             );
 
         if ($clazz->isAbstract()) {
-            if (!Type::typeFromString($this->class_name)::isNativeType()) {
+            if (!UnionType::typeFromString($this->class_name)::isNativeType()) {
                 if ($this->context->isGlobalScope()) {
                     // TODO: ?
                     list($scope_class,) = explode('::', $current_scope);
@@ -104,7 +104,7 @@ class ClassNameValidationVisitor
         }
 
         if ($clazz->isInterface()) {
-            if (!Type::typeFromString($this->class_name)::isNativeType()) {
+            if (!UnionType::typeFromString($this->class_name)::isNativeType()) {
                 Log::err(
                     Log::ETYPE,
                     "Cannot instantiate interface {$this->class_name}",
@@ -155,7 +155,7 @@ class ClassNameValidationVisitor
      */
     private function classExistsOrIsNative(Node $node) : bool {
         if (!$this->classExists()
-            && !Type::typeFromString($this->class_name)->isNativeType()
+            && !UnionType::typeFromString($this->class_name)->isNativeType()
         ) {
             Log::err(
                 Log::EUNDEF,

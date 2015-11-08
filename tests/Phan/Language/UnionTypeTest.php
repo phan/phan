@@ -9,9 +9,9 @@ $internal_function_name_list = get_defined_functions()['internal'];
 use \Phan\CodeBase;
 use \Phan\Configuration;
 use \Phan\Language\Context;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 
-class TypeTest extends \PHPUnit_Framework_TestCase {
+class UnionTypeTest extends \PHPUnit_Framework_TestCase {
 
     /** @var Context */
     protected $context = null;
@@ -37,37 +37,37 @@ class TypeTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testInt() {
-        $this->assertTypeStringEqual('42', 'int');
+        $this->assertUnionTypeStringEqual('42', 'int');
     }
 
     public function testString() {
         try {
-            $this->assertTypeStringEqual('"a string"', 'string');
+            $this->assertUnionTypeStringEqual('"a string"', 'string');
         } catch (Exception $exception) {
             print((string)$exception);
         }
     }
 
     public function testArrayUniform() {
-        $this->assertTypeStringEqual(
+        $this->assertUnionTypeStringEqual(
             '[1, 2, 3]',
             'int[]'
         );
     }
 
     public function testArrayMixed() {
-        $this->assertTypeStringEqual(
+        $this->assertUnionTypeStringEqual(
             '[1, "string"]', 'array'
         );
     }
 
     public function testArrayEmpty() {
-        $this->assertTypeStringEqual(
+        $this->assertUnionTypeStringEqual(
             '[]', 'array'
         );
     }
     public function testInternalObject() {
-        $this->assertTypeStringEqual(
+        $this->assertUnionTypeStringEqual(
             'new SplStack();', 'splstack'
         );
     }
@@ -82,7 +82,7 @@ class TypeTest extends \PHPUnit_Framework_TestCase {
      * @param string $type_name
      * The expected type of the statement
      */
-    private function assertTypeStringEqual(
+    private function assertUnionTypeStringEqual(
         string $code_stub,
         string $type_name)
     {
@@ -99,7 +99,7 @@ class TypeTest extends \PHPUnit_Framework_TestCase {
      * code.
      */
     private function typeStringFromCode(string $code) : string {
-        return Type::typeFromNode(
+        return UnionType::typeFromNode(
             $this->context,
             \ast\parse_code(
                 $code,

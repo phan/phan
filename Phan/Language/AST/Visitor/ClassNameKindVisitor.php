@@ -5,7 +5,7 @@ use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
@@ -134,7 +134,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
 
                 // Hack - loop through the possible types of the var and assume
                 // first found class is correct
-                foreach($variable->getType()->nongenerics()->getTypeNameList() as $type_name) {
+                foreach($variable->getUnionType()->nongenerics()->getTypeNameList() as $type_name) {
                     if ($this->context->getCodeBase()->hasClassWithFQSEN(
                         $this->context->getScopeFQSEN()->withClassName(
                             $this->context,

@@ -255,7 +255,7 @@ abstract class KindVisitorImplementation implements KindVisitor {
         return $this->visit($node);
     }
 
-    public function visitType(Node $node) {
+    public function visitUnionType(Node $node) {
         return $this->visit($node);
     }
 

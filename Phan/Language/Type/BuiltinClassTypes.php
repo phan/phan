@@ -1,5 +1,5 @@
 <?php
-namespace Phan\Language\Type;
+namespace Phan\Language\UnionType;
 
 return [
 	'mysqli' => [

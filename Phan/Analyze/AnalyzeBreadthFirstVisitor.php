@@ -16,7 +16,7 @@ use \Phan\Language\Element\{
     Variable
 };
 use \Phan\Language\FQSEN;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
@@ -80,7 +80,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             && $node->children[0]->kind == \ast\AST_LIST
         ) {
             $right_type =
-                Type::typeFromNode($context, $node);
+                UnionType::typeFromNode($context, $node);
 
             $type = $right_type->generics();
 
@@ -128,8 +128,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                     $name = $temp->children[1];
 
                     if($depth==1) {
-                        $variable->setType(
-                            Type::typeFromNode(
+                        $variable->setUnionType(
+                            UnionType::typeFromNode(
                                 $context,
                                 $node->children[1]
                             )
@@ -138,7 +138,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                         // TODO: track array content types
                         // This is a $GLOBALS['a']['b'] type of
                         // assignment
-                        $variable->setType(new Type(['array']));
+                        $variable->setUnionType(new Type(['array']));
                     }
                 }
             }
@@ -566,7 +566,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             if(!$found) Log::err(Log::EUNDEF, "call to undefined function {$func_name}()", $file, $ast->lineno);
             else {
                 // Ok, the function exists, but are we calling it correctly?
-                if($found instanceof ReflectionType) echo "oops at $file:{$ast->lineno}\n";  // DEBUG
+                if($found instanceof ReflectionUnionType) echo "oops at $file:{$ast->lineno}\n";  // DEBUG
                 arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
                 if($found['file'] != 'internal') {
                     // re-check the function's ast with these args

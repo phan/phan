@@ -3,7 +3,7 @@ namespace Phan\Language\Type;
 
 use \Phan\Language\AST\FlagVisitorImplementation;
 use \Phan\Language\Context;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \ast\Node;
 
 class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
@@ -23,7 +23,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
     public function visitBinaryConcat(Node $node) {
         $temp_taint = false;
 
-        Type::typeFromNode(
+        UnionType::typeFromNode(
             $this->context,
             $node->children[0],
             $temp_taint
@@ -31,10 +31,10 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
 
         if($temp_taint) {
             $taint = true;
-            return new Type(['string']);
+            return new UnionType(['string']);
         }
 
-        Type::typeFromNode(
+        UnionType::typeFromNode(
             $this->context,
             $node->children[1],
             $temp_taint
@@ -44,15 +44,15 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
             $taint = true;
         }
 
-        return new Type(['string']);
+        return new UnionType(['string']);
     }
 
     private function visitBinaryOpCommon(Node $node) {
         $left =
-            Type::typeFromNode($this->context, $node->chilren[0]);
+            UnionType::typeFromNode($this->context, $node->chilren[0]);
 
         $right =
-            Type::typeFromNode($this->context, $node->chilren[1]);
+            UnionType::typeFromNode($this->context, $node->chilren[1]);
 
         $taint = false;
         // If we have generics and no non-generics on the left and the right is not array-like ...
@@ -79,7 +79,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $node->lineno
             );
         }
-        return new Type(['bool']);
+        return new UnionType(['bool']);
     }
 
     public function visitBinaryIsIdentical(Node $node) {
@@ -117,17 +117,17 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
 
     public function visitBinaryAdd(Node $node) {
         $left =
-            Type::typeFromNode($this->context, $node->children[0]);
+            UnionType::typeFromNode($this->context, $node->children[0]);
 
         $right =
-            Type::typeFromNode($this->context, $node->chilren[1]);
+            UnionType::typeFromNode($this->context, $node->chilren[1]);
 
         // fast-track common cases
         if($left=='int' && $right == 'int') {
-            return new Type(['int']);
+            return new UnionType(['int']);
         }
         if(($left=='int' || $left=='float') && ($right=='int' || $right=='float')) {
-            return new Type(['float']);
+            return new UnionType(['float']);
         }
 
         $left_is_array = (!empty(generics($left)) && empty(nongenerics($left)));
@@ -140,7 +140,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $context->getFile(),
                 $node->lineno
             );
-            return Type::none();
+            return UnionType::none();
         } else if($right_is_array
             && !type_check($left, 'array')
         ) {
@@ -150,24 +150,24 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $file,
                 $node->lineno
             );
-            return Type::none();
+            return UnionType::none();
         } else if($left_is_array || $right_is_array) {
             // If it is a '+' and we know one side is an array and the other is unknown, assume array
-            return new Type(['array']);
+            return new UnionType(['array']);
         }
 
-        return new Type(['int', 'float']);
+        return new UnionType(['int', 'float']);
     }
 
     public function visit(Node $node) {
         $left =
-            Type::typeFromNode(
+            UnionType::typeFromNode(
                 $this->context,
                 $node->children[0]
             );
 
         $right =
-            Type::typeFromNode($this->context, $node->children[1]);
+            UnionType::typeFromNode($this->context, $node->children[1]);
 
         if ($left->hasTypeName('array')
             || $right->hasTypeName('array')
@@ -178,18 +178,18 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $context->getFile(),
                 $node->lineno
             );
-            return Type::none();
+            return UnionType::none();
         } else if ($left->hasTypeName('int')
             && $right->hasTypeName('int')
         ) {
-            return new Type(['int']);
+            return new UnionType(['int']);
         } else if ($left->hasTypeName('float')
             && $right->hasTypeName('float')
         ) {
-            return new Type(['float']);
+            return new UnionType(['float']);
         }
 
-        return new Type(['int', 'float']);
+        return new UnionType(['int', 'float']);
     }
 
 }

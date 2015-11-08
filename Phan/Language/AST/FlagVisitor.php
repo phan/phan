@@ -251,42 +251,42 @@ interface FlagVisitor {
     /**
      * Visit a node with flag `\ast\flags\TYPE_ARRAY`
      */
-    public function visitTypeArray(Node $node);
+    public function visitUnionTypeArray(Node $node);
 
     /**
      * Visit a node with flag `\ast\flags\TYPE_BOOL`
      */
-    public function visitTypeBool(Node $node);
+    public function visitUnionTypeBool(Node $node);
 
     /**
      * Visit a node with flag `\ast\flags\TYPE_CALLABLE`
      */
-    public function visitTypeCallable(Node $node);
+    public function visitUnionTypeCallable(Node $node);
 
     /**
      * Visit a node with flag `\ast\flags\TYPE_DOUBLE`
      */
-    public function visitTypeDouble(Node $node);
+    public function visitUnionTypeDouble(Node $node);
 
     /**
      * Visit a node with flag `\ast\flags\TYPE_LONG`
      */
-    public function visitTypeLong(Node $node);
+    public function visitUnionTypeLong(Node $node);
 
     /**
      * Visit a node with flag `\ast\flags\TYPE_NULL`
      */
-    public function visitTypeNull(Node $node);
+    public function visitUnionTypeNull(Node $node);
 
     /**
      * Visit a node with flag `\ast\flags\TYPE_OBJECT`
      */
-    public function visitTypeObject(Node $node);
+    public function visitUnionTypeObject(Node $node);
 
     /**
      * Visit a node with flag `\ast\flags\TYPE_STRING`
      */
-    public function visitTypeString(Node $node);
+    public function visitUnionTypeString(Node $node);
 
     /**
      * Visit a node with flag `\ast\flags\UNARY_BITWISE_NOT`

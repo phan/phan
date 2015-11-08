@@ -9,7 +9,7 @@ use \Phan\Language\Element\Constant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 
 class Clazz extends TypedStructuralElement {
 
@@ -66,7 +66,7 @@ class Clazz extends TypedStructuralElement {
      * @param string $name,
      * The name of the typed structural element
      *
-     * @param Type $type,
+     * @param UnionType $type,
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
@@ -80,7 +80,7 @@ class Clazz extends TypedStructuralElement {
         Context $context,
         Comment $comment,
         string $name,
-        Type $type,
+        UnionType $type,
         int $flags
     ) {
         parent::__construct(
@@ -152,7 +152,7 @@ class Clazz extends TypedStructuralElement {
             $context,
             Comment::none(),
             $class->getName(),
-            new Type([$class->getName()]),
+            new UnionType([$class->getName()]),
             $flags
         );
 
@@ -172,7 +172,7 @@ class Clazz extends TypedStructuralElement {
                     $context->withClassFQSEN($clazz->getFQSEN()),
                     Comment::none(),
                     $name,
-                    Type::typeForObject($value),
+                    UnionType::typeForObject($value),
                     0
                 );
 
@@ -206,7 +206,7 @@ class Clazz extends TypedStructuralElement {
                     $context,
                     Comment::none(),
                     $name,
-                    Type::typeForObject($value),
+                    UnionType::typeForObject($value),
                     0
                 );
         }
@@ -240,8 +240,8 @@ class Clazz extends TypedStructuralElement {
 
         // Add the parent to the union type of this
         // class
-        $this->getType()->addType(
-            Type::typeFromString((string)$fqsen)
+        $this->getUnionType()->addType(
+            UnionType::typeFromString((string)$fqsen)
         );
 
     }
@@ -274,8 +274,8 @@ class Clazz extends TypedStructuralElement {
 
         // Add the interface to the union type of this
         // class
-        $this->getType()->addType(
-            Type::typeFromString((string)$fqsen)
+        $this->getUnionType()->addType(
+            UnionType::typeFromString((string)$fqsen)
         );
     }
 

@@ -9,7 +9,7 @@ use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
 use \Phan\Language\FQSEN;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
@@ -241,7 +241,7 @@ class ParseVisitor extends KindVisitorImplementation {
                 ->withLineNumberEnd($node->endLineno ?: -1),
             Comment::fromString($node->docComment ?: ''),
             $node->name,
-            new Type([$node->name]),
+            new UnionType([$node->name]),
             $node->flags
         );
 
@@ -371,7 +371,7 @@ class ParseVisitor extends KindVisitorImplementation {
         }
 
         if ('__invoke' === $method_name) {
-            $clazz->getType()->addTypeName('callable');
+            $clazz->getUnionType()->addTypeName('callable');
         }
 
         // Send the context into the method
@@ -411,8 +411,8 @@ class ParseVisitor extends KindVisitorImplementation {
                 continue;
             }
 
-            // @var Type
-            $type = Type::typeFromNode(
+            // @var UnionType
+            $type = UnionType::typeFromNode(
                 $this->context,
                 $node->children[1]
             );
@@ -441,7 +441,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
             // Set the node type to be the declared type. This may
             // be overridden if a @var sets the type
-            $property->setDeclaredType($type);
+            $property->setDeclaredUnionType($type);
 
             // Add the property to the class
             $clazz->addProperty($property);
@@ -449,13 +449,13 @@ class ParseVisitor extends KindVisitorImplementation {
             // Look for any @var declarations
             foreach ($comment->getVariableList() as $i => $variable) {
                 if ((string)$type != 'null'
-                    && !$type->canCastToTypeInContext(
-                        $variable->getType(),
+                    && !$type->canCastToUnionTypeInContext(
+                        $variable->getUnionType(),
                         $this->context
                     )
                 ) {
                     Log::err(Log::ETYPE,
-                        "property is declared to be {$variable->getType()} but was assigned $type",
+                        "property is declared to be {$variable->getUnionType()} but was assigned $type",
                         $this->context->getFile(),
                         $node->lineno
                     );
@@ -464,12 +464,12 @@ class ParseVisitor extends KindVisitorImplementation {
                 // Set the declared type to the doc-comment type and add
                 // |null if the default value is null
 
-                $property->getType()->addType(
-                    $variable->getType()
+                $property->getUnionType()->addType(
+                    $variable->getUnionType()
                 );
 
-                $property->setDeclaredType(
-                    $variable->getType()
+                $property->setDeclaredUnionType(
+                    $variable->getUnionType()
                 );
             }
         }
@@ -497,7 +497,7 @@ class ParseVisitor extends KindVisitorImplementation {
                     ->withLineNumberEnd($node->endLineno ?? 0),
                 Comment::fromString($node->docComment ?? ''),
                 $node->children[0],
-                Type::typeFromNode(
+                UnionType::typeFromNode(
                     $this->context,
                     $node->children[1]
                 ),

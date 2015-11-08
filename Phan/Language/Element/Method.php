@@ -7,7 +7,7 @@ use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
@@ -48,7 +48,7 @@ class Method extends TypedStructuralElement {
      * @param string $name,
      * The name of the typed structural element
      *
-     * @param Type $type,
+     * @param UnionType $type,
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
@@ -66,7 +66,7 @@ class Method extends TypedStructuralElement {
         Context $context,
         Comment $comment,
         string $name,
-        Type $type,
+        UnionType $type,
         int $flags,
         int $number_of_required_parameters = 0,
         int $number_of_optional_parameters = 0
@@ -124,7 +124,7 @@ class Method extends TypedStructuralElement {
             $context,
             Comment::none(),
             $reflection_function->getName(),
-            Type::none(),
+            UnionType::none(),
             0,
             $number_of_required_parameters,
             $number_of_optional_parameters
@@ -159,7 +159,7 @@ class Method extends TypedStructuralElement {
             $context,
             Comment::none(),
             $method->name,
-            Type::none(),
+            UnionType::none(),
             $reflection_method->getModifiers(),
             $number_of_required_parameters,
             $number_of_optional_parameters
@@ -173,7 +173,7 @@ class Method extends TypedStructuralElement {
 
         // Populate multiple-dispatch alternate method
         foreach ($fqsen->alternateFQSENInfiniteList() as $alt_fqsen) {
-            if (!Type::builtinExists($alt_fqsen)) {
+            if (!UnionType::builtinExists($alt_fqsen)) {
                 break;
             }
 
@@ -203,7 +203,7 @@ class Method extends TypedStructuralElement {
                     $context,
                     Comment::none(),
                     $param->name,
-                    new Type([(empty($arginfo) ? '' : (next($arginfo) ?: ''))]),
+                    new UnionType([(empty($arginfo) ? '' : (next($arginfo) ?: ''))]),
                     $flags
                 );
 
@@ -264,7 +264,7 @@ class Method extends TypedStructuralElement {
             $context,
             $comment,
             $node->name,
-            Type::none(),
+            UnionType::none(),
             $node->flags ?? 0
         );
 
@@ -280,13 +280,13 @@ class Method extends TypedStructuralElement {
 
         // Take a look at method return types
         if($node->children[3] !== null) {
-            $method->getType()->addType(
-                Type::typeFromSimpleNode(
+            $method->getUnionType()->addType(
+                UnionType::typeFromSimpleNode(
                     $context,
                     $node->children[3]
                 )
             );
-        } else if ($comment->hasReturnType()) {
+        } else if ($comment->hasReturnUnionType()) {
 
             // See if we have a return type specified in the comment
             $type = $comment->getReturnType();
@@ -296,11 +296,11 @@ class Method extends TypedStructuralElement {
                 // point, but fill it in regardless. It will be partially
                 // correct
                 if ($context->hasClassFQSEN()) {
-                    $type = $context->getClassFQSEN()->asType();
+                    $type = $context->getClassFQSEN()->asUnionType();
                 }
             }
 
-            $method->getType()->addType($type);
+            $method->getUnionType()->addType($type);
         }
 
         // Add params to local scope for user functions
@@ -308,7 +308,7 @@ class Method extends TypedStructuralElement {
 
             $parameter_offset = 0;
             foreach ($method->parameter_list as $i => $parameter) {
-                if (!$parameter->getType()->hasAnyType()) {
+                if (!$parameter->getUnionType()->hasAnyType()) {
                     // If there is no type specified in PHP, check
                     // for a docComment with @param declarations. We
                     // assume order in the docComment matches the
@@ -317,25 +317,25 @@ class Method extends TypedStructuralElement {
                         $comment_type =
                             $comment->getParameterAtOffset(
                                 $parameter_offset
-                            )->getType();
+                            )->getUnionType();
 
-                        $parameter->getType()->addType($comment_type);
+                        $parameter->getUnionType()->addType($comment_type);
                     }
                 }
 
                 // If there's a default value on the parameter, check to
                 // see if the type of the default is cool with the
                 // specified type.
-                if ($parameter->hasDefaultValueType()) {
+                if ($parameter->hasDefaultValueUnionType()) {
                     $default_type = $parameter->getDefaultValueType();
 
-                    if (!$default_type->canCastToTypeInContext(
-                        $parameter->getType(),
+                    if (!$default_type->canCastToUnionTypeInContext(
+                        $parameter->getUnionType(),
                         $context
                     )) {
                         Log::err(
                             Log::ETYPE,
-                            "Default value for {$parameter->getType()} \${$parameter->getName()} can't be {$default_type}",
+                            "Default value for {$parameter->getUnionType()} \${$parameter->getName()} can't be {$default_type}",
                             $context->getFile(),
                             $node->lineno
                         );
@@ -346,9 +346,9 @@ class Method extends TypedStructuralElement {
                     // doesn't mean that is its type. Any type can default
                     // to null
                     if ((string)$default_type === 'null'
-                        && $parameter->getType()->hasAnyType()
+                        && $parameter->getUnionType()->hasAnyType()
                     ) {
-                        $parameter->getType()->addType($type);
+                        $parameter->getUnionType()->addType($type);
                     }
                 }
 

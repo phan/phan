@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element\Comment;
 
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 
 class Parameter {
 
@@ -13,7 +13,7 @@ class Parameter {
     private $name = null;
 
     /**
-     * @var Type
+     * @var UnionType
      * The type of the parameter
      */
     private $type = null;
@@ -28,7 +28,7 @@ class Parameter {
      * @param string $name
      * The name of the parameter
      *
-     * @param Type $type
+     * @param UnionType $type
      * The type of the parameter
      *
      * @param string $comment
@@ -36,7 +36,7 @@ class Parameter {
      */
     public function __construct(
         string $name,
-        Type $type,
+        UnionType $type,
         string $comment
     ) {
         $this->name = $name;
@@ -53,10 +53,10 @@ class Parameter {
     }
 
     /**
-     * @return Type
+     * @return UnionType
      * The type of the parameter
      */
-    public function getType() : Type {
+    public function getUnionType() : UnionType {
         return $this->type;
     }
 
@@ -71,7 +71,7 @@ class Parameter {
     public function __toString() : string {
         $string = '';
 
-        if ($this->type->hasAnyType()) {
+        if ($this->type->hasAnyUnionType()) {
             $string .= (string)$this->type . ' ';
         }
 

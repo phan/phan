@@ -19,7 +19,7 @@ $BUILTIN_CLASS_TYPES =
 $BUILTIN_FUNCTION_ARGUMENT_TYPES =
     require(__DIR__.'/Type/BuiltinFunctionArgumentTypes.php');
 
-class Type {
+class UnionType {
     use \Phan\Language\AST;
 
     /**
@@ -43,19 +43,19 @@ class Type {
     }
 
     /**
-     * Get a Type specifying that there are no
+     * Get a UnionType specifying that there are no
      * known types on a thing.
      */
-    public static function none() : Type {
-        return new Type([]);
+    public static function none() : UnionType {
+        return new UnionType([]);
     }
 
     /**
-     * @return Type
-     * A Type for the given object
+     * @return UnionType
+     * A UnionType for the given object
      */
-    public static function typeForObject($object) : Type {
-        return new Type([gettype($object)]);
+    public static function typeForObject($object) : UnionType {
+        return new UnionType([gettype($object)]);
     }
 
     /**
@@ -63,10 +63,10 @@ class Type {
      * A '|' delimited string representing a type in the form
      * 'int|string|null|ClassName'.
      *
-     * @return Type
+     * @return UnionType
      */
-    public static function typeFromString(string $type_string) : Type {
-        return new Type(explode('|', $type_string));
+    public static function typeFromString(string $type_string) : UnionType {
+        return new UnionType(explode('|', $type_string));
     }
 
     /**
@@ -82,7 +82,7 @@ class Type {
     public static function typeFromSimpleNode(
         Context $context,
         $node
-    ) : Type {
+    ) : UnionType {
         if($node instanceof \ast\Node) {
             switch($node->kind) {
             case \ast\AST_NAME:
@@ -107,7 +107,7 @@ class Type {
         } else {
             $result = (string)$node;
         }
-        return Type::typeFromString($result);
+        return UnionType::typeFromString($result);
     }
 
     /**
@@ -154,7 +154,7 @@ class Type {
      * @param Context $context
      * @param Node|string|null $node
      *
-     * @return Type
+     * @return UnionType
      *
      * @see \Phan\Deprecated\Pass2::node_type
      * Formerly 'function node_type'
@@ -162,10 +162,10 @@ class Type {
     public static function typeFromNode(
         Context $context,
         $node
-    ) : Type {
+    ) : UnionType {
         if(!($node instanceof Node)) {
             if($node === null) {
-                return Type::none();
+                return UnionType::none();
             }
             return self::typeForObject($node);
         }
@@ -270,25 +270,25 @@ class Type {
     }
 
 
-    public static function builtinClassPropertyType(
+    public static function builtinClassPropertyUnionType(
         string $class_name,
         string $property_name
-    ) : Type {
+    ) : UnionType {
         $class_property_type_map =
             $BUILTIN_CLASS_TYPES[strtolower($class_name)]['properties'];
 
         $property_type_name =
             $class_property_type_map[$property_name];
 
-        return new Type($property_type_name);
+        return new UnionType($property_type_name);
     }
 
     /**
-     * @return Type[]
+     * @return UnionType[]
      * A list of types for parameters associated with the
      * given builtin function with the given name
      */
-    public static function builtinFunctionPropertyNameTypeMap(
+    public static function builtinFunctionPropertyNameUnionTypeMap(
         FQSEN $function_fqsen
     ) : array {
         $type_name_struct =
@@ -305,7 +305,7 @@ class Type {
 
         foreach ($name_type_name_map as $name => $type_name) {
             $property_name_type_map[$name] =
-                new Type($type_name);
+                new UnionType($type_name);
         }
 
         return $property_name_type_map;
@@ -343,7 +343,7 @@ class Type {
         }
 
         list($namespace, $class_name) =
-            self::namespaceandTypeFromType($type_name);
+            self::namespaceandUnionTypeFromType($type_name);
 
         // If its a root namespace, map it
         if ('\\' === $namespace) {
@@ -384,7 +384,7 @@ class Type {
      *
      * @return null
      */
-    public function addType(Type $type) {
+    public function addType(UnionType $type) {
         foreach ($type->getTypeNameList() as $i => $type_name) {
             $this->addTypeName($type_name);
         }
@@ -438,7 +438,7 @@ class Type {
     }
 
     /**
-     * @param Type $target_type
+     * @param UnionType $target_type
      * A type to check to see if this can cast to it
      *
      * @param Context $context
@@ -452,8 +452,8 @@ class Type {
      * @see \Phan\Deprecated\Pass2::type_check
      * Formerly 'function type_check'
      */
-    public function canCastToTypeInContext(
-        Type $type_target,
+    public function canCastToUnionTypeInContext(
+        UnionType $type_target,
         Context $context
     ) : bool {
         $type_name_source = (string)$this;
@@ -492,14 +492,14 @@ class Type {
 
         // our own union types
         foreach($this->type_name_list as $s) {
-            $s_type = Type::typeFromString($s);
+            $s_type = UnionType::typeFromString($s);
 
             if(empty($s)) {
                 continue;
             }
 
             foreach($type_target->type_name_list as $d) {
-                $d_type = Type::typeFromString($d);
+                $d_type = UnionType::typeFromString($d);
 
                 if(empty($d)) {
                     continue;
@@ -628,10 +628,10 @@ class Type {
     /**
      * Takes "a|b[]|c|d[]|e" and returns "b|d"
      *
-     * @return Type
+     * @return UnionType
      * The subset of types in this
      */
-    public function generics() : Type {
+    public function generics() : UnionType {
         $str = (string)$this;
 
         // If array is in there, then it can be any type
@@ -639,11 +639,11 @@ class Type {
         if ($this->hasTypeName('array')
             || $this->hasTypeName('mixed')
         ) {
-            return new Type(['mixed']);
+            return new UnionType(['mixed']);
         }
 
         if ($this->hasTypeName('array')) {
-            return Type::none();
+            return UnionType::none();
         }
 
         $type_names = [];
@@ -655,7 +655,7 @@ class Type {
             $type_names[] = substr($type_name, 0, $pos);
         }
 
-        return new Type($type_names);
+        return new UnionType($type_names);
     }
 
     /**
@@ -664,7 +664,7 @@ class Type {
      * @see \Phan\Deprecated\Pass2::nongenerics
      * Formerly `function nongenerics`
      */
-    public function nongenerics() : Type {
+    public function nongenerics() : UnionType {
         $str = (string)$this;
 
         $type_names = [];
@@ -681,7 +681,7 @@ class Type {
             $type_names[] = $type_name;
         }
 
-        return new Type($type_names);
+        return new UnionType($type_names);
     }
 
     /**
@@ -689,7 +689,7 @@ class Type {
      * A pair with the 0th element being the namespace and the first
      * element being the type name.
      */
-    private static function namespaceAndTypeFromType(
+    private static function namespaceAndUnionTypeFromType(
         string $type_name
     ) : array {
         $fq_class_name_elements =

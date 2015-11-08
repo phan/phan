@@ -5,7 +5,7 @@ namespace Phan\Language\Element;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\FQSEN;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 
 class TypedStructuralElement extends StructuralElement {
 
@@ -16,7 +16,7 @@ class TypedStructuralElement extends StructuralElement {
     private $name;
 
     /**
-     * @var Type
+     * @var UnionType
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      */
@@ -47,7 +47,7 @@ class TypedStructuralElement extends StructuralElement {
      * @param string $name,
      * The name of the typed structural element
      *
-     * @param Type $type,
+     * @param UnionType $type,
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
@@ -61,7 +61,7 @@ class TypedStructuralElement extends StructuralElement {
         Context $context,
         Comment $comment,
         string $name,
-        Type $type,
+        UnionType $type,
         int $flags
     ) {
         parent::__construct(
@@ -117,20 +117,20 @@ class TypedStructuralElement extends StructuralElement {
     }
 
     /**
-     * @return Type
+     * @return UnionType
      * Get the type of this structural element
      */
-    public function getType() : Type {
+    public function getUnionType() : UnionType {
         return $this->type;
     }
 
     /**
-     * @param Type $type
+     * @param UnionType $type
      * Set the type of this element
      *
      * @return null
      */
-    public function setType(Type $type) {
+    public function setUnionType(UnionType $type) {
         $this->type = $type;
     }
 

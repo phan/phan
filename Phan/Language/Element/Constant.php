@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 
 /**
  *
@@ -20,7 +20,7 @@ class Constant extends TypedStructuralElement {
      * @param string $name,
      * The name of the typed structural element
      *
-     * @param Type $type,
+     * @param UnionType $type,
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
@@ -34,7 +34,7 @@ class Constant extends TypedStructuralElement {
         Context $context,
         Comment $comment,
         string $name,
-        Type $type,
+        UnionType $type,
         int $flags
     ) {
         parent::__construct(

@@ -3,13 +3,13 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 use \Phan\Language\element\Comment;
 
 class Property extends TypedStructuralElement {
 
     /**
-     * @var Type
+     * @var UnionType
      * The declared type of the property
      */
     private $declared_type;
@@ -24,7 +24,7 @@ class Property extends TypedStructuralElement {
      * @param string $name,
      * The name of the typed structural element
      *
-     * @param Type $type,
+     * @param UnionType $type,
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
@@ -38,7 +38,7 @@ class Property extends TypedStructuralElement {
         Context $context,
         Comment $comment,
         string $name,
-        Type $type,
+        UnionType $type,
         int $flags
     ) {
         parent::__construct(
@@ -75,7 +75,7 @@ class Property extends TypedStructuralElement {
             $context,
             Comment::none(),
             $name,
-            new Type($type),
+            new UnionType($type),
             $property->getModifiers()
         );
 
@@ -83,20 +83,20 @@ class Property extends TypedStructuralElement {
     }
 
     /**
-     * @return Type
+     * @return UnionType
      * Get the declared type of the property
      */
-    public function getDeclaredType() : Type {
+    public function getDeclaredUnionType() : UnionType {
         return $this->declared_type;
     }
 
     /**
-     * @param Type $type
+     * @param UnionType $type
      * Set the declared type of the property
      *
      * @return null
      */
-    public function setDeclaredType(Type $type) {
+    public function setDeclaredUnionType(UnionType $type) {
         $this->declared_type = $type;
     }
 

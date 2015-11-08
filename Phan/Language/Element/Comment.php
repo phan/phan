@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Element\Comment\Parameter as CommentParameter;
-use \Phan\Language\Type;
+use \Phan\Language\UnionType;
 
 /**
  */
@@ -29,8 +29,8 @@ class Comment {
     private $parameter_list = [];
 
     /**
-     * @var Type
-     * A Type defined by a @return directive
+     * @var UnionType
+     * A UnionType defined by a @return directive
      */
     private $return = null;
 
@@ -53,13 +53,13 @@ class Comment {
      *
      * @param array $variable_list
      * @param array $parameter_list
-     * @param Type $return
+     * @param UnionType $return
      */
     private function __construct(
         bool $is_deprecated,
         array $variable_list,
         array $parameter_list,
-        Type $return,
+        UnionType $return,
         string $string
     ) {
         $this->deprecated = $is_deprecated;
@@ -75,7 +75,7 @@ class Comment {
      */
     public static function none() : Comment {
         return new Comment(
-            false, [], [], Type::none(), ''
+            false, [], [], UnionType::none(), ''
         );
     }
 
@@ -108,7 +108,7 @@ class Comment {
 
                     $comment_parameter = new CommentParameter(
                         empty($match[2]) ? '' : trim($match[2], '$'),
-                        Type::typeFromString($type),
+                        UnionType::typeFromString($type),
                         $line
                     );
 
@@ -126,7 +126,7 @@ class Comment {
 
                     $variable_list[] = new CommentParameter(
                         empty($match[2])?'':trim($match[2],'$'),
-                        Type::typeFromString($type),
+                        UnionType::typeFromString($type),
                         ''
                     );
                 }
@@ -154,7 +154,7 @@ class Comment {
             $is_deprecated,
             $variable_list,
             $parameter_list,
-            Type::typeFromString($return ?: ''),
+            UnionType::typeFromString($return ?: ''),
             $comment
         );
     }
@@ -169,10 +169,10 @@ class Comment {
     }
 
     /**
-     * @return Type
-     * A Type defined by a @return directive
+     * @return UnionType
+     * A UnionType defined by a @return directive
      */
-    public function getReturnType() : Type {
+    public function getReturnType() : UnionType {
         return $this->return;
     }
 
@@ -181,7 +181,7 @@ class Comment {
      * True if this doc block contains a @return
      * directive specifying a type.
      */
-    public function hasReturnType() : bool {
+    public function hasReturnUnionType() : bool {
         return !empty($this->return);
     }
 

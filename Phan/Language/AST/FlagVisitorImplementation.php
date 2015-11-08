@@ -203,35 +203,35 @@ abstract class FlagVisitorImplementation implements FlagVisitor {
         return $this->visit($node);
     }
 
-    public function visitTypeArray(Node $node) {
+    public function visitUnionTypeArray(Node $node) {
         return $this->visit($node);
     }
 
-    public function visitTypeBool(Node $node) {
+    public function visitUnionTypeBool(Node $node) {
         return $this->visit($node);
     }
 
-    public function visitTypeCallable(Node $node) {
+    public function visitUnionTypeCallable(Node $node) {
         return $this->visit($node);
     }
 
-    public function visitTypeDouble(Node $node) {
+    public function visitUnionTypeDouble(Node $node) {
         return $this->visit($node);
     }
 
-    public function visitTypeLong(Node $node) {
+    public function visitUnionTypeLong(Node $node) {
         return $this->visit($node);
     }
 
-    public function visitTypeNull(Node $node) {
+    public function visitUnionTypeNull(Node $node) {
         return $this->visit($node);
     }
 
-    public function visitTypeObject(Node $node) {
+    public function visitUnionTypeObject(Node $node) {
         return $this->visit($node);
     }
 
-    public function visitTypeString(Node $node) {
+    public function visitUnionTypeString(Node $node) {
         return $this->visit($node);
     }
 
