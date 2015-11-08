@@ -6,7 +6,7 @@ use \Phan\Language\Type;
 abstract class NativeType extends Type {
     const NAME = '';
 
-    public static function instance() : None {
+    public static function instance() {
         static $instance = null;
 
         if (empty($instance)) {

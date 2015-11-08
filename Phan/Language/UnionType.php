@@ -11,7 +11,9 @@ use \Phan\Language\Type\{
     IntType,
     MixedType,
     NoneType,
-    StringType
+    NullType,
+    StringType,
+    VoidType
 };
 use \Phan\Language\Type\NodeTypeKindVisitor;
 use \ast\Node;
@@ -70,7 +72,7 @@ class UnionType extends \ArrayObject  {
         Context $context,
         $node
     ) : UnionType {
-        return self::astUnionTypeFromSimple($context, $node);
+        return self::astUnionTypeFromSimpleNode($context, $node);
     }
 
     /**
@@ -91,7 +93,7 @@ class UnionType extends \ArrayObject  {
                 return new UnionType();
             }
 
-            return Type::fromObject($node);
+            return Type::fromObject($node)->asUnionType();
         }
 
         return (new Element($node))->acceptKindVisitor(
@@ -156,7 +158,7 @@ class UnionType extends \ArrayObject  {
      * Get the first type in this set
      */
     public function head() : Type {
-        return array_values($this)[0];
+        return array_values($this->getArrayCopy())[0];
     }
 
     /**
@@ -177,7 +179,7 @@ class UnionType extends \ArrayObject  {
      * @return null
      */
     public function addUnionType(UnionType $union_type) {
-        foreach ($union_type->getTypeList() as $i => $type) {
+        foreach ($union_type as $i => $type) {
             $this->addType($type);
         }
     }
@@ -188,7 +190,7 @@ class UnionType extends \ArrayObject  {
      * type.
      */
     public function hasType(Type $type) : bool {
-        return isset($this[$type]);
+        return isset($this[(string)$type]);
     }
 
     /**
@@ -198,7 +200,7 @@ class UnionType extends \ArrayObject  {
      * or 'self'.
      */
     public function hasSelfType() : bool {
-        return array_reduce($this,
+        return array_reduce($this->getArrayCopy(),
             function (bool $carry, Type $type) : bool {
                 return ($carry || $type->isSelfType());
             }, false);
@@ -215,6 +217,22 @@ class UnionType extends \ArrayObject  {
         }
 
         return ($this->head() === $type);
+    }
+
+    /**
+     * @return bool
+     * True if this UnionType is exclusively native
+     * types
+     */
+    public function isNativeType() : bool {
+        if (empty($this)) {
+            return false;
+        }
+
+        return array_reduce($this->getArrayCopy(),
+            function (bool $carry, Type $type) : bool {
+                return ($carry && $type->isNativeType());
+            }, true);
     }
 
     /**
@@ -247,6 +265,14 @@ class UnionType extends \ArrayObject  {
      */
     public function typeCount() : int {
         return count($this);
+    }
+
+    /**
+     * @return bool
+     * True if this Union has no types
+     */
+    public function isEmpty() : bool {
+        return ($this->typeCount() < 1);
     }
 
     /**
@@ -371,10 +397,12 @@ class UnionType extends \ArrayObject  {
      * the generic array version of this type. For instance,
      * 'int|float' will produce 'int[]|float[]'.
      */
-    public function asGenericTypes() {
-        return array_map(function (Type $type) : Type {
-            return $type->asGenericType();
-        }, $this);
+    public function asGenericTypes() : UnionType {
+        return new UnionType(
+            array_map(function (Type $type) : Type {
+                return $type->asGenericType();
+            }, $this->getArrayCopy())
+        );
     }
 
     /**

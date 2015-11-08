@@ -165,7 +165,7 @@ class Parameter extends Variable {
         assert($node instanceof Node, "node was not an \\ast\\Node");
 
         // Get the type of the parameter
-        $type = UnionType::typeFromSimpleNode(
+        $type = UnionType::fromSimpleNode(
             $context,
             $node->children[0]
         );
@@ -189,7 +189,7 @@ class Parameter extends Variable {
 
             // Set the type
             $parameter->setDefaultValueUnionType(
-                UnionType::typeFromNode(
+                UnionType::fromNode(
                     $context,
                     $node->children[2]
                 )

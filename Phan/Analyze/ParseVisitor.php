@@ -9,6 +9,7 @@ use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
 use \Phan\Language\FQSEN;
+use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -241,7 +242,7 @@ class ParseVisitor extends KindVisitorImplementation {
                 ->withLineNumberEnd($node->endLineno ?: -1),
             Comment::fromString($node->docComment ?: ''),
             $node->name,
-            new UnionType([$node->name]),
+            UnionType::fromString($node->name),
             $node->flags
         );
 

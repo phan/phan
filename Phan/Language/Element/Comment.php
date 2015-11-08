@@ -108,7 +108,7 @@ class Comment {
 
                     $comment_parameter = new CommentParameter(
                         empty($match[2]) ? '' : trim($match[2], '$'),
-                        UnionType::typeFromString($type),
+                        UnionType::fromString($type),
                         $line
                     );
 
@@ -126,7 +126,7 @@ class Comment {
 
                     $variable_list[] = new CommentParameter(
                         empty($match[2])?'':trim($match[2],'$'),
-                        UnionType::typeFromString($type),
+                        UnionType::fromString($type),
                         ''
                     );
                 }
@@ -154,7 +154,7 @@ class Comment {
             $is_deprecated,
             $variable_list,
             $parameter_list,
-            UnionType::typeFromString($return ?: ''),
+            UnionType::fromString($return ?: ''),
             $comment
         );
     }

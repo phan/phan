@@ -289,18 +289,19 @@ class Method extends TypedStructuralElement {
         } else if ($comment->hasReturnUnionType()) {
 
             // See if we have a return type specified in the comment
-            $type = $comment->getReturnType();
+            $union_type = $comment->getReturnType();
 
-            if ($type->hasSelfType()) {
+            if ($union_type->hasSelfType()) {
                 // We can't actually figure out 'static' at this
                 // point, but fill it in regardless. It will be partially
                 // correct
                 if ($context->hasClassFQSEN()) {
-                    $type = $context->getClassFQSEN()->asUnionType();
+                    $union_type =
+                        $context->getClassFQSEN()->asUnionType();
                 }
             }
 
-            $method->getUnionType()->addType($type);
+            $method->getUnionType()->addUnionType($union_type);
         }
 
         // Add params to local scope for user functions
@@ -308,7 +309,7 @@ class Method extends TypedStructuralElement {
 
             $parameter_offset = 0;
             foreach ($method->parameter_list as $i => $parameter) {
-                if (!$parameter->getUnionType()->hasAnyType()) {
+                if (!$parameter->getUnionType()->isEmpty()) {
                     // If there is no type specified in PHP, check
                     // for a docComment with @param declarations. We
                     // assume order in the docComment matches the
@@ -329,9 +330,8 @@ class Method extends TypedStructuralElement {
                 if ($parameter->hasDefaultValueUnionType()) {
                     $default_type = $parameter->getDefaultValueType();
 
-                    if (!$default_type->canCastToUnionTypeInContext(
-                        $parameter->getUnionType(),
-                        $context
+                    if (!$default_type->canCastToUnionType(
+                        $parameter->getUnionType()
                     )) {
                         Log::err(
                             Log::ETYPE,

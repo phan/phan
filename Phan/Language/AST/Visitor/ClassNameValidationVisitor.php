@@ -78,7 +78,7 @@ class ClassNameValidationVisitor
             );
 
         if ($clazz->isAbstract()) {
-            if (!UnionType::typeFromString($this->class_name)::isNativeType()) {
+            if (!UnionType::fromString($this->class_name)::isNativeType()) {
                 if ($this->context->isGlobalScope()) {
                     // TODO: ?
                     list($scope_class,) = explode('::', $current_scope);
@@ -104,7 +104,7 @@ class ClassNameValidationVisitor
         }
 
         if ($clazz->isInterface()) {
-            if (!UnionType::typeFromString($this->class_name)::isNativeType()) {
+            if (!UnionType::fromString($this->class_name)::isNativeType()) {
                 Log::err(
                     Log::ETYPE,
                     "Cannot instantiate interface {$this->class_name}",
@@ -155,7 +155,7 @@ class ClassNameValidationVisitor
      */
     private function classExistsOrIsNative(Node $node) : bool {
         if (!$this->classExists()
-            && !UnionType::typeFromString($this->class_name)->isNativeType()
+            && !UnionType::fromString($this->class_name)->isNativeType()
         ) {
             Log::err(
                 Log::EUNDEF,

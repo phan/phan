@@ -54,7 +54,7 @@ trait AST {
             $result = (string)$node;
         }
 
-        return UnionType::typeFromString($result);
+        return UnionType::fromString($result);
     }
 
     /**
@@ -130,7 +130,7 @@ trait AST {
         }
 
         $name = $node->children[0];
-        $type = new UnionType([$name]);
+        $type = UnionType::fromString($name);
 
         if($node->flags & \ast\flags\NAME_NOT_FQ) {
 

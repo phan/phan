@@ -5,6 +5,21 @@ use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Type\NodeTypeKindVisitor;
+use \Phan\Langauge\Type\{
+    ArrayType,
+    BoolType,
+    CallableType,
+    FloatType,
+    IntType,
+    MixedType,
+    NoneType,
+    NullType,
+    ObjectType,
+    ResourceType,
+    ScalarType,
+    StringType,
+    VoidType
+};
 use \Phan\Language\UnionType;
 use \ast\Node;
 
@@ -57,7 +72,7 @@ class Type {
      * Get a type for the given object
      */
     public static function fromObject($object) : Type {
-        return new Type(gettype($object));
+        return Type::fromString(gettype($object));
     }
 
     /**
@@ -65,6 +80,22 @@ class Type {
      * Parse a type from the given string
      */
     public static function fromString(string $string) : Type {
+        $string = self::canonicalNameFromName($string);
+
+        switch ($string) {
+        case 'array': return ArrayType::instance();
+        case 'bool': return BoolType::instance();
+        case 'callable': return CallableType::instance();
+        case 'float': return FloatType::instance();
+        case 'int': return IntType::instance();
+        case 'mixed': return MixedType::instance();
+        case 'null': return NullType::instance();
+        case 'object': return ObjectType::instance();
+        case 'resource': return ResourceType::instance();
+        case 'string': return StringType::instance();
+        case 'void': return VoidType::instance();
+        }
+
         // TODO: look for a namespace
         return new Type($string);
     }
@@ -87,7 +118,7 @@ class Type {
             || $this->name == 'mixed'
             || strpos($this->name, '[]') !== false
         ) {
-            return new Type('array', $this->getNamespace());
+            return ArrayType::instance();
         }
 
         return new Type($this->name . '[]', $this->getNamespace());

@@ -153,7 +153,7 @@ class Clazz extends TypedStructuralElement {
             $context,
             Comment::none(),
             $class->getName(),
-            (new Type($class->getName()))->asUnionType(),
+            UnionType::fromString($class->getName()),
             $flags
         );
 
@@ -242,7 +242,7 @@ class Clazz extends TypedStructuralElement {
         // Add the parent to the union type of this
         // class
         $this->getUnionType()->addType(
-            UnionType::typeFromString((string)$fqsen)
+            UnionType::fromString((string)$fqsen)
         );
 
     }
@@ -276,7 +276,7 @@ class Clazz extends TypedStructuralElement {
         // Add the interface to the union type of this
         // class
         $this->getUnionType()->addType(
-            UnionType::typeFromString((string)$fqsen)
+            UnionType::fromString((string)$fqsen)
         );
     }
 

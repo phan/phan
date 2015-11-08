@@ -16,6 +16,8 @@ use \Phan\Language\Element\{
     Variable
 };
 use \Phan\Language\FQSEN;
+use \Phan\Langauge\Type;
+use \Phan\Langauge\Type\ArrayType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -138,7 +140,9 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                         // TODO: track array content types
                         // This is a $GLOBALS['a']['b'] type of
                         // assignment
-                        $variable->setUnionType(new Type(['array']));
+                        $variable->setUnionType(
+                            ArrayType::instance()->asUnionType()
+                        );
                     }
                 }
             }
