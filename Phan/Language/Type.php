@@ -5,6 +5,7 @@ use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Type\NodeTypeKindVisitor;
+use \Phan\Language\UnionType;
 use \ast\Node;
 
 /**
@@ -47,8 +48,49 @@ class Type {
         string $name,
         string $namespace = '\\'
     ) {
-        $this->name = $name;
+        $this->name = self::canonicalNameFromName($name);
         $this->namespace = $namespace;
+    }
+
+    /**
+     * @return Type
+     * Get a type for the given object
+     */
+    public static function fromObject($object) : Type {
+        return new Type(gettype($object));
+    }
+
+    /**
+     * @return Type
+     * Parse a type from the given string
+     */
+    public static function fromString(string $string) : Type {
+        // TODO: look for a namespace
+        return new Type($string);
+    }
+
+    /**
+     * @return UnionType
+     * A UnionType representing this and only this type
+     */
+    public function asUnionType() : UnionType {
+        return new UnionType([$this]);
+    }
+
+    /**
+     * @return string
+     * The name associated with this type
+     */
+    public function getName() : string {
+        return $this->name;
+    }
+
+    /**
+     * @return string
+     * The namespace associated with this type
+     */
+    public function getNamespace() : string {
+        return $this->namespace;
     }
 
     /**
@@ -106,6 +148,115 @@ class Type {
     }
 
     /**
+     * @return bool
+     * True if this is a generic type such as 'int[]' or
+     * 'string[]'.
+     */
+    public function isGeneric() : bool {
+        return (strpos((string)$this, '[]') !== false);
+    }
+
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    public function canCastToType(Type $type) : bool {
+
+        /*
+        if(substr($source,0,9) == 'callable:') {
+            $s = 'callable';
+        }
+
+        if(substr($d,0,9)=='callable:') {
+            $d = 'callable';
+        }
+        */
+
+        $s = (string)$this;
+        $d = (string)$type;
+
+        if($s[0]=='\\') {
+            $s = substr($s,1);
+        }
+
+        if($d[0]=='\\') {
+            $d = substr($d,1);
+        }
+
+        if($s===$d) {
+            return true;
+        }
+
+        if($s==='int' && $d==='float') {
+            return true; // int->float is ok
+        }
+
+        if(($s==='array'
+            || $s==='string'
+            || (strpos($s,'[]')!==false))
+            && $d==='callable'
+        ) {
+            return true;
+        }
+        if($s === 'object'
+            && !$d_type->isScalar()
+            && $d!=='array'
+        ) {
+            return true;
+        }
+
+        if($d === 'object' &&
+            !$s_type->isScalar()
+            && $s!=='array'
+        ) {
+            return true;
+        }
+
+        if(strpos($s,'[]') !== false
+            && $d==='array'
+        ) {
+            return true;
+        }
+
+        if(strpos($d,'[]') !== false
+            && $s==='array'
+        ) {
+            return true;
+        }
+
+        if(($pos = strrpos($d, '\\')) !== false) {
+            if ('\\' !== $this->getNamespace()) {
+                if(trim(strtolower($this->getNamespace().'\\'.$s),
+                    '\\') == $d
+                ) {
+                    return true;
+                }
+            } else {
+                if(substr($d, $pos+1) === $s) {
+                    return true; // Lazy hack, but...
+                }
+            }
+        }
+
+        if(($pos = strrpos($s,'\\')) !== false) {
+            if ('\\' !== $type->getNamespace()) {
+                if(trim(strtolower($type->getNamespace().'\\'.$d),
+                    '\\') == $s
+                ) {
+                    return true;
+                }
+            } else {
+                if(substr($s, $pos+1) === $d) {
+                    return true; // Lazy hack, but...
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return string
      * A human readable representation of this type
      */
@@ -124,7 +275,7 @@ class Type {
      * @return string
      * A canonical name for the given type name
      */
-    private static function toCanonicalName(
+    private static function canonicalNameFromName(
         string $name
     ) : string {
         static $repmaps = [
@@ -143,5 +294,23 @@ class Type {
         );
     }
 
+    /**
+     * @return string[]
+     * A pair with the 0th element being the namespace and the first
+     * element being the type name.
+     */
+    private static function namespaceAndUnionTypeFromType(
+        string $type_name
+    ) : array {
+        $fq_class_name_elements =
+            array_filter(explode('\\', $type_name));
 
+        $class_name =
+            array_pop($fq_class_name_elements);
+
+        $namespace =
+            '\\' . implode('\\', $fq_class_name_elements);
+
+        return [$namespace, $class_name];
+    }
 }

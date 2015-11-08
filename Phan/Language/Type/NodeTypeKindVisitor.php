@@ -35,7 +35,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * an overriding method
      */
     public function visit(Node $node) : UnionType {
-        return UnionType::none();
+        return new UnionType();
     }
 
     /**
@@ -203,10 +203,10 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                         );
                     }
                 }
-                return UnionType::none();
+                return new UnionType();
             }
         } else {
-            return UnionType::none();
+            return new UnionType();
         }
         return new UnionType([$gen]);
     }
@@ -247,11 +247,11 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             }
             else {
                 // TODO: user-defined constant
-                return UnionType::none();
+                return new UnionType();
             }
         }
 
-        return UnionType::none();
+        return new UnionType();
     }
 
     /**
@@ -275,7 +275,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 $node->lineno
             );
 
-            return UnionType::none();
+            return new UnionType();
         }
 
         $class_fqsen =
@@ -293,7 +293,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 $node->lineno
             );
 
-            return UnionType::none();
+            return new UnionType();
         }
 
         // Get a reference to the class defining the constant
@@ -305,14 +305,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         while(!$defining_clazz->hasConstantWithName($constant_name)) {
             // Make sure the class has a parent
             if (!$defining_clazz->hasParentClassFQSEN()) {
-                return UnionType::none();
+                return new UnionType();
             }
 
             // Make sure that parent exists
             if (!$this->context->getCodeBase()->hasClassWithFQSEN(
                 $defining_clazz->getParentClassFQSEN()
             )) {
-                return UnionType::none();
+                return new UnionType();
             }
 
             // Climb to that parent
@@ -329,7 +329,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 $this->context->getFile(),
                 $node->lineno
             );
-            return UnionType::none();
+            return new UnionType();
         }
 
         return $defining_clazz
@@ -345,7 +345,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
         /*
         if($node->children[0]->kind != \ast\AST_VAR) {
-            return UnionType::none();
+            return new UnionType();
         }
 
         $class_name =
@@ -354,7 +354,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         if($class_name && !($node->children[1] instanceof Node)) {
             $ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
             if(empty($ltemp)) {
-                return UnionType::none();
+                return new UnionType();
             }
             // TODO
             return $classes[$ltemp]['properties'][$node->children[1]]['type'];
@@ -367,7 +367,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      */
     public function visitStaticProp(Node $node) : UnionType {
         if($node->children[0]->kind != \ast\AST_NAME) {
-            return UnionType::none();
+            return new UnionType();
         }
 
         $class_name =
@@ -376,7 +376,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         if(!($class_name
             && !($node->children[1] instanceof Node))
         ) {
-            return UnionType::none();
+            return new UnionType();
         }
 
         $class_fqsen =
@@ -397,7 +397,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
         // Property not found :(
         if (!$clazz->hasPropertyWithName($property_name)) {
-            return UnionType::none();
+            return new UnionType();
         }
 
         $property =
@@ -450,7 +450,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         if (!$this->context->getCodeBase()->getMethodByFQSEN(
             $method_fqsen
         )) {
-            return UnionType::none();
+            return new UnionType();
         }
 
         $method = $this->context->getCodeBase()->getMethodByFQSEN(
@@ -468,7 +468,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $this->astClassNameFromNode($this->context, $node);
 
         if (empty($class_name)) {
-            return UnionType::none();
+            return new UnionType();
         }
 
         $class_fqsen =

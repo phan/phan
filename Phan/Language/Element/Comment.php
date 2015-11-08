@@ -75,7 +75,7 @@ class Comment {
      */
     public static function none() : Comment {
         return new Comment(
-            false, [], [], UnionType::none(), ''
+            false, [], [], new UnionType(), ''
         );
     }
 

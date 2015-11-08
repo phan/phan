@@ -4,6 +4,15 @@ namespace Phan\Language;
 use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
+use \Phan\Language\Type;
+use \Phan\Language\Type\{
+    ArrayType,
+    FloatType,
+    IntType,
+    MixedType,
+    NoneType,
+    StringType
+};
 use \Phan\Language\Type\NodeTypeKindVisitor;
 use \ast\Node;
 
@@ -19,43 +28,17 @@ $BUILTIN_CLASS_TYPES =
 $BUILTIN_FUNCTION_ARGUMENT_TYPES =
     require(__DIR__.'/Type/BuiltinFunctionArgumentTypes.php');
 
-class UnionType {
+class UnionType extends \ArrayObject  {
     use \Phan\Language\AST;
 
     /**
-     * @var string[]
-     * A list of type names
+     * @param Type[] $type_list
+     * An optional list of types represented by this union
      */
-    private $type_name_list = [];
-
-    /**
-     * @param string[] $type_name_list
-     * A list of type names
-     */
-    public function __construct(array $type_name_list) {
-        $this->type_name_list = array_filter(array_map(function(string $type_name) {
-            return $this->toCanonicalName($type_name);
-        }, $type_name_list));
-    }
-
-    public function __toString() : string {
-        return implode('|', $this->type_name_list);
-    }
-
-    /**
-     * Get a UnionType specifying that there are no
-     * known types on a thing.
-     */
-    public static function none() : UnionType {
-        return new UnionType([]);
-    }
-
-    /**
-     * @return UnionType
-     * A UnionType for the given object
-     */
-    public static function typeForObject($object) : UnionType {
-        return new UnionType([gettype($object)]);
+    public function __construct(array $type_list = []) {
+        foreach ($type_list as $type) {
+            $this->addType($type);
+        }
     }
 
     /**
@@ -65,8 +48,12 @@ class UnionType {
      *
      * @return UnionType
      */
-    public static function typeFromString(string $type_string) : UnionType {
-        return new UnionType(explode('|', $type_string));
+    public static function fromString(string $type_string) : UnionType {
+        return new UnionType(
+            array_map(function(string $type_name) {
+                return Type::fromString($type_name);
+            }, explode('|', $type_string))
+        );
     }
 
     /**
@@ -79,49 +66,11 @@ class UnionType {
      *
      * @see \Phan\Deprecated\AST::ast_node_type
      */
-    public static function typeFromSimpleNode(
+    public static function fromSimpleNode(
         Context $context,
         $node
     ) : UnionType {
-        if($node instanceof \ast\Node) {
-            switch($node->kind) {
-            case \ast\AST_NAME:
-                $result = static::astQualifiedName($context, $node);
-                break;
-            case \ast\AST_TYPE:
-                if($node->flags == \ast\flags\TYPE_CALLABLE) {
-                    $result = 'callable';
-                } else if($node->flags == \ast\flags\TYPE_ARRAY) {
-                    $result = 'array';
-                }
-                else assert(false, "Unknown type: {$node->flags}");
-                break;
-            default:
-                Log::err(
-                    Log::EFATAL,
-                    "ast_node_type: unknown node type: "
-                    . \ast\get_kind_name($node->kind)
-                );
-                break;
-            }
-        } else {
-            $result = (string)$node;
-        }
-        return UnionType::typeFromString($result);
-    }
-
-    /**
-     * @return bool
-     * True if this type has a type referencing the
-     * class context in which it exists such as 'static'
-     * or 'self'.
-     */
-    public function hasSelfType() : bool {
-        return (
-            $this->hasTypeName('static')
-            || $this->hasTypeName('self')
-            || $this->hasTypeName('$this')
-        );
+        return self::astUnionTypeFromSimple($context, $node);
     }
 
     /**
@@ -133,116 +82,22 @@ class UnionType {
      * @see \Phan\Deprecated\Pass2::node_type
      * Formerly 'function node_type'
      */
-    public static function typeFromNode(
+    public static function fromNode(
         Context $context,
         $node
     ) : UnionType {
         if(!($node instanceof Node)) {
             if($node === null) {
-                return UnionType::none();
+                return UnionType::empty();
             }
-            return self::typeForObject($node);
+
+            return Type::fromObject($node);
         }
 
         return (new Element($node))->acceptKindVisitor(
             new NodeTypeKindVisitor($context)
         );
 	}
-
-    /**
-     * Looks for any suspicious GPSC variables in the given node
-     *
-     * @return bool
-     */
-    private function isTainted(
-        Context $context,
-        Node $node,
-        string $current_scope
-    ) : bool {
-
-        // global $scope, $tainted_by;
-
-        static $tainted = [
-            '_GET' => '*',
-            '_POST' => '*',
-            '_COOKIE' => '*',
-            '_REQUEST' => '*',
-            '_FILES' => '*',
-            '_SERVER' => [
-                'QUERY_STRING',
-                'HTTP_HOST',
-                'HTTP_USER_AGENT',
-                'HTTP_ACCEPT_ENCODING',
-                'HTTP_ACCEPT_LANGUAGE',
-                'REQUEST_URI',
-                'PHP_SELF',
-                'argv'
-            ]
-        ];
-
-        if(!$node instanceof Node) {
-            return false;
-        }
-
-        $parent = $node;
-        while(($node instanceof Node)
-            && ($node->kind != \ast\AST_VAR)
-            && ($node->kind != \ast\AST_MAGIC_CONST)
-        ) {
-            $parent = $node;
-            if(empty($node->children[0])) {
-                break;
-            }
-            $node = $node->children[0];
-        }
-
-        if($parent->kind == \ast\AST_DIM) {
-            if($node->children[0] instanceof Node) {
-                // $$var or something else dynamic is going on, not direct access to a suspivious var
-                return false;
-            }
-            foreach($tainted as $name=>$index) {
-                if($node->children[0] === $name) {
-                    if($index=='*') {
-                        return true;
-                    }
-                    if($parent->children[1] instanceof Node) {
-                        // Dynamic index, give up
-                        return false;
-                    }
-                    if(in_array($parent->children[1], $index, true)) {
-                        return true;
-                    }
-                }
-            }
-        } else if($parent->kind == \ast\AST_VAR
-            && !($parent->children[0] instanceof Node)
-        ) {
-            $variable_name = $parent->children[0];
-            if (empty($context->getScope()->getVariableNameList()[$variable_name])) {
-            }
-
-            if(empty($scope[$current_scope]['vars'][$parent->children[0]])) {
-                if(!superglobal($parent->children[0]))
-                    Log::err(
-                        Log::EVAR,
-                        "Variable \${$parent->children[0]} is not defined",
-                        $file,
-                        $parent->lineno
-                    );
-            } else {
-                if(!empty($scope[$current_scope]['vars'][$parent->children[0]]['tainted'])
-                ) {
-                    $tainted_by =
-                        $scope[$current_scope]['vars'][$parent->children[0]]['tainted_by'];
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
 
     public static function builtinClassPropertyType(
         string $class_name,
@@ -297,47 +152,11 @@ class UnionType {
     }
 
     /**
-     * @param string $type_name
-     * Any type name
-     *
-     * @return string
-     * A canonical name for the given type name
+     * @return Type
+     * Get the first type in this set
      */
-    private static function toCanonicalName(string $type_name) : string {
-
-        static $repmaps = [
-            ['integer', 'double', 'boolean', 'false',
-            'true', 'callback', 'closure', 'NULL' ],
-            ['int', 'float', 'bool', 'bool', 'bool',
-            'callable', 'callable', 'null' ]
-        ];
-
-        if (empty($type_name)) {
-            return $type_name;
-        }
-
-        list($namespace, $class_name) =
-            self::namespaceandUnionTypeFromType($type_name);
-
-        // If its a root namespace, map it
-        if ('\\' === $namespace) {
-            return str_replace(
-                $repmaps[0],
-                $repmaps[1],
-                strtolower($class_name)
-            );
-        }
-
-        return $namespace . '\\' . strtolower($class_name);
-
-    }
-
-    /**
-     * @return string[]
-     * The list of types in this union type
-     */
-    public function getTypeNameList() : array {
-        return $this->type_name_list;
+    public function head() : Type {
+        return array_values($this)[0];
     }
 
     /**
@@ -345,12 +164,11 @@ class UnionType {
      *
      * @return null
      */
-    public function addTypeName($type_name) {
-        $this->type_name_list[] = $type_name;
-
+    public function addType(Type $type) {
         // Only allow unique elements
-        $this->type_name_list =
-            array_filter(array_unique($this->type_name_list));
+        if ($type) {
+            $this[(string)$type] = $type;
+        }
     }
 
     /**
@@ -358,9 +176,9 @@ class UnionType {
      *
      * @return null
      */
-    public function addType(UnionType $type) {
-        foreach ($type->getTypeNameList() as $i => $type_name) {
-            $this->addTypeName($type_name);
+    public function addUnionType(UnionType $union_type) {
+        foreach ($union_type->getTypeList() as $i => $type) {
+            $this->addType($type);
         }
     }
 
@@ -369,31 +187,58 @@ class UnionType {
      * True if this union type contains the given named
      * type.
      */
-    public function hasTypeName(string $type_name) : bool {
-        return in_array($type_name, $this->type_name_list);
+    public function hasType(Type $type) : bool {
+        return isset($this[$type]);
     }
 
     /**
+     * @return bool
+     * True if this type has a type referencing the
+     * class context in which it exists such as 'static'
+     * or 'self'.
+     */
+    public function hasSelfType() : bool {
+        return array_reduce($this,
+            function (bool $carry, Type $type) : bool {
+                return ($carry || $type->isSelfType());
+            }, false);
+    }
+
+    /**
+     * @return bool
+     * True if and only if this UnionType contains
+     * the given type and no others.
+     */
+    public function isType(Type $type) : bool {
+        if (empty($this) || count($this) > 1) {
+            return false;
+        }
+
+        return ($this->head() === $type);
+    }
+
+    /**
+     * @return bool
+     * True iff this union contains the exact set of types
+     * represented in the given union type.
+     */
+    public function isEqualTo(UnionType $union_type) : bool {
+        return ((string)$this === (string)$union_type);
+    }
+
+    /**
+     * @param Type[] $type_list
+     * A list of types
+     *
      * @return bool
      * True if this union type contains any of the given
      * named types
      */
-    public function hasAnyTypeName(array $type_name_list) : bool {
-        return array_reduce(
-            $type_name_list,
-            function(bool $carry, string $type_name)  {
-                return $carry || $this->hasTypeName($type_name);
-            },
-            false
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this union type contains any types.
-     */
-    public function hasAnyType() : bool {
-        return !empty($this->type_name_list);
+    public function hasAnyType(array $type_list) : bool {
+        return array_reduce($type_list,
+            function(bool $carry, Type $type)  {
+                return ($carry || $this->hasType($type));
+            }, false);
     }
 
     /**
@@ -401,23 +246,12 @@ class UnionType {
      * The number of types in this union type
      */
     public function typeCount() : int {
-        return count($this->type_name_list);
+        return count($this);
     }
 
     /**
-     * @return string[]
-     */
-    public function typeNameList() : array {
-        return $this->type_name_list;
-    }
-
-    /**
-     * @param UnionType $target_type
+     * @param UnionType $target
      * A type to check to see if this can cast to it
-     *
-     * @param Context $context
-     * The context in which we'd like to perform the
-     * cast
      *
      * @return bool
      * True if this type is allowed to cast to the given type
@@ -426,146 +260,61 @@ class UnionType {
      * @see \Phan\Deprecated\Pass2::type_check
      * Formerly 'function type_check'
      */
-    public function canCastToUnionTypeInContext(
-        UnionType $type_target,
-        Context $context
+    public function canCastToUnionType(
+        UnionType $target
     ) : bool {
-        $type_name_source = (string)$this;
-        $type_name_target = (string)$type_target;
-
         // Fast-track most common cases first
-        if($type_name_source === $type_name_target) {
+        if ($this->isEqualTo($target)) {
             return true;
         }
 
         // If either type is unknown, we can't call it
         // a success
-        if(empty($type_name_source) || empty($type_name_target)) {
+        if(empty($this) || empty($target)) {
             return true;
         }
 
-        // TODO: Can we assume nulls cast to anything?
-        if('null' === $type_name_source || 'null' === $type_name_target) {
+        // null <-> null
+        if ($this->isType(NullType::instance())
+            || $target->isType(NullType::instance())
+        ) {
             return true;
         }
 
-        if(strpos("|$type_name_source|", '|mixed|') !== false) {
+        // mixed <-> mixed
+        if ($target->hasType(MixedType::instance())
+            || $this->hasType(MixedType::instance())
+        ) {
             return true;
         }
 
-        if(strpos("|$type_name_target|", '|mixed|') !== false) {
+        // int -> float
+        if ($this->isType(IntType::instance())
+            && $target->isType(FloatType::instance())
+        ) {
             return true;
         }
 
-        if($type_name_source ==='int' && $type_name_target === 'float') {
-            return true;
-        }
-
-        // $src = type_map(strtolower($src));
-        // $dst = type_map(strtolower($dst));
-
-        // our own union types
-        foreach($this->type_name_list as $s) {
-            $s_type = UnionType::typeFromString($s);
-
-            if(empty($s)) {
+        // Check conversion on the cross product of all
+        // type combinations and see if any can cast to
+        // any.
+        foreach($this as $source_type) {
+            if(empty($source_type)) {
                 continue;
             }
-
-            foreach($type_target->type_name_list as $d) {
-                $d_type = UnionType::typeFromString($d);
-
-                if(empty($d)) {
+            foreach($target as $target_type) {
+                if(empty($target_type)) {
                     continue;
                 }
 
-                if(substr($s,0,9)=='callable:') {
-                    $s = 'callable';
-                }
-
-                if(substr($d,0,9)=='callable:') {
-                    $d = 'callable';
-                }
-
-                if($s[0]=='\\') {
-                    $s = substr($s,1);
-                }
-
-                if($d[0]=='\\') {
-                    $d = substr($d,1);
-                }
-
-                if($s===$d) {
+                if ($source_type->canCastToType($target_type)) {
                     return true;
-                }
-
-                if($s==='int' && $d==='float') {
-                    return true; // int->float is ok
-                }
-
-                if(($s==='array'
-                    || $s==='string'
-                    || (strpos($s,'[]')!==false))
-                    && $d==='callable'
-                ) {
-                    return true;
-                }
-                if($s === 'object'
-                    && !$d_type->isScalar()
-                    && $d!=='array'
-                ) {
-                    return true;
-                }
-
-                if($d === 'object' &&
-                    !$s_type->isScalar()
-                    && $s!=='array'
-                ) {
-                    return true;
-                }
-
-                if(strpos($s,'[]') !== false
-                    && $d==='array'
-                ) {
-                    return true;
-                }
-
-                if(strpos($d,'[]') !== false
-                    && $s==='array'
-                ) {
-                    return true;
-                }
-
-                if(($pos=strrpos($d,'\\'))!==false) {
-                    if ($context->hasNamespace()) {
-                        if(trim(strtolower($context->getNamespace().'\\'.$s),
-                            '\\') == $d
-                        ) {
-                            return true;
-                        }
-                    } else {
-                        if(substr($d, $pos+1) === $s) {
-                            return true; // Lazy hack, but...
-                        }
-                    }
-                }
-
-                if(($pos=strrpos($s,'\\'))!==false) {
-                    if ($context->hasNamespace()) {
-                        if(trim(strtolower($context->getNamespace().'\\'.$d),
-                            '\\') == $s
-                        ) {
-                            return true;
-                        }
-                    } else {
-                        if(substr($s, $pos+1) === $d) {
-                            return true; // Lazy hack, but...
-                        }
-                    }
                 }
             }
         }
 
+        // Only if no source types can be cast to any target
+        // types do we say that we cannot perform the cast
         return false;
     }
 
@@ -577,26 +326,11 @@ class UnionType {
      * Formerly `function type_scalar`
      */
     public function isScalar() : bool {
-        static $native_scalar_type_list = [
-                'int',
-                'float',
-                'bool',
-                'true',
-                'string',
-                'null'
-        ];
-
-        if (!$this->hasAnyType() || 'mixed' === (string)$this) {
+        if (empty($this) || count($this) > 1) {
             return false;
         }
 
-        foreach ($this->type_name_list as $type_name) {
-            if (!in_array($type_name, $native_scalar_type_list)) {
-                return false;
-            }
-        }
-
-        return true;
+        return $this[0]->isScalar();
     }
 
     /**
@@ -605,40 +339,47 @@ class UnionType {
      * @return UnionType
      * The subset of types in this
      */
-    public function generics() : UnionType {
+    public function genericTypes() : UnionType {
         $str = (string)$this;
 
         // If array is in there, then it can be any type
         // Same for |mixed|
-        if ($this->hasTypeName('array')
-            || $this->hasTypeName('mixed')
+        if ($this->hasType(ArrayType::instance())
+            || $this->hasTypeName(MixedType::instance())
         ) {
-            return new UnionType(['mixed']);
+            return MixedType::instance()->toUnionType();
         }
 
-        if ($this->hasTypeName('array')) {
-            return UnionType::none();
+        if ($this->hasType(ArrayType::instance())) {
+            return NoneType::instance()->toUnionType();
         }
 
-        $type_names = [];
-        foreach($this->type_name_list as $type_name) {
-            if(($pos = strpos($type_name, '[]')) === false) {
-                continue;
-            }
+        return new UnionType(array_filter(array_map($this,
+            function(Type $type) {
+                if(($pos = strpos((string)$type, '[]')) === false) {
+                    return null;
+                }
 
-            $type_names[] = substr($type_name, 0, $pos);
-        }
-
-        return new UnionType($type_names);
+                return substr((string)$type, 0, $pos);
+            }))
+        );
     }
 
     /**
      * Takes "a|b[]|c|d[]|e" and returns "a|c|e"
      *
+     * @return UnionType
+     * A UnionType with generic types filtered out
+     *
      * @see \Phan\Deprecated\Pass2::nongenerics
      * Formerly `function nongenerics`
      */
-    public function nongenerics() : UnionType {
+    public function nonGenericTypes() : UnionType {
+        return array_filter($this, function(Type $type) {
+            return !$type->isGeneric();
+        });
+
+        /*
         $str = (string)$this;
 
         $type_names = [];
@@ -656,26 +397,48 @@ class UnionType {
         }
 
         return new UnionType($type_names);
+         */
     }
 
     /**
-     * @return string[]
-     * A pair with the 0th element being the namespace and the first
-     * element being the type name.
+     * As per the Serializable interface
+     *
+     * @return string
+     * A serialized representation of this type
+     *
+     * @see \Serializable
      */
-    private static function namespaceAndUnionTypeFromType(
-        string $type_name
-    ) : array {
-        $fq_class_name_elements =
-            array_filter(explode('\\', $type_name));
+    public function serialize() : string {
+        return (string)$this;
+    }
 
-        $class_name =
-            array_pop($fq_class_name_elements);
+    /**
+     * As per the Serializable interface
+     *
+     * @param string $serialized
+     * A serialized UnionType
+     *
+     * @return UnionType
+     * A UnionType representing the given serialized form
+     *
+     * @see \Serializable
+     */
+    public function unserialize($serialized) {
+        return self::fromString($serialized);
+    }
 
-        $namespace =
-            '\\' . implode('\\', $fq_class_name_elements);
+    /**
+     * @return string
+     * A human-readable string representation of this union
+     * type
+     */
+    public function __toString() : string {
+        // Sort the types so that we get a stable
+        // representation
+        self::natsort();
 
-        return [$namespace, $class_name];
+        // Delimit by '|'
+        return implode('|', $this);
     }
 
 }

@@ -9,6 +9,7 @@ use \Phan\Language\Element\Constant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
+use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 
 class Clazz extends TypedStructuralElement {
@@ -152,7 +153,7 @@ class Clazz extends TypedStructuralElement {
             $context,
             Comment::none(),
             $class->getName(),
-            new UnionType([$class->getName()]),
+            (new Type($class->getName()))->asUnionType(),
             $flags
         );
 
@@ -172,7 +173,7 @@ class Clazz extends TypedStructuralElement {
                     $context->withClassFQSEN($clazz->getFQSEN()),
                     Comment::none(),
                     $name,
-                    UnionType::typeForObject($value),
+                    Type::fromObject($value)->asUnionType(),
                     0
                 );
 

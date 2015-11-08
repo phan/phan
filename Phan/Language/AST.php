@@ -16,6 +16,48 @@ use \ast\Node;
 trait AST {
 
     /**
+     * ast_node_type() is for places where an actual type
+     * name appears. This returns that type name. Use node_type()
+     * instead to figure out the type of a node
+     *
+     * @param Context $context
+     * @param null|string|Node $node
+     *
+     * @see \Phan\Deprecated\AST::ast_node_type
+     */
+    protected static function astUnionTypeFromSimpleNode(
+        Context $context,
+        $node
+    ) : UnionType {
+        if($node instanceof \ast\Node) {
+            switch($node->kind) {
+            case \ast\AST_NAME:
+                $result = static::astQualifiedName($context, $node);
+                break;
+            case \ast\AST_TYPE:
+                if($node->flags == \ast\flags\TYPE_CALLABLE) {
+                    $result = 'callable';
+                } else if($node->flags == \ast\flags\TYPE_ARRAY) {
+                    $result = 'array';
+                }
+                else assert(false, "Unknown type: {$node->flags}");
+                break;
+            default:
+                Log::err(
+                    Log::EFATAL,
+                    "ast_node_type: unknown node type: "
+                    . \ast\get_kind_name($node->kind)
+                );
+                break;
+            }
+        } else {
+            $result = (string)$node;
+        }
+
+        return UnionType::typeFromString($result);
+    }
+
+    /**
      * @param Context $context
      * @param null|string|Node $node
      *
@@ -154,7 +196,7 @@ trait AST {
         }
 
         if($node->children[0] instanceof Node) {
-            return UnionType::none();
+            return new UnionType();
         }
 
         $variable_name = $node->children[0];
@@ -184,7 +226,7 @@ trait AST {
             */
         }
 
-        return UnionType::none();
+        return new UnionType();
     }
 
     /**

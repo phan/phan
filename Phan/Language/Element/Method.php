@@ -124,7 +124,7 @@ class Method extends TypedStructuralElement {
             $context,
             Comment::none(),
             $reflection_function->getName(),
-            UnionType::none(),
+            new UnionType(),
             0,
             $number_of_required_parameters,
             $number_of_optional_parameters
@@ -159,7 +159,7 @@ class Method extends TypedStructuralElement {
             $context,
             Comment::none(),
             $method->name,
-            UnionType::none(),
+            new UnionType(),
             $reflection_method->getModifiers(),
             $number_of_required_parameters,
             $number_of_optional_parameters
@@ -264,7 +264,7 @@ class Method extends TypedStructuralElement {
             $context,
             $comment,
             $node->name,
-            UnionType::none(),
+            new UnionType(),
             $node->flags ?? 0
         );
 

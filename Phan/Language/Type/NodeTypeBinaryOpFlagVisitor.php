@@ -140,7 +140,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $context->getFile(),
                 $node->lineno
             );
-            return UnionType::none();
+            return new UnionType();
         } else if($right_is_array
             && !type_check($left, 'array')
         ) {
@@ -150,7 +150,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $file,
                 $node->lineno
             );
-            return UnionType::none();
+            return new UnionType();
         } else if($left_is_array || $right_is_array) {
             // If it is a '+' and we know one side is an array and the other is unknown, assume array
             return new UnionType(['array']);
@@ -178,7 +178,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $context->getFile(),
                 $node->lineno
             );
-            return UnionType::none();
+            return new UnionType();
         } else if ($left->hasTypeName('int')
             && $right->hasTypeName('int')
         ) {
