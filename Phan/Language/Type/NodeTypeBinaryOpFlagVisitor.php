@@ -4,6 +4,22 @@ namespace Phan\Language\Type;
 use \Phan\Language\AST\FlagVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
+use \Phan\Language\Type\{
+    ArrayType,
+    BoolType,
+    CallableType,
+    FloatType,
+    GenericArrayType,
+    IntType,
+    MixedType,
+    NativeType,
+    NullType,
+    ObjectType,
+    ResourceType,
+    ScalarType,
+    StringType,
+    VoidType
+};
 use \ast\Node;
 
 class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
@@ -169,8 +185,8 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
         $right =
             UnionType::fromNode($this->context, $node->children[1]);
 
-        if ($left->hasTypeName('array')
-            || $right->hasTypeName('array')
+        if ($left->hasType(ArrayType::instance())
+            || $right->hasType(ArrayType::instance())
         ) {
             Log::err(
                 Log::ETYPE,
@@ -179,17 +195,20 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $node->lineno
             );
             return new UnionType();
-        } else if ($left->hasTypeName('int')
-            && $right->hasTypeName('int')
+        } else if ($left->hasType(IntType::instance())
+            && $right->hasType(IntType::instance())
         ) {
-            return new UnionType(['int']);
-        } else if ($left->hasTypeName('float')
-            && $right->hasTypeName('float')
+            return IntType::instance()->asUnionType();
+        } else if ($left->hasType(FloatType::instance())
+            && $right->hasType(FloatType::instance())
         ) {
-            return new UnionType(['float']);
+            return FloatType::instance()->asUnionType();
         }
 
-        return new UnionType(['int', 'float']);
+        return new UnionType([
+            IntType::instance(),
+            FloatType::instance()
+        ]);
     }
 
 }
