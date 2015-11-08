@@ -73,6 +73,11 @@ class CodeBase {
 
     }
 
+    /**
+     * Add a class to the code base
+     *
+     * @return null
+     */
     public function addClass(Clazz $class_element) {
         $this->class_map[$class_element->getFQSEN()->__toString()]
             = $class_element;
@@ -82,6 +87,9 @@ class CodeBase {
     /**
      * Get a map from FQSEN strings to the class it
      * represents for all known classes.
+     *
+     * @return Clazz[]
+     * A map from FQSEN string to Clazz
      */
     public function getClassMap() : array {
         return $this->class_map;
@@ -89,6 +97,7 @@ class CodeBase {
 
     /**
      * @return Clazz
+     * A class with the given FQSEN
      */
     public function getClassByFQSEN(FQSEN $fqsen) : Clazz {
         assert(isset($this->class_map[(string)$fqsen]),

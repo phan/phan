@@ -138,6 +138,10 @@ class ClassNameValidationVisitor
         return $this->classExistsOrIsNative($node);
     }
 
+    /**
+     * @return bool
+     * False if this class cannot be found
+     */
     private function classExists() : bool {
         return
             $this->context->getCodeBase()->hasClassWithFQSEN(
@@ -150,16 +154,16 @@ class ClassNameValidationVisitor
      * False if the class name doesn't point to a known class
      */
     private function classExistsOrIsNative(Node $node) : bool {
-        if (!$this->classExists()) {
-            if (!Type::typeFromString($this->class_name)->isNativeType()) {
-                Log::err(
-                    Log::EUNDEF,
-                    "static call to undeclared class {$this->class_name}",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-                return false;
-            }
+        if (!$this->classExists()
+            && !Type::typeFromString($this->class_name)->isNativeType()
+        ) {
+            Log::err(
+                Log::EUNDEF,
+                "static call to undeclared class {$this->class_name}",
+                $this->context->getFile(),
+                $node->lineno
+            );
+            return false;
         }
 
         return true;

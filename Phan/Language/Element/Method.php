@@ -34,6 +34,11 @@ class Method extends TypedStructuralElement {
     private $ret = null;
 
     /**
+     * @var bool
+     */
+    private $is_dynamic = false;
+
+    /**
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
@@ -374,9 +379,20 @@ class Method extends TypedStructuralElement {
 
     /**
      * @return int
+     * The maximum number of parameters to this method
+     */
+    public function getNumberOfParameters() : int {
+        return (
+            $this->getNumberOfRequiredParameters()
+            + $this->getNumberOfOptionalParameters()
+        );
+    }
+
+    /**
+     * @return int
      * The number of required parameters on this method
      */
-    public function getNumberOfRequiredParametrs() : int {
+    public function getNumberOfRequiredParameters() : int {
         return $this->number_of_required_parameters;
     }
     /**
@@ -395,6 +411,22 @@ class Method extends TypedStructuralElement {
      */
     public function getParameterList() : array {
         return $this->parameter_list;
+    }
+
+    public function isDynamic() : bool {
+        return $this->is_dynamic;
+    }
+
+    /**
+     * Mark this method as dynamic
+     *
+     * @param bool $is_dynamic
+     * True to set this method to be dynamic, else false
+     *
+     * @return null
+     */
+    public function setIsDynamic(bool $is_dynamic) {
+        $this->is_dynamic = $is_dynamic;
     }
 
     /**

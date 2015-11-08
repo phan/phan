@@ -199,7 +199,9 @@ class FQSEN {
         Context $context,
         string $class_name
     ) : FQSEN {
-        $fqsen = clone($this);
+        $fqsen = clone($this)
+            ->withMethodName($context, '')
+            ->withClosureName($context, '');
 
         // Check to see if this is a qualified class name
         if(0 === strpos($class_name, '\\')) {
@@ -287,7 +289,8 @@ class FQSEN {
         Context $context,
         string $method_name
     ) : FQSEN {
-        $fqsen = clone($this);
+        $fqsen = clone($this)
+            ->withClosureName($context, '');
         $fqsen->method_name = $method_name;
         return $fqsen;
     }

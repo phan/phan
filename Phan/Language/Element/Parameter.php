@@ -210,6 +210,12 @@ class Parameter extends Variable {
         );
     }
 
+    public function isVariadic() : bool {
+        return (bool)(
+            $this->getFlags() & \ast\flags\PARAM_VARIADIC
+        );
+    }
+
     public function __toString() : string {
         $string = '';
 

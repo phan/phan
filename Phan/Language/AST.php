@@ -5,6 +5,8 @@ use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\Visitor\ClassNameKindVisitor;
 use \Phan\Language\AST\Visitor\ClassNameValidationVisitor;
+use \Phan\Language\Element\Variable;
+use \Phan\Log;
 use \Phan\Language\Type;
 use \ast\Node;
 
@@ -32,7 +34,7 @@ trait AST {
             new ClassNameKindVisitor($context)
         );
 
-        if (!$class_name) {
+        if (empty($class_name)) {
             return '';
         }
 
@@ -86,7 +88,6 @@ trait AST {
         }
 
         $name = $node->children[0];
-
         $type = new Type([$name]);
 
         if($node->flags & \ast\flags\NAME_NOT_FQ) {
@@ -120,7 +121,7 @@ trait AST {
             }
 
             // No aliasing, just prepend the namespace
-            return $context->getNamespace() . '\\' . $name;
+            return $context->getNamespace() . '\\' . (string)$type;
         } else {
             return $name;
         }
@@ -160,7 +161,7 @@ trait AST {
 
         // if(empty($scope[$current_scope]['vars'][$node->children[0]])
         if (!$context->getScope()->hasVariableWithName($variable_name)) {
-            if(!superglobal($variable_name))
+            if(!Variable::isSuperglobalVariableWithName($variable_name))
                 Log::err(
                     Log::EVAR,
                     "Variable \${$node->children[0]} is not defined",
@@ -186,5 +187,39 @@ trait AST {
         return Type::none();
     }
 
+    /**
+     * @return string
+     * A variable name associated with the given node
+     */
+    public static function astVariableName($node) : string {
+        if(!$node instanceof \ast\Node) {
+            return (string)$node;
+        }
+
+        $parent = $node;
+
+        while(($node instanceof \ast\Node)
+            && ($node->kind != \ast\AST_VAR)
+            && ($node->kind != \ast\AST_STATIC)
+            && ($node->kind != \ast\AST_MAGIC_CONST)
+        ) {
+            $parent = $node;
+            $node = $node->children[0];
+        }
+
+        if(!$node instanceof \ast\Node) {
+            return (string)$node;
+        }
+
+        if(empty($node->children[0])) {
+            return '';
+        }
+
+        if($node->children[0] instanceof \ast\Node) {
+            return '';
+        }
+
+        return (string)$node->children[0];
+    }
 
 }

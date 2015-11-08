@@ -27,6 +27,14 @@ class Scope {
     }
 
     /**
+     * @return Variable[]
+     * A map from name to Variable in this scope
+     */
+    public function getVariableMap() : array {
+        return $this->variable_map;
+    }
+
+    /**
      * @return Scope;
      */
     public function withVariable(Variable $variable) : Scope {

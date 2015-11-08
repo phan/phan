@@ -8,7 +8,7 @@ $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
 require_once(__DIR__.'/Phan/Bootstrap.php');
-require_once(__DIR__.'/Phan/Deprecated/CLI.php');
+require_once(__DIR__.'/Phan/CLI.php');
 
 use Phan\Analyzer;
 use Phan\CodeBase;

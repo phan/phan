@@ -21,16 +21,11 @@ use \Phan\Log;
 use \ast\Node;
 
 /**
- * The class is a visitor for AST nodes that does parsing. Each
- * visitor populates the $context->getCodeBase() with any
- * globally accessible structural elements and will return a
- * possibly new context as modified by the given node.
- *
  * # Example Usage
  * ```
  * $context =
  *     (new Element($node))->acceptKindVisitor(
- *         new ParseVisitor($context)
+ *         new AnalyzeBreadthFirstVisitor($context)
  *     );
  * ```
  */
@@ -79,7 +74,6 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitAssign(Node $node) : Context {
-
         $context = $this->context;
 
         if($node->children[0] instanceof \ast\Node
@@ -105,48 +99,59 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             Variable::fromNodeInContext($node, $context)
         );
 
-        return $context;
+        foreach ($context->getScope()->getVariableMap() as $name => $variable) {
 
-        /*
-        foreach($vars as $k=>$v) {
-            if(empty($v)) $v = ['type'=>'', 'tainted'=>false, 'tainted_by'=>''];
-            if(empty($v['type'])) $v['type'] = '';
-            if(strpos($k, '::') === false) $cs = $current_scope;
-            else $cs = 'global';  // Put static properties in the global scope TODO: revisit
+            if(strpos($name, '::') === false) {
+                $cs = (string)$context->getScopeFQSEN();
+            } else {
+                // TODO: revisit
+                // Put static properties in the global scope
+                $cs = 'global';
+            }
 
             // Check if we are assigning something to $GLOBALS[key]
-            if($k=='GLOBALS' && $ast->children[0]->kind == \ast\AST_DIM) {
-                $temp = $ast;
+            if($name == 'GLOBALS'
+                && ($node->children[0]->kind ?? 0) == \ast\AST_DIM
+            ) {
+                $temp = $node;
                 $depth=0;
                 while($temp->children[0]->kind == \ast\AST_DIM) {
                     $depth++;
-                    $temp=$temp->children[0];
+                    $temp = $temp->children[0];
                 }
+
                 // If the index is a simple scalar, set it in the global scope
-                if(!empty($temp->children[1]) && !($temp->children[1] instanceof \ast\Node)) {
+                if(!empty($temp->children[1])
+                    && !($temp->children[1] instanceof \ast\Node)
+                ) {
                     $cs = 'global';
-                    $k = $temp->children[1];
+                    $name = $temp->children[1];
+
                     if($depth==1) {
-                        $taint = false;
-                        $tainted_by = '';
-                        $v['type'] = node_type($file, $namespace, $ast->children[1], $current_scope, $current_class, $taint);
-                        $v['tainted'] = $taint;
-                        $v['tainted_by'] = $tainted_by;
+                        $variable->setType(
+                            Type::typeFromNode(
+                                $context,
+                                $node->children[1]
+                            )
+                        );
                     } else {
-                        // This is a $GLOBALS['a']['b'] type of assignment
                         // TODO: track array content types
-                        $v['type'] = 'array';
-                        $v['tainted'] = false;
-                        $v['tainted_by'] = '';
+                        // This is a $GLOBALS['a']['b'] type of
+                        // assignment
+                        $variable->setType(new Type(['array']));
                     }
                 }
             }
-            if($k=='GLOBALS') break;
-            add_var_scope($cs, $k, strtolower($v['type']));
-            $scope[$cs]['vars'][$k]['tainted'] = $v['tainted'];
-            $scope[$cs]['vars'][$k]['tainted_by'] = $v['tainted_by'];
+
+            if($name == 'GLOBALS') {
+                break;
+            }
+
+            // TODO: eh?
+            // add_var_scope($cs, $k, strtolower($v['type']));
         }
-        */
+
+        return $context;
     }
 
     /**
@@ -265,7 +270,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
         /*
         if(!array_key_exists($current_scope, $scope)) $scope[$current_scope] = [];
         if(!array_key_exists('vars', $scope[$current_scope])) $scope[$current_scope]['vars'] = [];
-        $name = var_name($ast);
+        $name = self::astVariableName($ast);
         if(empty($name)) break;
         if(!array_key_exists($name, $scope['global']['vars'])) {
             add_var_scope('global', $name, '');
@@ -306,7 +311,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitStatic(Node $node) : Context {
         /*
-        $name = var_name($ast);
+        $name = self::astVariableName($ast);
         $type = node_type($file, $namespace, $ast->children[1], $current_scope, $current_class, $taint);
         if(!empty($name)) {
             add_var_scope($current_scope, $name, $type);
@@ -573,7 +578,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 }
             }
         } else if ($call->kind == \ast\AST_VAR) {
-            $name = var_name($call);
+            $name = self::astVariableName($call);
             if(!empty($name)) {
             // $var() - hopefully a closure, otherwise we don't know
                 if(array_key_exists($name, $scope[$current_scope]['vars'])) {

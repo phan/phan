@@ -2,12 +2,14 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\Debug;
 use \Phan\Deprecated;
 use \Phan\Language\Context;
 use \Phan\Language\Type;
 use \ast\Node;
 
 class Variable extends TypedStructuralElement {
+    use \Phan\Language\AST;
 
     /**
      * @param \phan\Context $context
@@ -54,7 +56,11 @@ class Variable extends TypedStructuralElement {
         Context $context
     ) : Variable {
 
-        $variable_name = Deprecated::var_name($node);
+        $variable_name = self::astVariableName($node);
+
+        // Get the type of the assignment
+        $type =
+            Type::typeFromNode($context, $node);
 
         return new Variable(
             $context
@@ -62,8 +68,34 @@ class Variable extends TypedStructuralElement {
                 ->withLineNumberEnd($node->endLineno ?? 0),
             Comment::fromString($node->docComment ?? ''),
             $variable_name,
-            Type::none(),
+            $type,
             $node->flags
         );
     }
+
+    /**
+     * @return bool
+     * True if the variable with the given name is a
+     * superglobal
+     */
+    public static function isSuperglobalVariableWithName(
+        string $name
+    ) : bool {
+        return in_array($name, [
+            '_GET',
+            '_POST',
+            '_COOKIE',
+            '_REQUEST',
+            '_SERVER',
+            '_ENV',
+            '_FILES',
+            '_SESSION',
+            'GLOBALS'
+        ]);
+    }
+
+    public function __toString() : string {
+        return "{$this->getType()} {$this->getName()}";
+    }
+
 }

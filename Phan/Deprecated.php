@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace Phan;
 
+use \Phan\Language\Context;
+use \Phan\Language\Element\Method;
 use \Phan\Log;
+use \ast\Node;
 
 class Deprecated {
     use \Phan\Language\AST;
@@ -49,6 +52,8 @@ class Deprecated {
     }
 
     /**
+     * TODO: Move to Type
+     *
      * @return
      * Takes "a|b" and returns "a[]|b[]"
      */
@@ -68,40 +73,6 @@ class Deprecated {
         }
 
         return implode('|', $ret);
-    }
-
-    /**
-     * Finds the variable name
-     */
-    public static function var_name($node):string {
-        if(!$node instanceof \ast\Node) {
-            return (string)$node;
-        }
-
-        $parent = $node;
-
-        while(($node instanceof \ast\Node)
-            && ($node->kind != \ast\AST_VAR)
-            && ($node->kind != \ast\AST_STATIC)
-            && ($node->kind != \ast\AST_MAGIC_CONST)
-        ) {
-            $parent = $node;
-            $node = $node->children[0];
-        }
-
-        if(!$node instanceof \ast\Node) {
-            return (string)$node;
-        }
-
-        if(empty($node->children[0])) {
-            return '';
-        }
-
-        if($node->children[0] instanceof \ast\Node) {
-            return '';
-        }
-
-        return (string)$node->children[0];
     }
 
 }

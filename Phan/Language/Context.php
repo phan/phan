@@ -131,6 +131,14 @@ class Context {
         return $this->file;
     }
 
+    /**
+     * @return bool
+     * True if this object is internal to PHP
+     */
+    public function isInternal() : bool {
+        return ('internal' === $this->getFile());
+    }
+
     /*
      * @param string $namespace
      * The namespace of the file

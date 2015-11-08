@@ -91,8 +91,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $node_flags = $node->kind;
         }
 
-        // $taint = var_taint_check($file, $node, $current_scope);
-
         return
             (new Element($node))->acceptFlagVisitor(
                 new NodeTypeBinaryOpFlagVisitor($this->context)
@@ -117,8 +115,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_CAST`
      */
     public function visitCast(Node $node) : Type {
-        // $taint = var_taint_check($file, $node->children[0], $current_scope);
-
         switch($node->flags) {
         case \ast\flags\TYPE_NULL:
             return new Type(['null']);
@@ -149,37 +145,35 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_NEW`
      */
     public function visitNew(Node $node) : Type {
-
         $class_name =
             $this->astClassNameFromNode($this->context, $node);
 
-        if($class_name) {
-            $class_fqsen = FQSEN::fromContextAndString(
-                $this->context,
-                $class_name
-            );
+        assert(!empty($class_name), "Class name cannot be empty");
 
-            if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
-                return $this->context->getCodeBase()->getClassByFQSEN(
-                    $class_fqsen
-                )->getType();
-            }
+        if(empty($class_name)) {
+            return new Type(['object']);
         }
 
-        return new Type(['object']);
+        $class_fqsen = FQSEN::fromContextAndString(
+            $this->context,
+            $class_name
+        );
+
+        if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+            return $this->context->getCodeBase()->getClassByFQSEN(
+                $class_fqsen
+            )->getType();
+        }
     }
 
     /**
      * Visit a node with kind `\ast\AST_DIM`
      */
     public function visitDim(Node $node) : Type {
-        // $taint = var_taint_check($file, $node->children[0], $current_scope);
-
         $type = self::typeFromNode($this->context, $node->children[0]);
 
         if ($type->hasAnyType()) {
-            // TODO
-            $gen = generics($type);
+            $gen = $type->generics();
             if(empty($gen)) {
                 if($type!=='null'
                     // TODO
@@ -221,26 +215,23 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_VAR`
      */
     public function visitVar(Node $node) : Type {
-        return var_type(
-            $file,
-            $node,
-            $current_scope,
-            $taint
-        );
+        return self::astVarType($this->context, $node);
     }
 
     /**
      * Visit a node with kind `\ast\AST_ENCAPS_LIST`
      */
     public function visitEncapsList(Node $node) : Type {
-			foreach($node->children as $encap) {
-				if($encap instanceof Node) {
-                    if(var_taint_check($file, $encap, $current_scope)) {
-                        $taint = true;
-                    }
-				}
-			}
-			return new Type(['string']);
+        /*
+        foreach($node->children as $encap) {
+            if($encap instanceof Node) {
+                if(var_taint_check($file, $encap, $current_scope)) {
+                    $taint = true;
+                }
+            }
+        }
+         */
+        return new Type(['string']);
     }
 
     /**
@@ -350,36 +341,69 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_PROP`
      */
     public function visitProp(Node $node) : Type {
-        if($node->children[0]->kind == \ast\AST_VAR) {
-            $class_name =
-                $this->astClassNameFromNode($this->context, $node);
+        return $this->visitStaticProp($node);
 
-            if($class_name && !($node->children[1] instanceof Node)) {
-                $ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
-                if(empty($ltemp)) {
-                    return Type::none();
-                }
-                // TODO
-                return $classes[$ltemp]['properties'][$node->children[1]]['type'];
-            }
+        /*
+        if($node->children[0]->kind != \ast\AST_VAR) {
+            return Type::none();
         }
+
+        $class_name =
+            $this->astClassNameFromNode($this->context, $node);
+
+        if($class_name && !($node->children[1] instanceof Node)) {
+            $ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
+            if(empty($ltemp)) {
+                return Type::none();
+            }
+            // TODO
+            return $classes[$ltemp]['properties'][$node->children[1]]['type'];
+        }
+         */
     }
 
     /**
      * Visit a node with kind `\ast\AST_STATIC_PROP`
      */
     public function visitStaticProp(Node $node) : Type {
-        if($node->children[0]->kind == \ast\AST_NAME) {
-            $class_name = qualified_name($file, $node->children[0], $namespace);
-            if($class_name && !($node->children[1] instanceof Node)) {
-                $ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
-                if(empty($ltemp)) {
-                    return Type::none();
-                }
-                // TODO
-                return $classes[$ltemp]['properties'][$node->children[1]]['type'];
-            }
+        if($node->children[0]->kind != \ast\AST_NAME) {
+            return Type::none();
         }
+
+        $class_name =
+            $this->astClassNameFromNode($this->context, $node);
+
+        if(!($class_name
+            && !($node->children[1] instanceof Node))
+        ) {
+            return Type::none();
+        }
+
+        $class_fqsen =
+            $this->context->getScopeFQSEN()->withClassName(
+                $class_name
+            );
+
+        assert(
+            $this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen),
+            "Class $class_fqsen must exist"
+        );
+
+        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+            $class_fqsen
+        );
+
+        $property_name = $node->children[1];
+
+        // Property not found :(
+        if (!$clazz->hasPropertyWithName($property_name)) {
+            return Type::none();
+        }
+
+        $property =
+            $clazz->getPropertyWithName($property_name);
+
+        return $property->getType();
     }
 
 
@@ -417,11 +441,23 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $class_name =
             $this->astClassNameFromNode($this->context, $node);
 
-        $method = find_method($class_name, $node->children[1]);
-        if($method) {
-            // TODO
-            return $method['ret'] ?? '';
+        $method_name = $node->children[1];
+
+        $method_fqsen = $this->context->getScopeFQSEN()
+            ->withClassName($this->context, $class_name)
+            ->withMethodName($this->context, $method_name);
+
+        if (!$this->context->getCodeBase()->getMethodByFQSEN(
+            $method_fqsen
+        )) {
+            return Type::none();
         }
+
+        $method = $this->context->getCodeBase()->getMethodByFQSEN(
+            $method_fqsen
+        );
+
+        return $method->getType();
     }
 
     /**
@@ -431,23 +467,70 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $class_name =
             $this->astClassNameFromNode($this->context, $node);
 
-        if($class_name) {
-            $method_name = $node->children[1];
-            $method = find_method($class_name, $method_name);
-            if($method === false) {
-                Log::err(
-                    Log::EUNDEF,
-                    "call to undeclared method {$class_name}->{$method_name}()",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-            } else if($method != 'dynamic') {
-                // TODO
-                return $method['ret'];
-            }
+        if (empty($class_name)) {
+            return Type::none();
         }
+
+        $class_fqsen =
+            $this->context->getScopeFQSEN()->withClassName(
+                $this->context,
+                $class_name
+            );
+
+        assert(
+            $this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen),
+            "Class $class_fqsen must exist"
+        );
+
+        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+            $class_fqsen
+        );
+
+        $method_name = $node->children[1];
+
+        $method_fqsen = $clazz->getFQSEN()->withMethodName(
+            $this->context,
+            $method_name
+        );
+
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
+            $method_fqsen
+        )) {
+            Log::err(
+                Log::EUNDEF,
+                "call to undeclared method {$class_fqsen}->{$method_name}()",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
+
+        $method = $this->context->getCodeBase()->getMethodByFQSEN(
+            $method_fqsen
+        );
+
+        // TODO: What's dynamic mean?
+        if (!$method->isDynamic()) {
+            // TODO: What's ret?
+            //return $method['ret'];
+            return $method->getType();
+        }
+
+        return $method->getType();
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_ASSIGN`
+     */
+    public function visitAssign(Node $node) : Type {
+        return Type::typeFromNode(
+            $this->context,
+            $node->children[1]
+        );
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_UNARY_MINUS`
+     */
     public function visitUnaryMinus(Node $node) : Type {
         return Type::typeForObject($node->children[0]);
     }

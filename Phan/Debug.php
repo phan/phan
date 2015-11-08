@@ -8,6 +8,10 @@ use \ast\Node;
  */
 class Debug {
 
+    public static function mark() {
+        print "mark\n";
+    }
+
     /**
      * @param string|Node|null $node
      * An AST node

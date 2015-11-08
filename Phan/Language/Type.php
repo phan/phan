@@ -29,12 +29,6 @@ class Type {
     private $type_name_list = [];
 
     /**
-     * @var bool
-     * True if this
-     */
-    private $is_tainted = false;
-
-    /**
      * @param string[] $type_name_list
      * A list of type names
      */
@@ -336,34 +330,32 @@ class Type {
      * A canonical name for the given type name
      */
     private static function toCanonicalName(string $type_name) : string {
+
         static $repmaps = [
-            [
-                'integer',
-                'double',
-                'boolean',
-                'false',
-                'true',
-                'callback',
-                'closure',
-                'NULL'
-            ],
-            [
-                'int',
-                'float',
-                'bool',
-                'bool',
-                'bool',
-                'callable',
-                'callable',
-                'null'
-            ]
+            ['integer', 'double', 'boolean', 'false',
+            'true', 'callback', 'closure', 'NULL' ],
+            ['int', 'float', 'bool', 'bool', 'bool',
+            'callable', 'callable', 'null' ]
         ];
 
-        return str_replace(
-            $repmaps[0],
-            $repmaps[1],
-            strtolower($type_name)
-        );
+        if (empty($type_name)) {
+            return $type_name;
+        }
+
+        list($namespace, $class_name) =
+            self::namespaceandTypeFromType($type_name);
+
+        // If its a root namespace, map it
+        if ('\\' === $namespace) {
+            return str_replace(
+                $repmaps[0],
+                $repmaps[1],
+                strtolower($class_name)
+            );
+        }
+
+        return $namespace . '\\' . strtolower($class_name);
+
     }
 
     /**
@@ -655,7 +647,7 @@ class Type {
         }
 
         $type_names = [];
-        foreach(explode('|', (string)$this) as $type_name) {
+        foreach($this->type_name_list as $type_name) {
             if(($pos = strpos($type_name, '[]')) === false) {
                 continue;
             }
@@ -664,6 +656,52 @@ class Type {
         }
 
         return new Type($type_names);
+    }
+
+    /**
+     * Takes "a|b[]|c|d[]|e" and returns "a|c|e"
+     *
+     * @see \Phan\Deprecated\Pass2::nongenerics
+     * Formerly `function nongenerics`
+     */
+    public function nongenerics() : Type {
+        $str = (string)$this;
+
+        $type_names = [];
+        foreach($this->type_name_list as $type_name) {
+            if(($pos = strpos($type_name, '[]')) !== false) {
+                continue;
+            }
+
+            // TODO: this was `if ($str == 'array') {`. Thats broken, right?
+            if($type_name == 'array') {
+                continue;
+            }
+
+            $type_names[] = $type_name;
+        }
+
+        return new Type($type_names);
+    }
+
+    /**
+     * @return string[]
+     * A pair with the 0th element being the namespace and the first
+     * element being the type name.
+     */
+    private static function namespaceAndTypeFromType(
+        string $type_name
+    ) : array {
+        $fq_class_name_elements =
+            array_filter(explode('\\', $type_name));
+
+        $class_name =
+            array_pop($fq_class_name_elements);
+
+        $namespace =
+            '\\' . implode('\\', $fq_class_name_elements);
+
+        return [$namespace, $class_name];
     }
 
 }

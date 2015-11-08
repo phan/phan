@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\AST\Visitor;
 
+use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
-use \Phan\Language\Type;
 use \Phan\Language\Context;
+use \Phan\Language\Type;
 use \Phan\Log;
 use \ast\Node;
 
@@ -41,11 +42,8 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
         if($node->children[0]->kind == \ast\AST_NAME) {
             $class_name = $node->children[0]->children[0];
 
-            if($class_name == 'self'
-                || $class_name == 'static'
-                || $class_name == 'parent'
-            ) {
-                if (!$this->context->hasClassFQSEN()) {
+            if(in_array($class_name, ['self', 'static', 'parent'])) {
+                if (!$this->context->isClassScope()) {
                     Log::err(
                         Log::ESTATIC,
                         "Cannot access {$class_name}:: when no class scope is active",
@@ -76,12 +74,12 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                 // TODO
                 $static_call_ok = true;
             } else {
+                // qualified_name($file, $node->children[0], $namespace);
                 $class_name =
                     self::astQualifiedName(
                         $this->context,
                         $node->children[0]
                     );
-                    // qualified_name($file, $node->children[0], $namespace);
             }
         }
 
@@ -109,23 +107,60 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
             if(!($node->children[0]->children[0] instanceof \ast\Node)) {
                 // $var->method()
                 if($node->children[0]->children[0] == 'this') {
-                    if(!$current_class) {
-                        Log::err(Log::ESTATIC, 'Using $this when not in object context', $file, $node->lineno);
+                    if(!$this->context->isClassScope()) {
+                        Log::err(
+                            Log::ESTATIC,
+                            'Using $this when not in object context',
+                            $this->context->getFile(),
+                            $node->lineno
+                        );
                         return '';
                     }
                 }
-                if(empty($scope[$current_scope]['vars'][$node->children[0]->children[0]])) {
+
+                $variable_name =
+                    $node->children[0]->children[0];
+
+                if (!$this->context->getScope()->hasVariableWithName(
+                    $variable_name
+                )) {
                     // Got lost, couldn't find the variable in the current scope
                     // If it really isn't defined, it will be caught by the undefined var error
                     return '';
                 }
-                $call = $scope[$current_scope]['vars'][$node->children[0]->children[0]]['type'];
-                // Hack - loop through the possible types of the var and assume first found class is correct
-                foreach(explode('|', nongenerics($call)) as $class_name) {
-                    if(!empty($classes[strtolower($class_name)])) break;
+
+                $variable =
+                    $this->context->getScope()->getVariableWithName($variable_name);
+
+                // Hack - loop through the possible types of the var and assume
+                // first found class is correct
+                foreach($variable->getType()->nongenerics()->getTypeNameList() as $type_name) {
+                    if ($this->context->getCodeBase()->hasClassWithFQSEN(
+                        $this->context->getScopeFQSEN()->withClassName(
+                            $this->context,
+                            $type_name
+                        )
+                    )) {
+                        break;
+                    }
                 }
-                if(empty($class_name)) return '';
-                $class_name = $classes[strtolower($class_name)]['name'] ?? $class_name;
+
+                if(empty($type_name)) {
+                    return '';
+                }
+
+                $class_fqsen = $this->context->getScopeFQSEN()->withClassName(
+                    $this->context,
+                    $type_name
+                );
+
+                $class_name = $type_name;
+                if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+                    $class_name =
+                        $this->context->getCodeBase()->getClassByFQSEN($class_fqsen)->getName();
+                }
+
+                return $class_name;
             }
         } else if($node->children[0]->kind == \ast\AST_PROP) {
             $prop = $node->children[0];
@@ -153,6 +188,8 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                 }
             }
         }
+
+        return $class_name;
     }
 
     public function visitProp(Node $node) : string {

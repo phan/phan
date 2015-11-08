@@ -7,28 +7,31 @@ use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
-use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
+use \Phan\Language\Element\{
+    Clazz,
+    Comment,
+    Constant,
+    Method,
+    Property,
+    Variable
+};
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
 use \Phan\Log;
 use \ast\Node;
 
 /**
- * The class is a visitor for AST nodes that does parsing. Each
- * visitor populates the $context->getCodeBase() with any
- * globally accessible structural elements and will return a
- * possibly new context as modified by the given node.
- *
  * # Example Usage
  * ```
  * $context =
  *     (new Element($node))->acceptKindVisitor(
- *         new ParseVisitor($context)
+ *         new AnalyzeDepthFirstVisitor($context)
  *     );
  * ```
  */
 class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
     use \Phan\Language\AST;
+    use \Phan\Analyze\ArgumentType;
 
     /**
      * @var Context
@@ -285,6 +288,17 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                 $closure_name
             );
 
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
+            $closure_fqsen
+        )) {
+            Log::err(
+                Log::EFATAL,
+                "Can't find closure {$closure_fqsen} - aborting",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
+
         $closure = $this->context->getCodeBase()->getMethodByFQSEN(
             $closure_fqsen
         );
@@ -310,7 +324,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                         $node->lineno
                     );
                 } else {
-                    $variable_name = Deprecated::var_name($use->children[0]);
+                    $variable_name = self::astVariableName($use->children[0]);
 
                     if(empty($variable_name)) {
                         continue;
@@ -377,46 +391,23 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                 );
             }
             if(!empty($node->children[2])) {
-
-
-
-                // add_var_scope($current_scope, var_name($ast->children[2]), '', true);
+                $context = $this->context->withScopeVariable(
+                    Variable::fromNodeInContext($node->children[2], $context)
+                );
             }
         } else {
-            /*
-            // value
-            add_var_scope($current_scope, var_name($ast->children[1]), '', true);
-            // key
-            if(!empty($ast->children[2])) {
-                add_var_scope($current_scope, var_name($ast->children[2]), '', true);
-            }
-             */
-        }
+            $context = $this->context->withScopeVariable(
+                Variable::fromNodeInContext($node->children[1], $context)
+            );
 
-
-
-
-        /*
-        if(($ast->children[2] instanceof \ast\Node) && ($ast->children[2]->kind == \ast\AST_LIST)) {
-            Log::err(Log::EFATAL, "Can't use list() as a key element - aborting", $file, $ast->lineno);
-        }
-        if($ast->children[1]->kind == \ast\AST_LIST) {
-            foreach($ast->children[1]->children as $node) {
-                add_var_scope($current_scope, var_name($node), '', true);
-            }
-            if(!empty($ast->children[2])) {
-                add_var_scope($current_scope, var_name($ast->children[2]), '', true);
-            }
-        } else {
-            // value
-            add_var_scope($current_scope, var_name($ast->children[1]), '', true);
-            // key
-            if(!empty($ast->children[2])) {
-                add_var_scope($current_scope, var_name($ast->children[2]), '', true);
+            if(!empty($node->children[2])) {
+                $context = $this->context->withScopeVariable(
+                    Variable::fromNodeInContext($node->children[2], $context)
+                );
             }
         }
-        */
-        return $this->context;
+
+        return $context;
     }
 
     /**
@@ -428,13 +419,17 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitCatch(Node $node) : Context {
-        /*
-        $obj = var_name($ast->children[0]);
-        $name = var_name($ast->children[1]);
-        if(!empty($name))
-            add_var_scope($current_scope, $name, $obj, true);
-         */
-        return $this->context;
+        $object_name = self::astVariableName($node->children[0]);
+        $name = self::astVariableName($node->children[1]);
+
+        $context = $this->context;
+        if (!empty($name)) {
+            $context = $this->context->withScopeVariable(
+                Variable::fromNodeInContext($node->children[1], $context)
+            );
+        }
+
+        return $context;
     }
 
     /**
@@ -448,7 +443,88 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitMethodCall(Node $node) : Context {
-        return $this->visitReturn($node);
+        // Find out the name of the class for which we're
+        // calling a method
+        $class_name =
+            self::astClassNameFromNode($this->context, $node);
+
+        assert(!empty($class_name), "Class name cannot be empty");
+
+        $class_fqsen =
+            $this->context->getScopeFQSEN()->withClassName(
+                $this->context, $class_name
+            );
+
+        if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+            Log::err(
+                Log::EFATAL,
+                "Can't find class {$class_fqsen} - aborting",
+                $this->context->getFile(),
+                $node->lineno
+            );
+            return $this->context;
+        }
+
+        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+            $class_fqsen
+        );
+
+        $method_name = $node->children[1];
+
+        $method_fqsen =
+            $clazz->getFQSEN()->withMethodName(
+                $this->context, $method_name
+            );
+
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
+            Log::err(
+                Log::EUNDEF,
+                "call to undeclared method {$class_fqsen}->{$method_name}()",
+                $this->context->getFile(),
+                $node->lineno
+            );
+            return $this->context;
+        }
+
+        $method = $this->context->getCodeBase()->getMethodByFQSEN(
+            $method_fqsen
+        );
+
+        if($method->getName() != 'dynamic') {
+
+            if(array_key_exists('avail', $method)
+                && !$method['avail']
+            ) {
+                Log::err(
+                    Log::EAVAIL,
+                    "method {$class_fqsen}::{$method_name}() is not compiled into this version of PHP",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
+
+            self::analyzeArgumentType($method, $node);
+
+            /*
+            if($method->getContext()->getFile() != 'internal') {
+                // re-check the function's ast with these args
+                if(!$quick_mode) {
+                    pass2(
+                        $method['file'],
+                        $method['namespace'],
+                        $method['ast'],
+                        $method['scope'],
+                        $ast,
+                        $classes[strtolower($class_name)],
+                        $method,
+                        $parent_scope
+                    );
+                }
+            }
+             */
+        }
+
+        return $this->context;
     }
 
     /**
