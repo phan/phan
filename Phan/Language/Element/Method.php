@@ -285,8 +285,8 @@ class Method extends TypedStructuralElement {
             $node->flags ?? 0
         );
 
+        // Set the parameter list on the method
         $method->parameter_list = $parameter_list;
-
 
         // Check to see if the comment specifies that the
         // method is deprecated
@@ -294,7 +294,6 @@ class Method extends TypedStructuralElement {
 
         // Take a look at method return types
         if($node->children[3] !== null) {
-
             $union_type = UnionType::fromSimpleNode(
                 $context,
                 $node->children[3]

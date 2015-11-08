@@ -62,8 +62,14 @@ class Variable extends TypedStructuralElement {
         $union_type =
             UnionType::fromNode($context, $node);
 
-        // assert(!$union_type->isEmpty(),
-        //     "Type for a node shouldn't be empty");
+        /*
+        assert(!$union_type->isEmpty(),
+            "Type for a variable with name $variable_name shouldn't be empty");
+
+        if ($union_type->isEmpty()) {
+            Debug::printNode($node);
+        }
+         */
 
         return new Variable(
             $context

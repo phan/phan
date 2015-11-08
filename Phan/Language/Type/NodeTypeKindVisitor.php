@@ -342,7 +342,41 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_PROP`
      */
     public function visitProp(Node $node) : UnionType {
-        return $this->visitStaticProp($node);
+        $class_name =
+            $this->astClassNameFromNode($this->context, $node);
+
+        if(!($class_name
+            && !($node->children[1] instanceof Node))
+        ) {
+            return new UnionType();
+        }
+
+        $class_fqsen =
+            $this->context->getScopeFQSEN()->withClassName(
+                $this->context,
+                $class_name
+            );
+
+        assert(
+            $this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen),
+            "Class $class_fqsen must exist"
+        );
+
+        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+            $class_fqsen
+        );
+
+        $property_name = $node->children[1];
+
+        // Property not found :(
+        if (!$clazz->hasPropertyWithName($property_name)) {
+            return new UnionType();
+        }
+
+        $property =
+            $clazz->getPropertyWithName($property_name);
+
+        return $property->getUnionType();
     }
 
     /**
@@ -364,6 +398,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
         $class_fqsen =
             $this->context->getScopeFQSEN()->withClassName(
+                $this->context,
                 $class_name
             );
 

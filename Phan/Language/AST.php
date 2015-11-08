@@ -6,8 +6,9 @@ use \Phan\Language\AST\Element;
 use \Phan\Language\AST\Visitor\ClassNameKindVisitor;
 use \Phan\Language\AST\Visitor\ClassNameValidationVisitor;
 use \Phan\Language\Element\Variable;
-use \Phan\Log;
+use \Phan\Language\Type\MixedType;
 use \Phan\Language\UnionType;
+use \Phan\Log;
 use \ast\Node;
 
 /**
@@ -221,7 +222,7 @@ trait AST {
             && ($node->children[0]->kind == \ast\AST_VAR
                 || $node->children[0]->kind == \ast\AST_BINARY_OP)
         ) {
-            return new UnionType(['mixed']);
+            return MixedType::instance()->asUnionType();
         }
 
         if($node->children[0] instanceof Node) {

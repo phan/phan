@@ -116,6 +116,8 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                         );
                         return '';
                     }
+
+                    return (string)$this->context->getClassFQSEN();
                 }
 
                 $variable_name =
