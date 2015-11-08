@@ -82,7 +82,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             && $node->children[0]->kind == \ast\AST_LIST
         ) {
             $right_type =
-                UnionType::typeFromNode($context, $node);
+                UnionType::fromNode($context, $node);
 
             $type = $right_type->generics();
 
@@ -131,7 +131,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
 
                     if($depth==1) {
                         $variable->setUnionType(
-                            UnionType::typeFromNode(
+                            UnionType::fromNode(
                                 $context,
                                 $node->children[1]
                             )

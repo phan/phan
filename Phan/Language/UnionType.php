@@ -423,9 +423,11 @@ class UnionType extends \ArrayObject  {
      * Formerly `function nongenerics`
      */
     public function nonGenericTypes() : UnionType {
-        return array_filter($this, function(Type $type) {
-            return !$type->isGeneric();
-        });
+        return new UnionType(
+            array_filter($this->getArrayCopy(), function(Type $type) {
+                return !$type->isGeneric();
+            })
+        );
 
         /*
         $str = (string)$this;

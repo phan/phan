@@ -136,11 +136,11 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
 
                 // Hack - loop through the possible types of the var and assume
                 // first found class is correct
-                foreach($variable->getUnionType()->nongenerics()->getTypeNameList() as $type_name) {
+                foreach($variable->getUnionType()->nonGenericTypes() as $type_name) {
                     if ($this->context->getCodeBase()->hasClassWithFQSEN(
                         $this->context->getScopeFQSEN()->withClassName(
                             $this->context,
-                            $type_name
+                            (string)$type_name
                         )
                     )) {
                         break;
@@ -153,7 +153,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
 
                 $class_fqsen = $this->context->getScopeFQSEN()->withClassName(
                     $this->context,
-                    $type_name
+                    (string)$type_name
                 );
 
                 $class_name = $type_name;

@@ -52,12 +52,12 @@ trait ArgumentType {
                     );
                     return;
                 } else if($argcount == 2) {
-                    $arg1_type = UnionType::typeFromNode(
+                    $arg1_type = UnionType::fromNode(
                         $method->getContext(),
                         $arglist->children[0]
                     );
 
-                    $arg2_type = UnionType::typeFromNode(
+                    $arg2_type = UnionType::fromNode(
                         $method->getContext(),
                         $arglist->children[1]
                     );
@@ -358,7 +358,7 @@ trait ArgumentType {
         string $log_message
     ) : bool {
         // Get the type of the node
-        $node_type = UnionType::typeFromNode(
+        $node_type = UnionType::fromNode(
             $context,
             $node
         );
