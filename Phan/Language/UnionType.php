@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
+use \Phan\Language\Context;
 use \Phan\Language\Type;
 use \Phan\Language\Type\{
     ArrayType,
@@ -44,21 +44,54 @@ class UnionType extends \ArrayObject  {
     }
 
     /**
+     * @param string $fully_qualified_string
+     * A '|' delimited string representing a type in the form
+     * 'int|string|null|ClassName'.
+     *
+     * @param Context $context
+     * The context in which the type string was
+     * found
+     *
+     * @return UnionType
+     */
+    public static function fromFullyQualifiedString(
+        string $fully_qualified_string
+    ) : UnionType {
+        if (empty($fully_qualified_string)) {
+            return new UnionType();
+        }
+
+        return new UnionType(
+            array_map(function(string $type_name) {
+                return Type::fromFullyQualifiedString($type_name);
+            }, explode('|', $fully_qualified_string))
+        );
+
+    }
+
+    /**
      * @param string $type_string
      * A '|' delimited string representing a type in the form
      * 'int|string|null|ClassName'.
      *
+     * @param Context $context
+     * The context in which the type string was
+     * found
+     *
      * @return UnionType
      */
-    public static function fromString(string $type_string) : UnionType {
+    public static function fromStringInContext(
+        string $type_string,
+        Context $context
+    ) : UnionType {
         if (empty($type_string)) {
             return new UnionType();
         }
 
         return new UnionType(
-            array_map(function(string $type_name) use ($type_string) {
+            array_map(function(string $type_name) use ($context, $type_string) {
                 assert(!empty($type_name), "Type cannot be empty. $type_string given.");
-                return Type::fromString($type_name);
+                return Type::fromStringInContext($type_name, $context);
             }, explode('|', $type_string))
         );
     }
@@ -474,7 +507,7 @@ class UnionType extends \ArrayObject  {
      * @see \Serializable
      */
     public function unserialize($serialized) {
-        return self::fromString($serialized);
+        return self::fromFullyQualifiedString($serialized);
     }
 
     /**

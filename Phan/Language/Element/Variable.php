@@ -62,11 +62,20 @@ class Variable extends TypedStructuralElement {
         $type =
             UnionType::fromNode($context, $node);
 
+        if ($variable_name == 'right_type') {
+            print "type: $type\n";
+            assert(false);
+        }
+
+
         return new Variable(
             $context
                 ->withLineNumberStart($node->lineno ?? 0)
                 ->withLineNumberEnd($node->endLineno ?? 0),
-            Comment::fromString($node->docComment ?? ''),
+                    Comment::fromStringInContext(
+                        $node->docComment ?? '',
+                        $context
+                    ),
             $variable_name,
             $type,
             $node->flags

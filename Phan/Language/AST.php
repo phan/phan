@@ -32,15 +32,20 @@ trait AST {
         if($node instanceof \ast\Node) {
             switch($node->kind) {
             case \ast\AST_NAME:
-                $result = static::astQualifiedName($context, $node);
+                $result =
+                    static::astQualifiedName(
+                        $context,
+                        $node
+                    );
                 break;
             case \ast\AST_TYPE:
                 if($node->flags == \ast\flags\TYPE_CALLABLE) {
                     $result = 'callable';
                 } else if($node->flags == \ast\flags\TYPE_ARRAY) {
                     $result = 'array';
+                } else {
+                    assert(false, "Unknown type: {$node->flags}");
                 }
-                else assert(false, "Unknown type: {$node->flags}");
                 break;
             default:
                 Log::err(
@@ -54,7 +59,7 @@ trait AST {
             $result = (string)$node;
         }
 
-        return UnionType::fromString($result);
+        return UnionType::fromStringInContext($result, $context);
     }
 
     /**
@@ -124,13 +129,13 @@ trait AST {
         $node
     ) : string {
         if(!($node instanceof \ast\Node)
-            && $node->kind != \ast\AST_NAME
+            || $node->kind != \ast\AST_NAME
         ) {
             return self::astVarUnionType($context, $node);
         }
 
         $name = $node->children[0];
-        $type = UnionType::fromString($name);
+        $type = UnionType::fromStringInContext($name, $context);
 
         if($node->flags & \ast\flags\NAME_NOT_FQ) {
 
@@ -142,8 +147,12 @@ trait AST {
             // Not fully qualified, check if we have an exact
             // namespace alias for it
             if ($context->hasNamespaceMapFor(T_CLASS, (string)$type)) {
-                return
-                    (string)$context->getNamespaceMapFor(T_CLASS, (string)$type);
+                $fqsen = $context->getNamespaceMapFor(
+                    T_CLASS,
+                    (string)$type
+                );
+
+                return (string)$fqsen;
             }
 
             // Check for a namespace-relative alias
@@ -163,7 +172,7 @@ trait AST {
             }
 
             // No aliasing, just prepend the namespace
-            return $context->getNamespace() . '\\' . (string)$type;
+            return '\\' . $context->getNamespace() . '\\' . (string)$type;
         } else {
             return $name;
         }

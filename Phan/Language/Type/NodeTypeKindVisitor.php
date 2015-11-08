@@ -425,13 +425,16 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $class_name =
             $this->astClassNameFromNode($this->context, $node);
 
+        assert(!empty($class_name),
+            'Class name cannot be empty');
+
         $method_name = $node->children[1];
 
         $method_fqsen = $this->context->getScopeFQSEN()
             ->withClassName($this->context, $class_name)
             ->withMethodName($this->context, $method_name);
 
-        if (!$this->context->getCodeBase()->getMethodByFQSEN(
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
             $method_fqsen
         )) {
             return new UnionType();

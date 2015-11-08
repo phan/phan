@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\Language\Context;
 use \Phan\Language\Element\Comment\Parameter as CommentParameter;
 use \Phan\Language\UnionType;
 
@@ -84,8 +85,9 @@ class Comment {
      * A comment built by parsing the given doc block
      * string.
      */
-    public static function fromString(
-        string $comment
+    public static function fromStringInContext(
+        string $comment,
+        Context $context
     ) : Comment {
 
         $is_deprecated = false;
@@ -108,7 +110,7 @@ class Comment {
 
                     $comment_parameter = new CommentParameter(
                         empty($match[2]) ? '' : trim($match[2], '$'),
-                        UnionType::fromString($type),
+                        UnionType::fromStringInContext($type, $context),
                         $line
                     );
 
@@ -126,7 +128,7 @@ class Comment {
 
                     $variable_list[] = new CommentParameter(
                         empty($match[2])?'':trim($match[2],'$'),
-                        UnionType::fromString($type),
+                        UnionType::fromStringInContext($type, $context),
                         ''
                     );
                 }
@@ -154,7 +156,7 @@ class Comment {
             $is_deprecated,
             $variable_list,
             $parameter_list,
-            UnionType::fromString($return ?: ''),
+            UnionType::fromStringInContext($return ?: '', $context),
             $comment
         );
     }

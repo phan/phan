@@ -257,7 +257,10 @@ class Method extends TypedStructuralElement {
         // Parse the comment above the method to get
         // extra meta information about the method.
         $comment =
-            Comment::fromString($node->docComment ?? '');
+            Comment::fromStringInContext(
+                $node->docComment ?? '',
+                $context
+            );
 
         // Create the skeleton method object from what
         // we know so far
@@ -281,12 +284,13 @@ class Method extends TypedStructuralElement {
 
         // Take a look at method return types
         if($node->children[3] !== null) {
-            $method->getUnionType()->addUnionType(
-                UnionType::fromSimpleNode(
-                    $context,
-                    $node->children[3]
-                )
+
+            $union_type = UnionType::fromSimpleNode(
+                $context,
+                $node->children[3]
             );
+
+            $method->getUnionType()->addUnionType($union_type);
         } else if ($comment->hasReturnUnionType()) {
 
             // See if we have a return type specified in the comment

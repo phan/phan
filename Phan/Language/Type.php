@@ -34,7 +34,7 @@ class Type {
      * The namespace of this type such as '\' or
      * '\Phan\Language'
      */
-    protected $namespace = '\\';
+    protected $namespace = null;
 
     /**
      * @param string $name
@@ -46,12 +46,13 @@ class Type {
      */
     public function __construct(
         string $name,
-        string $namespace = '\\'
+        string $namespace
     ) {
         assert(!empty($name), "Type name cannot be empty");
 
         $this->name = self::canonicalNameFromName($name);
-        $this->namespace = $namespace;
+
+        $this->namespace = $namespace ?? '\\';
     }
 
     /**
@@ -59,19 +60,21 @@ class Type {
      * Get a type for the given object
      */
     public static function fromObject($object) : Type {
-        return Type::fromString(gettype($object));
+        return Type::fromInternalTypeName(gettype($object));
     }
 
     /**
      * @return Type
-     * Parse a type from the given string
+     * Get a type for the given type name
      */
-    public static function fromString(string $string) : Type {
-        assert(!empty($string), "Type cannot be empty");
+    public static function fromInternalTypeName(
+        string $type_name
+    ) : Type {
 
-        $string = self::canonicalNameFromName($string);
+        $type_name =
+            self::canonicalNameFromName($type_name);
 
-        switch ($string) {
+        switch ($type_name) {
         case 'array':
             return \Phan\Language\Type\ArrayType::instance();
         case 'bool':
@@ -96,8 +99,122 @@ class Type {
             return \Phan\Language\Type\VoidType::instance();
         }
 
-        // TODO: look for a namespace
-        return new Type($string);
+        assert(false,
+            "No internal type with name $type_name");
+    }
+
+    /**
+     * @param string $fully_qualified_string
+     * A fully qualified type name
+     *
+     * @param Context $context
+     * The context in which the type string was
+     * found
+     *
+     * @return UnionType
+     */
+    public static function fromFullyQualifiedString(
+        string $fully_qualified_string
+    ) : Type {
+
+        assert(!empty($fully_qualified_string),
+            "Type cannot be empty");
+        assert('\\' === $fully_qualified_string[0],
+            "fromFullyQualifiedString() called without fully qualified string");
+
+        list($namespace, $type_name) =
+            self::namespaceAndTypeFromString(
+                $fully_qualified_string
+            );
+
+        $type_name =
+            self::canonicalNameFromName($type_name);
+
+        // If we have a namespace, we're all set
+        return new Type($namespace, $type_name);
+    }
+
+    /**
+     * @param string $string
+     * A string representing a type
+     *
+     * @param Context $context
+     * The context in which the type string was
+     * found
+     *
+     * @return Type
+     * Parse a type from the given string
+     */
+    public static function fromStringInContext(
+        string $string,
+        Context $context
+    ) : Type {
+        assert(!empty($string), "Type cannot be empty");
+
+        $namespace = null;
+
+        // Extract the namespace if the type string is
+        // fully-qualified
+        if ('//' === $string[0]) {
+            list($namespace, $type_name) =
+                self::namespaceAndTypeFromString(
+                    $fully_qualified_string
+                );
+
+            if (!empty($namespace)) {
+                $namespace =
+                    '\\' . implode('\\', $namespace_elements);
+            }
+        }
+
+        $type_name =
+            self::canonicalNameFromName($string);
+
+        // If we have a namespace, we're all set
+        if (!empty($namespace)) {
+            return new Type($namespace, $string);
+        }
+
+        // Check to see if its a builtin type
+        switch ($type_name) {
+        case 'array':
+            return \Phan\Language\Type\ArrayType::instance();
+        case 'bool':
+            return \Phan\Language\Type\BoolType::instance();
+        case 'callable':
+            return \Phan\Language\Type\CallableType::instance();
+        case 'float':
+            return \Phan\Language\Type\FloatType::instance();
+        case 'int':
+            return \Phan\Language\Type\IntType::instance();
+        case 'mixed':
+            return \Phan\Language\Type\MixedType::instance();
+        case 'null':
+            return \Phan\Language\Type\NullType::instance();
+        case 'object':
+            return \Phan\Language\Type\ObjectType::instance();
+        case 'resource':
+            return \Phan\Language\Type\ResourceType::instance();
+        case 'string':
+            return \Phan\Language\Type\StringType::instance();
+        case 'void':
+            return \Phan\Language\Type\VoidType::instance();
+        }
+
+        // Check to see if the type name is mapped via
+        // a using clause
+        if ($context->hasNamespaceMapFor(T_CLASS, $type_name)) {
+            $fqsen =
+                $context->getNamespaceMapFor(T_CLASS, $type_name);
+
+            return new Type(
+                $fqsen->getClassName(),
+                $fqsen->getNamespace()
+            );
+        }
+
+        // Attach the context's namespace to the type name
+        return new Type($type_name, $context->getNamespace());
     }
 
     /**
@@ -130,6 +247,28 @@ class Type {
      */
     public function getName() : string {
         return $this->name;
+    }
+
+    /**
+     * @return bool
+     * True if this namespace is defined
+     */
+    public function hasNamespace() : bool {
+        return !empty($this->namespace);
+    }
+
+    /**
+     * @return bool
+     * True if this namespace is defined
+     */
+    public function isFullyQualified() : bool {
+        if (!$this->hasNamespace()) {
+            return false;
+        }
+
+        // Check to see if our namespace is fully
+        // qualified
+        return (0 !== strpos('\\', $this->getNamespace()));
     }
 
     /**
@@ -308,6 +447,10 @@ class Type {
      * A human readable representation of this type
      */
     public function __toString() {
+        if (!$this->hasNamespace()) {
+            return $this->name;
+        }
+
         if ('\\' == $this->namespace) {
             return '\\' . $this->name;
         }
@@ -346,7 +489,7 @@ class Type {
      * A pair with the 0th element being the namespace and the first
      * element being the type name.
      */
-    private static function namespaceAndUnionTypeFromType(
+    private static function namespaceAndTypeFromString(
         string $type_name
     ) : array {
         $fq_class_name_elements =
@@ -356,7 +499,9 @@ class Type {
             array_pop($fq_class_name_elements);
 
         $namespace =
-            '\\' . implode('\\', $fq_class_name_elements);
+            '\\' . implode('\\', array_filter(
+                $fq_class_name_elements
+            ));
 
         return [$namespace, $class_name];
     }

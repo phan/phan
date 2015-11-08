@@ -225,7 +225,6 @@ class ParseVisitor extends KindVisitorImplementation {
 
         assert(!empty($class_name), "Class name cannot be null");
 
-
         $class_fqsen = FQSEN::fromContext($this->context)
             ->withClassName($this->context, $class_name);
 
@@ -240,9 +239,15 @@ class ParseVisitor extends KindVisitorImplementation {
             $this->context
                 ->withLineNumberStart($node->lineno)
                 ->withLineNumberEnd($node->endLineno ?: -1),
-            Comment::fromString($node->docComment ?: ''),
+                Comment::fromStringInContext(
+                    $node->docComment ?: '',
+                    $this->context
+                ),
             $node->name,
-            UnionType::fromString($node->name),
+            UnionType::fromStringInContext(
+                $node->name,
+                $this->context
+            ),
             $node->flags
         );
 
@@ -403,7 +408,10 @@ class ParseVisitor extends KindVisitorImplementation {
         $clazz = $this->getContextClass();
 
         // Get a comment on the property declaration
-        $comment = Comment::fromString($node->docComment ?? '');
+        $comment = Comment::fromStringInContext(
+            $node->docComment ?? '',
+            $this->context
+        );
 
         foreach($node->children as $i=>$node) {
             // Ignore children which are not property elements
@@ -432,7 +440,10 @@ class ParseVisitor extends KindVisitorImplementation {
                     $this->context
                         ->withLineNumberStart($node->lineno)
                         ->withLineNumberEnd($node->endLineno ?? -1),
-                    Comment::fromString($node->docComment ?? ''),
+                        Comment::fromStringInContext(
+                            $node->docComment ?? '',
+                            $this->context
+                        ),
                     is_string($node->children[0])
                     ? $node->children[0]
                     : '_error_',
@@ -495,7 +506,10 @@ class ParseVisitor extends KindVisitorImplementation {
                 $this->context
                     ->withLineNumberStart($node->lineno ?? 0)
                     ->withLineNumberEnd($node->endLineno ?? 0),
-                Comment::fromString($node->docComment ?? ''),
+                Comment::fromStringInContext(
+                    $node->docComment ?? '',
+                    $this->context
+                ),
                 $node->children[0],
                 UnionType::fromNode(
                     $this->context,

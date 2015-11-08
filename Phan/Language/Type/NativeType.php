@@ -10,7 +10,7 @@ abstract class NativeType extends Type {
         static $instance = null;
 
         if (empty($instance)) {
-            $instance = new static(static::NAME);
+            $instance = new static(static::NAME, '\\');
         }
 
         return $instance;

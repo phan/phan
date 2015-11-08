@@ -17,9 +17,9 @@ class B {
     public function __construct() {
         $str = 'string';
 
-        $a = new A;
-
         $alpha = A::$alpha;
+
+        $a = new A;
         $str = $a->str();
         $this->a = $a->instance();
     }

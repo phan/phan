@@ -171,7 +171,10 @@ class Parameter extends Variable {
         );
 
         $comment =
-            Comment::fromString($node->docComment ?? '');
+            Comment::fromStringInContext(
+                $node->docComment ?? '',
+                $context
+            );
 
         // Create the skeleton parameter from what we know so far
         $parameter = new Parameter(
