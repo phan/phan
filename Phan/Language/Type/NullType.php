@@ -4,5 +4,5 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class NullType extends ScalarType {
-    protected $name = 'null';
+    const NAME = 'null';
 }

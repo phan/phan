@@ -4,12 +4,13 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 abstract class NativeType extends Type {
+    const NAME = '';
 
-    public function instance() : None {
+    public static function instance() : None {
         static $instance = null;
 
         if (empty($instance)) {
-            $instance = new self();
+            $instance = new static(static::NAME);
         }
 
         return $instance;

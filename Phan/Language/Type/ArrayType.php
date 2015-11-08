@@ -4,5 +4,5 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class ArrayType extends NativeType {
-    protected $name = 'array';
+    const NAME = 'array';
 }

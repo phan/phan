@@ -4,5 +4,5 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class ObjectType extends NativeType {
-    protected $name = 'object';
+    const NAME = 'object';
 }

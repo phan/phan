@@ -4,5 +4,5 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class StringType extends ScalarType {
-    protected $name = 'string';
+    const NAME = 'string';
 }

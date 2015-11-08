@@ -2,11 +2,20 @@
 namespace Phan\Language\Type;
 
 use \Phan\Debug;
-use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
+use \Phan\Language\Type;
+use \Phan\Language\Type\{
+    ArrayType,
+    FloatType,
+    IntType,
+    MixedType,
+    NoneType,
+    NullType,
+    StringType
+};
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -58,13 +67,15 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
                 if($node->children[$i]->children[0] instanceof Node) {
                     $element_types[] =
-                        UnionType::typeFromNode(
+                        UnionType::fromNode(
                             $this->context,
                             $node->children[$i]->children[0]
                         );
                 } else {
                     $element_types[] =
-                        new UnionType([gettype($node->children[$i]->children[0])]);
+                        Type::fromObject(
+                            $node->children[$i]->children[0]
+                        )->asUnionType();
                 }
             }
 
@@ -72,13 +83,11 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 array_values(array_unique($element_types));
 
             if(count($element_types) == 1) {
-                return UnionType::typeFromString(
-                    Deprecated::mkgenerics((string)$element_types[0])
-                );
+                return $element_types[0]->asGenericTypes();
             }
         }
 
-        return new UnionType(['array']);
+        return ArrayType::instance()->asUnionType();
     }
 
     /**
@@ -117,22 +126,19 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     public function visitCast(Node $node) : UnionType {
         switch($node->flags) {
         case \ast\flags\TYPE_NULL:
-            return new UnionType(['null']);
+            return NullType::instance()->asUnionType();
         case \ast\flags\TYPE_BOOL:
-            // $taint = false;
-            return new UnionType(['bool']);
+            return BoolType::instance()->asUnionType();
         case \ast\flags\TYPE_LONG:
-            // $taint = false;
-            return new UnionType(['int']);
+            return IntType::instance()->asUnionType();
         case \ast\flags\TYPE_DOUBLE:
-            // $taint = false;
-            return new UnionType(['float']);
+            return FloatType::instance()->asUnionType();
         case \ast\flags\TYPE_STRING:
-            return new UnionType(['string']);
+            return StringType::instance()->asUnionType();
         case \ast\flags\TYPE_ARRAY:
-            return new UnionType(['array']);
+            return ArrayType::instance()->asUnionType();
         case \ast\flags\TYPE_OBJECT:
-            return new UnionType(['object']);
+            return ObjectType::instance()->asUnionType();
         default:
             Log::err(
                 Log::EFATAL,
@@ -151,7 +157,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         assert(!empty($class_name), "Class name cannot be empty");
 
         if(empty($class_name)) {
-            return new UnionType(['object']);
+            ObjectType::instance()->asUnionType();
         }
 
         $class_fqsen = FQSEN::fromContextAndString(
@@ -170,24 +176,25 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_DIM`
      */
     public function visitDim(Node $node) : UnionType {
-        $type = self::typeFromNode($this->context, $node->children[0]);
+        $union_type =
+            UnionType::fromNode($this->context, $node->children[0]);
 
-        if ($type->hasAnyUnionType()) {
-            $gen = $type->generics();
-            if(empty($gen)) {
-                if($type!=='null'
+        if (!empty($union_type)) {
+            $generic_types  = $union_type->genericTypes();
+            if(empty($generic_types)) {
+                if(!$union_type->isType(NullType::instance())
                     // TODO
                     && !type_check($type, 'string|ArrayAccess')
                 ) {
                     // array offsets work on strings, unfortunately
                     // Double check that any classes in the type don't have ArrayAccess
                     $ok = false;
-                    foreach(explode('|', $type) as $t) {
-                        if(!empty($t) && !is_native_type($t)) {
+                    foreach($union_type as $type) {
+                        if(!empty($type) && !is_native_type($type)) {
                             // TODO
-                            if(!empty($classes[strtolower($t)]['type'])) {
+                            if(!empty($classes[strtolower($type)]['type'])) {
                                 // TODO
-                                if(strpos('|'.$classes[strtolower($t)]['type'].'|','|ArrayAccess|')!==false) {
+                                if(strpos('|'.$classes[strtolower($type)]['type'].'|','|ArrayAccess|')!==false) {
                                     $ok = true;
                                     break;
                                 }
@@ -197,18 +204,22 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                     if(!$ok) {
                         Log::err(
                             Log::ETYPE,
-                            "Suspicious array access to $type",
+                            "Suspicious array access to $union_type",
                             $this->context->getFile(),
                             $node->lineno
                         );
                     }
                 }
+
                 return new UnionType();
             }
+
+            return $generic_types;
         } else {
             return new UnionType();
         }
-        return new UnionType([$gen]);
+
+        return $union_type;
     }
 
     /**
@@ -222,16 +233,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_ENCAPS_LIST`
      */
     public function visitEncapsList(Node $node) : UnionType {
-        /*
-        foreach($node->children as $encap) {
-            if($encap instanceof Node) {
-                if(var_taint_check($file, $encap, $current_scope)) {
-                    $taint = true;
-                }
-            }
-        }
-         */
-        return new UnionType(['string']);
+        return StringType::intance()->asUnionType();
     }
 
     /**
@@ -240,10 +242,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     public function visitConst(Node $node) : UnionType {
         if($node->children[0]->kind == \ast\AST_NAME) {
             if(defined($node->children[0]->children[0])) {
-                // return type_map(gettype(constant($node->children[0]->children[0])));
-                return new UnionType([
-                    gettype(constant($node->children[0]->children[0]))
-                ]);
+                return Type::fromObject(
+                    constant($node->children[0]->children[0])
+                )->asUnionType();
             }
             else {
                 // TODO: user-defined constant
@@ -261,7 +262,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $constant_name = $node->children[1];
 
         if($constant_name == 'class') {
-            return new UnionType(['string']); // class name fetch
+            return StringType::instance()->asUnionType(); // class name fetch
         }
 
         $class_name =
@@ -342,24 +343,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      */
     public function visitProp(Node $node) : UnionType {
         return $this->visitStaticProp($node);
-
-        /*
-        if($node->children[0]->kind != \ast\AST_VAR) {
-            return new UnionType();
-        }
-
-        $class_name =
-            $this->astClassNameFromNode($this->context, $node);
-
-        if($class_name && !($node->children[1] instanceof Node)) {
-            $ltemp = find_property($file, $node, $class_name, $node->children[1], $class_name, false);
-            if(empty($ltemp)) {
-                return new UnionType();
-            }
-            // TODO
-            return $classes[$ltemp]['properties'][$node->children[1]]['type'];
-        }
-         */
     }
 
     /**
@@ -411,6 +394,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_CALL`
      */
     public function visitCall(Node $node) : UnionType {
+        assert(false, "TODO");
         if($node->children[0]->kind == \ast\AST_NAME) {
             $func_name = $node->children[0]->children[0];
             if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
@@ -522,7 +506,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_ASSIGN`
      */
     public function visitAssign(Node $node) : UnionType {
-        return UnionType::typeFromNode(
+        return UnionType::fromNode(
             $this->context,
             $node->children[1]
         );

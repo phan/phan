@@ -4,5 +4,5 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class MixedType extends NativeType {
-    protected $name = 'mixed';
+    const NAME = 'mixed';
 }

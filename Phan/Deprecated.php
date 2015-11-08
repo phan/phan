@@ -57,6 +57,7 @@ class Deprecated {
      * @return
      * Takes "a|b" and returns "a[]|b[]"
      */
+    /*
     public static function mkgenerics(string $str) : string {
         $ret = [];
         foreach(explode('|', $str) as $type) {
@@ -74,5 +75,6 @@ class Deprecated {
 
         return implode('|', $ret);
     }
+     */
 
 }

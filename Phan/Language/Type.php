@@ -78,6 +78,22 @@ class Type {
     }
 
     /**
+     * @return Type
+     * Get a new type which is the generic array version of
+     * this type. For instance, 'int' will produce 'int[]'.
+     */
+    public function asGenericType() : Type {
+        if ($this->name == 'array'
+            || $this->name == 'mixed'
+            || strpos($this->name, '[]') !== false
+        ) {
+            return new Type('array', $this->getNamespace());
+        }
+
+        return new Type($this->name . '[]', $this->getNamespace());
+    }
+
+    /**
      * @return string
      * The name associated with this type
      */

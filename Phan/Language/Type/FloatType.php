@@ -4,5 +4,5 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class FloatType extends ScalarType {
-    protected $name = 'float';
+    const NAME = 'float';
 }

@@ -4,5 +4,5 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class ResourceType extends NativeType {
-    protected $name = 'resource';
+    const NAME = 'resource';
 }

@@ -4,5 +4,5 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class IntType extends ScalarType {
-    protected $name = 'int';
+    const NAME = 'int';
 }

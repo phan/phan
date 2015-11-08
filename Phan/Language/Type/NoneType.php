@@ -4,14 +4,13 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class None extends Type {
-
-    protected $name = '';
+    const NAME = '';
 
     public function instance() : None {
         static $instance = null;
 
         if (empty($instance)) {
-            $instance = new self();
+            $instance = new static(static::NAME);
         }
 
         return $instance;

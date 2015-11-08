@@ -88,7 +88,7 @@ class UnionType extends \ArrayObject  {
     ) : UnionType {
         if(!($node instanceof Node)) {
             if($node === null) {
-                return UnionType::empty();
+                return new UnionType();
             }
 
             return Type::fromObject($node);
@@ -366,6 +366,18 @@ class UnionType extends \ArrayObject  {
     }
 
     /**
+     * @return UnionType
+     * Get a new type for each type in this union which is
+     * the generic array version of this type. For instance,
+     * 'int|float' will produce 'int[]|float[]'.
+     */
+    public function asGenericTypes() {
+        return array_map(function (Type $type) : Type {
+            return $type->asGenericType();
+        }, $this);
+    }
+
+    /**
      * Takes "a|b[]|c|d[]|e" and returns "a|c|e"
      *
      * @return UnionType
@@ -438,7 +450,9 @@ class UnionType extends \ArrayObject  {
         self::natsort();
 
         // Delimit by '|'
-        return implode('|', $this);
+        return implode('|', array_map(function(Type $type) : string {
+            return (string)$type;
+        }, $this->getArrayCopy()));
     }
 
 }

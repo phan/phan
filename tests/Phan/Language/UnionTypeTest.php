@@ -99,7 +99,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
      * code.
      */
     private function typeStringFromCode(string $code) : string {
-        return UnionType::typeFromNode(
+        return UnionType::fromNode(
             $this->context,
             \ast\parse_code(
                 $code,

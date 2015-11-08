@@ -4,5 +4,5 @@ namespace Phan\Language\Type;
 use \Phan\Language\Type;
 
 class BoolType extends ScalarType {
-    protected $name = 'bool';
+    const NAME = 'bool';
 }

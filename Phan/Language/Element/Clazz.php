@@ -207,7 +207,7 @@ class Clazz extends TypedStructuralElement {
                     $context,
                     Comment::none(),
                     $name,
-                    UnionType::typeForObject($value),
+                    Type::fromObject($value)->asUnionType(),
                     0
                 );
         }
