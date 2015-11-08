@@ -140,12 +140,11 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             $class_fqsen
         );
 
-
         // Copy information from the traits into this class
         foreach ($clazz->getTraitFQSENList() as $trait_fqsen) {
             assert($this->context->getCodeBase()->hasClassWithFQSEN(
                 $trait_fqsen
-            ), "Trait should already have been proven to exist");
+            ), "Trait $trait_fqsen should already have been proven to exist");
 
             $trait =
                 $this->context->getCodeBase()->getClassByFQSEN(

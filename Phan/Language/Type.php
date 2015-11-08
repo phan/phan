@@ -116,7 +116,6 @@ class Type {
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) : Type {
-
         assert(!empty($fully_qualified_string),
             "Type cannot be empty");
         assert('\\' === $fully_qualified_string[0],
@@ -131,7 +130,7 @@ class Type {
             self::canonicalNameFromName($type_name);
 
         // If we have a namespace, we're all set
-        return new Type($namespace, $type_name);
+        return new Type($type_name, $namespace);
     }
 
     /**

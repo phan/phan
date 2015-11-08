@@ -134,11 +134,30 @@ trait AST {
             return self::astVarUnionType($context, $node);
         }
 
-        $name = $node->children[0];
-        $type = UnionType::fromStringInContext($name, $context);
+        $type_name = $node->children[0];
+        $type = null;
 
-        if($node->flags & \ast\flags\NAME_NOT_FQ) {
+        // Check to see if the name is fully qualified
+        if(!($node->flags & \ast\flags\NAME_NOT_FQ)) {
+            if ('\\' !== $type_name[0]) {
+                $type_name = '\\' . $type_name;
+            }
+            $type =
+                UnionType::fromFullyQualifiedString(
+                    $type_name
+                );
+        } else {
+            $type = UnionType::fromStringInContext(
+                $type_name, $context
+            );
+        }
 
+        return (string)$type;
+
+        /*
+        if($node->flags & \ast\flags\NAME_NOT_FQ
+            && 0 !== strpos('\\', (string)$type)
+        ) {
             // is it a simple native type name?
             if($type->isNativeType()) {
                 return (string)$type;
@@ -174,8 +193,9 @@ trait AST {
             // No aliasing, just prepend the namespace
             return '\\' . $context->getNamespace() . '\\' . (string)$type;
         } else {
-            return $name;
+            return (string)$type;
         }
+         */
     }
 
     /**
