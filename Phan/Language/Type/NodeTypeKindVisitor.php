@@ -516,7 +516,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_UNARY_MINUS`
      */
     public function visitUnaryMinus(Node $node) : UnionType {
-        return UnionType::typeForObject($node->children[0]);
+        return Type::fromObject($node->children[0])->asUnionType();
     }
 
 }

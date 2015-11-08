@@ -51,8 +51,13 @@ class UnionType extends \ArrayObject  {
      * @return UnionType
      */
     public static function fromString(string $type_string) : UnionType {
+        if (empty($type_string)) {
+            return new UnionType();
+        }
+
         return new UnionType(
-            array_map(function(string $type_name) {
+            array_map(function(string $type_name) use ($type_string) {
+                assert(!empty($type_name), "Type cannot be empty. $type_string given.");
                 return Type::fromString($type_name);
             }, explode('|', $type_string))
         );
@@ -158,6 +163,9 @@ class UnionType extends \ArrayObject  {
      * Get the first type in this set
      */
     public function head() : Type {
+        assert(count($this) > 0,
+            'Cannot call head() on empty UnionType');
+
         return array_values($this->getArrayCopy())[0];
     }
 
@@ -168,9 +176,7 @@ class UnionType extends \ArrayObject  {
      */
     public function addType(Type $type) {
         // Only allow unique elements
-        if ($type) {
-            $this[(string)$type] = $type;
-        }
+        $this[(string)$type] = $type;
     }
 
     /**
@@ -212,7 +218,7 @@ class UnionType extends \ArrayObject  {
      * the given type and no others.
      */
     public function isType(Type $type) : bool {
-        if (empty($this) || count($this) > 1) {
+        if (count($this) != 1) {
             return false;
         }
 
@@ -296,9 +302,11 @@ class UnionType extends \ArrayObject  {
 
         // If either type is unknown, we can't call it
         // a success
-        if(empty($this) || empty($target)) {
+        if($this->isEmpty() || $target->isEmpty()) {
             return true;
         }
+
+        print $this . "\t" . $target . "\n";
 
         // null <-> null
         if ($this->isType(NullType::instance())

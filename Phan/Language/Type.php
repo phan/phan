@@ -5,21 +5,6 @@ use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Type\NodeTypeKindVisitor;
-use \Phan\Langauge\Type\{
-    ArrayType,
-    BoolType,
-    CallableType,
-    FloatType,
-    IntType,
-    MixedType,
-    NoneType,
-    NullType,
-    ObjectType,
-    ResourceType,
-    ScalarType,
-    StringType,
-    VoidType
-};
 use \Phan\Language\UnionType;
 use \ast\Node;
 
@@ -63,6 +48,8 @@ class Type {
         string $name,
         string $namespace = '\\'
     ) {
+        assert(!empty($name), "Type name cannot be empty");
+
         $this->name = self::canonicalNameFromName($name);
         $this->namespace = $namespace;
     }
@@ -80,20 +67,33 @@ class Type {
      * Parse a type from the given string
      */
     public static function fromString(string $string) : Type {
+        assert(!empty($string), "Type cannot be empty");
+
         $string = self::canonicalNameFromName($string);
 
         switch ($string) {
-        case 'array': return ArrayType::instance();
-        case 'bool': return BoolType::instance();
-        case 'callable': return CallableType::instance();
-        case 'float': return FloatType::instance();
-        case 'int': return IntType::instance();
-        case 'mixed': return MixedType::instance();
-        case 'null': return NullType::instance();
-        case 'object': return ObjectType::instance();
-        case 'resource': return ResourceType::instance();
-        case 'string': return StringType::instance();
-        case 'void': return VoidType::instance();
+        case 'array':
+            return \Phan\Language\Type\ArrayType::instance();
+        case 'bool':
+            return \Phan\Language\Type\BoolType::instance();
+        case 'callable':
+            return \Phan\Language\Type\CallableType::instance();
+        case 'float':
+            return \Phan\Language\Type\FloatType::instance();
+        case 'int':
+            return \Phan\Language\Type\IntType::instance();
+        case 'mixed':
+            return \Phan\Language\Type\MixedType::instance();
+        case 'null':
+            return \Phan\Language\Type\NullType::instance();
+        case 'object':
+            return \Phan\Language\Type\ObjectType::instance();
+        case 'resource':
+            return \Phan\Language\Type\ResourceType::instance();
+        case 'string':
+            return \Phan\Language\Type\StringType::instance();
+        case 'void':
+            return \Phan\Language\Type\VoidType::instance();
         }
 
         // TODO: look for a namespace

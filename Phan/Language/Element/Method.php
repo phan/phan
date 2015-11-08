@@ -7,6 +7,7 @@ use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
+use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -320,7 +321,9 @@ class Method extends TypedStructuralElement {
                                 $parameter_offset
                             )->getUnionType();
 
-                        $parameter->getUnionType()->addType($comment_type);
+                        $parameter->getUnionType()->addUnionType(
+                            $comment_type
+                        );
                     }
                 }
 
@@ -346,9 +349,11 @@ class Method extends TypedStructuralElement {
                     // doesn't mean that is its type. Any type can default
                     // to null
                     if ((string)$default_type === 'null'
-                        && $parameter->getUnionType()->hasAnyType()
+                        && !$parameter->getUnionType()->isEmpty()
                     ) {
-                        $parameter->getUnionType()->addType($type);
+                        $parameter->getUnionType()->addType(
+                            NullType::instance()
+                        );
                     }
                 }
 

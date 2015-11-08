@@ -3,6 +3,6 @@ namespace Phan\Language\Type;
 
 use \Phan\Language\Type;
 
-class NullType extends NativeType {
+class CallableType extends NativeType {
     const NAME = 'callable';
 }

@@ -37,12 +37,15 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testInt() {
-        $this->assertUnionTypeStringEqual('42', '\\int');
+        $this->assertUnionTypeStringEqual('42', 'int');
     }
 
     public function testString() {
         try {
-            $this->assertUnionTypeStringEqual('"a string"', '\\string');
+            $this->assertUnionTypeStringEqual(
+                '"a string"',
+                'string'
+            );
         } catch (Exception $exception) {
             print((string)$exception);
         }
@@ -51,7 +54,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
     public function testArrayUniform() {
         $this->assertUnionTypeStringEqual(
             '[1, 2, 3]',
-            '\\int[]'
+            '\int[]'
         );
     }
 
