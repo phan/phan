@@ -60,7 +60,7 @@ class Variable extends TypedStructuralElement {
 
         // Get the type of the assignment
         $type =
-            UnionType::typeFromNode($context, $node);
+            UnionType::fromNode($context, $node);
 
         return new Variable(
             $context

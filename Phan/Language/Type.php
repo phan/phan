@@ -121,7 +121,7 @@ class Type {
             return ArrayType::instance();
         }
 
-        return new Type($this->name . '[]', $this->getNamespace());
+        return new \Phan\Language\Type\GenericArrayType($this);
     }
 
     /**

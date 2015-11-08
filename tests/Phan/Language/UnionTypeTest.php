@@ -54,7 +54,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
     public function testArrayUniform() {
         $this->assertUnionTypeStringEqual(
             '[1, 2, 3]',
-            '\int[]'
+            'int[]'
         );
     }
 

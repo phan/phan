@@ -413,7 +413,7 @@ class ParseVisitor extends KindVisitorImplementation {
             }
 
             // @var UnionType
-            $type = UnionType::typeFromNode(
+            $type = UnionType::fromNode(
                 $this->context,
                 $node->children[1]
             );
@@ -450,9 +450,8 @@ class ParseVisitor extends KindVisitorImplementation {
             // Look for any @var declarations
             foreach ($comment->getVariableList() as $i => $variable) {
                 if ((string)$type != 'null'
-                    && !$type->canCastToUnionTypeInContext(
-                        $variable->getUnionType(),
-                        $this->context
+                    && !$type->canCastToUnionType(
+                        $variable->getUnionType()
                     )
                 ) {
                     Log::err(Log::ETYPE,
@@ -465,7 +464,7 @@ class ParseVisitor extends KindVisitorImplementation {
                 // Set the declared type to the doc-comment type and add
                 // |null if the default value is null
 
-                $property->getUnionType()->addType(
+                $property->getUnionType()->addUnionType(
                     $variable->getUnionType()
                 );
 
@@ -498,7 +497,7 @@ class ParseVisitor extends KindVisitorImplementation {
                     ->withLineNumberEnd($node->endLineno ?? 0),
                 Comment::fromString($node->docComment ?? ''),
                 $node->children[0],
-                UnionType::typeFromNode(
+                UnionType::fromNode(
                     $this->context,
                     $node->children[1]
                 ),

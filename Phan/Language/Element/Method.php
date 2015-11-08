@@ -281,8 +281,8 @@ class Method extends TypedStructuralElement {
 
         // Take a look at method return types
         if($node->children[3] !== null) {
-            $method->getUnionType()->addType(
-                UnionType::typeFromSimpleNode(
+            $method->getUnionType()->addUnionType(
+                UnionType::fromSimpleNode(
                     $context,
                     $node->children[3]
                 )
@@ -310,7 +310,7 @@ class Method extends TypedStructuralElement {
 
             $parameter_offset = 0;
             foreach ($method->parameter_list as $i => $parameter) {
-                if (!$parameter->getUnionType()->isEmpty()) {
+                if ($parameter->getUnionType()->isEmpty()) {
                     // If there is no type specified in PHP, check
                     // for a docComment with @param declarations. We
                     // assume order in the docComment matches the

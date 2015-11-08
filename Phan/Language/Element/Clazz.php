@@ -241,7 +241,7 @@ class Clazz extends TypedStructuralElement {
 
         // Add the parent to the union type of this
         // class
-        $this->getUnionType()->addType(
+        $this->getUnionType()->addUnionType(
             UnionType::fromString((string)$fqsen)
         );
 

@@ -296,9 +296,6 @@ class UnionType extends \ArrayObject  {
         UnionType $target
     ) : bool {
         // Fast-track most common cases first
-        if ($this->isEqualTo($target)) {
-            return true;
-        }
 
         // If either type is unknown, we can't call it
         // a success
@@ -306,7 +303,10 @@ class UnionType extends \ArrayObject  {
             return true;
         }
 
-        print $this . "\t" . $target . "\n";
+        // T === T
+        if ($this->isEqualTo($target)) {
+            return true;
+        }
 
         // null <-> null
         if ($this->isType(NullType::instance())
