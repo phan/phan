@@ -183,17 +183,26 @@ class ParseVisitor extends KindVisitorImplementation {
     public function visitUse(Node $node) : Context {
         $context = $this->context;
 
-        foreach($node->children as $elem) {
-            $target = $elem->children[0];
-            if(empty($elem->children[1])) {
+        foreach($node->children as $child_node) {
+            $target = $child_node->children[0];
+            if(empty($child_node->children[1])) {
                 if(($pos=strrpos($target, '\\'))!==false) {
                     $alias = substr($target, $pos + 1);
                 } else {
                     $alias = $target;
                 }
             } else {
-                $alias = $elem->children[1];
+                $alias = $child_node->children[1];
             }
+
+            /*
+            if ($alias === $target) {
+                Debug::printNode($node);
+                exit;
+            }
+             */
+
+            print "$alias => $target\n";
 
             $context = $context->withNamespaceMap(
                 $node->flags, $alias, $target

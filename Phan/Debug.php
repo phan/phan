@@ -54,9 +54,11 @@ class Debug {
 
         $string .= \ast\get_kind_name($node->kind);
 
+        /*
         $string .= ' ['
             . self::astFlagDescription($node->flags ?? 0)
             . ']';
+         */
 
         if (isset($node->lineno)) {
             $string .= ' #' . $node->lineno;

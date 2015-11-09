@@ -154,7 +154,8 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $class_name =
             $this->astClassNameFromNode($this->context, $node);
 
-        assert(!empty($class_name), "Class name cannot be empty");
+        assert(!empty($class_name),
+            "Class name cannot be empty in {$this->context}");
 
         if(empty($class_name)) {
             ObjectType::instance()->asUnionType();
@@ -170,6 +171,11 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 $class_fqsen
             )->getUnionType();
         }
+
+        assert(false,
+            "Class $class_fqsen not found at {$this->context}");
+
+        return new UnionType();
     }
 
     /**
@@ -429,28 +435,71 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_CALL`
      */
     public function visitCall(Node $node) : UnionType {
-        assert(false, "TODO");
-        if($node->children[0]->kind == \ast\AST_NAME) {
-            $func_name = $node->children[0]->children[0];
-            if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
-                $func = $namespace_map[T_FUNCTION][$file][strtolower($namespace.$func_name)] ??
-                    $namespace_map[T_FUNCTION][$file][strtolower($func_name)] ??
-                    $functions[strtolower($namespace.$func_name)] ??
-                    $functions[strtolower($func_name)] ??  null;
-            } else {
-                $func = $functions[strtolower($func_name)] ?? null;
-            }
-            if($func['file'] == 'internal' && empty($func['ret'])) {
-                if(!empty($internal_arginfo[$func_name])) {
-                    // TODO
-                    return $internal_arginfo[$func_name][0] ?? '';
-                }
-            } else {
-                return new UnionType([$func['ret'] ?? '']);
-            }
-        } else {
+        if($node->children[0]->kind !== \ast\AST_NAME) {
             // TODO: Handle $func() and other cases that get here
+            return new UnionType();
         }
+
+        $function_name =
+            $node->children[0]->children[0];
+
+        $function_fqsen = null;
+
+        // If its not fully qualified
+        if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+            // Check to see if we have a mapped name
+            if ($this->context->hasNamespaceMapFor(
+                T_FUNCTION, $function_name
+            )) {
+                $function_fqsen =
+                    $this->context->getNamespaceMapFor(
+                        T_FUNCTION, $function_name
+                    );
+            } else {
+                $function_fqsen =
+                    $this->context->getScopeFQSEN()->withMethodName(
+                        $this->context, $function_name
+                    );
+            }
+
+        // If the name is fully qualified
+        } else {
+            $function_fqsen =
+                FQSEN::fromFullyQualifiedString($function_fqsen);
+        }
+
+        // If the function doesn't exist, check to see if its
+        // a call to a builtin method
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
+            $function_fqsen
+        )) {
+            $function_fqsen =
+                FQSEN::fromFullyQualifiedString('\\::' . $function_name);
+        }
+
+        assert(
+            $this->context->getCodeBase()->hasMethodWithFQSEN(
+                $function_fqsen
+            ), "Function with $function_fqsen must exist at {$this->context}"
+        );
+
+        $function =
+            $this->context->getCodeBase()->getMethodByFQSEN(
+                $function_fqsen
+            );
+
+        if ($function->getContext()->isInternal()
+            && $function->getUnionType()->isEmpty()
+        ) {
+            /*
+            // TODO
+            if(!empty($internal_arginfo[$func_name])) {
+                return $internal_arginfo[$func_name][0] ?? '';
+            }
+             */
+        }
+
+        return $function->getUnionType();
     }
 
     /**
@@ -460,8 +509,11 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $class_name =
             $this->astClassNameFromNode($this->context, $node);
 
-        assert(!empty($class_name),
-            'Class name cannot be empty');
+        // assert(!empty($class_name), 'Class name cannot be empty');
+
+        if (!$class_name) {
+            return new UnionType();
+        }
 
         $method_name = $node->children[1];
 

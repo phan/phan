@@ -402,6 +402,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                     false
                 );
 
+            // TODO: Find out the generic type
             /*
             // Get the type of the node from the left side
             $type = UnionType::fromNode(
@@ -476,7 +477,13 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             Debug::PrintNode($node);
         }
         assert(!empty($class_name), 'Class name cannot be empty');
-         */
+        */
+
+        // If we can't figure out the class name (which happens
+        // from time to time), then give up
+        if (empty($class_name)) {
+            return $this->context;
+        }
 
         $class_fqsen =
             $this->context->getScopeFQSEN()->withClassName(

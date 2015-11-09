@@ -115,15 +115,22 @@ class FQSEN {
             '\\' . implode('\\', $fq_class_name_elements);
 
         // If we're not fully qualified, check to see if its mapped
-        if (0 !== strpos('\\', $fqsen_string)) {
+        if (0 !== strpos($fqsen_string, '\\')) {
             // Check for a class name map
-            if ($context->hasNamespaceMapFor(T_CLASS, $class_name)) {
+            if ($class_name
+                && $context->hasNamespaceMapFor(T_CLASS, $class_name)
+            ) {
                 $namespace =
-                    (string)$context->getNamespaceMapFor(T_CLASS, $class_name);
+                    (string)$context->getNamespaceMapFor(
+                        T_CLASS,
+                        $class_name
+                    );
             }
 
             // Check for a method map
-            if ($context->hasNamespaceMapFor(T_FUNCTION, $method_name)) {
+            if ($method_name
+                && $context->hasNamespaceMapFor(T_FUNCTION, $method_name)
+            ) {
                 $namespace =
                     (string)$context->getNamespaceMapFor(T_FUNCTION, $method_name);
             }

@@ -529,13 +529,12 @@ class Context {
      * @return string
      */
     public function __toString() : string {
-        return 'Context: '
-            . $this->file
+        return $this->file
             . ':' . (string)$this->line_number_start
-            . ':' . (string)$this->line_number_end
-            . ' ' . (string)$this->class_fqsen
-            . ':' . (string)$this->method_fqsen
-            . ' ' . (string)$this->getScopeFQSEN()
+            . ($this->line_number_end
+                ? (':' . (string)$this->line_number_end)
+                : '')
+            . ' in scope ' . (string)$this->getScopeFQSEN()
             ;
     }
 }

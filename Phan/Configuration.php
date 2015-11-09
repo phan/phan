@@ -15,7 +15,7 @@ class Configuration {
         'bc_checks' => true,
 
         // The vesion of the AST we're using
-        'ast_version' => 10,
+        'ast_version' => 20,
     ];
 
     /**

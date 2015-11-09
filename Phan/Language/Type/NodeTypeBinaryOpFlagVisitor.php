@@ -60,7 +60,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
             $taint = true;
         }
 
-        return new UnionType(['string']);
+        return StringType::instance()->asUnionType();
     }
 
     private function visitBinaryOpCommon(Node $node) {
