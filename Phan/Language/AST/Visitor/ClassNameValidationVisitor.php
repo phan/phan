@@ -168,10 +168,11 @@ class ClassNameValidationVisitor
         ) {
             Log::err(
                 Log::EUNDEF,
-                "static call to undeclared class {$this->class_name}",
+                "call to undeclared class {$this->class_fqsen}",
                 $this->context->getFile(),
                 $node->lineno
             );
+
             return false;
         }
 

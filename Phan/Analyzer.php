@@ -224,10 +224,7 @@ class Analyzer {
         );
 
         $context =
-            (new Context($code_base))
-                ->withFile($file_path)
-                ->withLineNumberStart($node->lineno ?? 0)
-                ->withLineNumberEnd($node->endLineno ?? 0);
+            (new Context($code_base))->withFile($file_path);
 
         if (empty($node)) {
             Log::err(
@@ -266,7 +263,11 @@ class Analyzer {
         // given node
         $context =
             (new Element($node))->acceptKindVisitor(
-                new AnalyzeDepthFirstVisitor($context)
+                new AnalyzeDepthFirstVisitor(
+                    $context
+                        ->withLineNumberStart($node->lineno ?? 0)
+                        ->withLineNumberEnd($node->endLineno ?? 0)
+                )
             );
 
         assert(!empty($context), 'Context cannot be null');
@@ -286,12 +287,19 @@ class Analyzer {
                 $this->analyzeNodeInContext(
                     $child_node,
                     $child_context
+                        ->withLineNumberStart($node->lineno ?? 0)
+                        ->withLineNumberEnd($node->endLineno ?? 0)
+
                 );
 		}
 
         $context =
             (new Element($node))->acceptKindVisitor(
-                new AnalyzeBreadthFirstVisitor($context)
+                new AnalyzeBreadthFirstVisitor(
+                    $context
+                        ->withLineNumberStart($node->lineno ?? 0)
+                        ->withLineNumberEnd($node->endLineno ?? 0)
+                )
             );
 
         // Pass the context back up to our parent

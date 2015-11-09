@@ -416,7 +416,7 @@ class UnionType extends \ArrayObject  {
         // If array is in there, then it can be any type
         // Same for |mixed|
         if ($this->hasType(ArrayType::instance())
-            || $this->hasTypeName(MixedType::instance())
+            || $this->hasType(MixedType::instance())
         ) {
             return MixedType::instance()->toUnionType();
         }
@@ -425,14 +425,14 @@ class UnionType extends \ArrayObject  {
             return NoneType::instance()->toUnionType();
         }
 
-        return new UnionType(array_filter(array_map($this,
+        return new UnionType(array_filter(array_map(
             function(Type $type) {
                 if(($pos = strpos((string)$type, '[]')) === false) {
                     return null;
                 }
 
                 return substr((string)$type, 0, $pos);
-            }))
+            }, $this->getArrayCopy()))
         );
     }
 

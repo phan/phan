@@ -151,18 +151,10 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                     return '';
                 }
 
-                $class_fqsen = $this->context->getScopeFQSEN()->withClassName(
+                return (string)$this->context->getScopeFQSEN()->withClassName(
                     $this->context,
                     (string)$type_name
                 );
-
-                $class_name = $type_name;
-                if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
-                    $class_name =
-                        $this->context->getCodeBase()->getClassByFQSEN($class_fqsen)->getName();
-                }
-
-                return (string)$class_name;
             }
         } else if($node->children[0]->kind == \ast\AST_PROP) {
             $prop = $node->children[0];
@@ -209,6 +201,16 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                     }
                 }
             }
+        } else if ($node->children[0]->kind == \ast\AST_METHOD_CALL) {
+            // Get the type returned by the first method
+            // call.
+            $union_type = UnionType::fromNode(
+                $this->context,
+                $node->children[0]
+            );
+
+            // Hope that its a class
+            return (string)$union_type;
         }
 
         return (string)$class_name;

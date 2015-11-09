@@ -179,9 +179,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $union_type =
             UnionType::fromNode($this->context, $node->children[0]);
 
-        if (!empty($union_type)) {
-            $generic_types  = $union_type->genericTypes();
-            if(empty($generic_types)) {
+        if (!$union_type->isEmpty()) {
+            $generic_types = $union_type->genericTypes();
+            if($generic_types->isEmpty()) {
                 if(!$union_type->isType(NullType::instance())
                     // TODO
                     && !type_check($type, 'string|ArrayAccess')

@@ -101,7 +101,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             Variable::fromNodeInContext($node, $context)
         );
 
-        foreach ($context->getScope()->getVariableMap() as $name => $variable) {
+        foreach ($context->getScope()->getVariableMap()
+            as $name => $variable) {
 
             if(strpos($name, '::') === false) {
                 $cs = (string)$context->getScopeFQSEN();
@@ -124,7 +125,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
 
                 // If the index is a simple scalar, set it in the global scope
                 if(!empty($temp->children[1])
-                    && !($temp->children[1] instanceof \ast\Node)
+                    && !($temp->children[1] instanceof Node)
                 ) {
                     $cs = 'global';
                     $name = $temp->children[1];

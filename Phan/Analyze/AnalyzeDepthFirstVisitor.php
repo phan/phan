@@ -395,14 +395,38 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                 );
             }
         } else {
-            $context = $this->context->withScopeVariable(
-                Variable::fromNodeInContext($node->children[1], $context)
+            $variable =
+                Variable::fromNodeInContext(
+                    $node->children[1],
+                    $context,
+                    false
+                );
+
+            /*
+            // Get the type of the node from the left side
+            $type = UnionType::fromNode(
+                $this->context,
+                $node->children[0]
             );
 
+            // Set the type on the variable
+            $variable->setUnionType($type);
+            */
+
+            // Add the variable to the scope
+            $context =
+                $this->context->withScopeVariable($variable);
+
             if(!empty($node->children[2])) {
-                $context = $this->context->withScopeVariable(
-                    Variable::fromNodeInContext($node->children[2], $context)
-                );
+                $variable =
+                    Variable::fromNodeInContext(
+                        $node->children[2],
+                        $context,
+                        false
+                    );
+
+                $context =
+                    $this->context->withScopeVariable($variable);
             }
         }
 
@@ -448,8 +472,10 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             self::astClassNameFromNode($this->context, $node);
 
         /*
-        assert(!empty($class_name),
-            'Class name cannot be empty');
+        if (!$class_name) {
+            Debug::PrintNode($node);
+        }
+        assert(!empty($class_name), 'Class name cannot be empty');
          */
 
         $class_fqsen =

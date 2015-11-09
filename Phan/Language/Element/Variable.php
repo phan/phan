@@ -48,26 +48,29 @@ class Variable extends TypedStructuralElement {
     }
 
     /**
+     * @param Node $node
+     * An AST_VAR node
+     *
+     * @param Context $context
+     * The context in which the variable is found
+     *
      * @return Variable
      * A variable begotten from a node
      */
     public static function fromNodeInContext(
         Node $node,
-        Context $context
+        Context $context,
+        bool $should_check_type = true
     ) : Variable {
 
         $variable_name = self::astVariableName($node);
 
         // Get the type of the assignment
-        $union_type =
-            UnionType::fromNode($context, $node);
+        $union_type = $should_check_type
+            ? UnionType::fromNode($context, $node)
+            : new UnionType();
 
-        /*
-        assert(!$union_type->isEmpty(),
-            "Type for a variable with name $variable_name shouldn't be empty");
-         */
-
-        return new Variable(
+        $variable = new Variable(
             $context
                 ->withLineNumberStart($node->lineno ?? 0)
                 ->withLineNumberEnd($node->endLineno ?? 0),
@@ -79,6 +82,8 @@ class Variable extends TypedStructuralElement {
             $union_type,
             $node->flags
         );
+
+        return $variable;
     }
 
     /**

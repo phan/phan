@@ -86,6 +86,10 @@ trait AST {
             return '';
         }
 
+        if ('ast\\Node' == $class_name) {
+            Debug::printNode($node);
+        }
+
         // Validate that the class name is correct
         if (!(new Element($node))->acceptKindVisitor(
             new ClassNameValidationVisitor($context, $class_name)
@@ -207,6 +211,9 @@ trait AST {
      * @param Context $context
      * @param null|string\Node $node
      *
+     * @param Node|mixed $node
+     * The node to get a union type for
+     *
      * @return UnionType
      *
      * @see \Phan\Deprecated\Pass2::var_type
@@ -231,15 +238,16 @@ trait AST {
 
         $variable_name = $node->children[0];
 
-        // if(empty($scope[$current_scope]['vars'][$node->children[0]])
-        if (!$context->getScope()->hasVariableWithName($variable_name)) {
-            if(!Variable::isSuperglobalVariableWithName($variable_name))
+        if (!$context->getScope()->hasVariableWithName($variable_name)
+        ) {
+            if(!Variable::isSuperglobalVariableWithName($variable_name)) {
                 Log::err(
                     Log::EVAR,
                     "Variable \${$node->children[0]} is not defined",
                     $context->getFile(),
                     $node->lineno
                 );
+            }
         } else {
             $variable =
                 $context->getScope()->getVariableWithName($variable_name);
