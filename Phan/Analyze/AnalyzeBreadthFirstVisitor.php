@@ -84,7 +84,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             $right_type =
                 UnionType::fromNode($context, $node);
 
-            $type = $right_type->generics();
+            $type = $right_type->genericTypes();
 
             foreach($node->children[0]->children as $child_node) {
                 if (!$child_node) {
