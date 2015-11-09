@@ -90,9 +90,9 @@ class UnionType extends \ArrayObject  {
         }
 
         return new UnionType(
-            array_map(function(string $type_name) use ($context) {
-                assert(!empty($type_name),
-                    "Type cannot be empty. $type_name given.");
+            array_map(function(string $type_name) use ($context, $type_string) {
+                assert($type_name !== '',
+                    "Type cannot be empty. Type '$type_name' given as part of the union type '$type_string' in $context.");
                 return Type::fromStringInContext(
                     $type_name,
                     $context
@@ -166,7 +166,7 @@ class UnionType extends \ArrayObject  {
         FQSEN $function_fqsen
     ) : array {
         $type_name_struct =
-            $BUILTIN_FUNCTION_ARGUMENT_TYPES[$function_fqsen->__toString()];
+            $BUILTIN_FUNCTION_ARGUMENT_TYPES[(string)$function_fqsen];
 
         if (!$type_name_struct) {
             return [];

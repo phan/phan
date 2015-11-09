@@ -152,11 +152,19 @@ class Comment {
 
         }
 
+        // Clean up the type string to make sure it
+        // can be parsed without blowing up
+        $type_string = implode('|',
+            array_filter(
+                array_map(function (string $string) {
+                    return trim($string);
+                }, explode('|', $return ?: ''))));
+
         return new Comment(
             $is_deprecated,
             $variable_list,
             $parameter_list,
-            UnionType::fromStringInContext($return ?: '', $context),
+            UnionType::fromStringInContext($type_string, $context),
             $comment
         );
     }

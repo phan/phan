@@ -170,7 +170,9 @@ class Type {
         string $string,
         Context $context
     ) : Type {
-        assert(!empty($string), "Type cannot be empty");
+
+        assert($string !== '' ,
+            "Type cannot be empty in $context");
 
         $namespace = null;
 
