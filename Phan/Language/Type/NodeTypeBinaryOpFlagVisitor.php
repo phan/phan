@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use \Phan\Debug;
 use \Phan\Language\AST\FlagVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
@@ -39,22 +40,24 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
     public function visitBinaryConcat(Node $node) {
         $temp_taint = false;
 
-        UnionType::fromNode(
-            $this->context,
-            $node->children[0],
-            $temp_taint
-        );
+        $left_type =
+            UnionType::fromNode(
+                $this->context,
+                $node->children['left'],
+                $temp_taint
+            );
 
         if($temp_taint) {
             $taint = true;
             return new UnionType(['string']);
         }
 
-        UnionType::fromNode(
-            $this->context,
-            $node->children[1],
-            $temp_taint
-        );
+        $right_type =
+            UnionType::fromNode(
+                $this->context,
+                $node->children['right'],
+                $temp_taint
+            );
 
         if($temp_taint) {
             $taint = true;
@@ -65,10 +68,16 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
 
     private function visitBinaryOpCommon(Node $node) {
         $left =
-            UnionType::fromNode($this->context, $node->chilren[0]);
+            UnionType::fromNode(
+                $this->context,
+                $node->chilren['left']
+            );
 
         $right =
-            UnionType::fromNode($this->context, $node->chilren[1]);
+            UnionType::fromNode(
+                $this->context,
+                $node->chilren['right']
+            );
 
         $taint = false;
         // If we have generics and no non-generics on the left and the right is not array-like ...
@@ -179,11 +188,14 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
         $left =
             UnionType::fromNode(
                 $this->context,
-                $node->children[0]
+                $node->children['left']
             );
 
         $right =
-            UnionType::fromNode($this->context, $node->children[1]);
+            UnionType::fromNode(
+                $this->context,
+                $node->children['right']
+            );
 
         if ($left->hasType(ArrayType::instance())
             || $right->hasType(ArrayType::instance())

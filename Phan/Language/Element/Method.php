@@ -266,7 +266,7 @@ class Method extends TypedStructuralElement {
         // The list of parameters specified on the
         // method
         $parameter_list =
-            Parameter::listFromNode($context, $node->children[0]);
+            Parameter::listFromNode($context, $node->children['params']);
 
         // Add each parameter to the scope of the function
         foreach ($parameter_list as $parameter) {
@@ -293,10 +293,10 @@ class Method extends TypedStructuralElement {
         $method->setIsDeprecated($comment->isDeprecated());
 
         // Take a look at method return types
-        if($node->children[3] !== null) {
+        if($node->children['returnType'] !== null) {
             $union_type = UnionType::fromSimpleNode(
                 $context,
-                $node->children[3]
+                $node->children['returnType']
             );
 
             $method->getUnionType()->addUnionType($union_type);

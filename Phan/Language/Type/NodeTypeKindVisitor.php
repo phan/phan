@@ -65,16 +65,16 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                     break;
                 }
 
-                if($node->children[$i]->children[0] instanceof Node) {
+                if($node->children[$i]->children['value'] instanceof Node) {
                     $element_types[] =
                         UnionType::fromNode(
                             $this->context,
-                            $node->children[$i]->children[0]
+                            $node->children[$i]->children['value']
                         );
                 } else {
                     $element_types[] =
                         Type::fromObject(
-                            $node->children[$i]->children[0]
+                            $node->children[$i]->children['value']
                         )->asUnionType();
                 }
             }
@@ -154,11 +154,15 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $class_name =
             $this->astClassNameFromNode($this->context, $node);
 
+        if (!$class_name) {
+            exit;
+        }
+
         assert(!empty($class_name),
             "Class name cannot be empty in {$this->context}");
 
         if(empty($class_name)) {
-            ObjectType::instance()->asUnionType();
+            return ObjectType::instance()->asUnionType();
         }
 
         $class_fqsen = FQSEN::fromContextAndString(
@@ -182,8 +186,12 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_DIM`
      */
     public function visitDim(Node $node) : UnionType {
+
         $union_type =
-            UnionType::fromNode($this->context, $node->children[0]);
+            UnionType::fromNode(
+                $this->context,
+                $node->children['expr']
+            );
 
         if (!$union_type->isEmpty()) {
             $generic_types = $union_type->genericTypes();
@@ -246,10 +254,10 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_CONST`
      */
     public function visitConst(Node $node) : UnionType {
-        if($node->children[0]->kind == \ast\AST_NAME) {
-            if(defined($node->children[0]->children[0])) {
+        if($node->children['name']->kind == \ast\AST_NAME) {
+            if(defined($node->children['name']->children['name'])) {
                 return Type::fromObject(
-                    constant($node->children[0]->children[0])
+                    constant($node->children['name']->children['name'])
                 )->asUnionType();
             }
             else {
@@ -352,7 +360,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $this->astClassNameFromNode($this->context, $node);
 
         if(!($class_name
-            && !($node->children[1] instanceof Node))
+            && !($node->children['prop'] instanceof Node))
         ) {
             return new UnionType();
         }
@@ -372,7 +380,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $class_fqsen
         );
 
-        $property_name = $node->children[1];
+        $property_name = $node->children['prop'];
 
         // Property not found :(
         if (!$clazz->hasPropertyWithName($property_name)) {
@@ -435,18 +443,18 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_CALL`
      */
     public function visitCall(Node $node) : UnionType {
-        if($node->children[0]->kind !== \ast\AST_NAME) {
+        if($node->children['expr']->kind !== \ast\AST_NAME) {
             // TODO: Handle $func() and other cases that get here
             return new UnionType();
         }
 
         $function_name =
-            $node->children[0]->children[0];
+            $node->children['expr']->children['name'];
 
         $function_fqsen = null;
 
         // If its not fully qualified
-        if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+        if($node->children['expr']->flags & \ast\flags\NAME_NOT_FQ) {
             // Check to see if we have a mapped name
             if ($this->context->hasNamespaceMapFor(
                 T_FUNCTION, $function_name
@@ -515,7 +523,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             return new UnionType();
         }
 
-        $method_name = $node->children[1];
+        $method_name = $node->children['method'];
 
         $method_fqsen = $this->context->getScopeFQSEN()
             ->withClassName($this->context, $class_name)
@@ -561,7 +569,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $class_fqsen
         );
 
-        $method_name = $node->children[1];
+        $method_name = $node->children['method'];
 
         $method_fqsen = $clazz->getFQSEN()->withMethodName(
             $this->context,
@@ -598,10 +606,13 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_ASSIGN`
      */
     public function visitAssign(Node $node) : UnionType {
-        return UnionType::fromNode(
-            $this->context,
-            $node->children[1]
-        );
+        $type =
+            UnionType::fromNode(
+                $this->context,
+                $node->children['expr']
+            );
+
+        return $type;
     }
 
     /**

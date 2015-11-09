@@ -139,7 +139,7 @@ trait AST {
             return self::astVarUnionType($context, $node);
         }
 
-        $type_name = $node->children[0];
+        $type_name = $node->children['name'];
         $type = null;
 
         // Check to see if the name is fully qualified
@@ -225,25 +225,25 @@ trait AST {
     ) : UnionType {
 
         // Check for $$var or ${...} (whose idea was that anyway?)
-        if(($node->children[0] instanceof Node)
-            && ($node->children[0]->kind == \ast\AST_VAR
-                || $node->children[0]->kind == \ast\AST_BINARY_OP)
+        if(($node->children['name'] instanceof Node)
+            && ($node->children['name']->kind == \ast\AST_VAR
+                || $node->children['name']->kind == \ast\AST_BINARY_OP)
         ) {
             return MixedType::instance()->asUnionType();
         }
 
-        if($node->children[0] instanceof Node) {
+        if($node->children['name'] instanceof Node) {
             return new UnionType();
         }
 
-        $variable_name = $node->children[0];
+        $variable_name = $node->children['name'];
 
         if (!$context->getScope()->hasVariableWithName($variable_name)
         ) {
             if(!Variable::isSuperglobalVariableWithName($variable_name)) {
                 Log::err(
                     Log::EVAR,
-                    "Variable \${$node->children[0]} is not defined",
+                    "Variable \${$node->children['name']} is not defined",
                     $context->getFile(),
                     $node->lineno
                 );
@@ -284,22 +284,24 @@ trait AST {
             && ($node->kind != \ast\AST_MAGIC_CONST)
         ) {
             $parent = $node;
-            $node = $node->children[0];
+
+            // TODO: The name usually goes in slot zero, right?
+            $node = array_values($node->children)[0];
         }
 
         if(!$node instanceof \ast\Node) {
             return (string)$node;
         }
 
-        if(empty($node->children[0])) {
+        if(empty($node->children['name'])) {
             return '';
         }
 
-        if($node->children[0] instanceof \ast\Node) {
+        if($node->children['name'] instanceof \ast\Node) {
             return '';
         }
 
-        return (string)$node->children[0];
+        return (string)$node->children['name'];
     }
 
 }

@@ -75,7 +75,7 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitNamespace(Node $node) : Context {
-        $namespace = '\\' . (string)$node->children[0];
+        $namespace = '\\' . (string)$node->children['name'];
 
         return $this->context->withNamespace($namespace);
     }
@@ -111,17 +111,17 @@ class ParseVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-        if(!($node->children[0] instanceof Node
-            && $node->children[0]->children[0] instanceof Node)
+        if(!($node->children['expr'] instanceof Node
+            && ($node->children['expr']->children['name'] ?? null) instanceof Node)
         ) {
             return $this->context;
         }
 
         // check for $$var[]
-        if($node->children[0]->kind == \ast\AST_VAR
-            && $node->children[0]->children[0]->kind == \ast\AST_VAR
+        if($node->children['expr']->kind == \ast\AST_VAR
+            && $node->children['expr']->children['name']->kind == \ast\AST_VAR
         ) {
-            $temp = $node->children[0]->children[0];
+            $temp = $node->children['expr']->children['name'];
             $depth = 1;
             while($temp instanceof Node) {
                 $temp = $temp->children[0];
@@ -170,6 +170,34 @@ class ParseVisitor extends KindVisitorImplementation {
     }
 
     /**
+     * Visit a node with kind `\ast\AST_GROUP_USE`
+     * such as `use \ast\Node;`.
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitGroupUse(Node $node) : Context {
+
+        $prefix = array_shift($node->children);
+
+        $context = $this->context;
+
+        foreach ($this->aliasTargetMapFromUseNode($node->children['uses'])
+            as $alias => $target
+        ) {
+            $context = $context->withNamespaceMap(
+                $node->flags, $alias, $prefix.'\\'.$target
+            );
+        }
+
+        return $context;
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_USE`
      * such as `use \ast\Node;`.
      *
@@ -183,25 +211,8 @@ class ParseVisitor extends KindVisitorImplementation {
     public function visitUse(Node $node) : Context {
         $context = $this->context;
 
-        foreach($node->children as $child_node) {
-            $target = $child_node->children[0];
-            if(empty($child_node->children[1])) {
-                if(($pos=strrpos($target, '\\'))!==false) {
-                    $alias = substr($target, $pos + 1);
-                } else {
-                    $alias = $target;
-                }
-            } else {
-                $alias = $child_node->children[1];
-            }
-
-            /*
-            if ($alias === $target) {
-                Debug::printNode($node);
-                exit;
-            }
-             */
-
+        foreach ($this->aliasTargetMapFromUseNode($node)
+            as $alias => $target) {
             $context = $context->withNamespaceMap(
                 $node->flags, $alias, $target
             );
@@ -209,6 +220,34 @@ class ParseVisitor extends KindVisitorImplementation {
 
         return $context;
     }
+
+    /**
+     * @return array
+     * A map from alias to target
+     */
+    private function aliasTargetMapFromUseNode(Node $node) : array {
+        assert($node->kind == \ast\AST_USE,
+            'Method takes AST_USE nodes');
+
+        $map = [];
+        foreach($node->children as $child_node) {
+            $target = $child_node->children['name'];
+
+            if(empty($child_node->children['alias'])) {
+                if(($pos=strrpos($target, '\\'))!==false) {
+                    $alias = substr($target, $pos + 1);
+                } else {
+                    $alias = $target;
+                }
+            } else {
+                $alias = $child_node->children['alias'];
+            }
+            $map[$alias] = $target;
+        }
+
+        return $map;
+    }
+
 
     /**
      * Visit a node with kind `\ast\AST_CLASS`
@@ -330,7 +369,7 @@ class ParseVisitor extends KindVisitorImplementation {
         $trait_fqsen_string_list =
             static::astQualifiedNameList(
                 $this->context,
-                $node->children[0]
+                $node->children['traits']
             );
 
         // Add each trait to the class
@@ -430,10 +469,10 @@ class ParseVisitor extends KindVisitorImplementation {
             // @var UnionType
             $type = UnionType::fromNode(
                 $this->context,
-                $node->children[1]
+                $node->children['default']
             );
 
-            $property_name = $node->children[0];
+            $property_name = $node->children['name'];
 
             assert(is_string($property_name),
                 'Property name must be a string. '
@@ -451,9 +490,9 @@ class ParseVisitor extends KindVisitorImplementation {
                             $node->docComment ?? '',
                             $this->context
                         ),
-                    is_string($node->children[0])
-                    ? $node->children[0]
-                    : '_error_',
+                    is_string($node->children['name'])
+                        ? $node->children['name']
+                        : '_error_',
                     $type,
                     $node->flags
                 );
@@ -508,21 +547,21 @@ class ParseVisitor extends KindVisitorImplementation {
     public function visitClassConstDecl(Node $node) : Context {
         $clazz = $this->getContextClass();
 
-        foreach($node->children as $node) {
+        foreach($node->children as $child_node) {
             $constant = new Constant(
                 $this->context
-                    ->withLineNumberStart($node->lineno ?? 0)
-                    ->withLineNumberEnd($node->endLineno ?? 0),
+                    ->withLineNumberStart($child_node->lineno ?? 0)
+                    ->withLineNumberEnd($child_node->endLineno ?? 0),
                 Comment::fromStringInContext(
-                    $node->docComment ?? '',
+                    $child_node->docComment ?? '',
                     $this->context
                 ),
-                $node->children[0],
+                $child_node->children['name'],
                 UnionType::fromNode(
                     $this->context,
-                    $node->children[1]
+                    $child_node->children['value']
                 ),
-                $node->flags ?? 0
+                $child_node->flags ?? 0
             );
 
             $clazz->addConstant($constant);
@@ -619,11 +658,11 @@ class ParseVisitor extends KindVisitorImplementation {
      */
     public function visitCall(Node $node) : Context {
         $found = false;
-        $call_node = $node->children[0];
+        $call_node = $node->children['expr'];
 
         if($call_node->kind == \ast\AST_NAME) {
 
-            $function_name = $call_node->children[0];
+            $function_name = $call_node->children['name'];
 
             $method_fqsen =
                 $this->context->getScopeFQSEN()
@@ -689,12 +728,12 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitStaticCall(Node $node) : Context {
-        $call = $node->children[0];
+        $call = $node->children['class'];
 
         if($call->kind == \ast\AST_NAME) {
-            $func_name = strtolower($call->children[0]);
+            $func_name = strtolower($call->children['name']);
             if($func_name == 'parent') {
-                $meth = strtolower($node->children[1]);
+                $meth = strtolower($node->children['method']);
 
                 if($meth == '__construct') {
                     $clazz = $this->getContextClass();

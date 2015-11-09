@@ -78,15 +78,15 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
     public function visitAssign(Node $node) : Context {
         $context = $this->context;
 
-        if($node->children[0] instanceof \ast\Node
-            && $node->children[0]->kind == \ast\AST_LIST
+        if($node->children['var'] instanceof \ast\Node
+            && $node->children['var']->kind == \ast\AST_LIST
         ) {
             $right_type =
                 UnionType::fromNode($context, $node);
 
             $type = $right_type->genericTypes();
 
-            foreach($node->children[0]->children as $child_node) {
+            foreach($node->children['var']->children as $child_node) {
                 if (!$child_node) {
                     continue;
                 }
@@ -97,9 +97,10 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             }
         }
 
-        $context = $context->withScopeVariable(
-            Variable::fromNodeInContext($node, $context)
-        );
+        $variable =
+            Variable::fromNodeInContext($node, $context);
+
+        $context = $context->withScopeVariable($variable);
 
         foreach ($context->getScope()->getVariableMap()
             as $name => $variable) {

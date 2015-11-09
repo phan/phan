@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\Debug;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
 use \Phan\Log;
@@ -27,9 +28,9 @@ trait ArgumentType {
         if($node->kind == \ast\AST_CALL
             || $node->kind == \ast\AST_NEW
         ) {
-            $arglist = $node->children[1];
+            $arglist = $node->children['args'];
         } else {
-            $arglist = $node->children[2];
+            $arglist = $node->children['args'];
         }
 
         $argcount = count($arglist->children);

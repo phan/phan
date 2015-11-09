@@ -78,7 +78,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitNamespace(Node $node) : Context {
         return $this->context->withNamespace(
-            (string)$node->children[0]
+            (string)$node->children['name']
         );
     }
 
@@ -371,8 +371,8 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitForeach(Node $node) : Context {
-        if(($node->children[2] instanceof \ast\Node)
-            && ($node->children[2]->kind == \ast\AST_LIST)
+        if(($node->children['key'] instanceof \ast\Node)
+            && ($node->children['key']->kind == \ast\AST_LIST)
         ) {
             Log::err(
                 Log::EFATAL,
@@ -383,13 +383,13 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         }
 
         $context = $this->context;
-        if($node->children[1]->kind == \ast\AST_LIST) {
-            foreach($node->children[1]->children as $child_node) {
+        if($node->children['value']->kind == \ast\AST_LIST) {
+            foreach($node->children['value']->children as $child_node) {
                 $context = $this->context->withScopeVariable(
                     Variable::fromNodeInContext($child_node, $context)
                 );
             }
-            if(!empty($node->children[2])) {
+            if(!empty($node->children['key'])) {
                 $context = $this->context->withScopeVariable(
                     Variable::fromNodeInContext($node->children[2], $context)
                 );
@@ -397,7 +397,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         } else {
             $variable =
                 Variable::fromNodeInContext(
-                    $node->children[1],
+                    $node->children['value'],
                     $context,
                     false
                 );
@@ -418,10 +418,10 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             $context =
                 $this->context->withScopeVariable($variable);
 
-            if(!empty($node->children[2])) {
+            if(!empty($node->children['key'])) {
                 $variable =
                     Variable::fromNodeInContext(
-                        $node->children[2],
+                        $node->children['key'],
                         $context,
                         false
                     );
@@ -504,7 +504,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             $class_fqsen
         );
 
-        $method_name = $node->children[1];
+        $method_name = $node->children['method'];
 
         $method_fqsen =
             $clazz->getFQSEN()->withMethodName(

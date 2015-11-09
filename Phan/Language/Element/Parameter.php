@@ -167,7 +167,7 @@ class Parameter extends Variable {
         // Get the type of the parameter
         $type = UnionType::fromSimpleNode(
             $context,
-            $node->children[0]
+            $node->children['type']
         );
 
         $comment =
@@ -180,21 +180,21 @@ class Parameter extends Variable {
         $parameter = new Parameter(
             $context,
             $comment,
-            (string)$node->children[1],
+            (string)$node->children['name'],
             $type,
             $node->flags
         );
 
         // If there is a default value, store it and its type
-        if ($node->children[2] !== null) {
+        if ($node->children['default'] !== null) {
             // Set the node as the value
-            $parameter->setDefaultValue($node->children[2]);
+            $parameter->setDefaultValue($node->children['default']);
 
             // Set the type
             $parameter->setDefaultValueUnionType(
                 UnionType::fromNode(
                     $context,
-                    $node->children[2]
+                    $node->children['default']
                 )
             );
         }

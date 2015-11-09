@@ -39,8 +39,8 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
     }
 
     public function visitNew(Node $node) : string {
-        if($node->children[0]->kind == \ast\AST_NAME) {
-            $class_name = $node->children[0]->children[0];
+        if($node->children['class']->kind == \ast\AST_NAME) {
+            $class_name = $node->children['class']->children['name'];
 
             if(in_array($class_name, ['self', 'static', 'parent'])) {
                 if (!$this->context->isClassScope()) {
@@ -76,7 +76,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
             } else {
                 $class_name = self::astQualifiedName(
                     $this->context,
-                    $node->children[0]
+                    $node->children['class']
                 );
             }
         }
@@ -103,10 +103,10 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
     public function visitMethodCall(Node $node) : string {
         $class_name = null;
 
-        if($node->children[0]->kind == \ast\AST_VAR) {
-            if(!($node->children[0]->children[0] instanceof Node)) {
+        if($node->children['expr']->kind == \ast\AST_VAR) {
+            if(!($node->children['expr']->children['name'] instanceof Node)) {
                 // $var->method()
-                if($node->children[0]->children[0] == 'this') {
+                if($node->children['expr']->children['name'] == 'this') {
                     if(!$this->context->isClassScope()) {
                         Log::err(
                             Log::ESTATIC,
@@ -121,7 +121,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                 }
 
                 $variable_name =
-                    $node->children[0]->children[0];
+                    $node->children['expr']->children['name'];
 
                 if (!$this->context->getScope()->hasVariableWithName(
                     $variable_name
@@ -156,12 +156,15 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                     (string)$type_name
                 );
             }
-        } else if($node->children[0]->kind == \ast\AST_PROP) {
-            $prop = $node->children[0];
-            if($prop->children[0]->kind == \ast\AST_VAR && !($prop->children[0]->children[0] instanceof \ast\Node)) {
+        } else if($node->children['expr']->kind == \ast\AST_PROP) {
+            $prop = $node->children['expr'];
+            if($prop->children['expr']->kind == \ast\AST_VAR
+                && !($prop->children['expr']->children['name'] instanceof Node)
+            ) {
                 // $var->prop->method()
-                $var = $prop->children[0];
-                if($var->children[0] == 'this') {
+                $var = $prop->children['expr'];
+
+                if($var->children['name'] == 'this') {
                     if(!$this->context->isClassScope()) {
                         Log::err(
                             Log::ESTATIC,
@@ -177,8 +180,9 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                         $this->context->getClassFQSEN()
                     );
 
-                    if(!($prop->children[1] instanceof Node)) {
-                        $property_name = $prop->children[1];
+                    if(!($prop->children['prop'] instanceof Node)) {
+                        $property_name = $prop->children['prop'];
+
                         if ($clazz->hasPropertyWithName($property_name)) {
                             $property =
                                 $clazz->getPropertyWithName($property_name);
@@ -201,12 +205,12 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                     }
                 }
             }
-        } else if ($node->children[0]->kind == \ast\AST_METHOD_CALL) {
+        } else if ($node->children['expr']->kind == \ast\AST_METHOD_CALL) {
             // Get the type returned by the first method
             // call.
             $union_type = UnionType::fromNode(
                 $this->context,
-                $node->children[0]
+                $node->children['expr']
             );
 
             // Hope that its a class

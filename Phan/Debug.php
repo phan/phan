@@ -36,9 +36,14 @@ class Debug {
      */
     public static function nodeToString(
         $node,
+        $name = null,
         int $indent = 0
     ) : string {
         $string = str_repeat("\t", $indent);
+
+        if ($name) {
+            $string .= "$name => ";
+        }
 
         if (is_string($node)) {
             return $string . $node . "\n";
@@ -70,8 +75,12 @@ class Debug {
 
         $string .= "\n";
 
-        foreach ($node->children ?? [] as $child_node) {
-            $string .= self::nodeToString($child_node, $indent + 1);
+        foreach ($node->children ?? [] as $name => $child_node) {
+            $string .= self::nodeToString(
+                $child_node,
+                $name,
+                $indent + 1
+            );
         }
 
         return $string;

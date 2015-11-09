@@ -100,4 +100,8 @@ class Property extends TypedStructuralElement {
         $this->declared_type = $type;
     }
 
+    public function __toString() : string {
+        return "{$this->getUnionType()} {$this->getName()}";
+    }
+
 }
