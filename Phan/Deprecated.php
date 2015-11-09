@@ -24,7 +24,10 @@ class Deprecated {
                         || $temp->kind == \ast\AST_STATIC_PROP)
                     ) {
                         $last = $temp;
-                        $temp = $temp->children['expr'];
+
+                        // Lets just hope the 0th is the expression
+                        // we want
+                        $temp = array_values($temp->children)[0];
                     }
 
                     if($temp instanceof \ast\Node) {

@@ -40,7 +40,9 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
 
     public function visitNew(Node $node) : string {
         if($node->children['class']->kind == \ast\AST_NAME) {
-            $class_name = $node->children['class']->children['name'];
+
+            $class_name =
+                $node->children['class']->children['name'];
 
             if(in_array($class_name, ['self', 'static', 'parent'])) {
                 if (!$this->context->isClassScope()) {
@@ -55,11 +57,14 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
 
                 if($class_name == 'static') {
                     $class_name =
-                        (string)$this->context->getClassFQSEN()->getClassName();
+                        (string)$this->context->getClassFQSEN()
+                        ->getClassName();
                 } else if($class_name == 'self') {
                     // TODO
                     if ($this->context->isGlobalScope()) {
-                        list($class_name,) = explode('::', $current_scope);
+                        assert(false, "Not Implemented");
+                        list($class_name,) =
+                            explode('::', $current_scope);
                     } else {
                         $class_name =
                             (string)$this->context->getClassFQSEN()->getClassName();
@@ -68,11 +73,24 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                     $clazz =
                         $this->context->getClassInScope();
 
-                    $class_name = (string)$clazz->getParentClassFQSEN();
-                }
+                    if (!$clazz->hasParentClassFQSEN()) {
+                        // TODO: This may be getting called in
+                        //       the first pass.
+                        /*
+                        Log::err(
+                            Log::EFATAL,
+                            "Call to parent in {$class_name} when no parent exists",
+                            $this->context->getFile(),
+                            $node->lineno
+                        );
+                        */
 
-                // TODO
-                $static_call_ok = true;
+                        return '';
+                    }
+
+                    $class_name =
+                        (string)$clazz->getParentClassFQSEN();
+                }
             } else {
                 $class_name = self::astQualifiedName(
                     $this->context,

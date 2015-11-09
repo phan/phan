@@ -273,7 +273,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_CLASS_CONST`
      */
     public function visitClassConst(Node $node) : UnionType {
-        $constant_name = $node->children[1];
+        $constant_name = $node->children['const'];
 
         if($constant_name == 'class') {
             return StringType::instance()->asUnionType(); // class name fetch
@@ -397,7 +397,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_STATIC_PROP`
      */
     public function visitStaticProp(Node $node) : UnionType {
-        if($node->children[0]->kind != \ast\AST_NAME) {
+        if($node->children['class']->kind != \ast\AST_NAME) {
             return new UnionType();
         }
 
@@ -405,7 +405,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $this->astClassNameFromNode($this->context, $node);
 
         if(!($class_name
-            && !($node->children[1] instanceof Node))
+            && !($node->children['prop'] instanceof Node))
         ) {
             return new UnionType();
         }
@@ -425,7 +425,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $class_fqsen
         );
 
-        $property_name = $node->children[1];
+        $property_name = $node->children['prop'];
 
         // Property not found :(
         if (!$clazz->hasPropertyWithName($property_name)) {
@@ -616,10 +616,17 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     }
 
     /**
+     * Visit a node with kind `\ast\AST_UNARY_OP`
+     */
+    public function visitUnaryOp(Node $node) : UnionType {
+        return Type::fromObject($node->children['expr'])->asUnionType();
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_UNARY_MINUS`
      */
     public function visitUnaryMinus(Node $node) : UnionType {
-        return Type::fromObject($node->children[0])->asUnionType();
+        return Type::fromObject($node->children['expr'])->asUnionType();
     }
 
 }

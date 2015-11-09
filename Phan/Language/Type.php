@@ -5,6 +5,22 @@ use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Type\NodeTypeKindVisitor;
+use \Phan\Language\Type\{
+    ArrayType,
+    BoolType,
+    CallableType,
+    FloatType,
+    GenericArrayType,
+    IntType,
+    MixedType,
+    NativeType,
+    NullType,
+    ObjectType,
+    ResourceType,
+    ScalarType,
+    StringType,
+    VoidType
+};
 use \Phan\Language\UnionType;
 use \ast\Node;
 
@@ -385,14 +401,14 @@ class Type {
             return true;
         }
         if($s === 'object'
-            && !$d_type->isScalar()
+            && !$type->isScalar()
             && $d!=='array'
         ) {
             return true;
         }
 
         if($d === 'object' &&
-            !$s_type->isScalar()
+            !$this->isScalar()
             && $s!=='array'
         ) {
             return true;

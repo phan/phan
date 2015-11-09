@@ -187,6 +187,7 @@ class Parameter extends Variable {
 
         // If there is a default value, store it and its type
         if ($node->children['default'] !== null) {
+
             // Set the node as the value
             $parameter->setDefaultValue($node->children['default']);
 
@@ -222,7 +223,7 @@ class Parameter extends Variable {
     public function __toString() : string {
         $string = '';
 
-        if ($this->getUnionType()->hasAnyType()) {
+        if ($this->getUnionType()->isEmpty()) {
             $string .= (string)$this->getUnionType() . ' ';
         }
 

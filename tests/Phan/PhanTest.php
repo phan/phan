@@ -89,8 +89,8 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
             );
 
             $this->assertEquals(
-                $output,
                 $expected_output,
+                $output,
                 "Unexpected output in $test_file_path"
             );
         }

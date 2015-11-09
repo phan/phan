@@ -2,7 +2,9 @@
 
 class A {
 
-    /** @var bad message that is not a type */
+    /**
+     * @var bad message that is not a type
+     */
     public static $property = [
         'alpha',
         'beta',

@@ -41,7 +41,7 @@ class Debug {
     ) : string {
         $string = str_repeat("\t", $indent);
 
-        if ($name) {
+        if ($name !== null) {
             $string .= "$name => ";
         }
 

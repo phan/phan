@@ -144,11 +144,11 @@ class ParseVisitor extends KindVisitorImplementation {
             }
 
         // $foo->$bar['baz'];
-        } else if(!empty($node->children[0]->children[1])
-            && ($node->children[0]->children[1] instanceof Node)
-            && ($node->children[0]->kind == \ast\AST_PROP)
-            && ($node->children[0]->children[0]->kind == \ast\AST_VAR)
-            && ($node->children[0]->children[1]->kind == \ast\AST_VAR)
+        } else if(!empty($node->children['expr']->children[1])
+            && ($node->children['expr']->children[1] instanceof Node)
+            && ($node->children['expr']->kind == \ast\AST_PROP)
+            && ($node->children['expr']->children[0]->kind == \ast\AST_VAR)
+            && ($node->children['expr']->children[1]->kind == \ast\AST_VAR)
         ) {
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
@@ -304,13 +304,14 @@ class ParseVisitor extends KindVisitorImplementation {
         // accessible object
         $this->context->getCodeBase()->addClass($clazz);
 
+
         // Look to see if we have a parent class
-        if(!empty($node->children[0])) {
+        if(!empty($node->children['extends'])) {
             $parent_class_name =
-                $node->children[0]->children[0];
+                $node->children['extends']->children['name'];
 
             // Check to see if the name isn't fully qualified
-            if($node->children[0]->flags & \ast\flags\NAME_NOT_FQ) {
+            if($node->children['extends']->flags & \ast\flags\NAME_NOT_FQ) {
                 if ($this->context->hasNamespaceMapFor(
                     T_CLASS,
                     $parent_class_name
@@ -506,6 +507,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
             // Look for any @var declarations
             foreach ($comment->getVariableList() as $i => $variable) {
+
                 if ((string)$type != 'null'
                     && !$type->canCastToUnionType(
                         $variable->getUnionType()
