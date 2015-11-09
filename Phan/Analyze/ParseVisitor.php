@@ -202,8 +202,6 @@ class ParseVisitor extends KindVisitorImplementation {
             }
              */
 
-            print "$alias => $target\n";
-
             $context = $context->withNamespaceMap(
                 $node->flags, $alias, $target
             );
