@@ -207,30 +207,6 @@ class Method extends TypedStructuralElement {
                     new UnionType([(empty($arginfo) ? '' : (next($arginfo) ?: ''))]),
                     $flags
                 );
-
-            /*
-            // TODO
-            while(!empty(${"arginfo{$alt}"})) {
-                $name_alt = strtolower($method->name).' '.$alt;
-
-                // TODO
-                $name_method_info_map[$name_alt]->parameter_list[] =
-                    new ParameterElement(
-                        'internal',
-                        '',
-                        0,
-                        0,
-                        '',
-                        false,
-                        $flags,
-                        $param->name,
-                        (empty(${"arginfo{$alt}"}) ? '' : (next(${"arginfo{$alt}"}) ?: '')),
-                        null
-                    );
-
-                $alt++;
-            }
-             */
         }
 
         return $name_method_info_map;
@@ -305,7 +281,8 @@ class Method extends TypedStructuralElement {
         } else if ($comment->hasReturnUnionType()) {
 
             // See if we have a return type specified in the comment
-            $union_type = $comment->getReturnType();
+            $union_type =
+                $comment->getReturnType();
 
             if ($union_type->hasSelfType()) {
                 // We can't actually figure out 'static' at this

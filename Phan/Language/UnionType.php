@@ -461,6 +461,21 @@ class UnionType extends \ArrayObject  {
     }
 
     /**
+     * @return bool
+     * True if this is exclusively generic types
+     */
+    public function isGeneric() : bool {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return array_reduce($this->getArrayCopy(),
+            function (bool $carry, Type $type) : bool {
+                return ($carry && $type->isGeneric());
+            }, true);
+    }
+
+    /**
      * @return UnionType
      * Get a new type for each type in this union which is
      * the generic array version of this type. For instance,

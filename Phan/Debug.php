@@ -25,6 +25,22 @@ class Debug {
     }
 
     /**
+     * @return string
+     * The name of the node
+     */
+    public static function nodeName($node) : string {
+        if (is_string($node)) {
+            return 'string';
+        }
+
+        if (!$node) {
+            return 'null';
+        }
+
+        return \ast\get_kind_name($node->kind);
+    }
+
+    /**
      * @param string|Node|null $node
      * An AST node
      *

@@ -12,6 +12,7 @@ use \Phan\Language\Element\{
     Comment,
     Constant,
     Method,
+    Parameter,
     Property,
     Variable
 };
@@ -263,7 +264,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             );
         }
 
-
         if(!empty($node->children['uses'])
             && $node->children['uses']->kind == \ast\AST_CLOSURE_USES
         ) {
@@ -309,6 +309,23 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                         }
                     }
                 }
+            }
+        }
+
+        // Add all parameters to the scope
+        if (!empty($node->children['params'])
+            && $node->children['params']->kind == \ast\AST_PARAM_LIST
+        ) {
+            $params = $node->children['params'];
+            foreach ($params->children as $param) {
+                // Read the parameter
+                $parameter = Parameter::fromNode(
+                    $this->context,
+                    $param
+                );
+
+                // Add it to the scope
+                $context = $context->withScopeVariable($parameter);
             }
         }
 

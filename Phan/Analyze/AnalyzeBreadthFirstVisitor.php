@@ -17,10 +17,10 @@ use \Phan\Language\Element\{
 };
 use \Phan\Language\FQSEN;
 use \Phan\Langauge\Type;
-use \Phan\Langauge\Type\ArrayType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \Phan\Language\Type\ArrayType;
 
 /**
  * # Example Usage
@@ -234,10 +234,15 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitIfElem(Node $node) : Context {
-        /*
-        // Just to check for errors in the expression
-        node_type($file, $namespace, $ast->children[0], $current_scope, $current_class, $taint);
-        */
+        // Just check for errors in the expression
+        if (isset($node->children['cond'])
+            && $node->children['cond'] instanceof Node
+        ) {
+            $expression_type = UnionType::fromNode(
+                $this->context,
+                $node->children['cond']
+            );
+        }
 
         return $this->context;
     }
@@ -338,11 +343,10 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitForeach(Node $node) : Context {
-        $expression_type =
-            $type = UnionType::fromNode(
-                $this->context,
-                $node->children['expr']
-            );
+        $expression_type = UnionType::fromNode(
+            $this->context,
+            $node->children['expr']
+        );
 
         // Check the expression type to make sure its
         // something we can iterate over
@@ -376,11 +380,10 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
         // If the element has a default, set its type
         // on the variable
         if (isset($node->children['default'])) {
-            $default_type =
-                $type = UnionType::fromNode(
-                    $this->context,
-                    $node->children['default']
-                );
+            $default_type = UnionType::fromNode(
+                $this->context,
+                $node->children['default']
+            );
 
             $variable->setUnionType($default_type);
         }
@@ -413,21 +416,22 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitPrint(Node $node) : Context {
-        /*
-        $taint = false;
-        $tainted_by = '';
-        $type = node_type($file, $namespace, $ast->children[0], $current_scope, $current_class, $taint);
-        if($type == 'array' || (strlen($type) > 2 && substr($type,-2)=='[]')) {
-            Log::err(Log::ETYPE, "array to string conversion", $file, $ast->lineno);
+
+        $type = UnionType::fromNode(
+            $this->context,
+            $node->children['expr']
+        );
+
+        if ($type->isType(ArrayType::instance())
+            || $type->isGeneric()
+        ) {
+            Log::err(
+                Log::ETYPE,
+                "array to string conversion",
+                $this->context->getFile(),
+                $node->lineno
+            );
         }
-        if($taint) {
-            if(empty($tainted_by)) {
-                Log::err(Log::ETAINT, "possibly tainted output.", $file, $ast->lineno);
-            } else {
-                Log::err(Log::ETAINT, "possibly tainted output. Data tainted at $tainted_by", $file, $ast->lineno);
-            }
-        }
-         */
 
         return $this->context;
     }

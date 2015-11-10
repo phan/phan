@@ -194,7 +194,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
             Log::err(
                 Log::ETYPE,
                 "invalid array operator",
-                $context->getFile(),
+                $this->context->getFile(),
                 $node->lineno
             );
             return new UnionType();

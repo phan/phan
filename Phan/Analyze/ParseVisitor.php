@@ -616,7 +616,6 @@ class ParseVisitor extends KindVisitorImplementation {
                     $this->context,
                     $function_name
                 )->withAlternateId($alternate_id++);
-
         } while($this->context->getCodeBase()
             ->hasMethodWithFQSEN($function_fqsen));
 

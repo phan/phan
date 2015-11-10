@@ -114,7 +114,7 @@ class Log {
 		$log = self::getInstance();
 		$out = '';
 
-        $print_closure = function($message) {
+        $print_closure = function(string $message) {
             print $message;
         };
 
