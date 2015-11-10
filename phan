@@ -8,11 +8,11 @@ $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
 require_once(__DIR__.'/Phan/Bootstrap.php');
-require_once(__DIR__.'/Phan/CLI.php');
 
-use Phan\Analyzer;
-use Phan\CodeBase;
-use Phan\Log;
+use \Phan\Analyzer;
+use \Phan\CodeBase;
+use \Phan\Log;
+use \Phan\CLI;
 
 // \Phan\Analyzer::analyze will emit messages to STDOUT
 (new Analyzer())->analyze(
@@ -21,5 +21,6 @@ use Phan\Log;
         $internal_interface_name_list,
         $internal_trait_name_list,
         $internal_function_name_list
-    ), $files
+    ),
+    (new CLI)->getFileList()
 );

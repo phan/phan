@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan;
 
 /**
@@ -12,9 +11,21 @@ class Configuration {
      */
     private $configuration = [
         // Backwards Compatibility Checking
-        'bc_checks' => true,
+        'backward_compatibility_checks' => true,
 
-        // The vesion of the AST we're using
+        // A set of fully qualified class-names for which
+        // a call to parent::__construct() is required
+        'parent_constructor_required' => [],
+
+        // Include a progress bar in the output
+        'progress_bar' => false,
+
+        // Run a quick version of checks that takes less
+        // time
+        'quick_mode' => false,
+
+        // The vesion of the AST (defined in php-ast)
+        // we're using
         'ast_version' => 30,
     ];
 

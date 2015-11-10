@@ -4,6 +4,7 @@ namespace Phan;
 use \Phan\Analyze\AnalyzeBreadthFirstVisitor;
 use \Phan\Analyze\AnalyzeDepthFirstVisitor;
 use \Phan\Analyze\ParseVisitor;
+use \Phan\CLI;
 use \Phan\CodeBase;
 use \Phan\Configuration;
 use \Phan\Debug;
@@ -42,11 +43,14 @@ class Analyzer {
         CodeBase $code_base,
         array $file_path_list
     ) {
+        $file_count = count($file_path_list);
+
         // This first pass parses code and populates the
         // global state we'll need for doing a second
         // analysis after.
-        foreach ($file_path_list as $file_path) {
+        foreach ($file_path_list as $i => $file_path) {
             $this->parseFile($code_base, $file_path);
+            CLI::progress('parse',  $i/$file_count);
         }
 
         // Take a pass over all classes verifying various
@@ -61,8 +65,9 @@ class Analyzer {
 
         // Once we know what the universe looks like we
         // can scan for more complicated issues.
-        foreach ($file_path_list as $file_path) {
+        foreach ($file_path_list as $i => $file_path) {
             $this->analyzeCode($code_base, $file_path);
+            CLI::progress('analyze',  $i/$file_count);
         }
 
         // Emit all log messages
@@ -179,9 +184,7 @@ class Analyzer {
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
             self::analyzeDuplicateClass($code_base, $clazz);
             self::analyzeParentClassExists($code_base, $clazz);
-
-            // TODO: too much noise
-            // self::analyzeParentConstructorCalled($code_base, $clazz);
+            self::analyzeParentConstructorCalled($code_base, $clazz);
         }
     }
 
@@ -305,5 +308,4 @@ class Analyzer {
         // Pass the context back up to our parent
         return $context;
     }
-
 }

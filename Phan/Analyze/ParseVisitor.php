@@ -123,7 +123,7 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitDim(Node $node) : Context {
-        if (!Configuration::instance()->bc_checks) {
+        if (!Configuration::instance()->backward_compatibility_checks) {
             return $this->context;
         }
 
@@ -281,7 +281,6 @@ class ParseVisitor extends KindVisitorImplementation {
         $class_name = $node->name;
 
         if (!$class_name) {
-            print $this->context . "\n";
             return $this->context;
         }
 
@@ -727,7 +726,7 @@ class ParseVisitor extends KindVisitorImplementation {
             }
         }
 
-        if(Configuration::instance()->bc_checks) {
+        if(Configuration::instance()->backward_compatibility_checks) {
             \Phan\Deprecated::bc_check(
                 $this->context->getFile(),
                 $node
@@ -776,7 +775,7 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitReturn(Node $node) : Context {
-        if (Configuration::instance()->bc_checks) {
+        if (Configuration::instance()->backward_compatibility_checks) {
             Deprecated::bc_check($this->context->getFile(), $node);
         }
 

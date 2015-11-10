@@ -168,8 +168,6 @@ class UnionType extends \ArrayObject  {
         FQSEN $function_fqsen
     ) : array {
 
-        print ">$function_fqsen\n";
-
         $type_name_struct =
             $BUILTIN_FUNCTION_ARGUMENT_TYPES[(string)$function_fqsen];
 

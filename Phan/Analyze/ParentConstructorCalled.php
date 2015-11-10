@@ -3,6 +3,7 @@
 namespace Phan\Analyze;
 
 use \Phan\CodeBase;
+use \Phan\Configuration;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 use \Phan\Log;
@@ -18,6 +19,13 @@ trait ParentConstructorCalled {
         CodeBase $code_base,
         Clazz $clazz
     ) {
+        // Only look at classes configured to require a call
+        // to its parent constructor
+        if (!in_array($clazz->getName(),
+            Configuration::instance()->parent_constructor_required)
+        ) {
+            return;
+        }
 
         // Don't worry about internal classes
         if ($clazz->isInternal()) {

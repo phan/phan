@@ -1,26 +1,25 @@
 <?php
 declare(strict_types=1);
 
-/**
- * Listen for all errors
- */
+// Listen for all errors
 error_reporting(E_ALL);
 
-/**
- * Create the autoloader for classes that maps namespaces
- * and classes to files and loads them via require_once.
- */
+// Take as much memory as we need
+ini_set("memory_limit", '-1');
+
+// Add the root to the include path
 define('CLASS_DIR', __DIR__ . '/../');
 set_include_path(get_include_path().PATH_SEPARATOR.CLASS_DIR);
 
-// Include the composer autoloader
+// Use the composer autoloader
 require_once(__DIR__.'/../vendor/autoload.php');
 
-/*
-use \Phan\Log;
-
-// Display all errors collected when shutting down
-register_shutdown_function(function () {
-    Log::display();
-});
-*/
+// Customize assertions
+assert_options(ASSERT_ACTIVE,   true);
+assert_options(ASSERT_BAIL,     true);
+assert_options(ASSERT_WARNING,  false);
+assert_options(ASSERT_CALLBACK,
+    function (string $script, int $line, $expression, $message) {
+        print "$script:$line ($expression) $message\n";
+        debug_print_backtrace();
+    });

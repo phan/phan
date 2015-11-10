@@ -491,6 +491,12 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
+        // TODO: What do we do with a method call on
+        //       something that is null. Log an error?
+        if ('\null' === $class_name) {
+            return $this->context;
+        }
+
         $class_fqsen =
             $this->context->getScopeFQSEN()->withClassName(
                 $this->context, $class_name
@@ -512,6 +518,17 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
 
         $method_name = $node->children['method'];
 
+        if ($method_name instanceof Node) {
+            // TODO: The method_name turned out to
+            //       be a variable. We'd have to look
+            //       that up to figure out what the
+            //       string is, but thats a drag.
+            return $this->context;
+        }
+
+        assert(is_string($method_name),
+            "Method name must be a string. Found non-string at {$this->context}");
+
         $method_fqsen =
             $clazz->getFQSEN()->withMethodName(
                 $this->context, $method_name
@@ -532,7 +549,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         );
 
         if($method->getName() != 'dynamic') {
-
             if(array_key_exists('avail', $method)
                 && !$method['avail']
             ) {
