@@ -86,7 +86,7 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
             (string)$context->getScopeFQSEN()
         );
 
-        $stmt_list_node = $class_node->children[2];
+        $stmt_list_node = $class_node->children['stmts'];
         $method_node = $stmt_list_node->children[0];
 
         $context =
