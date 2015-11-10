@@ -534,8 +534,7 @@ class Context {
         return $this->file
             . ':' . (string)$this->line_number_start
             . ($this->line_number_end
-                ? (':' . (string)$this->line_number_end)
-                : '')
+                ? (':' . (string)$this->line_number_end) : '')
             . ' in scope ' . (string)$this->getScopeFQSEN()
             ;
     }

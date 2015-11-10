@@ -639,39 +639,6 @@ class ParseVisitor extends KindVisitorImplementation {
     }
 
     /**
-     * Visit a node with kind `\ast\AST_CLOSURE`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitClosure(Node $node) : Context {
-        $closure_name = 'closure_' . $node->lineno;
-
-        $closure_fqsen =
-            $this->context->getScopeFQSEN()->withClosureName(
-                $this->context,
-                $closure_name
-            );
-
-        $method =
-            Method::fromNode($this->context, $node);
-
-        // Override the FQSEN with the found alternate ID
-        $method->setFQSEN($closure_fqsen);
-
-        $this->context->getCodeBase()->addClosure($method);
-
-        return
-            $this->context->withClosureFQSEN(
-                $closure_fqsen
-            );
-    }
-
-    /**
      * Visit a node with kind `\ast\AST_CALL`
      *
      * @param Node $node

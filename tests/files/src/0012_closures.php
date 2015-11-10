@@ -1,11 +1,19 @@
 <?php
 
-function f() : int {
-    $alpha = 42;
+$closure = function() {
+    return 42;
+};
 
-    $closure = function(int $beta) use ($alpha) {
-        return $alpha + $beta;
-    };
+class A {
+    private $a = 42;
 
-    return $closure(42);
+    public function f() {
+        $b = 2;
+
+        $closure = function(int $p) use ($b, $c) {
+            return ($p + $this->a + $b);
+        };
+
+        return $closure(3);
+    }
 }

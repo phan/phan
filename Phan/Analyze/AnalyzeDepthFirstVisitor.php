@@ -241,32 +241,29 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                 $closure_name
             );
 
-        if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
-            $closure_fqsen
-        )) {
-            Log::err(
-                Log::EFATAL,
-                "Can't find closure {$closure_fqsen} - aborting",
-                $this->context->getFile(),
-                $node->lineno
+        $method =
+            Method::fromNode($this->context, $node);
+
+        // Override the FQSEN with the found alternate ID
+        $method->setFQSEN($closure_fqsen);
+
+        // TODO: We don't need this, right?
+        // $this->context->getCodeBase()->addClosure($method);
+
+        // If we have a 'this' variable in our current scope,
+        // pass it down into the closure
+        $context = $this->context;
+        if ($context->getScope()->hasVariableWithName('this')) {
+            $context = $context->withScopeVariable(
+                $context->getScope()->getVariableWithName('this')
             );
         }
 
-        $closure = $this->context->getCodeBase()->getMethodByFQSEN(
-            $closure_fqsen
-        );
 
-        /*
-        if(!empty($scope[$parent_scope]['vars']['this'])) {
-            // TODO: check for a static closure
-            add_var_scope($current_scope, 'this', $scope[$parent_scope]['vars']['this']['type']);
-        }
-         */
-
-        if(!empty($node->children[1])
-            && $node->children[1]->kind == \ast\AST_CLOSURE_USES
+        if(!empty($node->children['uses'])
+            && $node->children['uses']->kind == \ast\AST_CLOSURE_USES
         ) {
-            $uses = $node->children[1];
+            $uses = $node->children['uses'];
 
             foreach($uses->children as $use) {
                 if($use->kind != \ast\AST_CLOSURE_VAR) {
@@ -277,14 +274,15 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                         $node->lineno
                     );
                 } else {
-                    $variable_name = self::astVariableName($use->children[0]);
+                    $variable_name =
+                        self::astVariableName($use->children['name']);
 
                     if(empty($variable_name)) {
                         continue;
                     }
 
                     if($use->flags & \ast\flags\PARAM_REF) {
-                        assert(false, "TODO");
+                        assert(false, "TODO for $context");
                         /*
                         if(empty($parent_scope)
                             || empty($scope[$parent_scope]['vars'])
@@ -311,9 +309,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             }
         }
 
-        return $closure->getContext()->withClosureFQSEN(
-            $closure_fqsen
-        );
+        return $context->withClosureFQSEN($closure_fqsen);
     }
 
     /**

@@ -7,3 +7,12 @@ try {
 }
 
 print $a;
+
+try {
+    $b = 2;
+} catch (Exception $exception) {
+    print_r($exception);
+}
+
+print $b;
+
