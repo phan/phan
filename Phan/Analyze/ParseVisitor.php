@@ -477,18 +477,18 @@ class ParseVisitor extends KindVisitorImplementation {
         // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
-        // Get a comment on the property declaration
-        $comment = Comment::fromStringInContext(
-            $node->docComment ?? '',
-            $this->context
-        );
-
         foreach($node->children as $i=>$node) {
             // Ignore children which are not property elements
             if (!$node
                 || $node->kind != \ast\AST_PROP_ELEM) {
                 continue;
             }
+
+            // Get a comment on the property declaration
+            $comment = Comment::fromStringInContext(
+                $node->docComment ?? '',
+                $this->context
+            );
 
             // @var UnionType
             $type = UnionType::fromNode(

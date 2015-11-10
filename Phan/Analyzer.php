@@ -52,6 +52,7 @@ class Analyzer {
             $this->parseFile($code_base, $file_path);
             CLI::progress('parse',  $i/$file_count);
         }
+        CLI::progress('parse',  1.0);
 
         // Take a pass over all classes verifying various
         // states now that we have the whole state in
@@ -69,6 +70,7 @@ class Analyzer {
             $this->analyzeCode($code_base, $file_path);
             CLI::progress('analyze',  $i/$file_count);
         }
+        CLI::progress('analyze',  1.0);
 
         // Emit all log messages
         Log::display();
