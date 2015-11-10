@@ -1,0 +1,4 @@
+%s:5 NOOPError no-op variable
+%s:8 NOOPError no-op array
+%s:11 NOOPError no-op closure
+%s:15 NOOPError no-op constant

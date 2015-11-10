@@ -274,7 +274,8 @@ class Analyzer {
      */
     public function analyzeNodeInContext(
         Node $node,
-        Context $context
+        Context $context,
+        Node $parent_node = null
     ) : Context {
 
         // Visit the given node populating the code base
@@ -307,8 +308,8 @@ class Analyzer {
                     $child_node,
                     $child_context
                         ->withLineNumberStart($child_node->lineno ?? 0)
-                        ->withLineNumberEnd($child_node->endLineno ?? 0)
-
+                        ->withLineNumberEnd($child_node->endLineno ?? 0),
+                    $node
                 );
 		}
 
@@ -318,7 +319,8 @@ class Analyzer {
                 new AnalyzeBreadthFirstVisitor(
                     $context
                         ->withLineNumberStart($node->lineno ?? 0)
-                        ->withLineNumberEnd($node->endLineno ?? 0)
+                        ->withLineNumberEnd($node->endLineno ?? 0),
+                    $parent_node
                 )
             );
 

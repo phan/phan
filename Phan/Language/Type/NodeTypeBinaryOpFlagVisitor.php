@@ -21,6 +21,7 @@ use \Phan\Language\Type\{
     StringType,
     VoidType
 };
+use \Phan\Log;
 use \ast\Node;
 
 class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {

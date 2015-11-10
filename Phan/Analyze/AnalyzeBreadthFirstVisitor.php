@@ -42,12 +42,24 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
     private $context;
 
     /**
+     * @var Node|null
+     */
+    private $parent_node;
+
+    /**
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
+     *
+     * @param Node|null $parent_node
+     * The parent node of the node being analyzed
      */
-    public function __construct(Context $context) {
+    public function __construct(
+        Context $context,
+        Node $parent_node = null
+    ) {
         $this->context = $context;
+        $this->parent_node = $parent_node;
     }
 
     /**
@@ -429,12 +441,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitVar(Node $node) : Context {
-        /*
-        if($parent_kind == \ast\AST_STMT_LIST) {
-            Log::err(Log::ENOOP, "no-op variable", $file, $ast->lineno);
-        }
-         */
-
+        $this->checkNoOp($node, "no-op variable");
         return $this->context;
     }
 
@@ -447,12 +454,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitArray(Node $node) : Context {
-        /*
-        if($parent_kind == \ast\AST_STMT_LIST) {
-            Log::err(Log::ENOOP, "no-op array", $file, $ast->lineno);
-        }
-         */
-
+        $this->checkNoOp($node, "no-op array");
         return $this->context;
     }
 
@@ -465,13 +467,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitConst(Node $node) : Context {
-        /*
-        if($parent_kind == \ast\AST_STMT_LIST) {
-            Log::err(Log::ENOOP, "no-op constant", $file, $ast->lineno);
-        }
-        */
-
-
+        $this->checkNoOp($node, "no-op constant");
         return $this->context;
     }
 
@@ -484,12 +480,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitClosure(Node $node) : Context {
-        /*
-        if($parent_kind == \ast\AST_STMT_LIST) {
-            Log::err(Log::ENOOP, "no-op closure", $file, $ast->lineno);
-        }
-        */
-
+        $this->checkNoOp($node, "no-op closure");
         return $this->context;
     }
 
@@ -772,6 +763,29 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
          */
 
         return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to check to see if its a no-op
+     *
+     * @param string $message
+     * A message to emit if its a no-op
+     *
+     * @return null
+     */
+    private function checkNoOp(Node $node, string $message) {
+        if($this->parent_node instanceof Node &&
+            $this->parent_node->kind == \ast\AST_STMT_LIST
+        ) {
+            Log::err(
+                Log::ENOOP,
+                $message,
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
+
     }
 
 }
