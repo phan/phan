@@ -188,7 +188,7 @@ class UnionType extends \ArrayObject  {
 
         foreach ($name_type_name_map as $name => $type_name) {
             $property_name_type_map[$name] =
-                new UnionType([$type_name]);
+                Type::fromFullyQualifiedString($type_name)->asUnionType();
         }
 
         return $property_name_type_map;

@@ -501,15 +501,16 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 $function_fqsen
             );
 
+        // If this is an internal function, see if we can get
+        // its types from the static dataset.
         if ($function->getContext()->isInternal()
             && $function->getUnionType()->isEmpty()
         ) {
-            /*
-            // TODO
-            if(!empty($internal_arginfo[$func_name])) {
-                return $internal_arginfo[$func_name][0] ?? '';
-            }
-             */
+            $map = UnionType::builtinFunctionPropertyNameTypeMap(
+                $function_fqsen
+            );
+
+            return $map[$function_name] ?? new UnionType();
         }
 
         return $function->getUnionType();
@@ -546,7 +547,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $method_fqsen = $this->context->getScopeFQSEN()
             ->withClassName($this->context, $class_name)
             ->withMethodName($this->context, $method_name);
-
 
         if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
             $method_fqsen
@@ -613,13 +613,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         }
 
         $method = $clazz->getMethodByName($method_name);
-
-        // TODO: What's dynamic mean?
-        if (!$method->isDynamic()) {
-            // TODO: What's ret?
-            //return $method['ret'];
-            return $method->getUnionType();
-        }
 
         return $method->getUnionType();
     }

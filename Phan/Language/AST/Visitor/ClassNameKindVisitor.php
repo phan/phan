@@ -94,12 +94,14 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
             if (!$clazz->hasParentClassFQSEN()) {
                 // TODO: This may be getting called in
                 //       the first pass.
+                /*
                 Log::err(
                     Log::EFATAL,
                     "Call to parent in {$class_name} when no parent exists",
                     $this->context->getFile(),
                     $node->lineno
                 );
+                 */
 
                 return '';
             }

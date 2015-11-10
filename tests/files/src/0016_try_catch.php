@@ -3,7 +3,7 @@
 try {
     $a = 42;
 } catch (Exception $exception) {
-    print_r($exception);
+    print $exception->getMessage();
 }
 
 print $a;
@@ -11,8 +11,7 @@ print $a;
 try {
     $b = 2;
 } catch (Exception $exception) {
-    print_r($exception);
+    print $exception->getMessage();
 }
 
 print $b;
-
