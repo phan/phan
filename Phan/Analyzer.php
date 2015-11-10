@@ -306,14 +306,13 @@ class Analyzer {
                 $this->analyzeNodeInContext(
                     $child_node,
                     $child_context
-                        ->withLineNumberStart($node->lineno ?? 0)
-                        ->withLineNumberEnd($node->endLineno ?? 0)
+                        ->withLineNumberStart($child_node->lineno ?? 0)
+                        ->withLineNumberEnd($child_node->endLineno ?? 0)
 
                 );
 		}
 
-        // Do another pass after having analyzed all
-        // child nodes.
+        // Do another pass across siblings
         $context =
             (new Element($node))->acceptKindVisitor(
                 new AnalyzeBreadthFirstVisitor(
