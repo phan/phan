@@ -485,7 +485,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         if (!$clazz->hasMethodWithName($method_name)) {
             Log::err(
                 Log::EUNDEF,
-                "call to undeclared method {$class_fqsen}->{$method_name}()",
+                "call to undeclared method $class_fqsen->$method_name()",
                 $this->context->getFile(),
                 $node->lineno
             );

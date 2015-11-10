@@ -71,8 +71,8 @@ class Parameter {
     public function __toString() : string {
         $string = '';
 
-        if ($this->type->hasAnyUnionType()) {
-            $string .= (string)$this->type . ' ';
+        if (!$this->type->isEmpty()) {
+            $string .= "{$this->type} ";
         }
 
         $string .= $this->name;

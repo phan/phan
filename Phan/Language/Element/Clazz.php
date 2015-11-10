@@ -367,8 +367,9 @@ class Clazz extends TypedStructuralElement {
      * @return null
      */
     public function addMethod(Method $method) {
-        if (empty($this->method_map[$method->getName()])) {
-            $this->method_map[$method->getName()] = $method;
+        $name = strtolower($method->getName());
+        if (empty($this->method_map[$name])) {
+            $this->method_map[$name] = $method;
         }
     }
 
@@ -376,7 +377,7 @@ class Clazz extends TypedStructuralElement {
      *
      */
     public function hasMethodWithName(string $name) : bool {
-        return !empty($this->method_map[$name]);
+        return !empty($this->method_map[strtolower($name)]);
     }
 
     /**
@@ -384,7 +385,7 @@ class Clazz extends TypedStructuralElement {
      * The method with the given name
      */
     public function getMethodByName(string $name) : Method {
-        return $this->method_map[$name];
+        return $this->method_map[strtolower($name)];
     }
 
     /**

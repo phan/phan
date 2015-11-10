@@ -338,10 +338,10 @@ class ParseVisitor extends KindVisitorImplementation {
                 )) {
                     // Get a fully-qualified name
                     $parent_class_name =
-                        (string)$this->context->getNamespaceMapfor(
+                        (string)($this->context->getNamespaceMapFor(
                             T_CLASS,
                             $parent_class_name
-                        );
+                        ));
                 } else {
                     $parent_class_name =
                         $this->context->getNamespace() . '\\' . $parent_class_name;

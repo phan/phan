@@ -576,6 +576,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 $this->context->getFile(),
                 $node->lineno
             );
+
             return new UnionType();
         }
 
