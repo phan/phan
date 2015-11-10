@@ -281,14 +281,14 @@ class ParseVisitor extends KindVisitorImplementation {
      */
     public function visitClass(Node $node) : Context {
 
-        // Get an FQSEN for this class
         $class_name = $node->name;
 
-        if (!$class_name) {
+        assert(!empty($class_name),
+            "Class must have name in {$this->context}");
+
+        if (empty($class_name)) {
             return $this->context;
         }
-
-        assert(!empty($class_name), "Class name cannot be null");
 
         $class_fqsen = FQSEN::fromContext($this->context)
             ->withClassName($this->context, $class_name);
@@ -322,7 +322,6 @@ class ParseVisitor extends KindVisitorImplementation {
         // Add the class to the code base as a globally
         // accessible object
         $this->context->getCodeBase()->addClass($clazz);
-
 
         // Look to see if we have a parent class
         if(!empty($node->children['extends'])) {

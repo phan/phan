@@ -435,22 +435,6 @@ class Context {
     }
 
     /**
-     * @param FQSEN $fqsen
-     * A fully-qualified structural element name describing
-     * the current scope.
-     *
-     * @return Context
-     * A clone of this context with the given value is returned
-     */
-    public function withScopeFQSEN(FQSEN $fqsen) : Context {
-        return clone($this)
-            ->withNamespace($fqsen->getNamespace())
-            ->withClassName($fqsen->getClassName())
-            ->withMethodName($fqsen->getMethodName())
-            ->withClosureName($fqsen->getClosureName());
-    }
-
-    /**
      * @return string
      * A fully-qualified structural element name describing
      * the current scope.

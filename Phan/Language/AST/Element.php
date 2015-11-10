@@ -242,7 +242,7 @@ class Element {
         case \ast\flags\ASSIGN_BITWISE_OR:
             return $visitor->visitAssignBitwiseOr($this->node);
         case \ast\flags\ASSIGN_BITWISE_XOR:
-            return $visitor->visitAssign_bitwiseXor($this->node);
+            return $visitor->visitAssignBitwiseXor($this->node);
         case \ast\flags\ASSIGN_CONCAT:
             return $visitor->visitAssignConcat($this->node);
         case \ast\flags\ASSIGN_DIV:

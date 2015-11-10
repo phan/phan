@@ -85,6 +85,16 @@ class Clazz extends TypedStructuralElement {
         UnionType $type,
         int $flags
     ) {
+        // Add variable '$this' to the scope
+        $context =
+            $context->withScopeVariable(new Variable(
+                $context,
+                Comment::none(),
+                'this',
+                $type,
+                0
+            ));
+
         parent::__construct(
             $context,
             $comment,

@@ -407,11 +407,11 @@ class UnionType extends \ArrayObject  {
      * Formerly `function type_scalar`
      */
     public function isScalar() : bool {
-        if (empty($this) || count($this) > 1) {
+        if ($this->isEmpty() || count($this) > 1) {
             return false;
         }
 
-        return $this[0]->isScalar();
+        return $this->head()->isScalar();
     }
 
     /**

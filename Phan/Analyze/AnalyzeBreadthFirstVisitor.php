@@ -76,32 +76,62 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitAssign(Node $node) : Context {
-        $context = $this->context;
-
         if($node->children['var'] instanceof \ast\Node
             && $node->children['var']->kind == \ast\AST_LIST
         ) {
+            // Get the type of the right side of the
+            // assignment
             $right_type =
-                UnionType::fromNode($context, $node);
+                UnionType::fromNode($this->context, $node);
 
-            $type = $right_type->asNonGenericTypes();
+            // Figure out the type of elements in the list
+            $element_type =
+                $right_type->asNonGenericTypes();
 
             foreach($node->children['var']->children as $child_node) {
-                if (!$child_node) {
+                // Some times folks like to pass a null to
+                // a list to throw the element away. I'm not
+                // here to judge.
+                if (!($child_node instanceof Node)) {
                     continue;
                 }
 
-                $context = $this->context->withScopeVariable(
-                    Variable::fromNodeInContext($child_node, $context)
+                $variable = Variable::fromNodeInContext(
+                    $child_node,
+                    $this->context,
+                    false
                 );
+
+                // Set the element type on each element of
+                // the list
+                $variable->setUnionType($element_type);
+
+                // Note that we're not creating a new scope, just
+                // adding variables to the existing scope
+                $this->context->addScopeVariable($variable);
             }
+
+            return $this->context;
         }
 
         $variable =
-            Variable::fromNodeInContext($node, $context);
+            Variable::fromNodeInContext($node, $this->context);
 
-        $context = $context->withScopeVariable($variable);
+        // Get the type of the right side of the
+        // assignment
+        $right_type =
+            UnionType::fromNode($this->context, $node);
 
+        // Set that type on the variable
+        $variable->setUnionType($right_type);
+
+        // Note that we're not creating a new scope, just
+        // adding variables to the existing scope
+        $this->context->addScopeVariable($variable);
+
+        return $this->context;
+
+        /*
         foreach ($context->getScope()->getVariableMap()
             as $name => $variable) {
 
@@ -156,8 +186,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             // TODO: eh?
             // add_var_scope($cs, $k, strtolower($v['type']));
         }
-
-        return $context;
+         */
     }
 
     /**
@@ -296,13 +325,22 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitForeach(Node $node) : Context {
-        /*
-        // check the array, the key,value part was checked on in the non-DPS part above
-        $type = node_type($file, $namespace, $ast->children[0], $current_scope, $current_class);
-        if(type_scalar($type)) {
-            Log::err(Log::ETYPE, "$type passed to foreach instead of array", $file, $ast->lineno);
+        $expression_type =
+            $type = UnionType::fromNode(
+                $this->context,
+                $node->children['expr']
+            );
+
+        // Check the expression type to make sure its
+        // something we can iterate over
+        if ($expression_type->isScalar()) {
+            Log::err(
+                Log::ETYPE,
+                "$expression_type passed to foreach instead of array",
+                $this->context->getFile(),
+                $node->lineno
+            );
         }
-         */
 
         return $this->context;
     }

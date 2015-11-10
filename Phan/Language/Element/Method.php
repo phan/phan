@@ -199,8 +199,8 @@ class Method extends TypedStructuralElement {
                 $flags |= \ast\flags\PARAM_VARIADIC;
             }
 
-            $name_method_info_map[strtolower($method->name)]->parameter_list[] =
-                new Parameter(
+            $name_method_info_map[strtolower($method->name)]
+                ->parameter_list[] = new Parameter(
                     $context,
                     Comment::none(),
                     $param->name,
@@ -208,6 +208,7 @@ class Method extends TypedStructuralElement {
                     $flags
                 );
 
+            /*
             // TODO
             while(!empty(${"arginfo{$alt}"})) {
                 $name_alt = strtolower($method->name).' '.$alt;
@@ -229,6 +230,7 @@ class Method extends TypedStructuralElement {
 
                 $alt++;
             }
+             */
         }
 
         return $name_method_info_map;
