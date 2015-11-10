@@ -478,13 +478,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         $class_name =
             self::astClassNameFromNode($this->context, $node);
 
-        /*
-        if (!$class_name) {
-            Debug::PrintNode($node);
-        }
-        assert(!empty($class_name), 'Class name cannot be empty');
-        */
-
         // If we can't figure out the class name (which happens
         // from time to time), then give up
         if (empty($class_name)) {
@@ -493,7 +486,14 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
 
         // TODO: What do we do with a method call on
         //       something that is null. Log an error?
-        if ('\null' === $class_name) {
+        if (in_array($class_name, [
+            '\null', '\string', '\object', 'null'
+        ])) {
+            // These seem to be coming from default values
+            // being assigned to variables that are not being
+            // overridden by docBlock annotations
+            Debug::printNode($node);
+            assert(false, "Class name $class_name is fucked in context {$this->context}");
             return $this->context;
         }
 

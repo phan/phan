@@ -25,6 +25,16 @@ class GenericArrayType extends ArrayType {
         return true;
     }
 
+    /**
+     * @return Type
+     * A variation of this type that is not generic.
+     * i.e. 'int[]' becomes 'int'.
+     */
+    public function asNonGenericType() : Type {
+        return $this->element_type;
+    }
+
+
     public function __toString() : string {
         return "{$this->element_type}[]";
     }

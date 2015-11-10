@@ -360,6 +360,22 @@ class Type {
     }
 
     /**
+     * @return Type
+     * A variation of this type that is not generic.
+     * i.e. 'int[]' becomes 'int'.
+     */
+    public function asNonGenericType() : Type {
+        if (($pos = strpos((string)$this, '[]')) !== false) {
+            return new Type(
+                substr((string)$this, 0, $pos),
+                $this->getNamespace()
+            );
+        }
+
+        return $this;
+    }
+
+    /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly

@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\AST\Visitor;
 
+use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
-use \Phan\Language\UnionType;
 use \Phan\Language\Context;
+use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
@@ -78,29 +79,16 @@ class ClassNameValidationVisitor
             );
 
         if ($clazz->isAbstract()) {
-            if (!UnionType::fromStringInContext(
-                $this->class_name,
-                $this->context
-            )::isNativeType()) {
-                if ($this->context->isGlobalScope()) {
-                    // TODO: ?
-                    list($scope_class,) = explode('::', $current_scope);
-                } else {
-                    $scope_class = '';
-                }
-                $lsc = strtolower($scope_class);
-                if(($lc != $lsc)
-                    || ($lc == $lsc
-                    && strtolower($current_class['name']) != $lsc)
-                ) {
-                    Log::err(
-                        Log::ETYPE,
-                        "Cannot instantiate abstract class {$this->class_name}",
-                        $this->context->getFile(),
-                        $node->lineno
-                    );
-                    return false;
-                }
+            if ($clazz->getFQSEN()
+                !== $this->context->getScopeFQSEN()
+            ) {
+                Log::err(
+                    Log::ETYPE,
+                    "Cannot instantiate abstract class {$this->class_name}",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+                return false;
             }
 
             return true;
@@ -160,23 +148,32 @@ class ClassNameValidationVisitor
      * False if the class name doesn't point to a known class
      */
     private function classExistsOrIsNative(Node $node) : bool {
-        if (!$this->classExists()
-            && !UnionType::fromStringInContext(
-                $this->class_name,
-                $this->context
-            )->isNativeType()
-        ) {
-            Log::err(
-                Log::EUNDEF,
-                "call to undeclared class {$this->class_fqsen}",
-                $this->context->getFile(),
-                $node->lineno
-            );
-
-            return false;
+        if ($this->classExists()) {
+            return true;
         }
 
-        return true;
+        $type = UnionType::fromStringInContext(
+            $this->class_name,
+            $this->context
+        );
+
+        if($type->isNativeType()) {
+            return true;
+        }
+
+        Log::err(
+            Log::EUNDEF,
+            "call to undeclared class {$this->class_fqsen}",
+            $this->context->getFile(),
+            $node->lineno
+        );
+
+        /*
+        assert(false,
+            "Can't find {$this->class_fqsen} at {$this->context}");
+         */
+
+        return false;
     }
 
 }

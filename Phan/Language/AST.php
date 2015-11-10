@@ -147,60 +147,17 @@ trait AST {
             if ('\\' !== $type_name[0]) {
                 $type_name = '\\' . $type_name;
             }
-            $type =
-                UnionType::fromFullyQualifiedString(
-                    $type_name
-                );
-        } else {
-            $type = UnionType::fromStringInContext(
-                $type_name, $context
+            return (string) UnionType::fromFullyQualifiedString(
+                $type_name
             );
+
         }
+
+        $type = UnionType::fromStringInContext(
+            $type_name, $context
+        );
 
         return (string)$type;
-
-        /*
-        if($node->flags & \ast\flags\NAME_NOT_FQ
-            && 0 !== strpos('\\', (string)$type)
-        ) {
-            // is it a simple native type name?
-            if($type->isNativeType()) {
-                return (string)$type;
-            }
-
-            // Not fully qualified, check if we have an exact
-            // namespace alias for it
-            if ($context->hasNamespaceMapFor(T_CLASS, (string)$type)) {
-                $fqsen = $context->getNamespaceMapFor(
-                    T_CLASS,
-                    (string)$type
-                );
-
-                return (string)$fqsen;
-            }
-
-            // Check for a namespace-relative alias
-            if(($pos = strpos((string)$type, '\\')) !== false) {
-
-                $first_part = substr((string)$type, 0, $pos);
-
-                if ($context->hasNamespaceMapFor(T_CLASS, $first_part)) {
-                    $qualified_first_part =
-                        (string)$context->getNamespaceMapFor(T_CLASS, $first_part);
-
-                    // Replace that first aliases part and return the full name
-                    return $qualified_first_part
-                        . '\\'
-                        . substr((string)$type, $pos + 1);
-                }
-            }
-
-            // No aliasing, just prepend the namespace
-            return '\\' . $context->getNamespace() . '\\' . (string)$type;
-        } else {
-            return (string)$type;
-        }
-         */
     }
 
     /**

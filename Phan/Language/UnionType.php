@@ -415,8 +415,6 @@ class UnionType extends \ArrayObject  {
      * The subset of types in this
      */
     public function genericTypes() : UnionType {
-        $str = (string)$this;
-
         // If array is in there, then it can be any type
         // Same for |mixed|
         if ($this->hasType(ArrayType::instance())
@@ -431,11 +429,10 @@ class UnionType extends \ArrayObject  {
 
         return new UnionType(array_filter(array_map(
             function(Type $type) {
-                if(($pos = strpos((string)$type, '[]')) === false) {
+                if (!$type->isGeneric()) {
                     return null;
                 }
-
-                return substr((string)$type, 0, $pos);
+                return $type->asNonGenericType();
             }, $this->getArrayCopy()))
         );
     }

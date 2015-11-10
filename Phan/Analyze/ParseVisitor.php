@@ -203,10 +203,11 @@ class ParseVisitor extends KindVisitorImplementation {
         $context = $this->context;
 
         foreach ($this->aliasTargetMapFromUseNode($node->children['uses'])
-            as $alias => $target
+            as $alias => $map
         ) {
+            list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
-                $node->flags, $alias, $prefix.'\\'.$target
+                $flags, $alias, $prefix.'\\'.$target
             );
         }
 
@@ -228,7 +229,9 @@ class ParseVisitor extends KindVisitorImplementation {
         $context = $this->context;
 
         foreach ($this->aliasTargetMapFromUseNode($node)
-            as $alias => $target) {
+            as $alias => $map
+        ) {
+            list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
                 $node->flags, $alias, $target
             );
@@ -258,7 +261,8 @@ class ParseVisitor extends KindVisitorImplementation {
             } else {
                 $alias = $child_node->children['alias'];
             }
-            $map[$alias] = $target;
+
+            $map[$alias] = [$child_node->flags, $target];
         }
 
         return $map;
