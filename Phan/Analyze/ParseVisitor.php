@@ -608,18 +608,17 @@ class ParseVisitor extends KindVisitorImplementation {
     public function visitFuncDecl(Node $node) : Context {
         $function_name = $node->name;
 
-        $function_fqsen =
-            $this->context->getScopeFQSEN()->withFunctionName(
-                $this->context,
-                $function_name
-            );
-
         // Hunt for an un-taken alternate ID
         $alternate_id = 0;
-        while($this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
+        do {
             $function_fqsen =
-                $function_fqsen->withAlternateId(++$alternate_id);
-        }
+                $this->context->getScopeFQSEN()->withFunctionName(
+                    $this->context,
+                    $function_name
+                )->withAlternateId($alternate_id++);
+
+        } while($this->context->getCodeBase()
+            ->hasMethodWithFQSEN($function_fqsen));
 
         $method = Method::fromNode(
             $this->context
@@ -632,10 +631,8 @@ class ParseVisitor extends KindVisitorImplementation {
 
         $this->context->getCodeBase()->addFunction($method);
 
-        $context =
+        return
             $this->context->withMethodFQSEN($function_fqsen);
-
-        return $context;
     }
 
     /**

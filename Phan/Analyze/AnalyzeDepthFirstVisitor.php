@@ -78,7 +78,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitNamespace(Node $node) : Context {
         return $this->context->withNamespace(
-            (string)$node->children['name']
+            '\\' . (string)$node->children['name']
         );
     }
 
@@ -122,26 +122,34 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
     public function visitClass(Node $node) : Context {
         $class_name = $node->name;
 
-        $class_fqsen =
-            $this->context->getScopeFQSEN()->withClassName(
-                $this->context, $class_name
+        $alternate_id = 0;
+
+        // Hunt for the alternate of this class defined
+        // in this file
+        do {
+            $class_fqsen =
+                $this->context->getScopeFQSEN()->withClassName(
+                    $this->context, $class_name
+                )->withAlternateId($alternate_id++);
+
+            if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+                Log::err(
+                    Log::EFATAL,
+                    "Can't find class {$class_fqsen} - aborting",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
+
+            $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+                $class_fqsen
             );
 
-        if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
-            Log::err(
-                Log::EFATAL,
-                "Can't find class {$class_fqsen} - aborting",
-                $this->context->getFile(),
-                $node->lineno
-            );
-        }
-
-        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
-            $class_fqsen
-        );
+        } while($this->context->getFile()
+            != $clazz->getContext()->getFile());
 
         return $clazz->getContext()->withClassFQSEN(
-            $clazz->getFQSEN()
+            $class_fqsen
         );
     }
 
@@ -157,32 +165,21 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitMethod(Node $node) : Context {
         $method_name = $node->name;
+        $clazz = $this->getContextClass();
 
-        $method_fqsen =
-            $this->context->getScopeFQSEN()->withMethodName(
-                $this->context, $method_name
-            );
-
-        if (!$this->context->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
-            /*
-            Debug::printNode($node);
-            assert(false, "Can't find method '$method_fqsen' in {$this->context}\n");
-             */
-
+        if (!$clazz->hasMethodWithName($method_name)) {
             Log::err(
                 Log::EFATAL,
-                "Can't find method {$method_fqsen} - aborting",
+                "Can't find method {$clazz->getFQSEN()}::$method_name() - aborting",
                 $this->context->getFile(),
                 $node->lineno
             );
         }
 
-        $method = $this->context->getCodeBase()->getMethodByFQSEN(
-            $method_fqsen
-        );
+        $method = $clazz->getMethodByName($method_name);
 
         return $method->getContext()->withMethodFQSEN(
-            $method_fqsen
+            $method->getFQSEN()
         );
     }
 
@@ -199,23 +196,30 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
     public function visitFuncDecl(Node $node) : Context {
         $function_name = $node->name;
 
-        $function_fqsen =
-            $this->context->getScopeFQSEN()->withFunctionName(
-                $this->context, $function_name
-            );
+        $alternate_id = 0;
 
-        if (!$this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
-            Log::err(
-                Log::EFATAL,
-                "Can't find function {$function_fqsen} - aborting",
-                $this->context->getFile(),
-                $node->lineno
-            );
-        }
+        // Hunt for the alternate of this method defined
+        // in this file
+        do {
+            $function_fqsen =
+                $this->context->getScopeFQSEN()->withFunctionName(
+                    $this->context, $function_name
+                )->withAlternateId($alternate_id++);
 
-        $method = $this->context->getCodeBase()->getMethodByFQSEN(
-            $function_fqsen
-        );
+            if (!$this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
+                Log::err(
+                    Log::EFATAL,
+                    "Can't find function {$function_fqsen} - aborting",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
+
+            $method = $this->context->getCodeBase()->getMethodByFQSEN(
+                $function_fqsen
+            );
+        } while($this->context->getFile() !=
+            $method->getContext()->getFile());
 
         return $method->getContext()->withMethodFQSEN(
             $function_fqsen
@@ -264,7 +268,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             && $node->children['uses']->kind == \ast\AST_CLOSURE_USES
         ) {
             $uses = $node->children['uses'];
-
             foreach($uses->children as $use) {
                 if($use->kind != \ast\AST_CLOSURE_VAR) {
                     Log::err(

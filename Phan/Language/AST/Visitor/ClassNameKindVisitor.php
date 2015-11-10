@@ -46,10 +46,9 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
             return '';
         }
 
-        // TODO: Not sure what types these'd be
+        // TODO: These are of the form `new $this->foo(...)`. Way
+        //       too complex for me right now.
         if($node->children['class']->kind !== \ast\AST_NAME) {
-            assert(false,
-                "Unhandled case in {$this->context}");
             return '';
         }
 
