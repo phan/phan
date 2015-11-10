@@ -277,38 +277,44 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                         $this->context->getFile(),
                         $node->lineno
                     );
+
+                    continue;
+                }
+                $variable_name =
+                    self::astVariableName($use->children['name']);
+
+                if(empty($variable_name)) {
+                    continue;
+                }
+
+                if (!$this->context->getScope()->hasVariableWithName(
+                    $variable_name
+                )) {
+                    Log::err(
+                        Log::EVAR,
+                        "Variable \${$variable_name} is not defined",
+                        $this->context->getFile(),
+                        $node->lineno
+                    );
+                    continue;
+                }
+
+                $variable =
+                    $this->context->getScope()->getVariableWithName(
+                        $variable_name
+                    );
+
+                // If its a reference variable, we pass the variable
+                // directly into the closure's scope
+                if($use->flags & \ast\flags\PARAM_REF) {
+                    $context =
+                        $context->withScopeVariable($variable);
+
+                // If its not a reference, we pass a copy into the
+                // closure's scope
                 } else {
-                    $variable_name =
-                        self::astVariableName($use->children['name']);
-
-                    if(empty($variable_name)) {
-                        continue;
-                    }
-
-                    if($use->flags & \ast\flags\PARAM_REF) {
-                        assert(false, "TODO for $context");
-                        /*
-                        if(empty($parent_scope)
-                            || empty($scope[$parent_scope]['vars'])
-                            || empty($scope[$parent_scope]['vars'][$name])
-                        ) {
-                            add_var_scope($parent_scope, $name, '');
-                        }
-                        $scope[$current_scope]['vars'][$name] =
-                            &$scope[$parent_scope]['vars'][$name];
-                         */
-                    } else {
-                        if (!$this->context->getScope()->hasVariableWithName(
-                            $variable_name
-                        )) {
-                            Log::err(
-                                Log::EVAR,
-                                "Variable \${$variable_name} is not defined",
-                                $this->context->getFile(),
-                                $node->lineno
-                            );
-                        }
-                    }
+                    $context =
+                        $context->withScopeVariable(clone($variable));
                 }
             }
         }

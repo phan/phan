@@ -10,7 +10,8 @@ class A {
     public function f() {
         $b = 2;
 
-        $closure = function(int $p) use ($b, $c) {
+        $closure = function(int $p) use (&$b, $c) {
+            $b = 'string';
             return ($p + $this->a + $b);
         };
 

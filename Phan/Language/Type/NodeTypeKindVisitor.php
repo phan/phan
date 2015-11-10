@@ -530,6 +530,19 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
         $method_name = $node->children['method'];
 
+        // Give up on any complicated nonsense where the
+        // method name is a variable such as in
+        // `$variable->$function_name()`.
+        if ($method_name instanceof Node) {
+            return new UnionType();
+        }
+
+        // Method names can some times turn up being
+        // other method calls.
+        assert(is_string($method_name),
+            "Method name must be a string. Something else given.");
+
+
         $method_fqsen = $this->context->getScopeFQSEN()
             ->withClassName($this->context, $class_name)
             ->withMethodName($this->context, $method_name);
