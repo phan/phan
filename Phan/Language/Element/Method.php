@@ -281,8 +281,7 @@ class Method extends TypedStructuralElement {
         } else if ($comment->hasReturnUnionType()) {
 
             // See if we have a return type specified in the comment
-            $union_type =
-                $comment->getReturnType();
+            $union_type = $comment->getReturnType();
 
             if ($union_type->hasSelfType()) {
                 // We can't actually figure out 'static' at this
@@ -290,7 +289,9 @@ class Method extends TypedStructuralElement {
                 // correct
                 if ($context->hasClassFQSEN()) {
                     $union_type =
-                        $context->getClassFQSEN()->asUnionType();
+                        $union_type->addUnionType(
+                            $context->getClassFQSEN()->asUnionType()
+                        );
                 }
             }
 

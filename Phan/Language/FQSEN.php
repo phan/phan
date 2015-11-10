@@ -399,7 +399,8 @@ class FQSEN {
      * A string representing this fully-qualified structural
      * element name.
      */
-    public function asUnionType() : Type {
+    // TODO: Make this 'UnionType'
+    public function asUnionType() : UnionType {
         return new UnionType([$this->__toString()]);
     }
 
@@ -443,7 +444,7 @@ class FQSEN {
 
         // Ensure that the first character of the namespace
         // is always a '\'
-        if ($namespace[0] !== '\\') {
+        if (0 !== strpos($namespace, '\\')) {
             $namespace = '\\' . $namespace;
         }
 

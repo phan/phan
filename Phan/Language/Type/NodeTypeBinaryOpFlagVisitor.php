@@ -125,7 +125,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
         if ($left->isType(IntType::instance())
             && $right->isType(IntType::instance())
         ) {
-            return new UnionType(IntType::instance());
+            return IntType::instance()->asUnionType();
         }
 
         if (($left->isType(IntType::instance())
@@ -133,7 +133,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
             && ($right->isType(IntType::instance())
             || $right->isType(FloatType::instance()))
         ) {
-            return new UnionType(FloatType::instance());
+            return FloatType::instance()->asUnionType();
         }
 
         $left_is_array = (

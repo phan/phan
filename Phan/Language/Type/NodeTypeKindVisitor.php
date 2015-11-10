@@ -201,13 +201,20 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                     // Double check that any classes in the type don't have ArrayAccess
                     $ok = false;
                     foreach($union_type as $type) {
-                        if(!empty($type)
-                            && !$type->isNativeType()
-                        ) {
-                            // TODO
-                            if(!empty($classes[strtolower($type)]['type'])) {
-                                // TODO
-                                if(strpos('|'.$classes[strtolower($type)]['type'].'|','|ArrayAccess|')!==false) {
+                        if(!empty($type) && !$type->isNativeType()) {
+                            $class_fqsen = FQSEN::fromFullyQualifiedString(
+                                (string)$type
+                            );
+
+                            if ($this->context->getCodeBase()->hasClassWithFQSEN(
+                                $class_fqsen
+                            )) {
+                                $clazz =
+                                    $this->context->getCodeBase()->getClassByFQSEN($class_fqsen);
+
+                                if ($clazz->getUnionType()->hasType(
+                                    new Type('ArrayAccess', '\\')
+                                )) {
                                     $ok = true;
                                     break;
                                 }

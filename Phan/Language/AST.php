@@ -144,7 +144,7 @@ trait AST {
 
         // Check to see if the name is fully qualified
         if(!($node->flags & \ast\flags\NAME_NOT_FQ)) {
-            if ('\\' !== $type_name[0]) {
+            if (0 !== strpos($type_name, '\\')) {
                 $type_name = '\\' . $type_name;
             }
             return (string) UnionType::fromFullyQualifiedString(

@@ -456,7 +456,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         // TODO: What do we do with a method call on
         //       something that is null. Log an error?
         if (in_array($class_name, [
-            '\null', '\string', '\object', 'null'
+            '\null', '\string', '\object', 'null', '\mixed'
         ])) {
             // These seem to be coming from default values
             // being assigned to variables that are not being

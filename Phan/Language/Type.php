@@ -66,7 +66,7 @@ class Type {
     ) {
         assert(!empty($name), "Type name cannot be empty");
 
-        if (!$namespace || '\\' !== $namespace[0]) {
+        if (!$namespace || 0 !== strpos($namespace, '\\')) {
             throw new \Exception("Namespace must be fully qualified");
         }
 
