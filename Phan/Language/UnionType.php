@@ -444,6 +444,18 @@ class UnionType extends \ArrayObject  {
     }
 
     /**
+     * @return UnionType
+     * Get the subset of types which are not native
+     */
+    public function nonNativeTypes() : UnionType {
+        return new UnionType(
+            array_filter($this->getArrayCopy(), function(Type $type) {
+                return !$type->isNativeType();
+            })
+        );
+    }
+
+    /**
      * Takes "a|b[]|c|d[]|e" and returns "a|c|e"
      *
      * @return UnionType

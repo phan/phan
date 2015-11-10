@@ -142,63 +142,6 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
         $this->context->addScopeVariable($variable);
 
         return $this->context;
-
-        /*
-        foreach ($context->getScope()->getVariableMap()
-            as $name => $variable) {
-
-            if(strpos($name, '::') === false) {
-                $cs = (string)$context->getScopeFQSEN();
-            } else {
-                // TODO: revisit
-                // Put static properties in the global scope
-                $cs = 'global';
-            }
-
-            // Check if we are assigning something to $GLOBALS[key]
-            if($name == 'GLOBALS'
-                && ($node->children[0]->kind ?? 0) == \ast\AST_DIM
-            ) {
-                $temp = $node;
-                $depth=0;
-                while($temp->children[0]->kind == \ast\AST_DIM) {
-                    $depth++;
-                    $temp = $temp->children[0];
-                }
-
-                // If the index is a simple scalar, set it in the global scope
-                if(!empty($temp->children[1])
-                    && !($temp->children[1] instanceof Node)
-                ) {
-                    $cs = 'global';
-                    $name = $temp->children[1];
-
-                    if($depth==1) {
-                        $variable->setUnionType(
-                            UnionType::fromNode(
-                                $context,
-                                $node->children[1]
-                            )
-                        );
-                    } else {
-                        // TODO: track array content types
-                        // This is a $GLOBALS['a']['b'] type of
-                        // assignment
-                        $variable->setUnionType(
-                            ArrayType::instance()->asUnionType()
-                        );
-                    }
-                }
-            }
-
-            if($name == 'GLOBALS') {
-                break;
-            }
-
-            // TODO: eh?
-            // add_var_scope($cs, $k, strtolower($v['type']));
-        }
-         */
     }
 
     /**

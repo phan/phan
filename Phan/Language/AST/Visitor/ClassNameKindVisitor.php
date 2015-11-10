@@ -258,8 +258,20 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                 $node->children['expr']
             );
 
-            // Hope that its a class
-            return (string)$union_type;
+            // Find the subset of types that are viable
+            // classes
+            $viable_class_types = $union_type
+                ->nonNativeTypes()
+                ->nonGenericTypes();
+
+            // If there are no non-native types, give up
+            if ($viable_class_types->isEmpty()) {
+                return '';
+            }
+
+            // Return the first non-native type in the
+            // list and hope its a class
+            return (string)$viable_class_types->head();
         }
 
         return '';

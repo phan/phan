@@ -17,6 +17,7 @@ use \Phan\Language\Element\{
     Variable
 };
 use \Phan\Language\FQSEN;
+use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -453,24 +454,17 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-        // TODO: What do we do with a method call on
-        //       something that is null. Log an error?
-        if (in_array($class_name, [
-            '\null', '\string', '\object', 'null', '\mixed'
-        ])) {
-            // These seem to be coming from default values
-            // being assigned to variables that are not being
-            // overridden by docBlock annotations
-            Debug::printNode($node);
-            assert(false, "Class name $class_name is fucked in context {$this->context}");
-            return $this->context;
-        }
-
         $class_fqsen =
             $this->context->getScopeFQSEN()->withClassName(
                 $this->context, $class_name
             );
 
+        // Ensure that we're not getting native types here
+        assert(!Type::fromFullyQualifiedString((string)$class_fqsen)
+                ->isNativeType(),
+            "Cannot call methods on native type $class_fqsen in {$this->context}");
+
+        // Check to see if the class actually exists
         if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
             Log::err(
                 Log::EFATAL,

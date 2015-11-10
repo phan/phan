@@ -144,11 +144,7 @@ EOB;
         $rest = 60 - $current;
         echo str_repeat("\u{25b1}", $current);
         echo str_repeat("\u{25b0}", $rest);
-        echo " ".sprintf("% 3d",(int)(100*$p))."%";
-
-        if (1.0 === $p) {
-            echo "\n";
-        }
+        echo " ".sprintf("% 3d",(int)(100*$p))."%"."\r";
     }
 
 }

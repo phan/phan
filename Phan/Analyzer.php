@@ -50,9 +50,9 @@ class Analyzer {
         // analysis after.
         foreach ($file_path_list as $i => $file_path) {
             $this->parseFile($code_base, $file_path);
-            CLI::progress('parse',  $i/$file_count);
+            CLI::progress('parse    ',  $i/$file_count);
         }
-        CLI::progress('parse',  1.0);
+        CLI::progress('parse    ',  1.0);
 
         // Take a pass over all classes verifying various
         // states now that we have the whole state in
@@ -68,9 +68,9 @@ class Analyzer {
         // can scan for more complicated issues.
         foreach ($file_path_list as $i => $file_path) {
             $this->analyzeCode($code_base, $file_path);
-            CLI::progress('analyze',  $i/$file_count);
+            CLI::progress('analyze  ',  $i/$file_count);
         }
-        CLI::progress('analyze',  1.0);
+        CLI::progress('analyze  ',  1.0);
 
         // Emit all log messages
         Log::display();
@@ -184,19 +184,26 @@ class Analyzer {
      */
     private function analyzeClasses(CodeBase $code_base) {
 
+        $class_count = count($code_base->getClassMap());
+
         // Take a pass to import all details from ancestors
+        $i = 0;
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
             // Make sure the parent classes exist
             self::analyzeParentClassExists($code_base, $clazz);
 
             // The import them
             $clazz->importAncestorClasses($code_base);
+
+            CLI::progress('classes  ',  ($i++)/$class_count);
         }
 
         // Run a few checks on all of the classes
+        $i = 0;
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
             self::analyzeDuplicateClass($code_base, $clazz);
             self::analyzeParentConstructorCalled($code_base, $clazz);
+            CLI::progress('classes  ',  ++$i/$class_count);
         }
     }
 
@@ -207,8 +214,11 @@ class Analyzer {
      * @return null
      */
     private function analyzeFunctions(CodeBase $code_base) {
+        $function_count = count($code_base->getMethodMap());
+        $i = 0;
         foreach ($code_base->getMethodMap() as $fqsen_string => $method) {
             self::analyzeDuplicateFunction($code_base, $method);
+            CLI::progress('functions',  (++$i)/$function_count);
         }
     }
 
