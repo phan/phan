@@ -194,7 +194,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             );
 
         if (!$union_type->isEmpty()) {
-            $generic_types = $union_type->genericTypes();
+            $generic_types = $union_type->asNonGenericTypes();
             if($generic_types->isEmpty()) {
                 if(!$union_type->isType(NullType::instance())
                     && !$union_type->canCastToUnionType(
@@ -493,14 +493,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             return new UnionType();
         }
 
-        /*
-        assert(
-            $this->context->getCodeBase()->hasMethodWithFQSEN(
-                $function_fqsen
-            ), "Function with $function_fqsen must exist at {$this->context}"
-        );
-         */
-
         $function =
             $this->context->getCodeBase()->getMethodByFQSEN(
                 $function_fqsen
@@ -581,14 +573,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
         $method_name = $node->children['method'];
 
-        $method_fqsen = $clazz->getFQSEN()->withMethodName(
-            $this->context,
-            $method_name
-        );
-
-        if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
-            $method_fqsen
-        )) {
+        if (!$clazz->hasMethodWithName($method_name)) {
             Log::err(
                 Log::EUNDEF,
                 "call to undeclared method {$class_fqsen}->{$method_name}()",
@@ -598,9 +583,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             return new UnionType();
         }
 
-        $method = $this->context->getCodeBase()->getMethodByFQSEN(
-            $method_fqsen
-        );
+        $method = $clazz->getMethodByName($method_name);
 
         // TODO: What's dynamic mean?
         if (!$method->isDynamic()) {

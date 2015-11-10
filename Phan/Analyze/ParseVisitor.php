@@ -425,8 +425,9 @@ class ParseVisitor extends KindVisitorImplementation {
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while($clazz->hasMethodWithFQSEN($method_fqsen)) {
-            $method_fqsen = $method_fqsen->withAlternateId(++$alternate_id);
+        while($this->context->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
+            $method_fqsen =
+                $method_fqsen->withAlternateId(++$alternate_id);
         }
 
         $method =

@@ -181,6 +181,13 @@ class Analyzer {
      * @return null
      */
     private function analyzeClasses(CodeBase $code_base) {
+
+        // Take a pass to import all details from ancestors
+        foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
+            $clazz->importAncestorClasses($code_base);
+        }
+
+        // Run a few checks on all of the classes
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
             self::analyzeDuplicateClass($code_base, $clazz);
             self::analyzeParentClassExists($code_base, $clazz);
@@ -280,7 +287,7 @@ class Analyzer {
 
         assert(!empty($context), 'Context cannot be null');
 
-		// Depth-First for everything else
+        // Go depth first on that first set of analyses
         $child_context = $context;
 		foreach($node->children as $child_node) {
             // Skip any non Node children.
@@ -300,6 +307,8 @@ class Analyzer {
                 );
 		}
 
+        // Do another pass after having analyzed all
+        // child nodes.
         $context =
             (new Element($node))->acceptKindVisitor(
                 new AnalyzeBreadthFirstVisitor(

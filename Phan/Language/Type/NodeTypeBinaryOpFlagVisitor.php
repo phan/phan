@@ -54,7 +54,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $node->children['right']
             );
 
-        if (!empty($left->genericTypes())
+        if (!empty($left->asNonGenericTypes())
             && empty($left->nonGenericTypes())
             && !$right->canCastToUnionType(ArrayType::instance()->asUnionType())
         ) {
@@ -64,7 +64,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $context->getFile(),
                 $node->lineno
             );
-        } else if (!empty($right->genericTypes())
+        } else if (!empty($right->asNonGenericTypes())
             && empty($right->nonGenericTypes())
             && !$left->canCastToUnionType(ArrayType::instance()->asUnionType())
         ) {
@@ -136,11 +136,11 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
         }
 
         $left_is_array = (
-            !empty($left->genericTypes()) && empty($left->nonGenericTypes())
+            !empty($left->asNonGenericTypes()) && empty($left->nonGenericTypes())
         );
 
         $right_is_array = (
-            !empty($right->genericTypes()) && empty($right->nonGenericTypes())
+            !empty($right->asNonGenericTypes()) && empty($right->nonGenericTypes())
         );
 
         if($left_is_array

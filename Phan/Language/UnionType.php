@@ -420,7 +420,7 @@ class UnionType extends \ArrayObject  {
      * @return UnionType
      * The subset of types in this
      */
-    public function genericTypes() : UnionType {
+    public function asNonGenericTypes() : UnionType {
         // If array is in there, then it can be any type
         // Same for |mixed|
         if ($this->hasType(ArrayType::instance())
@@ -444,20 +444,6 @@ class UnionType extends \ArrayObject  {
     }
 
     /**
-     * @return UnionType
-     * Get a new type for each type in this union which is
-     * the generic array version of this type. For instance,
-     * 'int|float' will produce 'int[]|float[]'.
-     */
-    public function asGenericTypes() : UnionType {
-        return new UnionType(
-            array_map(function (Type $type) : Type {
-                return $type->asGenericType();
-            }, $this->getArrayCopy())
-        );
-    }
-
-    /**
      * Takes "a|b[]|c|d[]|e" and returns "a|c|e"
      *
      * @return UnionType
@@ -472,26 +458,20 @@ class UnionType extends \ArrayObject  {
                 return !$type->isGeneric();
             })
         );
+    }
 
-        /*
-        $str = (string)$this;
-
-        $type_names = [];
-        foreach($this->type_name_list as $type_name) {
-            if(($pos = strpos($type_name, '[]')) !== false) {
-                continue;
-            }
-
-            // TODO: this was `if ($str == 'array') {`. Thats broken, right?
-            if($type_name == 'array') {
-                continue;
-            }
-
-            $type_names[] = $type_name;
-        }
-
-        return new UnionType($type_names);
-         */
+    /**
+     * @return UnionType
+     * Get a new type for each type in this union which is
+     * the generic array version of this type. For instance,
+     * 'int|float' will produce 'int[]|float[]'.
+     */
+    public function asGenericTypes() : UnionType {
+        return new UnionType(
+            array_map(function (Type $type) : Type {
+                return $type->asGenericType();
+            }, $this->getArrayCopy())
+        );
     }
 
     /**

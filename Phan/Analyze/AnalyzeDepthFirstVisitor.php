@@ -140,57 +140,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             $class_fqsen
         );
 
-        // Copy information from the traits into this class
-        foreach ($clazz->getTraitFQSENList() as $trait_fqsen) {
-            assert($this->context->getCodeBase()->hasClassWithFQSEN(
-                $trait_fqsen
-            ), "Trait $trait_fqsen should already have been proven to exist");
-
-            $trait =
-                $this->context->getCodeBase()->getClassByFQSEN(
-                    $trait_fqsen
-                );
-
-            // Copy properties
-            foreach ($trait->getPropertyMap() as $property) {
-                $clazz->addProperty($property);
-            }
-
-            // Copy constants
-            foreach ($trait->getConstantMap() as $constant) {
-                $clazz->addConstant($constant);
-            }
-
-            // Copy methods
-            foreach ($trait->getMethodMap() as $method) {
-                // TODO: if the method is already there, don't add
-                $clazz->addMethod($method);
-            }
-
-        }
-
-        /*
-        foreach($traits as $trait) {
-            $tocopy = [];
-            foreach($classes[$ltrait]['methods'] as $k=>$method) {
-                if(!empty($classes[$lname]['methods'][$k])) continue; // We already have this method, skip it
-                $tocopy[$k] = $method;
-            }
-
-            $classes[$lname]['methods'] = array_merge($classes[$ltrait]['methods'], $classes[$lname]['methods']);
-            // Need the scope as well
-            foreach($tocopy as $k=>$method) {
-                if(empty($scope["{$classes[$ltrait]['name']}::{$method['name']}"])) continue;
-                $cs = $namespace.$ast->name.'::'.$method['name'];
-                if(!array_key_exists($cs, $scope)) $scope[$cs] = [];
-                if(!array_key_exists('vars', $scope[$cs])) $scope[$cs]['vars'] = [];
-                $scope[$cs] = $scope["{$classes[$ltrait]['name']}::{$method['name']}"];
-                $classes[$lname]['methods'][$k]['scope'] = "{$classes[$lname]['name']}::{$method['name']}";
-                // And finally re-map $this to point to this class
-                $scope[$cs]['vars']['this']['type'] = $namespace.$ast->name;
-            }
-        }
-         */
         return $clazz->getContext()->withClassFQSEN(
             $clazz->getFQSEN()
         );
@@ -371,17 +320,8 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitForeach(Node $node) : Context {
-        if(($node->children['key'] instanceof \ast\Node)
-            && ($node->children['key']->kind == \ast\AST_LIST)
-        ) {
-            Log::err(
-                Log::EFATAL,
-                "Can't use list() as a key element - aborting",
-                $this->context->getFile(),
-                $node->lineno
-            );
-        }
 
+        // If the value is a list, thats no good
         $context = $this->context;
         if($node->children['value']->kind == \ast\AST_LIST) {
             foreach($node->children['value']->children as $child_node) {
@@ -389,46 +329,61 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                     Variable::fromNodeInContext($child_node, $context)
                 );
             }
-            if(!empty($node->children['key'])) {
-                $context = $this->context->withScopeVariable(
-                    Variable::fromNodeInContext($node->children[2], $context)
-                );
-            }
-        } else {
-            $variable =
-                Variable::fromNodeInContext(
-                    $node->children['value'],
-                    $context,
-                    false
-                );
 
-            // TODO: Find out the generic type
-            /*
+        // Otherwise, read the value as regular variable and
+        // add it to the scope
+        } else {
+            // Create a variable for the value
+            $variable = Variable::fromNodeInContext(
+                $node->children['value'],
+                $context,
+                false
+            );
+
             // Get the type of the node from the left side
             $type = UnionType::fromNode(
                 $this->context,
-                $node->children[0]
+                $node->children['expr']
             );
 
-            // Set the type on the variable
-            $variable->setUnionType($type);
-            */
+            // Filter out the non-generic types of the
+            // expression
+            $non_generic_type = $type->asNonGenericTypes();
+
+            // If we were able to figure out the type and its
+            // a generic type, then set its element types as
+            // the type of the variable
+            if (!$non_generic_type->isEmpty()) {
+                $variable->setUnionType($non_generic_type);
+            }
 
             // Add the variable to the scope
             $context =
                 $this->context->withScopeVariable($variable);
+        }
 
-            if(!empty($node->children['key'])) {
-                $variable =
-                    Variable::fromNodeInContext(
-                        $node->children['key'],
-                        $context,
-                        false
-                    );
-
-                $context =
-                    $this->context->withScopeVariable($variable);
+        // If there's a key, make a variable out of that too
+        if(!empty($node->children['key'])) {
+            if(($node->children['key'] instanceof \ast\Node)
+                && ($node->children['key']->kind == \ast\AST_LIST)
+            ) {
+                Log::err(
+                    Log::EFATAL,
+                    "Can't use list() as a key element - aborting",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
             }
+
+            $variable =
+                Variable::fromNodeInContext(
+                    $node->children['key'],
+                    $context,
+                    false
+                );
+
+            $context =
+                $this->context->withScopeVariable($variable);
         }
 
         return $context;
@@ -529,22 +484,18 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         assert(is_string($method_name),
             "Method name must be a string. Found non-string at {$this->context}");
 
-        $method_fqsen =
-            $clazz->getFQSEN()->withMethodName(
-                $this->context, $method_name
-            );
-
-        if (!$clazz->hasMethodWithFQSEN($method_fqsen)) {
+        if (!$clazz->hasMethodWithName($method_name)) {
             Log::err(
                 Log::EUNDEF,
                 "call to undeclared method {$class_fqsen}->{$method_name}()",
                 $this->context->getFile(),
                 $node->lineno
             );
+
             return $this->context;
         }
 
-        $method = $clazz->getMethodByFQSEN($method_fqsen);
+        $method = $clazz->getMethodByName($method_name);
 
         if($method->getName() != 'dynamic') {
             if(array_key_exists('avail', $method)

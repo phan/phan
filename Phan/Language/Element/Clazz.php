@@ -13,6 +13,7 @@ use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 
 class Clazz extends TypedStructuralElement {
+    use \Phan\Memoize;
 
     /**
      * @var \Phan\Language\FQSEN
@@ -356,22 +357,24 @@ class Clazz extends TypedStructuralElement {
      * @return null
      */
     public function addMethod(Method $method) {
-        $this->method_map[(string)$method->getFQSEN()] = $method;
+        if (empty($this->method_map[$method->getName()])) {
+            $this->method_map[$method->getName()] = $method;
+        }
     }
 
     /**
      *
      */
-    public function hasMethodWithFQSEN(FQSEN $fqsen) : bool {
-        return !empty($this->method_map[(string)$fqsen]);
+    public function hasMethodWithName(string $name) : bool {
+        return !empty($this->method_map[$name]);
     }
 
     /**
      * @return Method
      * The method with the given name
      */
-    public function getMethodByFQSEN(FQSEN $fqsen) : Method {
-        return $this->method_map[(string)$fqsen];
+    public function getMethodByName(string $name) : Method {
+        return $this->method_map[$name];
     }
 
     /**
@@ -439,5 +442,93 @@ class Clazz extends TypedStructuralElement {
     public function getFQSEN() : FQSEN {
         return parent::getFQSEN()
             ->withClassName($this->getContext(), $this->getName());
+    }
+
+    /**
+     * Add properties, constants and methods from all
+     * ancestors (parents, traits, ...) to this class
+     *
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return null
+     */
+    public function importAncestorClasses(CodeBase $code_base) {
+        $this->memoize(__METHOD__, function() use ($code_base) {
+            // Copy information from the traits into this class
+            foreach ($this->getTraitFQSENList() as $trait_fqsen) {
+                assert($code_base->hasClassWithFQSEN($trait_fqsen),
+                    "Trait $trait_fqsen should already have been proven to exist");
+                $this->importAncestorClass(
+                    $code_base->getClassByFQSEN($trait_fqsen)
+                );
+            }
+
+            // Copy information from the parent(s)
+            $this->importParentClass($code_base);
+        });
+    }
+
+    /*
+     * Add properties, constants and methods from the
+     * parent of this class
+     *
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return null
+     */
+    public function importParentClass(CodeBase $code_base) {
+        $this->memoize(__METHOD__, function() use ($code_base) {
+            if (!$this->hasParentClassFQSEN()) {
+                return;
+            }
+
+            assert($code_base->hasClassWithFQSEN($this->getParentClassFQSEN()),
+                "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist");
+
+            // Get the parent class
+            $parent = $code_base->getClassByFQSEN(
+                $this->getParentClassFQSEN()
+            );
+
+            // Tell the parent to import its own parents first
+            $parent->importParentClass($code_base);
+
+            // Import elements from the parent
+            $this->importAncestorClass($parent);
+        });
+    }
+
+    /**
+     * Add properties, constants and methods from the given
+     * class to this.
+     *
+     * @param Clazz $superclazz
+     * A class to import from
+     *
+     * @return null
+     */
+    public function importAncestorClass(Clazz $superclazz) {
+        $this->memoize((string)$superclazz->getFQSEN(),
+            function() use ($superclazz) {
+                // Copy properties
+                foreach ($superclazz->getPropertyMap() as $property) {
+                    $this->addProperty($property);
+                }
+
+                // Copy constants
+                foreach ($superclazz->getConstantMap() as $constant) {
+                    $this->addConstant($constant);
+                }
+
+                // Copy methods
+                foreach ($superclazz->getMethodMap() as $method) {
+                    // TODO: if the method is already there, don't add
+                    $this->addMethod($method);
+                }
+            });
     }
 }

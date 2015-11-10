@@ -65,7 +65,9 @@ trait ArgumentType {
                     );
 
                     if((string)$arg1_type == 'array') {
-                        if (!$arg1_type->canCastToUnionTypeInContext('string', $method->getContext())) {
+                        if (!$arg1_type->canCastToUnionType(
+                            StringType::instance()->asUnionType()
+                        )) {
                             Log::err(
                                 Log::EPARAM,
                                 "arg#2(glue) is $arg2_type but {$method->getName()}() takes string when arg#1 is array",
@@ -74,7 +76,9 @@ trait ArgumentType {
                             );
                         }
                     } else if((string)$arg1_type == 'string') {
-                        if (!$arg1_type->canCastToUnionTypeInContext('array', $method->getContext())) {
+                        if (!$arg1_type->canCastToUnionType(
+                            ArrayType::intance()->asUnionType()
+                        )) {
                             Log::err(
                                 Log::EPARAM,
                                 "arg#2(pieces) is $arg2_type but {$method->getName()}() takes array when arg#1 is string",
@@ -236,7 +240,7 @@ trait ArgumentType {
             while($method->getContext()->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
                 // Get the method with the given FQSEN
                 $alt_method =
-                    $method->getCodeBase()->getCodeBase()->getMethodByFQSEN(
+                    $method->getContext()->getCodeBase()->getMethodByFQSEN(
                         $method_fqsen
                     );
 

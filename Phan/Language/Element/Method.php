@@ -169,7 +169,7 @@ class Method extends TypedStructuralElement {
         $fqsen = $method->getFQSEN();
 
         $name_method_info_map = [
-            $fqsen->__toString() => $method
+            $method->getName() => $method
         ];
 
         // Populate multiple-dispatch alternate method
