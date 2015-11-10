@@ -176,6 +176,8 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             )->getUnionType();
         }
 
+        // TODO: This will fire if the class references `new self()`
+        //       type things.
         assert(false,
             "Class $class_fqsen not found at {$this->context}");
 
@@ -198,14 +200,16 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             if($generic_types->isEmpty()) {
                 if(!$union_type->isType(NullType::instance())
                     && !$union_type->canCastToUnionType(
-                        UnionType::fromFullyQualifiedString('string|ArrayAccess')
+                        UnionType::fromFullyQualifiedString('\::string|\::ArrayAccess')
                     )
                 ) {
                     // array offsets work on strings, unfortunately
                     // Double check that any classes in the type don't have ArrayAccess
                     $ok = false;
                     foreach($union_type as $type) {
-                        if(!empty($type) && !is_native_type($type)) {
+                        if(!empty($type)
+                            && !$type->isNativeType()
+                        ) {
                             // TODO
                             if(!empty($classes[strtolower($type)]['type'])) {
                                 // TODO

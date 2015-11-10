@@ -443,13 +443,19 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitCatch(Node $node) : Context {
-        $object_name = self::astVariableName($node->children[0]);
-        $name = self::astVariableName($node->children[1]);
+        $object_name =
+            self::astVariableName($node->children['class']);
+
+        $name =
+            self::astVariableName($node->children['var']);
 
         $context = $this->context;
         if (!empty($name)) {
             $context = $this->context->withScopeVariable(
-                Variable::fromNodeInContext($node->children[1], $context)
+                Variable::fromNodeInContext(
+                    $node->children['var'],
+                    $context
+                )
             );
         }
 

@@ -141,7 +141,7 @@ class Type {
         assert(!empty($fully_qualified_string),
             "Type cannot be empty");
         assert('\\' === $fully_qualified_string[0],
-            "fromFullyQualifiedString() called without fully qualified string");
+            "fromFullyQualifiedString() called without fully qualified string '$fully_qualified_string'");
 
         list($namespace, $type_name) =
             self::namespaceAndTypeFromString(
