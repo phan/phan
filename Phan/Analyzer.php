@@ -226,9 +226,11 @@ class Analyzer {
             Configuration::instance()->ast_version
         );
 
+        // Set the file on the context
         $context =
             (new Context($code_base))->withFile($file_path);
 
+        // Ensure we have some content
         if (empty($node)) {
             Log::err(
                 Log::EUNDEF,
@@ -236,9 +238,11 @@ class Analyzer {
                 $file_path,
                 0
             );
+
             return $context;
         }
 
+        // Start recursively analyzing the tree
         return $this->analyzeNodeInContext(
             $node,
             $context
@@ -260,6 +264,7 @@ class Analyzer {
         Node $node,
         Context $context
     ) : Context {
+
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the
@@ -278,7 +283,6 @@ class Analyzer {
 		// Depth-First for everything else
         $child_context = $context;
 		foreach($node->children as $child_node) {
-
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;

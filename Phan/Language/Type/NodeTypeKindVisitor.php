@@ -154,12 +154,10 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $class_name =
             $this->astClassNameFromNode($this->context, $node);
 
-        if (!$class_name) {
-            exit;
-        }
-
+        /*
         assert(!empty($class_name),
             "Class name cannot be empty in {$this->context}");
+         */
 
         if(empty($class_name)) {
             return ObjectType::instance()->asUnionType();
