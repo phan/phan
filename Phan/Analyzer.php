@@ -169,7 +169,8 @@ class Analyzer {
                     $child_context
                 );
 
-            assert(!empty($context), 'Context cannot be null');
+            assert(!empty($child_context),
+                'Context cannot be null');
         }
 
         // Pass the context back up to our parent
