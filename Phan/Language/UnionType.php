@@ -150,6 +150,8 @@ class UnionType extends \ArrayObject  {
         string $class_name,
         string $property_name
     ) : UnionType {
+        global $BUILTIN_CLASS_TYPES;
+
         $class_property_type_map =
             $BUILTIN_CLASS_TYPES[strtolower($class_name)]['properties'];
 
@@ -163,10 +165,14 @@ class UnionType extends \ArrayObject  {
      * @return UnionType[]
      * A list of types for parameters associated with the
      * given builtin function with the given name
+     *
+     * @see internal_varargs_check
+     * Formerly `function internal_varargs_check`
      */
     public static function builtinFunctionPropertyNameTypeMap(
         FQSEN $function_fqsen
     ) : array {
+        global $BUILTIN_FUNCTION_ARGUMENT_TYPES;
 
         $type_name_struct =
             $BUILTIN_FUNCTION_ARGUMENT_TYPES[(string)$function_fqsen];

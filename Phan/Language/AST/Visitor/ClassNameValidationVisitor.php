@@ -168,11 +168,6 @@ class ClassNameValidationVisitor
             $node->lineno
         );
 
-        /*
-        assert(false,
-            "Can't find {$this->class_fqsen} at {$this->context}");
-         */
-
         return false;
     }
 

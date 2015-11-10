@@ -534,7 +534,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                 $this->context, $method_name
             );
 
-        if (!$this->context->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
+        if (!$clazz->hasMethodWithFQSEN($method_fqsen)) {
             Log::err(
                 Log::EUNDEF,
                 "call to undeclared method {$class_fqsen}->{$method_name}()",
@@ -544,9 +544,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-        $method = $this->context->getCodeBase()->getMethodByFQSEN(
-            $method_fqsen
-        );
+        $method = $clazz->getMethodByFQSEN($method_fqsen);
 
         if($method->getName() != 'dynamic') {
             if(array_key_exists('avail', $method)

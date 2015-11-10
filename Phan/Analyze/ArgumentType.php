@@ -4,6 +4,7 @@ namespace Phan\Analyze;
 use \Phan\Debug;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
+use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
@@ -188,7 +189,7 @@ trait ArgumentType {
                 // The arginfo check will handle the other case
                 break;
             default:
-                if(self::internal_varargs_check($method->getName())) {
+                if(UnionType::builtinFunctionPropertyNameTypeMap($method->getFQSEN())) {
                     $varargs = true;
                 }
                 break;
@@ -328,24 +329,6 @@ trait ArgumentType {
             );
         }
     }
-
-    /**
-     *
-     */
-    private static function internal_varargs_check(
-        string $func_name
-    ) : bool {
-        assert(false, "TODO");
-        global $internal_arginfo;
-
-        if(empty($internal_arginfo[$func_name])) return false;
-        foreach($internal_arginfo[$func_name] as $k=>$v) {
-            if($k===0) continue;
-            if(strpos($k,'...')!==false) return true;
-        }
-        return false;
-    }
-
 
     /**
      * Emit a log message if the type of the given
