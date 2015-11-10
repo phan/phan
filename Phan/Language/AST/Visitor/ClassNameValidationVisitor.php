@@ -79,15 +79,14 @@ class ClassNameValidationVisitor
             );
 
         if ($clazz->isAbstract()) {
-            if ($clazz->getFQSEN()
-                !== $this->context->getScopeFQSEN()
-            ) {
+            if ($clazz->getFQSEN() != $this->context->getClassFQSEN()) {
                 Log::err(
                     Log::ETYPE,
                     "Cannot instantiate abstract class {$this->class_name}",
                     $this->context->getFile(),
                     $node->lineno
                 );
+
                 return false;
             }
 

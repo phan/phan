@@ -154,11 +154,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         $class_name =
             $this->astClassNameFromNode($this->context, $node);
 
-        /*
-        assert(!empty($class_name),
-            "Class name cannot be empty in {$this->context}");
-         */
-
         if(empty($class_name)) {
             return ObjectType::instance()->asUnionType();
         }
@@ -176,6 +171,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
         // TODO: This will fire if the class references `new self()`
         //       type things.
+        debug_print_backtrace(10);
         assert(false,
             "Class $class_fqsen not found at {$this->context}");
 

@@ -294,6 +294,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
     }
 
     /**
+     * Visit a node with kind `\ast\AST_GLOBAL`
+     *
      * @param Node $node
      * A node to parse
      *
@@ -302,16 +304,15 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitGlobal(Node $node) : Context {
-        /*
-        if(!array_key_exists($current_scope, $scope)) $scope[$current_scope] = [];
-        if(!array_key_exists('vars', $scope[$current_scope])) $scope[$current_scope]['vars'] = [];
-        $name = self::astVariableName($ast);
-        if(empty($name)) break;
-        if(!array_key_exists($name, $scope['global']['vars'])) {
-            add_var_scope('global', $name, '');
-        }
-        $scope[$current_scope]['vars'][$name] = &$scope['global']['vars'][$name];
-         */
+        $variable = Variable::fromNodeInContext(
+            $node->children['var'],
+            $this->context,
+            false
+        );
+
+        // Note that we're not creating a new scope, just
+        // adding variables to the existing scope
+        $this->context->addScopeVariable($variable);
 
         return $this->context;
     }
@@ -354,15 +355,27 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitStatic(Node $node) : Context {
-        /*
-        $name = self::astVariableName($ast);
-        $type = node_type($file, $namespace, $ast->children[1], $current_scope, $current_class, $taint);
-        if(!empty($name)) {
-            add_var_scope($current_scope, $name, $type);
-            $scope[$current_scope]['vars'][$name]['tainted'] = $taint;
-            $scope[$current_scope]['vars'][$name]['tainted_by'] = $tainted_by;
+        $variable = Variable::fromNodeInContext(
+            $node->children['var'],
+            $this->context,
+            false
+        );
+
+        // If the element has a default, set its type
+        // on the variable
+        if (isset($node->children['default'])) {
+            $default_type =
+                $type = UnionType::fromNode(
+                    $this->context,
+                    $node->children['default']
+                );
+
+            $variable->setUnionType($default_type);
         }
-         */
+
+        // Note that we're not creating a new scope, just
+        // adding variables to the existing scope
+        $this->context->addScopeVariable($variable);
 
         return $this->context;
     }

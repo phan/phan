@@ -530,30 +530,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
     }
 
     /**
-     * Visit a node with kind `\ast\AST_GLOBAL`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitGlobal(Node $node) : Context {
-        $variable = Variable::fromNodeInContext(
-            $node->children['var'],
-            $this->context,
-            false
-        );
-
-        // Note that we're not creating a new scope, just
-        // adding variables to the existing scope
-        $this->context->addScopeVariable($variable);
-
-        return $this->context;
-    }
-
-    /**
      * @return Clazz
      * Get the class on this scope or fail real hard
      */

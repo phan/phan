@@ -468,8 +468,14 @@ class Clazz extends TypedStructuralElement {
         $this->memoize(__METHOD__, function() use ($code_base) {
             // Copy information from the traits into this class
             foreach ($this->getTraitFQSENList() as $trait_fqsen) {
+                // Let the parent class finder worry about this
+                if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+                    continue;
+                }
+
                 assert($code_base->hasClassWithFQSEN($trait_fqsen),
                     "Trait $trait_fqsen should already have been proven to exist");
+
                 $this->importAncestorClass(
                     $code_base->getClassByFQSEN($trait_fqsen)
                 );
@@ -496,8 +502,15 @@ class Clazz extends TypedStructuralElement {
                 return;
             }
 
+            // Let the parent class finder worry about this
+            if (!$code_base->hasClassWithFQSEN(
+                $this->getParentClassFQSEN()
+            )) {
+                return;
+            }
+
             assert($code_base->hasClassWithFQSEN($this->getParentClassFQSEN()),
-                "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist");
+                "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist from {$this->getContext()}");
 
             // Get the parent class
             $parent = $code_base->getClassByFQSEN(

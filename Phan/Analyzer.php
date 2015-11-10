@@ -184,13 +184,16 @@ class Analyzer {
 
         // Take a pass to import all details from ancestors
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
+            // Make sure the parent classes exist
+            self::analyzeParentClassExists($code_base, $clazz);
+
+            // The import them
             $clazz->importAncestorClasses($code_base);
         }
 
         // Run a few checks on all of the classes
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
             self::analyzeDuplicateClass($code_base, $clazz);
-            self::analyzeParentClassExists($code_base, $clazz);
             self::analyzeParentConstructorCalled($code_base, $clazz);
         }
     }

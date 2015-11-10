@@ -75,8 +75,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
         }
 
         if($class_name == 'static') {
-            return (string)$this->context->getClassFQSEN()
-                ->getClassName();
+            return (string)$this->context->getClassFQSEN();
         }
 
         if($class_name == 'self') {
@@ -86,26 +85,22 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                 list($class_name,) =
                     explode('::', $current_scope);
             } else {
-                return (string)$this->context->getClassFQSEN()
-                    ->getClassName();
+                return (string)$this->context->getClassFQSEN();
             }
         }
 
         if($class_name == 'parent') {
-            $clazz =
-                $this->context->getClassInScope();
+            $clazz = $this->context->getClassInScope();
 
             if (!$clazz->hasParentClassFQSEN()) {
                 // TODO: This may be getting called in
                 //       the first pass.
-                /*
                 Log::err(
                     Log::EFATAL,
                     "Call to parent in {$class_name} when no parent exists",
                     $this->context->getFile(),
                     $node->lineno
                 );
-                */
 
                 return '';
             }
