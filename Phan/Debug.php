@@ -73,6 +73,10 @@ class Debug {
             $string .= ':' . $node->endLineno;
         }
 
+        if (isset($node->name)) {
+            $string .= ' name:' . $node->name;
+        }
+
         $string .= "\n";
 
         foreach ($node->children ?? [] as $name => $child_node) {

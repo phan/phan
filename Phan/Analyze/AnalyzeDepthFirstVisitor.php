@@ -164,6 +164,11 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             );
 
         if (!$this->context->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
+            /*
+            Debug::printNode($node);
+            assert(false, "Can't find method '$method_fqsen' in {$this->context}\n");
+             */
+
             Log::err(
                 Log::EFATAL,
                 "Can't find method {$method_fqsen} - aborting",
@@ -394,23 +399,20 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitCatch(Node $node) : Context {
-        $object_name =
-            self::astVariableName($node->children['class']);
-
-        $name =
+        $variable_name =
             self::astVariableName($node->children['var']);
 
-        $context = $this->context;
-        if (!empty($name)) {
-            $context = $this->context->withScopeVariable(
+        if (!empty($variable)) {
+            $this->context->addScopeVariable(
                 Variable::fromNodeInContext(
                     $node->children['var'],
-                    $context
+                    $this->context,
+                    false
                 )
             );
         }
 
-        return $context;
+        return $this->context;
     }
 
     /**

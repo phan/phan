@@ -283,12 +283,14 @@ class ParseVisitor extends KindVisitorImplementation {
 
         $class_name = $node->name;
 
-        assert(!empty($class_name),
-            "Class must have name in {$this->context}");
-
+        // This happens now and then and I have no idea
+        // why.
         if (empty($class_name)) {
             return $this->context;
         }
+
+        assert(!empty($class_name),
+            "Class must have name in {$this->context}");
 
         $class_fqsen = FQSEN::fromContext($this->context)
             ->withClassName($this->context, $class_name);
