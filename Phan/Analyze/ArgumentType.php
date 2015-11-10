@@ -235,7 +235,7 @@ trait ArgumentType {
             $alternate_id = 0;
 
             $method_fqsen =
-                $method_fqsen->withAlternateId(++$alternate_id);
+                $method->getFQSEN()->withAlternateId(++$alternate_id);
 
             while($method->getContext()->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
                 // Get the method with the given FQSEN
@@ -259,9 +259,18 @@ trait ArgumentType {
             if(!$has_alternate_with_sufficient_parameters) {
                 if($method->getContext()->isInternal()) {
                     // TODO: here
-                    Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() which requires {$func['required']} arg(s)", $file, $ast->lineno);
+                    Log::err(
+                        Log::EPARAM,
+                        "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
+                        $method->getContext()->getFile(),
+                        $method->getContext()->getLineNumberStart()
+                    );
                 } else {
-                    Log::err(Log::EPARAM, "call with $argcount arg(s) to {$func['name']}() which requires {$func['required']} arg(s) defined at {$func['file']}:{$func['lineno']}", $file, $ast->lineno);
+                    Log::err(Log::EPARAM,
+                        "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s) defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                        $method->getContext()->getFile(),
+                        $method->getContext()->getLineNumberStart()
+                    );
                 }
             }
         }
@@ -354,9 +363,8 @@ trait ArgumentType {
         );
 
         // See if it can be cast to the given type
-        $can_cast = $arg_type->canCastToUnionTypeInContext(
-            $cast_type,
-            $context
+        $can_cast = $node_type->canCastToUnionType(
+            $cast_type
         );
 
         // If it can't, emit the log message

@@ -171,11 +171,12 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
         // TODO: This will fire if the class references `new self()`
         //       type things.
-        debug_print_backtrace(10);
+        Debug::printNode($node);
+        print_r($this->context->getNamespaceMap());
         assert(false,
             "Class $class_fqsen not found at {$this->context}");
 
-        return new UnionType();
+        return ObjectType::instance()->asUnionType();
     }
 
     /**

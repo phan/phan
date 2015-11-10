@@ -183,16 +183,32 @@ class Type {
                 self::namespaceAndTypeFromString($string);
         }
 
-        $type_name =
-            self::canonicalNameFromName($string);
+        $type_name = strtolower($string);
 
-        // If we have a namespace, we're all set
+        // If this was a fully qualified type, we're all
+        // set
         if (!empty($namespace)) {
             return new Type($type_name, $namespace);
         }
 
+        // Check to see if the type name is mapped via
+        // a using clause.
+        //
+        // Gotta check this before checking for native types
+        // because there are monsters out there that will
+        // remap the names via things like `use \Foo\String`.
+        if ($context->hasNamespaceMapFor(T_CLASS, $type_name)) {
+            $fqsen =
+                $context->getNamespaceMapFor(T_CLASS, $type_name);
+
+            return new Type(
+                $fqsen->getClassName(),
+                $fqsen->getNamespace()
+            );
+        }
+
         // Check to see if its a builtin type
-        switch ($type_name) {
+        switch (self::canonicalNameFromName($type_name)) {
         case 'array':
             return \Phan\Language\Type\ArrayType::instance();
         case 'bool':
@@ -215,18 +231,6 @@ class Type {
             return \Phan\Language\Type\StringType::instance();
         case 'void':
             return \Phan\Language\Type\VoidType::instance();
-        }
-
-        // Check to see if the type name is mapped via
-        // a using clause
-        if ($context->hasNamespaceMapFor(T_CLASS, $type_name)) {
-            $fqsen =
-                $context->getNamespaceMapFor(T_CLASS, $type_name);
-
-            return new Type(
-                $fqsen->getClassName(),
-                $fqsen->getNamespace()
-            );
         }
 
         // Attach the context's namespace to the type name

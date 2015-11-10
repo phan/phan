@@ -150,7 +150,6 @@ trait AST {
             return (string) UnionType::fromFullyQualifiedString(
                 $type_name
             );
-
         }
 
         $type = UnionType::fromStringInContext(
