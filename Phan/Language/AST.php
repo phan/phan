@@ -210,15 +210,6 @@ trait AST {
                 $context->getScope()->getVariableWithName($variable_name);
 
             return $variable->getUnionType();
-
-            /*
-            if(!empty($scope[$current_scope]['vars'][$node->children[0]]['tainted'])
-            ) {
-                $tainted_by =
-                    $scope[$current_scope]['vars'][$node->children[0]]['tainted_by'];
-                $taint = true;
-            }
-            */
         }
 
         return new UnionType();

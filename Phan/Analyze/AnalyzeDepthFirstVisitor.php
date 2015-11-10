@@ -320,13 +320,10 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitForeach(Node $node) : Context {
-
-        // If the value is a list, thats no good
-        $context = $this->context;
         if($node->children['value']->kind == \ast\AST_LIST) {
             foreach($node->children['value']->children as $child_node) {
-                $context = $this->context->withScopeVariable(
-                    Variable::fromNodeInContext($child_node, $context)
+                $this->context->addScopeVariable(
+                    Variable::fromNodeInContext($child_node, $this->context)
                 );
             }
 
@@ -336,7 +333,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             // Create a variable for the value
             $variable = Variable::fromNodeInContext(
                 $node->children['value'],
-                $context,
+                $this->context,
                 false
             );
 
@@ -358,8 +355,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             }
 
             // Add the variable to the scope
-            $context =
-                $this->context->withScopeVariable($variable);
+            $this->context->addScopeVariable($variable);
         }
 
         // If there's a key, make a variable out of that too
@@ -375,18 +371,18 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                 );
             }
 
-            $variable =
-                Variable::fromNodeInContext(
-                    $node->children['key'],
-                    $context,
-                    false
-                );
+            $variable = Variable::fromNodeInContext(
+                $node->children['key'],
+                $this->context,
+                false
+            );
 
-            $context =
-                $this->context->withScopeVariable($variable);
+            $this->context->addScopeVariable($variable);
         }
 
-        return $context;
+        // Note that we're not creating a new scope, just
+        // adding variables to the existing scope
+        return $this->context;
     }
 
     /**

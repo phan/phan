@@ -417,6 +417,24 @@ class Context {
     }
 
     /**
+     * Add a variable to this context's scope. Note that
+     * this does not create a new context. You're actually
+     * injecting the variable into the context. Use with
+     * caution.
+     *
+     * @param Variable $variable
+     * A variable to inject into this context
+     *
+     * @return null
+     */
+    public function addScopeVariable(
+        Variable $variable
+    ) {
+        $this->scope =
+            $this->getScope()->withVariable($variable);
+    }
+
+    /**
      * @param FQSEN $fqsen
      * A fully-qualified structural element name describing
      * the current scope.
