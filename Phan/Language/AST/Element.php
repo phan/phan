@@ -351,9 +351,58 @@ class Element {
             return $visitor->visitUnaryBitwiseNot($this->node);
         case \ast\flags\UNARY_BOOL_NOT:
             return $visitor->visitUnaryBoolNot($this->node);
+        case \ast\flags\BINARY_BOOL_AND:
+            return $visitor->visitBinaryBoolAnd($this->node);
+        case \ast\flags\BINARY_BOOL_OR:
+            return $visitor->visitBinaryBoolOr($this->node);
+        case \ast\flags\BINARY_IS_GREATER:
+            return $visitor->visitBinaryIsGreater($this->node);
+        case \ast\flags\BINARY_IS_GREATER_OR_EQUAL:
+            return $visitor->visitBinaryIsGreaterOrEqual($this->node);
+        case \ast\flags\CLASS_ANONYMOUS:
+            return $visitor->visitClassAnonymous($this->node);
+        case \ast\flags\EXEC_EVAL:
+            return $visitor->visitExecEval($this->node);
+        case \ast\flags\EXEC_INCLUDE:
+            return $visitor->visitExecInclude($this->node);
+        case \ast\flags\EXEC_INCLUDE_ONCE:
+            return $visitor->visitExecIncludeOnce($this->node);
+        case \ast\flags\EXEC_REQUIRE:
+            return $visitor->visitExecRequire($this->node);
+        case \ast\flags\EXEC_REQUIRE_ONCE:
+            return $visitor->visitExecRequireOnce($this->node);
+        case \ast\flags\MAGIC_CLASS:
+            return $visitor->visitMagicClass($this->node);
+        case \ast\flags\MAGIC_DIR:
+            return $visitor->visitMagicDir($this->node);
+        case \ast\flags\MAGIC_FILE:
+            return $visitor->visitMagicFile($this->node);
+        case \ast\flags\MAGIC_FUNCTION:
+            return $visitor->visitMagicFunction($this->node);
+        case \ast\flags\MAGIC_LINE:
+            return $visitor->visitMagicLine($this->node);
+        case \ast\flags\MAGIC_METHOD:
+            return $visitor->visitMagicMethod($this->node);
+        case \ast\flags\MAGIC_NAMESPACE:
+            return $visitor->visitMagicNamespace($this->node);
+        case \ast\flags\MAGIC_TRAIT:
+            return $visitor->visitMagicTrait($this->node);
+        case \ast\flags\UNARY_MINUS:
+            return $visitor->visitUnaryMinus($this->node);
+        case \ast\flags\UNARY_PLUS:
+            return $visitor->visitUnaryPlus($this->node);
+        case \ast\flags\UNARY_SILENCE:
+            return $visitor->visitUnarySilence($this->node);
+        case \ast\flags\USE_CONST:
+            return $visitor->visitUseConst($this->node);
+        case \ast\flags\USE_FUNCTION:
+            return $visitor->visitUseFunction($this->node);
+        case \ast\flags\USE_NORMAL:
+            return $visitor->visitUseNormal($this->node);
         default:
-            Debug::printNode($this->node);
-            assert(false, 'All flags must match');
+            assert(false,
+                "All flags must match. Found "
+                . Debug::astFlagDescription($this->node->flags));
             break;
         }
     }

@@ -38,31 +38,6 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
     }
 
     public function visitBinaryConcat(Node $node) {
-        $temp_taint = false;
-
-        $left_type =
-            UnionType::fromNode(
-                $this->context,
-                $node->children['left'],
-                $temp_taint
-            );
-
-        if($temp_taint) {
-            $taint = true;
-            return new UnionType(['string']);
-        }
-
-        $right_type =
-            UnionType::fromNode(
-                $this->context,
-                $node->children['right'],
-                $temp_taint
-            );
-
-        if($temp_taint) {
-            $taint = true;
-        }
-
         return StringType::instance()->asUnionType();
     }
 
@@ -70,21 +45,18 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
         $left =
             UnionType::fromNode(
                 $this->context,
-                $node->chilren['left']
+                $node->children['left']
             );
 
         $right =
             UnionType::fromNode(
                 $this->context,
-                $node->chilren['right']
+                $node->children['right']
             );
 
-        $taint = false;
-        // If we have generics and no non-generics on the left and the right is not array-like ...
-
-        if(!empty(generics($left))
-            && empty(nongenerics($left))
-            && !type_check($right, 'array')
+        if (!empty($left->genericTypes())
+            && empty($left->nonGenericTypes())
+            && !$right->canCastToUnionType(ArrayType::instance()->asUnionType())
         ) {
             Log::err(
                 Log::ETYPE,
@@ -92,9 +64,9 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $context->getFile(),
                 $node->lineno
             );
-        } else if(!empty(generics($right))
-            && empty(nongenerics($right))
-            && !type_check($left, 'array')
+        } else if (!empty($right->genericTypes())
+            && empty($right->nonGenericTypes())
+            && !$left->canCastToUnionType(ArrayType::instance()->asUnionType())
         ) {
             // and the same for the right side
             Log::err(
@@ -104,7 +76,8 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
                 $node->lineno
             );
         }
-        return new UnionType(['bool']);
+
+        return BoolType::instance()->asUnionType();
     }
 
     public function visitBinaryIsIdentical(Node $node) {
@@ -142,23 +115,36 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
 
     public function visitBinaryAdd(Node $node) {
         $left =
-            UnionType::fromNode($this->context, $node->children[0]);
+            UnionType::fromNode($this->context, $node->children['left']);
 
         $right =
-            UnionType::fromNode($this->context, $node->chilren[1]);
+            UnionType::fromNode($this->context, $node->children['right']);
 
         // fast-track common cases
-        if($left=='int' && $right == 'int') {
-            return new UnionType(['int']);
-        }
-        if(($left=='int' || $left=='float') && ($right=='int' || $right=='float')) {
-            return new UnionType(['float']);
+        if ($left->isType(IntType::instance())
+            && $right->isType(IntType::instance())
+        ) {
+            return new UnionType(IntType::instance());
         }
 
-        $left_is_array = (!empty(generics($left)) && empty(nongenerics($left)));
-        $right_is_array = (!empty(generics($right)) && empty(nongenerics($right)));
+        if (($left->isType(IntType::instance())
+            || $left->isType(FloatType::instance()))
+            && ($right->isType(IntType::instance())
+            || $right->isType(FloatType::instance()))
+        ) {
+            return new UnionType(FloatType::instance());
+        }
 
-        if($left_is_array && !type_check($right, 'array')) {
+        $left_is_array = (
+            !empty($left->genericTypes()) && empty($left->nonGenericTypes())
+        );
+
+        $right_is_array = (
+            !empty($right->genericTypes()) && empty($right->nonGenericTypes())
+        );
+
+        if($left_is_array
+            && !$right->canCastToUnionType(ArrayType::instance()->asUnionType())) {
             Log::err(
                 Log::ETYPE,
                 "invalid operator: left operand is array and right is not",
@@ -167,7 +153,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
             );
             return new UnionType();
         } else if($right_is_array
-            && !type_check($left, 'array')
+            && !$left->canCastToUnionType(ArrayType::intance()->asUnionType())
         ) {
             Log::err(
                 Log::ETYPE,
@@ -177,11 +163,15 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
             );
             return new UnionType();
         } else if($left_is_array || $right_is_array) {
-            // If it is a '+' and we know one side is an array and the other is unknown, assume array
-            return new UnionType(['array']);
+            // If it is a '+' and we know one side is an array
+            // and the other is unknown, assume array
+            return ArrayType::intance()->asUnionType();
         }
 
-        return new UnionType(['int', 'float']);
+        return new UnionType([
+            IntType::instance(),
+            FloatType::instance()
+        ]);
     }
 
     public function visit(Node $node) {

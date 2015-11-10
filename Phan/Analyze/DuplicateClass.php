@@ -26,6 +26,12 @@ trait DuplicateClass {
 
         $original_fqsen = $clazz->getFQSEN()->getCanonicalFQSEN();
 
+        if (!$code_base->hasClassWithFQSEN($original_fqsen)) {
+            // If there's a missing class we'll catch that
+            // elsewhere
+            return;
+        }
+
         // Get the original class
         $original_class = $code_base->getClassByFQSEN(
             $original_fqsen

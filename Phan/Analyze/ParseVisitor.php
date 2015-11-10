@@ -10,6 +10,22 @@ use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
+use \Phan\Language\Type\{
+    ArrayType,
+    BoolType,
+    CallableType,
+    FloatType,
+    GenericArrayType,
+    IntType,
+    MixedType,
+    NativeType,
+    NullType,
+    ObjectType,
+    ResourceType,
+    ScalarType,
+    StringType,
+    VoidType
+};
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -424,7 +440,9 @@ class ParseVisitor extends KindVisitorImplementation {
         }
 
         if ('__invoke' === $method_name) {
-            $clazz->getUnionType()->addTypeName('callable');
+            $clazz->getUnionType()->addType(
+                CallableType::instance()
+            );
         }
 
         // Send the context into the method

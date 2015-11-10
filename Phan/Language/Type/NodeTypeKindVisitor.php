@@ -197,8 +197,9 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $generic_types = $union_type->genericTypes();
             if($generic_types->isEmpty()) {
                 if(!$union_type->isType(NullType::instance())
-                    // TODO
-                    && !type_check($type, 'string|ArrayAccess')
+                    && !$union_type->canCastToUnionType(
+                        UnionType::fromFullyQualifiedString('string|ArrayAccess')
+                    )
                 ) {
                     // array offsets work on strings, unfortunately
                     // Double check that any classes in the type don't have ArrayAccess
@@ -247,7 +248,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * Visit a node with kind `\ast\AST_ENCAPS_LIST`
      */
     public function visitEncapsList(Node $node) : UnionType {
-        return StringType::intance()->asUnionType();
+        return StringType::instance()->asUnionType();
     }
 
     /**
@@ -473,7 +474,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         // If the name is fully qualified
         } else {
             $function_fqsen =
-                FQSEN::fromFullyQualifiedString($function_fqsen);
+                FQSEN::fromFullyQualifiedString($function_name);
         }
 
         // If the function doesn't exist, check to see if its
@@ -485,11 +486,18 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
                 FQSEN::fromFullyQualifiedString('\\::' . $function_name);
         }
 
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
+            // TODO: Log missing builtin?
+            return new UnionType();
+        }
+
+        /*
         assert(
             $this->context->getCodeBase()->hasMethodWithFQSEN(
                 $function_fqsen
             ), "Function with $function_fqsen must exist at {$this->context}"
         );
+         */
 
         $function =
             $this->context->getCodeBase()->getMethodByFQSEN(

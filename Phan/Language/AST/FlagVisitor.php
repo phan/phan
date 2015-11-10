@@ -298,4 +298,125 @@ interface FlagVisitor {
      */
     public function visitUnaryBoolNot(Node $node);
 
+    /**
+     * Visit a node with flag `\ast\flags\BINARY_BOOL_AND`
+     */
+    public function visitBinaryBoolAnd(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\BINARY_BOOL_OR`
+     */
+    public function visitBinaryBoolOr(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\BINARY_IS_GREATER`
+     */
+    public function visitBinaryIsGreater(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\BINARY_IS_GREATER_OR_EQUAL`
+     */
+    public function visitBinaryIsGreaterOrEqual(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\CLASS_ANONYMOUS`
+     */
+    public function visitClassAnonymous(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\EXEC_EVAL`
+     */
+    public function visitExecEval(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\EXEC_INCLUDE`
+     */
+    public function visitExecInclude(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\EXEC_INCLUDE_ONCE`
+     */
+    public function visitExecIncludeOnce(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\EXEC_REQUIRE`
+     */
+    public function visitExecRequire(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\EXEC_REQUIRE_ONCE`
+     */
+    public function visitExecRequireOnce(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\MAGIC_CLASS`
+     */
+    public function visitMagicClass(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\MAGIC_DIR`
+     */
+    public function visitMagicDir(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\MAGIC_FILE`
+     */
+    public function visitMagicFile(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\MAGIC_FUNCTION`
+     */
+    public function visitMagicFunction(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\MAGIC_LINE`
+     */
+    public function visitMagicLine(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\MAGIC_METHOD`
+     */
+    public function visitMagicMethod(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\MAGIC_NAMESPACE`
+     */
+    public function visitMagicNamespace(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\MAGIC_TRAIT`
+     */
+    public function visitMagicTrait(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\UNARY_MINUS`
+     */
+    public function visitUnaryMinus(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\UNARY_PLUS`
+     */
+    public function visitUnaryPlus(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\UNARY_SILENCE`
+     */
+    public function visitUnarySilence(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\USE_CONST`
+     */
+    public function visitUseConst(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\USE_FUNCTION`
+     */
+    public function visitUseFunction(Node $node);
+
+    /**
+     * Visit a node with flag `\ast\flags\USE_NORMAL`
+     */
+    public function visitUseNormal(Node $node);
+
+
 }

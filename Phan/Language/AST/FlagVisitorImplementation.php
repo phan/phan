@@ -243,4 +243,100 @@ abstract class FlagVisitorImplementation implements FlagVisitor {
         return $this->visit($node);
     }
 
+    public function visitBinaryBoolAnd(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryBoolOr(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryIsGreater(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitBinaryIsGreaterOrEqual(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitClassAnonymous(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitExecEval(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitExecInclude(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitExecIncludeOnce(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitExecRequire(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitExecRequireOnce(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitMagicClass(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitMagicDir(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitMagicFile(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitMagicFunction(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitMagicLine(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitMagicMethod(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitMagicNamespace(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitMagicTrait(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUnaryMinus(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUnaryPlus(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUnarySilence(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUseConst(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUseFunction(Node $node) {
+        return $this->visit($node);
+    }
+
+    public function visitUseNormal(Node $node) {
+        return $this->visit($node);
+    }
+
 }

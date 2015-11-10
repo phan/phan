@@ -97,7 +97,9 @@ class UnionType extends \ArrayObject  {
                     $type_name,
                     $context
                 );
-            }, explode('|', $type_string))
+            }, array_filter(array_map(function (string $type_name) {
+                return trim($type_name);
+            }, explode('|', $type_string))))
         );
     }
 
@@ -165,6 +167,9 @@ class UnionType extends \ArrayObject  {
     public static function builtinFunctionPropertyNameTypeMap(
         FQSEN $function_fqsen
     ) : array {
+
+        print ">$function_fqsen\n";
+
         $type_name_struct =
             $BUILTIN_FUNCTION_ARGUMENT_TYPES[(string)$function_fqsen];
 
@@ -419,7 +424,7 @@ class UnionType extends \ArrayObject  {
         if ($this->hasType(ArrayType::instance())
             || $this->hasType(MixedType::instance())
         ) {
-            return MixedType::instance()->toUnionType();
+            return MixedType::instance()->asUnionType();
         }
 
         if ($this->hasType(ArrayType::instance())) {
