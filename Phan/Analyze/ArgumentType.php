@@ -193,7 +193,9 @@ trait ArgumentType {
                 // The arginfo check will handle the other case
                 break;
             default:
-                if(UnionType::builtinFunctionPropertyNameTypeMap($method->getFQSEN())) {
+                if(UnionType::builtinFunctionPropertyNameTypeMap(
+                    $method->getFQSEN(), $method->getContext()->getCodeBase()
+                )) {
                     $varargs = true;
                 }
                 break;

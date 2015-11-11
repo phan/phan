@@ -203,6 +203,9 @@ trait AST {
                     $context->getFile(),
                     $node->lineno
                 );
+
+                debug_print_backtrace(3);
+                assert(false, 'here');
             }
         } else {
             $variable =

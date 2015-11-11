@@ -33,6 +33,7 @@ use \Phan\Language\Type\ArrayType;
  */
 class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
     use \Phan\Language\AST;
+    use \Phan\Analyze\ArgumentType;
 
     /**
      * @var Context
@@ -531,52 +532,112 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitCall(Node $node) : Context {
-        /*
-        $found = false;
-        $call = $ast->children[0];
+        $expression = $node->children['expr'];
 
-        if($call->kind == \ast\AST_NAME) {
-            $func_name = $call->children[0];
-            $found = null;
-            if($call->flags & \ast\flags\NAME_NOT_FQ) {
-                if(!empty($namespace_map[T_FUNCTION][$file][strtolower($namespace.$func_name)])) {
-                    $cs = $namespace_map[T_FUNCTION][$file][strtolower($namespace.$func_name)];
-                    $found = $functions[strtolower($cs)];
-                } else if(!empty($namespace_map[T_FUNCTION][$file][strtolower($func_name)])) {
-                    $cs = $namespace_map[T_FUNCTION][$file][strtolower($func_name)];
-                    $found = $functions[strtolower($cs)];
-                } else if(!empty($functions[strtolower($namespace.$func_name)])) {
-                    $cs = $namespace.$func_name;
-                    $found = $functions[strtolower($cs)];
-                } else if(!empty($functions[strtolower($func_name)])) {
-                    $cs = $func_name;
-                    $found = $functions[strtolower($func_name)];
+        if($expression->kind == \ast\AST_NAME) {
+            $function_name = $expression->children['name'];
+
+            $function_fqsen =
+                $this->context->getScopeFQSEN()->withFunctionName(
+                    $this->context,
+                    $function_name
+                );
+
+            if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
+                $function_fqsen
+            )) {
+                Log::err(
+                    Log::EUNDEF,
+                    "call to undefined function {$function_name}()",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
+
+            $method = $this->context->getCodeBase()->getMethodByFQSEN(
+                $function_fqsen
+            );
+
+            // Check the arguments and make sure they're cool.
+            self::analyzeArgumentType($method, $node);
+            // arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
+
+            /*
+            if (!$this->context->isInternal()) {
+                // TODO:
+                // re-check the function's ast with these args
+                if(!$quick_mode) {
+                    pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
                 }
             } else {
-                if(!empty($functions[strtolower($func_name)])) {
-                    $cs = $func_name;
-                    $found = $functions[strtolower($func_name)];
+                if(!$found) {
+                    Log::err(
+                        Log::EAVAIL,
+                        "function {$function_name}() is not compiled into this version of PHP",
+                        $this->context->getFile(),
+                        $node->lineno
+                    );
                 }
             }
-            if(!$found) Log::err(Log::EUNDEF, "call to undefined function {$func_name}()", $file, $ast->lineno);
-            else {
-                // Ok, the function exists, but are we calling it correctly?
-                if($found instanceof ReflectionUnionType) echo "oops at $file:{$ast->lineno}\n";  // DEBUG
-                arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
-                if($found['file'] != 'internal') {
-                    // re-check the function's ast with these args
-                    if(!$quick_mode) pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
-                } else {
-                    if(!$found['avail']) {
-                        if(!$found) Log::err(Log::EAVAIL, "function {$func_name}() is not compiled into this version of PHP", $file, $ast->lineno);
+             */
+
+            // Iterate through the arguments looking for arguments
+            // that are not defined in this scope. If the method
+            // takes a pass-by-reference parameter, then we add
+            // the variable to the scope.
+            $arguments = $node->children['args'];
+            foreach ($arguments->children as $i => $argument) {
+                // Look for variables passed as arguments
+                if ($argument instanceof Node
+                    && $argument->kind === \ast\AST_VAR
+                ) {
+                    $parameter = $method->getParameterList()[$i] ?? null;
+
+                    // Check to see if the parameter at this
+                    // position is pass-by-reference.
+                    if (!$parameter || !$parameter->isPassByReference()) {
+                        continue;
+                    }
+
+                    $variable_name =
+                        self::astVariableName($argument);
+
+                    // Check to see if the variable is not yet defined
+                    if (!$this->context->getScope()->hasVariableWithName(
+                        $variable_name
+                    )) {
+                        $variable = Variable::fromNodeInContext(
+                            $argument,
+                            $this->context,
+                            false
+                        );
+
+                        // Set the element type on each element of
+                        // the list
+                        $variable->setUnionType(
+                            $parameter->getUnionType()
+                        );
+
+                        // Note that we're not creating a new scope, just
+                        // adding variables to the existing scope
+                        $this->context->addScopeVariable($variable);
                     }
                 }
             }
+
         } else if ($call->kind == \ast\AST_VAR) {
-            $name = self::astVariableName($call);
+            $name = self::astVariableName($expression);
             if(!empty($name)) {
-            // $var() - hopefully a closure, otherwise we don't know
-                if(array_key_exists($name, $scope[$current_scope]['vars'])) {
+                // $var() - hopefully a closure, otherwise we don't know
+
+                if ($this->context->getScope()->hasVariableWithName(
+                    $name
+                )) {
+                    $variable = $this->context->getScope()
+                        ->getVariableWithName($name);
+
+                    // TODO
+                    /*
                     if(($pos=strpos($scope[$current_scope]['vars'][$name]['type'], '{closure '))!==false) {
                         $closure_id = (int)substr($scope[$current_scope]['vars'][$name]['type'], $pos+9);
                         $func_name = '{closure '.$closure_id.'}';
@@ -584,10 +645,11 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                         arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
                         if(!$quick_mode) pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
                     }
+                     */
                 }
             }
         }
-        */
+
 
         return $this->context;
     }
