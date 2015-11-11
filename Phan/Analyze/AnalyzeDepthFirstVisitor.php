@@ -425,7 +425,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         $variable_name =
             self::astVariableName($node->children['var']);
 
-        if (!empty($variable)) {
+        if (!empty($variable_name)) {
             $this->context->addScopeVariable(
                 Variable::fromNodeInContext(
                     $node->children['var'],

@@ -288,7 +288,6 @@ class Analyzer {
         Context $context,
         Node $parent_node = null
     ) : Context {
-
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the

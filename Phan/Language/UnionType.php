@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -19,20 +20,9 @@ use \Phan\Language\Type\{
 use \Phan\Language\Type\NodeTypeKindVisitor;
 use \ast\Node;
 
-/**
- * Static data defining type names for builtin classes
- */
-$BUILTIN_CLASS_TYPES =
-    require(__DIR__.'/Type/BuiltinClassTypes.php');
-
-/**
- * Static data defining types for builtin functions
- */
-$BUILTIN_FUNCTION_ARGUMENT_TYPES =
-    require(__DIR__.'/Type/BuiltinFunctionArgumentTypes.php');
-
 class UnionType extends \ArrayObject  {
     use \Phan\Language\AST;
+    use \Phan\Memoize;
 
     /**
      * @param Type[] $type_list
@@ -42,6 +32,7 @@ class UnionType extends \ArrayObject  {
         foreach ($type_list as $type) {
             $this->addType($type);
         }
+
     }
 
     /**
@@ -150,10 +141,10 @@ class UnionType extends \ArrayObject  {
         string $class_name,
         string $property_name
     ) : UnionType {
-        global $BUILTIN_CLASS_TYPES;
+        $map = self::builtinClassTypeMap();
 
         $class_property_type_map =
-            $BUILTIN_CLASS_TYPES[strtolower($class_name)]['properties'];
+            $map[strtolower($class_name)]['properties'];
 
         $property_type_name =
             $class_property_type_map[$property_name];
@@ -170,28 +161,47 @@ class UnionType extends \ArrayObject  {
      * Formerly `function internal_varargs_check`
      */
     public static function builtinFunctionPropertyNameTypeMap(
-        FQSEN $function_fqsen
+        FQSEN $function_fqsen,
+        CodeBase $code_base
     ) : array {
-        global $BUILTIN_FUNCTION_ARGUMENT_TYPES;
+        $context = new Context($code_base);
 
-        $type_name_struct =
-            $BUILTIN_FUNCTION_ARGUMENT_TYPES[(string)$function_fqsen];
+        $map = self::builtinFunctionArgumentTypeMap();
 
-        if (!$type_name_struct) {
+        // Get the simple name of the function
+        $function_name = $function_fqsen->getMethodName();
+
+        // See if we have a mapping
+        if (!isset($map[$function_name])) {
             return [];
         }
 
-        $type_return = array_shift($type_name_struct);
+        $type_name_struct = $map[$function_name];
+        if (empty($type_name_struct)) {
+            return [];
+        }
+
+        // Figure out the return type
+        $return_type_name = array_shift($type_name_struct);
+        $return_type = $return_type_name
+            ? UnionType::fromStringInContext($return_type_name, $context)
+            : null;
+
         $name_type_name_map = $type_name_struct;
 
         $property_name_type_map = [];
 
         foreach ($name_type_name_map as $name => $type_name) {
             $property_name_type_map[$name] =
-                Type::fromFullyQualifiedString($type_name)->asUnionType();
+                Type::fromFullyQualifiedString(
+                    '\\::' . $type_name
+                )->asUnionType();
         }
 
-        return $property_name_type_map;
+        return [
+            'return_type' => $return_type,
+            'property_name_type_map' => $property_name_type_map,
+        ];
     }
 
     /**
@@ -542,6 +552,30 @@ class UnionType extends \ArrayObject  {
         return implode('|', array_map(function(Type $type) : string {
             return (string)$type;
         }, $this->getArrayCopy()));
+    }
+
+    /**
+     * @return array
+     * A map from builtin function name to type information
+     *
+     * @see \Phan\Language\Type\BuiltinFunctionArgumentTypes
+     */
+    private static function builtinFunctionArgumentTypeMap() {
+        static $map = false;
+        return $map ?:
+            ($map = require(__DIR__.'/Type/BuiltinFunctionArgumentTypes.php'));
+    }
+
+    /**
+     * @return array
+     * A map from builtin class names to type information
+     *
+     * @see \Phan\Language\Type\BuiltinFunctionArgumentTypes
+     */
+    private static function builtinClassTypeMap() {
+        static $map = false;
+        return $map ?:
+            ($map = require(__DIR__.'/Type/BuiltinClassTypes.php'));
     }
 
 }

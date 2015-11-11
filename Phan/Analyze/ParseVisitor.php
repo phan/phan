@@ -654,7 +654,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
             $method_fqsen =
                 $this->context->getScopeFQSEN()
-                ->withFunctionName($this->context, $function_name);
+                    ->withFunctionName($this->context, $function_name);
 
             if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
                 $method_fqsen
@@ -672,26 +672,13 @@ class ParseVisitor extends KindVisitorImplementation {
                 $method_fqsen
             );
 
-            // if($func_name == 'func_get_args' || $func_name == 'func_get_arg' || $func_name == 'func_num_args') {
             if (in_array($function_name, [
                 'func_get_args',
                 'func_get_arg',
                 'func_num_args'
             ])) {
-
-                // TODO: We don't actually have to check the class
-                //       scope. Scoped methods can be method or
-                //       functions.
-
-                // if(!empty($current_class)) {
-                if ($this->context->isClassScope()) {
-                    $method->setNumberOfOptionalParameters(999999);
-                    // $classes[$lc]['methods'][strtolower($current_function)]['optional'] = 999999;
-
-                } else {
-                    $method->setNumberOfOptionalParameters(999999);
-                    // $functions[strtolower($current_function)]['optional'] = 999999;
-                }
+                // TODO: whats going on here?
+                $method->setNumberOfOptionalParameters(999999);
             }
         }
 

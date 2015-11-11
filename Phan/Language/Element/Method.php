@@ -131,8 +131,64 @@ class Method extends TypedStructuralElement {
             $number_of_optional_parameters
         );
 
+        // See if we have any type information for this
+        // builtin function
+        $map = UnionType::builtinFunctionPropertyNameTypeMap(
+            $method->getFQSEN(), $context->getCodeBase()
+        );
+
+        // Set the return type if one is defined
+        if (!empty($map['return_type'])) {
+            $method->setUnionType($map['return_type']);
+        }
+
+        // Load properties if defined
+        foreach ($map['property_name_type_map'] ?? []
+            as $parameter_name => $parameter_type
+        ) {
+            $flags = 0;
+            $is_optional = false;
+
+            // Check to see if its a pass-by-reference parameter
+            if (strpos($parameter_name, '&') === 0) {
+                $flags |= \ast\flags\PARAM_REF;
+                $parameter_name = substr($parameter_name, 1);
+            }
+
+            // Check to see if its variadic
+            if (strpos($parameter_name, '...') !== false) {
+                $flags |= \ast\flags\PARAM_VARIADIC;
+                $parameter_name = str_replace('...', '', $parameter_name);
+            }
+
+            // Check to see if its an optional parameter
+            if (strpos($parameter_name, '=') !== false) {
+                $is_optional = true;
+                $parameter_name = str_replace('=', '', $parameter_name);
+            }
+
+            $parameter = new Parameter(
+                $context,
+                Comment::none(),
+                $parameter_name,
+                $parameter_type,
+                $flags
+            );
+
+            if ($is_optional) {
+                $parameter->setDefaultValue(null);
+                $parameter->setDefaultValueUnionType(
+                    NullType::instance()->asUnionType()
+                );
+            }
+
+            // Add the parameter
+            $method->parameter_list[] = $parameter;
+        }
+
         return $method;
     }
+
 
     /**
      * @return map[string,Method];
@@ -446,4 +502,25 @@ class Method extends TypedStructuralElement {
         );
     }
 
+    /**
+     * @return string
+     * A string representation of this method signature
+     */
+    public function __toString() : string {
+        $string = '';
+
+        $string .= (string)$this->getComment() . "\n";
+
+        $string .= 'function ' . $this->getName();
+
+        $string .= '(' . implode(', ', $this->getParameterList()) . ')';
+
+        if (!$this->getUnionType()->isEmpty()) {
+            $string .= ' : ' . (string)$this->getUnionType();
+        }
+
+        $string .= ';';
+
+        return $string;
+    }
 }

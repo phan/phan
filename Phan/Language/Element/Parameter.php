@@ -214,20 +214,49 @@ class Parameter extends Variable {
         );
     }
 
+    /**
+     * @return bool
+     * True if this parameter is variadic, i.e. can
+     * take an unlimited list of parameters and express
+     * them as an array.
+     */
     public function isVariadic() : bool {
         return (bool)(
             $this->getFlags() & \ast\flags\PARAM_VARIADIC
         );
     }
 
+    /**
+     * @return bool
+     * True if this parameter is pass-by-reference
+     * i.e. prefixed with '&'.
+     */
+    public function isPassByReference() : bool {
+        return (bool)(
+            $this->getFlags() & \ast\flags\PARAM_REF
+        );
+    }
+
     public function __toString() : string {
         $string = '';
 
-        if ($this->getUnionType()->isEmpty()) {
+        if (!$this->getUnionType()->isEmpty()) {
             $string .= (string)$this->getUnionType() . ' ';
         }
 
+        if ($this->isPassByReference()) {
+            $string .= '&';
+        }
+
         $string .= $this->getName();
+
+        if ($this->isVariadic()) {
+            $string .= ' ...';
+        }
+
+        if ($this->isOptional()) {
+            $string .= ' = null';
+        }
 
         return $string;
     }

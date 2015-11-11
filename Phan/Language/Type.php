@@ -24,18 +24,6 @@ use \Phan\Language\Type\{
 use \Phan\Language\UnionType;
 use \ast\Node;
 
-/**
- * Static data defining type names for builtin classes
- */
-$BUILTIN_CLASS_TYPES =
-    require(__DIR__.'/Type/BuiltinClassTypes.php');
-
-/**
- * Static data defining types for builtin functions
- */
-$BUILTIN_FUNCTION_ARGUMENT_TYPES =
-    require(__DIR__.'/Type/BuiltinFunctionArgumentTypes.php');
-
 class Type {
     use \Phan\Language\AST;
 
@@ -147,6 +135,9 @@ class Type {
             self::namespaceAndTypeFromString(
                 $fully_qualified_string
             );
+
+        assert(!empty($namespace) && !empty($type_name),
+            "Type '$fully_qualified_string' was not fully qualified");
 
         $type_name =
             self::canonicalNameFromName($type_name);
