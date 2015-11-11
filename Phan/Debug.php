@@ -75,11 +75,9 @@ class Debug {
 
         $string .= \ast\get_kind_name($node->kind);
 
-        /*
         $string .= ' ['
             . self::astFlagDescription($node->flags ?? 0)
             . ']';
-         */
 
         if (isset($node->lineno)) {
             $string .= ' #' . $node->lineno;
@@ -114,7 +112,7 @@ class Debug {
     public static function astFlagDescription(int $flag) : string {
         $flag_names = [];
         foreach (self::$AST_FLAG_ID_NAME_MAP as $id => $name) {
-            if ($flag & $id) {
+            if ($flag == $id) {
                 $flag_names[] = $name;
             }
         }

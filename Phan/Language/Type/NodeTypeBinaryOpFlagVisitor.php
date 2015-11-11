@@ -32,16 +32,110 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
     private $context;
 
     /**
-     *
+     * Create a new NodeTypeBinaryOpFlagVisitor
      */
     public function __construct(Context $context) {
         $this->context = $context;
     }
 
-    public function visitBinaryConcat(Node $node) {
+    /**
+     * Default visitor for node kinds that do not have
+     * an overriding method
+     *
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visit(Node $node) : UnionType {
+        $left = UnionType::fromNode(
+            $this->context,
+            $node->children['left']
+        );
+
+        $right = UnionType::fromNode(
+            $this->context,
+            $node->children['right']
+        );
+
+        if ($left->hasType(ArrayType::instance())
+            || $right->hasType(ArrayType::instance())
+        ) {
+            Log::err(
+                Log::ETYPE,
+                "invalid array operator",
+                $this->context->getFile(),
+                $node->lineno
+            );
+            return new UnionType();
+        } else if ($left->hasType(IntType::instance())
+            && $right->hasType(IntType::instance())
+        ) {
+            return IntType::instance()->asUnionType();
+        } else if ($left->hasType(FloatType::instance())
+            && $right->hasType(FloatType::instance())
+        ) {
+            return FloatType::instance()->asUnionType();
+        }
+
+        return new UnionType([
+            IntType::instance(),
+            FloatType::instance()
+        ]);
+    }
+
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryBoolAnd(Node $node) : UnionType {
+        return $this->visitBinaryBool($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryBoolXor(Node $node) : UnionType {
+        return $this->visitBinaryBool($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryBoolOr(Node $node) : UnionType {
+        return $this->visitBinaryBool($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryConcat(Node $node) : UnionType {
         return StringType::instance()->asUnionType();
     }
 
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
     private function visitBinaryOpCommon(Node $node) {
         $left =
             UnionType::fromNode(
@@ -81,45 +175,112 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
         return BoolType::instance()->asUnionType();
     }
 
-    public function visitBinaryIsIdentical(Node $node) {
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryIsIdentical(Node $node) : UnionType {
         return $this->visitBinaryOpCommon($node);
     }
 
-    public function visitBinaryIsNotIdentical(Node $node) {
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryIsNotIdentical(Node $node) : UnionType {
         return $this->visitBinaryOpCommon($node);
     }
 
-    public function visitBinaryIsEqual(Node $node) {
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryIsEqual(Node $node) : UnionType {
         return $this->visitBinaryOpCommon($node);
     }
 
-    public function visitBinaryIsNotEqual(Node $node) {
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryIsNotEqual(Node $node) : UnionType {
         return $this->visitBinaryOpCommon($node);
     }
 
-    public function visitBinaryIsSmaller(Node $node) {
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryIsSmaller(Node $node) : UnionType {
         return $this->visitBinaryOpCommon($node);
     }
 
-    public function visitBinaryIsSmallerOrEqual(Node $node) {
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryIsSmallerOrEqual(Node $node) : UnionType {
         return $this->visitBinaryOpCommon($node);
     }
 
-    public function visitBinaryIsGreater(Node $node) {
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryIsGreater(Node $node) : UnionType {
         return $this->visitBinaryOpCommon($node);
     }
 
-    public function visitBinaryIsGreaterOrEqual(Node $node) {
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryIsGreaterOrEqual(Node $node) : UnionType {
         return $this->visitBinaryOpCommon($node);
     }
 
 
-    public function visitBinaryAdd(Node $node) {
-        $left =
-            UnionType::fromNode($this->context, $node->children['left']);
+    /**
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryAdd(Node $node) : UnionType {
+        $left = UnionType::fromNode(
+            $this->context,
+            $node->children['left']
+        );
 
-        $right =
-            UnionType::fromNode($this->context, $node->children['right']);
+        $right = UnionType::fromNode(
+            $this->context,
+            $node->children['right']
+        );
 
         // fast-track common cases
         if ($left->isType(IntType::instance())
@@ -137,15 +298,19 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
         }
 
         $left_is_array = (
-            !empty($left->asNonGenericTypes()) && empty($left->nonGenericTypes())
+            !empty($left->asNonGenericTypes())
+            && empty($left->nonGenericTypes())
         );
 
         $right_is_array = (
-            !empty($right->asNonGenericTypes()) && empty($right->nonGenericTypes())
+            !empty($right->asNonGenericTypes())
+            && empty($right->nonGenericTypes())
         );
 
         if($left_is_array
-            && !$right->canCastToUnionType(ArrayType::instance()->asUnionType())) {
+            && !$right->canCastToUnionType(
+                ArrayType::instance()->asUnionType())
+        ) {
             Log::err(
                 Log::ETYPE,
                 "invalid operator: left operand is array and right is not",
@@ -175,43 +340,17 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
         ]);
     }
 
-    public function visit(Node $node) {
-        $left =
-            UnionType::fromNode(
-                $this->context,
-                $node->children['left']
-            );
-
-        $right =
-            UnionType::fromNode(
-                $this->context,
-                $node->children['right']
-            );
-
-        if ($left->hasType(ArrayType::instance())
-            || $right->hasType(ArrayType::instance())
-        ) {
-            Log::err(
-                Log::ETYPE,
-                "invalid array operator",
-                $this->context->getFile(),
-                $node->lineno
-            );
-            return new UnionType();
-        } else if ($left->hasType(IntType::instance())
-            && $right->hasType(IntType::instance())
-        ) {
-            return IntType::instance()->asUnionType();
-        } else if ($left->hasType(FloatType::instance())
-            && $right->hasType(FloatType::instance())
-        ) {
-            return FloatType::instance()->asUnionType();
-        }
-
-        return new UnionType([
-            IntType::instance(),
-            FloatType::instance()
-        ]);
+    /**
+     * Common visitor for binary boolean operations
+     *
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    private function visitBinaryBool(Node $node) : UnionType {
+        return BoolType::instance()->asUnionType();
     }
 
 }
