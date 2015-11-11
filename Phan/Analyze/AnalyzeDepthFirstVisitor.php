@@ -279,6 +279,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
 
                     continue;
                 }
+
                 $variable_name =
                     self::astVariableName($use->children['name']);
 
@@ -286,35 +287,50 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                     continue;
                 }
 
+                $variable = null;
+
+                // Check to see if the variable exists in this scope
                 if (!$this->context->getScope()->hasVariableWithName(
                     $variable_name
                 )) {
-                    Log::err(
-                        Log::EVAR,
-                        "Variable \${$variable_name} is not defined",
-                        $this->context->getFile(),
-                        $node->lineno
-                    );
-                    continue;
-                }
 
-                $variable =
-                    $this->context->getScope()->getVariableWithName(
-                        $variable_name
-                    );
+                    // If this is not pass-by-reference variable we
+                    // have a problem
+                    if (!($use->flags & \ast\flags\PARAM_REF)) {
+                        Log::err(
+                            Log::EVAR,
+                            "Variable \${$variable_name} is not defined",
+                            $this->context->getFile(),
+                            $node->lineno
+                        );
 
-                // If its a reference variable, we pass the variable
-                // directly into the closure's scope
-                if($use->flags & \ast\flags\PARAM_REF) {
-                    $context =
-                        $context->withScopeVariable($variable);
-
-                // If its not a reference, we pass a copy into the
-                // closure's scope
+                        continue;
+                    } else {
+                        // If the variable doesn't exist, but its
+                        // a pass-by-reference variable, we can
+                        // just create it
+                        $variable = Variable::fromNodeInContext(
+                            $use,
+                            $this->context,
+                            false
+                        );
+                    }
                 } else {
-                    $context =
-                        $context->withScopeVariable(clone($variable));
+                    $variable =
+                        $this->context->getScope()->getVariableWithName(
+                            $variable_name
+                        );
+
+                    // If this isn't a pass-by-reference variable, we
+                    // clone the variable so state within this scope
+                    // doesn't update the outer scope
+                    if (!($use->flags & \ast\flags\PARAM_REF)) {
+                        $variable = clone($variable);
+                    }
                 }
+
+                // Pass the variable into a new scope
+                $context = $context->withScopeVariable($variable);
             }
         }
 
