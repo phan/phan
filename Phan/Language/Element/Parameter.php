@@ -248,7 +248,7 @@ class Parameter extends Variable {
             $string .= '&';
         }
 
-        $string .= $this->getName();
+        $string .= "\${$this->getName()}";
 
         if ($this->isVariadic()) {
             $string .= ' ...';

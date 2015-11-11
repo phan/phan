@@ -385,7 +385,6 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitPrint(Node $node) : Context {
-
         $type = UnionType::fromNode(
             $this->context,
             $node->children['expr']

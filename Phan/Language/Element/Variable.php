@@ -107,7 +107,13 @@ class Variable extends TypedStructuralElement {
     }
 
     public function __toString() : string {
-        return "{$this->getUnionType()} {$this->getName()}";
+        $string = '';
+
+        if (!$this->getUnionType()->isEmpty()) {
+            $string .= "$this->getUnionType() ";
+        }
+
+        return "$string\${$this->getName()}";
     }
 
 }

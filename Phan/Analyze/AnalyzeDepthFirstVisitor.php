@@ -349,9 +349,14 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
     public function visitForeach(Node $node) : Context {
         if($node->children['value']->kind == \ast\AST_LIST) {
             foreach($node->children['value']->children as $child_node) {
-                $this->context->addScopeVariable(
-                    Variable::fromNodeInContext($child_node, $this->context)
-                );
+                $variable =
+                    Variable::fromNodeInContext(
+                        $child_node,
+                        $this->context,
+                        false
+                    );
+
+                $this->context->addScopeVariable($variable);
             }
 
         // Otherwise, read the value as regular variable and
