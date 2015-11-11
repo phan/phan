@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Debug;
-use \Phan\Deprecated;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \ast\Node;

@@ -3,7 +3,6 @@ namespace Phan\Analyze;
 
 use \Phan\Configuration;
 use \Phan\Debug;
-use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
@@ -578,6 +577,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                     $this->context->getFile(),
                     $node->lineno
                 );
+
+                return $this->context;
             }
 
             $method = $this->context->getCodeBase()->getMethodByFQSEN(
@@ -585,8 +586,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             );
 
             // Check the arguments and make sure they're cool.
-            self::analyzeArgumentType($method, $node);
-            // arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
+            self::analyzeArgumentType($method, $node, $this->context);
 
             /*
             if (!$this->context->isInternal()) {

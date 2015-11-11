@@ -252,23 +252,12 @@ class FQSEN {
         Context $context,
         string $method_name
     ) : FQSEN {
-        $fqsen = clone($this);
 
-        // If its not fully qualified already, see if we have
-        // a mapped NS for it.
-        if(0 !== strpos($method_name, '\\')) {
-            if ($context->hasNamespaceMapFor(T_FUNCTION, $method_name)) {
-                return
-                    $context->getNamespaceMapFor(
-                        T_FUNCTION,
-                        $method_name
-                    );
-            }
-        }
+        $fqsen = clone($this)
+            ->withClassName($context, '');
 
-        // Check again to see if its fully qualified, and if so
-        // extract the namespace
-        if(0 == strpos($method_name, '\\')) {
+        // Its fully qualified. Ship it.
+        if(0 === strpos($method_name, '\\')) {
             $fq_method_name_elements =
                 array_filter(explode('\\', $method_name));
 
@@ -278,10 +267,24 @@ class FQSEN {
             $namespace =
                 '\\' . implode('\\', $fq_method_name_elements);
 
-            $fqsen = $fqsen->withNamespace($namespace);
+            return $fqsen
+                ->withNamespace($namespace)
+                ->withMethodName($method_name);
         }
 
-        $fqsen->method_name = $method_name;
+        // See if we have a namespace map for it
+        if ($context->hasNamespaceMapFor(T_FUNCTION, $method_name)) {
+            return $context->getNamespaceMapFor(
+                T_FUNCTION, $method_name
+            );
+        }
+
+        // Otherwise, this is a top-level function
+        $fqsen = $fqsen
+            ->withNamespace('\\')
+            ->withMethodName($context, $method_name);
+
+        // print "$fqsen\n";
 
         return $fqsen;
     }

@@ -3,7 +3,6 @@ namespace Phan\Analyze;
 
 use \Phan\Configuration;
 use \Phan\Debug;
-use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
@@ -523,7 +522,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                 );
             }
 
-            self::analyzeArgumentType($method, $node);
+            self::analyzeArgumentType($method, $node, $this->context);
 
             /*
             if($method->getContext()->getFile() != 'internal') {

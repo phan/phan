@@ -185,26 +185,30 @@ class Analyzer {
      */
     private function analyzeClasses(CodeBase $code_base) {
 
-        $class_count = count($code_base->getClassMap());
+        $class_count = 2 * count($code_base->getClassMap());
 
         // Take a pass to import all details from ancestors
         $i = 0;
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
+            CLI::progress('classes  ',  ++$i/$class_count);
+
             // Make sure the parent classes exist
             self::analyzeParentClassExists($code_base, $clazz);
 
             // The import them
             $clazz->importAncestorClasses($code_base);
-
-            CLI::progress('classes  ',  ($i++)/$class_count);
         }
 
         // Run a few checks on all of the classes
-        $i = 0;
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
+            CLI::progress('classes  ',  ++$i/$class_count);
+
+            if ($clazz->getContext()->isInternal()) {
+                continue;
+            }
+
             self::analyzeDuplicateClass($code_base, $clazz);
             self::analyzeParentConstructorCalled($code_base, $clazz);
-            CLI::progress('classes  ',  ++$i/$class_count);
         }
     }
 
@@ -218,8 +222,13 @@ class Analyzer {
         $function_count = count($code_base->getMethodMap());
         $i = 0;
         foreach ($code_base->getMethodMap() as $fqsen_string => $method) {
-            self::analyzeDuplicateFunction($code_base, $method);
             CLI::progress('functions',  (++$i)/$function_count);
+
+            if ($method->getContext()->isInternal()) {
+                continue;
+            }
+
+            self::analyzeDuplicateFunction($code_base, $method);
         }
     }
 

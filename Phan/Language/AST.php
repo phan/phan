@@ -252,4 +252,76 @@ trait AST {
         return (string)$node->children['name'];
     }
 
+    /**
+     * Perform some backwards compatibility checks on a node
+     *
+     * @param Context $context
+     * The context in which the node appears
+     *
+     * @param Node $node
+     * The node we'd like to check
+     *
+     * @return null
+     *
+     * @see \Phan\Deprecated::bc_check
+     * Formerly `function bc_check`
+     */
+    public static function astBackwardCompatibilityCheck(
+        Context $context,
+        Node $node
+    ) {
+        if(!($node->children['expr'] instanceof \node\Node)) {
+            return;
+        }
+
+        if($node->children['expr']->kind !== \node\node_DIM) {
+            return;
+        }
+
+        $temp = $node->children['expr']->children['expr'];
+        $lnode = $temp;
+        if(!($temp->kind == \node\node_PROP
+            || $temp->kind == \node\node_STATIC_PROP
+        )) {
+            return;
+        }
+
+        while($temp instanceof \node\Node
+            && ($temp->kind == \node\node_PROP
+            || $temp->kind == \node\node_STATIC_PROP)
+        ) {
+            $lnode = $temp;
+
+            // Lets just hope the 0th is the expression
+            // we want
+            $temp = array_values($temp->children)[0];
+        }
+
+        if(!($temp instanceof \node\Node)) {
+            return;
+        }
+
+        if(($lnode->children['prop'] instanceof \node\Node
+            && $lnode->children['prop']->kind == \node\node_VAR
+            ) && ($temp->kind == \node\node_VAR
+            || $temp->kind == \node\node_NAME)
+        ) {
+            $ftemp = new \SplFileObject($file);
+            $ftemp->seek($node->lineno-1);
+            $line = $ftemp->current();
+            unset($ftemp);
+            if(strpos($line,'}[') === false
+                || strpos($line,']}') === false
+                || strpos($line,'>{') === false
+            ) {
+                Log::err(
+                    Log::ECOMPAT,
+                    "expression may not be PHP 7 compatible",
+                    $file,
+                    $node->lineno
+                );
+            }
+        }
+    }
+
 }

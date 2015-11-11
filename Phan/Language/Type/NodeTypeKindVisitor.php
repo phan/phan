@@ -642,7 +642,8 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             && $function->getUnionType()->isEmpty()
         ) {
             $map = UnionType::builtinFunctionPropertyNameTypeMap(
-                $function_fqsen
+                $function_fqsen,
+                $this->context->getCodeBase()
             );
 
             return $map[$function_name] ?? new UnionType();

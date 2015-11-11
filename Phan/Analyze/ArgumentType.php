@@ -2,8 +2,25 @@
 namespace Phan\Analyze;
 
 use \Phan\Debug;
+use \Phan\Language\Context;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
+use \Phan\Language\Type\{
+    ArrayType,
+    BoolType,
+    CallableType,
+    FloatType,
+    GenericArrayType,
+    IntType,
+    MixedType,
+    NativeType,
+    NullType,
+    ObjectType,
+    ResourceType,
+    ScalarType,
+    StringType,
+    VoidType
+};
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -13,6 +30,15 @@ trait ArgumentType {
     /**
      * Check to see if the given Clazz is a duplicate
      *
+     * @param Method $method
+     * The method we're analyzing arguments for
+     *
+     * @param Node $node
+     * The node holding the method call we're looking at
+     *
+     * @param Context $context
+     * The context in which we see the call
+     *
      * @return null
      *
      * @see \Phan\Deprecated\Pass2::arg_check
@@ -20,7 +46,8 @@ trait ArgumentType {
      */
     public static function analyzeArgumentType(
         Method $method,
-        Node $node
+        Node $node,
+        Context $context
     ) {
         $ok = false;
         $varargs = false;
@@ -38,7 +65,7 @@ trait ArgumentType {
 
         // Special common cases where we want slightly
         // better multi-signature error messages
-        if($method->getContext()->getFile() == 'internal') {
+        if($method->getContext()->isInternal()) {
             switch($method->getName()) {
             case 'join':
             case 'implode':
@@ -48,19 +75,19 @@ trait ArgumentType {
                 if($argcount == 1) {
                     self::analyzeNodeUnionTypeCast(
                         $arglist->children[0],
-                        $method->getContext(),
-                        new UnionType(['array']),
+                        $context,
+                        ArrayType::instance()->asUnionType(),
                         "arg#1(pieces) is %s but {$method->getName()}() takes array when passed only 1 arg"
                     );
                     return;
                 } else if($argcount == 2) {
                     $arg1_type = UnionType::fromNode(
-                        $method->getContext(),
+                        $context,
                         $arglist->children[0]
                     );
 
                     $arg2_type = UnionType::fromNode(
-                        $method->getContext(),
+                        $context,
                         $arglist->children[1]
                     );
 
@@ -71,19 +98,19 @@ trait ArgumentType {
                             Log::err(
                                 Log::EPARAM,
                                 "arg#2(glue) is $arg2_type but {$method->getName()}() takes string when arg#1 is array",
-                                $method->getContext()->getFile(),
-                                $method->getContext()->getLineNumberStart()
+                                $context->getFile(),
+                                $context->getLineNumberStart()
                             );
                         }
                     } else if((string)$arg1_type == 'string') {
-                        if (!$arg1_type->canCastToUnionType(
-                            ArrayType::intance()->asUnionType()
+                        if (!$arg2_type->canCastToUnionType(
+                            ArrayType::instance()->asUnionType()
                         )) {
                             Log::err(
                                 Log::EPARAM,
                                 "arg#2(pieces) is $arg2_type but {$method->getName()}() takes array when arg#1 is string",
-                                $method->getContext()->getFile(),
-                                $method->getContext()->getLineNumberStart()
+                                $context->getFile(),
+                                $context->getLineNumberStart()
                             );
                         }
                     }
@@ -101,8 +128,8 @@ trait ArgumentType {
                     Log::err(
                         Log::EPARAM,
                         "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
+                        $context->getFile(),
+                        $context->getLineNumberStart()
                     );
 
                     return;
@@ -110,16 +137,16 @@ trait ArgumentType {
 
                 self::analyzeNodeUnionTypeCast(
                     $arglist->children[$argcount - 1],
-                    $method->getContext(),
-                    new UnionType(['callable']),
+                    $context,
+                    CallableType::instance()->asUnionType(),
                     "The last argument to {$method->getName()} must be a callable"
                 );
 
                 for ($i=0; $i < ($argcount - 1); $i++) {
                     self::analyzeNodeUnionTypeCast(
                         $arglist->children[$i],
-                        $method->getContext(),
-                        new UnionType(['callable']),
+                        $context,
+                        CallableType::instance()->asUnionType(),
                         "arg#".($i+1)." is %s but {$method->getName()}() takes array"
                     );
                 }
@@ -131,8 +158,8 @@ trait ArgumentType {
                     Log::err(
                         Log::EPARAM,
                         "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
+                        $context->getFile(),
+                        $context->getLineNumberStart()
                     );
                     return;
                 }
@@ -141,23 +168,23 @@ trait ArgumentType {
                 // can be a variable number of arrays before it
                 self::analyzeNodeUnionTypeCast(
                     $arglist->children[$argcount - 1],
-                    $method->getContext(),
-                    new UnionType(['callable']),
+                    $context,
+                    CallableType::instance()->asUnionType(),
                     "The last argument to {$method->getName()} must be a callable"
                 );
 
                 self::analyzeNodeUnionTypeCast(
                     $arglist->children[$argcount - 2],
-                    $method->getContext(),
-                    new UnionType(['callable']),
+                    $context,
+                    CallableType::instance()->asUnionType(),
                     "The second last argument to {$method->getName()} must be a callable"
                 );
 
                 for($i=0; $i < ($argcount-2); $i++) {
                     self::analyzeNodeUnionTypeCast(
                         $arglist->children[$i],
-                        $method->getContext(),
-                        new UnionType(['array']),
+                        $context,
+                        ArrayType::instance()->asUnionType(),
                         "arg#".($i+1)." is %s but {$method->getName()}() takes array"
                     );
                 }
@@ -169,8 +196,8 @@ trait ArgumentType {
                     // If we have just one arg it must be a string token
                     self::analyzeNodeUnionTypeCast(
                         $arglist->children[0],
-                        $method->getContext(),
-                        new UnionType(['array']),
+                        $context,
+                        ArrayType::instance()->asUnionType(),
                         "arg#1(token) is %s but {$method->getName()}() takes string when passed only one arg"
                     );
                 }
@@ -182,8 +209,8 @@ trait ArgumentType {
                     // If we have just one arg it must be an array
                     if (!self::analyzeNodeUnionTypeCast(
                         $arglist->children[0],
-                        $method->getContext(),
-                        new UnionType(['array']),
+                        $context,
+                        ArrayType::instance()->asUnionType(),
                         "arg#1(values) is %s but {$method->getName()}() takes array when passed only one arg"
                     )) {
                         return;
@@ -194,7 +221,8 @@ trait ArgumentType {
                 break;
             default:
                 if(UnionType::builtinFunctionPropertyNameTypeMap(
-                    $method->getFQSEN(), $method->getContext()->getCodeBase()
+                    $method->getFQSEN(),
+                    $context->getCodeBase()
                 )) {
                     $varargs = true;
                 }
@@ -205,8 +233,8 @@ trait ArgumentType {
                 Log::err(
                     Log::EDEP,
                     "Call to deprecated function {$method->getName()}() defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
-                    $method->getContext()->getFile(),
-                    $method->getContext()->getLineNumberStart()
+                    $context->getFile(),
+                    $context->getLineNumberStart()
                 );
             }
         }
@@ -239,10 +267,10 @@ trait ArgumentType {
             $method_fqsen =
                 $method->getFQSEN()->withAlternateId(++$alternate_id);
 
-            while($method->getContext()->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
+            while($context->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
                 // Get the method with the given FQSEN
                 $alt_method =
-                    $method->getContext()->getCodeBase()->getMethodByFQSEN(
+                    $context->getCodeBase()->getMethodByFQSEN(
                         $method_fqsen
                     );
 
@@ -264,14 +292,15 @@ trait ArgumentType {
                     Log::err(
                         Log::EPARAM,
                         "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
+                        $context->getFile(),
+                        $context->getLineNumberStart()
                     );
                 } else {
-                    Log::err(Log::EPARAM,
+                    Log::err(
+                        Log::EPARAM,
                         "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s) defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
+                        $context->getFile(),
+                        $context->getLineNumberStart()
                     );
                 }
             }
@@ -296,14 +325,14 @@ trait ArgumentType {
                     Log::err(
                         Log::EPARAM,
                         "call with $argcount arg(s) to {$method->getName()}() which only takes {$max} arg(s)",
-                        $method->getContext()->getFile(),
+                        $context->getFile(),
                         $node->lineno
                     );
                 else
                     Log::err(
                         Log::EPARAM,
                         "call with $argcount arg(s) to {$method->getName()}() which only takes {$max} arg(s) defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
-                        $method->getContext()->getFile(),
+                        $context->getFile(),
                         $node->lineno
                     );
             }
@@ -339,7 +368,7 @@ trait ArgumentType {
             Log::err(
                 Log::ETYPE,
                 $err,
-                $method->getContext()->getFile(),
+                $context->getFile(),
                 $node->lineno
             );
         }

@@ -122,7 +122,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
 
     public function visitInstanceOf(Node $node) : string {
         if($node->children[1]->kind == \ast\AST_NAME) {
-            return qualified_name($file, $node->children[1], $namespace);
+            return self::astQualifiedName($this->context, $node);
         }
 
         return '';

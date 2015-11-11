@@ -3,7 +3,6 @@ namespace Phan\Analyze;
 
 use \Phan\Configuration;
 use \Phan\Debug;
-use \Phan\Deprecated;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
@@ -683,10 +682,7 @@ class ParseVisitor extends KindVisitorImplementation {
         }
 
         if(Configuration::instance()->backward_compatibility_checks) {
-            \Phan\Deprecated::bc_check(
-                $this->context->getFile(),
-                $node
-            );
+            self::astBackwardCompatibilityCheck($this->context, $node);
         }
 
         return $this->context;
@@ -732,7 +728,7 @@ class ParseVisitor extends KindVisitorImplementation {
      */
     public function visitReturn(Node $node) : Context {
         if (Configuration::instance()->backward_compatibility_checks) {
-            Deprecated::bc_check($this->context->getFile(), $node);
+            self::astBackwardCompatibilityCheck($this->context, $node);
         }
 
         return $this->context;
