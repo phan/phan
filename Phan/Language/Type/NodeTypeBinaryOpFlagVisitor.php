@@ -85,6 +85,10 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
         ]);
     }
 
+    public function visitBinaryOp(Node $node) : UnionType {
+        return $this->visitBinaryBool($node);
+    }
+
     /**
      * @param Node $node
      * A node to check types on
@@ -227,7 +231,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
      * The resulting type(s) of the binary operation
      */
     public function visitBinaryIsSmaller(Node $node) : UnionType {
-        return $this->visitBinaryOpCommon($node);
+        return $this->visitBinaryBool($node);
     }
 
     /**
@@ -238,7 +242,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
      * The resulting type(s) of the binary operation
      */
     public function visitBinaryIsSmallerOrEqual(Node $node) : UnionType {
-        return $this->visitBinaryOpCommon($node);
+        return $this->visitBinaryBool($node);
     }
 
     /**
@@ -249,7 +253,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
      * The resulting type(s) of the binary operation
      */
     public function visitBinaryIsGreater(Node $node) : UnionType {
-        return $this->visitBinaryOpCommon($node);
+        return $this->visitBinaryBool($node);
     }
 
     /**
@@ -260,7 +264,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
      * The resulting type(s) of the binary operation
      */
     public function visitBinaryIsGreaterOrEqual(Node $node) : UnionType {
-        return $this->visitBinaryOpCommon($node);
+        return $this->visitBinaryBool($node);
     }
 
 

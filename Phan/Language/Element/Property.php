@@ -51,44 +51,6 @@ class Property extends TypedStructuralElement {
     }
 
     /**
-     * @param Context $context
-     * The context in which the property appears
-     *
-     * @param \ReflectionProperty $reflection_property
-     * The property to create a property structural element
-     * from
-     *
-     * @return Property
-     * Get a Property structural element from a ReflectionProperty
-     * in a given context
-     */
-    /*
-    public static function fromReflectionProperty(
-        Context $context,
-        \ReflectionProperty $reflection_property
-    ) : Property {
-
-        $type =
-            UnionType::builtinClassPropertyType(
-            );
-
-        $type =
-            $INTERNAL_CLASS_VARS[strtolower($class->getName())]['properties'][$name]
-            ?? self::typeMap(gettype($value));
-
-        $property = new Property(
-            $context,
-            Comment::none(),
-            $name,
-            new UnionType($type),
-            $property->getModifiers()
-        );
-
-        return $property;
-    }
-     */
-
-    /**
      * @return UnionType
      * Get the declared type of the property
      */

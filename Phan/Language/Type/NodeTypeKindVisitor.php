@@ -110,14 +110,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitBinaryOp(Node $node) : UnionType {
-        /*
-        if($node->kind == \ast\AST_BINARY_OP) {
-            $node_flags = $node->flags;
-        } else {
-            $node_flags = $node->kind;
-        }
-        */
-
         return
             (new Element($node))->acceptFlagVisitor(
                 new NodeTypeBinaryOpFlagVisitor($this->context)
@@ -804,7 +796,10 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitUnaryOp(Node $node) : UnionType {
-        return Type::fromObject($node->children['expr'])->asUnionType();
+        return UnionType::fromNode(
+            $this->context,
+            $node->children['expr']
+        );
     }
 
     /**

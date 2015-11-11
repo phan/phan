@@ -261,6 +261,7 @@ class Method extends TypedStructuralElement {
                     Comment::none(),
                     $param->name,
                     new UnionType(),
+                    // TODO: what was this below?
                     // new UnionType([(empty($arginfo) ? '' : (next($arginfo) ?: ''))]),
                     $flags
                 );
