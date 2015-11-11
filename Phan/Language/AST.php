@@ -200,7 +200,7 @@ trait AST {
             if(!Variable::isSuperglobalVariableWithName($variable_name)) {
                 Log::err(
                     Log::EVAR,
-                    "Variable $variable_name is not defined",
+                    "Variable \$$variable_name is not defined",
                     $context->getFile(),
                     $node->lineno
                 );

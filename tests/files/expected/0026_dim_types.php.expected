@@ -1,0 +1,1 @@
+%s:47 TypeError arg#1 (a) is \string but f() takes int defined at %s:21

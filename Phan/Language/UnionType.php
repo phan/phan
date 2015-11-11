@@ -194,8 +194,7 @@ class UnionType extends \ArrayObject  {
         foreach ($name_type_name_map as $name => $type_name) {
             $property_name_type_map[$name] = empty($type_name)
                 ? new UnionType()
-                : Type::fromStringInContext($type_name, $context)
-                    ->asUnionType();
+                : UnionType::fromStringInContext($type_name, $context);
         }
 
         return [
@@ -509,6 +508,26 @@ class UnionType extends \ArrayObject  {
                 return $type->asGenericType();
             }, $this->getArrayCopy())
         );
+    }
+
+    /**
+     * @param CodeBase
+     * The code base to use in order to find super classes, etc.
+     *
+     * @return UnionType
+     * Expands all class types to all inherited classes returning
+     * a superset of this type.
+     */
+    public function asExpandedTypes(CodeBase $code_base) : UnionType {
+        $union_type = clone($this);
+
+        foreach ($this as $type) {
+            $union_type->addUnionType(
+                $type->asExpandedTypes($code_base)
+            );
+        }
+
+        return $union_type;
     }
 
     /**

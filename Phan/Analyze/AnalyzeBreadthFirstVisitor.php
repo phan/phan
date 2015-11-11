@@ -128,8 +128,10 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
 
         // Get the type of the right side of the
         // assignment
-        $right_type =
-            UnionType::fromNode($this->context, $node->children['expr']);
+        $right_type = UnionType::fromNode(
+            $this->context,
+            $node->children['expr']
+        );
 
         $variable = null;
 
@@ -147,6 +149,13 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             )) {
                 $variable = $this->context->getScope()->getVariableWithName(
                     $variable_name
+                );
+
+            // If it didn't exist, create the variable
+            } else {
+                $variable = Variable::fromNodeInContext(
+                    $node->children['var'],
+                    $this->context
                 );
             }
 
@@ -584,12 +593,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 $function_fqsen
             );
 
-            // Check the arguments and make sure they're cool.
-            self::analyzeArgumentType($method, $node, $this->context);
-
             /*
             if (!$this->context->isInternal()) {
-                // TODO:
                 // re-check the function's ast with these args
                 if(!$quick_mode) {
                     pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
@@ -649,6 +654,9 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                     }
                 }
             }
+
+            // Check the arguments and make sure they're cool.
+            self::analyzeArgumentType($method, $node, $this->context);
 
         } else if ($expression->kind == \ast\AST_VAR) {
             $name = self::astVariableName($expression);

@@ -33,11 +33,26 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
     /**
      * Default visitor for node kinds that do not have
      * an overriding method
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return string
+     * The class name represented by the given call
      */
     public function visit(Node $node) : string {
         return '';
     }
 
+    /**
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return string
+     * The class name represented by the given call
+     */
     public function visitNew(Node $node) : string {
 
         // TODO: What do we do with calls of the form
@@ -112,14 +127,38 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
         return '';
     }
 
+    /**
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return string
+     * The class name represented by the given call
+     */
     public function visitStaticCall(Node $node) : string {
         return $this->visitNew($node);
     }
 
+    /**
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return string
+     * The class name represented by the given call
+     */
     public function visitClassConst(Node $node) : string {
         return $this->visitNew($node);
     }
 
+    /**
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return string
+     * The class name represented by the given call
+     */
     public function visitInstanceOf(Node $node) : string {
         if($node->children[1]->kind == \ast\AST_NAME) {
             return self::astQualifiedName($this->context, $node);
@@ -128,6 +167,14 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
         return '';
     }
 
+    /**
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return string
+     * The class name represented by the given call
+     */
     public function visitMethodCall(Node $node) : string {
 
         if($node->children['expr']->kind == \ast\AST_VAR) {
@@ -279,6 +326,14 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
         return '';
     }
 
+    /**
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return string
+     * The class name represented by the given call
+     */
     public function visitProp(Node $node) : string {
         return $this->visitMethodCall($node);
     }

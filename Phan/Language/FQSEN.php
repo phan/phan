@@ -162,6 +162,17 @@ class FQSEN {
     }
 
     /**
+     * @param Type $type
+     * A type to get an FQSEN for
+     *
+     * @return FQSEN
+     * An FQSEN representing the given type
+     */
+    public static function fromType(Type $type) : FQSEN {
+        return FQSEN::fromFullyQualifiedString((string)$type);
+    }
+
+    /**
      * @return FQSEN[]
      * An infinite list of alternative FQSENs
      */

@@ -486,8 +486,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
             );
 
         // Ensure that we're not getting native types here
-        assert(!Type::fromFullyQualifiedString((string)$class_fqsen)
-                ->isNativeType(),
+        assert(!Type::fromFullyQualifiedString((string)$class_fqsen)->isNativeType(),
             "Cannot call methods on native type $class_fqsen in {$this->context}");
 
         // Check to see if the class actually exists
@@ -531,6 +530,11 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
 
         $method = $clazz->getMethodByName($method_name);
 
+        self::analyzeArgumentType($method, $node, $this->context);
+
+
+        // TODO: whats this?
+        /*
         if($method->getName() != 'dynamic') {
             if(array_key_exists('avail', $method)
                 && !$method['avail']
@@ -545,24 +549,23 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
 
             self::analyzeArgumentType($method, $node, $this->context);
 
-            /*
-            if($method->getContext()->getFile() != 'internal') {
-                // re-check the function's ast with these args
-                if(!$quick_mode) {
-                    pass2(
-                        $method['file'],
-                        $method['namespace'],
-                        $method['ast'],
-                        $method['scope'],
-                        $ast,
-                        $classes[strtolower($class_name)],
-                        $method,
-                        $parent_scope
-                    );
-                }
-            }
-             */
+            // if($method->getContext()->getFile() != 'internal') {
+            //     // re-check the function's ast with these args
+            //     if(!$quick_mode) {
+            //         pass2(
+            //             $method['file'],
+            //             $method['namespace'],
+            //             $method['ast'],
+            //             $method['scope'],
+            //             $ast,
+            //             $classes[strtolower($class_name)],
+            //             $method,
+            //             $parent_scope
+            //         );
+            //     }
+            // }
         }
+        */
 
         return $this->context;
     }

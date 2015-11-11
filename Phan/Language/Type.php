@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use \Phan\CodeBase;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Type\NodeTypeKindVisitor;
@@ -51,14 +52,20 @@ class Type {
         string $name,
         string $namespace
     ) {
-        assert(!empty($name), "Type name cannot be empty");
+        assert(!empty($name),
+            "Type name cannot be empty");
 
-        if (!$namespace || 0 !== strpos($namespace, '\\')) {
-            throw new \Exception("Namespace must be fully qualified");
-        }
+        assert(false === strpos($name, '|'),
+            "Type name '{$name}' may not contain a pipe.");
 
-        assert(!empty($namespace), "Namespace cannot be empty");
-        assert('\\' === $namespace[0], "Namespace must be fully qualified");
+        assert($namespace && 0 === strpos($namespace, '\\'),
+            "Namespace must be fully qualified");
+
+        assert(!empty($namespace),
+            "Namespace cannot be empty");
+
+        assert('\\' === $namespace[0],
+            "Namespace must be fully qualified");
 
         $this->name = self::canonicalNameFromName($name);
         $this->namespace = $namespace ?? '\\';
@@ -237,6 +244,15 @@ class Type {
     }
 
     /**
+     * @return FQSEN
+     * A fully-qualified structural element name derived
+     * from this type
+     */
+    public function asFQSEN() : FQSEN {
+        return FQSEN::fromType($this);
+    }
+
+    /**
      * @return Type
      * Get a new type which is the generic array version of
      * this type. For instance, 'int' will produce 'int[]'.
@@ -359,9 +375,9 @@ class Type {
      * i.e. 'int[]' becomes 'int'.
      */
     public function asNonGenericType() : Type {
-        if (($pos = strpos((string)$this, '[]')) !== false) {
+        if (($pos = strpos($this->name, '[]')) !== false) {
             return new Type(
-                substr((string)$this, 0, $pos),
+                substr($this->name, 0, $pos),
                 $this->getNamespace()
             );
         }
@@ -370,11 +386,59 @@ class Type {
     }
 
     /**
+     * @param CodeBase
+     * The code base to use in order to find super classes, etc.
+     *
+     * @return UnionType
+     * Expands class types to all inherited classes returning
+     * a superset of this type.
+     */
+    public function asExpandedTypes(CodeBase $code_base) : UnionType {
+        if ($this->isNativeType()) {
+            return $this->asUnionType();
+        }
+
+        $union_type = $this->asUnionType();
+
+        if ($this->isGeneric()) {
+            // ClassA[] => ClassA
+            $non_generic_type = $this->asNonGenericType();
+
+            $class_fqsen = $non_generic_type->asFQSEN();
+
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                return $union_type;
+            }
+
+            $clazz = $code_base->getClassByFQSEN($class_fqsen);
+
+            $union_type->addUnionType(
+                $clazz->getUnionType()->asGenericTypes()
+            );
+        } else {
+            $class_fqsen = $this->asFQSEN();
+
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                return $union_type;
+            }
+
+            $clazz = $code_base->getClassByFQSEN($class_fqsen);
+
+            $union_type->addUnionType($clazz->getUnionType());
+        }
+
+        return $union_type;
+    }
+
+    /**
      * @return bool
      * True if this Type can be cast to the given Type
      * cleanly
      */
     public function canCastToType(Type $type) : bool {
+        if ($this === $type) {
+            return true;
+        }
 
         /*
         if(substr($source,0,9) == 'callable:') {
