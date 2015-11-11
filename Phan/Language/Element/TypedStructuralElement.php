@@ -10,7 +10,7 @@ use \Phan\Language\UnionType;
 class TypedStructuralElement extends StructuralElement {
 
     /**
-     * @var name
+     * @var string
      * The name of the typed structural element
      */
     private $name;

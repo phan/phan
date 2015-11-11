@@ -62,10 +62,15 @@ class Property extends TypedStructuralElement {
      * Get a Property structural element from a ReflectionProperty
      * in a given context
      */
+    /*
     public static function fromReflectionProperty(
         Context $context,
         \ReflectionProperty $reflection_property
     ) : Property {
+
+        $type =
+            UnionType::builtinClassPropertyType(
+            );
 
         $type =
             $INTERNAL_CLASS_VARS[strtolower($class->getName())]['properties'][$name]
@@ -81,6 +86,7 @@ class Property extends TypedStructuralElement {
 
         return $property;
     }
+     */
 
     /**
      * @return UnionType

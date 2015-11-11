@@ -93,11 +93,13 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
         }
 
         if($class_name == 'self') {
-            // TODO
             if ($this->context->isGlobalScope()) {
-                assert(false, "Not Implemented");
+                assert(false, "Unimplemented branch is required for {$this->context}");
+                // TODO
+                /*
                 list($class_name,) =
                     explode('::', $current_scope);
+                 */
             } else {
                 return (string)$this->context->getClassFQSEN();
             }
