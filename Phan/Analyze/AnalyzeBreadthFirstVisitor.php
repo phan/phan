@@ -15,12 +15,12 @@ use \Phan\Language\Element\{
     Property,
     Variable
 };
-use \Phan\Language\FQSEN;
 use \Phan\Langauge\Type;
+use \Phan\Language\FQSEN;
+use \Phan\Language\Type\ArrayType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
-use \Phan\Language\Type\ArrayType;
 
 /**
  * # Example Usage
@@ -127,16 +127,42 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-        $variable =
-            Variable::fromNodeInContext($node, $this->context);
-
         // Get the type of the right side of the
         // assignment
         $right_type =
-            UnionType::fromNode($this->context, $node);
+            UnionType::fromNode($this->context, $node->children['expr']);
+
+        $variable = null;
+
+        // Check to see if this is an array offset type
+        // thing like '$a[] = 5'.
+        if ($node->children['var'] instanceof Node
+            && $node->children['var']->kind === \ast\AST_DIM
+        ) {
+            $variable_name =
+                self::astVariableName($node->children['var']);
+
+            // Check to see if the variable is not yet defined
+            if ($this->context->getScope()->hasVariableWithName(
+                $variable_name
+            )) {
+                $variable = $this->context->getScope()->getVariableWithName(
+                    $variable_name
+                );
+            }
+
+            // Make the right type a generic (i.e. int -> int[])
+            $right_type = $right_type->asGenericTypes();
+        } else {
+            // Create a new variable
+            $variable = Variable::fromNodeInContext(
+                $node,
+                $this->context
+            );
+        }
 
         // Set that type on the variable
-        $variable->setUnionType($right_type);
+        $variable->getUnionType()->addUnionType($right_type);
 
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope
@@ -625,11 +651,10 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 }
             }
 
-        } else if ($call->kind == \ast\AST_VAR) {
+        } else if ($expression->kind == \ast\AST_VAR) {
             $name = self::astVariableName($expression);
             if(!empty($name)) {
                 // $var() - hopefully a closure, otherwise we don't know
-
                 if ($this->context->getScope()->hasVariableWithName(
                     $name
                 )) {

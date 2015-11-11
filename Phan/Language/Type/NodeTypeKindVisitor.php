@@ -49,6 +49,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_ARRAY`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitArray(Node $node) : UnionType {
         if(!empty($node->children)
@@ -92,6 +100,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_BINARY_OP`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitBinaryOp(Node $node) : UnionType {
         if($node->kind == \ast\AST_BINARY_OP) {
@@ -108,6 +124,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_GREATER`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitGreater(Node $node) : UnionType {
         return $this->visitBinaryOp($node);
@@ -115,6 +139,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_GREATER_EQUAL`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitGreaterEqual(Node $node) : UnionType {
         return $this->visitBinaryOp($node);
@@ -122,6 +154,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_CAST`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitCast(Node $node) : UnionType {
         switch($node->flags) {
@@ -149,6 +189,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_NEW`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitNew(Node $node) : UnionType {
         $class_name =
@@ -177,70 +225,112 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_DIM`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitDim(Node $node) : UnionType {
-
         $union_type =
             UnionType::fromNode(
                 $this->context,
                 $node->children['expr']
             );
 
-        if (!$union_type->isEmpty()) {
-            $generic_types = $union_type->asNonGenericTypes();
-            if($generic_types->isEmpty()) {
-                if(!$union_type->isType(NullType::instance())
-                    && !$union_type->canCastToUnionType(
-                        UnionType::fromFullyQualifiedString('\::string|\::ArrayAccess')
-                    )
-                ) {
-                    // array offsets work on strings, unfortunately
-                    // Double check that any classes in the type don't have ArrayAccess
-                    $ok = false;
-                    foreach($union_type as $type) {
-                        if(!empty($type) && !$type->isNativeType()) {
-                            $class_fqsen = FQSEN::fromFullyQualifiedString(
-                                (string)$type
-                            );
-
-                            if ($this->context->getCodeBase()->hasClassWithFQSEN(
-                                $class_fqsen
-                            )) {
-                                $clazz =
-                                    $this->context->getCodeBase()->getClassByFQSEN($class_fqsen);
-
-                                if ($clazz->getUnionType()->hasType(
-                                    new Type('ArrayAccess', '\\')
-                                )) {
-                                    $ok = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if(!$ok) {
-                        Log::err(
-                            Log::ETYPE,
-                            "Suspicious array access to $union_type",
-                            $this->context->getFile(),
-                            $node->lineno
-                        );
-                    }
-                }
-
-                return new UnionType();
-            }
-
-            return $generic_types;
-        } else {
+        if ($union_type->isEmpty()) {
             return new UnionType();
         }
 
-        return $union_type;
+        // Figure out what the types of accessed array
+        // elements would be
+        $generic_types =
+            $union_type->asNonGenericTypes();
+
+        // If we have generics, we're all set
+        if(!$generic_types->isEmpty()) {
+            return $generic_types;
+        }
+
+        // If the only type is null, we don't know what
+        // accessed items will be
+        if ($union_type->isType(NullType::instance())) {
+            return new UnionType();
+        }
+
+        $element_types = new UnionType();
+
+        // You can access string characters via array index,
+        // so we'll add the string type to the result if we're
+        // indexing something that could be a string
+        if ($union_type->isType(StringType::instance())
+            || $union_type->canCastToUnionType(StringType::instance()->asUnionType())
+        ) {
+            $element_types->addType(StringType::instance());
+        }
+
+        // array offsets work on strings, unfortunately
+        // Double check that any classes in the type don't
+        // have ArrayAccess
+        $array_access_type = new Type('ArrayAccess', '\\');
+
+        // Hunt for any types that are viable class names and
+        // see if they inherit from ArrayAccess
+        foreach ($union_type as $type) {
+
+            if ($type->isNativeType()) {
+                continue;
+            }
+
+            $class_fqsen = FQSEN::fromFullyQualifiedString(
+                (string)$type
+            );
+
+            // If we can't find the class, the type probably
+            // wasn't a class.
+            if (!$this->context->getCodeBase()->hasClassWithFQSEN(
+                $class_fqsen
+            )) {
+                continue;
+            }
+
+            $clazz =
+                $this->context->getCodeBase()->getClassByFQSEN($class_fqsen);
+
+            // If the class has type ArrayAccess, it can be indexed
+            // as if it were an array. That being said, we still don't
+            // know the types of the elements, but at least we don't
+            // error out.
+            if ($clazz->getUnionType()->hasType($array_access_type)) {
+                return $element_types;
+            }
+        }
+
+        if ($element_types->isEmpty()) {
+            Log::err(
+                Log::ETYPE,
+                "Suspicious array access to $union_type",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
+
+        return $element_types;
     }
 
     /**
      * Visit a node with kind `\ast\AST_VAR`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitVar(Node $node) : UnionType {
         return self::astVarUnionType($this->context, $node);
@@ -248,6 +338,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_ENCAPS_LIST`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitEncapsList(Node $node) : UnionType {
         return StringType::instance()->asUnionType();
@@ -255,6 +353,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_CONST`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitConst(Node $node) : UnionType {
         if($node->children['name']->kind == \ast\AST_NAME) {
@@ -274,6 +380,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_CLASS_CONST`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitClassConst(Node $node) : UnionType {
         $constant_name = $node->children['const'];
@@ -357,6 +471,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_PROP`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitProp(Node $node) : UnionType {
         $class_name =
@@ -398,6 +520,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_STATIC_PROP`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitStaticProp(Node $node) : UnionType {
         if($node->children['class']->kind != \ast\AST_NAME) {
@@ -444,6 +574,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_CALL`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitCall(Node $node) : UnionType {
         if($node->children['expr']->kind !== \ast\AST_NAME) {
@@ -515,6 +653,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_STATIC_CALL`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitStaticCall(Node $node) : UnionType {
         $class_name =
@@ -560,6 +706,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_METHOD_CALL`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitMethodCall(Node $node) : UnionType {
         $class_name =
@@ -616,6 +770,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_ASSIGN`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitAssign(Node $node) : UnionType {
         $type =
@@ -629,6 +791,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_UNARY_OP`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitUnaryOp(Node $node) : UnionType {
         return Type::fromObject($node->children['expr'])->asUnionType();
@@ -636,6 +806,14 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_UNARY_MINUS`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
      */
     public function visitUnaryMinus(Node $node) : UnionType {
         return Type::fromObject($node->children['expr'])->asUnionType();

@@ -188,6 +188,7 @@ trait AST {
             return MixedType::instance()->asUnionType();
         }
 
+        // This is nonsense. Give up.
         if($node->children['name'] instanceof Node) {
             return new UnionType();
         }
@@ -203,9 +204,6 @@ trait AST {
                     $context->getFile(),
                     $node->lineno
                 );
-
-                debug_print_backtrace(3);
-                assert(false, 'here');
             }
         } else {
             $variable =
