@@ -110,6 +110,18 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitBinaryOp(Node $node) : UnionType {
+        switch ($node->flags) {
+        case \ast\flags\BINARY_BOOL_AND:
+        case \ast\flags\BINARY_BOOL_OR:
+        case \ast\flags\BINARY_IS_GREATER:
+        case \ast\flags\BINARY_IS_GREATER_OR_EQUAL:
+        case \ast\flags\BINARY_IS_IDENTICAL:
+        case \ast\flags\BINARY_IS_NOT_EQUAL:
+        case \ast\flags\BINARY_IS_SMALLER:
+        case \ast\flags\BINARY_IS_SMALLER_OR_EQUAL:
+            return BoolType::instance()->asUnionType();
+        }
+
         return
             (new Element($node))->acceptFlagVisitor(
                 new NodeTypeBinaryOpFlagVisitor($this->context)
@@ -796,6 +808,13 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitUnaryOp(Node $node) : UnionType {
+
+        // Shortcut some easy operators
+        switch ($node->flags) {
+        case \ast\flags\UNARY_BOOL_NOT:
+            return BoolType::instance()->asUnionType();
+        }
+
         return UnionType::fromNode(
             $this->context,
             $node->children['expr']
