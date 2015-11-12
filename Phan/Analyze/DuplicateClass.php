@@ -41,9 +41,9 @@ trait DuplicateClass {
         // an internal class
         if ($original_class->isInternal()) {
             Log::err(Log::EREDEF,
-                "Class {$original_fqsen} defined at "
+                "$clazz defined at "
                 . "{$clazz->getContext()->getFile()}:{$clazz->getContext()->getLineNumberStart()} "
-                . "was previously defined as {$original_class->getFQSEN()} internally",
+                . "was previously defined as $original_class internally",
                     $clazz->getContext()->getFile(),
                     $clazz->getContext()->getLineNumberStart()
                 );
@@ -52,10 +52,10 @@ trait DuplicateClass {
         // definition
         } else {
             Log::err(Log::EREDEF,
-                "Class {$original_fqsen} defined at "
+                "$clazz defined at "
                 . "{$clazz->getContext()->getFile()}:{$clazz->getContext()->getLineNumberStart()} "
-                . "was previously defined as {$original_class->getFQSEN()} at "
-                . "{$original_class->getContext()->getFile()}:{$original_class->getContext()->getLineNumberStart()} ",
+                . "was previously defined as $original_class at "
+                . "{$original_class->getContext()->getFile()}:{$original_class->getContext()->getLineNumberStart()}",
                     $clazz->getContext()->getFile(),
                     $clazz->getContext()->getLineNumberStart()
                 );

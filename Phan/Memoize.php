@@ -33,6 +33,31 @@ trait Memoize {
     }
 
     /**
+     * Memoize the result of $fn(), saving the result
+     * with key $key.
+     *
+     * @param string $key
+     * The key to use for storing the result of the
+     * computation.
+     *
+     * @param Closure $fn
+     * A function to compute only once for the given
+     * $key.
+     *
+     * @return mixed
+     * The result of the given computation is returned
+     */
+    protected static function memoizeStatic(string $key, \Closure $fn) {
+        static $memoized_data = [];
+
+        if (!array_key_exists($key, $memoized_data)) {
+            $memoized_data[$key] = $fn();
+        }
+
+        return $memoized_data[$key];
+    }
+
+    /**
      * Delete all memoized data
      *
      * @return null

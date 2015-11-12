@@ -484,6 +484,12 @@ class Method extends TypedStructuralElement {
         return $this->is_dynamic;
     }
 
+    public function isStatic() : bool {
+        return (bool)(
+            $this->getFlags() & \ast\flags\MODIFIER_STATIC
+        );
+    }
+
     /**
      * Mark this method as dynamic
      *

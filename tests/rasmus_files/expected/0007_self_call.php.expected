@@ -1,1 +1,1 @@
-%s:9 UndefError static call to undeclared method B::func3()
+%s:9 UndefError static call to undeclared method \b::func3()

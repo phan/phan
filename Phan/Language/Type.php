@@ -26,6 +26,7 @@ use \ast\Node;
 
 class Type {
     use \Phan\Language\AST;
+    use \Phan\Memoize;
 
     /**
      * @var string
@@ -48,7 +49,7 @@ class Type {
      * The (optional) namespace of the type such as '\'
      * or '\Phan\Language'.
      */
-    public function __construct(
+    protected function __construct(
         string $namespace,
         string $name
     ) {
@@ -74,6 +75,51 @@ class Type {
         } else {
             $this->name = strtolower($name);
         }
+    }
+
+    /**
+     * This is the base level constructor for types
+     *
+     * @param string $name
+     * The name of the type such as 'int' or 'MyClass'
+     *
+     * @param string $namespace
+     * The (optional) namespace of the type such as '\'
+     * or '\Phan\Language'.
+     *
+     * @return Type
+     * A type representing the given path is returned. Note
+     * that we return cached types. Don't attempt to change
+     * a type once you get it.
+     */
+    public static function fromNamespaceAndName(
+        string $namespace,
+        string $type_name
+    ) : Type {
+        $type_name = strtolower(trim($type_name));
+        $namespace = trim($namespace);
+        return self::memoizeStatic($namespace . '\\' . $type_name,
+            function() use ($namespace, $type_name) : Type {
+                // Only if we're in the root namespace can we
+                // canonicalize native types.
+                if ('\\' === $namespace) {
+                    $type_name = self::canonicalNameFromName($type_name);
+                }
+
+                // If this looks like a generic type string, explicitly
+                // make it as such
+                if (self::isGenericString($type_name)
+                    && ($pos = strpos($type_name, '[]')) !== false
+                ) {
+                    return new GenericArrayType(new Type(
+                        $namespace,
+                        substr($type_name, 0, $pos)
+                    ));
+                }
+
+                // If we have a namespace, we're all set
+                return new Type($namespace, $type_name);
+            });
     }
 
     /**
@@ -154,33 +200,6 @@ class Type {
             $namespace,
             $type_name
         );
-    }
-
-    public static function fromNamespaceAndName(
-        string $namespace,
-        string $type_name
-    ) : Type {
-        $type_name = strtolower($type_name);
-
-        // Only if we're in the root namespace can we
-        // canonicalize native types.
-        if ('\\' === $namespace) {
-            $type_name = self::canonicalNameFromName($type_name);
-        }
-
-        // If this looks like a generic type string, explicitly
-        // make it as such
-        if (self::isGenericString($type_name)
-            && ($pos = strpos($type_name, '[]')) !== false
-        ) {
-            return new GenericArrayType(new Type(
-                $namespace,
-                substr($type_name, 0, $pos)
-            ));
-        }
-
-        // If we have a namespace, we're all set
-        return new Type($namespace, $type_name);
     }
 
     /**

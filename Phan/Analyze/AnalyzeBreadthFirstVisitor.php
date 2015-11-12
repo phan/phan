@@ -872,38 +872,106 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitStaticCall(Node $node) : Context {
-        /*
-        $static_call_ok = false;
-        $class_name = find_class_name($file, $ast, $namespace, $current_class, $current_scope, $static_call_ok);
-        if($class_name) {
-            // The class is declared, but does it have the method?
-            $method_name = $ast->children[1];
-            $static_class = '';
-            if($ast->children[0]->kind == \ast\AST_NAME) {
-                $static_class = $ast->children[0]->children[0];
+
+        $class_name = self::astClassNameFromNode(
+            $this->context, $node
+        );
+
+        if(!$class_name) {
+            return $this->context;
+        }
+
+        // The class is declared, but does it have the method?
+        $method_name = $node->children['method'];
+
+        // Get the name of the static class being referenced
+        $static_class = '';
+        if($node->children['class']->kind == \ast\AST_NAME) {
+            $static_class = $node->children['class']->children['name'];
+        }
+
+        if ($method_name === '__construct') {
+            if ($static_class !== 'parent') {
+                Log::err(
+                    Log::EUNDEF,
+                    "static call to undeclared method {$static_class}::{$method_name}()",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
             }
 
-            $method = find_method($class_name, $method_name, $static_class);
-            if(is_array($method) && array_key_exists('avail', $method) && !$method['avail']) {
-                Log::err(Log::EAVAIL, "method {$class_name}::{$method_name}() is not compiled into this version of PHP", $file, $ast->lineno);
-            }
-            if($method === false) {
-                Log::err(Log::EUNDEF, "static call to undeclared method {$class_name}::{$method_name}()", $file, $ast->lineno);
-            } else if($method != 'dynamic') {
-                // Was it declared static?
-                if(!($method['flags'] & \ast\flags\MODIFIER_STATIC)) {
-                    if(!$static_call_ok) {
-                        Log::err(Log::ESTATIC, "static call to non-static method {$class_name}::{$method_name}() defined at {$method['file']}:{$method['lineno']}", $file, $ast->lineno);
-                    }
-                }
-                arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
-                if($method['file'] != 'internal') {
-                    // re-check the function's ast with these args
-                    if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
-                }
-            }
+            return $this->context;
+        }
+
+
+        $class_fqsen =
+            $this->context->getScopeFQSEN()->withClassName(
+                $this->context, $class_name
+            );
+
+        // Check to see if the class actually exists
+        if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+            Log::err(
+                Log::EFATAL,
+                "Can't find class {$class_fqsen} - aborting",
+                $this->context->getFile(),
+                $node->lineno
+            );
+            return $this->context;
+        }
+
+        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+            $class_fqsen
+        );
+
+        if (!$clazz->hasMethodWithName($method_name)) {
+            Log::err(
+                Log::EUNDEF,
+                "static call to undeclared method {$class_fqsen}::{$method_name}()",
+                $this->context->getFile(),
+                $node->lineno
+            );
+
+            return $this->context;
+        }
+
+        $method = $clazz->getMethodByName($method_name);
+
+        /*
+        if(array_key_exists('avail', $method) && !$method['avail']) {
+            Log::err(
+                Log::EAVAIL,
+                "method {$class_name}::{$method_name}() is not compiled into this version of PHP",
+                $file,
+                $ast->lineno
+            );
         }
         */
+
+        // TODO: wha?
+        // else if($method != 'dynamic') {
+
+        // Was it declared static?
+        if(!$method->isStatic() && 'parent' !== $static_class) {
+            Log::err(
+                Log::ESTATIC,
+                "static call to non-static method {$class_fqsen}::{$method_name}() defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
+
+        // Confirm the arguments are clean
+        ArgumentType::analyzeArgumentType($method, $node, $this->context);
+
+        /*
+        // re-check the function's ast with these args
+        if (!$method->getContext()->isInternal()) {
+            if(!$quick_mode) {
+                pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
+            }
+        }
+         */
 
         return $this->context;
     }

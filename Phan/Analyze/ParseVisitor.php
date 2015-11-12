@@ -152,7 +152,7 @@ class ParseVisitor extends KindVisitorImplementation {
                 Log::err(
                     Log::ECOMPAT,
                     "{$dollars}{$temp}[] expression may not be PHP 7 compatible",
-                    $file,
+                    $this->context->getFile(),
                     $node->lineno
                 );
             }

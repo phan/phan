@@ -323,19 +323,19 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
             );
             return new UnionType();
         } else if($right_is_array
-            && !$left->canCastToUnionType(ArrayType::intance()->asUnionType())
+            && !$left->canCastToUnionType(ArrayType::instance()->asUnionType())
         ) {
             Log::err(
                 Log::ETYPE,
                 "invalid operator: right operand is array and left is not",
-                $file,
+                $context->getFile(),
                 $node->lineno
             );
             return new UnionType();
         } else if($left_is_array || $right_is_array) {
             // If it is a '+' and we know one side is an array
             // and the other is unknown, assume array
-            return ArrayType::intance()->asUnionType();
+            return ArrayType::instance()->asUnionType();
         }
 
         return new UnionType([

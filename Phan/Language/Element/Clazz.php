@@ -444,6 +444,16 @@ class Clazz extends TypedStructuralElement {
 
     /**
      * @return bool
+     * True if this is a final class
+     */
+    public function isFinal() : bool {
+        return (bool)(
+            $this->getFlags() & \ast\flags\CLASS_FINAL
+        );
+    }
+
+    /**
+     * @return bool
      * True if this is an abstract class
      */
     public function isAbstract() : bool {
@@ -592,6 +602,34 @@ class Clazz extends TypedStructuralElement {
             yield $code_base->getClassByFQSEN($fqsen);
             $fqsen = $fqsen->withAlternateId(++$alternate_id);
         }
+    }
+
+    /**
+     * @return string
+     * A string describing this class
+     */
+    public function __toString() : string {
+        $string = '';
+
+        if ($this->isFinal()) {
+            $string .= 'final ';
+        }
+
+        if ($this->isAbstract()) {
+            $string .= 'abstract ';
+        }
+
+        if ($this->isInterface()) {
+            $string .= 'Interface ';
+        } else if ($this->isTrait()) {
+            $string .= 'Trait ';
+        } else {
+            $string .= 'Class ';
+        }
+
+        $string .= (string)$this->getFQSEN()->getCanonicalFQSEN();
+
+        return $string;
     }
 
 }

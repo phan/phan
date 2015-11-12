@@ -150,40 +150,6 @@ trait ArgumentType {
 
         // Check the parameter types
         self::analyzeParameterList($method, $arglist, $context);
-
-        // Are the types right?
-        // Check if we have any alternate arginfo signatures
-        // Checking the alternates before the main to make the final error messages, if any, refer to the main signature
-        $errs = [];
-        /*
-        $alt = 1;
-        if($class_name) {
-            $lc = strtolower($class_name);
-            $lfn = strtolower($func['name']);
-            $func['name'] = $class_name.'::'.$func['name'];
-            while(!empty($classes[$lc]['methods']["$lfn $alt"])) {
-                $errs = arglist_type_check($file, $namespace, $arglist, $classes[$lc]['methods']["$lfn $alt"], $current_scope, $current_class);
-                $alt++;
-                if(empty($errs)) break;
-            }
-        } else {
-            while(!empty($functions["{$func['name']} $alt"])) {
-                $errs = arglist_type_check($file, $namespace, $arglist, $functions["{$func['name']} $alt"], $current_scope, $current_class);
-                $alt++;
-                if(empty($errs)) break;
-            }
-        }
-        if($alt==1 || ($alt>1 && !empty($errs))) $errs = arglist_type_check($file, $namespace, $arglist, $func, $current_scope, $current_class);
-        */
-
-        foreach($errs as $err) {
-            Log::err(
-                Log::ETYPE,
-                $err,
-                $context->getFile(),
-                $node->lineno
-            );
-        }
     }
 
     /**

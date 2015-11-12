@@ -12,7 +12,6 @@ use \Phan\Language\Type\{
     FloatType,
     IntType,
     MixedType,
-    NoneType,
     NullType,
     StringType,
     VoidType
@@ -20,9 +19,14 @@ use \Phan\Language\Type\{
 use \Phan\Language\Type\NodeTypeKindVisitor;
 use \ast\Node;
 
-class UnionType extends \ArrayObject  {
+class UnionType {
     use \Phan\Language\AST;
     use \Phan\Memoize;
+
+    /**
+     * @var Type[]
+     */
+    private $type_list = [];
 
     /**
      * @param Type[] $type_list
@@ -32,7 +36,6 @@ class UnionType extends \ArrayObject  {
         foreach ($type_list as $type) {
             $this->addType($type);
         }
-
     }
 
     /**
@@ -210,8 +213,17 @@ class UnionType extends \ArrayObject  {
      */
     public static function builtinExists(FQSEN $fqsen) : bool {
         return !empty(
-            $BUILTIN_FUNCTION_ARGUMENT_TYPES[(string)$fqsen]
+            self::builtinFunctionArgumentTypeMap()[(string)$fqsen]
         );
+    }
+
+    /**
+     * @return Type[]
+     * The list of simple types associated with this
+     * union type.
+     */
+    public function getTypeList() : array {
+        return $this->type_list;
     }
 
     /**
@@ -219,10 +231,15 @@ class UnionType extends \ArrayObject  {
      * Get the first type in this set
      */
     public function head() : Type {
-        assert(count($this) > 0,
+
+        if (empty($this->getTypeList())) {
+            debug_print_backtrace(3);
+        }
+
+        assert(!empty($this->getTypeList()),
             'Cannot call head() on empty UnionType');
 
-        return array_values($this->getArrayCopy())[0];
+        return array_values($this->getTypeList())[0];
     }
 
     /**
@@ -232,17 +249,8 @@ class UnionType extends \ArrayObject  {
      */
     public function addType(Type $type) {
         // Only allow unique elements
-        $this[(string)$type] = $type;
-    }
-
-    /**
-     * Add the given types to this type
-     *
-     * @return null
-     */
-    public function addUnionType(UnionType $union_type) {
-        foreach ($union_type as $i => $type) {
-            $this->addType($type);
+        if (!$this->hasType($type)) {
+            $this->type_list[$type->__toString()] = $type;
         }
     }
 
@@ -252,7 +260,18 @@ class UnionType extends \ArrayObject  {
      * type.
      */
     public function hasType(Type $type) : bool {
-        return isset($this[(string)$type]);
+        return array_key_exists((string)$type, $this->type_list);
+    }
+
+    /**
+     * Add the given types to this type
+     *
+     * @return null
+     */
+    public function addUnionType(UnionType $union_type) {
+        foreach ($union_type->getTypeList() as $i => $type) {
+            $this->addType($type);
+        }
     }
 
     /**
@@ -262,7 +281,7 @@ class UnionType extends \ArrayObject  {
      * or 'self'.
      */
     public function hasSelfType() : bool {
-        return array_reduce($this->getArrayCopy(),
+        return array_reduce($this->getTypeList(),
             function (bool $carry, Type $type) : bool {
                 return ($carry || $type->isSelfType());
             }, false);
@@ -274,11 +293,11 @@ class UnionType extends \ArrayObject  {
      * the given type and no others.
      */
     public function isType(Type $type) : bool {
-        if (count($this) != 1) {
+        if (count($this->getTypeList()) != 1) {
             return false;
         }
 
-        return ($this->head() === $type);
+        return ((string)$this->head() == (string)$type);
     }
 
     /**
@@ -287,11 +306,11 @@ class UnionType extends \ArrayObject  {
      * types
      */
     public function isNativeType() : bool {
-        if (empty($this)) {
+        if (empty($this->getTypeList())) {
             return false;
         }
 
-        return array_reduce($this->getArrayCopy(),
+        return array_reduce($this->getTypeList(),
             function (bool $carry, Type $type) : bool {
                 return ($carry && $type->isNativeType());
             }, true);
@@ -326,7 +345,7 @@ class UnionType extends \ArrayObject  {
      * The number of types in this union type
      */
     public function typeCount() : int {
-        return count($this);
+        return count($this->getTypeList());
     }
 
     /**
@@ -416,11 +435,11 @@ class UnionType extends \ArrayObject  {
         // Check conversion on the cross product of all
         // type combinations and see if any can cast to
         // any.
-        foreach($this as $source_type) {
+        foreach($this->getTypeList() as $source_type) {
             if(empty($source_type)) {
                 continue;
             }
-            foreach($target as $target_type) {
+            foreach($target->getTypeList() as $target_type) {
                 if(empty($target_type)) {
                     continue;
                 }
@@ -444,7 +463,7 @@ class UnionType extends \ArrayObject  {
      * Formerly `function type_scalar`
      */
     public function isScalar() : bool {
-        if ($this->isEmpty() || count($this) > 1) {
+        if ($this->isEmpty() || count($this->getTypeList()) > 1) {
             return false;
         }
 
@@ -467,7 +486,7 @@ class UnionType extends \ArrayObject  {
         }
 
         if ($this->hasType(ArrayType::instance())) {
-            return NoneType::instance()->toUnionType();
+            return NullType::instance()->toUnionType();
         }
 
         return new UnionType(array_filter(array_map(
@@ -476,7 +495,7 @@ class UnionType extends \ArrayObject  {
                     return null;
                 }
                 return $type->asNonGenericType();
-            }, $this->getArrayCopy()))
+            }, $this->getTypeList()))
         );
     }
 
@@ -486,7 +505,7 @@ class UnionType extends \ArrayObject  {
      */
     public function nonNativeTypes() : UnionType {
         return new UnionType(
-            array_filter($this->getArrayCopy(), function(Type $type) {
+            array_filter($this->getTypeList(), function(Type $type) {
                 return !$type->isNativeType();
             })
         );
@@ -503,7 +522,7 @@ class UnionType extends \ArrayObject  {
      */
     public function nonGenericTypes() : UnionType {
         return new UnionType(
-            array_filter($this->getArrayCopy(), function(Type $type) {
+            array_filter($this->getTypeList(), function(Type $type) {
                 return !$type->isGeneric();
             })
         );
@@ -518,7 +537,7 @@ class UnionType extends \ArrayObject  {
             return false;
         }
 
-        return array_reduce($this->getArrayCopy(),
+        return array_reduce($this->getTypeList(),
             function (bool $carry, Type $type) : bool {
                 return ($carry && $type->isGeneric());
             }, true);
@@ -534,7 +553,7 @@ class UnionType extends \ArrayObject  {
         return new UnionType(
             array_map(function (Type $type) : Type {
                 return $type->asGenericType();
-            }, $this->getArrayCopy())
+            }, $this->getTypeList())
         );
     }
 
@@ -549,7 +568,7 @@ class UnionType extends \ArrayObject  {
     public function asExpandedTypes(CodeBase $code_base) : UnionType {
         $union_type = clone($this);
 
-        foreach ($this as $type) {
+        foreach ($this->getTypeList() as $type) {
             $union_type->addUnionType(
                 $type->asExpandedTypes($code_base)
             );
@@ -593,12 +612,12 @@ class UnionType extends \ArrayObject  {
     public function __toString() : string {
         // Sort the types so that we get a stable
         // representation
-        self::natsort();
+        ksort($this->type_list);
 
         // Delimit by '|'
         return implode('|', array_map(function(Type $type) : string {
             return (string)$type;
-        }, $this->getArrayCopy()));
+        }, $this->getTypeList()));
     }
 
     /**

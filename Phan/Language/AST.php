@@ -317,7 +317,7 @@ trait AST {
                 Log::err(
                     Log::ECOMPAT,
                     "expression may not be PHP 7 compatible",
-                    $file,
+                    $context->getFile(),
                     $node->lineno
                 );
             }
