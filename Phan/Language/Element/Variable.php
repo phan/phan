@@ -3,12 +3,12 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Debug;
+use \Phan\Language\AST;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \ast\Node;
 
 class Variable extends TypedStructuralElement {
-    use \Phan\Language\AST;
 
     /**
      * @param \phan\Context $context
@@ -62,7 +62,7 @@ class Variable extends TypedStructuralElement {
         bool $should_check_type = true
     ) : Variable {
 
-        $variable_name = self::astVariableName($node);
+        $variable_name = AST::variableName($node);
 
         // Get the type of the assignment
         $union_type = $should_check_type

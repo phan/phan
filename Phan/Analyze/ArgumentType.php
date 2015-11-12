@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\Debug;
+use \Phan\Language\AST;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Parameter;
@@ -200,7 +201,7 @@ trait ArgumentType {
                     );
                 } else {
                     $variable_name =
-                        self::astVariableName($argument);
+                        AST::variableName($argument);
 
                     if($argument->kind == \ast\AST_STATIC_PROP) {
                         if (in_array($variable_name, [
@@ -243,6 +244,14 @@ trait ArgumentType {
                         $context->getFile(),
                         $node->lineno
                     );
+
+                    /*
+                    print "$parameter_type\n";
+                    assert(false,
+                        "arg#".($i+1)."({$parameter->getName()}) is $argument_type but {$method->getName()}() takes {$parameter->getUnionType()} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}"
+                    );
+                     */
+
                 }
             }
 

@@ -2,6 +2,7 @@
 namespace Phan\Language\AST\Visitor;
 
 use \Phan\Debug;
+use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
@@ -14,7 +15,6 @@ use \ast\Node;
  * types of nodes
  */
 class ClassNameKindVisitor extends KindVisitorImplementation {
-    use \Phan\Language\AST;
 
     /**
      * @var Context
@@ -71,7 +71,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
             $node->children['class']->children['name'];
 
         if(!in_array($class_name, ['self', 'static', 'parent'])) {
-            return self::astQualifiedName(
+            return AST::qualifiedName(
                 $this->context,
                 $node->children['class']
             );
@@ -163,7 +163,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
      */
     public function visitInstanceOf(Node $node) : string {
         if($node->children[1]->kind == \ast\AST_NAME) {
-            return self::astQualifiedName($this->context, $node);
+            return AST::qualifiedName($this->context, $node);
         }
 
         return '';
@@ -178,7 +178,6 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
      * The class name represented by the given call
      */
     public function visitMethodCall(Node $node) : string {
-
         if($node->children['expr']->kind == \ast\AST_VAR) {
             if(($node->children['expr']->children['name'] instanceof Node)) {
                 // TODO: not sure what to make of this
@@ -203,6 +202,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
             $variable_name =
                 $node->children['expr']->children['name'];
 
+
             if (!$this->context->getScope()->hasVariableWithName(
                 $variable_name
             )) {
@@ -217,17 +217,17 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
 
             // Hack - loop through the possible types of the var and assume
             // first found class is correct
-            foreach($variable->getUnionType()->nonGenericTypes() as $type_name) {
+            foreach($variable->getUnionType()->nonGenericTypes()->getTypeList() as $type) {
                 $child_class_fqsen =
                     $this->context->getScopeFQSEN()->withClassName(
                         $this->context,
-                        (string)$type_name
+                        (string)$type
                     );
 
                 if ($this->context->getCodeBase()->hasClassWithFQSEN($child_class_fqsen)) {
                     return (string)$this->context->getScopeFQSEN()->withClassName(
                         $this->context,
-                        (string)$type_name
+                        (string)$type
                     );
                 }
             }
@@ -278,11 +278,11 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                         $clazz->getPropertyWithName($property_name);
 
                     // Find the first viable property type
-                    foreach ($property->getUnionType()->nonGenericTypes() as $class_name) {
+                    foreach ($property->getUnionType()->nonGenericTypes()->getTypeList() as $type) {
                         $class_fqsen =
                             $this->context->getScopeFQSEN()->withClassName(
                                 $this->context,
-                                (string)$class_name
+                                (string)$type
                             );
 
                         if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {

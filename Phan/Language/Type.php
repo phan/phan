@@ -2,6 +2,7 @@
 namespace Phan\Language;
 
 use \Phan\CodeBase;
+use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Type\NodeTypeKindVisitor;
@@ -25,7 +26,6 @@ use \Phan\Language\UnionType;
 use \ast\Node;
 
 class Type {
-    use \Phan\Language\AST;
     use \Phan\Memoize;
 
     /**
@@ -502,7 +502,7 @@ class Type {
 
         // Resurse up the tree to include all types
         $recursive_union_type = new UnionType();
-        foreach ($union_type as $clazz_type) {
+        foreach ($union_type->getTypeList() as $clazz_type) {
             if ((string)$clazz_type !== (string)$this) {
                 $recursive_union_type->addUnionType(
                     $clazz_type->asExpandedTypes($code_base)

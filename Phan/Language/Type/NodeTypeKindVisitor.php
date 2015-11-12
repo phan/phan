@@ -2,6 +2,7 @@
 namespace Phan\Language\Type;
 
 use \Phan\Debug;
+use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
@@ -21,7 +22,6 @@ use \Phan\Log;
 use \ast\Node;
 
 class NodeTypeKindVisitor extends KindVisitorImplementation {
-    use \Phan\Language\AST;
 
     /**
      * @var Context
@@ -206,7 +206,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      */
     public function visitNew(Node $node) : UnionType {
         $class_name =
-            $this->astClassNameFromNode($this->context, $node);
+            AST::classNameFromNode($this->context, $node);
 
         if(empty($class_name)) {
             return ObjectType::instance()->asUnionType();
@@ -286,7 +286,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess
-        foreach ($union_type as $type) {
+        foreach ($union_type->getTypeList() as $type) {
 
             if ($type->isNativeType()) {
                 continue;
@@ -340,7 +340,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitVar(Node $node) : UnionType {
-        return self::astVarUnionType($this->context, $node);
+        return AST::varUnionType($this->context, $node);
     }
 
     /**
@@ -404,7 +404,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         }
 
         $class_name =
-            $this->astClassNameFromNode($this->context, $node);
+            AST::classNameFromNode($this->context, $node);
 
         if(!$class_name) {
             Log::err(
@@ -489,7 +489,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      */
     public function visitProp(Node $node) : UnionType {
         $class_name =
-            $this->astClassNameFromNode($this->context, $node);
+            AST::classNameFromNode($this->context, $node);
 
         if(!($class_name
             && !($node->children['prop'] instanceof Node))
@@ -542,7 +542,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         }
 
         $class_name =
-            $this->astClassNameFromNode($this->context, $node);
+            AST::classNameFromNode($this->context, $node);
 
         if(!($class_name
             && !($node->children['prop'] instanceof Node))
@@ -672,7 +672,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      */
     public function visitStaticCall(Node $node) : UnionType {
         $class_name =
-            $this->astClassNameFromNode($this->context, $node);
+            AST::classNameFromNode($this->context, $node);
 
         // assert(!empty($class_name), 'Class name cannot be empty');
 
@@ -725,7 +725,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
      */
     public function visitMethodCall(Node $node) : UnionType {
         $class_name =
-            $this->astClassNameFromNode($this->context, $node);
+            AST::classNameFromNode($this->context, $node);
 
         if (empty($class_name)) {
             return new UnionType();

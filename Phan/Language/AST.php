@@ -14,7 +14,7 @@ use \ast\Node;
 /**
  * A set of methods for extracting details from AST nodes.
  */
-trait AST {
+class AST {
 
     /**
      * ast_node_type() is for places where an actual type
@@ -26,7 +26,7 @@ trait AST {
      *
      * @see \Phan\Deprecated\AST::ast_node_type
      */
-    protected static function astUnionTypeFromSimpleNode(
+    public static function unionTypeFromSimpleNode(
         Context $context,
         $node
     ) : UnionType {
@@ -34,7 +34,7 @@ trait AST {
             switch($node->kind) {
             case \ast\AST_NAME:
                 $result =
-                    static::astQualifiedName(
+                    self::qualifiedName(
                         $context,
                         $node
                     );
@@ -73,9 +73,9 @@ trait AST {
      * @see \Phan\Deprecated\Util::find_class_name
      * Formerly `function find_class_name`
      */
-    protected static function astClassNameFromNode(
+    public static function classNameFromNode(
         Context $context,
-        $node
+        Node $node
     ) : string {
         // Extract the class name
         $class_name = (new Element($node))->acceptKindVisitor(
@@ -84,10 +84,6 @@ trait AST {
 
         if (empty($class_name)) {
             return '';
-        }
-
-        if ('ast\\Node' == $class_name) {
-            Debug::printNode($node);
         }
 
         // Validate that the class name is correct
@@ -108,7 +104,7 @@ trait AST {
      * @see \Phan\Deprecated\node_namelist
      * Formerly `function node_namelist`
      */
-    protected static function astQualifiedNameList(
+    public static function qualifiedNameList(
         Context $context,
         $node
     ) : array {
@@ -117,7 +113,7 @@ trait AST {
         }
 
         return array_map(function($name_node) use ($context) {
-            return self::astQualifiedName($context, $name_node);
+            return self::qualifiedName($context, $name_node);
         }, $node->children);
     }
 
@@ -129,14 +125,14 @@ trait AST {
      * @see \Phan\Deprecated\Util::qualified_name
      * From `function qualified_name`
      */
-    protected static function astQualifiedName(
+    public static function qualifiedName(
         Context $context,
         $node
     ) : string {
         if(!($node instanceof \ast\Node)
             || $node->kind != \ast\AST_NAME
         ) {
-            return self::astVarUnionType($context, $node);
+            return (string)self::varUnionType($context, $node);
         }
 
         $type_name = $node->children['name'];
@@ -167,7 +163,7 @@ trait AST {
      * @param Context $context
      * @param null|string\Node $node
      *
-     * @param Node|mixed $node
+     * @param Node $node
      * The node to get a union type for
      *
      * @return UnionType
@@ -175,9 +171,9 @@ trait AST {
      * @see \Phan\Deprecated\Pass2::var_type
      * From `function var_type`
      */
-    protected static function astVarUnionType(
+    public static function varUnionType(
         Context $context,
-        $node
+        Node $node
     ) : UnionType {
 
         // Check for $$var or ${...} (whose idea was that anyway?)
@@ -219,7 +215,7 @@ trait AST {
      * @return string
      * A variable name associated with the given node
      */
-    public static function astVariableName($node) : string {
+    public static function variableName($node) : string {
         if(!$node instanceof \ast\Node) {
             return (string)$node;
         }
@@ -266,7 +262,7 @@ trait AST {
      * @see \Phan\Deprecated::bc_check
      * Formerly `function bc_check`
      */
-    public static function astBackwardCompatibilityCheck(
+    public static function backwardCompatibilityCheck(
         Context $context,
         Node $node
     ) {

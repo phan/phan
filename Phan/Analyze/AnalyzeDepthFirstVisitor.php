@@ -3,6 +3,7 @@ namespace Phan\Analyze;
 
 use \Phan\Configuration;
 use \Phan\Debug;
+use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
@@ -31,7 +32,6 @@ use \ast\Node;
  * ```
  */
 class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
-    use \Phan\Language\AST;
     use \Phan\Analyze\ArgumentType;
 
     /**
@@ -281,7 +281,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                 }
 
                 $variable_name =
-                    self::astVariableName($use->children['name']);
+                    AST::variableName($use->children['name']);
 
                 if(empty($variable_name)) {
                     continue;
@@ -443,7 +443,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitCatch(Node $node) : Context {
         $variable_name =
-            self::astVariableName($node->children['var']);
+            AST::variableName($node->children['var']);
 
         if (!empty($variable_name)) {
             $this->context->addScopeVariable(
@@ -472,7 +472,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         // Find out the name of the class for which we're
         // calling a method
         $class_name =
-            self::astClassNameFromNode($this->context, $node);
+            AST::classNameFromNode($this->context, $node);
 
         // If we can't figure out the class name (which happens
         // from time to time), then give up

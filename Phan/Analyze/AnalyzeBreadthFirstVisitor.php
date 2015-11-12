@@ -3,6 +3,7 @@ namespace Phan\Analyze;
 
 use \Phan\Configuration;
 use \Phan\Debug;
+use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
@@ -31,7 +32,6 @@ use \ast\Node;
  * ```
  */
 class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
-    use \Phan\Language\AST;
     use \Phan\Analyze\ArgumentType;
 
     /**
@@ -141,7 +141,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             && $node->children['var']->kind === \ast\AST_DIM
         ) {
             $variable_name =
-                self::astVariableName($node->children['var']);
+                AST::variableName($node->children['var']);
 
             // Check to see if the variable is not yet defined
             if ($this->context->getScope()->hasVariableWithName(
@@ -168,7 +168,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             assert(is_string($property_name),
                 "Property must be string in context {$this->context}");
 
-            $class_name = self::astClassNameFromNode(
+            $class_name = AST::classNameFromNode(
                 $this->context, $node->children['var']
             );
 
@@ -764,7 +764,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                     }
 
                     $variable_name =
-                        self::astVariableName($argument);
+                        AST::variableName($argument);
 
                     // Check to see if the variable is not yet defined
                     if (!$this->context->getScope()->hasVariableWithName(
@@ -793,7 +793,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             self::analyzeArgumentType($method, $node, $this->context);
 
         } else if ($expression->kind == \ast\AST_VAR) {
-            $name = self::astVariableName($expression);
+            $name = AST::variableName($expression);
             if(!empty($name)) {
                 // $var() - hopefully a closure, otherwise we don't know
                 if ($this->context->getScope()->hasVariableWithName(
@@ -873,7 +873,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitStaticCall(Node $node) : Context {
 
-        $class_name = self::astClassNameFromNode(
+        $class_name = AST::classNameFromNode(
             $this->context, $node
         );
 

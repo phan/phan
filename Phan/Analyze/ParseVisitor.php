@@ -3,6 +3,7 @@ namespace Phan\Analyze;
 
 use \Phan\Configuration;
 use \Phan\Debug;
+use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
@@ -44,7 +45,6 @@ use \ast\Node;
  * ```
  */
 class ParseVisitor extends KindVisitorImplementation {
-    use \Phan\Language\AST;
 
     /**
      * @var Context
@@ -386,7 +386,7 @@ class ParseVisitor extends KindVisitorImplementation {
         $clazz = $this->getContextClass();
 
         $trait_fqsen_string_list =
-            static::astQualifiedNameList(
+            AST::qualifiedNameList(
                 $this->context,
                 $node->children['traits']
             );
@@ -682,7 +682,7 @@ class ParseVisitor extends KindVisitorImplementation {
         }
 
         if(Configuration::instance()->backward_compatibility_checks) {
-            self::astBackwardCompatibilityCheck($this->context, $node);
+            AST::backwardCompatibilityCheck($this->context, $node);
         }
 
         return $this->context;
@@ -728,7 +728,7 @@ class ParseVisitor extends KindVisitorImplementation {
      */
     public function visitReturn(Node $node) : Context {
         if (Configuration::instance()->backward_compatibility_checks) {
-            self::astBackwardCompatibilityCheck($this->context, $node);
+            AST::backwardCompatibilityCheck($this->context, $node);
         }
 
         return $this->context;

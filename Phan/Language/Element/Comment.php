@@ -109,10 +109,14 @@ class Comment {
                         $type = $match[1];
                     }
 
+                    $variable_name =
+                        empty($match[2]) ? '' : trim($match[2], '$');
+
+                    $union_type =
+                        UnionType::fromStringInContext($type, $context);
+
                     $comment_parameter = new CommentParameter(
-                        empty($match[2]) ? '' : trim($match[2], '$'),
-                        UnionType::fromStringInContext($type, $context),
-                        $line
+                        $variable_name, $union_type, $line
                     );
 
                     $parameter_list[] = $comment_parameter;

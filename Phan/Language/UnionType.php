@@ -3,6 +3,7 @@ namespace Phan\Language;
 
 use \Phan\CodeBase;
 use \Phan\Debug;
+use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
@@ -20,7 +21,6 @@ use \Phan\Language\Type\NodeTypeKindVisitor;
 use \ast\Node;
 
 class UnionType {
-    use \Phan\Language\AST;
     use \Phan\Memoize;
 
     /**
@@ -111,7 +111,7 @@ class UnionType {
         Context $context,
         $node
     ) : UnionType {
-        return self::astUnionTypeFromSimpleNode($context, $node);
+        return AST::unionTypeFromSimpleNode($context, $node);
     }
 
     /**
