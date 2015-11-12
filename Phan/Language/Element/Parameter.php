@@ -216,6 +216,14 @@ class Parameter extends Variable {
 
     /**
      * @return bool
+     * True if this is a required parameter
+     */
+    public function isRequired() : bool {
+        return !$this->isOptional();
+    }
+
+    /**
+     * @return bool
      * True if this parameter is variadic, i.e. can
      * take an unlimited list of parameters and express
      * them as an array.

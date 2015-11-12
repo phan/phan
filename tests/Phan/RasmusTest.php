@@ -45,9 +45,6 @@ class RasmusTest extends \PHPUnit_Framework_TestCase {
      * `tests/files/expected`
      */
     public function testFiles() {
-
-        return;
-
         foreach (scandir(RASMUS_TEST_FILE_DIR) as $test_file_name) {
             // Skip '.' and '..'
             if (empty($test_file_name)

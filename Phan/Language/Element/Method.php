@@ -324,6 +324,17 @@ class Method extends TypedStructuralElement {
         // Set the parameter list on the method
         $method->parameter_list = $parameter_list;
 
+        $method->setNumberOfRequiredParameters(array_reduce(
+            $parameter_list, function (int $carry, Parameter $parameter) : int {
+                return ($carry + ($parameter->isRequired() ? 1 : 0));
+            }, 0));
+
+        $method->setNumberOfOptionalParameters(array_reduce(
+            $parameter_list, function (int $carry, Parameter $parameter) : int {
+                return ($carry + ($parameter->isOptional() ? 1 : 0));
+            }, 0));
+
+
         // Check to see if the comment specifies that the
         // method is deprecated
         $method->setIsDeprecated($comment->isDeprecated());
@@ -355,9 +366,6 @@ class Method extends TypedStructuralElement {
 
             $method->getUnionType()->addUnionType($union_type);
         }
-
-        // assert(!$method->getUnionType()->isEmpty(),
-        //     "Method {$method->getFQSEN()} must have a type");
 
         // Add params to local scope for user functions
         if($context->getFile() != 'internal') {
@@ -502,6 +510,19 @@ class Method extends TypedStructuralElement {
             $this->getContext(),
             $this->getName()
         );
+    }
+
+    /**
+     * @return Method[]
+     * The set of all alternates to this method
+     */
+    public function alternateGenerator(CodeBase $code_base) : \Generator {
+        $alternate_id = 0;
+        $fqsen = $this->getFQSEN();
+        while ($code_base->hasMethodWithFQSEN($fqsen)) {
+            yield $code_base->getMethodByFQSEN($fqsen);
+            $fqsen = $fqsen->withAlternateId(++$alternate_id);
+        }
     }
 
     /**

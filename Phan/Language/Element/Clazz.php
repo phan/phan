@@ -580,4 +580,18 @@ class Clazz extends TypedStructuralElement {
                 }
             });
     }
+
+    /**
+     * @return Clazz[]
+     * The set of all alternates to this class
+     */
+    public function alternateGenerator(CodeBase $code_base) : \Generator {
+        $alternate_id = 0;
+        $fqsen = $this->getFQSEN();
+        while ($code_base->hasClassWithFQSEN($fqsen)) {
+            yield $code_base->getClassByFQSEN($fqsen);
+            $fqsen = $fqsen->withAlternateId(++$alternate_id);
+        }
+    }
+
 }

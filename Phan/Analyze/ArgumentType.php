@@ -87,34 +87,16 @@ trait ArgumentType {
         if(!$is_unpack
             && $argcount < $method->getNumberOfRequiredParameters()
         ) {
-            $has_alternate_with_sufficient_parameters = false;
-
-            // Hunt for an available alternate ID if necessary
-            $alternate_id = 0;
-
-            $method_fqsen =
-                $method->getFQSEN()->withAlternateId(++$alternate_id);
-
-            while($context->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
-                // Get the method with the given FQSEN
-                $alt_method =
-                    $context->getCodeBase()->getMethodByFQSEN(
-                        $method_fqsen
+            $alternate_found = array_reduce(
+                (array)$method->alternateGenerator($context->getCodeBase()),
+                function (bool $carry, Method $alternate_method) : bool {
+                    return $carry || (
+                        $argcount >=
+                        $alternate_method->getNumberOfParameters()
                     );
+                }, false);
 
-                // See if the alternate has a good number of arguments
-                if($argcount >= $alt_method->getNumberOfRequiredParameters()) {
-                    $has_alternate_with_sufficient_parameters = true;
-                    break;
-                }
-
-                // Otherwise, keep hunting for an alternate that
-                // works
-                $method_fqsen =
-                    $method_fqsen->withAlternateId(++$alternate_id);
-            }
-
-            if(!$has_alternate_with_sufficient_parameters) {
+            if(!$alternate_found) {
                 if($method->getContext()->isInternal()) {
                     Log::err(
                         Log::EPARAM,
@@ -133,42 +115,41 @@ trait ArgumentType {
             }
         }
 
-        // Check the parameter types
-        self::analyzeParameterList($method, $arglist, $context);
 
-        /*
         if(!$is_varargs
-            && $argcount > $method->getNumberOfParameters()) {
-            $err = true;
-            $alt = 1;
-            // Check if there is an alternate signature that is ok
-            while(!empty($functions["{$func['name']} $alt"])) {
-                if($argcount > ($functions["{$func['name']} $alt"]['required']+$functions["{$func['name']} $alt"]['optional'])) $alt++;
-                else { $err = false; break; }
-            }
-            // For method calls, we have no way of knowing the actual signature.
-            // We may only have the base signature from an interface, for example
-            // and the actual called method could have extra optional args
-            if($err && $ast->kind != \ast\AST_METHOD_CALL) {
+            && $argcount > $method->getNumberOfParameters()
+        ) {
+            $alternate_found = array_reduce(
+                (array)$method->alternateGenerator($context->getCodeBase()),
+                function (bool $carry, Method $alternate_method) : bool {
+                    return $carry || (
+                        $argcount <=
+                        $alternate_method->getNumberOfParameters()
+                    );
+                }, false);
+
+            if (!$alternate_found) {
                 $max = $method->getNumberOfParameters();
-                if($method->getContext()->isInternal())
+                if($method->getContext()->isInternal()) {
                     Log::err(
                         Log::EPARAM,
                         "call with $argcount arg(s) to {$method->getName()}() which only takes {$max} arg(s)",
                         $context->getFile(),
                         $node->lineno
                     );
-                else
+                } else {
                     Log::err(
                         Log::EPARAM,
                         "call with $argcount arg(s) to {$method->getName()}() which only takes {$max} arg(s) defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
                         $context->getFile(),
                         $node->lineno
                     );
+                }
             }
         }
-        */
 
+        // Check the parameter types
+        self::analyzeParameterList($method, $arglist, $context);
 
         // Are the types right?
         // Check if we have any alternate arginfo signatures
@@ -285,14 +266,14 @@ trait ArgumentType {
                 if ($method->getContext()->isInternal()) {
                     Log::err(
                         Log::ETYPE,
-                        "arg#".($i+1)." ({$parameter->getName()}) is $argument_type but {$method->getName()}() takes {$parameter->getUnionType()}",
+                        "arg#".($i+1)."({$parameter->getName()}) is $argument_type but {$method->getName()}() takes {$parameter->getUnionType()}",
                         $context->getFile(),
                         $node->lineno
                     );
                 } else {
                     Log::err(
                         Log::ETYPE,
-                        "arg#".($i+1)." ({$parameter->getName()}) is $argument_type but {$method->getName()}() takes {$parameter->getUnionType()} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                        "arg#".($i+1)."({$parameter->getName()}) is $argument_type but {$method->getName()}() takes {$parameter->getUnionType()} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
                         $context->getFile(),
                         $node->lineno
                     );
