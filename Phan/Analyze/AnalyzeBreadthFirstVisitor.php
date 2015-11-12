@@ -903,7 +903,6 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-
         $class_fqsen =
             $this->context->getScopeFQSEN()->withClassName(
                 $this->context, $class_name
@@ -985,25 +984,105 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitMethodCall(Node $node) : Context {
-        /*
-        $class_name = find_class_name($file, $ast, $namespace, $current_class, $current_scope);
-        if($class_name) {
-            $method_name = $ast->children[1];
-            $method = find_method($class_name, $method_name);
-            if($method === false) {
-                Log::err(Log::EUNDEF, "call to undeclared method {$class_name}->{$method_name}()", $file, $ast->lineno);
-            } else if($method != 'dynamic') {
-                if(array_key_exists('avail', $method) && !$method['avail']) {
-                    Log::err(Log::EAVAIL, "method {$class_name}::{$method_name}() is not compiled into this version of PHP", $file, $ast->lineno);
-                }
-                arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
-                if($method['file'] != 'internal') {
-                    // re-check the function's ast with these args
-                    if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
-                }
-            }
+        // Find out the name of the class for which we're
+        // calling a method
+        $class_name =
+            AST::classNameFromNode($this->context, $node);
+
+        // If we can't figure out the class name (which happens
+        // from time to time), then give up
+        if (empty($class_name)) {
+            return $this->context;
         }
+
+        $class_fqsen =
+            $this->context->getScopeFQSEN()->withClassName(
+                $this->context, $class_name
+            );
+
+        /*
+        // Ensure that we're not getting native types here
+        assert(!Type::fromFullyQualifiedString((string)$class_fqsen)->isNativeType(),
+            "Cannot call methods on native type $class_fqsen in {$this->context}");
          */
+
+        // Check to see if the class actually exists
+        if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+            Log::err(
+                Log::EFATAL,
+                "Can't find class {$class_fqsen} - aborting",
+                $this->context->getFile(),
+                $node->lineno
+            );
+            return $this->context;
+        }
+
+        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+            $class_fqsen
+        );
+
+        $method_name = $node->children['method'];
+
+        if ($method_name instanceof Node) {
+            // TODO: The method_name turned out to
+            //       be a variable. We'd have to look
+            //       that up to figure out what the
+            //       string is, but thats a drag.
+            return $this->context;
+        }
+
+        assert(is_string($method_name),
+            "Method name must be a string. Found non-string at {$this->context}");
+
+        if (!$clazz->hasMethodWithName($method_name)) {
+            Log::err(
+                Log::EUNDEF,
+                "call to undeclared method $class_fqsen->$method_name()",
+                $this->context->getFile(),
+                $node->lineno
+            );
+
+            return $this->context;
+        }
+
+        $method = $clazz->getMethodByName($method_name);
+
+        self::analyzeArgumentType($method, $node, $this->context);
+
+
+        // TODO: whats this?
+        /*
+        if($method->getName() != 'dynamic') {
+            if(array_key_exists('avail', $method)
+                && !$method['avail']
+            ) {
+                Log::err(
+                    Log::EAVAIL,
+                    "method {$class_fqsen}::{$method_name}() is not compiled into this version of PHP",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
+
+            self::analyzeArgumentType($method, $node, $this->context);
+
+            // if($method->getContext()->getFile() != 'internal') {
+            //     // re-check the function's ast with these args
+            //     if(!$quick_mode) {
+            //         pass2(
+            //             $method['file'],
+            //             $method['namespace'],
+            //             $method['ast'],
+            //             $method['scope'],
+            //             $ast,
+            //             $classes[strtolower($class_name)],
+            //             $method,
+            //             $parent_scope
+            //         );
+            //     }
+            // }
+        }
+        */
 
         return $this->context;
     }
