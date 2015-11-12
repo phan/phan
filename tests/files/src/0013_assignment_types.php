@@ -14,6 +14,8 @@ class A {
 }
 
 class B {
+    private $a;
+
     public function __construct() {
         $str = 'string';
 

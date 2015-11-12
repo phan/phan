@@ -335,7 +335,7 @@ class Context {
      * @return Context
      * A clone of this context with the given value is returned
      */
-    public function withClosureFQSEN(FQSEN $fqsen) : Context {
+    public function withClosureFQSEN(FQSEN $fqsen = null) : Context {
         $context = clone($this);
         $context->closure_fqsen = $fqsen;
         return $context;
@@ -369,6 +369,11 @@ class Context {
     public function withIsConditional(bool $is_conditional) : Context {
         $context = clone($this);
         $context->is_conditional = $is_conditional;
+
+        if ($is_conditional) {
+            $this->getCodeBase()->incrementConditionals();
+        }
+
         return $context;
     }
 

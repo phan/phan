@@ -238,7 +238,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             );
 
             // Set that type on the variable
-            $variable->getUnionType()->addUnionType($right_type);
+            $variable->setUnionType($right_type);
 
             // Note that we're not creating a new scope, just
             // adding variables to the existing scope

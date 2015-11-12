@@ -332,11 +332,20 @@ class Analyzer {
                 );
 		}
 
+        // When popping out of the children, jump back up
+        // in the context stack
+        if (!$context->isClosureScope()
+            && $child_context->isClosureScope()
+        ) {
+            $child_context =
+                $child_context->withClosureFQSEN(null);
+        }
+
         // Do another pass across siblings
         $context =
             (new Element($node))->acceptKindVisitor(
                 new AnalyzeBreadthFirstVisitor(
-                    $context
+                    $child_context
                         ->withLineNumberStart($node->lineno ?? 0)
                         ->withLineNumberEnd($node->endLineno ?? 0),
                     $parent_node

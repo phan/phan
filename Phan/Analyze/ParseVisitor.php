@@ -107,7 +107,6 @@ class ParseVisitor extends KindVisitorImplementation {
      */
     public function visitIf(Node $node) : Context {
         $context = $this->context->withIsConditional(true);
-        $context->getCodeBase()->incrementConditionals();
         return $context;
     }
 
