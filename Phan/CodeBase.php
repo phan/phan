@@ -182,8 +182,9 @@ class CodeBase {
      */
     private function addFunctionsByNames($function_name_list) {
         foreach ($function_name_list as $i => $function_name) {
-            $method = Method::fromFunctionName($this, $function_name);
-            $this->addMethod($method);
+            foreach (Method::fromFunctionName($this, $function_name) as $method) {
+                $this->addMethod($method);
+            }
         }
     }
 

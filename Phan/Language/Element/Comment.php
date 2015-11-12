@@ -101,7 +101,7 @@ class Comment {
 
             if(($pos=strpos($line, '@param')) !== false) {
                 $match = [];
-                if(preg_match('/@param\s+(\S+)\s+(?:(\$\S+))*/', $line, $match)) {
+                if(preg_match('/@param\s+(\S+)\s*(?:(\$\S+))*/', $line, $match)) {
                     if(stripos($match[1],'\\') === 0
                         && strpos($match[1],'\\', 1) === false) {
                         $type = trim($match[1], '\\');
@@ -112,8 +112,18 @@ class Comment {
                     $variable_name =
                         empty($match[2]) ? '' : trim($match[2], '$');
 
-                    $union_type =
-                        UnionType::fromStringInContext($type, $context);
+                    // If the type looks like a variable name,
+                    // make it an empty type so that other stuff
+                    // can match it. We can't just skip it or
+                    // we'd mess up the parameter order.
+                    $union_type = null;
+                    if (0 !== strpos($type, '$')) {
+                        $union_type =
+                            UnionType::fromStringInContext($type, $context);
+                    } else {
+                        $union_type = new UnionType();
+                    }
+
 
                     $comment_parameter = new CommentParameter(
                         $variable_name, $union_type, $line
@@ -158,7 +168,6 @@ class Comment {
                     $is_deprecated = true;
                 }
             }
-
         }
 
         return new Comment(

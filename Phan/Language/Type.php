@@ -394,7 +394,9 @@ class Type {
      * or 'self'.
      */
     public function isSelfType() : bool {
-        return in_array((string)$this, ['static', 'self', '$this']);
+        return in_array((string)$this, [
+            'static', 'self', '$this'
+        ]);
     }
 
     /**
@@ -561,6 +563,7 @@ class Type {
         ) {
             return true;
         }
+
         if($s === 'object'
             && !$type->isScalar()
             && $d!=='array'

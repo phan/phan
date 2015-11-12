@@ -156,7 +156,6 @@ class UnionType {
     }
 
     /**
-     * @return UnionType[]
      * A list of types for parameters associated with the
      * given builtin function with the given name
      *
@@ -173,37 +172,42 @@ class UnionType {
 
         // Get the simple name of the function
         $function_name = $function_fqsen->getMethodName();
+        $function_name_original = $function_name;
+        $alternate_id = 0;
 
-        // See if we have a mapping
-        if (!isset($map[$function_name])) {
-            return [];
+        $configurations = [];
+        while (isset($map[$function_name])) {
+            // Get some static data about the function
+            $type_name_struct = $map[$function_name];
+            if (empty($type_name_struct)) {
+                continue;
+            }
+
+            // Figure out the return type
+            $return_type_name = array_shift($type_name_struct);
+            $return_type = $return_type_name
+                ? UnionType::fromStringInContext($return_type_name, $context)
+                : null;
+
+            $name_type_name_map = $type_name_struct;
+            $property_name_type_map = [];
+
+            foreach ($name_type_name_map as $name => $type_name) {
+                $property_name_type_map[$name] = empty($type_name)
+                    ? new UnionType()
+                    : UnionType::fromStringInContext($type_name, $context);
+            }
+
+            $configurations[] = [
+                'return_type' => $return_type,
+                'property_name_type_map' => $property_name_type_map,
+            ];
+
+            $function_name =
+                $function_name_original . ' ' . (++$alternate_id);
         }
 
-        $type_name_struct = $map[$function_name];
-        if (empty($type_name_struct)) {
-            return [];
-        }
-
-        // Figure out the return type
-        $return_type_name = array_shift($type_name_struct);
-        $return_type = $return_type_name
-            ? UnionType::fromStringInContext($return_type_name, $context)
-            : null;
-
-        $name_type_name_map = $type_name_struct;
-
-        $property_name_type_map = [];
-
-        foreach ($name_type_name_map as $name => $type_name) {
-            $property_name_type_map[$name] = empty($type_name)
-                ? new UnionType()
-                : UnionType::fromStringInContext($type_name, $context);
-        }
-
-        return [
-            'return_type' => $return_type,
-            'property_name_type_map' => $property_name_type_map,
-        ];
+        return $configurations;
     }
 
     /**

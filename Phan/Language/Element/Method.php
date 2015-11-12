@@ -88,29 +88,35 @@ class Method extends TypedStructuralElement {
     }
 
     /**
-     *
+     * @return Method[]
+     * One or more (alternate) methods begotten from
+     * reflection info and builtin method data
      */
     public static function fromFunctionName(
         CodeBase $code_base,
         string $function_name
-    ) : Method {
+    ) : array {
 
         $reflection_function =
             new \ReflectionFunction($function_name);
 
-        return self::fromReflectionFunction(
+        $method_list = self::fromReflectionFunction(
             $code_base,
             $reflection_function
         );
+
+        return $method_list;
     }
 
     /**
-     *
+     * @return Method[]
+     * One or more (alternate) methods begotten from
+     * reflection info and builtin method data
      */
     public static function fromReflectionFunction(
         CodeBase $code_base,
         \ReflectionFunction $reflection_function
-    ) : Method {
+    ) : array {
 
         $number_of_required_parameters =
             $reflection_function->getNumberOfRequiredParameters();
@@ -133,62 +139,72 @@ class Method extends TypedStructuralElement {
 
         // See if we have any type information for this
         // builtin function
-        $map = UnionType::builtinFunctionPropertyNameTypeMap(
+        $map_list = UnionType::builtinFunctionPropertyNameTypeMap(
             $method->getFQSEN(), $context->getCodeBase()
         );
 
-        // Set the return type if one is defined
-        if (!empty($map['return_type'])) {
-            $method->setUnionType($map['return_type']);
-        }
+        $alternate_id = 0;
+        return array_map(function($map) use ($method, $context, &$alternate_id) : Method {
+            $alternate_method = clone($method);
 
-        // Load properties if defined
-        foreach ($map['property_name_type_map'] ?? []
-            as $parameter_name => $parameter_type
-        ) {
-            $flags = 0;
-            $is_optional = false;
-
-            // Check to see if its a pass-by-reference parameter
-            if (strpos($parameter_name, '&') === 0) {
-                $flags |= \ast\flags\PARAM_REF;
-                $parameter_name = substr($parameter_name, 1);
-            }
-
-            // Check to see if its variadic
-            if (strpos($parameter_name, '...') !== false) {
-                $flags |= \ast\flags\PARAM_VARIADIC;
-                $parameter_name = str_replace('...', '', $parameter_name);
-            }
-
-            // Check to see if its an optional parameter
-            if (strpos($parameter_name, '=') !== false) {
-                $is_optional = true;
-                $parameter_name = str_replace('=', '', $parameter_name);
-            }
-
-            $parameter = new Parameter(
-                $context,
-                Comment::none(),
-                $parameter_name,
-                $parameter_type,
-                $flags
+            $alternate_method->setFQSEN(
+                $alternate_method->getFQSEN()->withAlternateId(
+                    $alternate_id++
+                )
             );
 
-            if ($is_optional) {
-                $parameter->setDefaultValue(null);
-                $parameter->setDefaultValueUnionType(
-                    NullType::instance()->asUnionType()
-                );
+            // Set the return type if one is defined
+            if (!empty($map['return_type'])) {
+                $alternate_method->setUnionType($map['return_type']);
             }
 
-            // Add the parameter
-            $method->parameter_list[] = $parameter;
-        }
+            // Load properties if defined
+            foreach ($map['property_name_type_map'] ?? []
+                as $parameter_name => $parameter_type
+            ) {
+                $flags = 0;
+                $is_optional = false;
 
-        return $method;
+                // Check to see if its a pass-by-reference parameter
+                if (strpos($parameter_name, '&') === 0) {
+                    $flags |= \ast\flags\PARAM_REF;
+                    $parameter_name = substr($parameter_name, 1);
+                }
+
+                // Check to see if its variadic
+                if (strpos($parameter_name, '...') !== false) {
+                    $flags |= \ast\flags\PARAM_VARIADIC;
+                    $parameter_name = str_replace('...', '', $parameter_name);
+                }
+
+                // Check to see if its an optional parameter
+                if (strpos($parameter_name, '=') !== false) {
+                    $is_optional = true;
+                    $parameter_name = str_replace('=', '', $parameter_name);
+                }
+
+                $parameter = new Parameter(
+                    $context,
+                    Comment::none(),
+                    $parameter_name,
+                    $parameter_type,
+                    $flags
+                );
+
+                if ($is_optional) {
+                    $parameter->setDefaultValue(null);
+                    $parameter->setDefaultValueUnionType(
+                        NullType::instance()->asUnionType()
+                    );
+                }
+
+                // Add the parameter
+                $alternate_method->parameter_list[] = $parameter;
+            }
+
+            return $alternate_method;
+        }, $map_list);
     }
-
 
     /**
      * @return map[string,Method];

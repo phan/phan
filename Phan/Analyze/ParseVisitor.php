@@ -644,45 +644,24 @@ class ParseVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitCall(Node $node) : Context {
-        $found = false;
-        $call_node = $node->children['expr'];
-
-        if($call_node->kind == \ast\AST_NAME) {
-
-            $function_name = $call_node->children['name'];
-
-            $method_fqsen =
-                $this->context->getScopeFQSEN()
-                    ->withFunctionName($this->context, $function_name);
-
-            if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
-                $method_fqsen
-            )) {
-                // TODO: There are missing methods like 'apache_note'
-                //       that we'll want to do something with other
-                //       than ignoring.
-                // assert(false, "Method with FQSEN $method_fqsen not found.");
-                return $this->context;
-            }
-
-            // Get the current method in scope or fail real hard
-            // if we're in an impossible state
-            $method = $this->context->getCodeBase()->getMethodByFQSEN(
-                $method_fqsen
-            );
-
-            if (in_array($function_name, [
-                'func_get_args',
-                'func_get_arg',
-                'func_num_args'
-            ])) {
-                // TODO: whats going on here?
-                $method->setNumberOfOptionalParameters(999999);
-            }
-        }
 
         if(Configuration::instance()->backward_compatibility_checks) {
             AST::backwardCompatibilityCheck($this->context, $node);
+        }
+
+        // If this is a call to a method that indicates that we
+        // are treating the method in scope as a varargs method,
+        // then set its optional args to something very high so
+        // it can be called with anything.
+        $expression = $node->children['expr'];
+        if($expression->kind === \ast\AST_NAME
+            && $this->context->isMethodScope()
+            && in_array($expression->children['name'], [
+                'func_get_args', 'func_get_arg', 'func_num_args'
+            ])
+        ) {
+            $this->context->getMethodInScope()
+                ->setNumberOfOptionalParameters(999999);
         }
 
         return $this->context;

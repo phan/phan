@@ -218,40 +218,65 @@ trait ArgumentType {
                 }
             }
 
-            // Make sure each argument can be cast to the
-            // specified parameter types
+            // Get the type of the argument. We'll check it against
+            // the parameter in a moment
             $argument_type = UnionType::fromNode(
                 $context, $argument
             );
 
-            $parameter_type = $parameter->getUnionType();
+            // Expand it to include all parent types up the chain
+            $argument_type_expanded =
+                $argument_type->asExpandedTypes($context->getCodeBase());
 
-            if (!$argument_type->canCastToExpandedUnionType(
-                $parameter_type,
-                $context->getCodeBase()
-            )) {
+            // Check the method to see if it has the correct
+            // parameter types. If not, keep hunting through
+            // alternates of the method until we find one that
+            // takes the correct types
+            $alternate_parameter = null;
+            $alternate_found = false;
+
+            foreach ($method->alternateGenerator($context->getCodeBase())
+                as $alternate_id => $alternate_method
+            ) {
+                if (empty($alternate_method->getParameterList()[$i])) {
+                    continue;
+                }
+
+                // Get the parameter associated with this argument
+                $alternate_parameter =
+                    $alternate_method->getParameterList()[$i] ?? null;
+
+                // Expand the types to find all parents and traits
+                $alternate_parameter_type_expanded =
+                    $alternate_parameter
+                    ->getUnionType()
+                    ->asExpandedTypes($context->getCodeBase());
+
+                // See if the argument can be cast to the
+                // parameter
+                if ($argument_type_expanded->canCastToUnionType(
+                    $alternate_parameter_type_expanded
+                )) {
+                    $alternate_found = true;
+                    break;
+                }
+            }
+
+            if (!$alternate_found) {
                 if ($method->getContext()->isInternal()) {
                     Log::err(
                         Log::ETYPE,
-                        "arg#".($i+1)."({$parameter->getName()}) is $argument_type but {$method->getName()}() takes {$parameter->getUnionType()}",
+                        "arg#".($i+1)."({$alternate_parameter->getName()}) is $argument_type but {$method->getName()}() takes {$alternate_parameter->getUnionType()}",
                         $context->getFile(),
                         $node->lineno
                     );
                 } else {
                     Log::err(
                         Log::ETYPE,
-                        "arg#".($i+1)."({$parameter->getName()}) is $argument_type but {$method->getName()}() takes {$parameter->getUnionType()} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                        "arg#".($i+1)."({$alternate_parameter->getName()}) is $argument_type but {$method->getName()}() takes {$alternate_parameter->getUnionType()} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
                         $context->getFile(),
                         $node->lineno
                     );
-
-                    /*
-                    print "$parameter_type\n";
-                    assert(false,
-                        "arg#".($i+1)."({$parameter->getName()}) is $argument_type but {$method->getName()}() takes {$parameter->getUnionType()} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}"
-                    );
-                     */
-
                 }
             }
 

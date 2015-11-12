@@ -165,6 +165,11 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
 
             $property_name = $node->children['var']->children['prop'];
 
+            // Things like $foo->$bar
+            if (!is_string($property_name)) {
+                return $this->context;
+            }
+
             assert(is_string($property_name),
                 "Property must be string in context {$this->context}");
 
@@ -199,12 +204,16 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             );
 
             if (!$clazz->hasPropertyWithName($property_name)) {
-                Log::err(
-                    Log::EAVAIL,
-                    "Missing property with name '$property_name'",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
+
+                // Check to see if the class has a __set method
+                if (!$clazz->hasMethodWithName('__set')) {
+                    Log::err(
+                        Log::EAVAIL,
+                        "Missing property with name '$property_name'",
+                        $this->context->getFile(),
+                        $node->lineno
+                    );
+                }
 
                 return $this->context;
             }
@@ -884,6 +893,11 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
         // The class is declared, but does it have the method?
         $method_name = $node->children['method'];
 
+        // Give up on things like Class::$var
+        if (!is_string($method_name)) {
+            return $this->context;
+        }
+
         // Get the name of the static class being referenced
         $static_class = '';
         if($node->children['class']->kind == \ast\AST_NAME) {
@@ -922,6 +936,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
         $clazz = $this->context->getCodeBase()->getClassByFQSEN(
             $class_fqsen
         );
+
 
         if (!$clazz->hasMethodWithName($method_name)) {
             Log::err(
