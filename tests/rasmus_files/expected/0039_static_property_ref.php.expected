@@ -1,0 +1,1 @@
+%s:10 TypeError arg#1(arg) is int|string but test3() takes array defined at %s:7

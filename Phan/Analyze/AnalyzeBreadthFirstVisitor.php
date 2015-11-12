@@ -161,20 +161,89 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
 
             // Make the right type a generic (i.e. int -> int[])
             $right_type = $right_type->asGenericTypes();
+        } else if ($node->children['var']->kind === \ast\AST_PROP) {
+
+            $property_name = $node->children['var']->children['prop'];
+
+            assert(is_string($property_name),
+                "Property must be string in context {$this->context}");
+
+            $class_name = self::astClassNameFromNode(
+                $this->context, $node->children['var']
+            );
+
+            // If we can't figure out the class name (which happens
+            // from time to time), then give up
+            if (empty($class_name)) {
+                return $this->context;
+            }
+
+            $class_fqsen =
+                $this->context->getScopeFQSEN()->withClassName(
+                    $this->context, $class_name
+                );
+
+            // Check to see if the class actually exists
+            if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+                Log::err(
+                    Log::EFATAL,
+                    "Can't find class {$class_fqsen} - aborting",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+                return $this->context;
+            }
+
+            $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+                $class_fqsen
+            );
+
+            if (!$clazz->hasPropertyWithName($property_name)) {
+                Log::err(
+                    Log::EAVAIL,
+                    "Missing property with name '$property_name'",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+
+                return $this->context;
+            }
+
+            $property = $clazz->getPropertyWithName($property_name);
+
+            if (!$right_type->canCastToExpandedUnionType(
+                $property->getUnionType(),
+                $this->context->getCodeBase()
+            )) {
+                Log::err(
+                    Log::ETYPE,
+                    "assigning $right_type to property but {$property->getName()} is declared to be {$property->getUnionType()}",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+
+                return $this->context;
+
+                // TODO: Alternatively, we could add this type to the
+                //       property's possible types
+                // Add the type assigned to it to its type
+                // $property->getUnionType()->addUnionType($right_type);
+            }
+
         } else {
             // Create a new variable
             $variable = Variable::fromNodeInContext(
                 $node,
                 $this->context
             );
+
+            // Set that type on the variable
+            $variable->getUnionType()->addUnionType($right_type);
+
+            // Note that we're not creating a new scope, just
+            // adding variables to the existing scope
+            $this->context->addScopeVariable($variable);
         }
-
-        // Set that type on the variable
-        $variable->getUnionType()->addUnionType($right_type);
-
-        // Note that we're not creating a new scope, just
-        // adding variables to the existing scope
-        $this->context->addScopeVariable($variable);
 
         return $this->context;
     }
@@ -462,7 +531,12 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitClosure(Node $node) : Context {
         $this->checkNoOp($node, "no-op closure");
-        return $this->context;
+        return $this->context->withClosureFQSEN(
+            $this->context->getScopeFQSEN()->withClosureName(
+                $this->context,
+                'closure_' . $node->lineno
+            )
+        );
     }
 
     /**
@@ -474,6 +548,66 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitReturn(Node $node) : Context {
+
+        // Don't check return types in traits
+        if ($this->context->isClassScope()) {
+            $clazz = $this->context->getClassInScope();
+            if ($clazz->isTrait()) {
+                return $this->context;
+            }
+        }
+
+        // Make sure we're actually returning from a method.
+        if (!$this->context->isMethodScope()
+            && !$this->context->isClosureScope()) {
+            return $this->context;
+        }
+
+        // Get the method/function/closure we're in
+        $method = null;
+        if ($this->context->isClosureScope()) {
+            $method = $this->context->getClosureInScope();
+        } else if ($this->context->isMethodScope()) {
+            $method = $this->context->getMethodInScope();
+        } else {
+            assert(false,
+                "We're supposed to be in either method or closure scope.");
+        }
+
+        // Figure out what we intend to return
+        $method_return_type = $method->getUnionType();
+
+        // Figure out what is actually being returned
+        $expression_type = UnionType::fromNode(
+            $this->context,
+            $node->children['expr']
+        );
+
+        // If there is no declared type, see if we can deduce
+        // what it should be based on the return type
+        if ($method_return_type->isEmpty()) {
+
+            // Set the inferred type of the method based
+            // on what we're returning
+            $method->getUnionType()->addUnionType($expression_type);
+
+            // No point in comparing this type to the
+            // type we just set
+            return $this->context;
+        }
+
+        if (!$expression_type->canCastToExpandedUnionType(
+            $method_return_type,
+            $this->context->getCodeBase()
+        )) {
+            Log::err(
+                Log::ETYPE,
+                "return $expression_type but {$method->getName()}() is declared to return {$method_return_type}",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
+
         /*
         // a return from within a trait context is meaningless
         if($current_class['flags'] & \ast\flags\CLASS_TRAIT) break;

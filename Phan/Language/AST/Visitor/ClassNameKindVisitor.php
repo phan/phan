@@ -17,7 +17,7 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
     use \Phan\Language\AST;
 
     /**
-     * @var $context
+     * @var Context
      * The context of the current execution
      */
     private $context;

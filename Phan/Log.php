@@ -13,6 +13,11 @@ class Log {
 	protected $output_filename = '';
 	protected $output_mask = -1;
 
+    /**
+     * @var string[]
+     */
+    protected $msgs = [];
+
 	const EREDEF  =  1<<0;
 	const EUNDEF  =  1<<1;
 	const ETYPE   =  1<<2;

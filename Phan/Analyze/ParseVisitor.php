@@ -252,7 +252,7 @@ class ParseVisitor extends KindVisitorImplementation {
             $target = $child_node->children['name'];
 
             if(empty($child_node->children['alias'])) {
-                if(($pos=strrpos($target, '\\'))!==false) {
+                if(($pos = strrpos($target, '\\'))!==false) {
                     $alias = substr($target, $pos + 1);
                 } else {
                     $alias = $target;
@@ -609,6 +609,7 @@ class ParseVisitor extends KindVisitorImplementation {
 
         // Hunt for an un-taken alternate ID
         $alternate_id = 0;
+        $function_fqsen = null;
         do {
             $function_fqsen =
                 $this->context->getScopeFQSEN()->withFunctionName(

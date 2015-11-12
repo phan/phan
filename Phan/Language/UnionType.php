@@ -339,6 +339,34 @@ class UnionType extends \ArrayObject  {
 
     /**
      * @param UnionType $target
+     * The type we'd like to see if this type can cast
+     * to
+     *
+     * @param CodeBase $code_base
+     * The code base used to expand types
+     *
+     * @return bool
+     * Test to see if this type can be cast to the
+     * given type after expanding both union types
+     * to include all ancestor types
+     */
+    public function canCastToExpandedUnionType(
+        UnionType $target,
+        CodeBase $code_base
+    ) : bool {
+
+        $this_expanded =
+            $this->asExpandedTypes($code_base);
+
+        $target_expanded =
+            $target->asExpandedTypes($code_base);
+
+        return
+            $this_expanded->canCastToUnionType($target_expanded);
+    }
+
+    /**
+     * @param UnionType $target
      * A type to check to see if this can cast to it
      *
      * @return bool

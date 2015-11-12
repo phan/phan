@@ -481,7 +481,19 @@ class Type {
             $union_type->addUnionType($clazz->getUnionType());
         }
 
-        return $union_type;
+        // Resurse up the tree to include all types
+        $recursive_union_type = new UnionType();
+        foreach ($union_type as $clazz_type) {
+            if ((string)$clazz_type !== (string)$this) {
+                $recursive_union_type->addUnionType(
+                    $clazz_type->asExpandedTypes($code_base)
+                );
+            } else {
+                $recursive_union_type->addType($clazz_type);
+            }
+        }
+
+        return $recursive_union_type;
     }
 
     /**

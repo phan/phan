@@ -1,0 +1,1 @@
+%s:15 TypeError arg#1(farg2) is int[]|float but B::test2() takes int defined at %s:8

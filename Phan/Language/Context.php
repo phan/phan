@@ -3,6 +3,7 @@ namespace Phan\Language;
 
 use \Phan\CodeBase;
 use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\Scope;
 use \Phan\Log;
@@ -92,7 +93,6 @@ class Context {
         $this->file = 'internal';
         $this->namespace = '';
         $this->namespace_map = [];
-        $this->scope_fqsen = null;
         $this->class_fqsen = null;
         $this->method_fqsen = null;
         $this->closure_fqsen = null;
@@ -189,11 +189,12 @@ class Context {
      * The namespace mapped name for the given flags and name
      */
     public function getNamespaceMapFor(int $flags, string $name) : FQSEN {
-        if (!empty($this->namespace_map[$flags][strtolower($name)])) {
-            return $this->namespace_map[$flags][strtolower($name)];
-        }
+        assert(
+            !empty($this->namespace_map[$flags][strtolower($name)]),
+            "No namespace defined for $name"
+        );
 
-        return '';
+        return $this->namespace_map[$flags][strtolower($name)];
     }
 
     /**
@@ -518,12 +519,34 @@ class Context {
      */
     public function getMethodInScope() : Method {
         assert($this->isMethodScope(),
-            "Must be in method scope to get class. Actually in {$this}");
+            "Must be in method scope to get method. Actually in {$this}");
 
         return $this->getCodeBase()->getMethodByFQSEN(
             $this->getMethodFQSEN()
         );
     }
+
+    /**
+     * @return bool
+     * True if we're within a closure scope
+     */
+    public function isClosureScope() : bool {
+        return !empty($this->closure_fqsen);
+    }
+
+    /**
+     * @return Method
+     * Get the closure in this scope or fail real hard
+     */
+    public function getClosureInScope() : Method {
+        assert($this->isClosureScope(),
+            "Must be in closure scope to get closure. Actually in {$this}");
+
+        return $this->getCodeBase()->getMethodByFQSEN(
+            $this->getClosureFQSEN()
+        );
+    }
+
 
     /**
      * Get a string representation of the context

@@ -252,8 +252,8 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
         // Override the FQSEN with the found alternate ID
         $method->setFQSEN($closure_fqsen);
 
-        // TODO: We don't need this, right?
-        // $this->context->getCodeBase()->addClosure($method);
+        // Make the closure reachable by FQSEN from anywhere
+        $this->context->getCodeBase()->addClosure($method);
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure

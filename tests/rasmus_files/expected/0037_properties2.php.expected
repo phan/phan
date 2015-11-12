@@ -1,0 +1,2 @@
+%s:20 AccessError Cannot access protected property B::$text
+%s:13 TypeError property is declared to be string but was assigned int[]

@@ -1,0 +1,4 @@
+%s:4 TaintError possibly tainted output. Data tainted at %s:17
+%s:9 TaintError possibly tainted output. Data tainted at %s:20
+%s:15 TaintError possibly tainted output. Data tainted at %s:14
+%s:23 TaintError possibly tainted output. Data tainted at %s:20

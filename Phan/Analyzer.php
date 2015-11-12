@@ -313,6 +313,7 @@ class Analyzer {
         assert(!empty($context), 'Context cannot be null');
 
         // Go depth first on that first set of analyses
+        $child_context = $context;
 		foreach($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
@@ -321,10 +322,10 @@ class Analyzer {
 
             // Step into each child node and get an
             // updated context for the node
-            $context =
+            $child_context =
                 $this->analyzeNodeInContext(
                     $child_node,
-                    $context
+                    $child_context
                         ->withLineNumberStart($child_node->lineno ?? 0)
                         ->withLineNumberEnd($child_node->endLineno ?? 0),
                     $node

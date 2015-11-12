@@ -276,16 +276,11 @@ trait ArgumentType {
                 $context, $argument
             );
 
-            $expanded_argument_type = $argument_type
-                ->asExpandedTypes($context->getCodeBase());
-
             $parameter_type = $parameter->getUnionType();
 
-            $expanded_parameter_type = $parameter_type
-                ->asExpandedTypes($context->getCodeBase());
-
-            if (!$expanded_argument_type->canCastToUnionType(
-                $expanded_parameter_type
+            if (!$argument_type->canCastToExpandedUnionType(
+                $parameter_type,
+                $context->getCodeBase()
             )) {
                 if ($method->getContext()->isInternal()) {
                     Log::err(

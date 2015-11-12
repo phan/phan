@@ -1,0 +1,2 @@
+%s:9 TypeError property is declared to be int[] but was assigned string[]
+%s:10 TypeError property is declared to be int[] but was assigned int

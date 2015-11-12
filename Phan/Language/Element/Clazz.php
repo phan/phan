@@ -142,7 +142,7 @@ class Clazz extends TypedStructuralElement {
     public static function fromReflectionClass(
         CodeBase $code_base,
         \ReflectionClass $class
-    ) {
+    ) : Clazz {
         // Build a set of flags based on the constitution
         // of the built-in class
         $flags = 0;
@@ -171,8 +171,12 @@ class Clazz extends TypedStructuralElement {
         // If this class has a parent class, add it to the
         // class info
         if(($parent_class = $class->getParentClass())) {
-            $clazz->parent_class_name =
-                $parent_class->getName();
+
+            $parent_class_fqsen = FQSEN::fromFullyQualifiedString(
+                '\\' . $parent_class->getName()
+            );
+
+            $clazz->setParentClassFQSEN($parent_class_fqsen);
         }
 
         foreach($class->getDefaultProperties() as $name => $value) {
@@ -193,11 +197,19 @@ class Clazz extends TypedStructuralElement {
             ] = $property_element;
         }
 
-        $clazz->interface_list =
-            $class->getInterfaceNames();
+        $clazz->interface_fqsen_list = array_map(
+            function(string $name) : FQSEN {
+                return FQSEN::fromFullyQualifiedString(
+                    '\\' . $name
+                );
+            }, $class->getInterfaceNames());
 
-        $clazz->trait_list =
-            $class->getTraitNames();
+        $clazz->trait_fqsen_list = array_map(
+            function(string $name) : FQSEN {
+                return FQSEN::fromFullyQualifiedString(
+                    '\\' . $name
+                );
+            }, $class->getTraitNames());
 
         $parents = [];
         $temp = $class;
@@ -208,9 +220,12 @@ class Clazz extends TypedStructuralElement {
         }
 
         $types = [$class->getName()];
-        $types = array_merge($types, $clazz->interface_list);
+        $types = array_merge($types, $clazz->interface_fqsen_list);
         $types = array_merge($types, $parents);
-        $clazz->type = implode('|', array_unique($types));
+        $clazz->setUnionType(UnionType::fromStringInContext(
+            implode('|', array_unique($types)),
+            $context
+        ));
 
         foreach($class->getConstants() as $name => $value) {
             $clazz->constant_map[$name] =
@@ -444,6 +459,16 @@ class Clazz extends TypedStructuralElement {
     public function isInterface() : bool {
         return (bool)(
             $this->getFlags() & \ast\flags\CLASS_INTERFACE
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this class is a trait
+     */
+    public function isTrait() : bool {
+        return (bool)(
+            $this->getFlags() & \ast\flags\CLASS_TRAIT
         );
     }
 

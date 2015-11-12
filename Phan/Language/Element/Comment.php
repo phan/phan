@@ -63,7 +63,7 @@ class Comment {
         UnionType $return,
         string $string
     ) {
-        $this->deprecated = $is_deprecated;
+        $this->is_deprecated = $is_deprecated;
         $this->variable_list = $variable_list;
         $this->parameter_list = $parameter_list;
         $this->return = $return;
@@ -168,7 +168,7 @@ class Comment {
 
     /**
      * @return bool
-     * Set to true if the comment contains a @deprecated
+     * Set to true if the comment contains a 'deprecated'
      * directive.
      */
     public function isDeprecated() : bool {

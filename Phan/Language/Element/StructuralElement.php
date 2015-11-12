@@ -11,7 +11,7 @@ use \Phan\Language\Element\Comment;
 class StructuralElement {
 
     /**
-     * @var \phan\Context
+     * @var Context
      * The context in which the structural element lives
      */
     private $context = null;

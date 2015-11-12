@@ -1,0 +1,4 @@
+%s:8 TypeError property is declared to be string but was assigned int
+%s:8 TypeError property is declared to be int but was assigned string
+%s:12 TypeError property is declared to be string but was assigned array
+%s:18 AccessError Cannot access protected property A::$foo

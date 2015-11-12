@@ -1,0 +1,1 @@
+%s:13 TypeError return string[] but test2() is declared to return datetime[]
