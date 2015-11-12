@@ -281,7 +281,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
         // array offsets work on strings, unfortunately
         // Double check that any classes in the type don't
         // have ArrayAccess
-        $array_access_type = new Type('ArrayAccess', '\\');
+        $array_access_type = new Type('\\', 'ArrayAccess');
 
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess

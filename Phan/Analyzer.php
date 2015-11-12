@@ -49,8 +49,8 @@ class Analyzer {
         // global state we'll need for doing a second
         // analysis after.
         foreach ($file_path_list as $i => $file_path) {
+            CLI::progress('parse    ',  $i/$file_count, 0.5);
             $this->parseFile($code_base, $file_path);
-            CLI::progress('parse    ',  $i/$file_count);
         }
         CLI::progress('parse    ',  1.0);
 
@@ -68,7 +68,7 @@ class Analyzer {
         // can scan for more complicated issues.
         foreach ($file_path_list as $i => $file_path) {
             $this->analyzeCode($code_base, $file_path);
-            CLI::progress('analyze  ',  $i/$file_count);
+            CLI::progress('analyze  ',  $i/$file_count, 0.5);
         }
         CLI::progress('analyze  ',  1.0);
 
@@ -190,7 +190,7 @@ class Analyzer {
         // Take a pass to import all details from ancestors
         $i = 0;
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
-            CLI::progress('classes  ',  ++$i/$class_count);
+            CLI::progress('classes  ',  ++$i/$class_count, 0.5);
 
             // Make sure the parent classes exist
             self::analyzeParentClassExists($code_base, $clazz);
@@ -201,7 +201,7 @@ class Analyzer {
 
         // Run a few checks on all of the classes
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
-            CLI::progress('classes  ',  ++$i/$class_count);
+            CLI::progress('classes  ',  ++$i/$class_count, 0.5);
 
             if ($clazz->getContext()->isInternal()) {
                 continue;
@@ -222,7 +222,7 @@ class Analyzer {
         $function_count = count($code_base->getMethodMap());
         $i = 0;
         foreach ($code_base->getMethodMap() as $fqsen_string => $method) {
-            CLI::progress('functions',  (++$i)/$function_count);
+            CLI::progress('functions',  (++$i)/$function_count, 0.5);
 
             if ($method->getContext()->isInternal()) {
                 continue;

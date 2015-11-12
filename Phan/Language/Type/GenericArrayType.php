@@ -17,7 +17,7 @@ class GenericArrayType extends ArrayType {
      * The type of every element in this array
      */
     public function __construct(Type $type) {
-        parent::__construct(self::NAME, '\\');
+        parent::__construct('\\', self::NAME);
         $this->element_type = $type;
     }
 

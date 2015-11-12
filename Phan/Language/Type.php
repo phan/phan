@@ -29,16 +29,16 @@ class Type {
 
     /**
      * @var string
-     * The name of this type such as 'int' or 'MyClass'
-     */
-    protected $name = null;
-
-    /**
-     * @var string
      * The namespace of this type such as '\' or
      * '\Phan\Language'
      */
     protected $namespace = null;
+
+    /**
+     * @var string
+     * The name of this type such as 'int' or 'MyClass'
+     */
+    protected $name = null;
 
     /**
      * @param string $name
@@ -49,15 +49,9 @@ class Type {
      * or '\Phan\Language'.
      */
     public function __construct(
-        string $name,
-        string $namespace
+        string $namespace,
+        string $name
     ) {
-        assert(!empty($name),
-            "Type name cannot be empty");
-
-        assert(false === strpos($name, '|'),
-            "Type name '{$name}' may not contain a pipe.");
-
         assert($namespace && 0 === strpos($namespace, '\\'),
             "Namespace must be fully qualified");
 
@@ -67,8 +61,19 @@ class Type {
         assert('\\' === $namespace[0],
             "Namespace must be fully qualified");
 
-        $this->name = self::canonicalNameFromName($name);
-        $this->namespace = $namespace ?? '\\';
+        assert(!empty($name),
+            "Type name cannot be empty");
+
+        assert(false === strpos($name, '|'),
+            "Type name '{$name}' may not contain a pipe.");
+
+        $this->namespace = $namespace ?: '\\';
+
+        if ('\\' === $this->namespace) {
+            $this->name = self::canonicalNameFromName($name);
+        } else {
+            $this->name = strtolower($name);
+        }
     }
 
     /**
@@ -145,11 +150,37 @@ class Type {
         assert(!empty($namespace) && !empty($type_name),
             "Type '$fully_qualified_string' was not fully qualified");
 
-        $type_name =
-            self::canonicalNameFromName($type_name);
+        return self::fromNamespaceAndName(
+            $namespace,
+            $type_name
+        );
+    }
+
+    public static function fromNamespaceAndName(
+        string $namespace,
+        string $type_name
+    ) : Type {
+        $type_name = strtolower($type_name);
+
+        // Only if we're in the root namespace can we
+        // canonicalize native types.
+        if ('\\' === $namespace) {
+            $type_name = self::canonicalNameFromName($type_name);
+        }
+
+        // If this looks like a generic type string, explicitly
+        // make it as such
+        if (self::isGenericString($type_name)
+            && ($pos = strpos($type_name, '[]')) !== false
+        ) {
+            return new GenericArrayType(new Type(
+                $namespace,
+                substr($type_name, 0, $pos)
+            ));
+        }
 
         // If we have a namespace, we're all set
-        return new Type($type_name, $namespace);
+        return new Type($namespace, $type_name);
     }
 
     /**
@@ -185,7 +216,10 @@ class Type {
         // If this was a fully qualified type, we're all
         // set
         if (!empty($namespace)) {
-            return new Type($type_name, $namespace);
+            return self::fromNamespaceAndName(
+                $namespace,
+                $type_name
+            );
         }
 
         // Check to see if the type name is mapped via
@@ -199,8 +233,8 @@ class Type {
                 $context->getNamespaceMapFor(T_CLASS, $type_name);
 
             return new Type(
-                $fqsen->getClassName(),
-                $fqsen->getNamespace()
+                $fqsen->getNamespace(),
+                $fqsen->getClassName()
             );
         }
 
@@ -231,8 +265,10 @@ class Type {
         }
 
         // Attach the context's namespace to the type name
-        return new Type($type_name,
-            $context->getNamespace() ?: '\\');
+        return self::fromNamespaceAndName(
+            $context->getNamespace() ?: '\\',
+            $type_name
+        );
     }
 
     /**
@@ -366,7 +402,22 @@ class Type {
      * 'string[]'.
      */
     public function isGeneric() : bool {
-        return (strpos((string)$this, '[]') !== false);
+        return self::isGenericString($this->name);
+    }
+
+    /**
+     * @param string $type_name
+     * A non-namespaced type name like 'int[]'
+     *
+     * @return bool
+     * True if this is a generic type such as 'int[]' or
+     * 'string[]'.
+     */
+    private static function isGenericString(string $type_name) : bool {
+        if (in_array($type_name, ['[]', 'array'])) {
+            return false;
+        }
+        return (strpos($type_name, '[]') !== false);
     }
 
     /**
@@ -376,9 +427,12 @@ class Type {
      */
     public function asNonGenericType() : Type {
         if (($pos = strpos($this->name, '[]')) !== false) {
+            assert($this->name !== '[]' && $this->name !== 'array',
+                "Non-generic type '{$this->name}' requested to be non-generic");
+
             return new Type(
-                substr($this->name, 0, $pos),
-                $this->getNamespace()
+                $this->getNamespace(),
+                substr($this->name, 0, $pos)
             );
         }
 

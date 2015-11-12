@@ -133,12 +133,34 @@ EOB;
     /**
      * Update a progress bar on the screen
      *
+     * @param string $msg
+     * A short message to display with the progress
+     * meter
+     *
+     * @param float $p
+     * The percentage to display
+     *
+     * @param float $sample_rate
+     * How frequently we should update the progress
+     * bar, randomly sampled
+     *
      * @return null
      */
-    public static function progress(string $msg, float $p) {
+    public static function progress(
+        string $msg,
+        float $p,
+        float $sample_rate = 1.0
+    ) {
         if (!Configuration::instance()->progress_bar) {
             return;
         }
+
+        // Don't update every time when we're moving
+        // super fast
+        if (rand(0, 100) > 100 * $sample_rate) {
+            return;
+        }
+
         echo "\r$msg ";
         $current = (int)($p * 60);
         $rest = 60 - $current;
