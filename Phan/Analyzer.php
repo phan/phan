@@ -103,10 +103,7 @@ class Analyzer {
         );
 
         $context =
-            (new Context($code_base))
-                ->withFile($file_path)
-                ->withLineNumberStart($node->lineno ?? 0)
-                ->withLineNumberEnd($node->endLineno ?? 0);
+            (new Context($code_base))->withFile($file_path);
 
         if (empty($node)) {
             Log::err(
@@ -147,7 +144,10 @@ class Analyzer {
         // given node
         $context =
             (new Element($node))->acceptKindVisitor(
-                new ParseVisitor($context)
+                new ParseVisitor($context
+                    ->withLineNumberStart($node->lineno ?? 0)
+                    ->withLineNumberEnd($node->endLineno ?? 0)
+                )
             );
 
         assert(!empty($context), 'Context cannot be null');

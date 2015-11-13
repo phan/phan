@@ -1,7 +1,7 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\Analyze\Analyzable;
 use \Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
@@ -13,29 +13,29 @@ use \Phan\Log;
 use \ast\Node;
 
 class Method extends TypedStructuralElement {
+    use Analyzable;
 
     /**
      * @var int
+     * The number of required parameters for the method
      */
     private $number_of_required_parameters = 0;
 
     /**
      * @var int
+     * The number of optional parameters for the method
      */
     private $number_of_optional_parameters = 0;
 
     /**
-     * @var
+     * @var Parameter[]
+     * The list of parameters for this method
      */
     private $parameter_list = [];
 
     /**
-     * @var ?
-     */
-    private $ret = null;
-
-    /**
      * @var bool
+     * No idea what this is
      */
     private $is_dynamic = false;
 
@@ -335,6 +335,11 @@ class Method extends TypedStructuralElement {
             new UnionType(),
             $node->flags ?? 0
         );
+
+        // If the method is Analyzable, set the node so that
+        // we can come back to it whenever we like and
+        // rescan it
+        $method->setNode($node);
 
         // Set the parameter list on the method
         $method->parameter_list = $parameter_list;

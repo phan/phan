@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\Analyze\Analyzable;
 use \Phan\Configuration;
 use \Phan\Debug;
 use \Phan\Language\AST;
@@ -719,6 +720,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                     $function_name
                 );
 
+            // Make sure the method we're calling actually exists
             if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
                 $function_fqsen
             )) {
@@ -732,27 +734,10 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 return $this->context;
             }
 
+            // Get the method we're calling
             $method = $this->context->getCodeBase()->getMethodByFQSEN(
                 $function_fqsen
             );
-
-            /*
-            if (!$this->context->isInternal()) {
-                // re-check the function's ast with these args
-                if(!$quick_mode) {
-                    pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
-                }
-            } else {
-                if(!$found) {
-                    Log::err(
-                        Log::EAVAIL,
-                        "function {$function_name}() is not compiled into this version of PHP",
-                        $this->context->getFile(),
-                        $node->lineno
-                    );
-                }
-            }
-             */
 
             // Iterate through the arguments looking for arguments
             // that are not defined in this scope. If the method
@@ -761,45 +746,74 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             $arguments = $node->children['args'];
             foreach ($arguments->children as $i => $argument) {
                 // Look for variables passed as arguments
-                if ($argument instanceof Node
+                if (!($argument instanceof Node
                     && $argument->kind === \ast\AST_VAR
-                ) {
-                    $parameter = $method->getParameterList()[$i] ?? null;
+                )) {
+                    continue;
+                }
 
-                    // Check to see if the parameter at this
-                    // position is pass-by-reference.
-                    if (!$parameter || !$parameter->isPassByReference()) {
-                        continue;
-                    }
+                $parameter = $method->getParameterList()[$i] ?? null;
 
-                    $variable_name =
-                        AST::variableName($argument);
+                // Check to see if the parameter at this
+                // position is pass-by-reference.
+                if (!$parameter || !$parameter->isPassByReference()) {
+                    continue;
+                }
 
-                    // Check to see if the variable is not yet defined
-                    if (!$this->context->getScope()->hasVariableWithName(
-                        $variable_name
-                    )) {
-                        $variable = Variable::fromNodeInContext(
-                            $argument,
-                            $this->context,
-                            false
-                        );
+                $variable_name =
+                    AST::variableName($argument);
 
-                        // Set the element type on each element of
-                        // the list
-                        $variable->setUnionType(
-                            $parameter->getUnionType()
-                        );
+                // Check to see if the variable is not yet defined
+                if (!$this->context->getScope()->hasVariableWithName(
+                    $variable_name
+                )) {
+                    $variable = Variable::fromNodeInContext(
+                        $argument,
+                        $this->context,
+                        false
+                    );
 
-                        // Note that we're not creating a new scope, just
-                        // adding variables to the existing scope
-                        $this->context->addScopeVariable($variable);
-                    }
+                    // Set the element type on each element of
+                    // the list
+                    $variable->setUnionType(
+                        $parameter->getUnionType()
+                    );
+
+                    // Note that we're not creating a new scope, just
+                    // adding variables to the existing scope
+                    $this->context->addScopeVariable($variable);
                 }
             }
 
             // Check the arguments and make sure they're cool.
             self::analyzeArgumentType($method, $node, $this->context);
+
+            // Now that we've made sure the arguments are sufficient
+            // for definitions on the method, we iterate over the
+            // arguments again and add their types to the parameter
+            // types so we can test the method again
+            foreach ($arguments->children as $i => $argument) {
+                $parameter = $method->getParameterList()[$i] ?? null;
+
+                if (!$parameter) {
+                    continue;
+                }
+
+                $argument_type = UnionType::fromNode(
+                    $this->context, $argument
+                );
+
+                $parameter->getUnionType()->addUnionType(
+                    $argument_type
+                );
+            }
+
+            // Now that we know something about the parameters used
+            // to call the method, we can reanalyze the method with
+            // the types of the parameter
+            if (!$method->getContext()->isInternal()) {
+                $method->analyze($this->context);
+            }
 
         } else if ($expression->kind == \ast\AST_VAR) {
             $name = AST::variableName($expression);
@@ -810,6 +824,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 )) {
                     $variable = $this->context->getScope()
                         ->getVariableWithName($name);
+
 
                     // TODO
                     /*
@@ -824,7 +839,6 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 }
             }
         }
-
 
         return $this->context;
     }
