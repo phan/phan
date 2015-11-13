@@ -553,7 +553,9 @@ class Method extends TypedStructuralElement {
     public function __toString() : string {
         $string = '';
 
-        $string .= (string)$this->getComment() . "\n";
+        if ((string)$this->getComment()) {
+            $string .= (string)$this->getComment() . "\n";
+        }
 
         $string .= 'function ' . $this->getName();
 

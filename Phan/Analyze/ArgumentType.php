@@ -68,10 +68,17 @@ trait ArgumentType {
         $arglist = $node->children['args'];
         $argcount = count($arglist->children);
 
-        // Figure out if any parameters are variadic
-        $is_varargs = array_reduce($method->getParameterList(),
-            function ($carry, Parameter $parameter) {
-                return ($carry || $parameter->isVariadic());
+        // Figure out if any version of this method has any
+        // parameters that are variadic
+        $is_varargs = array_reduce(
+            iterator_to_array($method->alternateGenerator($context->getCodeBase())),
+            function (bool $carry, Method $alternate_method) : bool {
+                return $carry || (
+                    array_reduce($alternate_method->getParameterList(),
+                    function (bool $carry, Parameter $parameter) {
+                        return ($carry || $parameter->isVariadic());
+                    }, false)
+                );
             }, false);
 
         // Figure out if any of the arguments are a call to unpack()
@@ -594,16 +601,9 @@ trait ArgumentType {
                     return;
                 }
             }
-            $varargs = true;
             // The arginfo check will handle the other case
             break;
         default:
-            if(UnionType::builtinFunctionPropertyNameTypeMap(
-                $method->getFQSEN(),
-                $context->getCodeBase()
-            )) {
-                $varargs = true;
-            }
             break;
         }
     }
