@@ -362,6 +362,19 @@ class ParseVisitor extends KindVisitorImplementation {
             $clazz->setParentClassFQSEN($parent_fqsen);
         }
 
+        // Add any implemeneted interfaces
+        if (!empty($node->children['implements'])) {
+            $interface_list = AST::qualifiedNameList(
+                $this->context,
+                $node->children['implements']
+            );
+            foreach ($interface_list as $name) {
+                $clazz->addInterfaceClassFQSEN(
+                    FQSEN::fromFullyQualifiedString($name)
+                );
+            }
+        }
+
         // Update the context to signal that we're now
         // within a class context.
         $context = $clazz->getContext()->withClassFQSEN(

@@ -475,32 +475,21 @@ class Type {
 
         $union_type = $this->asUnionType();
 
-        if ($this->isGeneric()) {
-            // ClassA[] => ClassA
-            $non_generic_type = $this->asNonGenericType();
+        $class_fqsen = $this->isGeneric()
+            ? $this->asNonGenericType()->asFQSEN()
+            : $this->asFQSEN();
 
-            $class_fqsen = $non_generic_type->asFQSEN();
-
-            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-                return $union_type;
-            }
-
-            $clazz = $code_base->getClassByFQSEN($class_fqsen);
-
-            $union_type->addUnionType(
-                $clazz->getUnionType()->asGenericTypes()
-            );
-        } else {
-            $class_fqsen = $this->asFQSEN();
-
-            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-                return $union_type;
-            }
-
-            $clazz = $code_base->getClassByFQSEN($class_fqsen);
-
-            $union_type->addUnionType($clazz->getUnionType());
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return $union_type;
         }
+
+        $clazz = $code_base->getClassByFQSEN($class_fqsen);
+
+        $union_type->addUnionType(
+            $this->isGeneric()
+                ?  $clazz->getUnionType()->asGenericTypes()
+                : $clazz->getUnionType()
+        );
 
         // Resurse up the tree to include all types
         $recursive_union_type = new UnionType();

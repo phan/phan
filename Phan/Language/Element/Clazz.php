@@ -197,35 +197,21 @@ class Clazz extends TypedStructuralElement {
             ] = $property_element;
         }
 
-        $clazz->interface_fqsen_list = array_map(
-            function(string $name) : FQSEN {
-                return FQSEN::fromFullyQualifiedString(
+        foreach ($class->getInterfaceNames() as $name) {
+            $clazz->addInterfaceClassFQSEN(
+                FQSEN::fromFullyQualifiedString(
                     '\\' . $name
-                );
-            }, $class->getInterfaceNames());
-
-        $clazz->trait_fqsen_list = array_map(
-            function(string $name) : FQSEN {
-                return FQSEN::fromFullyQualifiedString(
-                    '\\' . $name
-                );
-            }, $class->getTraitNames());
-
-        $parents = [];
-        $temp = $class;
-        while($parent = $temp->getParentClass()) {
-            $parents[] = $parent->getName();
-            $parents = array_merge($parents, $parent->getInterfaceNames());
-            $temp = $parent;
+                )
+            );
         }
 
-        $types = [$class->getName()];
-        $types = array_merge($types, $clazz->interface_fqsen_list);
-        $types = array_merge($types, $parents);
-        $clazz->setUnionType(UnionType::fromStringInContext(
-            implode('|', array_unique($types)),
-            $context
-        ));
+        foreach ($class->getTraitNames() as $name) {
+            $clazz->addTraitFQSEN(
+                FQSEN::fromFullyQualifiedString(
+                    '\\' . $name
+                )
+            );
+        }
 
         foreach($class->getConstants() as $name => $value) {
             $clazz->constant_map[$name] =
@@ -243,8 +229,7 @@ class Clazz extends TypedStructuralElement {
                 Method::mapFromReflectionClassAndMethod(
                     $context->withClassFQSEN($clazz->getFQSEN()),
                     $class,
-                    $method,
-                    $parents
+                    $method
                 );
 
             $clazz->method_map = array_merge(
@@ -270,7 +255,6 @@ class Clazz extends TypedStructuralElement {
         $this->getUnionType()->addUnionType(
             UnionType::fromFullyQualifiedString((string)$fqsen)
         );
-
     }
 
     /**
@@ -414,8 +398,13 @@ class Clazz extends TypedStructuralElement {
     /**
      * @return null
      */
-    public function addTraitFQSEN(FQSEN $trait) {
-        $this->trait_fqsen_list[] = $trait;
+    public function addTraitFQSEN(FQSEN $fqsen) {
+        $this->trait_fqsen_list[] = $fqsen;
+
+        // Add the trait to the union type of this class
+        $this->getUnionType()->addUnionType(
+            UnionType::fromFullyQualifiedString((string)$fqsen)
+        );
     }
 
     /**

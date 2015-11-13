@@ -212,8 +212,7 @@ class Method extends TypedStructuralElement {
     public static function mapFromReflectionClassAndMethod(
         Context $context,
         \ReflectionClass $class,
-        \ReflectionMethod $method,
-        array $parents
+        \ReflectionMethod $method
     ) : array {
         $reflection_method =
             new \ReflectionMethod($class->getName(), $method->name);
