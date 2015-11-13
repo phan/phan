@@ -556,7 +556,6 @@ class ParseVisitor extends KindVisitorImplementation {
 
                 // Set the declared type to the doc-comment type and add
                 // |null if the default value is null
-
                 $property->getUnionType()->addUnionType(
                     $variable->getUnionType()
                 );

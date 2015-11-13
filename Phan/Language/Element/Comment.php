@@ -119,11 +119,13 @@ class Comment {
                     $union_type = null;
                     if (0 !== strpos($type, '$')) {
                         $union_type =
-                            UnionType::fromStringInContext($type, $context);
+                            UnionType::fromStringInContext(
+                                $type,
+                                $context
+                            );
                     } else {
                         $union_type = new UnionType();
                     }
-
 
                     $comment_parameter = new CommentParameter(
                         $variable_name, $union_type, $line
@@ -144,11 +146,19 @@ class Comment {
                         $type = $match[1];
                     }
 
-                    $variable_list[] = new CommentParameter(
-                        empty($match[2])?'':trim($match[2],'$'),
-                        UnionType::fromStringInContext($type, $context),
-                        ''
+                    $var_name =
+                        empty($match[2])?'':trim($match[2],'$');
+
+                    $var_type = UnionType::fromStringInContext(
+                        $type,
+                        $context
                     );
+
+                    $comment_parameter = new CommentParameter(
+                        $var_name, $var_type, $line
+                    );
+
+                    $variable_list[] = $comment_parameter;
                 }
             }
 

@@ -79,7 +79,7 @@ class CodeBase {
      * @return null
      */
     public function addClass(Clazz $class_element) {
-        $this->class_map[$class_element->getFQSEN()->__toString()]
+        $this->class_map[(string)$class_element->getFQSEN()]
             = $class_element;
         $this->incrementClasses();
     }

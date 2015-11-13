@@ -345,14 +345,17 @@ class Method extends TypedStructuralElement {
         $method->parameter_list = $parameter_list;
 
         $method->setNumberOfRequiredParameters(array_reduce(
-            $parameter_list, function (int $carry, Parameter $parameter) : int {
+            $parameter_list,
+            function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
-            }, 0));
+            }, 0)
+        );
 
         $method->setNumberOfOptionalParameters(array_reduce(
             $parameter_list, function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
-            }, 0));
+            }, 0)
+        );
 
 
         // Check to see if the comment specifies that the

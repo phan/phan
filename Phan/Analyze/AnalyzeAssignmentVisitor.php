@@ -4,6 +4,7 @@ namespace Phan\Analyze;
 use \Phan\Analyze\Analyzable;
 use \Phan\Debug;
 use \Phan\Language\AST;
+use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{
@@ -29,7 +30,7 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
     private $assignment_node;
 
     /**
-     * @var UnionType;
+     * @var UnionType
      */
     private $right_type;
 
@@ -60,10 +61,8 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visit(Node $node) : Context {
-        /*
         assert(false,
             "Unknown left side of assignment {$this->context}");
-         */
 
         return $this->visitVar($node);
     }
@@ -116,50 +115,22 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitDim(Node $node) : Context {
-        $variable_name = AST::variableName($node);
-
-        $variable = null;
-
-        // Check to see if the variable is not yet defined
-        if ($this->context->getScope()->hasVariableWithName(
-            $variable_name
-        )) {
-            $variable =
-                $this->context->getScope()->getVariableWithName(
-                    $variable_name
-                );
-
-        // If it didn't exist, create the variable
-        } else {
-            $variable = Variable::fromNodeInContext(
-                $node,
-                $this->context
-            );
-        }
 
         // Make the right type a generic (i.e. int -> int[])
         $right_type =
             $this->right_type->asGenericTypes();
 
-        if (!$right_type->canCastToExpandedUnionType(
-            $variable->getUnionType(),
-            $this->context->getCodeBase()
-        )) {
-            Log::err(
-                Log::ETYPE,
-                "assigning {$this->right_type} to {$variable->getName()}[] but {$variable->getName()} is declared to be an array of {$variable->getUnionType()->asNonGenericTypes()}",
-                $this->context->getFile(),
-                $node->lineno
+        // Recurse into whatever we're []'ing
+        $context =
+            (new Element($node->children['expr']))->acceptKindVisitor(
+                new AnalyzeAssignmentVisitor(
+                    $this->context,
+                    $node,
+                    $right_type
+                )
             );
-        }
 
-        // After having checked that the types work out, add
-        // the right-type to the property for future analysis
-        $variable->getUnionType()->addUnionType(
-            $right_type
-        );
-
-        return $this->context;
+        return $context;
     }
 
     /**
@@ -290,6 +261,8 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
             $variable->getUnionType()->addUnionType(
                 $this->right_type
             );
+            // TODO: Do we add to its type or replace it?
+            // $variable->setUnionType($this->right_type);
 
             return $this->context;
         }
