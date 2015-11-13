@@ -771,12 +771,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
         Method $method,
         Node $node
     ) {
-        self::analyzeArgumentType($method, $node, $this->context);
-
-        // Now that we've made sure the arguments are sufficient
-        // for definitions on the method, we iterate over the
-        // arguments again and add their types to the parameter
-        // types so we can test the method again
+        // Create variables for any pass-by-reference
+        // parameters
         $argument_list = $node->children['args'];
         foreach ($argument_list->children as $i => $argument) {
             $parameter = $method->getParameterList()[$i] ?? null;
@@ -791,30 +787,40 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             if ($parameter->isPassByReference()
                 && $argument->kind == \ast\AST_VAR
             ) {
-                $variable_name = AST::variableName($argument);
-
-                // Check to see if the variable already exists
-                if ($this->context->getScope()->hasVariableWithName(
-                    $variable_name
-                )) {
-                    $variable =
-                        $this->context->getScope()->getVariableWithName(
-                            $variable_name
-                        );
-
-                    $variable->getUnionType()->addUnionType(
-                        $parameter->getUnionType()
+                $variable =
+                    AST::getOrCreateVariableFromNodeInContext(
+                        $argument,
+                        $this->context
                     );
-                }
+
+                $variable->getUnionType()->addUnionType(
+                    $parameter->getUnionType()
+                );
+            }
+        }
+
+        // Confirm the argument types are clean
+        self::analyzeArgumentType($method, $node, $this->context);
+
+        // Now that we've made sure the arguments are sufficient
+        // for definitions on the method, we iterate over the
+        // arguments again and add their types to the parameter
+        // types so we can test the method again
+        $argument_list = $node->children['args'];
+        foreach ($argument_list->children as $i => $argument) {
+            $parameter = $method->getParameterList()[$i] ?? null;
+
+            if (!$parameter) {
+                continue;
             }
 
-            $argument_type = UnionType::fromNode(
-                $this->context, $argument
-            );
-
-            // If the parameter has no type, pass the argument's
-            // type to it
+            // If the parameter has no type, pass the
+            // argument's type to it
             if ($parameter->getUnionType()->isEmpty()) {
+                $argument_type = UnionType::fromNode(
+                    $this->context, $argument
+                );
+
                 $parameter->getUnionType()->addUnionType(
                     $argument_type
                 );
