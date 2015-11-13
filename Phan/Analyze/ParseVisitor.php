@@ -422,6 +422,13 @@ class ParseVisitor extends KindVisitorImplementation {
 
     /**
      * Visit a node with kind `\ast\AST_METHOD_REFERENCE`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
      */
     public function visitMethod(Node $node) : Context {
         // Bomb out if we're not in a class context

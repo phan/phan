@@ -2,9 +2,13 @@
 namespace Phan\Language;
 
 use \Phan\Debug;
+use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\NodeException;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\Visitor\ClassNameKindVisitor;
 use \Phan\Language\AST\Visitor\ClassNameValidationVisitor;
+use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\Type\MixedType;
 use \Phan\Language\UnionType;
@@ -318,6 +322,211 @@ class AST {
                 );
             }
         }
+    }
+
+    /**
+     * @param Node $node
+     * The node that has a reference to a class
+     *
+     * @param Context $context
+     * The context in which we found the node
+     *
+     * @return Clazz
+     * The class being referenced in the given node in
+     * the given context
+     *
+     * @throws NodeException
+     * An exception is thrown if we can't understand the node
+     *
+     * @throws CodeBaseExtension
+     * An exception is thrown if we can't find the referenced
+     * class
+     */
+    public static function classFromNodeInContext(
+        Node $node,
+        Context $context
+    ) : Clazz {
+        // Figure out the name of the class
+        $class_name = self::classNameFromNode($context, $node);
+
+        // If we can't figure out the class name (which happens
+        // from time to time), then give up
+        if (empty($class_name)) {
+            throw new NodeException($node, 'Could not find class name');
+        }
+
+        $class_fqsen =
+            $context->getScopeFQSEN()->withClassName(
+                $context, $class_name
+            );
+
+        // Check to see if the class actually exists
+        if (!$context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+            throw new CodeBaseException(
+                "Can't find class {$class_fqsen}"
+            );
+        }
+
+        $class =
+            $context->getCodeBase()->getClassByFQSEN($class_fqsen);
+
+        return $class;
+
+        /*
+        // Hunt for an appropriate alternate for the class
+        // that is associated with the current context
+        foreach ($class->alternateGenerator($context->getCodeBase())
+            as $alternate_id => $alternate_class
+        ) {
+            if ($alternate_class->getFile() == $context->getFile()) {
+                return $class;
+            }
+        }
+
+        assert(false,
+            "Couldn't find appropriate alternate for class $class_fqsen.");
+
+        // We didn't find an appropriate alternate
+        return $class;
+         */
+    }
+
+    /**
+     * @param Node $node
+     * The node that has a reference to a class
+     *
+     * @param Context $context
+     * The context in which we found the node
+     *
+     * @param Node|string $method_name_or_node
+     * Either then name of the method or a node that
+     * produces the name of the method.
+     *
+     * @return Method
+     * A method with the given name on the class referenced
+     * from the given node
+     *
+     * @throws NodeException
+     * An exception is thrown if we can't understand the node
+     *
+     * @throws CodeBaseExtension
+     * An exception is thrown if we can't find the given
+     * method
+     */
+    public static function classMethodFromNodeInContext(
+        Node $node,
+        Context $context,
+        $method_name_or_node
+    ) : Method {
+        $clazz = self::classFromNodeInContext($node, $context);
+
+        if ($method_name_or_node instanceof Node) {
+            // TODO: The method_name turned out to
+            //       be a variable. We'd have to look
+            //       that up to figure out what the
+            //       string is, but thats a drag.
+            throw new NodeException(
+                $method_name_or_node,
+                "Unexpected method node"
+            );
+        }
+
+        $method_name = $method_name_or_node;
+
+        assert(is_string($method_name),
+            "Method name must be a string. Found non-string at {$context}");
+
+        if (!$clazz->hasMethodWithName($method_name)) {
+            throw new CodeBaseException(
+                "call to undeclared method {$clazz->getFQSEN()}->$method_name()"
+            );
+        }
+
+        $method = $clazz->getMethodByName($method_name);
+
+        return $method;
+    }
+
+    /**
+     * @param string $function_name
+     * The name of the function we'd like to look up
+     *
+     * @param Context $context
+     * The context in which we found the reference to the
+     * given function name
+     *
+     * @return Method
+     * A method with the given name in the given context
+     *
+     * @throws CodeBaseExtension
+     * An exception is thrown if we can't find the given
+     * function
+     */
+    public static function functionFromNameInContext(
+        string $function_name,
+        Context $context
+    ) : Method {
+
+        $function_fqsen =
+            $context->getScopeFQSEN()->withFunctionName(
+                $context, $function_name
+            );
+
+        // Make sure the method we're calling actually exists
+        if (!$context->getCodeBase()->hasMethodWithFQSEN(
+            $function_fqsen
+        )) {
+            throw new CodeBaseException(
+                "call to undefined function {$function_name}()"
+            );
+        }
+
+        return $context->getCodeBase()->getMethodByFQSEN(
+            $function_fqsen
+        );
+    }
+
+    /**
+     * @param Node $node
+     * A node that has a reference to a variable
+     *
+     * @param Context $context
+     * The context in which we found the reference
+     *
+     * @return Variable
+     * A variable in scope or a new variable
+     *
+     * @throws NodeException
+     * An exception is thrown if we can't understand the node
+     */
+    public static function getOrCreateVariableFromNodeInContext(
+        Node $node,
+        Context $context
+    ) : Variable {
+
+        // Get the name of the variable
+        $variable_name = self::variableName($node);
+
+        if(empty($variable_name)) {
+            throw new NodeException($node, "Variable name not found");
+        }
+
+        // Check to see if the variable exists in this scope
+        if ($context->getScope()->hasVariableWithName($variable_name)) {
+            return $context->getScope()->getVariableWithName(
+                $variable_name
+            );
+        }
+
+        // Create a new variable
+        $variable = Variable::fromNodeInContext(
+            $node, $context, false
+        );
+
+
+        $context->addScopeVariable($variable);
+
+        return $variable;
     }
 
 }

@@ -197,34 +197,42 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
     public function visitFuncDecl(Node $node) : Context {
         $function_name = $node->name;
 
-        $alternate_id = 0;
+        try {
+            $method = AST::functionFromNameInContext(
+                $function_name, $this->context
+            );
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EFATAL,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
 
-        // Hunt for the alternate of this method defined
-        // in this file
-        do {
-            $function_fqsen =
-                $this->context->getScopeFQSEN()->withFunctionName(
-                    $this->context, $function_name
-                )->withAlternateId($alternate_id++);
-
-            if (!$this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
-                Log::err(
-                    Log::EFATAL,
-                    "Can't find function {$function_fqsen} - aborting",
-                    $this->context->getFile(),
-                    $node->lineno
+        // Hunt for the alternate associated with the file we're
+        // looking at currently in this context.
+        foreach ($method->alternateGenerator($this->context->getCodeBase())
+            as $i => $alternate_method
+        ) {
+            if ($alternate_method->getContext()->getFile()
+                === $this->context->getFile()
+            ) {
+                return $method->getContext()->withMethodFQSEN(
+                    $alternate_method->getFQSEN()
                 );
             }
+        }
 
-            $method = $this->context->getCodeBase()->getMethodByFQSEN(
-                $function_fqsen
-            );
-        } while($this->context->getFile() !=
-            $method->getContext()->getFile());
-
-        return $method->getContext()->withMethodFQSEN(
-            $function_fqsen
+        // No alternate was found
+        Log::err(
+            Log::EFATAL,
+            "Can't find function {$function_name} - aborting",
+            $this->context->getFile(),
+            $node->lineno
         );
+
+        return $this->context;
     }
 
     /**

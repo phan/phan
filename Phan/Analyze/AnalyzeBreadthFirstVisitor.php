@@ -5,6 +5,8 @@ use \Phan\Analyze\Analyzable;
 use \Phan\Analyze\AnalyzeAssignmentVisitor;
 use \Phan\Configuration;
 use \Phan\Debug;
+use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\NodeException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -356,7 +358,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitVar(Node $node) : Context {
-        $this->checkNoOp($node, "no-op variable");
+        $this->analyzeNoOp($node, "no-op variable");
         return $this->context;
     }
 
@@ -369,7 +371,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitArray(Node $node) : Context {
-        $this->checkNoOp($node, "no-op array");
+        $this->analyzeNoOp($node, "no-op array");
         return $this->context;
     }
 
@@ -382,7 +384,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitConst(Node $node) : Context {
-        $this->checkNoOp($node, "no-op constant");
+        $this->analyzeNoOp($node, "no-op constant");
         return $this->context;
     }
 
@@ -395,7 +397,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitClosure(Node $node) : Context {
-        $this->checkNoOp($node, "no-op closure");
+        $this->analyzeNoOp($node, "no-op closure");
         return $this->context->withClosureFQSEN(
             $this->context->getScopeFQSEN()->withClosureName(
                 $this->context,
@@ -473,61 +475,6 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             );
         }
 
-        /*
-        // a return from within a trait context is meaningless
-        if($current_class['flags'] & \ast\flags\CLASS_TRAIT) break;
-        // Check if there is a return type on the current function
-        if(!empty($current_function['oret'])) {
-            $ret = $ast->children[0];
-            if($ret instanceof \ast\Node) {
-                #	if($ast->children[0]->kind == \ast\AST_ARRAY) $ret_type='array';
-                #	else $ret_type = node_type($file, $namespace, $ret, $current_scope, $current_class);
-                $ret_type = node_type($file, $namespace, $ret, $current_scope, $current_class);
-            } else {
-                $ret_type = type_map(gettype($ret));
-                // This is distinct from returning actual NULL which doesn't hit this else since it is an AST_CONST node
-                if($ret_type=='null') $ret_type='void';
-            }
-            $check_type = $current_function['oret'];
-            if(strpos("|$check_type|",'|self|')!==false) {
-                $check_type = preg_replace("/\bself\b/", $current_class['name'], $check_type);
-            }
-            if(strpos("|$check_type|",'|static|')!==false) {
-                $check_type = preg_replace("/\bstatic\b/", $current_class['name'], $check_type);
-            }
-            if(strpos("|$check_type|",'|\$this|')!==false) {
-                $check_type = preg_replace("/\b\$this\b/", $current_class['name'], $check_type);
-            }
-            if(!type_check(all_types($ret_type), all_types($check_type), $namespace)) {
-                Log::err(Log::ETYPE, "return $ret_type but {$current_function['name']}() is declared to return {$current_function['oret']}", $file, $ast->lineno);
-            }
-        } else {
-            $lcs = strtolower($current_scope);
-            $type = node_type($file, $namespace, $ast->children[0], $current_scope, $current_class);
-            if(!empty($functions[$lcs]['oret'])) { // The function has a return type declared
-                if(!type_check(all_types($type), all_types($functions[$lcs]['oret']), $namespace)) {
-                    Log::err(Log::ETYPE, "return $type but {$functions[$lcs]['name']}() is declared to return {$functions[$lcs]['oret']}", $file, $ast->lineno);
-                }
-            } else {
-                if(strpos($current_scope, '::') !== false) {
-                    list($class_name,$method_name) = explode('::',$current_scope,2);
-                    $idx = find_method_class($class_name, $method_name);
-                    if($idx) {
-                        $classes[$idx]['methods'][strtolower($method_name)]['ret'] = merge_type($classes[$idx]['methods'][strtolower($method_name)]['ret'], strtolower($type));
-                    }
-                } else {
-                    if(!empty($functions[$lcs]['ret'])) {
-                        $functions[$lcs]['ret'] = merge_type($functions[$lcs]['ret'], $type);
-                    } else {
-                        if($current_scope != 'global') {
-                            $functions[$lcs]['ret'] = $type;
-                        }
-                    }
-                }
-            }
-        }
-         */
-
         return $this->context;
     }
 
@@ -567,21 +514,15 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
         $expression = $node->children['expr'];
 
         if($expression->kind == \ast\AST_NAME) {
-            $function_name = $expression->children['name'];
-
-            $function_fqsen =
-                $this->context->getScopeFQSEN()->withFunctionName(
-                    $this->context,
-                    $function_name
+            try {
+                $method = AST::functionFromNameInContext(
+                    $expression->children['name'],
+                    $this->context
                 );
-
-            // Make sure the method we're calling actually exists
-            if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
-                $function_fqsen
-            )) {
+            } catch (CodeBaseException $exception) {
                 Log::err(
                     Log::EUNDEF,
-                    "call to undefined function {$function_name}()",
+                    $exception->getMessage(),
                     $this->context->getFile(),
                     $node->lineno
                 );
@@ -589,88 +530,12 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 return $this->context;
             }
 
-            // Get the method we're calling
-            $method = $this->context->getCodeBase()->getMethodByFQSEN(
-                $function_fqsen
-            );
+            // Check the call for paraemter and argument types
+            $this->analyzeCallToMethod($method, $node);
+        }
 
-            // Iterate through the arguments looking for arguments
-            // that are not defined in this scope. If the method
-            // takes a pass-by-reference parameter, then we add
-            // the variable to the scope.
-            $arguments = $node->children['args'];
-            foreach ($arguments->children as $i => $argument) {
-                // Look for variables passed as arguments
-                if (!($argument instanceof Node
-                    && $argument->kind === \ast\AST_VAR
-                )) {
-                    continue;
-                }
-
-                $parameter = $method->getParameterList()[$i] ?? null;
-
-                // Check to see if the parameter at this
-                // position is pass-by-reference.
-                if (!$parameter || !$parameter->isPassByReference()) {
-                    continue;
-                }
-
-                $variable_name =
-                    AST::variableName($argument);
-
-                // Check to see if the variable is not yet defined
-                if (!$this->context->getScope()->hasVariableWithName(
-                    $variable_name
-                )) {
-                    $variable = Variable::fromNodeInContext(
-                        $argument,
-                        $this->context,
-                        false
-                    );
-
-                    // Set the element type on each element of
-                    // the list
-                    $variable->setUnionType(
-                        $parameter->getUnionType()
-                    );
-
-                    // Note that we're not creating a new scope, just
-                    // adding variables to the existing scope
-                    $this->context->addScopeVariable($variable);
-                }
-            }
-
-            // Check the arguments and make sure they're cool.
-            self::analyzeArgumentType($method, $node, $this->context);
-
-            // Now that we've made sure the arguments are sufficient
-            // for definitions on the method, we iterate over the
-            // arguments again and add their types to the parameter
-            // types so we can test the method again
-            foreach ($arguments->children as $i => $argument) {
-                $parameter = $method->getParameterList()[$i] ?? null;
-
-                if (!$parameter) {
-                    continue;
-                }
-
-                $argument_type = UnionType::fromNode(
-                    $this->context, $argument
-                );
-
-                $parameter->getUnionType()->addUnionType(
-                    $argument_type
-                );
-            }
-
-            // Now that we know something about the parameters used
-            // to call the method, we can reanalyze the method with
-            // the types of the parameter
-            if (!$method->getContext()->isInternal()) {
-                $method->analyze($this->context);
-            }
-
-        } else if ($expression->kind == \ast\AST_VAR) {
+        /*
+        else if ($expression->kind == \ast\AST_VAR) {
             $name = AST::variableName($expression);
             if(!empty($name)) {
                 // $var() - hopefully a closure, otherwise we don't know
@@ -682,18 +547,17 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
 
 
                     // TODO
-                    /*
-                    if(($pos=strpos($scope[$current_scope]['vars'][$name]['type'], '{closure '))!==false) {
-                        $closure_id = (int)substr($scope[$current_scope]['vars'][$name]['type'], $pos+9);
-                        $func_name = '{closure '.$closure_id.'}';
-                        $found = $functions[$func_name];
-                        arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
-                        if(!$quick_mode) pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
-                    }
-                     */
+                    // if(($pos=strpos($scope[$current_scope]['vars'][$name]['type'], '{closure '))!==false) {
+                    //     $closure_id = (int)substr($scope[$current_scope]['vars'][$name]['type'], $pos+9);
+                    //     $func_name = '{closure '.$closure_id.'}';
+                    //     $found = $functions[$func_name];
+                    //     arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
+                    //     if(!$quick_mode) pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
+                    // }
                 }
             }
         }
+         */
 
         return $this->context;
     }
@@ -868,107 +732,102 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitMethodCall(Node $node) : Context {
-        // Find out the name of the class for which we're
-        // calling a method
-        $class_name =
-            AST::classNameFromNode($this->context, $node);
-
-        // If we can't figure out the class name (which happens
-        // from time to time), then give up
-        if (empty($class_name)) {
-            return $this->context;
-        }
-
-        $class_fqsen =
-            $this->context->getScopeFQSEN()->withClassName(
-                $this->context, $class_name
+        try {
+            $method = AST::classMethodFromNodeInContext(
+                $node,
+                $this->context,
+                $node->children['method']
             );
-
-        /*
-        // Ensure that we're not getting native types here
-        assert(!Type::fromFullyQualifiedString((string)$class_fqsen)->isNativeType(),
-            "Cannot call methods on native type $class_fqsen in {$this->context}");
-         */
-
-        // Check to see if the class actually exists
-        if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
-            Log::err(
-                Log::EFATAL,
-                "Can't find class {$class_fqsen} - aborting",
-                $this->context->getFile(),
-                $node->lineno
-            );
-            return $this->context;
-        }
-
-        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
-            $class_fqsen
-        );
-
-        $method_name = $node->children['method'];
-
-        if ($method_name instanceof Node) {
-            // TODO: The method_name turned out to
-            //       be a variable. We'd have to look
-            //       that up to figure out what the
-            //       string is, but thats a drag.
-            return $this->context;
-        }
-
-        assert(is_string($method_name),
-            "Method name must be a string. Found non-string at {$this->context}");
-
-        if (!$clazz->hasMethodWithName($method_name)) {
+        } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,
-                "call to undeclared method $class_fqsen->$method_name()",
+                $exception->getMessage(),
                 $this->context->getFile(),
                 $node->lineno
             );
-
+            return $this->context;
+        } catch (NodeException $exception) {
+            // If we can't figure out what kind of a call
+            // this is, don't worry about it
             return $this->context;
         }
 
-        $method = $clazz->getMethodByName($method_name);
-
-        self::analyzeArgumentType($method, $node, $this->context);
-
-
-        // TODO: whats this?
-        /*
-        if($method->getName() != 'dynamic') {
-            if(array_key_exists('avail', $method)
-                && !$method['avail']
-            ) {
-                Log::err(
-                    Log::EAVAIL,
-                    "method {$class_fqsen}::{$method_name}() is not compiled into this version of PHP",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-            }
-
-            self::analyzeArgumentType($method, $node, $this->context);
-
-            // if($method->getContext()->getFile() != 'internal') {
-            //     // re-check the function's ast with these args
-            //     if(!$quick_mode) {
-            //         pass2(
-            //             $method['file'],
-            //             $method['namespace'],
-            //             $method['ast'],
-            //             $method['scope'],
-            //             $ast,
-            //             $classes[strtolower($class_name)],
-            //             $method,
-            //             $parent_scope
-            //         );
-            //     }
-            // }
-        }
-        */
+        // Check the call for paraemter and argument types
+        $this->analyzeCallToMethod($method, $node);
 
         return $this->context;
+    }
+
+    /**
+     * Analyze the parameters and arguments for a call
+     * to the given method or function
+     *
+     * @param Method $method
+     * @param Node $node
+     *
+     * @return null
+     */
+    private function analyzeCallToMethod(
+        Method $method,
+        Node $node
+    ) {
+        self::analyzeArgumentType($method, $node, $this->context);
+
+        // Now that we've made sure the arguments are sufficient
+        // for definitions on the method, we iterate over the
+        // arguments again and add their types to the parameter
+        // types so we can test the method again
+        $argument_list = $node->children['args'];
+        foreach ($argument_list->children as $i => $argument) {
+            $parameter = $method->getParameterList()[$i] ?? null;
+
+            if (!$parameter) {
+                continue;
+            }
+
+            // If the parameter is pass-by-reference and we're
+            // passing a variable in, see if we should pass
+            // the parameter and variable types to eachother
+            if ($parameter->isPassByReference()
+                && $argument->kind == \ast\AST_VAR
+            ) {
+                $variable_name = AST::variableName($argument);
+
+                // Check to see if the variable already exists
+                if ($this->context->getScope()->hasVariableWithName(
+                    $variable_name
+                )) {
+                    $variable =
+                        $this->context->getScope()->getVariableWithName(
+                            $variable_name
+                        );
+
+                    $variable->getUnionType()->addUnionType(
+                        $parameter->getUnionType()
+                    );
+                }
+            }
+
+            $argument_type = UnionType::fromNode(
+                $this->context, $argument
+            );
+
+            // If the parameter has no type, pass the argument's
+            // type to it
+            if ($parameter->getUnionType()->isEmpty()) {
+                $parameter->getUnionType()->addUnionType(
+                    $argument_type
+                );
+            }
+        }
+
+        // Now that we know something about the parameters used
+        // to call the method, we can reanalyze the method with
+        // the types of the parameter
+        if (!$method->getContext()->isInternal()) {
+            // TODO
+            // $method->analyze($method->getContext());
+        }
     }
 
     /**
@@ -980,7 +839,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      *
      * @return null
      */
-    private function checkNoOp(Node $node, string $message) {
+    private function analyzeNoOp(Node $node, string $message) {
         if($this->parent_node instanceof Node &&
             $this->parent_node->kind == \ast\AST_STMT_LIST
         ) {
