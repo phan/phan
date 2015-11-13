@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\Analyze\Analyzable;
+use \Phan\Analyze\AnalyzeAssignmentVisitor;
 use \Phan\Configuration;
 use \Phan\Debug;
 use \Phan\Language\AST;
@@ -89,43 +90,6 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitAssign(Node $node) : Context {
-        if($node->children['var'] instanceof \ast\Node
-            && $node->children['var']->kind == \ast\AST_LIST
-        ) {
-            // Get the type of the right side of the
-            // assignment
-            $right_type =
-                UnionType::fromNode($this->context, $node);
-
-            // Figure out the type of elements in the list
-            $element_type =
-                $right_type->asNonGenericTypes();
-
-            foreach($node->children['var']->children as $child_node) {
-                // Some times folks like to pass a null to
-                // a list to throw the element away. I'm not
-                // here to judge.
-                if (!($child_node instanceof Node)) {
-                    continue;
-                }
-
-                $variable = Variable::fromNodeInContext(
-                    $child_node,
-                    $this->context,
-                    false
-                );
-
-                // Set the element type on each element of
-                // the list
-                $variable->setUnionType($element_type);
-
-                // Note that we're not creating a new scope, just
-                // adding variables to the existing scope
-                $this->context->addScopeVariable($variable);
-            }
-
-            return $this->context;
-        }
 
         // Get the type of the right side of the
         // assignment
@@ -134,128 +98,19 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             $node->children['expr']
         );
 
-        $variable = null;
+        assert($node->children['var'] instanceof Node,
+            "Expected left side of assignment to be a var in {$this->context}");
 
-        // Check to see if this is an array offset type
-        // thing like '$a[] = 5'.
-        if ($node->children['var'] instanceof Node
-            && $node->children['var']->kind === \ast\AST_DIM
-        ) {
-            $variable_name =
-                AST::variableName($node->children['var']);
-
-            // Check to see if the variable is not yet defined
-            if ($this->context->getScope()->hasVariableWithName(
-                $variable_name
-            )) {
-                $variable = $this->context->getScope()->getVariableWithName(
-                    $variable_name
-                );
-
-            // If it didn't exist, create the variable
-            } else {
-                $variable = Variable::fromNodeInContext(
-                    $node->children['var'],
-                    $this->context
-                );
-            }
-
-            // Make the right type a generic (i.e. int -> int[])
-            $right_type = $right_type->asGenericTypes();
-        } else if ($node->children['var']->kind === \ast\AST_PROP) {
-
-            $property_name = $node->children['var']->children['prop'];
-
-            // Things like $foo->$bar
-            if (!is_string($property_name)) {
-                return $this->context;
-            }
-
-            assert(is_string($property_name),
-                "Property must be string in context {$this->context}");
-
-            $class_name = AST::classNameFromNode(
-                $this->context, $node->children['var']
+        $context =
+            (new Element($node->children['var']))->acceptKindVisitor(
+                new AnalyzeAssignmentVisitor(
+                    $this->context,
+                    $node,
+                    $right_type
+                )
             );
 
-            // If we can't figure out the class name (which happens
-            // from time to time), then give up
-            if (empty($class_name)) {
-                return $this->context;
-            }
-
-            $class_fqsen =
-                $this->context->getScopeFQSEN()->withClassName(
-                    $this->context, $class_name
-                );
-
-            // Check to see if the class actually exists
-            if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
-                Log::err(
-                    Log::EFATAL,
-                    "Can't find class {$class_fqsen} - aborting",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-                return $this->context;
-            }
-
-            $clazz = $this->context->getCodeBase()->getClassByFQSEN(
-                $class_fqsen
-            );
-
-            if (!$clazz->hasPropertyWithName($property_name)) {
-
-                // Check to see if the class has a __set method
-                if (!$clazz->hasMethodWithName('__set')) {
-                    Log::err(
-                        Log::EAVAIL,
-                        "Missing property with name '$property_name'",
-                        $this->context->getFile(),
-                        $node->lineno
-                    );
-                }
-
-                return $this->context;
-            }
-
-            $property = $clazz->getPropertyWithName($property_name);
-
-            if (!$right_type->canCastToExpandedUnionType(
-                $property->getUnionType(),
-                $this->context->getCodeBase()
-            )) {
-                Log::err(
-                    Log::ETYPE,
-                    "assigning $right_type to property but {$property->getName()} is declared to be {$property->getUnionType()}",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-
-                return $this->context;
-
-                // TODO: Alternatively, we could add this type to the
-                //       property's possible types
-                // Add the type assigned to it to its type
-                // $property->getUnionType()->addUnionType($right_type);
-            }
-
-        } else {
-            // Create a new variable
-            $variable = Variable::fromNodeInContext(
-                $node,
-                $this->context
-            );
-
-            // Set that type on the variable
-            $variable->setUnionType($right_type);
-
-            // Note that we're not creating a new scope, just
-            // adding variables to the existing scope
-            $this->context->addScopeVariable($variable);
-        }
-
-        return $this->context;
+        return $context;
     }
 
     /**

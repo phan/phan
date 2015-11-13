@@ -293,7 +293,6 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
                 if (!$this->context->getScope()->hasVariableWithName(
                     $variable_name
                 )) {
-
                     // If this is not pass-by-reference variable we
                     // have a problem
                     if (!($use->flags & \ast\flags\PARAM_REF)) {
