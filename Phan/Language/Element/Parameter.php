@@ -68,6 +68,10 @@ class Parameter extends Variable {
         $this->default_value = $default_value;
     }
 
+    public function setUnionType(UnionType $type) {
+        parent::setUnionType($type);
+    }
+
     /**
      * @return bool
      * True if this parameter has a default value
