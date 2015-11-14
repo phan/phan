@@ -8,6 +8,7 @@ use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{
+    Comment,
     Property,
     Variable
 };
@@ -120,6 +121,31 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
         $right_type =
             $this->right_type->asGenericTypes();
 
+
+        if ($node->children['expr']->kind == \ast\AST_VAR) {
+            $variable_name = AST::variableName($node);
+
+            if ('GLOBALS' === $variable_name) {
+                $dim = $node->children['dim'];
+
+                $variable = new Variable(
+                    $this->context,
+                    Comment::fromStringInContext(
+                        $node->docComment ?? '',
+                        $this->context
+                    ),
+                    $dim,
+                    $this->right_type,
+                    $node->flags
+                );
+
+                $this->context->getScope()
+                    ->withGlobalVariable($variable);
+
+                return $this->context;
+            }
+        }
+
         // Recurse into whatever we're []'ing
         $context =
             (new Element($node->children['expr']))->acceptKindVisitor(
@@ -129,6 +155,7 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
                     $right_type
                 )
             );
+
 
         return $context;
     }
@@ -262,7 +289,7 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
             $variable->getUnionType()->addUnionType(
                 $this->right_type
             );
-            */
+             */
 
             // TODO: Do we add to its type or replace it?
             $variable->setUnionType($this->right_type);
