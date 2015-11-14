@@ -18,6 +18,7 @@ use \Phan\Language\Element\{
 };
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
+use \Phan\Language\Scope;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -265,10 +266,10 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
-        $context = $this->context;
+        $context = $this->context->withScope(new Scope());
         if ($context->getScope()->hasVariableWithName('this')) {
-            $context = $context->withScopeVariable(
-                $context->getScope()->getVariableWithName('this')
+            $context = $context->addScopeVariable(
+                $this->context->getScope()->getVariableWithName('this')
             );
         }
 

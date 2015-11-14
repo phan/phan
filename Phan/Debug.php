@@ -24,6 +24,17 @@ class Debug {
         print self::nodeToString($node);
     }
 
+    public static function printNodeName($node, $indent = 0) {
+        print str_repeat("\t", $indent);
+        print self::nodeName($node);
+        print "\n";
+    }
+
+    public static function print(string $message, int $indent = 0) {
+        print str_repeat("\t", $indent);
+        print $message . "\n";
+    }
+
     /**
      * @return string
      * The name of the node

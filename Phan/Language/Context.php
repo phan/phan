@@ -222,9 +222,8 @@ class Context {
      * A clone of this context with the given value is returned
      */
     public function withLineNumberStart(int $line_number) : Context {
-        $context = clone($this);
-        $context->line_number_start = $line_number;
-        return $context;
+        $this->line_number_start = $line_number;
+        return $this;
     }
 
     /*
@@ -243,9 +242,8 @@ class Context {
      * A clone of this context with the given value is returned
      */
     public function withLineNumberEnd(int $line_number) : Context {
-        $context = clone($this);
-        $context->line_number_end = $line_number;
-        return $context;
+        $this->line_number_end = $line_number;
+        return $this;
     }
 
     /**
@@ -304,7 +302,7 @@ class Context {
      * @return Context
      * A clone of this context with the given value is returned
      */
-    public function withMethodFQSEN(FQSEN $fqsen) : Context {
+    public function withMethodFQSEN(FQSEN $fqsen = null) : Context {
         $context = clone($this);
         $context->method_fqsen = $fqsen;
         return $context;

@@ -84,6 +84,22 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
     }
 
     /**
+     * Visit a node with kind `\ast\AST_NAMESPACE`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitNamespace(Node $node) : Context {
+        return $this->context->withNamespace(
+            '\\' . (string)$node->children['name']
+        );
+    }
+
+    /**
      * @param Node $node
      * A node to parse
      *
@@ -520,12 +536,17 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                     $this->context
                 );
             } catch (CodeBaseException $exception) {
+                // TODO: extension methods aren't
+                //       available here. Not sure
+                //       how we should handle those
+                /*
                 Log::err(
                     Log::EUNDEF,
                     $exception->getMessage(),
                     $this->context->getFile(),
                     $node->lineno
                 );
+                 */
 
                 return $this->context;
             }
@@ -821,18 +842,28 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                     $this->context, $argument
                 );
 
-                $parameter->getUnionType()->addUnionType(
-                    $argument_type
-                );
+                // If this isn't an internal function or method
+                // and it has no type, add the argument's type
+                // to it so we can compare it to subsequent
+                // calls
+                if (!$parameter->getContext()->isInternal()) {
+                    $parameter->getUnionType()->addUnionType(
+                        $argument_type
+                    );
+                }
             }
         }
 
         // Now that we know something about the parameters used
         // to call the method, we can reanalyze the method with
-        // the types of the parameter
-        if (!$method->getContext()->isInternal()) {
-            // TODO
-            // $method->analyze($method->getContext());
+        // the types of the parameter, making sure we don't get
+        // into an infinite loop of checking calls to the current
+        // method in scope
+        if (!$method->getContext()->isInternal()
+            && (!$this->context->isMethodScope()
+                || $method->getFQSEN() !== $this->context->getMethodFQSEN())
+        ) {
+            $method->analyze($method->getContext());
         }
     }
 

@@ -105,7 +105,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
         );
 
         return
-            (new Analyzer)->parseAndGetContextForNodeInContext(
+            (new Analyzer)->parseNodeInContext(
                 \ast\parse_code(
                     '<?php ' . $code_stub,
                     Configuration::instance()->ast_version

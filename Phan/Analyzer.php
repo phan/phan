@@ -115,7 +115,7 @@ class Analyzer {
             return $context;
         }
 
-        return $this->parseAndGetContextForNodeInContext($node, $context);
+        return $this->parseNodeInContext($node, $context);
     }
 
     /**
@@ -133,7 +133,7 @@ class Analyzer {
      * @return Context
      * The context from within the node is returned
      */
-    public function parseAndGetContextForNodeInContext(
+    public function parseNodeInContext(
         Node $node,
         Context $context
     ) : Context {
@@ -164,7 +164,7 @@ class Analyzer {
             // Step into each child node and get an
             // updated context for the node
             $child_context =
-                $this->parseAndGetContextForNodeInContext(
+                $this->parseNodeInContext(
                     $child_node,
                     $child_context
                 );
@@ -295,13 +295,20 @@ class Analyzer {
     public function analyzeNodeInContext(
         Node $node,
         Context $context,
-        Node $parent_node = null
+        Node $parent_node = null,
+        int $depth = 0
     ) : Context {
+
+        /*
+        Debug::printNodeName($node, $depth);
+        Debug::print((string)$context, $depth);
+         */
+
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $context =
+        $child_context =
             (new Element($node))->acceptKindVisitor(
                 new AnalyzeDepthFirstVisitor(
                     $context
@@ -313,7 +320,6 @@ class Analyzer {
         assert(!empty($context), 'Context cannot be null');
 
         // Go depth first on that first set of analyses
-        $child_context = $context;
 		foreach($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
@@ -328,10 +334,12 @@ class Analyzer {
                     $child_context
                         ->withLineNumberStart($child_node->lineno ?? 0)
                         ->withLineNumberEnd($child_node->endLineno ?? 0),
-                    $node
+                    $node,
+                    $depth + 1
                 );
 		}
 
+        /*
         // When popping out of the children, jump back up
         // in the context stack
         if (!$context->isClosureScope()
@@ -340,12 +348,24 @@ class Analyzer {
             $child_context =
                 $child_context->withClosureFQSEN(null);
         }
+         */
+
+        /*
+        // When popping out of the children, jump back up
+        // in the context stack
+        if (!$context->isMethodScope()
+            && $child_context->isMethodScope()
+        ) {
+            $child_context =
+                $child_context->withMethodFQSEN(null);
+        }
+         */
 
         // Do another pass across siblings
         $context =
             (new Element($node))->acceptKindVisitor(
                 new AnalyzeBreadthFirstVisitor(
-                    $child_context
+                    $context
                         ->withLineNumberStart($node->lineno ?? 0)
                         ->withLineNumberEnd($node->endLineno ?? 0),
                     $parent_node

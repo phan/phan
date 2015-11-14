@@ -8,6 +8,7 @@ try {
 
 print $a;
 
+/*
 try {
     $b = 2;
 } catch (Exception $exception) {
@@ -15,3 +16,4 @@ try {
 }
 
 print $b;
+ */
