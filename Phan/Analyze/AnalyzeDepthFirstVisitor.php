@@ -452,17 +452,51 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitCatch(Node $node) : Context {
+
+        // Get the name of the class
+        $class_name = $node->children['class']->children['name'];
+
+        $clazz = null;
+
+        // If we can't figure out the class name (which happens
+        // from time to time), then give up
+        if (!empty($class_name)) {
+            $class_fqsen =
+                $this->context->getScopeFQSEN()->withClassName(
+                    $this->context, $class_name
+                );
+
+            // Check to see if the class actually exists
+            if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+                $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+                    $class_fqsen
+                );
+            } else {
+                Log::err(
+                    Log::EUNDEF,
+                    "call to method on undeclared class $class_name",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
+
+        }
+
         $variable_name =
             AST::variableName($node->children['var']);
 
         if (!empty($variable_name)) {
-            $this->context->addScopeVariable(
-                Variable::fromNodeInContext(
-                    $node->children['var'],
-                    $this->context,
-                    false
-                )
+            $variable = Variable::fromNodeInContext(
+                $node->children['var'],
+                $this->context,
+                false
             );
+
+            if ($clazz) {
+                $variable->setUnionType($clazz->getUnionType());
+            }
+
+            $this->context->addScopeVariable($variable);
         }
 
         return $this->context;
