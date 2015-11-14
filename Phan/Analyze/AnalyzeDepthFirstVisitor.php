@@ -249,7 +249,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitClosure(Node $node) : Context {
-        $closure_name = 'closure_' . $node->lineno;
+        $closure_name = 'callable_' . $node->lineno;
 
         $closure_fqsen =
             $this->context->getScopeFQSEN()->withClosureName(

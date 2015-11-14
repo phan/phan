@@ -22,6 +22,7 @@ use \Phan\Language\Element\{
 use \Phan\Langauge\Type;
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type\ArrayType;
+use \Phan\Language\Type\CallableType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -555,30 +556,45 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             $this->analyzeCallToMethod($method, $node);
         }
 
-        /*
         else if ($expression->kind == \ast\AST_VAR) {
-            $name = AST::variableName($expression);
-            if(!empty($name)) {
-                // $var() - hopefully a closure, otherwise we don't know
-                if ($this->context->getScope()->hasVariableWithName(
-                    $name
+            $variable_name = AST::variableName($expression);
+            if(empty($variable_name)) {
+                return $this->context;
+            }
+
+            // $var() - hopefully a closure, otherwise we don't know
+            if ($this->context->getScope()->hasVariableWithName(
+                $variable_name
+            )) {
+                $variable = $this->context->getScope()
+                    ->getVariableWithName($variable_name);
+
+                $union_type = $variable->getUnionType();
+                if ($union_type->isEmpty()) {
+                    return $this->context;
+                }
+
+                $type = $union_type->head();
+
+                if (!($type instanceof CallableType)) {
+                    return $this->context;
+                }
+
+                $closure_fqsen = $type->asFQSEN();
+
+                if ($this->context->getCodeBase()->hasMethodWithFQSEN(
+                    $closure_fqsen
                 )) {
-                    $variable = $this->context->getScope()
-                        ->getVariableWithName($name);
+                    // Get the closure
+                    $method = $this->context->getCodeBase()->getMethodByFQSEN(
+                        $closure_fqsen
+                    );
 
-
-                    // TODO
-                    // if(($pos=strpos($scope[$current_scope]['vars'][$name]['type'], '{closure '))!==false) {
-                    //     $closure_id = (int)substr($scope[$current_scope]['vars'][$name]['type'], $pos+9);
-                    //     $func_name = '{closure '.$closure_id.'}';
-                    //     $found = $functions[$func_name];
-                    //     arg_check($file, $namespace, $ast, $func_name, $found, $current_scope, $current_class);
-                    //     if(!$quick_mode) pass2($found['file'], $found['namespace'], $found['ast'], $found['scope'], $ast, $current_class, $found, $parent_scope);
-                    // }
+                    // Check the call for paraemter and argument types
+                    $this->analyzeCallToMethod($method, $node);
                 }
             }
         }
-         */
 
         return $this->context;
     }

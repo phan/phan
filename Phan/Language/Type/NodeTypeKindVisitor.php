@@ -329,6 +329,41 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
     }
 
     /**
+     * Visit a node with kind `\ast\AST_CLOSURE`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitClosure(Node $node) : UnionType {
+        $closure_name = 'callable_' . $node->lineno;
+
+        // The type of a closure is the fqsen pointing
+        // at its definition
+        $closure_fqsen =
+            $this->context->getScopeFQSEN()->withClosureName(
+                $this->context,
+                $closure_name
+            );
+
+        $type = CallableType::instanceWithClosureFQSEN(
+            $closure_fqsen
+        )->asUnionType();
+
+        /*
+        $type = Type::fromFullyQualifiedString(
+            (string)$closure_fqsen
+        )->asUnionType();
+         */
+
+        return $type;
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_VAR`
      *
      * @param Node $node
