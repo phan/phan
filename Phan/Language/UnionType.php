@@ -385,7 +385,9 @@ class UnionType {
             $target->asExpandedTypes($code_base);
 
         return
-            $this_expanded->canCastToUnionType($target_expanded);
+            $this_expanded->canCastToUnionType(
+                $target_expanded
+            );
     }
 
     /**

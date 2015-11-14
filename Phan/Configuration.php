@@ -38,8 +38,8 @@ class Configuration {
      * @return Configuration
      * Get a Configuration singleton
      */
-    public static function instance() {
-        static $instance = null;
+    public static function instance() : Configuration {
+        static $instance;
 
         if ($instance) {
             return $instance;

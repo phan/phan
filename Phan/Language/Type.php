@@ -638,9 +638,9 @@ class Type {
     ) : string {
         static $repmaps = [
             ['integer', 'double', 'boolean', 'false',
-            'true', 'callback', 'closure', 'NULL' ],
+            'true', 'callback', 'closure', 'NULL'],
             ['int', 'float', 'bool', 'bool', 'bool',
-            'callable', 'callable', 'null' ]
+            'callable', 'callable', 'null']
         ];
 
         if (empty($name)) {

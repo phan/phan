@@ -180,11 +180,15 @@ class Comment {
             }
         }
 
+        $return_type = UnionType::fromStringInContext(
+            $return ?: '', $context
+        );
+
         return new Comment(
             $is_deprecated,
             $variable_list,
             $parameter_list,
-            UnionType::fromStringInContext($return ?: '', $context),
+            $return_type,
             $comment
         );
     }
