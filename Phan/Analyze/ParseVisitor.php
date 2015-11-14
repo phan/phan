@@ -528,10 +528,10 @@ class ParseVisitor extends KindVisitorImplementation {
                     $this->context
                         ->withLineNumberStart($node->lineno)
                         ->withLineNumberEnd($node->endLineno ?? -1),
-                        Comment::fromStringInContext(
-                            $node->docComment ?? '',
-                            $this->context
-                        ),
+                    Comment::fromStringInContext(
+                        $node->docComment ?? '',
+                        $this->context
+                    ),
                     is_string($node->children['name'])
                         ? $node->children['name']
                         : '_error_',

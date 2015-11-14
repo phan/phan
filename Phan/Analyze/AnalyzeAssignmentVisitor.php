@@ -2,6 +2,8 @@
 namespace Phan\Analyze;
 
 use \Phan\Analyze\Analyzable;
+use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\NodeException;
 use \Phan\Debug;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
@@ -180,34 +182,21 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
         assert(is_string($property_name),
             "Property must be string in context {$this->context}");
 
-        $class_name =
-            AST::classNameFromNode($this->context, $node);
-
-        // If we can't figure out the class name (which happens
-        // from time to time), then give up
-        if (empty($class_name)) {
-            return $this->context;
-        }
-
-        $class_fqsen =
-            $this->context->getScopeFQSEN()->withClassName(
-                $this->context, $class_name
-            );
-
-        // Check to see if the class actually exists
-        if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+        try {
+            $clazz =
+                AST::classFromNodeInContext($node, $this->context);
+        } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EFATAL,
-                "Can't find class {$class_fqsen} - aborting",
+                $exception->getMessage(),
                 $this->context->getFile(),
                 $node->lineno
             );
+        } catch (NodeException $exception) {
+            // If we can't figure out what kind of a class
+            // this is, don't worry about it
             return $this->context;
         }
-
-        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
-            $class_fqsen
-        );
 
         if (!$clazz->hasPropertyWithName($property_name)) {
 

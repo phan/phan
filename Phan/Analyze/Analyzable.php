@@ -23,6 +23,13 @@ trait Analyzable {
     private $node = null;
 
     /**
+     * @var int
+     * The depth of recursion on this analyzable
+     * object
+     */
+    private $recursion_depth = 0;
+
+    /**
      * @param Node $node
      * The AST Node defining this object. We keep a
      * reference to this so that we can come to it
@@ -68,6 +75,14 @@ trait Analyzable {
         if (!$this->hasNode()) {
             return $context;
         }
+
+        // Don't go deeper than one level in
+        if ($this->recursion_depth++ > 0) {
+            return $context;
+        }
+
+        // Make sure we don't overwrite anything
+        $context = clone($context);
 
         // Analyze the node
         return (new Analyzer)->analyzeNodeInContext(

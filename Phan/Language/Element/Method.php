@@ -88,6 +88,23 @@ class Method extends TypedStructuralElement {
     }
 
     /**
+     * @return Method
+     * A default constructor for the given class
+     */
+    public static function defaultConstructorForClassInContext(
+        Clazz $clazz,
+        Context $context
+    ) : Method {
+        return new Method(
+            $context,
+            Comment::none(),
+            '__construct',
+            $clazz->getUnionType(),
+            0
+        );
+    }
+
+    /**
      * @return Method[]
      * One or more (alternate) methods begotten from
      * reflection info and builtin method data

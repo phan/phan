@@ -90,8 +90,7 @@ trait ArgumentType {
                 ));
             }, false);
 
-        // Unpack is apparently something weird. If its not that
-        // check to see if we have enough parameters.
+        // Make sure we have enough arguments
         if(!$is_unpack
             && $argcount < $method->getNumberOfRequiredParameters()
         ) {
@@ -123,7 +122,7 @@ trait ArgumentType {
             }
         }
 
-
+        // Make sure we don't have too many arguments
         if(!$is_varargs
             && $argcount > $method->getNumberOfParameters()
         ) {
@@ -280,7 +279,10 @@ trait ArgumentType {
                 } else {
                     Log::err(
                         Log::ETYPE,
-                        "arg#".($i+1)."({$alternate_parameter->getName()}) is $argument_type but {$method->getName()}() takes {$alternate_parameter->getUnionType()} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                        "arg#".($i+1)."({$alternate_parameter->getName()}) is "
+                        . "$argument_type but {$method->getName()}() "
+                        . "takes {$alternate_parameter->getUnionType()} "
+                        . "defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
                         $context->getFile(),
                         $node->lineno
                     );

@@ -416,7 +416,8 @@ class AST {
     public static function classMethodFromNodeInContext(
         Node $node,
         Context $context,
-        $method_name_or_node
+        $method_name_or_node,
+        bool $is_static
     ) : Method {
         $clazz = self::classFromNodeInContext($node, $context);
 
@@ -437,9 +438,15 @@ class AST {
             "Method name must be a string. Found non-string at {$context}");
 
         if (!$clazz->hasMethodWithName($method_name)) {
-            throw new CodeBaseException(
-                "call to undeclared method {$clazz->getFQSEN()}->$method_name()"
-            );
+            if ($is_static) {
+                throw new CodeBaseException(
+                    "call to undeclared method {$clazz->getFQSEN()}->$method_name()"
+                );
+            } else {
+                throw new CodeBaseException(
+                    "static call to undeclared method {$clazz->getFQSEN()}::$method_name()"
+                );
+            }
         }
 
         $method = $clazz->getMethodByName($method_name);

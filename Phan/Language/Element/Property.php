@@ -4,7 +4,7 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
-use \Phan\Language\element\Comment;
+use \Phan\Language\Element\Comment;
 
 class Property extends TypedStructuralElement {
 

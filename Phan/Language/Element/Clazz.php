@@ -102,6 +102,7 @@ class Clazz extends TypedStructuralElement {
             $type,
             $flags
         );
+
     }
 
     /**
@@ -367,6 +368,7 @@ class Clazz extends TypedStructuralElement {
      */
     public function addMethod(Method $method) {
         $name = strtolower($method->getName());
+
         if (empty($this->method_map[$name])) {
             $this->method_map[$name] = $method;
         }
@@ -376,7 +378,15 @@ class Clazz extends TypedStructuralElement {
      *
      */
     public function hasMethodWithName(string $name) : bool {
-        return !empty($this->method_map[strtolower($name)]);
+        $name = strtolower($name);
+
+        // All classes have a constructor even if it hasn't
+        // been declared yet
+        if ('__construct' === $name) {
+            return true;
+        }
+
+        return !empty($this->method_map[$name]);
     }
 
     /**
@@ -384,7 +394,30 @@ class Clazz extends TypedStructuralElement {
      * The method with the given name
      */
     public function getMethodByName(string $name) : Method {
-        return $this->method_map[strtolower($name)];
+        $name = strtolower($name);
+
+        if (!empty($this->method_map[$name])) {
+            return $this->method_map[$name];
+        }
+
+        if ('__construct' === $name) {
+            // Create a default constructor if its requested
+            // but doesn't exist yet
+            $default_constructor =
+                Method::defaultConstructorForClassInContext(
+                    $this,
+                    $this->getContext()->withClassFQSEN(
+                        $this->getFQSEN()
+                    )
+                );
+
+            $this->addMethod($default_constructor);
+
+            return $default_constructor;
+        }
+
+        // Error out
+        return null;
     }
 
     /**
@@ -469,6 +502,39 @@ class Clazz extends TypedStructuralElement {
         return (bool)(
             $this->getFlags() & \ast\flags\CLASS_TRAIT
         );
+    }
+
+    /**
+     * @param UnionType $union_type
+     * Set the type represented by this class
+     *
+     * @return null
+     */
+    public function setUnionType(UnionType $union_type) {
+        // Set the class's type
+        parent::setUnionType($union_type);
+
+        // Propagate the type to the constructor
+        if (!empty($this->method_map['__construct'])) {
+            $method = $this->getMethodByName('__construct');
+            $method->setUnionType($union_type);
+        }
+
+        // Propagate the type to the 'this' variable
+        $variable = $this->getContext()->getScope()
+            ->getVariableWithName('this');
+        $variable->setUnionType($union_type);
+    }
+
+    public function setFQSEN(FQSEN $fqsen) {
+        parent::setFQSEN($fqsen);
+
+        // Propagate the type to the constructor
+        if (!empty($this->method_map['__construct'])) {
+            $method = $this->getMethodByName('__construct');
+            $method->setFQSEN($fqsen);
+        }
+
     }
 
     /**

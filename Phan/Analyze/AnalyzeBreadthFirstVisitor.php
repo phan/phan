@@ -592,20 +592,32 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitNew(Node $node) : Context {
-        /*
-        $class_name = find_class_name($file, $ast, $namespace, $current_class, $current_scope);
-        if($class_name) {
-            $method_name = '__construct';  // No type checking for PHP4-style constructors
-            $method = find_method($class_name, $method_name);
-            if($method) { // Found a constructor
-                arg_check($file, $namespace, $ast, $method_name, $method, $current_scope, $current_class, $class_name);
-                if($method['file'] != 'internal') {
-                    // re-check the function's ast with these args
-                    if(!$quick_mode) pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
-                }
-            }
+        try {
+            $method = AST::classMethodFromNodeInContext(
+                $node,
+                $this->context,
+                '__construct',
+                false
+            );
+
+            $this->analyzeCallToMethod(
+                $method,
+                $node
+            );
+
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+            return $this->context;
+        } catch (NodeException $exception) {
+            // If we can't figure out what kind of a call
+            // this is, don't worry about it
+            return $this->context;
         }
-         */
 
         return $this->context;
     }
@@ -636,15 +648,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitStaticCall(Node $node) : Context {
 
-        $class_name = AST::classNameFromNode(
-            $this->context, $node
-        );
-
-        if(!$class_name) {
-            return $this->context;
-        }
-
-        // The class is declared, but does it have the method?
+        // Get the name of the method being called
         $method_name = $node->children['method'];
 
         // Give up on things like Class::$var
@@ -658,6 +662,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             $static_class = $node->children['class']->children['name'];
         }
 
+        // Short circuit on a constructor being called statically
+        // on something other than 'parent'
         if ($method_name === '__construct') {
             if ($static_class !== 'parent') {
                 Log::err(
@@ -671,75 +677,51 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-        $class_fqsen =
-            $this->context->getScopeFQSEN()->withClassName(
-                $this->context, $class_name
+        try {
+            // Get a reference to the method being called
+            $method = AST::classMethodFromNodeInContext(
+                $node,
+                $this->context,
+                $method_name,
+                true
             );
 
-        // Check to see if the class actually exists
-        if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
-            Log::err(
-                Log::EFATAL,
-                "Can't find class {$class_fqsen} - aborting",
-                $this->context->getFile(),
-                $node->lineno
+            // If the method isn't static and we're not calling
+            // it on 'parent', we're in a bad spot.
+            if(!$method->isStatic() && 'parent' !== $static_class) {
+                $clazz = AST::classFromNodeInContext(
+                    $node,
+                    $this->context
+                );
+
+                Log::err(
+                    Log::ESTATIC,
+                    "static call to non-static method {$clazz->getFQSEN()}::{$method_name}()"
+                    . " defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
+
+            // Make sure the parameters look good
+            $this->analyzeCallToMethod(
+                $method,
+                $node
             );
-            return $this->context;
-        }
 
-        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
-            $class_fqsen
-        );
-
-
-        if (!$clazz->hasMethodWithName($method_name)) {
+        } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,
-                "static call to undeclared method {$class_fqsen}::{$method_name}()",
+                $exception->getMessage(),
                 $this->context->getFile(),
                 $node->lineno
             );
-
+            return $this->context;
+        } catch (NodeException $exception) {
+            // If we can't figure out what kind of a call
+            // this is, don't worry about it
             return $this->context;
         }
-
-        $method = $clazz->getMethodByName($method_name);
-
-        /*
-        if(array_key_exists('avail', $method) && !$method['avail']) {
-            Log::err(
-                Log::EAVAIL,
-                "method {$class_name}::{$method_name}() is not compiled into this version of PHP",
-                $file,
-                $ast->lineno
-            );
-        }
-        */
-
-        // TODO: wha?
-        // else if($method != 'dynamic') {
-
-        // Was it declared static?
-        if(!$method->isStatic() && 'parent' !== $static_class) {
-            Log::err(
-                Log::ESTATIC,
-                "static call to non-static method {$class_fqsen}::{$method_name}() defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
-                $this->context->getFile(),
-                $node->lineno
-            );
-        }
-
-        // Confirm the arguments are clean
-        ArgumentType::analyzeArgumentType($method, $node, $this->context);
-
-        /*
-        // re-check the function's ast with these args
-        if (!$method->getContext()->isInternal()) {
-            if(!$quick_mode) {
-                pass2($method['file'], $method['namespace'], $method['ast'], $method['scope'], $ast, $classes[strtolower($class_name)], $method, $parent_scope);
-            }
-        }
-         */
 
         return $this->context;
     }
@@ -757,7 +739,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             $method = AST::classMethodFromNodeInContext(
                 $node,
                 $this->context,
-                $node->children['method']
+                $node->children['method'],
+                false
             );
         } catch (CodeBaseException $exception) {
             Log::err(

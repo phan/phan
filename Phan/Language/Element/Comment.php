@@ -12,7 +12,7 @@ class Comment {
 
     /**
      * @var bool
-     * Set to true if the comment contains a @deprecated
+     * Set to true if the comment contains a 'deprecated'
      * directive.
      */
     private $is_deprecated = false;
@@ -46,7 +46,7 @@ class Comment {
      * docblock.
      *
      * @param bool $is_deprecated
-     * Set to true if the comment contains a @deprecated
+     * Set to true if the comment contains a 'deprecated'
      * directive.
      *
      * @param string $string
