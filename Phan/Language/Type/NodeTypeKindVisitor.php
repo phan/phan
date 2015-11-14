@@ -354,12 +354,6 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             $closure_fqsen
         )->asUnionType();
 
-        /*
-        $type = Type::fromFullyQualifiedString(
-            (string)$closure_fqsen
-        )->asUnionType();
-         */
-
         return $type;
     }
 

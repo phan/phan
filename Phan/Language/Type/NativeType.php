@@ -25,7 +25,6 @@ abstract class NativeType extends Type {
     }
 
     public function __toString() : string {
-        // return static::NAME;
         // Native types can just use their
         // non-fully-qualified names
         return $this->name;
