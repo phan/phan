@@ -419,6 +419,7 @@ class AST {
         $method_name_or_node,
         bool $is_static
     ) : Method {
+
         $clazz = self::classFromNodeInContext($node, $context);
 
         if ($method_name_or_node instanceof Node) {
@@ -440,11 +441,11 @@ class AST {
         if (!$clazz->hasMethodWithName($method_name)) {
             if ($is_static) {
                 throw new CodeBaseException(
-                    "call to undeclared method {$clazz->getFQSEN()}->$method_name()"
+                    "static call to undeclared method {$clazz->getFQSEN()}::$method_name()"
                 );
             } else {
                 throw new CodeBaseException(
-                    "static call to undeclared method {$clazz->getFQSEN()}::$method_name()"
+                    "call to undeclared method {$clazz->getFQSEN()}->$method_name()"
                 );
             }
         }
