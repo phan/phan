@@ -16,3 +16,4 @@ B::test2($arg1);
 // No errors from undefined vars since they are by-ref
 test3($arg3);
 preg_match("/(a)/","a",$match);
+

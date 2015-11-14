@@ -3,6 +3,8 @@ namespace Phan\Analyze;
 
 use \Phan\Configuration;
 use \Phan\Debug;
+use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\NodeException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;

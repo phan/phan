@@ -686,6 +686,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 true
             );
 
+            // print "$method\n";
+
             // If the method isn't static and we're not calling
             // it on 'parent', we're in a bad spot.
             if(!$method->isStatic() && 'parent' !== $static_class) {
@@ -785,26 +787,46 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 continue;
             }
 
-            // If the parameter is pass-by-reference and we're
-            // passing a variable in, see if we should pass
-            // the parameter and variable types to eachother
+            // If pass-by-reference, make sure the variable exists
+            // or create it if it doesn't.
             if ($parameter->isPassByReference()
                 && $argument->kind == \ast\AST_VAR
             ) {
-                $variable =
-                    AST::getOrCreateVariableFromNodeInContext(
-                        $argument,
-                        $this->context
-                    );
-
-                $variable->getUnionType()->addUnionType(
-                    $parameter->getUnionType()
+                $variable = AST::getOrCreateVariableFromNodeInContext(
+                    $argument,
+                    $this->context
                 );
             }
         }
 
         // Confirm the argument types are clean
         self::analyzeArgumentType($method, $node, $this->context);
+
+        // Take another pass over pass-by-reference parameters
+        // and assign types to passed in variables
+        foreach ($argument_list->children as $i => $argument) {
+            $parameter = $method->getParameterList()[$i] ?? null;
+
+            if (!$parameter) {
+                continue;
+            }
+
+            // If the parameter is pass-by-reference and we're
+            // passing a variable in, see if we should pass
+            // the parameter and variable types to eachother
+            if ($parameter->isPassByReference()
+                && $argument->kind == \ast\AST_VAR
+            ) {
+                $variable = AST::getOrCreateVariableFromNodeInContext(
+                    $argument,
+                    $this->context
+                );
+
+                $variable->getUnionType()->addUnionType(
+                    $parameter->getUnionType()
+                );
+            }
+        }
 
         // Now that we've made sure the arguments are sufficient
         // for definitions on the method, we iterate over the
@@ -824,6 +846,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 $argument_type = UnionType::fromNode(
                     $this->context, $argument
                 );
+
 
                 // If this isn't an internal function or method
                 // and it has no type, add the argument's type

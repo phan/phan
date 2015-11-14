@@ -270,18 +270,11 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
                     $variable_name
                 );
 
-            // TODO:
-            // Confirm we can cast to the expected type
-
-            /*
-            // Set that type on the variable
-            $variable->getUnionType()->addUnionType(
-                $this->right_type
-            );
-             */
-
-            // TODO: Do we add to its type or replace it?
             $variable->setUnionType($this->right_type);
+
+            $this->context->addScopeVariable(
+                $variable
+            );
 
             return $this->context;
         }

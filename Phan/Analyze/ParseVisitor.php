@@ -473,9 +473,14 @@ class ParseVisitor extends KindVisitorImplementation {
             $method->getFQSEN()
         );
 
-        // Add each method parameter to the scope
+        // Add each method parameter to the scope. We clone it
+        // so that changes to the variable don't alter the
+        // parameter definition
         foreach ($method->getParameterList() as $parameter) {
-            $context = $context->withScopeVariable($parameter);
+            $variable = clone($parameter);
+            $context = $context->withScopeVariable(
+                $variable
+            );
         }
 
         return $context;

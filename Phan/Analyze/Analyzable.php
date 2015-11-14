@@ -77,17 +77,19 @@ trait Analyzable {
         }
 
         // Don't go deeper than one level in
-        if ($this->recursion_depth++ > 0) {
+        if ($this->recursion_depth++ > 2) {
             return $context;
         }
 
-        // Make sure we don't overwrite anything
-        $context = clone($context);
-
-        // Analyze the node
-        return (new Analyzer)->analyzeNodeInContext(
+        // Analyze the node in a cloned context so that we
+        // don't overwrite anything
+        $context = (new Analyzer)->analyzeNodeInContext(
             $this->getNode(),
-            $context
+            clone($context)
         );
+
+        // $this->recursion_depth = 0;
+
+        return $context;
     }
 }
