@@ -135,7 +135,7 @@ class AnalyzeDepthFirstVisitor extends ScopeKindVisitor {
 
         try {
             $method = AST::functionFromNameInContext(
-                $function_name, $this->context
+                $function_name, $this->context, true
             );
         } catch (CodeBaseException $exception) {
             Log::err(

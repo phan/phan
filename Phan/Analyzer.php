@@ -299,9 +299,6 @@ class Analyzer {
         int $depth = 0
     ) : Context {
 
-        // Debug::printNodeName($node, $depth);
-        // Debug::print((string)$context, $depth);
-
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the
@@ -314,6 +311,9 @@ class Analyzer {
                         ->withLineNumberEnd($node->endLineno ?? 0)
                 )
             );
+
+        // Debug::printNodeName($node, $depth);
+        // Debug::print((string)$child_context, $depth);
 
         assert(!empty($context), 'Context cannot be null');
 

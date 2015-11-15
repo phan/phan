@@ -256,12 +256,24 @@ class FQSEN {
     }
 
     /**
+     * @param Context $context
+     * The context in which the function name appears
+     *
+     * @param string $method_name
+     * The name of the function
+     *
+     * @param bool $is_function_declaration
+     * This must be set to true if we're getting an FQSEN
+     * for a function that is being declared and false if
+     * we're getting an FQSEN for a function being called.
+     *
      * @return FQSEN
      * A clone of this FQSEN with the given method name
      */
     public function withFunctionName(
         Context $context,
-        string $method_name
+        string $method_name,
+        bool $is_function_declaration = false
     ) : FQSEN {
 
         $fqsen = clone($this)
@@ -291,11 +303,19 @@ class FQSEN {
         }
 
         // Otherwise, this is a top-level function
-        $fqsen = $fqsen
-            ->withNamespace('\\')
-            ->withMethodName($context, $method_name);
+        $fqsen = $fqsen->withMethodName($context, $method_name);
 
-        return $fqsen;
+        // If we're getting an FQSEN for a function that
+        // is being declared, we inherit the namespace
+        // of our context
+        if ($is_function_declaration) {
+            return $fqsen;
+        }
+
+        // Otherwise, if we're calling a function which has
+        // not been explicitly mapped, we have to assume
+        // that its to the root namespace.
+        return $fqsen->withNamespace('\\');
     }
 
     /**

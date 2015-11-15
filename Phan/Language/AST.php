@@ -448,6 +448,11 @@ class AST {
      * The context in which we found the reference to the
      * given function name
      *
+     * @param bool $is_function_declaration
+     * This must be set to true if we're getting a function
+     * that is being declared and false if we're getting a
+     * function being called.
+     *
      * @return Method
      * A method with the given name in the given context
      *
@@ -457,12 +462,13 @@ class AST {
      */
     public static function functionFromNameInContext(
         string $function_name,
-        Context $context
+        Context $context,
+        bool $is_function_declaration = false
     ) : Method {
 
         $function_fqsen =
             $context->getScopeFQSEN()->withFunctionName(
-                $context, $function_name
+                $context, $function_name, $is_function_declaration
             );
 
         // Make sure the method we're calling actually exists
