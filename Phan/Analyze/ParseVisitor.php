@@ -361,18 +361,17 @@ class ParseVisitor extends ScopeKindVisitor {
         // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
-        foreach($node->children as $i=>$node) {
+        // Get a comment on the property declaration
+        $comment = Comment::fromStringInContext(
+            $node->children[0]->docComment ?? '',
+            $this->context
+        );
+
+        foreach($node->children as $i => $node) {
             // Ignore children which are not property elements
-            if (!$node
-                || $node->kind != \ast\AST_PROP_ELEM) {
+            if (!$node || $node->kind != \ast\AST_PROP_ELEM) {
                 continue;
             }
-
-            // Get a comment on the property declaration
-            $comment = Comment::fromStringInContext(
-                $node->docComment ?? '',
-                $this->context
-            );
 
             // @var UnionType
             $type = UnionType::fromNode(
@@ -413,15 +412,12 @@ class ParseVisitor extends ScopeKindVisitor {
             $clazz->addProperty($property);
 
             // Look for any @var declarations
-            foreach ($comment->getVariableList() as $i => $variable) {
-
+            if ($variable = $comment->getVariableList()[$i] ?? null) {
                 if ((string)$type != 'null'
-                    && !$type->canCastToUnionType(
-                        $variable->getUnionType()
-                    )
+                    && !$type->canCastToUnionType($variable->getUnionType())
                 ) {
                     Log::err(Log::ETYPE,
-                        "property is declared to be {$variable->getUnionType()} but was assigned $type",
+                        "assigning $type to property but {$property->getFQSEN()} is {$variable->getUnionType()}",
                         $this->context->getFile(),
                         $node->lineno
                     );
