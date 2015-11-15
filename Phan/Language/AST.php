@@ -488,13 +488,15 @@ class AST {
             $function_fqsen
         )) {
             throw new CodeBaseException(
-                "call to undefined function {$function_name}()"
+                "call to undefined function {$function_fqsen}()"
             );
         }
 
-        return $context->getCodeBase()->getMethodByFQSEN(
+        $method = $context->getCodeBase()->getMethodByFQSEN(
             $function_fqsen
         );
+
+        return $method;
     }
 
     /**

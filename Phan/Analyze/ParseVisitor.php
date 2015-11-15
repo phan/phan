@@ -496,10 +496,13 @@ class ParseVisitor extends ScopeKindVisitor {
         $function_fqsen = null;
         do {
             $function_fqsen =
-                $this->context->getScopeFQSEN()->withFunctionName(
-                    $this->context,
-                    $function_name
-                )->withAlternateId($alternate_id++);
+                $this->context->getScopeFQSEN()
+                    ->withFunctionName(
+                        $this->context,
+                        $function_name
+                    )
+                    ->withNamespace($this->context->getNamespace())
+                    ->withAlternateId($alternate_id++);
         } while($this->context->getCodeBase()
             ->hasMethodWithFQSEN($function_fqsen));
 
@@ -511,7 +514,6 @@ class ParseVisitor extends ScopeKindVisitor {
         );
 
         $method->setFQSEN($function_fqsen);
-
         $this->context->getCodeBase()->addFunction($method);
 
         return

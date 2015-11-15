@@ -100,6 +100,7 @@ class Comment {
         foreach($lines as $line) {
 
             if(($pos=strpos($line, '@param')) !== false) {
+                $match = [];
                 if(preg_match('/@param\s+(\S+)\s*(?:(\$\S+))*/', $line, $match)) {
                     $type = null;
                     if(stripos($match[1],'\\') === 0
@@ -136,6 +137,7 @@ class Comment {
             }
 
             if(($pos=stripos($line, '@var')) !== false) {
+                $match = [];
                 if(preg_match('/@var\s+(\S+)\s*(?:(\S+))*/', $line, $match)) {
                     $type = null;
                     if(strpos($match[1], '\\') === 0 &&

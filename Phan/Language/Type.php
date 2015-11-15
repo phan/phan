@@ -62,6 +62,10 @@ class Type {
         assert('\\' === $namespace[0],
             "Namespace must be fully qualified");
 
+        if (empty($name)) {
+            debug_print_backtrace(3);
+        }
+
         assert(!empty($name),
             "Type name cannot be empty");
 
@@ -98,6 +102,7 @@ class Type {
     ) : Type {
         $type_name = strtolower(trim($type_name));
         $namespace = trim($namespace);
+
         return self::memoizeStatic($namespace . '\\' . $type_name,
             function() use ($namespace, $type_name) : Type {
                 // Only if we're in the root namespace can we
@@ -231,13 +236,6 @@ class Type {
         }
 
         $type_name = strtolower($string);
-
-        /*
-        if ('aliasa' == $type_name) {
-            print "$context\n";
-            print_r($context->getNamespaceMap()[T_CLASS]);
-        }
-         */
 
         // Check to see if the type name is mapped via
         // a using clause.

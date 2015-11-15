@@ -540,14 +540,12 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
                 // TODO: extension methods aren't
                 //       available here. Not sure
                 //       how we should handle those
-                /*
                 Log::err(
                     Log::EUNDEF,
                     $exception->getMessage(),
                     $this->context->getFile(),
                     $node->lineno
                 );
-                 */
 
                 return $this->context;
             }

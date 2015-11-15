@@ -295,8 +295,6 @@ class FQSEN {
             ->withNamespace('\\')
             ->withMethodName($context, $method_name);
 
-        // print "$fqsen\n";
-
         return $fqsen;
     }
 

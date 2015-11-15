@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\Language\Context;
 use \Phan\Language\AST\KindVisitorImplementation;
+use \Phan\Language\Context;
+use \Phan\Language\FQSEN;
 use \Phan\Log;
 use \ast\Node;
 
@@ -88,12 +89,12 @@ class ScopeKindVisitor extends KindVisitorImplementation {
 
         $context = $this->context;
 
-        foreach ($this->aliasTargetMapFromUseNode($node->children['uses'])
+        foreach ($this->aliasTargetMapFromUseNode($node->children['uses'], $prefix)
             as $alias => $map
         ) {
             list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
-                $flags, $alias, $prefix.'\\'.$target
+                $flags, $alias, $target
             );
         }
 
@@ -118,6 +119,7 @@ class ScopeKindVisitor extends KindVisitorImplementation {
             as $alias => $map
         ) {
             list($flags, $target) = $map;
+            print "$alias => $target\n";
             $context = $context->withNamespaceMap(
                 $node->flags, $alias, $target
             );
@@ -126,13 +128,14 @@ class ScopeKindVisitor extends KindVisitorImplementation {
         return $context;
     }
 
-
-
     /**
      * @return array
      * A map from alias to target
      */
-    private function aliasTargetMapFromUseNode(Node $node) : array {
+    private function aliasTargetMapFromUseNode(
+        Node $node,
+        string $prefix = ''
+    ) : array {
         assert($node->kind == \ast\AST_USE,
             'Method takes AST_USE nodes');
 
@@ -148,6 +151,20 @@ class ScopeKindVisitor extends KindVisitorImplementation {
                 }
             } else {
                 $alias = $child_node->children['alias'];
+            }
+
+            if ($node->flags == T_FUNCTION) {
+                $parts = explode('\\', $target);
+                $function_name = array_pop($parts);
+                $target = new FQSEN(
+                    implode('\\', $parts),
+                    '',
+                    $function_name
+                );
+            } else {
+                $target = FQSEN::fromFullyQualifiedString(
+                    $prefix . '\\' . $target
+                );
             }
 
             $map[$alias] = [$child_node->flags, $target];
