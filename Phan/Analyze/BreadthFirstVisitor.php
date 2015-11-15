@@ -2,7 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\Analyze\Analyzable;
-use \Phan\Analyze\AnalyzeAssignmentVisitor;
+use \Phan\Analyze\AssignmentVisitor;
 use \Phan\Configuration;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
@@ -32,11 +32,11 @@ use \ast\Node;
  * ```
  * $context =
  *     (new Element($node))->acceptKindVisitor(
- *         new AnalyzeBreadthFirstVisitor($context)
+ *         new BreadthFirstVisitor($context)
  *     );
  * ```
  */
-class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
+class BreadthFirstVisitor extends KindVisitorImplementation {
     use \Phan\Analyze\ArgumentType;
 
     /**
@@ -122,7 +122,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
 
         $context =
             (new Element($node->children['var']))->acceptKindVisitor(
-                new AnalyzeAssignmentVisitor(
+                new AssignmentVisitor(
                     $this->context,
                     $node,
                     $right_type

@@ -20,7 +20,7 @@ use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
-class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
+class AssignmentVisitor extends KindVisitorImplementation {
     /**
      * @var Context
      * The context in which the node we're going to be looking
@@ -152,7 +152,7 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
         // Recurse into whatever we're []'ing
         $context =
             (new Element($node->children['expr']))->acceptKindVisitor(
-                new AnalyzeAssignmentVisitor(
+                new AssignmentVisitor(
                     $this->context,
                     $node,
                     $right_type

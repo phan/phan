@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\Analyze\AnalyzeBreadthFirstVisitor;
-use \Phan\Analyze\AnalyzeDepthFirstVisitor;
+use \Phan\Analyze\BreadthFirstVisitor;
+use \Phan\Analyze\DepthFirstVisitor;
 use \Phan\Analyze\ParseVisitor;
 use \Phan\CLI;
 use \Phan\CodeBase;
@@ -305,7 +305,7 @@ class Analyzer {
         // given node
         $child_context =
             (new Element($node))->acceptKindVisitor(
-                new AnalyzeDepthFirstVisitor(
+                new DepthFirstVisitor(
                     $context
                         ->withLineNumberStart($node->lineno ?? 0)
                         ->withLineNumberEnd($node->endLineno ?? 0)
@@ -340,7 +340,7 @@ class Analyzer {
         // Do another pass across siblings
         $context =
             (new Element($node))->acceptKindVisitor(
-                new AnalyzeBreadthFirstVisitor(
+                new BreadthFirstVisitor(
                     $context
                         ->withLineNumberStart($node->lineno ?? 0)
                         ->withLineNumberEnd($node->endLineno ?? 0),

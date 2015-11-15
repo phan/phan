@@ -30,11 +30,11 @@ use \ast\Node;
  * ```
  * $context =
  *     (new Element($node))->acceptKindVisitor(
- *         new AnalyzeDepthFirstVisitor($context)
+ *         new DepthFirstVisitor($context)
  *     );
  * ```
  */
-class AnalyzeDepthFirstVisitor extends ScopeKindVisitor {
+class DepthFirstVisitor extends ScopeKindVisitor {
     use \Phan\Analyze\ArgumentType;
 
     /**
