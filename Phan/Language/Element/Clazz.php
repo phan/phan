@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\CodeBase;
+use \Phan\Exception\AccessException;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Constant;
@@ -314,10 +315,47 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
+     * @param string $name
+     * The name of the property
+     *
+     * @param Context $context
+     * The context of the caller requesting the property
+     *
      * @return Property
+     * A property with the given name
+     *
+     * @throws AccessException
+     * An exception may be thrown if the caller does not
+     * have access to the given property from the given
+     * context
      */
-    public function getPropertyWithName(string $name) : Property {
-        return $this->property_map[$name];
+    public function getPropertyWithNameFromContext(
+        string $name,
+        Context $context
+    ) : Property {
+        $property = $this->property_map[$name];
+
+        // If we're getting the property from outside of this
+        // class and the property isn't public and we don't
+        // have a getter or setter, emit an access error
+        if ((!$context->hasClassFQSEN() || $context->getClassFQSEN() != $this->getFQSEN())
+            && !$property->isPublic()
+            && !$this->hasMethodWithName('__get')
+            && !$this->hasMethodWithName('__set')
+        ) {
+            if ($property->isPrivate()) {
+                throw new AccessException(
+                    "Cannot access private property {$this->getFQSEN()}::\${$property->getName()}"
+                );
+            }
+            if ($property->isProtected()) {
+                throw new AccessException(
+                    "Cannot access protected property {$this->getFQSEN()}::\${$property->getName()}"
+                );
+            }
+        }
+
+        return $property;
     }
 
     /**

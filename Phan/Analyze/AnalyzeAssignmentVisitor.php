@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\Analyze\Analyzable;
+use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Debug;
@@ -213,8 +214,21 @@ class AnalyzeAssignmentVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-        $property =
-            $clazz->getPropertyWithName($property_name);
+        try {
+            $property = $clazz->getPropertyWithNameFromContext(
+                $property_name,
+                $this->context
+            );
+        } catch (AccessException $exception) {
+            Log::err(
+                Log::EACCESS,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+
+            return $this->context;
+        }
 
         if (!$this->right_type->canCastToExpandedUnionType(
             $property->getUnionType(),

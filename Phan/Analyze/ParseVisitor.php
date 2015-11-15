@@ -367,19 +367,19 @@ class ParseVisitor extends ScopeKindVisitor {
             $this->context
         );
 
-        foreach($node->children as $i => $node) {
+        foreach($node->children as $i => $child_node) {
             // Ignore children which are not property elements
-            if (!$node || $node->kind != \ast\AST_PROP_ELEM) {
+            if (!$child_node || $child_node->kind != \ast\AST_PROP_ELEM) {
                 continue;
             }
 
             // @var UnionType
             $type = UnionType::fromNode(
                 $this->context,
-                $node->children['default']
+                $child_node->children['default']
             );
 
-            $property_name = $node->children['name'];
+            $property_name = $child_node->children['name'];
 
             assert(is_string($property_name),
                 'Property name must be a string. '
@@ -391,14 +391,14 @@ class ParseVisitor extends ScopeKindVisitor {
             $property =
                 new Property(
                     $this->context
-                        ->withLineNumberStart($node->lineno)
-                        ->withLineNumberEnd($node->endLineno ?? -1),
+                        ->withLineNumberStart($child_node->lineno)
+                        ->withLineNumberEnd($child_node->endLineno ?? -1),
                     Comment::fromStringInContext(
-                        $node->docComment ?? '',
+                        $child_node->docComment ?? '',
                         $this->context
                     ),
-                    is_string($node->children['name'])
-                        ? $node->children['name']
+                    is_string($child_node->children['name'])
+                        ? $child_node->children['name']
                         : '_error_',
                     $type,
                     $node->flags
@@ -419,7 +419,7 @@ class ParseVisitor extends ScopeKindVisitor {
                     Log::err(Log::ETYPE,
                         "assigning $type to property but {$property->getFQSEN()} is {$variable->getUnionType()}",
                         $this->context->getFile(),
-                        $node->lineno
+                        $child_node->lineno
                     );
                 }
 

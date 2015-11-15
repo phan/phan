@@ -2,6 +2,7 @@
 namespace Phan\Language\AST\Visitor;
 
 use \Phan\Debug;
+use \Phan\Exception\AccessException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -274,8 +275,21 @@ class ClassNameKindVisitor extends KindVisitorImplementation {
                 $property_name = $prop->children['prop'];
 
                 if ($clazz->hasPropertyWithName($property_name)) {
-                    $property =
-                        $clazz->getPropertyWithName($property_name);
+                    try {
+                        $property = $clazz->getPropertyWithNameFromContext(
+                            $property_name,
+                            $this->context
+                        );
+                    } catch (AccessException $exception) {
+                        Log::err(
+                            Log::EACCESS,
+                            $exception->getMessage(),
+                            $this->context->getFile(),
+                            $node->lineno
+                        );
+
+                        return '';
+                    }
 
                     // Find the first viable property type
                     foreach ($property->getUnionType()->nonGenericTypes()->getTypeList() as $type) {

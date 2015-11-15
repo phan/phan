@@ -2,6 +2,7 @@
 namespace Phan\Language\Type;
 
 use \Phan\Debug;
+use \Phan\Exception\AccessException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -548,8 +549,21 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             return new UnionType();
         }
 
-        $property =
-            $clazz->getPropertyWithName($property_name);
+        try {
+            $property = $clazz->getPropertyWithNameFromContext(
+                $property_name,
+                $this->context
+            );
+        } catch (AccessException $exception) {
+            Log::err(
+                Log::EACCESS,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+
+            return new UnionType();
+        }
 
         return $property->getUnionType();
     }
@@ -601,8 +615,21 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
             return new UnionType();
         }
 
-        $property =
-            $clazz->getPropertyWithName($property_name);
+        try {
+            $property = $clazz->getPropertyWithNameFromContext(
+                $property_name,
+                $this->context
+            );
+        } catch (AccessException $exception) {
+            Log::err(
+                Log::EACCESS,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+
+            return new UnionType();
+        }
 
         return $property->getUnionType();
     }

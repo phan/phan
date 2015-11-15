@@ -68,8 +68,50 @@ class Property extends TypedStructuralElement {
         $this->declared_type = $type;
     }
 
+    /**
+     * @return bool
+     * True if this is a public property
+     */
+    public function isPublic() {
+        return !(
+            $this->isProtected() || $this->isPrivate()
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this is a protected property
+     */
+    public function isProtected() {
+        return (bool)(
+            $this->getFlags() & \ast\flags\MODIFIER_PROTECTED
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this is a private property
+     */
+    public function isPrivate() {
+        return (bool)(
+            $this->getFlags() & \ast\flags\MODIFIER_PRIVATE
+        );
+    }
+
     public function __toString() : string {
-        return "{$this->getUnionType()} {$this->getName()}";
+        $string = '';
+
+        if ($this->isPublic()) {
+            $string .= 'public ';
+        } else if ($this->isProtected()) {
+            $string .= 'protected ';
+        } else if ($this->isPrivate()) {
+            $string .= 'private ';
+        }
+
+        $string .= "{$this->getUnionType()} {$this->getName()}";
+
+        return $string;
     }
 
 }
