@@ -34,15 +34,8 @@ use \ast\Node;
  *     );
  * ```
  */
-class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
+class AnalyzeDepthFirstVisitor extends ScopeKindVisitor {
     use \Phan\Analyze\ArgumentType;
-
-    /**
-     * @var Context
-     * The context in which the node we're going to be looking
-     * at exits.
-     */
-    private $context;
 
     /**
      * @param Context $context
@@ -50,67 +43,7 @@ class AnalyzeDepthFirstVisitor extends KindVisitorImplementation {
      * like to determine a type
      */
     public function __construct(Context $context) {
-        $this->context = $context;
-    }
-
-    /**
-     * Default visitor for node kinds that do not have
-     * an overriding method
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visit(Node $node) : Context {
-        // Many nodes don't change the context and we
-        // don't need to read them.
-        return $this->context;
-    }
-
-    /**
-     * Visit a node with kind `\ast\AST_NAMESPACE`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitNamespace(Node $node) : Context {
-        return $this->context->withNamespace(
-            '\\' . (string)$node->children['name']
-        );
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitUseTrait(Node $node) : Context {
-        return $this->context;
-    }
-
-    /**
-     * Visit a node with kind `\ast\AST_USE`
-     * such as `use \ast\Node;`.
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitUse(Node $node) : Context {
-        return $this->context;
+        parent::__construct($context);
     }
 
     /**

@@ -419,7 +419,6 @@ class AST {
         $method_name_or_node,
         bool $is_static
     ) : Method {
-
         $clazz = self::classFromNodeInContext($node, $context);
 
         if ($method_name_or_node instanceof Node) {

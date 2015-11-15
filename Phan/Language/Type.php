@@ -232,14 +232,12 @@ class Type {
 
         $type_name = strtolower($string);
 
-        // If this was a fully qualified type, we're all
-        // set
-        if (!empty($namespace)) {
-            return self::fromNamespaceAndName(
-                $namespace,
-                $type_name
-            );
+        /*
+        if ('aliasa' == $type_name) {
+            print "$context\n";
+            print_r($context->getNamespaceMap()[T_CLASS]);
         }
+         */
 
         // Check to see if the type name is mapped via
         // a using clause.
@@ -254,6 +252,15 @@ class Type {
             return new Type(
                 $fqsen->getNamespace(),
                 $fqsen->getClassName()
+            );
+        }
+
+        // If this was a fully qualified type, we're all
+        // set
+        if (!empty($namespace)) {
+            return self::fromNamespaceAndName(
+                $namespace,
+                $type_name
             );
         }
 

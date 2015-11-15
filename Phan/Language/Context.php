@@ -115,7 +115,7 @@ class Context {
      * The path to the file in which this element is defined
      *
      * @return Context
-     * A clone of this context with the given value is returned
+     * This context with the given value is returned
      */
     public function withFile(string $file) : Context {
         $context = clone($this);
@@ -199,19 +199,16 @@ class Context {
 
     /**
      * @return Context
-     * A clone of this context with the given value is returned
+     * This context with the given value is returned
      */
     public function withNamespaceMap(
         int $flags,
         string $alias,
         string  $target
     ) : Context {
-        $context = clone($this);
-
-        $context->namespace_map[$flags][strtolower($alias)] =
+        $this->namespace_map[$flags][strtolower($alias)] =
             FQSEN::fromFullyQualifiedString($target);
-
-        return $context;
+        return $this;
     }
 
     /**
@@ -219,7 +216,7 @@ class Context {
      * The starting line number of the element within the file
      *
      * @return Context
-     * A clone of this context with the given value is returned
+     * This context with the given value is returned
      */
     public function withLineNumberStart(int $line_number) : Context {
         $this->line_number_start = $line_number;
@@ -239,7 +236,7 @@ class Context {
      * The ending line number of the element within the $file
      *
      * @return Context
-     * A clone of this context with the given value is returned
+     * This context with the given value is returned
      */
     public function withLineNumberEnd(int $line_number) : Context {
         $this->line_number_end = $line_number;
