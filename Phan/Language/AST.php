@@ -375,24 +375,6 @@ class AST {
             $context->getCodeBase()->getClassByFQSEN($class_fqsen);
 
         return $class;
-
-        /*
-        // Hunt for an appropriate alternate for the class
-        // that is associated with the current context
-        foreach ($class->alternateGenerator($context->getCodeBase())
-            as $alternate_id => $alternate_class
-        ) {
-            if ($alternate_class->getFile() == $context->getFile()) {
-                return $class;
-            }
-        }
-
-        assert(false,
-            "Couldn't find appropriate alternate for class $class_fqsen.");
-
-        // We didn't find an appropriate alternate
-        return $class;
-         */
     }
 
     /**

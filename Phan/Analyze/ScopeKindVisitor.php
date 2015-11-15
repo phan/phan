@@ -119,7 +119,6 @@ class ScopeKindVisitor extends KindVisitorImplementation {
             as $alias => $map
         ) {
             list($flags, $target) = $map;
-            print "$alias => $target\n";
             $context = $context->withNamespaceMap(
                 $node->flags, $alias, $target
             );

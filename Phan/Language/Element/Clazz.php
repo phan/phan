@@ -234,13 +234,6 @@ class Clazz extends TypedStructuralElement {
                 );
 
             foreach ($method_list as $method) {
-                /*
-                if ('\datetime::format' == $method->getFQSEN()) {
-                    print "$method\n";
-                    print "{$method->getFQSEN()}\n";
-                }
-                 */
-
                 $code_base->addMethod($method);
                 $clazz->addMethod($method);
             }

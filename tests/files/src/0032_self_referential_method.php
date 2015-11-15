@@ -6,7 +6,7 @@ class A {
             return 'string';
         }
 
-        return f($a - 1);
+        return $this->f($a - 1);
     }
 }
 
