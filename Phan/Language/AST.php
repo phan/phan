@@ -34,10 +34,11 @@ class AST {
         Context $context,
         $node
     ) : UnionType {
+        $type_string = null;
         if($node instanceof \ast\Node) {
             switch($node->kind) {
             case \ast\AST_NAME:
-                $result =
+                $type_string =
                     self::qualifiedName(
                         $context,
                         $node
@@ -45,9 +46,9 @@ class AST {
                 break;
             case \ast\AST_TYPE:
                 if($node->flags == \ast\flags\TYPE_CALLABLE) {
-                    $result = 'callable';
+                    $type_string = 'callable';
                 } else if($node->flags == \ast\flags\TYPE_ARRAY) {
-                    $result = 'array';
+                    $type_string = 'array';
                 } else {
                     assert(false, "Unknown type: {$node->flags}");
                 }
@@ -61,10 +62,13 @@ class AST {
                 break;
             }
         } else {
-            $result = (string)$node;
+            $type_string = (string)$node;
         }
 
-        return UnionType::fromStringInContext($result, $context);
+        return UnionType::fromStringInContext(
+            $type_string,
+            $context
+        );
     }
 
     /**
