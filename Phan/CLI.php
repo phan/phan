@@ -161,12 +161,19 @@ EOB;
             return;
         }
 
+        $memory = memory_get_usage()/1024/1024;
+        $peak = memory_get_peak_usage()/1024/1024;
+
         echo "\r$msg ";
         $current = (int)($p * 60);
         $rest = 60 - $current;
         echo str_repeat("\u{25b1}", $current);
         echo str_repeat("\u{25b0}", $rest);
-        echo " " . sprintf("% 3d", (int)(100*$p)) . "%" . "\r";
+        echo " " . sprintf("% 3d", (int)(100*$p)) . "%";
+        echo sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
+        echo "\r";
+
+
     }
 
 }

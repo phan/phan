@@ -14,6 +14,9 @@ use \Phan\CodeBase;
 use \Phan\Log;
 use \Phan\CLI;
 
+// xhprof_enable(XHPROF_FLAGS_CPU + XHPROF_FLAGS_MEMORY);
+
+
 // \Phan\Analyzer::analyze will emit messages to STDOUT
 (new Analyzer())->analyze(
     new CodeBase(

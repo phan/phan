@@ -167,30 +167,32 @@ class CodeBase {
     }
 
     /**
+     * @param string[] $class_name_list
+     * A list of class names to load type information for
      *
+     * @return null
      */
     private function addClassesByNames(array $class_name_list) {
         foreach ($class_name_list as $i => $class_name) {
             $clazz = Clazz::fromClassName($this, $class_name);
-            $this->class_map[$clazz->getFQSEN()->__toString()] =
-                $clazz;
+            $this->class_map[(string)$clazz->getFQSEN()] = $clazz;
         }
     }
 
     /**
-     *
+     * @param string[] $function_name_list
+     * A list of function names to load type information for
      */
-    private function addFunctionsByNames($function_name_list) {
+    private function addFunctionsByNames(array $function_name_list) {
         foreach ($function_name_list as $i => $function_name) {
-            foreach (Method::fromFunctionName($this, $function_name) as $method) {
+            foreach (Method::methodListFromFunctionName($this, $function_name)
+                as $method
+            ) {
                 $this->addMethod($method);
             }
         }
     }
 
-    /**
-     *
-     */
     public function incrementConditionals() {
         $this->summary['conditionals']++;
     }

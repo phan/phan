@@ -225,18 +225,25 @@ class Clazz extends TypedStructuralElement {
                 );
         }
 
-        foreach($class->getMethods() as $method) {
-            $method_map =
-                Method::mapFromReflectionClassAndMethod(
+        foreach($class->getMethods() as $reflection_method) {
+            $method_list =
+                Method::methodListFromReflectionClassAndMethod(
                     $context->withClassFQSEN($clazz->getFQSEN()),
                     $class,
-                    $method
+                    $reflection_method
                 );
 
-            $clazz->method_map = array_merge(
-                $clazz->method_map,
-                $method_map
-            );
+            foreach ($method_list as $method) {
+                /*
+                if ('\datetime::format' == $method->getFQSEN()) {
+                    print "$method\n";
+                    print "{$method->getFQSEN()}\n";
+                }
+                 */
+
+                $code_base->addMethod($method);
+                $clazz->addMethod($method);
+            }
         }
 
         return $clazz;

@@ -306,7 +306,7 @@ class AST {
             ) && ($temp->kind == \node\node_VAR
             || $temp->kind == \node\node_NAME)
         ) {
-            $ftemp = new \SplFileObject($file);
+            $ftemp = new \SplFileObject($context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
             unset($ftemp);

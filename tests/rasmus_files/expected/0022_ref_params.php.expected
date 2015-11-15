@@ -1,2 +1,2 @@
-%s:14 TypeError arg#1(farg1) is int[] but test1() takes float defined at %s:3
-%s:15 TypeError arg#1(farg2) is float|int[] but test2() takes int defined at %s:8
+%s:14 TypeError arg#1(farg1) is int[] but \a::test1() takes float defined at %s:3
+%s:15 TypeError arg#1(farg2) is float|int[] but \b::test2() takes int defined at %s:8

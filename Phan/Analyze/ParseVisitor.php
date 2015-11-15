@@ -142,7 +142,7 @@ class ParseVisitor extends KindVisitorImplementation {
                 $depth++;
             }
             $dollars = str_repeat('$',$depth);
-            $ftemp = new \SplFileObject($file);
+            $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
             unset($ftemp);

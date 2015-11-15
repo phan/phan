@@ -109,7 +109,7 @@ class Method extends TypedStructuralElement {
      * One or more (alternate) methods begotten from
      * reflection info and builtin method data
      */
-    public static function fromFunctionName(
+    public static function methodListFromFunctionName(
         CodeBase $code_base,
         string $function_name
     ) : array {
@@ -117,7 +117,7 @@ class Method extends TypedStructuralElement {
         $reflection_function =
             new \ReflectionFunction($function_name);
 
-        $method_list = self::fromReflectionFunction(
+        $method_list = self::methodListFromReflectionFunction(
             $code_base,
             $reflection_function
         );
@@ -130,7 +130,7 @@ class Method extends TypedStructuralElement {
      * One or more (alternate) methods begotten from
      * reflection info and builtin method data
      */
-    public static function fromReflectionFunction(
+    public static function methodListFromReflectionFunction(
         CodeBase $code_base,
         \ReflectionFunction $reflection_function
     ) : array {
@@ -154,14 +154,63 @@ class Method extends TypedStructuralElement {
             $number_of_optional_parameters
         );
 
+        return self::methodListFromMethod($method);
+    }
+
+    /**
+     * @return Method[]
+     */
+    public static function methodListFromReflectionClassAndMethod(
+        Context $context,
+        \ReflectionClass $class,
+        \ReflectionMethod $method
+    ) : array {
+        $reflection_method =
+            new \ReflectionMethod($class->getName(), $method->name);
+
+        $number_of_required_parameters =
+            $reflection_method->getNumberOfRequiredParameters();
+
+        $number_of_optional_parameters =
+            $reflection_method->getNumberOfParameters()
+            - $number_of_required_parameters;
+
+        $method = new Method(
+            $context,
+            Comment::none(),
+            $method->name,
+            new UnionType(),
+            $reflection_method->getModifiers(),
+            $number_of_required_parameters,
+            $number_of_optional_parameters
+        );
+
+        return self::methodListFromMethod($method);
+    }
+
+    /**
+     * @param Method $method
+     * Get a list of methods hydrated with type information
+     * for the given partial method
+     *
+     * @return Method[]
+     * A list of typed methods based on the given method
+     */
+    private static function methodListFromMethod(
+        Method $method
+    ) : array {
         // See if we have any type information for this
         // builtin function
         $map_list = UnionType::builtinFunctionPropertyNameTypeMap(
-            $method->getFQSEN(), $context->getCodeBase()
+            $method->getFQSEN(),
+            $method->getContext()->getCodeBase()
         );
 
         $alternate_id = 0;
-        return array_map(function($map) use ($method, $context, &$alternate_id) : Method {
+        return array_map(function($map) use (
+            $method,
+            &$alternate_id
+        ) : Method {
             $alternate_method = clone($method);
 
             $alternate_method->setFQSEN(
@@ -201,7 +250,7 @@ class Method extends TypedStructuralElement {
                 }
 
                 $parameter = new Parameter(
-                    $context,
+                    $method->getContext(),
                     Comment::none(),
                     $parameter_name,
                     $parameter_type,
@@ -221,85 +270,6 @@ class Method extends TypedStructuralElement {
 
             return $alternate_method;
         }, $map_list);
-    }
-
-    /**
-     * @return map[string,Method];
-     */
-    public static function mapFromReflectionClassAndMethod(
-        Context $context,
-        \ReflectionClass $class,
-        \ReflectionMethod $method
-    ) : array {
-        $reflection_method =
-            new \ReflectionMethod($class->getName(), $method->name);
-
-        $number_of_required_parameters =
-            $reflection_method->getNumberOfRequiredParameters();
-
-        $number_of_optional_parameters =
-            $reflection_method->getNumberOfParameters()
-            - $number_of_required_parameters;
-
-        $canonical_method_name =
-            strtolower($method->name);
-
-        $method = new Method(
-            $context,
-            Comment::none(),
-            $method->name,
-            new UnionType(),
-            $reflection_method->getModifiers(),
-            $number_of_required_parameters,
-            $number_of_optional_parameters
-        );
-
-        $fqsen = $method->getFQSEN();
-
-        $name_method_info_map = [
-            strtolower($method->getName()) => $method
-        ];
-
-        // Populate multiple-dispatch alternate method
-        foreach ($fqsen->alternateFQSENInfiniteList() as $alt_fqsen) {
-            if (!UnionType::builtinExists($alt_fqsen)) {
-                break;
-            }
-
-            $alt_method = clone($method);
-            $alt_method->withName(
-                $method->name . ' ' . $alt_fqsen->getAlternateId()
-            );
-
-            $name_method_info_map = array_merge($name_method_info_map, [
-                $alt_fqsen->__toString() => $alt_method,
-            ]);
-        }
-
-        foreach($method->getParameterList() as $param) {
-            $alt = 1;
-            $flags = 0;
-            if($param->isPassedByReference()) {
-                $flags |= \ast\flags\PARAM_REF;
-            }
-
-            if($param->isVariadic()) {
-                $flags |= \ast\flags\PARAM_VARIADIC;
-            }
-
-            $name_method_info_map[strtolower($method->name)]
-                ->parameter_list[] = new Parameter(
-                    $context,
-                    Comment::none(),
-                    $param->name,
-                    new UnionType(),
-                    // TODO: what was this below?
-                    // new UnionType([(empty($arginfo) ? '' : (next($arginfo) ?: ''))]),
-                    $flags
-                );
-        }
-
-        return $name_method_info_map;
     }
 
     /**

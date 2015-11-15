@@ -170,8 +170,10 @@ class UnionType {
 
         $map = self::builtinFunctionArgumentTypeMap();
 
-        // Get the simple name of the function
-        $function_name = $function_fqsen->getMethodName();
+        $class_name = $function_fqsen->getClassName();
+        $function_name = ($class_name ? $class_name . '::' :  '')
+            .  $function_fqsen->getMethodName();
+
         $function_name_original = $function_name;
         $alternate_id = 0;
 

@@ -1,1 +1,1 @@
-%s:2 ParamError call with 0 arg(s) to max() which requires 1 arg(s)
+%s:2 ParamError call with 0 arg(s) to \::max() which requires 1 arg(s)

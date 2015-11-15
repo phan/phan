@@ -59,7 +59,7 @@ trait ArgumentType {
         if($method->isDeprecated()) {
             Log::err(
                 Log::EDEP,
-                "Call to deprecated function {$method->getName()}() defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                "Call to deprecated function {$method->getFQSEN()}() defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
                 $context->getFile(),
                 $context->getLineNumberStart()
             );
@@ -107,14 +107,14 @@ trait ArgumentType {
                 if($method->getContext()->isInternal()) {
                     Log::err(
                         Log::EPARAM,
-                        "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
+                        "call with $argcount arg(s) to {$method->getFQSEN()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
                         $context->getFile(),
                         $context->getLineNumberStart()
                     );
                 } else {
                     Log::err(
                         Log::EPARAM,
-                        "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s) defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                        "call with $argcount arg(s) to {$method->getFQSEN()}() which requires {$method->getNumberOfRequiredParameters()} arg(s) defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
                         $context->getFile(),
                         $context->getLineNumberStart()
                     );
@@ -140,14 +140,14 @@ trait ArgumentType {
                 if($method->getContext()->isInternal()) {
                     Log::err(
                         Log::EPARAM,
-                        "call with $argcount arg(s) to {$method->getName()}() which only takes {$max} arg(s)",
+                        "call with $argcount arg(s) to {$method->getFQSEN()}() which only takes {$max} arg(s)",
                         $context->getFile(),
                         $node->lineno
                     );
                 } else {
                     Log::err(
                         Log::EPARAM,
-                        "call with $argcount arg(s) to {$method->getName()}() which only takes {$max} arg(s) defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                        "call with $argcount arg(s) to {$method->getFQSEN()}() which only takes {$max} arg(s) defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
                         $context->getFile(),
                         $node->lineno
                     );
@@ -201,7 +201,7 @@ trait ArgumentType {
                 ) {
                     Log::err(
                         Log::ETYPE,
-                        "Only variables can be passed by reference at arg#".($i+1)." of {$method->getName()}()",
+                        "Only variables can be passed by reference at arg#".($i+1)." of {$method->getFQSEN()}()",
                         $context->getFile(),
                         $node->lineno
                     );
@@ -269,19 +269,29 @@ trait ArgumentType {
             }
 
             if (!$alternate_found) {
+                $parameter_name = $alternate_parameter
+                    ? $alternate_parameter->getName()
+                    : 'unknown';
+
+                $parameter_type = $alternate_parameter
+                    ? $alternate_parameter->getUnionType()
+                    : 'unknown';
+
                 if ($method->getContext()->isInternal()) {
                     Log::err(
                         Log::ETYPE,
-                        "arg#".($i+1)."({$alternate_parameter->getName()}) is $argument_type but {$method->getName()}() takes {$alternate_parameter->getUnionType()}",
+                        "arg#".($i+1)."($parameter_name) is "
+                        . "$argument_type but {$method->getFQSEN()}() "
+                        . "takes $parameter_type",
                         $context->getFile(),
                         $node->lineno
                     );
                 } else {
                     Log::err(
                         Log::ETYPE,
-                        "arg#".($i+1)."({$alternate_parameter->getName()}) is "
-                        . "$argument_type but {$method->getName()}() "
-                        . "takes {$alternate_parameter->getUnionType()} "
+                        "arg#".($i+1)."($parameter_name) is "
+                        . "$argument_type but {$method->getFQSEN()}() "
+                        . "takes $parameter_type "
                         . "defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
                         $context->getFile(),
                         $node->lineno
@@ -464,7 +474,7 @@ trait ArgumentType {
                     $arglist->children[0],
                     $context,
                     ArrayType::instance()->asUnionType(),
-                    "arg#1(pieces) is %s but {$method->getName()}() takes array when passed only 1 arg"
+                    "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
                 );
                 return;
             } else if($argcount == 2) {
@@ -484,7 +494,7 @@ trait ArgumentType {
                     )) {
                         Log::err(
                             Log::EPARAM,
-                            "arg#2(glue) is $arg2_type but {$method->getName()}() takes string when arg#1 is array",
+                            "arg#2(glue) is $arg2_type but {$method->getFQSEN()}() takes string when arg#1 is array",
                             $context->getFile(),
                             $context->getLineNumberStart()
                         );
@@ -495,7 +505,7 @@ trait ArgumentType {
                     )) {
                         Log::err(
                             Log::EPARAM,
-                            "arg#2(pieces) is $arg2_type but {$method->getName()}() takes array when arg#1 is string",
+                            "arg#2(pieces) is $arg2_type but {$method->getFQSEN()}() takes array when arg#1 is string",
                             $context->getFile(),
                             $context->getLineNumberStart()
                         );
@@ -514,7 +524,7 @@ trait ArgumentType {
             if($argcount < 3) {
                 Log::err(
                     Log::EPARAM,
-                    "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
+                    "call with $argcount arg(s) to {$method->getFQSEN()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
                     $context->getFile(),
                     $context->getLineNumberStart()
                 );
@@ -526,7 +536,7 @@ trait ArgumentType {
                 $arglist->children[$argcount - 1],
                 $context,
                 CallableType::instance()->asUnionType(),
-                "The last argument to {$method->getName()} must be a callable"
+                "The last argument to {$method->getFQSEN()} must be a callable"
             );
 
             for ($i=0; $i < ($argcount - 1); $i++) {
@@ -534,7 +544,7 @@ trait ArgumentType {
                     $arglist->children[$i],
                     $context,
                     CallableType::instance()->asUnionType(),
-                    "arg#".($i+1)." is %s but {$method->getName()}() takes array"
+                    "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                 );
             }
             return;
@@ -544,7 +554,7 @@ trait ArgumentType {
             if($argcount < 4) {
                 Log::err(
                     Log::EPARAM,
-                    "call with $argcount arg(s) to {$method->getName()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
+                    "call with $argcount arg(s) to {$method->getFQSEN()}() which requires {$method->getNumberOfRequiredParameters()} arg(s)",
                     $context->getFile(),
                     $context->getLineNumberStart()
                 );
@@ -557,14 +567,14 @@ trait ArgumentType {
                 $arglist->children[$argcount - 1],
                 $context,
                 CallableType::instance()->asUnionType(),
-                "The last argument to {$method->getName()} must be a callable"
+                "The last argument to {$method->getFQSEN()} must be a callable"
             );
 
             self::analyzeNodeUnionTypeCast(
                 $arglist->children[$argcount - 2],
                 $context,
                 CallableType::instance()->asUnionType(),
-                "The second last argument to {$method->getName()} must be a callable"
+                "The second last argument to {$method->getFQSEN()} must be a callable"
             );
 
             for($i=0; $i < ($argcount-2); $i++) {
@@ -572,7 +582,7 @@ trait ArgumentType {
                     $arglist->children[$i],
                     $context,
                     ArrayType::instance()->asUnionType(),
-                    "arg#".($i+1)." is %s but {$method->getName()}() takes array"
+                    "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                 );
             }
             return;
@@ -585,7 +595,7 @@ trait ArgumentType {
                     $arglist->children[0],
                     $context,
                     ArrayType::instance()->asUnionType(),
-                    "arg#1(token) is %s but {$method->getName()}() takes string when passed only one arg"
+                    "arg#1(token) is %s but {$method->getFQSEN()}() takes string when passed only one arg"
                 );
             }
             // The arginfo check will handle the other case
@@ -598,7 +608,7 @@ trait ArgumentType {
                     $arglist->children[0],
                     $context,
                     ArrayType::instance()->asUnionType(),
-                    "arg#1(values) is %s but {$method->getName()}() takes array when passed only one arg"
+                    "arg#1(values) is %s but {$method->getFQSEN()}() takes array when passed only one arg"
                 )) {
                     return;
                 }
