@@ -17,13 +17,11 @@ solution right now, you should probably look at [scrutinizer].
 * Undefined variable tracking
 * Supports namespaces, traits and variadics
 * Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
-* Basic tainted data detection
 
 See the [tests][tests] directory for some examples of the various checks.
 
 ## Planned
 
-* [Obsolescence](#obsolescence)
 * JSON, csv and possibly other output formats
 * Perhaps a genlist feature that will automatically figure out dependency files starting
   from a single entry point file
@@ -62,16 +60,6 @@ phan -f filelist.txt
 and it might generate output that looks like this:
 
 ```php
-Files scanned:	14
-Time:		0.21s
-Classes:	7
-Methods:	9
-Functions:	20
-Closures:	1
-Traits:		0
-Conditionals:	281
-Issues found:	11
-
 test1.php:191 UndefError call to undefined function get_real_size()
 test1.php:232 UndefError static call to undeclared class core\session\manager
 test1.php:386 UndefError Trying to instantiate undeclared class lang_installer
@@ -190,87 +178,18 @@ analysis tools by pulling the tree and walking it looking for interesting things
 Phan has 2 passes. On the first pass it reads every file, gets the AST and recursively parses it
 looking only for functions, methods and classes in order to populate a bunch of
 global hashes which will hold all of them. It also loads up definitions for all internal
-functions and classes. The type info for these come from a big file called [arginfo.php][arginfo].
-[Pass1][pass1] is quite simple to follow.
+functions and classes. The type info for these come from a big file called FunctionSignatureMap.
 
-The real complexity hits you hard in [Pass2][pass2]. Here some things are done recursively depth-first
+The real complexity hits you hard in the second pass. Here some things are done recursively depth-first
 and others not. For example, we catch something like `foreach($arr as $k=>$v)` because we need to tell the
 foreach code block that `$k` and `$v` exist. For other things we need to recurse as deeply as possible
 into the tree before unrolling our way back out. For example, for something like `c(b(a(1)))` we need
 to call `a(1)` and check that `a()` actually takes an int, then get the return type and pass it to `b()`
 and check that, before doing the same to `c()`.
 
-There is a `$scope` global hash which keeps track of all variables. It mimics PHP's scope handling in that it
-has a `$scope['global']` along with entries for each function, method and closure. This is used to detect
-undefined variables and also type-checked on a `return $var`. There is a debugging feature which will let
-you dump the scope. If `test.php` is:
-
-```php
-<?php
-class MyClass {
-	static function init(string $arg1, $arg2='opt'):array {
-		$local = [$arg1, $arg2];
-		return $local;
-	}
-
-	function read():string {
-		return "abc";
-	}
-}
-
-$stuff = MyClass::init("one");
-$data  = $stuff->read();
-```
-
-then `phan -s test.php` will output:
-
-```php
-MyClass::init
-¯¯¯¯¯¯¯¯¯¯¯¯¯
- Variables:
-	arg1: string (param: 1)
-	arg2: string (param: 2)
-	local: array
-
-MyClass::read
-¯¯¯¯¯¯¯¯¯¯¯¯¯
- Variables:
-	this: object:MyClass
-
-global
-¯¯¯¯¯¯
- Variables:
-	_GET: array(tainted)
-	_POST: array(tainted)
-	_COOKIE: array(tainted)
-	_REQUEST: array(tainted)
-	_SERVER: array(tainted)
-	_FILES: array(tainted)
-	GLOBALS: array
-	stuff: array
-	data: mixed
-```
-
-The `$classes` hash has a list of all classes, both internal and user-space. This is walked to figure out
-inheritance on calls by checking `$classes['class_name']['parent']`.
-
-The `$functions` hash contains all the known functions both internal and userspace. There is a debugging flag
-that will let you dump user-defined classes and functions. For the previous example `test.php` if you run `phan -u test.php`
-you will get:
-
-```php
-class MyClass
-¯¯¯¯¯¯¯¯¯¯¯¯¯
-	 MyClass::init(string arg1, arg2):array
-	 MyClass->read():string
-```
-
-The `$namespace_map` global contains the per-file namespacing aliasing.
-
-The `$quick_mode` global is just a flag that tells Pass 2 whether or not to rescan every function, method
-and closure call with the current set of args. By default quick mode is off, but you might want to turn it
-on if you are trying to run this on a huge codebase as part of a Continuous Integration process. Quick mode
-can be 2 to 3 times faster but it will miss a few potential issues as explained below.
+There is a Scope object which keeps track of all variables. It mimics PHP's scope handling in that it
+has a globals along with entries for each function, method and closure. This is used to detect
+undefined variables and also type-checked on a `return $var`.
 
 ## Quick Mode Explained
 
@@ -295,36 +214,10 @@ The initial scan of the function's code block has no type information for `$arg`
 isn't until we see the call and rescan test()'s code block that we can detect
 that it is actually returning the passed in `string` instead of an `int` as declared.
 
-## How you can help
-
-This is written in PHP specifically to encourage contributions. I know my stream-of-conciousness coding
-style can be a bit hard to sort through. The bulk of this was written quickly over a weekend with
-almost no re-factoring and cleanup yet. Please give me a hand with that.
-
-Look through the code for `TODO` comments and see if you can tackle any of those.
-
-And this last one is something anyone can help with. The [arginfo.php][arginfo] file is not
-complete. It was generated and then hand-edited but with currently around 10,500 entries, there
-are mistakes. Many of them even. You will notice them when you scan your own code. Please help me
-fix it. Hopefully the format is self-explanatory, especially if you read the comment at the top
-of the file.
-
-### Obsolescence
-
-I don't actually want to write, nor maintain a static analyzer. This is a placeholder and
-proof-of-concept designed to inspire and enourage others to write something better. We need
-a practical and pragmatic analyzer that we can just point at a bunch of code and have it
-tell us about any issues in it. Bits and pieces of this, especially [arginfo.php][arginfo]
-and maybe the tests will likely survive long-term, but much of it probably won't.
-
   [phpast]: https://github.com/nikic/php-ast
   [scrutinizer]: https://scrutinizer-ci.com/docs/guides/php/automated-code-reviews
   [doctypes]: http://www.phpdoc.org/docs/latest/guides/types.html
   [tests]: https://github.com/rlerdorf/phan/blob/master/tests
   [php7ast]: https://wiki.php.net/rfc/abstract_syntax_tree
-  [arginfo]: https://github.com/rlerdorf/phan/blob/master/includes/arginfo.php
-  [pass1]: https://github.com/rlerdorf/phan/blob/master/includes/pass1.php
-  [pass2]: https://github.com/rlerdorf/phan/blob/master/includes/pass2.php
-  [mainloop]: https://github.com/rlerdorf/phan/blob/master/phan
   [php7dev]: https://github.com/rlerdorf/php7dev
   [uniform]: https://wiki.php.net/rfc/uniform_variable_syntax
