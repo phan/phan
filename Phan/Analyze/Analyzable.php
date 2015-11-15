@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\Analyzer;
+use \Phan\Phan;
 use \Phan\Configuration;
 use \Phan\Debug;
 use \Phan\Language\Context;
@@ -83,7 +83,7 @@ trait Analyzable {
 
         // Analyze the node in a cloned context so that we
         // don't overwrite anything
-        $context = (new Analyzer)->analyzeNodeInContext(
+        $context = (new Phan)->analyzeNodeInContext(
             $this->getNode(),
             clone($context)
         );

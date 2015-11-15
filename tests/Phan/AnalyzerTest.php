@@ -6,7 +6,7 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-use \Phan\Analyzer;
+use \Phan\Phan;
 use \Phan\CodeBase;
 use \Phan\Configuration;
 use \Phan\Language\Context;
@@ -105,7 +105,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
         );
 
         return
-            (new Analyzer)->parseNodeInContext(
+            (new Phan)->parseNodeInContext(
                 \ast\parse_code(
                     '<?php ' . $code_stub,
                     Configuration::instance()->ast_version

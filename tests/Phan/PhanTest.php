@@ -6,7 +6,7 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-use \Phan\Analyzer;
+use \Phan\Phan;
 use \Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\Type;
@@ -74,7 +74,7 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
 
             try {
                 // Run the analyzer
-                (new Analyzer())->analyze(
+                (new Phan)->analyzeFileList(
                     clone($this->code_base),
                     [$test_file_path]
                 );

@@ -9,16 +9,12 @@ $internal_function_name_list = get_defined_functions()['internal'];
 
 require_once(__DIR__.'/Phan/Bootstrap.php');
 
-use \Phan\Analyzer;
+use \Phan\CLI;
 use \Phan\CodeBase;
 use \Phan\Log;
-use \Phan\CLI;
+use \Phan\Phan;
 
-// xhprof_enable(XHPROF_FLAGS_CPU + XHPROF_FLAGS_MEMORY);
-
-
-// \Phan\Analyzer::analyze will emit messages to STDOUT
-(new Analyzer())->analyze(
+(new Phan)->analyzeFileList(
     new CodeBase(
         $internal_class_name_list,
         $internal_interface_name_list,

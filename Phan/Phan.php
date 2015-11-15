@@ -16,7 +16,7 @@ use \ast\Node;
 /**
  * This class is the entry point into the static analyzer.
  */
-class Analyzer {
+class Phan {
     use \Phan\Analyze\DuplicateClass;
     use \Phan\Analyze\DuplicateFunction;
     use \Phan\Analyze\ParentClassExists;
@@ -39,7 +39,7 @@ class Analyzer {
      *
      * @see \Phan\CodeBase
      */
-    public function analyze(
+    public function analyzeFileList(
         CodeBase $code_base,
         array $file_path_list
     ) {
@@ -49,10 +49,9 @@ class Analyzer {
         // global state we'll need for doing a second
         // analysis after.
         foreach ($file_path_list as $i => $file_path) {
-            CLI::progress('parse    ',  $i/$file_count, 0.1);
+            CLI::progress('parse',  ($i+1)/$file_count);
             $this->parseFile($code_base, $file_path);
         }
-        CLI::progress('parse    ',  1.0);
 
         // Take a pass over all classes verifying various
         // states now that we have the whole state in
@@ -67,10 +66,9 @@ class Analyzer {
         // Once we know what the universe looks like we
         // can scan for more complicated issues.
         foreach ($file_path_list as $i => $file_path) {
-            CLI::progress('analyze  ',  $i/$file_count, 0.1);
+            CLI::progress('analyze',  ($i+1)/$file_count);
             $this->analyzeFile($code_base, $file_path);
         }
-        CLI::progress('analyze  ',  1.0);
 
         // Emit all log messages
         Log::display();
@@ -190,7 +188,7 @@ class Analyzer {
         // Take a pass to import all details from ancestors
         $i = 0;
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
-            CLI::progress('classes  ',  ++$i/$class_count, 0.1);
+            CLI::progress('classes',  ++$i/$class_count);
 
             // Make sure the parent classes exist
             self::analyzeParentClassExists($code_base, $clazz);
@@ -201,7 +199,7 @@ class Analyzer {
 
         // Run a few checks on all of the classes
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
-            CLI::progress('classes  ',  ++$i/$class_count, 0.1);
+            CLI::progress('classes',  ++$i/$class_count);
 
             if ($clazz->getContext()->isInternal()) {
                 continue;
@@ -222,7 +220,7 @@ class Analyzer {
         $function_count = count($code_base->getMethodMap());
         $i = 0;
         foreach ($code_base->getMethodMap() as $fqsen_string => $method) {
-            CLI::progress('functions',  (++$i)/$function_count, 0.1);
+            CLI::progress('functions',  (++$i)/$function_count);
 
             if ($method->getContext()->isInternal()) {
                 continue;

@@ -27,7 +27,7 @@ use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
-trait ArgumentType {
+class ArgumentType {
 
     /**
      * @param Method $method
@@ -44,7 +44,7 @@ trait ArgumentType {
      * @see \Phan\Deprecated\Pass2::arg_check
      * Formerly `function arg_check`
      */
-    public static function analyzeArgumentType(
+    public static function analyze(
         Method $method,
         Node $node,
         Context $context
@@ -298,103 +298,6 @@ trait ArgumentType {
                     );
                 }
             }
-
-            // For user functions, add the types of the args to
-            // the receiving function's scope
-            if (!$method->getContext()->isInternal()) {
-                // HMMM, this happens in ParseVisitor::visitMethod
-                // already, yeah?
-                //
-                // I think we can skip the junk below
-            }
-
-            /*
-            // For user functions, add the types of the args to the receiving function's scope
-            if($func['file'] != 'internal') {
-                if(empty($scope[$fn]['vars'][$param['name']])) {
-                    $scope[$fn]['vars'][$param['name']] = ['type'=>'', 'tainted'=>false, 'tainted_by'=>''];
-                }
-                // If it is by-ref link it back to the local variable name
-                if($param['flags'] & \ast\flags\PARAM_REF) {
-                    $arg_type = node_type($file, $namespace, $arg, $current_scope, $current_class, $taint, false);
-                    if($arg->kind == \ast\AST_STATIC_PROP && $arg->children[0]->kind == \ast\AST_NAME) {
-                        $class_name = $arg->children[0]->children[0];
-                        if($class_name == 'self' || $class_name == 'static' || $class_name == 'parent') {
-                            if($current_class) {
-                                if($class_name == 'static') $class_name = $current_class['name'];
-                                if($class_name == 'self') {
-                                    if($current_scope != 'global') list($class_name,) = explode('::', $current_scope);
-                                    else $class_name = $current_class['name'];
-                                }
-                                else if($class_name == 'parent') $class_name = $current_class['parent'];
-                                $static_call_ok = true;
-                            } else $class_name = '';
-                        } else {
-                            $class_name = qualified_name($file, $arg->children[0], $namespace);
-                        }
-                        if($class_name) {
-                            if(!($arg->children[1] instanceof \ast\Node)) {
-                                if(empty($classes[strtolower($class_name)]['properties'][$arg->children[1]])) {
-                                    Log::err(Log::ESTATIC, "Access to undeclared static property: {$class_name}::\${$arg->children[1]}", $file, $arg->lineno);
-                                } else {
-                                    $scope[$fn]['vars'][$param['name']] = &$classes[strtolower($class_name)]['properties'][$arg->children[1]];
-                                }
-                            }
-                        }
-                    } else {
-                        if(!empty($scope[$current_scope]['vars'][$arg_name])) {
-                            if($arg->kind != \ast\AST_DIM) {
-                                $scope[$fn]['vars'][$param['name']] = &$scope[$current_scope]['vars'][$arg_name];
-                            } else {
-                                // Not going to try to guess array sub-types here
-                                $scope[$fn]['vars'][$param['name']]['type'] = '';
-                            }
-                        } else {
-                            $scope[$fn]['vars'][$param['name']]['type'] = $arg_type;
-                        }
-                    }
-                } else {
-                    $arg_type = node_type($file, $namespace, $arg, $current_scope, $current_class, $taint);
-                    if(!empty($arg_type)) add_type($fn, $param['name'], strtolower($arg_type));
-                }
-            } else {
-                $arg_type = node_type($file, $namespace, $arg, $current_scope, $current_class, $taint, !($param['flags'] & \ast\flags\PARAM_REF));
-            }
-            */
-
-            /*
-            // For all functions, add the param to the local scope if pass-by-ref
-            // and make it an actual ref for user functions
-            if($param['flags'] & \ast\flags\PARAM_REF) {
-                if($func['file'] == 'internal') {
-                    if(empty($scope[$current_scope]['vars'][$arg_name])) {
-                        add_var_scope($current_scope, $arg_name, $arg_type);
-                    } else {
-                        add_type($current_scope, $arg_name, $param['type']);
-                    }
-                } else {
-                    if(empty($scope[$current_scope]['vars'][$arg_name])) {
-                        if(!array_key_exists($current_scope, $scope)) $scope[$current_scope] = [];
-                        if(!array_key_exists('vars', $scope[$current_scope])) $scope[$current_scope]['vars'] = [];
-                        $scope[$current_scope]['vars'][$arg_name] = &$scope[$fn]['vars'][$param['name']];
-                    }
-                }
-            }
-             */
-
-            /*
-            // turn callable:{closure n} into just callable
-            if(strpos($arg_type, ':') !== false) list($arg_type,) = explode(':',$arg_type,2);
-             */
-
-            /*
-            // if we have a single non-native type, expand it
-            if(!empty($arg_type) && !is_native_type($arg_type)) {
-                if(!empty($classes[strtolower($arg_type)]['type'])) {
-                    $arg_type = $classes[strtolower($arg_type)]['type'];
-                }
-            }
-             */
         }
     }
 

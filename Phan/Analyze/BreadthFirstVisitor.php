@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\Analyze\Analyzable;
+use \Phan\Analyze\ArgumentType;
 use \Phan\Analyze\AssignmentVisitor;
 use \Phan\Configuration;
 use \Phan\Debug;
@@ -37,7 +38,6 @@ use \ast\Node;
  * ```
  */
 class BreadthFirstVisitor extends KindVisitorImplementation {
-    use \Phan\Analyze\ArgumentType;
 
     /**
      * @var Context
@@ -814,7 +814,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         }
 
         // Confirm the argument types are clean
-        self::analyzeArgumentType($method, $node, $this->context);
+        ArgumentType::analyze($method, $node, $this->context);
 
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables
