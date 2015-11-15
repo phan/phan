@@ -842,6 +842,12 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             }
         }
 
+        // We're going to hunt to see if any of the arguments
+        // have a mismatch with the parameters. If so, we'll
+        // re-check the method to see how the parameters impact
+        // its return type
+        $has_argument_parameter_mismatch = false;
+
         // Now that we've made sure the arguments are sufficient
         // for definitions on the method, we iterate over the
         // arguments again and add their types to the parameter
@@ -857,6 +863,7 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
             // If the parameter has no type, pass the
             // argument's type to it
             if ($parameter->getUnionType()->isEmpty()) {
+                $has_argument_parameter_mismatch = true;
                 $argument_type = UnionType::fromNode(
                     $this->context, $argument
                 );
@@ -879,7 +886,8 @@ class AnalyzeBreadthFirstVisitor extends KindVisitorImplementation {
         // the types of the parameter, making sure we don't get
         // into an infinite loop of checking calls to the current
         // method in scope
-        if (!$method->getContext()->isInternal()
+        if ($has_argument_parameter_mismatch
+            && !$method->getContext()->isInternal()
             && (!$this->context->isMethodScope()
                 || $method->getFQSEN() !== $this->context->getMethodFQSEN())
         ) {

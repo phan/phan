@@ -1,2 +1,2 @@
-%s:9 TypeError property is declared to be int[] but was assigned string[]
-%s:10 TypeError property is declared to be int[] but was assigned int
+%s:9 TypeError assigning string[] to property but \a::prop is \int[]
+%s:10 TypeError assigning int to property but \a::prop is \int[]
