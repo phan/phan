@@ -44,7 +44,7 @@ use \ast\Node;
  *     );
  * ```
  */
-class ParseVisitor extends ScopeKindVisitor {
+class ParseVisitor extends ScopeVisitor {
 
     /**
      * @param Context $context

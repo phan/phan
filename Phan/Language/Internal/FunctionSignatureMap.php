@@ -1,5 +1,5 @@
 <?php
-namespace Phan\Language\UnionType;
+namespace Phan\Language\Internal;
 
 /**
  * Format

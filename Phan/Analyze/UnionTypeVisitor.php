@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Language\Type;
+namespace Phan\Analyze;
 
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
@@ -11,6 +11,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
 use \Phan\Language\Type\{
     ArrayType,
+    BoolType,
+    CallableType,
     FloatType,
     IntType,
     MixedType,
@@ -22,7 +24,7 @@ use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
-class NodeTypeKindVisitor extends KindVisitorImplementation {
+class UnionTypeVisitor extends KindVisitorImplementation {
 
     /**
      * @var Context
@@ -125,7 +127,7 @@ class NodeTypeKindVisitor extends KindVisitorImplementation {
 
         return
             (new Element($node))->acceptFlagVisitor(
-                new NodeTypeBinaryOpFlagVisitor($this->context)
+                new BinaryOperatorTypeVisitor($this->context)
             );
     }
 

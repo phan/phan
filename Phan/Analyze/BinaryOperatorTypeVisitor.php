@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Language\Type;
+namespace Phan\Analyze;
 
 use \Phan\Debug;
 use \Phan\Language\AST\FlagVisitorImplementation;
@@ -24,7 +24,7 @@ use \Phan\Language\Type\{
 use \Phan\Log;
 use \ast\Node;
 
-class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
+class BinaryOperatorTypeVisitor extends FlagVisitorImplementation {
 
     /**
      * @var Context
@@ -32,7 +32,7 @@ class NodeTypeBinaryOpFlagVisitor extends FlagVisitorImplementation {
     private $context;
 
     /**
-     * Create a new NodeTypeBinaryOpFlagVisitor
+     * Create a new BinaryOperatorTypeVisitor
      */
     public function __construct(Context $context) {
         $this->context = $context;

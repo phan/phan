@@ -17,7 +17,7 @@ use \Phan\Language\Type\{
     StringType,
     VoidType
 };
-use \Phan\Language\Type\NodeTypeKindVisitor;
+use \Phan\Analyze\UnionTypeVisitor;
 use \ast\Node;
 
 class UnionType {
@@ -136,7 +136,7 @@ class UnionType {
         }
 
         return (new Element($node))->acceptKindVisitor(
-            new NodeTypeKindVisitor($context)
+            new UnionTypeVisitor($context)
         );
 	}
 
@@ -632,12 +632,12 @@ class UnionType {
      * @return array
      * A map from builtin function name to type information
      *
-     * @see \Phan\Language\Type\BuiltinFunctionArgumentTypes
+     * @see \Phan\Language\Internal\FunctionSignatureMap
      */
     private static function builtinFunctionArgumentTypeMap() {
         static $map = false;
         return $map ?:
-            ($map = require(__DIR__.'/Type/BuiltinFunctionArgumentTypes.php'));
+            ($map = require(__DIR__.'/Internal/FunctionSignatureMap.php'));
     }
 
     /**
@@ -649,7 +649,7 @@ class UnionType {
     private static function builtinClassTypeMap() {
         static $map = false;
         return $map ?:
-            ($map = require(__DIR__.'/Type/BuiltinClassTypes.php'));
+            ($map = require(__DIR__.'/Internal/ClassSignatureMap.php'));
     }
 
 }

@@ -7,7 +7,7 @@ use \Phan\Language\FQSEN;
 use \Phan\Log;
 use \ast\Node;
 
-class ScopeKindVisitor extends KindVisitorImplementation {
+abstract class ScopeVisitor extends KindVisitorImplementation {
 
     /**
      * @var Context

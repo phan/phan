@@ -34,7 +34,7 @@ use \ast\Node;
  *     );
  * ```
  */
-class DepthFirstVisitor extends ScopeKindVisitor {
+class DepthFirstVisitor extends ScopeVisitor {
     use \Phan\Analyze\ArgumentType;
 
     /**

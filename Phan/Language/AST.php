@@ -5,8 +5,8 @@ use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Language\AST\Element;
-use \Phan\Language\AST\Visitor\ClassNameKindVisitor;
-use \Phan\Language\AST\Visitor\ClassNameValidationVisitor;
+use \Phan\Analyze\ClassNameVisitor;
+use \Phan\Analyze\ClassNameValidationVisitor;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Variable;
@@ -87,7 +87,7 @@ class AST {
     ) : string {
         // Extract the class name
         $class_name = (new Element($node))->acceptKindVisitor(
-            new ClassNameKindVisitor($context)
+            new ClassNameVisitor($context)
         );
 
         if (empty($class_name)) {

@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Language\AST\Visitor;
+namespace Phan\Analyze;
 
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
@@ -15,7 +15,7 @@ use \ast\Node;
  * A visitor that can extract a class name from a few
  * types of nodes
  */
-class ClassNameKindVisitor extends KindVisitorImplementation {
+class ClassNameVisitor extends KindVisitorImplementation {
 
     /**
      * @var Context
