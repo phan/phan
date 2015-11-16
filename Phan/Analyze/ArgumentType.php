@@ -96,7 +96,9 @@ class ArgumentType {
         ) {
             $alternate_found = array_reduce(
                 (array)$method->alternateGenerator($context->getCodeBase()),
-                function (bool $carry, Method $alternate_method) : bool {
+                function (bool $carry, Method $alternate_method) use(
+                    $argcount
+                ) : bool {
                     return $carry || (
                         $argcount >=
                         $alternate_method->getNumberOfParameters()
@@ -128,7 +130,9 @@ class ArgumentType {
         ) {
             $alternate_found = array_reduce(
                 (array)$method->alternateGenerator($context->getCodeBase()),
-                function (bool $carry, Method $alternate_method) : bool {
+                function (bool $carry, Method $alternate_method) use (
+                    $argcount
+                ) : bool {
                     return $carry || (
                         $argcount <=
                         $alternate_method->getNumberOfParameters()

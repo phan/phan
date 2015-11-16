@@ -282,6 +282,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess
+        print "$union_type\n";
         foreach ($union_type->getTypeList() as $type) {
 
             if ($type->isNativeType()) {

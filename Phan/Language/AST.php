@@ -8,6 +8,7 @@ use \Phan\Language\AST\Element;
 use \Phan\Analyze\ClassNameVisitor;
 use \Phan\Analyze\ClassNameValidationVisitor;
 use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;

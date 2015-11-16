@@ -329,7 +329,7 @@ class Method extends TypedStructuralElement {
         $method->setNode($node);
 
         // Set the parameter list on the method
-        $method->parameter_list = $parameter_list;
+        $method->setParameterList($parameter_list);
 
         $method->setNumberOfRequiredParameters(array_reduce(
             $parameter_list,
@@ -488,6 +488,16 @@ class Method extends TypedStructuralElement {
      */
     public function getParameterList() : array {
         return $this->parameter_list;
+    }
+
+    /**
+     * @param Parameter[] $parameter_list
+     * A list of parameters to set on this method
+     *
+     * @return null
+     */
+    public function setParameterList(array $parameter_list) {
+        $this->parameter_list = $parameter_list;
     }
 
     public function isDynamic() : bool {
