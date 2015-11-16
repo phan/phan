@@ -24,7 +24,7 @@ use \Phan\Language\Type\{
 use \Phan\Log;
 use \ast\Node;
 
-class BinaryOperatorTypeVisitor extends FlagVisitorImplementation {
+class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
 
     /**
      * @var Context
@@ -32,7 +32,7 @@ class BinaryOperatorTypeVisitor extends FlagVisitorImplementation {
     private $context;
 
     /**
-     * Create a new BinaryOperatorTypeVisitor
+     * Create a new BinaryOperatorFlagVisitor
      */
     public function __construct(Context $context) {
         $this->context = $context;
@@ -153,25 +153,29 @@ class BinaryOperatorTypeVisitor extends FlagVisitorImplementation {
                 $node->children['right']
             );
 
-        if (!empty($left->asNonGenericTypes())
-            && empty($left->nonGenericTypes())
-            && !$right->canCastToUnionType(ArrayType::instance()->asUnionType())
+        if (!$left->asNonGenericTypes()->isEmpty()
+            && $left->nonGenericTypes()->isEmpty()
+            && !$right->canCastToUnionType(
+                ArrayType::instance()->asUnionType()
+            )
         ) {
             Log::err(
                 Log::ETYPE,
                 "array to $right comparison",
-                $context->getFile(),
+                $this->context->getFile(),
                 $node->lineno
             );
-        } else if (!empty($right->asNonGenericTypes())
-            && empty($right->nonGenericTypes())
-            && !$left->canCastToUnionType(ArrayType::instance()->asUnionType())
+        } else if (!$right->asNonGenericTypes()->isEmpty()
+            && $right->nonGenericTypes()->isEmpty()
+            && !$left->canCastToUnionType(
+                ArrayType::instance()->asUnionType()
+            )
         ) {
             // and the same for the right side
             Log::err(
                 Log::ETYPE,
                 "$left to array comparison",
-                $context->getFile(),
+                $this->context->getFile(),
                 $node->lineno
             );
         }
@@ -354,7 +358,7 @@ class BinaryOperatorTypeVisitor extends FlagVisitorImplementation {
      * The resulting type(s) of the binary operation
      */
     private function visitBinaryBool(Node $node) : UnionType {
-        return BoolType::instance()->asUnionType();
+        return $this->visitBinaryOpCommon($node);
     }
 
 }
