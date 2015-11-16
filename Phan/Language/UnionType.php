@@ -644,14 +644,20 @@ class UnionType {
      * type
      */
     public function __toString() : string {
+        // Copy the list so that we don't sort the
+        // actual list. We rely on order of the list to get
+        // the 'primary' class from the type of a variable,
+        // for instance.
+        $type_list = array_merge([], $this->type_list);
+
         // Sort the types so that we get a stable
         // representation
-        ksort($this->type_list);
+        ksort($type_list);
 
         // Delimit by '|'
         return implode('|', array_map(function(Type $type) : string {
             return (string)$type;
-        }, $this->getTypeList()));
+        }, $type_list));
     }
 
     /**

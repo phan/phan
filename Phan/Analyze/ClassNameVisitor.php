@@ -228,6 +228,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
                         (string)$type
                     );
 
+
                 if ($this->context->getCodeBase()->hasClassWithFQSEN($child_class_fqsen)) {
                     return (string)$this->context->getScopeFQSEN()->withClassName(
                         $this->context,
