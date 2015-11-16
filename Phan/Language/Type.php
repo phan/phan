@@ -469,46 +469,65 @@ class Type {
      * @param CodeBase
      * The code base to use in order to find super classes, etc.
      *
+     * @param $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
      * @return UnionType
      * Expands class types to all inherited classes returning
      * a superset of this type.
      */
-    public function asExpandedTypes(CodeBase $code_base) : UnionType {
-        if ($this->isNativeType()) {
-            return $this->asUnionType();
-        }
+    public function asExpandedTypes(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        return $this->memoize(__METHOD__, function() use(
+            $code_base, $recursion_depth
+        ) : UnionType {
 
-        $union_type = $this->asUnionType();
+            assert($recursion_depth < 10,
+                "Recursion has gotten out of hand for type $this");
 
-        $class_fqsen = $this->isGeneric()
-            ? $this->asNonGenericType()->asFQSEN()
-            : $this->asFQSEN();
-
-        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-            return $union_type;
-        }
-
-        $clazz = $code_base->getClassByFQSEN($class_fqsen);
-
-        $union_type->addUnionType(
-            $this->isGeneric()
-                ?  $clazz->getUnionType()->asGenericTypes()
-                : $clazz->getUnionType()
-        );
-
-        // Resurse up the tree to include all types
-        $recursive_union_type = new UnionType();
-        foreach ($union_type->getTypeList() as $clazz_type) {
-            if ((string)$clazz_type !== (string)$this) {
-                $recursive_union_type->addUnionType(
-                    $clazz_type->asExpandedTypes($code_base)
-                );
-            } else {
-                $recursive_union_type->addType($clazz_type);
+            if ($this->isNativeType()) {
+                return $this->asUnionType();
             }
-        }
 
-        return $recursive_union_type;
+            $union_type = $this->asUnionType();
+
+            $class_fqsen = $this->isGeneric()
+                ? $this->asNonGenericType()->asFQSEN()
+                : $this->asFQSEN();
+
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                return $union_type;
+            }
+
+            $clazz = $code_base->getClassByFQSEN($class_fqsen);
+
+            $union_type->addUnionType(
+                $this->isGeneric()
+                    ?  $clazz->getUnionType()->asGenericTypes()
+                    : $clazz->getUnionType()
+            );
+
+            // Resurse up the tree to include all types
+            $recursive_union_type = new UnionType();
+            foreach ($union_type->getTypeList() as $clazz_type) {
+                if ((string)$clazz_type != (string)$this) {
+                    $recursive_union_type->addUnionType(
+                        $clazz_type->asExpandedTypes(
+                            $code_base,
+                            $recursion_depth + 1
+                        )
+                    );
+                } else {
+                    $recursive_union_type->addType($clazz_type);
+                }
+            }
+
+            return $recursive_union_type;
+        });
     }
 
     /**

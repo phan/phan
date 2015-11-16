@@ -124,28 +124,35 @@ class AssignmentVisitor extends KindVisitorImplementation {
         $right_type =
             $this->right_type->asGenericTypes();
 
-
         if ($node->children['expr']->kind == \ast\AST_VAR) {
             $variable_name = AST::variableName($node);
 
             if ('GLOBALS' === $variable_name) {
                 $dim = $node->children['dim'];
 
-                $variable = new Variable(
-                    $this->context,
-                    Comment::fromStringInContext(
-                        $node->docComment ?? '',
-                        $this->context
-                    ),
-                    $dim,
-                    $this->right_type,
-                    $node->flags
-                );
+                if(is_string($dim)) {
+                    // You're not going to believe this, but I just
+                    // found a piece of code like $GLOBALS[mt_rand()].
+                    // Super weird, right?
+                    assert(is_string($dim),
+                        "dim is not a string at {$this->context}");
 
-                $this->context->getScope()
-                    ->withGlobalVariable($variable);
+                    $variable = new Variable(
+                        $this->context,
+                        Comment::fromStringInContext(
+                            $node->docComment ?? '',
+                            $this->context
+                        ),
+                        $dim,
+                        $this->right_type,
+                        $node->flags ?? 0
+                    );
 
-                return $this->context;
+                    $this->context->getScope()
+                        ->withGlobalVariable($variable);
+
+                    return $this->context;
+                }
             }
         }
 

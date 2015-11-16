@@ -14,11 +14,16 @@ use \Phan\Language\Type\{
     BoolType,
     CallableType,
     FloatType,
+    GenericArrayType,
     IntType,
     MixedType,
-    NoneType,
+    NativeType,
     NullType,
-    StringType
+    ObjectType,
+    ResourceType,
+    ScalarType,
+    StringType,
+    VoidType
 };
 use \Phan\Language\UnionType;
 use \Phan\Log;

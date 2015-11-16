@@ -165,7 +165,9 @@ EOB;
         $memory = memory_get_usage()/1024/1024;
         $peak = memory_get_peak_usage()/1024/1024;
 
-        echo "\r$msg ";
+        $padded_message = str_pad ($msg, 10, ' ', STR_PAD_LEFT);
+
+        echo "$padded_message ";
         $current = (int)($p * 60);
         $rest = 60 - $current;
         echo str_repeat("\u{25b1}", $current);
@@ -173,8 +175,6 @@ EOB;
         echo " " . sprintf("% 3d", (int)(100*$p)) . "%";
         echo sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
         echo "\r";
-
-
     }
 
 }

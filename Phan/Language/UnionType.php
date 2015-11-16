@@ -569,20 +569,39 @@ class UnionType {
      * @param CodeBase
      * The code base to use in order to find super classes, etc.
      *
+     * @param $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
      * @return UnionType
      * Expands all class types to all inherited classes returning
      * a superset of this type.
      */
-    public function asExpandedTypes(CodeBase $code_base) : UnionType {
-        $union_type = clone($this);
+    public function asExpandedTypes(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        return $this->memoize(__METHOD__, function() use(
+            $code_base, $recursion_depth
+        ) : UnionType {
 
-        foreach ($this->getTypeList() as $type) {
-            $union_type->addUnionType(
-                $type->asExpandedTypes($code_base)
-            );
-        }
+            assert($recursion_depth < 10,
+                "Recursion has gotten out of hand for type $this");
 
-        return $union_type;
+            $union_type = clone($this);
+
+            foreach ($this->getTypeList() as $type) {
+                $union_type->addUnionType(
+                    $type->asExpandedTypes(
+                        $code_base,
+                        $recursion_depth + 1
+                    )
+                );
+            }
+
+            return $union_type;
+        });
     }
 
     /**
