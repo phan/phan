@@ -2192,6 +2192,7 @@ return [
 'fpassthru' => ['int', 'fp'=>''],
 'fprintf' => ['int', 'stream'=>'', 'format'=>'string', 'arg1='=>'', '...='=>''],
 'fputcsv' => ['int', 'fp'=>'', 'fields'=>'array', 'delimiter='=>'string', 'enclosure='=>'string', 'escape_char='=>'string'],
+'fputs' => ['int', 'fp'=>'', 'str'=>'string', 'length='=>'int'],
 'fread' => ['string', 'fp'=>'', 'length'=>'int'],
 'frenchtojd' => ['int', 'month'=>'int', 'day'=>'int', 'year'=>'int'],
 'FrenchToJD' => ['int', 'month'=>'int', 'day'=>'int', 'year'=>'int'],
