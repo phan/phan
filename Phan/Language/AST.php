@@ -9,6 +9,7 @@ use \Phan\Analyze\ClassNameVisitor;
 use \Phan\Analyze\ClassNameValidationVisitor;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\Type\MixedType;
 use \Phan\Language\UnionType;
@@ -524,10 +525,70 @@ class AST {
             $node, $context, false
         );
 
-
         $context->addScopeVariable($variable);
 
         return $variable;
     }
+
+    /**
+     * @param Node $node
+     * A node that has a reference to a variable
+     *
+     * @param Context $context
+     * The context in which we found the reference
+     *
+     * @return Variable
+     * A variable in scope or a new variable
+     *
+     * @throws NodeException
+     * An exception is thrown if we can't understand the node
+     *
+     * @throws CodeBaseExtension
+     * An exception is thrown if we can't find the given
+     * class
+     */
+    public static function getOrCreatePropertyFromNodeInContext(
+        string $property_name,
+        Node $node,
+        Context $context
+    ) : Property {
+        // Figure out the class we're looking the property
+        // up for
+        $clazz = self::classFromNodeInContext($node, $context);
+
+        assert(is_string($property_name),
+            'Property name must be a string. '
+            . 'Got '
+            . print_r($property_name, true)
+            . ' at '
+            . $context);
+
+        // Return it if the property exists on the class
+        if ($clazz->hasPropertyWithName($property_name)) {
+            return $clazz->getPropertyWithNameFromContext(
+                $property_name,
+                $context
+            );
+        }
+
+        $flags = 0;
+        if ($node->kind == \ast\AST_STATIC_PROP) {
+            $flags |= \ast\flags\MODIFIER_STATIC;
+        }
+
+        // Otherwise, we'll create it
+        $property = new Property(
+            $context,
+            Comment::none(),
+            $property_name,
+            new UnionType(),
+            $flags
+        );
+
+        $clazz->addProperty($property);
+
+        return $property;
+    }
+
 
 }

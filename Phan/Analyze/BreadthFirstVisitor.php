@@ -803,13 +803,26 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
             // If pass-by-reference, make sure the variable exists
             // or create it if it doesn't.
-            if ($parameter->isPassByReference()
-                && $argument->kind == \ast\AST_VAR
-            ) {
-                $variable = AST::getOrCreateVariableFromNodeInContext(
-                    $argument,
-                    $this->context
-                );
+            if ($parameter->isPassByReference()) {
+                if ($argument->kind == \ast\AST_VAR) {
+                    // We don't do anything with it; just create it
+                    // if it doesn't exist
+                    $variable = AST::getOrCreateVariableFromNodeInContext(
+                        $argument,
+                        $this->context
+                    );
+                } else if (
+                    $argument->kind == \ast\AST_STATIC_PROP
+                    || $argument->kind == \ast\AST_PROP
+                ) {
+                    // We don't do anything with it; just create it
+                    // if it doesn't exist
+                    $property = AST::getOrCreatePropertyFromNodeInContext(
+                        $argument->children['prop'],
+                        $argument,
+                        $this->context
+                    );
+                }
             }
         }
 
@@ -828,17 +841,30 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             // If the parameter is pass-by-reference and we're
             // passing a variable in, see if we should pass
             // the parameter and variable types to eachother
-            if ($parameter->isPassByReference()
-                && $argument->kind == \ast\AST_VAR
-            ) {
-                $variable = AST::getOrCreateVariableFromNodeInContext(
-                    $argument,
-                    $this->context
-                );
-
-                $variable->getUnionType()->addUnionType(
-                    $parameter->getUnionType()
-                );
+            $variable = null;
+            if ($parameter->isPassByReference()) {
+                if ($argument->kind == \ast\AST_VAR) {
+                    $variable = AST::getOrCreateVariableFromNodeInContext(
+                        $argument,
+                        $this->context
+                    );
+                } else if (
+                    $argument->kind == \ast\AST_STATIC_PROP
+                    || $argument->kind == \ast\AST_PROP
+                ) {
+                    // We don't do anything with it; just create it
+                    // if it doesn't exist
+                    $variable = AST::getOrCreatePropertyFromNodeInContext(
+                        $argument->children['prop'],
+                        $argument,
+                        $this->context
+                    );
+                }
+                if ($variable) {
+                    $variable->getUnionType()->addUnionType(
+                        $parameter->getUnionType()
+                    );
+                }
             }
         }
 

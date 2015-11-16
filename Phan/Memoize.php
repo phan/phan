@@ -10,6 +10,23 @@ trait Memoize {
     private $memoized_data = [];
 
     /**
+     * After a clone is called on this object, clone our
+     * deep objects.
+     *
+     * @return null
+     */
+    /*
+    public function __clone() {
+        $data = $this->memoized_data;
+        $this->memoized_data = [];
+        foreach ($data as $key => $value) {
+            $this->memoized_data[$key] =
+                is_object($value) ? clone($value) : $value;
+        }
+    }
+    */
+
+    /**
      * Memoize the result of $fn(), saving the result
      * with key $key.
      *

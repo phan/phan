@@ -74,6 +74,22 @@ class TypedStructuralElement extends StructuralElement {
     }
 
     /**
+     * After a clone is called on this object, clone our
+     * type and fqsen so that they survive copies intact
+     *
+     * @return null
+     */
+    public function __clone() {
+        $this->type = $this->type
+            ? clone($this->type)
+            : $this->type;
+
+        $this->fqsen = $this->fqsen
+            ? clone($this->fqsen)
+            : $this->fqsen;
+    }
+
+    /**
      * @return string
      * The (not fully-qualified) name of this element.
      */

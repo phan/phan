@@ -45,6 +45,22 @@ class StructuralElement {
     }
 
     /**
+     * After a clone is called on this object, clone our
+     * deep objects.
+     *
+     * @return null
+     */
+    public function __clone() {
+        $this->context = $this->context
+            ? clone($this->context)
+            : $this->context;
+
+        $this->comment = $this->comment
+            ? clone($this->comment)
+            : $this->comment;
+    }
+
+    /**
      * @return Context
      * The context in which this structural element exists
      */

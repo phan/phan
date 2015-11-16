@@ -59,6 +59,18 @@ class Parameter extends Variable {
         );
     }
 
+    /**
+     * After a clone is called on this object, clone our
+     * deep objects.
+     *
+     * @return null
+     */
+    public function __clone() {
+        $this->default_value_type = $this->default_value_type
+            ? clone($this->default_value_type)
+            : $this->default_value_type;
+    }
+
     public function setUnionType(UnionType $type) {
         parent::setUnionType($type);
     }

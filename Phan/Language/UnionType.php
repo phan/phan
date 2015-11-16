@@ -39,6 +39,18 @@ class UnionType {
     }
 
     /**
+     * After a clone is called on this object, clone our
+     * deep objects.
+     *
+     * @return null
+     */
+    public function __clone() {
+        $this->type_list = array_map(function(Type $type) : Type {
+            return $type ?  clone($type) : $type;
+        }, $this->type_list);
+    }
+
+    /**
      * @param string $fully_qualified_string
      * A '|' delimited string representing a type in the form
      * 'int|string|null|ClassName'.

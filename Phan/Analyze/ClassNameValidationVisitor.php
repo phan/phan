@@ -60,12 +60,17 @@ class ClassNameValidationVisitor
      * an overriding method
      */
     public function visit(Node $node) : bool {
+        if (isset($node->children['class'])) {
+            return $this->visitNew($node);
+        }
+
         Log::err(
             Log::EUNDEF,
             "Unknown node type",
             $this->context->getFile(),
             $node->lineno
         );
+
         return false;
     }
 

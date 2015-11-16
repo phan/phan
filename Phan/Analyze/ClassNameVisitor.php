@@ -43,6 +43,10 @@ class ClassNameVisitor extends KindVisitorImplementation {
      * The class name represented by the given call
      */
     public function visit(Node $node) : string {
+        if (isset($node->children['class'])) {
+            return $this->visitNew($node);
+        }
+
         return '';
     }
 

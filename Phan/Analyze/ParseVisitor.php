@@ -338,10 +338,7 @@ class ParseVisitor extends ScopeVisitor {
         // so that changes to the variable don't alter the
         // parameter definition
         foreach ($method->getParameterList() as $parameter) {
-            $variable = clone($parameter);
-            $context = $context->withScopeVariable(
-                $variable
-            );
+            $context->addScopeVariable(clone($parameter));
         }
 
         return $context;
@@ -512,8 +509,19 @@ class ParseVisitor extends ScopeVisitor {
         $method->setFQSEN($function_fqsen);
         $this->context->getCodeBase()->addFunction($method);
 
-        return
-            $this->context->withMethodFQSEN($function_fqsen);
+        // Send the context into the method
+        $context = $this->context->withMethodFQSEN(
+            $function_fqsen
+        );
+
+        // Add each method parameter to the scope. We clone it
+        // so that changes to the variable don't alter the
+        // parameter definition
+        foreach ($method->getParameterList() as $parameter) {
+            $context->addScopeVariable(clone($parameter));
+        }
+
+        return $context;
     }
 
     /**
