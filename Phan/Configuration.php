@@ -20,6 +20,10 @@ class Configuration {
         // Include a progress bar in the output
         'progress_bar' => false,
 
+        // The probability of actually emitting any
+        // progress bar update
+        'progress_bar_sample_rate' => 0.1,
+
         // Run a quick version of checks that takes less
         // time
         'quick_mode' => false,

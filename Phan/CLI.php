@@ -148,8 +148,7 @@ EOB;
      */
     public static function progress(
         string $msg,
-        float $p,
-        float $sample_rate = 1.0
+        float $p
     ) {
         if (!Configuration::instance()->progress_bar) {
             return;
@@ -157,7 +156,9 @@ EOB;
 
         // Don't update every time when we're moving
         // super fast
-        if (rand(0, 100) > 100 * $sample_rate) {
+        if (rand(0, 100)
+            > (100 * Configuration::instance()->progress_bar_sample_rate)
+        ) {
             return;
         }
 
