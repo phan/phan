@@ -207,7 +207,6 @@ class ClassNameVisitor extends KindVisitorImplementation {
             $variable_name =
                 $node->children['expr']->children['name'];
 
-
             if (!$this->context->getScope()->hasVariableWithName(
                 $variable_name
             )) {
