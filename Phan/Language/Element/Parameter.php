@@ -4,6 +4,7 @@ namespace Phan\Language\Element;
 
 use \Phan\Debug;
 use \Phan\Language\Context;
+use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -58,26 +59,8 @@ class Parameter extends Variable {
         );
     }
 
-    /**
-     * @param \mixed $default_value
-     * The default value for the parameter
-     *
-     * @return null
-     */
-    public function setDefaultValue($default_value) {
-        $this->default_value = $default_value;
-    }
-
     public function setUnionType(UnionType $type) {
         parent::setUnionType($type);
-    }
-
-    /**
-     * @return bool
-     * True if this parameter has a default value
-     */
-    public function hasDefaultValue() : bool {
-        return null !== $this->default_value;
     }
 
     /**
@@ -95,7 +78,11 @@ class Parameter extends Variable {
      *
      * @return null
      */
-    public function setDefaultValueUnionType(UnionType $type) {
+    public function setDefaultValue(
+        $default_value,
+        UnionType $type
+    ) {
+        $this->default_value = $default_value;
         $this->default_value_type = $type;
     }
 
@@ -104,7 +91,7 @@ class Parameter extends Variable {
      * True if this parameter has a type for its
      * default value
      */
-    public function hasDefaultValueUnionType() : bool {
+    public function hasDefaultValue() : bool {
         return !empty($this->default_value_type);
     }
 
@@ -190,18 +177,33 @@ class Parameter extends Variable {
         );
 
         // If there is a default value, store it and its type
-        if ($node->children['default'] !== null) {
+        if (($default_node = $node->children['default']) !== null) {
 
-            // Set the node as the value
-            $parameter->setDefaultValue($node->children['default']);
+            // We can't figure out default values during the
+            // parsing phase, unfortunately
+            if (!($default_node instanceof Node)
+                || $default_node->kind == \ast\AST_CONST
+                || $default_node->kind == \ast\AST_UNARY_OP
+                || $default_node->kind == \ast\AST_ARRAY
+            ) {
+                // Set the default value
+                $parameter->setDefaultValue(
+                    $node->children['default'],
+                    UnionType::fromNode(
+                        $context,
+                        $node->children['default']
+                    )
+                );
+            } else {
+                // Nodes here may be of type \ast\AST_CLASS_CONST
+                // which we can't figure out during the first
+                // parsing pass
+                $parameter->setDefaultValue(
+                    null,
+                    NullType::instance()->asUnionType()
+                );
+            }
 
-            // Set the type
-            $parameter->setDefaultValueUnionType(
-                UnionType::fromNode(
-                    $context,
-                    $node->children['default']
-                )
-            );
         }
 
         return $parameter;
@@ -212,10 +214,7 @@ class Parameter extends Variable {
      * True if this is an optional parameter
      */
     public function isOptional() : bool {
-        return (
-            $this->hasDefaultValueUnionType()
-            || $this->hasDefaultValue()
-        );
+        return $this->hasDefaultValue();
     }
 
     /**

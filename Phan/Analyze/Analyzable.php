@@ -88,8 +88,6 @@ trait Analyzable {
             clone($context)
         );
 
-        // $this->recursion_depth = 0;
-
         return $context;
     }
 }

@@ -143,6 +143,8 @@ class DepthFirstVisitor extends ScopeVisitor {
                 $this->context->getFile(),
                 $node->lineno
             );
+
+            return $this->context;
         }
 
         // Hunt for the alternate associated with the file we're

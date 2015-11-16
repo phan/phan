@@ -258,8 +258,8 @@ class Method extends TypedStructuralElement {
                 );
 
                 if ($is_optional) {
-                    $parameter->setDefaultValue(null);
-                    $parameter->setDefaultValueUnionType(
+                    $parameter->setDefaultValue(
+                        null,
                         NullType::instance()->asUnionType()
                     );
                 }
@@ -402,7 +402,7 @@ class Method extends TypedStructuralElement {
                 // If there's a default value on the parameter, check to
                 // see if the type of the default is cool with the
                 // specified type.
-                if ($parameter->hasDefaultValueUnionType()) {
+                if ($parameter->hasDefaultValue()) {
                     $default_type = $parameter->getDefaultValueType();
 
                     if (!$default_type->canCastToUnionType(

@@ -582,26 +582,21 @@ class UnionType {
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        return $this->memoize(__METHOD__, function() use(
-            $code_base, $recursion_depth
-        ) : UnionType {
+        assert($recursion_depth < 10,
+            "Recursion has gotten out of hand for type $this");
 
-            assert($recursion_depth < 10,
-                "Recursion has gotten out of hand for type $this");
+        $union_type = clone($this);
 
-            $union_type = clone($this);
+        foreach ($this->getTypeList() as $type) {
+            $union_type->addUnionType(
+                $type->asExpandedTypes(
+                    $code_base,
+                    $recursion_depth + 1
+                )
+            );
+        }
 
-            foreach ($this->getTypeList() as $type) {
-                $union_type->addUnionType(
-                    $type->asExpandedTypes(
-                        $code_base,
-                        $recursion_depth + 1
-                    )
-                );
-            }
-
-            return $union_type;
-        });
+        return $union_type;
     }
 
     /**
