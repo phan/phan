@@ -700,8 +700,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 true
             );
 
-            // print "$method\n";
-
             // If the method isn't static and we're not calling
             // it on 'parent', we're in a bad spot.
             if(!$method->isStatic() && 'parent' !== $static_class) {
