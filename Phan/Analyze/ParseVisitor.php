@@ -401,10 +401,6 @@ class ParseVisitor extends ScopeVisitor {
                     $node->flags
                 );
 
-            // Set the node type to be the declared type. This may
-            // be overridden if a @var sets the type
-            $property->setDeclaredUnionType($type);
-
             // Add the property to the class
             $clazz->addProperty($property);
 
@@ -423,10 +419,6 @@ class ParseVisitor extends ScopeVisitor {
                 // Set the declared type to the doc-comment type and add
                 // |null if the default value is null
                 $property->getUnionType()->addUnionType(
-                    $variable->getUnionType()
-                );
-
-                $property->setDeclaredUnionType(
                     $variable->getUnionType()
                 );
             }

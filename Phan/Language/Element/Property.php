@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
@@ -7,12 +6,6 @@ use \Phan\Language\UnionType;
 use \Phan\Language\Element\Comment;
 
 class Property extends TypedStructuralElement {
-
-    /**
-     * @var UnionType
-     * The declared type of the property
-     */
-    private $declared_type;
 
     /**
      * @param \phan\Context $context
@@ -48,24 +41,6 @@ class Property extends TypedStructuralElement {
             $type,
             $flags
         );
-    }
-
-    /**
-     * @return UnionType
-     * Get the declared type of the property
-     */
-    public function getDeclaredUnionType() : UnionType {
-        return $this->declared_type;
-    }
-
-    /**
-     * @param UnionType $type
-     * Set the declared type of the property
-     *
-     * @return null
-     */
-    public function setDeclaredUnionType(UnionType $type) {
-        $this->declared_type = $type;
     }
 
     /**

@@ -525,6 +525,36 @@ class Method extends TypedStructuralElement {
     }
 
     /**
+     * @return bool
+     * True if this is a public property
+     */
+    public function isPublic() {
+        return !(
+            $this->isProtected() || $this->isPrivate()
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this is a protected property
+     */
+    public function isProtected() {
+        return (bool)(
+            $this->getFlags() & \ast\flags\MODIFIER_PROTECTED
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this is a private property
+     */
+    public function isPrivate() {
+        return (bool)(
+            $this->getFlags() & \ast\flags\MODIFIER_PRIVATE
+        );
+    }
+
+    /**
      * Mark this method as dynamic
      *
      * @param bool $is_dynamic
@@ -571,12 +601,6 @@ class Method extends TypedStructuralElement {
      */
     public function __toString() : string {
         $string = '';
-
-        /*
-        if ((string)$this->getComment()) {
-            $string .= (string)$this->getComment() . "\n";
-        }
-         */
 
         $string .= 'function ' . $this->getName();
 

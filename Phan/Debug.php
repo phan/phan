@@ -131,6 +131,10 @@ class Debug {
         return implode('|', $flag_names);
     }
 
+    /**
+     * Note that flag IDs are not unique. You're likely going to get
+     * an incorrect name back from this. So sorry.
+     */
     private static $AST_FLAG_ID_NAME_MAP = [
         \ast\flags\ASSIGN_ADD => 'ASSIGN_ADD',
         \ast\flags\ASSIGN_BITWISE_AND => 'ASSIGN_BITWISE_AND',

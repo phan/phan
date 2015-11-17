@@ -95,7 +95,6 @@ class StructuralElement {
         $this->is_deprecated = $is_deprecated;
     }
 
-
     /**
      * @return bool
      * True if this was an internal PHP object
