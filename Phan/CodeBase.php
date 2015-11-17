@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Phan;
 
-use \Phan\CodeBase\File as CodeFile;
+use \Phan\CodeBase\File;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
@@ -39,7 +39,7 @@ use \Phan\Language\FQSEN;
 class CodeBase {
 
     /**
-     * @var CodeFile[]
+     * @var File[]
      * A map from file name to info such as its last
      * modification date used to determine if a file
      * needs to be re-parsed
@@ -268,7 +268,7 @@ class CodeBase {
      */
     public function flushDependenciesForFile(string $file_path) {
         if (empty($this->file_map[$file_path])) {
-            $this->file_map[$file_path] = new CodeFile($file_path);
+            $this->file_map[$file_path] = new File($file_path);
             return;
         }
 
@@ -287,12 +287,12 @@ class CodeBase {
      * @param string $file_path
      * A path to a file name
      *
-     * @return CodeFile
+     * @return File
      * An object tracking state for the given $file_path
      */
-    private function getCodeFileForFile(string $file_path) : CodeFile {
+    private function getFileForFile(string $file_path) : File {
         if (empty($this->file_map[$file_path])) {
-            $this->file_map[$file_path] = new CodeFile($file_path);
+            $this->file_map[$file_path] = new File($file_path);
         }
 
         return $this->file_map[$file_path];
@@ -304,7 +304,7 @@ class CodeBase {
      * code base, else false
      */
     public function isParseUpToDateForFile(string $file_path) : bool {
-        return $this->getCodeFileForFile($file_path)
+        return $this->getFileForFile($file_path)
             ->isParseUpToDate();
     }
 
@@ -315,7 +315,7 @@ class CodeBase {
      * @return null
      */
     public function setParseUpToDateForFile(string $file_path) {
-        return $this->getCodeFileForFile($file_path)
+        return $this->getFileForFile($file_path)
             ->setParseUpToDate();
     }
 
@@ -325,7 +325,7 @@ class CodeBase {
      * code base, else false
      */
     public function isAnalysisUpToDateForFile(string $file_path) : bool {
-        return $this->getCodeFileForFile($file_path)
+        return $this->getFileForFile($file_path)
             ->isAnalysisUpToDate();
     }
 
@@ -336,7 +336,7 @@ class CodeBase {
      * @return null
      */
     public function setAnalysisUpToDateForFile(string $file_path) {
-        return $this->getCodeFileForFile($file_path)
+        return $this->getFileForFile($file_path)
             ->setAnalysisUpToDate();
     }
 
