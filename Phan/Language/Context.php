@@ -189,12 +189,14 @@ class Context {
      * The namespace mapped name for the given flags and name
      */
     public function getNamespaceMapFor(int $flags, string $name) : FQSEN {
+        $name = strtolower($name);
+
         assert(
-            !empty($this->namespace_map[$flags][strtolower($name)]),
+            !empty($this->namespace_map[$flags][$name]),
             "No namespace defined for $name"
         );
 
-        return $this->namespace_map[$flags][strtolower($name)];
+        return $this->namespace_map[$flags][$name];
     }
 
     /**

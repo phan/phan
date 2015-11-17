@@ -815,13 +815,32 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                     $argument->kind == \ast\AST_STATIC_PROP
                     || $argument->kind == \ast\AST_PROP
                 ) {
-                    // We don't do anything with it; just create it
-                    // if it doesn't exist
-                    $property = AST::getOrCreatePropertyFromNodeInContext(
-                        $argument->children['prop'],
-                        $argument,
-                        $this->context
-                    );
+                    $property_name = $argument->children['prop'];
+
+                    if (is_string($property_name)) {
+                        // We don't do anything with it; just create it
+                        // if it doesn't exist
+                         try {
+                            $property = AST::getOrCreatePropertyFromNodeInContext(
+                                $argument->children['prop'],
+                                $argument,
+                                $this->context
+                            );
+                         } catch (CodeBaseException $exception) {
+                             Log::err(
+                                 Log::EUNDEF,
+                                 $exception->getMessage(),
+                                 $this->context->getFile(),
+                                 $node->lineno
+                             );
+                         } catch (NodeException $exception) {
+                             // If we can't figure out what kind of a call
+                             // this is, don't worry about it
+                         }
+                    } else {
+                        // This is stuff like `Class->$foo`. I'm ignoring
+                        // it.
+                    }
                 }
             }
         }
@@ -852,13 +871,32 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                     $argument->kind == \ast\AST_STATIC_PROP
                     || $argument->kind == \ast\AST_PROP
                 ) {
-                    // We don't do anything with it; just create it
-                    // if it doesn't exist
-                    $variable = AST::getOrCreatePropertyFromNodeInContext(
-                        $argument->children['prop'],
-                        $argument,
-                        $this->context
-                    );
+                    $property_name = $argument->children['prop'];
+
+                    if (is_string($property_name)) {
+                        // We don't do anything with it; just create it
+                        // if it doesn't exist
+                        try {
+                            $variable = AST::getOrCreatePropertyFromNodeInContext(
+                                $argument->children['prop'],
+                                $argument,
+                                $this->context
+                            );
+                         } catch (CodeBaseException $exception) {
+                             Log::err(
+                                 Log::EUNDEF,
+                                 $exception->getMessage(),
+                                 $this->context->getFile(),
+                                 $node->lineno
+                             );
+                         } catch (NodeException $exception) {
+                             // If we can't figure out what kind of a call
+                             // this is, don't worry about it
+                         }
+                    } else {
+                        // This is stuff like `Class->$foo`. I'm ignoring
+                        // it.
+                    }
                 }
                 if ($variable) {
                     $variable->getUnionType()->addUnionType(

@@ -591,5 +591,4 @@ class AST {
         return $property;
     }
 
-
 }

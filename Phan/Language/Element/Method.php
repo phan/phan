@@ -113,7 +113,6 @@ class Method extends TypedStructuralElement {
         CodeBase $code_base,
         string $function_name
     ) : array {
-
         $reflection_function =
             new \ReflectionFunction($function_name);
 
@@ -144,15 +143,26 @@ class Method extends TypedStructuralElement {
 
         $context = new Context($code_base);
 
+
+        $parts = explode('\\', $reflection_function->getName());
+        $method_name = array_pop($parts);
+        $namespace = '\\' . implode('\\', $parts);
+
+        $fqsen = FQSEN::fromFullyQualifiedString(
+            $namespace . '::' . $method_name
+        );
+
         $method = new Method(
             $context,
             Comment::none(),
-            $reflection_function->getName(),
+            $fqsen->getMethodName(),
             new UnionType(),
             0,
             $number_of_required_parameters,
             $number_of_optional_parameters
         );
+
+        $method->setFQSEN($fqsen);
 
         return self::methodListFromMethod($method);
     }
@@ -205,6 +215,10 @@ class Method extends TypedStructuralElement {
             $method->getFQSEN(),
             $method->getContext()->getCodeBase()
         );
+
+        if (!$map_list) {
+            return [$method];
+        }
 
         $alternate_id = 0;
         return array_map(function($map) use (

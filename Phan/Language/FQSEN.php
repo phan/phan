@@ -7,6 +7,8 @@ use \Phan\CodeBase;
  * A Fully-Qualified Structural Element Name
  */
 class FQSEN {
+    use \Phan\Memoize;
+
     /**
      * @var string
      * The namespace in an object's scope
@@ -302,13 +304,23 @@ class FQSEN {
             );
         }
 
+        $parts = explode('\\', $method_name);
+        $method_name = array_pop($parts);
+        $namespace = implode('\\', $parts);
+
+        if ($namespace) {
+            $fqsen = $fqsen->withNamespace(
+                '\\' . $namespace
+            );
+        }
+
         // Otherwise, this is a top-level function
         $fqsen = $fqsen->withMethodName($context, $method_name);
 
         // If we're getting an FQSEN for a function that
         // is being declared, we inherit the namespace
         // of our context
-        if ($is_function_declaration) {
+        if ($is_function_declaration || $namespace) {
             return $fqsen;
         }
 
@@ -384,6 +396,37 @@ class FQSEN {
     }
 
     /**
+     * @return bool
+     * True if this FQSEN is an alternate FQSEN
+     */
+    public function isAlternate() : bool {
+        return (bool)$this->alternate_id;
+    }
+
+    /**
+     * @return FQSEN
+     * Get the canonical (non-alternate) FQSEN for
+     * this FQSEN or this FQSEN if it is not an
+     * alternate.
+     */
+    public function getCanonicalFQSEN() : FQSEN {
+        if ($this->isAlternate()) {
+            return clone($this)->withAlternateId(0);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return UnionType
+     * A string representing this fully-qualified structural
+     * element name.
+     */
+    public function asUnionType() : UnionType {
+        return new UnionType([$this->__toString()]);
+    }
+
+    /**
      * @return string
      * A string representation of this fully-qualified
      * structural element name.
@@ -417,45 +460,13 @@ class FQSEN {
         // Append an alternate ID if we need to disambiguate
         // multiple definitions
         if ($this->alternate_id) {
-            $fqsen_string .= ' ' . $this->alternate_id;
+            $fqsen_string .= '\'' . $this->alternate_id;
         }
 
         assert(!empty($fqsen_string),
             "FQSENs should be non-empty" );
 
         return $fqsen_string;
-    }
-
-    /**
-     * @return UnionType
-     * A string representing this fully-qualified structural
-     * element name.
-     */
-    // TODO: Make this 'UnionType'
-    public function asUnionType() : UnionType {
-        return new UnionType([$this->__toString()]);
-    }
-
-    /**
-     * @return bool
-     * True if this FQSEN is an alternate FQSEN
-     */
-    public function isAlternate() : bool {
-        return (bool)$this->alternate_id;
-    }
-
-    /**
-     * @return FQSEN
-     * Get the canonical (non-alternate) FQSEN for
-     * this FQSEN or this FQSEN if it is not an
-     * alternate.
-     */
-    public function getCanonicalFQSEN() : FQSEN {
-        if ($this->isAlternate()) {
-            return clone($this)->withAlternateId(0);
-        }
-
-        return $this;
     }
 
     /**

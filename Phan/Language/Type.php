@@ -605,7 +605,7 @@ class Type {
 
         if(($pos = strrpos($d, '\\')) !== false) {
             if ('\\' !== $this->getNamespace()) {
-                if(trim(strtolower($this->getNamespace().'\\'.$s),
+                if(trim($this->getNamespace().'\\'.$s,
                     '\\') == $d
                 ) {
                     return true;
@@ -619,7 +619,7 @@ class Type {
 
         if(($pos = strrpos($s,'\\')) !== false) {
             if ('\\' !== $type->getNamespace()) {
-                if(trim(strtolower($type->getNamespace().'\\'.$d),
+                if(trim($type->getNamespace().'\\'.$d,
                     '\\') == $s
                 ) {
                     return true;

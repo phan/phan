@@ -413,7 +413,8 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
-     *
+     * @return bool
+     * True if this class has a method with the given name
      */
     public function hasMethodWithName(string $name) : bool {
         $name = strtolower($name);
