@@ -364,7 +364,7 @@ class Phan {
         foreach (Config::get()->third_party_directory_list
             as $directory
         ) {
-            if (0 == strpos($file_path, $directory)) {
+            if (0 === strpos($file_path, $directory)) {
                 return true;
             }
         }
