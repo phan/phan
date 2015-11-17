@@ -46,6 +46,13 @@ class Config {
         // they are first seen. If false, we'll report an
         // error message.
         'allow_missing_properties' => true,
+
+        // If a file path is given, the code base will be
+        // read from and written to the given location in
+        // order to attempt to save some work from being
+        // done. Only changed files will get analyzed if
+        // the file is read
+        'serialized_code_base_file' => null,
     ];
 
     /**

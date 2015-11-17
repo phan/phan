@@ -20,7 +20,7 @@ class CLI {
         global $argv;
 
         // Parse command line args
-        $opts = getopt("f:m:o:c:hqbpi3:t::");
+        $opts = getopt("f:m:o:c:hqbpis:3:t::");
 
         foreach($opts as $key => $value) {
             switch($key) {
@@ -67,6 +67,9 @@ class CLI {
             case '3':
                 Config::get()->third_party_directory_list =
                     explode(',', $value);
+                break;
+            case 's':
+                Config::get()->serialized_code_base_file = $value;
                 break;
             default:
                 $this->usage("Unknown option '-$key'"); break;

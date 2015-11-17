@@ -50,8 +50,26 @@ class Phan {
         // analysis after.
         foreach ($file_path_list as $i => $file_path) {
             CLI::progress('parse',  ($i+1)/$file_count);
-            $this->parseFile($code_base, $file_path);
+
+            // Check to see if we need to re-parse this file
+            if (!$code_base->isParseUpToDateForFile($file_path)) {
+                // Kick out anything we read from the former version
+                // of this file
+                $code_base->flushDependenciesForFile($file_path);
+
+                // Parse the file
+                $this->parseFile($code_base, $file_path);
+
+                // Update the timestamp on when it was last
+                // parsed
+                $code_base->setParseUpToDateForFile($file_path);
+            }
         }
+
+        // Store a serialized version of the code base if there
+        // is a configured serialized file path. This allows
+        // us to save some time on the next run.
+        $code_base->store();
 
         // Take a pass over all classes verifying various
         // states now that we have the whole state in
@@ -72,8 +90,19 @@ class Phan {
                 continue;
             }
 
-            $this->analyzeFile($code_base, $file_path);
+            if (!$code_base->isAnalysisUpToDateForFile($file_path)) {
+                // Analyze the file
+                $this->analyzeFile($code_base, $file_path);
+
+                // Mark that its analysis is up to date
+                $code_base->setAnalysisUpToDateForFile($file_path);
+            }
         }
+
+        // Store a serialized version of the code base if there
+        // is a configured serialized file path. This allows
+        // us to save some time on the next run.
+        $code_base->store();
 
         // Emit all log messages
         Log::display();

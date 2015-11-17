@@ -11,15 +11,28 @@ require_once(__DIR__.'/Phan/Bootstrap.php');
 
 use \Phan\CLI;
 use \Phan\CodeBase;
+use \Phan\Config;
 use \Phan\Log;
 use \Phan\Phan;
 
-(new Phan)->analyzeFileList(
-    new CodeBase(
+// Create our CLI interface and load arguments
+$cli = new CLI();
+
+// Read the code base from a saved state or create a
+// new one if none exists
+if (CodeBase::storedCodeBaseExists()) {
+    $code_base = CodeBase::fromStoredCodeBase();
+} else {
+    $code_base = new CodeBase(
         $internal_class_name_list,
         $internal_interface_name_list,
         $internal_trait_name_list,
         $internal_function_name_list
-    ),
-    (new CLI)->getFileList()
+    );
+}
+
+// Analyze the file list provided via the CLI
+(new Phan)->analyzeFileList(
+    $code_base,
+    $cli->getFileList()
 );

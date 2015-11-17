@@ -2,9 +2,10 @@
 declare(strict_types=1);
 namespace Phan;
 
+use \Phan\CodeBase\File as CodeFile;
 use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
 use \Phan\Language\Element\{Clazz, Element, Method};
+use \Phan\Language\FQSEN;
 
 /**
  * A CodeBase represents the known state of a code base
@@ -37,9 +38,32 @@ use \Phan\Language\Element\{Clazz, Element, Method};
  */
 class CodeBase {
 
+    /**
+     * @var CodeFile[]
+     * A map from file name to info such as its last
+     * modification date used to determine if a file
+     * needs to be re-parsed
+     */
+    private $file_map = [];
+
+    /**
+     * @var Class[]
+     * A map from fqsen string to the class it
+     * represents
+     */
     private $class_map = [];
+
+    /**
+     * @var Method[]
+     * A map from fqsen string to the method it
+     * represents
+     */
     private $method_map = [];
-    private $namespace_map = [];
+
+    /**
+     * @var int[]
+     * Summary information about the code base
+     */
     private $summary = [];
 
     public function __construct(
@@ -78,9 +102,15 @@ class CodeBase {
      *
      * @return null
      */
-    public function addClass(Clazz $class_element) {
-        $this->class_map[(string)$class_element->getFQSEN()]
-            = $class_element;
+    public function addClass(Clazz $class) {
+        $this->class_map[(string)$class->getFQSEN()]
+            = $class;
+
+        if (!$class->getContext()->isInternal()) {
+            $this->file_map[$class->getContext()->getFile()]
+                ->addClassFQSEN($class->getFQSEN());
+        }
+
         $this->incrementClasses();
     }
 
@@ -126,8 +156,21 @@ class CodeBase {
      * @param Method $method
      * A method to add to the code base
      */
-    public function addMethod(Method $method) {
+    private function addMethodCommon(Method $method) {
         $this->method_map[(string)$method->getFQSEN()] = $method;
+
+        if (!$method->getContext()->isInternal()) {
+            $this->file_map[$method->getContext()->getFile()]
+                ->addMethodFQSEN($method->getFQSEN());
+        }
+    }
+
+    /**
+     * @param Method $method
+     * A method to add to the code base
+     */
+    public function addMethod(Method $method) {
+        $this->addMethodCommon($method);
         $this->incrementMethods();
     }
 
@@ -136,7 +179,7 @@ class CodeBase {
      * A method to add to the code base
      */
     public function addFunction(Method $method) {
-        $this->method_map[(string)$method->getFQSEN()] = $method;
+        $this->addMethodCommon($method);
         $this->incrementFunctions();
     }
 
@@ -146,7 +189,7 @@ class CodeBase {
      * A method to add to the code base
      */
     public function addClosure(Method $method) {
-        $this->method_map[(string)$method->getFQSEN()] = $method;
+        $this->addMethodCommon($method);
         $this->incrementClosures();
     }
 
@@ -217,4 +260,135 @@ class CodeBase {
         $this->summary['closures']++;
     }
 
+    /**
+     * Remove any objects we have associated with the
+     * given file so that we can re-read it
+     *
+     * @return null
+     */
+    public function flushDependenciesForFile(string $file_path) {
+        if (empty($this->file_map[$file_path])) {
+            $this->file_map[$file_path] = new CodeFile($file_path);
+            return;
+        }
+
+        $code_file = $this->file_map[$file_path];
+
+        foreach ($code_file->getClassFQSENList() as $fqsen) {
+            unset($this->class_map[(string)$fqsen]);
+        }
+
+        foreach ($code_file->getMethodFQSENList() as $fqsen) {
+            unset($this->method_map[(string)$fqsen]);
+        }
+    }
+
+    /**
+     * @param string $file_path
+     * A path to a file name
+     *
+     * @return CodeFile
+     * An object tracking state for the given $file_path
+     */
+    private function getCodeFileForFile(string $file_path) : CodeFile {
+        if (empty($this->file_map[$file_path])) {
+            $this->file_map[$file_path] = new CodeFile($file_path);
+        }
+
+        return $this->file_map[$file_path];
+    }
+
+    /**
+     * @return bool
+     * True if the given file is up to date within this
+     * code base, else false
+     */
+    public function isParseUpToDateForFile(string $file_path) : bool {
+        return $this->getCodeFileForFile($file_path)
+            ->isParseUpToDate();
+    }
+
+    /**
+     * Mark the file at the given path as up to date so
+     * that we know if its changed on subsequent runs
+     *
+     * @return null
+     */
+    public function setParseUpToDateForFile(string $file_path) {
+        return $this->getCodeFileForFile($file_path)
+            ->setParseUpToDate();
+    }
+
+    /**
+     * @return bool
+     * True if the given file is up to date within this
+     * code base, else false
+     */
+    public function isAnalysisUpToDateForFile(string $file_path) : bool {
+        return $this->getCodeFileForFile($file_path)
+            ->isAnalysisUpToDate();
+    }
+
+    /**
+     * Mark the file at the given path as up to date so
+     * that we know if its changed on subsequent runs
+     *
+     * @return null
+     */
+    public function setAnalysisUpToDateForFile(string $file_path) {
+        return $this->getCodeFileForFile($file_path)
+            ->setAnalysisUpToDate();
+    }
+
+    /**
+     * Store the given code base to the location defined in the
+     * configuration (serialized_code_base_file).
+     *
+     * @return int|bool
+     * This function returns the number of bytes that were written
+     * to the file, or FALSE on failure.
+     */
+    public function store() {
+        if (!Config::get()->serialized_code_base_file) {
+            return false;
+        }
+
+        return file_put_contents(
+            Config::get()->serialized_code_base_file,
+            serialize($this),
+            LOCK_EX
+        );
+    }
+
+    /**
+     * @return bool
+     * True if a serialized code base exists and can be read
+     * else false
+     */
+    public static function storedCodeBaseExists() : bool {
+        if (!Config::get()->serialized_code_base_file) {
+            return false;
+        }
+
+        return file_exists(
+            Config::get()->serialized_code_base_file
+        );
+    }
+
+    /**
+     * @return CodeBase|bool
+     * A stored code base if its successful or false if
+     * unserialize fucks up
+     */
+    public static function fromStoredCodeBase() : CodeBase {
+        if (!self::storedCodeBaseExists()) {
+            throw new \Exception("No serialized_code_base_file defined");
+        }
+
+        return unserialize(
+            file_get_contents(
+                Config::get()->serialized_code_base_file
+            )
+        );
+    }
 }
