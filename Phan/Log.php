@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace Phan;
 
+use \Phan\Config;
+
 /**
  * Log
  *
@@ -103,7 +105,7 @@ class Log {
         // with a trace ID which indicates where the issue
         // came from allowing us to group on unique classes
         // of issues
-        if (Configuration::instance()->emit_trace_id) {
+        if (Config::get()->emit_trace_id) {
             $msg = self::traceId(debug_backtrace()[1])
                 . ' ' . $msg;
         }

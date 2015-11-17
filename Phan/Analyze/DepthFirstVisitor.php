@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\Configuration;
+use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;

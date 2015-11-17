@@ -8,7 +8,7 @@ $internal_function_name_list = get_defined_functions()['internal'];
 
 use \Phan\Phan;
 use \Phan\CodeBase;
-use \Phan\Configuration;
+use \Phan\Config;
 use \Phan\Language\Context;
 use \Phan\Language\Type;
 use \Phan\Language\FQSEN;
@@ -108,7 +108,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
             (new Phan)->parseNodeInContext(
                 \ast\parse_code(
                     '<?php ' . $code_stub,
-                    Configuration::instance()->ast_version
+                    Config::get()->ast_version
                 ),
                 new Context($code_base)
             );

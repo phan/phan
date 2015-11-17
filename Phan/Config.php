@@ -4,7 +4,7 @@ namespace Phan;
 /**
  * Program configuration
  */
-class Configuration {
+class Config {
 
     /**
      * Configuration options
@@ -36,7 +36,7 @@ class Configuration {
         // messages with an ID indicating the distinct class
         // of issue seen. This allows us to get counts of
         // distinct error types.
-        'emit_trace_id' => true,
+        'emit_trace_id' => false,
     ];
 
     /**
@@ -48,14 +48,14 @@ class Configuration {
      * @return Configuration
      * Get a Configuration singleton
      */
-    public static function instance() : Configuration {
+    public static function get() : Config {
         static $instance;
 
         if ($instance) {
             return $instance;
         }
 
-        $instance = new Configuration();
+        $instance = new Config();
         return $instance;
     }
 

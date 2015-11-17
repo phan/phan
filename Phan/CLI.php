@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\Configuration;
+use \Phan\Config;
 use \Phan\Log;
 
 class CLI {
@@ -14,7 +14,7 @@ class CLI {
 
     /**
      * Create and read command line arguments, configuring
-     * \Phan\Configuration as a side effect.
+     * \Phan\Config as a side effect.
      */
     public function __construct() {
         global $argv;
@@ -42,18 +42,18 @@ class CLI {
                 Log::setOutputMode($value);
                 break;
             case 'c':
-                Configuration::instance()
+                Config::get()
                     ->parent_constructor_required =
                     explode(',', $value);
                 break;
             case 'q':
-                Configuration::instance()->quick_mode = true;
+                Config::get()->quick_mode = true;
                 break;
             case 'b':
-                Configuration::instance()->backward_compatibility_checks = true;
+                Config::get()->backward_compatibility_checks = true;
                 break;
             case 'p':
-                Configuration::instance()->progress_bar = true;
+                Config::get()->progress_bar = true;
                 break;
             case 'o':
                 Log::setFilename($value);
@@ -150,14 +150,14 @@ EOB;
         string $msg,
         float $p
     ) {
-        if (!Configuration::instance()->progress_bar) {
+        if (!Config::get()->progress_bar) {
             return;
         }
 
         // Don't update every time when we're moving
         // super fast
         if (rand(0, 100)
-            > (100 * Configuration::instance()->progress_bar_sample_rate)
+            > (100 * Config::get()->progress_bar_sample_rate)
         ) {
             return;
         }

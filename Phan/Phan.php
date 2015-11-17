@@ -6,7 +6,7 @@ use \Phan\Analyze\DepthFirstVisitor;
 use \Phan\Analyze\ParseVisitor;
 use \Phan\CLI;
 use \Phan\CodeBase;
-use \Phan\Configuration;
+use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\Context;
@@ -97,7 +97,7 @@ class Phan {
         // of this method
         $node = \ast\parse_file(
             $file_path,
-            Configuration::instance()->ast_version
+            Config::get()->ast_version
         );
 
         $context =
@@ -253,7 +253,7 @@ class Phan {
         // of this method
         $node = \ast\parse_file(
             $file_path,
-            Configuration::instance()->ast_version
+            Config::get()->ast_version
         );
 
         // Set the file on the context

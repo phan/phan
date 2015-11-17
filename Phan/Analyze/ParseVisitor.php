@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\Configuration;
+use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
@@ -66,7 +66,7 @@ class ParseVisitor extends ScopeVisitor {
      * parsing the node
      */
     public function visitDim(Node $node) : Context {
-        if (!Configuration::instance()->backward_compatibility_checks) {
+        if (!Config::get()->backward_compatibility_checks) {
             return $this->context;
         }
 
@@ -536,7 +536,7 @@ class ParseVisitor extends ScopeVisitor {
      */
     public function visitCall(Node $node) : Context {
 
-        if(Configuration::instance()->backward_compatibility_checks) {
+        if(Config::get()->backward_compatibility_checks) {
             AST::backwardCompatibilityCheck($this->context, $node);
         }
 
@@ -597,7 +597,7 @@ class ParseVisitor extends ScopeVisitor {
      * parsing the node
      */
     public function visitReturn(Node $node) : Context {
-        if (Configuration::instance()->backward_compatibility_checks) {
+        if (Config::get()->backward_compatibility_checks) {
             AST::backwardCompatibilityCheck($this->context, $node);
         }
 

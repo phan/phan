@@ -699,7 +699,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         if ($function->getContext()->isInternal()
             && $function->getUnionType()->isEmpty()
         ) {
-            $map = UnionType::builtinFunctionPropertyNameTypeMap(
+            $map = UnionType::internalFunctionSignatureMapForFQSEN(
                 $function_fqsen,
                 $this->context->getCodeBase()
             );

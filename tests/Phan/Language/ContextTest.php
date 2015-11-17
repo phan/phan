@@ -7,7 +7,7 @@ $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
 use \Phan\CodeBase;
-use \Phan\Configuration;
+use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\Context;
@@ -69,7 +69,7 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
 
         $stmt_list_node = \ast\parse_code(
             $code,
-            Configuration::instance()->ast_version
+            Config::get()->ast_version
         );
 
         $class_node = $stmt_list_node->children[0];

@@ -94,6 +94,13 @@ class FQSEN {
         Context $context,
         string $fqsen_string
     ) : FQSEN {
+
+        $parts =
+            explode('\'', $fqsen_string);
+
+        $fqsen_string = $parts[0];
+        $alternate_id = $parts[1] ?? null;
+
         $elements =
             explode('::', $fqsen_string);
 
@@ -141,12 +148,18 @@ class FQSEN {
         // Clean it on up
         $namespace = self::cleanNamespace($namespace);
 
-        return new FQSEN(
+        $fqsen = new FQSEN(
             $namespace ?: '\\',
             $class_name ?: '',
             $method_name ?: '',
             $closure_name ?: ''
         );
+
+        if ($alternate_id) {
+            return $fqsen->withAlternateId((int)$alternate_id);
+        }
+
+        return $fqsen;
     }
 
     /**

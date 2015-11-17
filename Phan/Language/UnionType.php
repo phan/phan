@@ -152,11 +152,11 @@ class UnionType {
         );
 	}
 
-    public static function builtinClassPropertyType(
+    public static function internalClassSignatureMapForName(
         string $class_name,
         string $property_name
     ) : UnionType {
-        $map = self::builtinClassTypeMap();
+        $map = self::internalClassSignatureMap();
 
         $class_property_type_map =
             $map[strtolower($class_name)]['properties'];
@@ -174,13 +174,13 @@ class UnionType {
      * @see internal_varargs_check
      * Formerly `function internal_varargs_check`
      */
-    public static function builtinFunctionPropertyNameTypeMap(
+    public static function internalFunctionSignatureMapForFQSEN(
         FQSEN $function_fqsen,
         CodeBase $code_base
     ) : array {
         $context = new Context($code_base);
 
-        $map = self::builtinFunctionArgumentTypeMap();
+        $map = self::internalFunctionSignatureMap();
 
         $class_name = $function_fqsen->getClassName();
         $function_name = ($class_name ? $class_name . '::' :  '')
@@ -218,7 +218,7 @@ class UnionType {
             ];
 
             $function_name =
-                $function_name_original . ' ' . (++$alternate_id);
+                $function_name_original . '\'' . (++$alternate_id);
         }
 
         return $configurations;
@@ -231,7 +231,7 @@ class UnionType {
      */
     public static function builtinExists(FQSEN $fqsen) : bool {
         return !empty(
-            self::builtinFunctionArgumentTypeMap()[(string)$fqsen]
+            self::internalFunctionSignatureMap()[(string)$fqsen]
         );
     }
 
@@ -666,7 +666,7 @@ class UnionType {
      *
      * @see \Phan\Language\Internal\FunctionSignatureMap
      */
-    private static function builtinFunctionArgumentTypeMap() {
+    private static function internalFunctionSignatureMap() {
         static $map = false;
         return $map ?:
             ($map = require(__DIR__.'/Internal/FunctionSignatureMap.php'));
@@ -678,7 +678,7 @@ class UnionType {
      *
      * @see \Phan\Language\Type\BuiltinFunctionArgumentTypes
      */
-    private static function builtinClassTypeMap() {
+    private static function internalClassSignatureMap() {
         static $map = false;
         return $map ?:
             ($map = require(__DIR__.'/Internal/ClassSignatureMap.php'));

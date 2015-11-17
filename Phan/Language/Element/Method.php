@@ -107,7 +107,7 @@ class Method extends TypedStructuralElement {
     /**
      * @return Method[]
      * One or more (alternate) methods begotten from
-     * reflection info and builtin method data
+     * reflection info and internal method data
      */
     public static function methodListFromFunctionName(
         CodeBase $code_base,
@@ -127,7 +127,7 @@ class Method extends TypedStructuralElement {
     /**
      * @return Method[]
      * One or more (alternate) methods begotten from
-     * reflection info and builtin method data
+     * reflection info and internal method data
      */
     public static function methodListFromReflectionFunction(
         CodeBase $code_base,
@@ -210,8 +210,8 @@ class Method extends TypedStructuralElement {
         Method $method
     ) : array {
         // See if we have any type information for this
-        // builtin function
-        $map_list = UnionType::builtinFunctionPropertyNameTypeMap(
+        // internal function
+        $map_list = UnionType::internalFunctionSignatureMapForFQSEN(
             $method->getFQSEN(),
             $method->getContext()->getCodeBase()
         );

@@ -4,7 +4,7 @@ namespace Phan\Analyze;
 use \Phan\Analyze\Analyzable;
 use \Phan\Analyze\ArgumentType;
 use \Phan\Analyze\AssignmentVisitor;
-use \Phan\Configuration;
+use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;

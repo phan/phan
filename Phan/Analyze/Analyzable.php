@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\Phan;
-use \Phan\Configuration;
+use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Language\Context;
+use \Phan\Phan;
 use \ast\Node;
 
 /**
@@ -37,7 +37,7 @@ trait Analyzable {
      */
     public function setNode(Node $node) {
         // Don't waste the memory if we're in quick mode
-        if (Configuration::instance()->quick_mode) {
+        if (Config::get()->quick_mode) {
             return;
         }
 
@@ -68,7 +68,7 @@ trait Analyzable {
     public function analyze(Context $context) : Context {
         // Don't do anything if we care about being
         // fast
-        if (Configuration::instance()->quick_mode) {
+        if (Config::get()->quick_mode) {
             return $context;
         }
 
