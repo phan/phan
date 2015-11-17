@@ -20,7 +20,7 @@ class CLI {
         global $argv;
 
         // Parse command line args
-        $opts = getopt("f:m:o:c:haqbpi::");
+        $opts = getopt("f:m:o:c:hqbpit::");
 
         foreach($opts as $key => $value) {
             switch($key) {
@@ -60,6 +60,9 @@ class CLI {
                 break;
             case 'i':
                 Log::setOutputMask(Log::getOutputMask()^Log::EUNDEF);
+                break;
+            case 't':
+                Config::get()->emit_trace_id = true;
                 break;
             default:
                 $this->usage("Unknown option '-$key'"); break;
@@ -123,7 +126,7 @@ Usage: {$argv[0]} [options] [files...]
   -m <mode>       Output mode: verbose, short, json, csv
   -o <filename>   Output filename
   -p              Show progress bar
-  -a              Dump AST of provides files (for debugging)
+  -t              Emit trace IDs on messages (for grouping error types)
   -h			  This help
 
 EOB;
