@@ -5,8 +5,6 @@
 It requires PHP 7 with the [php-ast][phpast] extension loaded. The code you
 analyze with it can be written for any version of PHP, of course.
 
-It is nowhere near ready for production use. If you need a production-quality
-solution right now, you should probably look at [scrutinizer].
 
 ## Features
 

@@ -1,9 +1,2 @@
-/tests/src/*.diff
-/tests/src/*.exp
-/tests/src/*.log
-/tests/src/*.out
-/tests/src/*.php
-/tests/src/*.sh
-.hhconfig
 vendor
-deprecated
+test.state
