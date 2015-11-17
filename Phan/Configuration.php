@@ -31,6 +31,12 @@ class Configuration {
         // The vesion of the AST (defined in php-ast)
         // we're using
         'ast_version' => 30,
+
+        // Set to true in order to prepend all emitted error
+        // messages with an ID indicating the distinct class
+        // of issue seen. This allows us to get counts of
+        // distinct error types.
+        'emit_trace_id' => true,
     ];
 
     /**

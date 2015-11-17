@@ -99,6 +99,15 @@ class Log {
             }
 		}
 
+        // If configured to do so, prepend the message
+        // with a trace ID which indicates where the issue
+        // came from allowing us to group on unique classes
+        // of issues
+        if (Configuration::instance()->emit_trace_id) {
+            $msg = self::traceId(debug_backtrace()[1])
+                . ' ' . $msg;
+        }
+
 		if($etype & $log->output_mask) {
 			$ukey = md5($file.$lineno.$etype.$msg);
             $log->msgs[$ukey] = [
@@ -109,6 +118,19 @@ class Log {
             ];
 		}
 	}
+
+    /**
+     * Get an identifier for where the error is being thrown
+     * from. This helps us find counts of all unique errors
+     * being thrown.
+     */
+    public static function traceId($trace) {
+        $id = $trace['class']
+            . $trace['type']
+            . $trace['function'];
+
+        return substr(md5($id), 0, 6);
+    }
 
 	public static function errorHandler($errno, $errstr, $errfile, $errline) {
 		echo "$errfile:$errline $errstr\n";
