@@ -906,6 +906,12 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             }
         }
 
+        // If we're in quick mode, don't retest methods based on
+        // parameter types passed in
+        if (Config::get()->quick_mode) {
+            return;
+        }
+
         // We're going to hunt to see if any of the arguments
         // have a mismatch with the parameters. If so, we'll
         // re-check the method to see how the parameters impact
@@ -917,6 +923,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         // arguments again and add their types to the parameter
         // types so we can test the method again
         $argument_list = $node->children['args'];
+
+        // We create a copy of the parameter list so we can switch
+        // back to it after
+        $original_parameter_list = $method->getParameterList();
+
         foreach ($argument_list->children as $i => $argument) {
             $parameter = $method->getParameterList()[$i] ?? null;
 
@@ -938,6 +949,14 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 // to it so we can compare it to subsequent
                 // calls
                 if (!$parameter->getContext()->isInternal()) {
+                    // Clone the parameter in the original
+                    // parameter list so we can reset it
+                    // later
+                    $original_parameter_list[$i] = clone($parameter);
+
+                    // Then set the new type on that parameter based
+                    // on the argument's type. We'll use this to
+                    // retest the method with the passed in types
                     $parameter->getUnionType()->addUnionType(
                         $argument_type
                     );
@@ -957,6 +976,10 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         ) {
             $method->analyze($method->getContext());
         }
+
+        // Reset to the original parameter list after having
+        // tested the parameters with the types passed in
+        $method->setParameterList($original_parameter_list);
     }
 
     /**

@@ -17,8 +17,8 @@ class TypedStructuralElement extends StructuralElement {
 
     /**
      * @var UnionType
-     * A '|' delimited set of types satisfyped by this
-     * typed structural element.
+     * A set of types satisfyped by this typed structural
+     * element.
      */
     private $type = null;
 
@@ -80,6 +80,7 @@ class TypedStructuralElement extends StructuralElement {
      * @return null
      */
     public function __clone() {
+        parent::__clone();
         $this->type = $this->type
             ? clone($this->type)
             : $this->type;

@@ -66,6 +66,7 @@ class Parameter extends Variable {
      * @return null
      */
     public function __clone() {
+        parent::__clone();
         $this->default_value_type = $this->default_value_type
             ? clone($this->default_value_type)
             : $this->default_value_type;
