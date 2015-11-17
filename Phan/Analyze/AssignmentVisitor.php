@@ -2,10 +2,11 @@
 namespace Phan\Analyze;
 
 use \Phan\Analyze\Analyzable;
+use \Phan\Config;
+use \Phan\Debug;
 use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
-use \Phan\Debug;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -191,8 +192,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
             "Property must be string in context {$this->context}");
 
         try {
-            $clazz =
-                AST::classFromNodeInContext($node, $this->context);
+            $clazz = AST::classFromNodeInContext($node, $this->context);
         } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EFATAL,
@@ -210,12 +210,21 @@ class AssignmentVisitor extends KindVisitorImplementation {
 
             // Check to see if the class has a __set method
             if (!$clazz->hasMethodWithName('__set')) {
-                Log::err(
-                    Log::EAVAIL,
-                    "Missing property with name '$property_name'",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
+                if (Config::get()->allow_missing_properties) {
+                    // Create the property
+                    AST::getOrCreatePropertyFromNodeInContext(
+                        $property_name,
+                        $node,
+                        $this->context
+                    );
+                } else {
+                    Log::err(
+                        Log::EAVAIL,
+                        "Missing property with name '$property_name'",
+                        $this->context->getFile(),
+                        $node->lineno
+                    );
+                }
             }
 
             return $this->context;

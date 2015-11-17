@@ -2,4 +2,3 @@
 %s:8 TypeError assigning string to property but \a is int
 %s:12 TypeError assigning array to property but \a::text is int|string
 %s:18 AccessError Cannot access protected property \a::$foo
-%s:19 AvailError Missing property with name 'bar'
