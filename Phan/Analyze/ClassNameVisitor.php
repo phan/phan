@@ -60,14 +60,12 @@ class ClassNameVisitor extends KindVisitorImplementation {
      */
     public function visitNew(Node $node) : string {
 
-        // TODO: What do we do with calls of the form
-        //       `$foo::method()`;
+        // Things of the form `new $class_name();`
         if ($node->children['class']->kind == \ast\AST_VAR) {
             return '';
         }
 
-        // TODO: These are of the form `new $this->foo(...)`. Way
-        //       too complex for me right now.
+        // Things of the form `new $method->name()`
         if($node->children['class']->kind !== \ast\AST_NAME) {
             return '';
         }
@@ -100,11 +98,6 @@ class ClassNameVisitor extends KindVisitorImplementation {
         if($class_name == 'self') {
             if ($this->context->isGlobalScope()) {
                 assert(false, "Unimplemented branch is required for {$this->context}");
-                // TODO
-                /*
-                list($class_name,) =
-                    explode('::', $current_scope);
-                 */
             } else {
                 return (string)$this->context->getClassFQSEN();
             }
@@ -114,17 +107,6 @@ class ClassNameVisitor extends KindVisitorImplementation {
             $clazz = $this->context->getClassInScope();
 
             if (!$clazz->hasParentClassFQSEN()) {
-                // TODO: This may be getting called in
-                //       the first pass.
-                /*
-                Log::err(
-                    Log::EFATAL,
-                    "Call to parent in {$class_name} when no parent exists",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-                 */
-
                 return '';
             }
 
@@ -185,7 +167,6 @@ class ClassNameVisitor extends KindVisitorImplementation {
     public function visitMethodCall(Node $node) : string {
         if($node->children['expr']->kind == \ast\AST_VAR) {
             if(($node->children['expr']->children['name'] instanceof Node)) {
-                // TODO: not sure what to make of this
                 return '';
             }
 
@@ -314,8 +295,6 @@ class ClassNameVisitor extends KindVisitorImplementation {
                 return '';
             }
 
-            // TODO: Not sure what to make of non 'this'
-            //       properties
             return '';
         }
 

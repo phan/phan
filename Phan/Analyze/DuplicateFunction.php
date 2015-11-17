@@ -33,10 +33,7 @@ trait DuplicateFunction {
         $original_method =
             $code_base->getMethodByFQSEN($original_fqsen);
 
-        // TODO: lowercasing so that we're compatible with the output we're
-        //       comparing against. Feel free to not do this in the
-        //       future.
-        $method_name = strtolower($method->getName());
+        $method_name = $method->getName();
 
         if ('internal' === $original_method->getContext()->getFile()) {
             // If its in an conditional and the original is an

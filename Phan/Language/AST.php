@@ -238,8 +238,6 @@ class AST {
             && ($node->kind != \ast\AST_MAGIC_CONST)
         ) {
             $parent = $node;
-
-            // TODO: The name usually goes in slot zero, right?
             $node = array_values($node->children)[0];
         }
 

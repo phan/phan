@@ -537,9 +537,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                     $this->context
                 );
             } catch (CodeBaseException $exception) {
-                // TODO: extension methods aren't
-                //       available here. Not sure
-                //       how we should handle those
                 Log::err(
                     Log::EUNDEF,
                     $exception->getMessage(),

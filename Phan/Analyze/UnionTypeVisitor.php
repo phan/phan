@@ -402,7 +402,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 )->asUnionType();
             }
             else {
-                // TODO: user-defined constant
                 return new UnionType();
             }
         }
@@ -643,7 +642,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      */
     public function visitCall(Node $node) : UnionType {
         if($node->children['expr']->kind !== \ast\AST_NAME) {
-            // TODO: Handle $func() and other cases that get here
+            // Things like `$func()`
             return new UnionType();
         }
 
@@ -685,7 +684,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         if (!$this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
-            // TODO: Log missing builtin?
+            // Missing internal (bulitin) method.
             return new UnionType();
         }
 

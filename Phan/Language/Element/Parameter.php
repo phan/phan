@@ -141,7 +141,6 @@ class Parameter extends Variable {
                     Log::EPARAM,
                     "required arg follows optional",
                     $context->getFile(),
-                    // TODO: switch to $child_node->lineno
                     $node->lineno
                 );
             } else if ($parameter->isOptional()) {

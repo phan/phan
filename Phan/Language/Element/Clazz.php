@@ -679,7 +679,6 @@ class Clazz extends TypedStructuralElement {
 
                 // Copy methods
                 foreach ($superclazz->getMethodMap() as $method) {
-                    // TODO: if the method is already there, don't add
                     $this->addMethod($method);
                 }
             });
