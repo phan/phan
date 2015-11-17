@@ -36,21 +36,12 @@ class Comment {
     private $return = null;
 
     /**
-     * @var string $string;
-     * The original comment string
-     */
-    private $string;
-
-    /**
      * A private constructor meant to ingest a parsed comment
      * docblock.
      *
      * @param bool $is_deprecated
      * Set to true if the comment contains a 'deprecated'
      * directive.
-     *
-     * @param string $string
-     * The raw string of the comment
      *
      * @param array $variable_list
      * @param array $parameter_list
@@ -60,14 +51,12 @@ class Comment {
         bool $is_deprecated,
         array $variable_list,
         array $parameter_list,
-        UnionType $return,
-        string $string
+        UnionType $return
     ) {
         $this->is_deprecated = $is_deprecated;
         $this->variable_list = $variable_list;
         $this->parameter_list = $parameter_list;
         $this->return = $return;
-        $this->string = $string;
     }
 
     /**
@@ -76,7 +65,7 @@ class Comment {
      */
     public static function none() : Comment {
         return new Comment(
-            false, [], [], new UnionType(), ''
+            false, [], [], new UnionType()
         );
     }
 
@@ -190,8 +179,7 @@ class Comment {
             $is_deprecated,
             $variable_list,
             $parameter_list,
-            $return_type,
-            $comment
+            $return_type
         );
     }
 
