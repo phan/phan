@@ -20,7 +20,7 @@ class CLI {
         global $argv;
 
         // Parse command line args
-        $opts = getopt("f:m:o:c:hqbpit::");
+        $opts = getopt("f:m:o:c:hqbpi3:t::");
 
         foreach($opts as $key => $value) {
             switch($key) {
@@ -63,6 +63,10 @@ class CLI {
                 break;
             case 't':
                 Config::get()->emit_trace_id = true;
+                break;
+            case '3':
+                Config::get()->third_party_directory_list =
+                    explode(',', $value);
                 break;
             default:
                 $this->usage("Unknown option '-$key'"); break;

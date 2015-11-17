@@ -67,6 +67,11 @@ class Phan {
         // can scan for more complicated issues.
         foreach ($file_path_list as $i => $file_path) {
             CLI::progress('analyze',  ($i+1)/$file_count);
+
+            if (self::isThirdPartyFile($file_path)) {
+                continue;
+            }
+
             $this->analyzeFile($code_base, $file_path);
         }
 
@@ -348,5 +353,22 @@ class Phan {
 
         // Pass the context back up to our parent
         return $context;
+    }
+
+    /**
+     * @return bool
+     * True if this file is a member of a third party directory as
+     * configured via the CLI flag '-3 [paths]'.
+     */
+    public static function isThirdPartyFile(string $file_path) : bool {
+        foreach (Config::get()->third_party_directory_list
+            as $directory
+        ) {
+            if (0 == strpos($file_path, $directory)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -37,6 +37,10 @@ class Config {
         // of issue seen. This allows us to get counts of
         // distinct error types.
         'emit_trace_id' => false,
+
+        // A list of directories holding 3rd party code that
+        // we only want to parse, but not analyze
+        'third_party_directory_list' => [],
     ];
 
     /**
