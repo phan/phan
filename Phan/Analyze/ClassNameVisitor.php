@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
 use \Phan\Language\AST;
@@ -24,11 +25,19 @@ class ClassNameVisitor extends KindVisitorImplementation {
     private $context;
 
     /**
+     * @var CodeBase
+     */
+    private $code_basae;
+
+    /**
      * @param Context $context
      * The context of the current execution
+     *
+     * @param CodeBase $code_base
      */
-    public function __construct(Context $context) {
+    public function __construct(Context $context, CodeBase $code_base) {
         $this->context = $context;
+        $this->code_base = $code_base;
     }
 
     /**
@@ -104,7 +113,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
         }
 
         if($class_name == 'parent') {
-            $clazz = $this->context->getClassInScope();
+            $clazz = $this->context->getClassInScope($this->code_base);
 
             if (!$clazz->hasParentClassFQSEN()) {
                 return '';
@@ -210,7 +219,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
                     );
 
 
-                if ($this->context->getCodeBase()->hasClassWithFQSEN($child_class_fqsen)) {
+                if ($this->code_base->hasClassWithFQSEN($child_class_fqsen)) {
                     return (string)$this->context->getScopeFQSEN()->withClassName(
                         $this->context,
                         (string)$type
@@ -248,7 +257,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
                 }
 
                 // Get the class in scope
-                $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+                $clazz = $this->code_base->getClassByFQSEN(
                     $this->context->getClassFQSEN()
                 );
 
@@ -284,7 +293,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
                                 (string)$type
                             );
 
-                        if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+                        if ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
                             return (string)$class_fqsen;
                         }
                     }
@@ -303,6 +312,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
             // call.
             $union_type = UnionType::fromNode(
                 $this->context,
+                $this->code_base,
                 $node->children['expr']
             );
 

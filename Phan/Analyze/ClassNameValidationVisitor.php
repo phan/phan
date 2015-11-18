@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -24,6 +25,12 @@ class ClassNameValidationVisitor
     private $context;
 
     /**
+     * @var CodeBase
+     * The entire code base
+     */
+    private $code_base;
+
+    /**
      * @var string
      * The name of the class that we're verifying
      */
@@ -39,12 +46,20 @@ class ClassNameValidationVisitor
     /**
      * @param Context $context
      * The context of the current execution
+     *
+     * @param CodeBase $code_base
+     * The global code base
+     *
+     * @param string $class_name
+     * The name we're trying to validate
      */
     public function __construct(
         Context $context,
+        CodeBase $code_base,
         string $class_name
     ) {
         $this->context = $context;
+        $this->code_base = $code_base;
         $this->class_name = $class_name;
 
         // Compute the FQSEN based on the current context
@@ -80,7 +95,7 @@ class ClassNameValidationVisitor
         }
 
         $clazz =
-            $this->context->getCodeBase()->getClassByFQSEN(
+            $this->code_base->getClassByFQSEN(
                 $this->class_fqsen
             );
 
@@ -143,7 +158,7 @@ class ClassNameValidationVisitor
      */
     private function classExists() : bool {
         return
-            $this->context->getCodeBase()->hasClassWithFQSEN(
+            $this->code_base->hasClassWithFQSEN(
                 $this->class_fqsen
             );
     }

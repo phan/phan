@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Language\AST;
 use \Phan\Language\Context;
@@ -52,12 +53,15 @@ class Variable extends TypedStructuralElement {
      * @param Context $context
      * The context in which the variable is found
      *
+     * @param CodeBase $code_base
+     *
      * @return Variable
      * A variable begotten from a node
      */
     public static function fromNodeInContext(
         Node $node,
         Context $context,
+        CodeBase $code_base,
         bool $should_check_type = true
     ) : Variable {
 
@@ -65,7 +69,7 @@ class Variable extends TypedStructuralElement {
 
         // Get the type of the assignment
         $union_type = $should_check_type
-            ? UnionType::fromNode($context, $node)
+            ? UnionType::fromNode($context, $code_base, $node)
             : new UnionType();
 
         $variable = new Variable(

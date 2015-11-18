@@ -135,7 +135,7 @@ class Phan {
         );
 
         $context =
-            (new Context($code_base))->withFile($file_path);
+            (new Context)->withFile($file_path);
 
         if (empty($node)) {
             Log::err(
@@ -147,7 +147,7 @@ class Phan {
             return $context;
         }
 
-        return $this->parseNodeInContext($node, $context);
+        return $this->parseNodeInContext($node, $context, $code_base);
     }
 
     /**
@@ -162,12 +162,17 @@ class Phan {
      * @param Context $context
      * The context in which this node exists
      *
+     * @param CodeBase $code_base
+     * The global code base in which we store all
+     * state
+     *
      * @return Context
      * The context from within the node is returned
      */
     public function parseNodeInContext(
         Node $node,
-        Context $context
+        Context $context,
+        CodeBase $code_base
     ) : Context {
 
         // Visit the given node populating the code base
@@ -176,9 +181,11 @@ class Phan {
         // given node
         $context =
             (new Element($node))->acceptKindVisitor(
-                new ParseVisitor($context
-                    ->withLineNumberStart($node->lineno ?? 0)
-                    ->withLineNumberEnd($node->endLineno ?? 0)
+                new ParseVisitor(
+                    $context
+                        ->withLineNumberStart($node->lineno ?? 0)
+                        ->withLineNumberEnd($node->endLineno ?? 0),
+                    $code_base
                 )
             );
 
@@ -198,7 +205,8 @@ class Phan {
             $child_context =
                 $this->parseNodeInContext(
                     $child_node,
-                    $child_context
+                    $child_context,
+                    $code_base
                 );
 
             assert(!empty($child_context),
@@ -269,9 +277,7 @@ class Phan {
      * can scan for more complicated issues.
      *
      * @param CodeBase $code_base
-     * A code base needs to be passed in because we require
-     * it to be initialized before any classes or files are
-     * loaded.
+     * The global code base holding all state
      *
      * @param string[] $file_path_list
      * A list of files to scan
@@ -291,8 +297,7 @@ class Phan {
         );
 
         // Set the file on the context
-        $context =
-            (new Context($code_base))->withFile($file_path);
+        $context = (new Context)->withFile($file_path);
 
         // Ensure we have some content
         if (empty($node)) {
@@ -309,7 +314,8 @@ class Phan {
         // Start recursively analyzing the tree
         return $this->analyzeNodeInContext(
             $node,
-            $context
+            $context,
+            $code_base
         );
     }
 
@@ -327,6 +333,7 @@ class Phan {
     public function analyzeNodeInContext(
         Node $node,
         Context $context,
+        CodeBase $code_base,
         Node $parent_node = null,
         int $depth = 0
     ) : Context {
@@ -340,7 +347,8 @@ class Phan {
                 new DepthFirstVisitor(
                     $context
                         ->withLineNumberStart($node->lineno ?? 0)
-                        ->withLineNumberEnd($node->endLineno ?? 0)
+                        ->withLineNumberEnd($node->endLineno ?? 0),
+                    $code_base
                 )
             );
 
@@ -364,6 +372,7 @@ class Phan {
                     $child_context
                         ->withLineNumberStart($child_node->lineno ?? 0)
                         ->withLineNumberEnd($child_node->endLineno ?? 0),
+                    $code_base,
                     $node,
                     $depth + 1
                 );
@@ -376,6 +385,7 @@ class Phan {
                     $context
                         ->withLineNumberStart($node->lineno ?? 0)
                         ->withLineNumberEnd($node->endLineno ?? 0),
+                    $code_base,
                     $parent_node
                 )
             );

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Language\Context;
 use \Phan\Language\Type\NullType;
@@ -126,6 +127,7 @@ class Parameter extends Variable {
      */
     public static function listFromNode(
         Context $context,
+        CodeBase $code_base,
         Node $node
     ) : array {
         assert($node instanceof Node, "node was not an \\ast\\Node");
@@ -134,7 +136,7 @@ class Parameter extends Variable {
         $is_optional_seen = false;
         foreach ($node->children as $i => $child_node) {
             $parameter =
-                Parameter::fromNode($context, $child_node);
+                Parameter::fromNode($context, $code_base, $child_node);
 
             if (!$parameter->isOptional() && $is_optional_seen) {
                 Log::err(
@@ -162,6 +164,7 @@ class Parameter extends Variable {
      */
     public static function fromNode(
         Context $context,
+        CodeBase $code_base,
         Node $node
     ) : Parameter {
 
@@ -203,6 +206,7 @@ class Parameter extends Variable {
                     $node->children['default'],
                     UnionType::fromNode(
                         $context,
+                        $code_base,
                         $node->children['default']
                     )
                 );

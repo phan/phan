@@ -4,6 +4,7 @@ namespace Phan\Analyze;
 use \Phan\Analyze\Analyzable;
 use \Phan\Analyze\ArgumentType;
 use \Phan\Analyze\AssignmentVisitor;
+use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
@@ -47,6 +48,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
     private $context;
 
     /**
+     * @var CodeBase
+     */
+    private $code_base;
+
+    /**
      * @var Node|null
      */
     private $parent_node;
@@ -56,14 +62,21 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
+     * @param CodeBase $code_base
+     * A code base needs to be passed in because we require
+     * it to be initialized before any classes or files are
+     * loaded.
+     *
      * @param Node|null $parent_node
      * The parent node of the node being analyzed
      */
     public function __construct(
         Context $context,
+        CodeBase $code_base,
         Node $parent_node = null
     ) {
         $this->context = $context;
+        $this->code_base = $code_base;
         $this->parent_node = $parent_node;
     }
 
@@ -114,6 +127,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         // assignment
         $right_type = UnionType::fromNode(
             $this->context,
+            $this->code_base,
             $node->children['expr']
         );
 
@@ -124,6 +138,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             (new Element($node->children['var']))->acceptKindVisitor(
                 new AssignmentVisitor(
                     $this->context,
+                    $this->code_base,
                     $node,
                     $right_type
                 )
@@ -171,6 +186,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         ) {
             $expression_type = UnionType::fromNode(
                 $this->context,
+                $this->code_base,
                 $node->children['cond']
             );
         }
@@ -255,6 +271,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         $variable = Variable::fromNodeInContext(
             $node->children['var'],
             $this->context,
+            $this->code_base,
             false
         );
 
@@ -276,6 +293,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
     public function visitForeach(Node $node) : Context {
         $expression_type = UnionType::fromNode(
             $this->context,
+            $this->code_base,
             $node->children['expr']
         );
 
@@ -305,6 +323,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         $variable = Variable::fromNodeInContext(
             $node->children['var'],
             $this->context,
+            $this->code_base,
             false
         );
 
@@ -313,6 +332,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         if (isset($node->children['default'])) {
             $default_type = UnionType::fromNode(
                 $this->context,
+                $this->code_base,
                 $node->children['default']
             );
 
@@ -349,6 +369,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
     public function visitPrint(Node $node) : Context {
         $type = UnionType::fromNode(
             $this->context,
+            $this->code_base,
             $node->children['expr']
         );
 
@@ -435,7 +456,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
         // Don't check return types in traits
         if ($this->context->isClassScope()) {
-            $clazz = $this->context->getClassInScope();
+            $clazz = $this->context->getClassInScope($this->code_base);
             if ($clazz->isTrait()) {
                 return $this->context;
             }
@@ -450,9 +471,9 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         // Get the method/function/closure we're in
         $method = null;
         if ($this->context->isClosureScope()) {
-            $method = $this->context->getClosureInScope();
+            $method = $this->context->getClosureInScope($this->code_base);
         } else if ($this->context->isMethodScope()) {
-            $method = $this->context->getMethodInScope();
+            $method = $this->context->getMethodInScope($this->code_base);
         } else {
             assert(false,
                 "We're supposed to be in either method or closure scope.");
@@ -464,6 +485,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         // Figure out what is actually being returned
         $expression_type = UnionType::fromNode(
             $this->context,
+            $this->code_base,
             $node->children['expr']
         );
 
@@ -482,7 +504,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
         if (!$expression_type->canCastToExpandedUnionType(
             $method_return_type,
-            $this->context->getCodeBase()
+            $this->code_base
         )) {
             Log::err(
                 Log::ETYPE,
@@ -534,7 +556,8 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             try {
                 $method = AST::functionFromNameInContext(
                     $expression->children['name'],
-                    $this->context
+                    $this->context,
+                    $this->code_base
                 );
             } catch (CodeBaseException $exception) {
                 Log::err(
@@ -548,7 +571,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             }
 
             // Check the call for paraemter and argument types
-            $this->analyzeCallToMethod($method, $node);
+            $this->analyzeCallToMethod(
+                $this->code_base,
+                $method,
+                $node
+            );
         }
 
         else if ($expression->kind == \ast\AST_VAR) {
@@ -577,16 +604,20 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
                 $closure_fqsen = $type->asFQSEN();
 
-                if ($this->context->getCodeBase()->hasMethodWithFQSEN(
+                if ($this->code_base->hasMethodWithFQSEN(
                     $closure_fqsen
                 )) {
                     // Get the closure
-                    $method = $this->context->getCodeBase()->getMethodByFQSEN(
+                    $method = $this->code_base->getMethodByFQSEN(
                         $closure_fqsen
                     );
 
                     // Check the call for paraemter and argument types
-                    $this->analyzeCallToMethod($method, $node);
+                    $this->analyzeCallToMethod(
+                        $this->code_base,
+                        $method,
+                        $node
+                    );
                 }
             }
         }
@@ -607,11 +638,13 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             $method = AST::classMethodFromNodeInContext(
                 $node,
                 $this->context,
+                $this->code_base,
                 '__construct',
                 false
             );
 
             $this->analyzeCallToMethod(
+                $this->code_base,
                 $method,
                 $node
             );
@@ -693,6 +726,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             $method = AST::classMethodFromNodeInContext(
                 $node,
                 $this->context,
+                $this->code_base,
                 $method_name,
                 true
             );
@@ -702,7 +736,8 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             if(!$method->isStatic() && 'parent' !== $static_class) {
                 $clazz = AST::classFromNodeInContext(
                     $node,
-                    $this->context
+                    $this->context,
+                    $this->code_base
                 );
 
                 Log::err(
@@ -716,6 +751,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
             // Make sure the parameters look good
             $this->analyzeCallToMethod(
+                $this->code_base,
                 $method,
                 $node
             );
@@ -750,6 +786,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             $method = AST::classMethodFromNodeInContext(
                 $node,
                 $this->context,
+                $this->code_base,
                 $node->children['method'],
                 false
             );
@@ -768,7 +805,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         }
 
         // Check the call for paraemter and argument types
-        $this->analyzeCallToMethod($method, $node);
+        $this->analyzeCallToMethod(
+            $this->code_base,
+            $method,
+            $node
+        );
 
         return $this->context;
     }
@@ -777,12 +818,14 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      * Analyze the parameters and arguments for a call
      * to the given method or function
      *
+     * @param CodeBase $code_base
      * @param Method $method
      * @param Node $node
      *
      * @return null
      */
     private function analyzeCallToMethod(
+        CodeBase $code_base,
         Method $method,
         Node $node
     ) {
@@ -804,7 +847,8 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                     // if it doesn't exist
                     $variable = AST::getOrCreateVariableFromNodeInContext(
                         $argument,
-                        $this->context
+                        $this->context,
+                        $this->code_base
                     );
                 } else if (
                     $argument->kind == \ast\AST_STATIC_PROP
@@ -819,7 +863,8 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                             $property = AST::getOrCreatePropertyFromNodeInContext(
                                 $argument->children['prop'],
                                 $argument,
-                                $this->context
+                                $this->context,
+                                $this->code_base
                             );
                          } catch (CodeBaseException $exception) {
                              Log::err(
@@ -841,7 +886,12 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         }
 
         // Confirm the argument types are clean
-        ArgumentType::analyze($method, $node, $this->context);
+        ArgumentType::analyze(
+            $method,
+            $node,
+            $this->context,
+            $this->code_base
+        );
 
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables
@@ -860,7 +910,8 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 if ($argument->kind == \ast\AST_VAR) {
                     $variable = AST::getOrCreateVariableFromNodeInContext(
                         $argument,
-                        $this->context
+                        $this->context,
+                        $this->code_base
                     );
                 } else if (
                     $argument->kind == \ast\AST_STATIC_PROP
@@ -875,7 +926,8 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                             $variable = AST::getOrCreatePropertyFromNodeInContext(
                                 $argument->children['prop'],
                                 $argument,
-                                $this->context
+                                $this->context,
+                                $this->code_base
                             );
                          } catch (CodeBaseException $exception) {
                              Log::err(
@@ -935,7 +987,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             if ($parameter->getUnionType()->isEmpty()) {
                 $has_argument_parameter_mismatch = true;
                 $argument_type = UnionType::fromNode(
-                    $this->context, $argument
+                    $this->context, $this->code_base, $argument
                 );
 
 
@@ -969,7 +1021,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             && (!$this->context->isMethodScope()
                 || $method->getFQSEN() !== $this->context->getMethodFQSEN())
         ) {
-            $method->analyze($method->getContext());
+            $method->analyze($method->getContext(), $code_base);
         }
 
         // Reset to the original parameter list after having

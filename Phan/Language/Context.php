@@ -15,11 +15,6 @@ use \Phan\Log;
 class Context {
 
     /**
-     * @var CodeBase
-     */
-    private $code_base;
-
-    /**
      * @var string
      * The path to the file in which this element is defined
      */
@@ -83,13 +78,7 @@ class Context {
      */
     private $scope = null;
 
-    /**
-     * @param CodeBase $code_base
-     * A reference to the entire code base in which this
-     * context exists
-     */
-    public function __construct(CodeBase $code_base) {
-        $this->code_base = $code_base;
+    public function __construct() {
         $this->file = 'internal';
         $this->namespace = '';
         $this->namespace_map = [];
@@ -100,14 +89,6 @@ class Context {
         $this->line_number_start = 0;
         $this->line_number_end = 0;
         $this->scope = new Scope();
-    }
-
-    /**
-     * @return CodeBase
-     * The code base in which this context exists
-     */
-    public function getCodeBase() : CodeBase {
-        return $this->code_base;
     }
 
     /**
@@ -365,11 +346,6 @@ class Context {
     public function withIsConditional(bool $is_conditional) : Context {
         $context = clone($this);
         $context->is_conditional = $is_conditional;
-
-        if ($is_conditional) {
-            $this->getCodeBase()->incrementConditionals();
-        }
-
         return $context;
     }
 
@@ -485,14 +461,17 @@ class Context {
     }
 
     /**
+     * @param CodeBase $code_base
+     * The global code base holding all state
+     *
      * @return Clazz
      * Get the class in this scope, or fail real hard
      */
-    public function getClassInScope() : Clazz {
+    public function getClassInScope(CodeBase $code_base) : Clazz {
         assert($this->isClassScope(),
             "Must be in class scope to get class");
 
-        if (!$this->getCodeBase()->hasClassWithFQSEN($this->getClassFQSEN())) {
+        if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
             Log::err(
                 Log::EFATAL,
                 "Cannot find class with FQSEN {$this->getClassFQSEN()} in context {$this}",
@@ -501,7 +480,7 @@ class Context {
             );
         }
 
-        return $this->getCodeBase()->getClassByFQSEN(
+        return $code_base->getClassByFQSEN(
             $this->getClassFQSEN()
         );
     }
@@ -515,19 +494,25 @@ class Context {
     }
 
     /**
+     * @param CodeBase $code_base
+     * The global code base holding all state
+     *
      * @return Method
      * Get the method in this scope or fail real hard
      */
-    public function getMethodInScope() : Method {
+    public function getMethodInScope(CodeBase $code_base) : Method {
         assert($this->isMethodScope(),
             "Must be in method scope to get method. Actually in {$this}");
 
-        return $this->getCodeBase()->getMethodByFQSEN(
+        return $code_base->getMethodByFQSEN(
             $this->getMethodFQSEN()
         );
     }
 
     /**
+     * @param CodeBase $code_base
+     * The global code base holding all state
+     *
      * @return bool
      * True if we're within a closure scope
      */
@@ -539,11 +524,11 @@ class Context {
      * @return Method
      * Get the closure in this scope or fail real hard
      */
-    public function getClosureInScope() : Method {
+    public function getClosureInScope(CodeBase $code_base) : Method {
         assert($this->isClosureScope(),
             "Must be in closure scope to get closure. Actually in {$this}");
 
-        return $this->getCodeBase()->getMethodByFQSEN(
+        return $code_base->getMethodByFQSEN(
             $this->getClosureFQSEN()
         );
     }

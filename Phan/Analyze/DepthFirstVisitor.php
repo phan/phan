@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
@@ -41,8 +42,8 @@ class DepthFirstVisitor extends ScopeVisitor {
      * The context of the parser at the node for which we'd
      * like to determine a type
      */
-    public function __construct(Context $context) {
-        parent::__construct($context);
+    public function __construct(Context $context, CodeBase $code_base) {
+        parent::__construct($context, $code_base);
     }
 
     /**
@@ -68,7 +69,7 @@ class DepthFirstVisitor extends ScopeVisitor {
                     $this->context, $class_name
                 )->withAlternateId($alternate_id++);
 
-            if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+            if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
                 Log::err(
                     Log::EFATAL,
                     "Can't find class {$class_fqsen} - aborting",
@@ -77,7 +78,7 @@ class DepthFirstVisitor extends ScopeVisitor {
                 );
             }
 
-            $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+            $clazz = $this->code_base->getClassByFQSEN(
                 $class_fqsen
             );
 
@@ -134,7 +135,7 @@ class DepthFirstVisitor extends ScopeVisitor {
 
         try {
             $method = AST::functionFromNameInContext(
-                $function_name, $this->context, true
+                $function_name, $this->context, $this->code_base, true
             );
         } catch (CodeBaseException $exception) {
             Log::err(
@@ -149,7 +150,7 @@ class DepthFirstVisitor extends ScopeVisitor {
 
         // Hunt for the alternate associated with the file we're
         // looking at currently in this context.
-        foreach ($method->alternateGenerator($this->context->getCodeBase())
+        foreach ($method->alternateGenerator($this->code_base)
             as $i => $alternate_method
         ) {
             if ($alternate_method->getContext()->getFile()
@@ -191,14 +192,17 @@ class DepthFirstVisitor extends ScopeVisitor {
                 $closure_name
             );
 
-        $method =
-            Method::fromNode($this->context, $node);
+        $method = Method::fromNode(
+            $this->context,
+            $this->code_base,
+            $node
+        );
 
         // Override the FQSEN with the found alternate ID
         $method->setFQSEN($closure_fqsen);
 
         // Make the closure reachable by FQSEN from anywhere
-        $this->context->getCodeBase()->addClosure($method);
+        $this->code_base->addClosure($method);
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
@@ -256,6 +260,7 @@ class DepthFirstVisitor extends ScopeVisitor {
                         $variable = Variable::fromNodeInContext(
                             $use,
                             $this->context,
+                            $this->code_base,
                             false
                         );
                     }
@@ -287,6 +292,7 @@ class DepthFirstVisitor extends ScopeVisitor {
                 // Read the parameter
                 $parameter = Parameter::fromNode(
                     $this->context,
+                    $this->code_base,
                     $param
                 );
 
@@ -313,6 +319,7 @@ class DepthFirstVisitor extends ScopeVisitor {
                     Variable::fromNodeInContext(
                         $child_node,
                         $this->context,
+                        $this->code_base,
                         false
                     );
 
@@ -326,12 +333,14 @@ class DepthFirstVisitor extends ScopeVisitor {
             $variable = Variable::fromNodeInContext(
                 $node->children['value'],
                 $this->context,
+                $this->code_base,
                 false
             );
 
             // Get the type of the node from the left side
             $type = UnionType::fromNode(
                 $this->context,
+                $this->code_base,
                 $node->children['expr']
             );
 
@@ -366,6 +375,7 @@ class DepthFirstVisitor extends ScopeVisitor {
             $variable = Variable::fromNodeInContext(
                 $node->children['key'],
                 $this->context,
+                $this->code_base,
                 false
             );
 
@@ -401,8 +411,8 @@ class DepthFirstVisitor extends ScopeVisitor {
                 );
 
             // Check to see if the class actually exists
-            if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
-                $clazz = $this->context->getCodeBase()->getClassByFQSEN(
+            if ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
+                $clazz = $this->code_base->getClassByFQSEN(
                     $class_fqsen
                 );
             } else {
@@ -423,6 +433,7 @@ class DepthFirstVisitor extends ScopeVisitor {
             $variable = Variable::fromNodeInContext(
                 $node->children['var'],
                 $this->context,
+                $this->code_base,
                 false
             );
 
@@ -441,6 +452,6 @@ class DepthFirstVisitor extends ScopeVisitor {
      * Get the class on this scope or fail real hard
      */
     private function getContextClass() : Clazz {
-        return $this->context->getClassInScope();
+        return $this->context->getClassInScope($this->code_base);
     }
 }

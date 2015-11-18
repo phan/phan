@@ -128,6 +128,7 @@ class UnionType {
 
     /**
      * @param Context $context
+     * @param CodeBase $code_base
      * @param Node|string|null $node
      *
      * @return UnionType
@@ -137,6 +138,7 @@ class UnionType {
      */
     public static function fromNode(
         Context $context,
+        CodeBase $code_base,
         $node
     ) : UnionType {
         if(!($node instanceof Node)) {
@@ -148,7 +150,8 @@ class UnionType {
         }
 
         return (new Element($node))->acceptKindVisitor(
-            new UnionTypeVisitor($context)
+            new UnionTypeVisitor($context, $code_base),
+            $code_base
         );
 	}
 
@@ -175,10 +178,9 @@ class UnionType {
      * Formerly `function internal_varargs_check`
      */
     public static function internalFunctionSignatureMapForFQSEN(
-        FQSEN $function_fqsen,
-        CodeBase $code_base
+        FQSEN $function_fqsen
     ) : array {
-        $context = new Context($code_base);
+        $context = new Context;
 
         $map = self::internalFunctionSignatureMap();
 
