@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
 use \Phan\Language\AST;
@@ -40,20 +39,12 @@ class UnionTypeVisitor extends KindVisitorImplementation {
     private $context;
 
     /**
-     * @var CodeBase
-     */
-    private $code_base;
-
-    /**
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
-     *
-     * @param CodeBase $code_base
      */
-    public function __construct(Context $context, CodeBase $code_base) {
+    public function __construct(Context $context) {
         $this->context = $context;
-        $this->code_base = $code_base;
     }
 
     /**
@@ -94,7 +85,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                     $element_types[] =
                         UnionType::fromNode(
                             $this->context,
-                            $this->code_base,
                             $node->children[$i]->children['value']
                         );
                 } else {
@@ -130,10 +120,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
     public function visitBinaryOp(Node $node) : UnionType {
         return
             (new Element($node))->acceptBinaryFlagVisitor(
-                new BinaryOperatorFlagVisitor(
-                    $this->context,
-                    $this->code_base
-                )
+                new BinaryOperatorFlagVisitor($this->context)
             );
     }
 
@@ -214,11 +201,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitNew(Node $node) : UnionType {
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        $class_name =
+            AST::classNameFromNode($this->context, $node);
 
         if(empty($class_name)) {
             return ObjectType::instance()->asUnionType();
@@ -229,8 +213,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $class_name
         );
 
-        if ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
-            return $this->code_base->getClassByFQSEN(
+        if ($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+            return $this->context->getCodeBase()->getClassByFQSEN(
                 $class_fqsen
             )->getUnionType();
         }
@@ -256,7 +240,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         $union_type =
             UnionType::fromNode(
                 $this->context,
-                $this->code_base,
                 $node->children['expr']
             );
 
@@ -311,14 +294,14 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
             // If we can't find the class, the type probably
             // wasn't a class.
-            if (!$this->code_base->hasClassWithFQSEN(
+            if (!$this->context->getCodeBase()->hasClassWithFQSEN(
                 $class_fqsen
             )) {
                 continue;
             }
 
             $clazz =
-                $this->code_base->getClassByFQSEN($class_fqsen);
+                $this->context->getCodeBase()->getClassByFQSEN($class_fqsen);
 
             // If the class has type ArrayAccess, it can be indexed
             // as if it were an array. That being said, we still don't
@@ -444,11 +427,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return StringType::instance()->asUnionType(); // class name fetch
         }
 
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        $class_name =
+            AST::classNameFromNode($this->context, $node);
 
         if(!$class_name) {
             Log::err(
@@ -468,7 +448,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
 
         // Make sure the class exists
-        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+        if (!$this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
             Log::err(
                 Log::EUNDEF,
                 "Can't access undeclared constant {$class_name}::{$constant_name}",
@@ -481,7 +461,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // Get a reference to the class defining the constant
         $defining_clazz =
-            $this->code_base->getClassByFQSEN($class_fqsen);
+            $this->context->getCodeBase()->getClassByFQSEN($class_fqsen);
 
         // Climb the parent tree to find the definition of the
         // constant
@@ -492,14 +472,14 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             }
 
             // Make sure that parent exists
-            if (!$this->code_base->hasClassWithFQSEN(
+            if (!$this->context->getCodeBase()->hasClassWithFQSEN(
                 $defining_clazz->getParentClassFQSEN()
             )) {
                 return new UnionType();
             }
 
             // Climb to that parent
-            $defining_clazz = $this->code_base
+            $defining_clazz = $this->context->getCodeBase()
                 ->getClassByFQSEN($defining_clazz->getParentClassFQSEN());
         }
 
@@ -532,11 +512,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitProp(Node $node) : UnionType {
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        $class_name =
+            AST::classNameFromNode($this->context, $node);
 
         if(!($class_name
             && !($node->children['prop'] instanceof Node))
@@ -551,11 +528,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
 
         assert(
-            $this->code_base->hasClassWithFQSEN($class_fqsen),
+            $this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen),
             "Class $class_fqsen must exist"
         );
 
-        $clazz = $this->code_base->getClassByFQSEN(
+        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
             $class_fqsen
         );
 
@@ -601,11 +578,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return new UnionType();
         }
 
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        $class_name =
+            AST::classNameFromNode($this->context, $node);
 
         if(!($class_name
             && !($node->children['prop'] instanceof Node))
@@ -620,11 +594,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
 
         assert(
-            $this->code_base->hasClassWithFQSEN($class_fqsen),
+            $this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen),
             "Class $class_fqsen must exist"
         );
 
-        $clazz = $this->code_base->getClassByFQSEN(
+        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
             $class_fqsen
         );
 
@@ -702,20 +676,20 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // If the function doesn't exist, check to see if its
         // a call to a builtin method
-        if (!$this->code_base->hasMethodWithFQSEN(
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
             $function_fqsen
         )) {
             $function_fqsen =
                 FQSEN::fromFullyQualifiedString('\\::' . $function_name);
         }
 
-        if (!$this->code_base->hasMethodWithFQSEN($function_fqsen)) {
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN($function_fqsen)) {
             // Missing internal (bulitin) method.
             return new UnionType();
         }
 
         $function =
-            $this->code_base->getMethodByFQSEN(
+            $this->context->getCodeBase()->getMethodByFQSEN(
                 $function_fqsen
             );
 
@@ -725,7 +699,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             && $function->getUnionType()->isEmpty()
         ) {
             $map = UnionType::internalFunctionSignatureMapForFQSEN(
-                $function_fqsen
+                $function_fqsen,
+                $this->context->getCodeBase()
             );
 
             return $map[$function_name] ?? new UnionType();
@@ -746,11 +721,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitStaticCall(Node $node) : UnionType {
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        $class_name =
+            AST::classNameFromNode($this->context, $node);
 
         // assert(!empty($class_name), 'Class name cannot be empty');
 
@@ -777,13 +749,13 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             ->withClassName($this->context, $class_name)
             ->withMethodName($this->context, $method_name);
 
-        if (!$this->code_base->hasMethodWithFQSEN(
+        if (!$this->context->getCodeBase()->hasMethodWithFQSEN(
             $method_fqsen
         )) {
             return new UnionType();
         }
 
-        $method = $this->code_base->getMethodByFQSEN(
+        $method = $this->context->getCodeBase()->getMethodByFQSEN(
             $method_fqsen
         );
 
@@ -802,11 +774,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitMethodCall(Node $node) : UnionType {
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        $class_name =
+            AST::classNameFromNode($this->context, $node);
 
         if (empty($class_name)) {
             return new UnionType();
@@ -819,11 +788,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
 
         assert(
-            $this->code_base->hasClassWithFQSEN($class_fqsen),
+            $this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen),
             "Class $class_fqsen must exist"
         );
 
-        $clazz = $this->code_base->getClassByFQSEN(
+        $clazz = $this->context->getCodeBase()->getClassByFQSEN(
             $class_fqsen
         );
 
@@ -872,7 +841,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         $type =
             UnionType::fromNode(
                 $this->context,
-                $this->code_base,
                 $node->children['expr']
             );
 
@@ -900,7 +868,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         return UnionType::fromNode(
             $this->context,
-            $this->code_base,
             $node->children['expr']
         );
     }

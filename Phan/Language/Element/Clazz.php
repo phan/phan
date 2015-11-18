@@ -159,7 +159,7 @@ class Clazz extends TypedStructuralElement {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
 
-        $context = new Context();
+        $context = new Context($code_base);
 
         // Build a base class element
         $clazz = new Clazz(
@@ -230,7 +230,6 @@ class Clazz extends TypedStructuralElement {
             $method_list =
                 Method::methodListFromReflectionClassAndMethod(
                     $context->withClassFQSEN($clazz->getFQSEN()),
-                    $code_base,
                     $class,
                     $reflection_method
                 );

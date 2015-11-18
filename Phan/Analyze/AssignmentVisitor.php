@@ -2,7 +2,6 @@
 namespace Phan\Analyze;
 
 use \Phan\Analyze\Analyzable;
-use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
@@ -31,11 +30,6 @@ class AssignmentVisitor extends KindVisitorImplementation {
     private $context;
 
     /**
-     * @var CodeBase
-     */
-    private $code_base;
-
-    /**
      * @var Node
      */
     private $assignment_node;
@@ -52,12 +46,10 @@ class AssignmentVisitor extends KindVisitorImplementation {
      */
     public function __construct(
         Context $context,
-        CodeBase $code_base,
         Node $assignment_node,
         UnionType $right_type
     ) {
         $this->context = $context;
-        $this->code_base = $code_base;
         $this->assignment_node = $assignment_node;
         $this->right_type = $right_type;
     }
@@ -104,7 +96,6 @@ class AssignmentVisitor extends KindVisitorImplementation {
             $variable = Variable::fromNodeInContext(
                 $child_node,
                 $this->context,
-                $this->code_base,
                 false
             );
 
@@ -171,7 +162,6 @@ class AssignmentVisitor extends KindVisitorImplementation {
             (new Element($node->children['expr']))->acceptKindVisitor(
                 new AssignmentVisitor(
                     $this->context,
-                    $this->code_base,
                     $node,
                     $right_type
                 )
@@ -202,11 +192,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
             "Property must be string in context {$this->context}");
 
         try {
-            $clazz = AST::classFromNodeInContext(
-                $node,
-                $this->context,
-                $this->code_base
-            );
+            $clazz = AST::classFromNodeInContext($node, $this->context);
         } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EFATAL,
@@ -229,8 +215,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     AST::getOrCreatePropertyFromNodeInContext(
                         $property_name,
                         $node,
-                        $this->context,
-                        $this->code_base
+                        $this->context
                     );
                 } else {
                     Log::err(
@@ -263,7 +248,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
 
         if (!$this->right_type->canCastToExpandedUnionType(
             $property->getUnionType(),
-            $this->code_base
+            $this->context->getCodeBase()
         )) {
             Log::err(
                 Log::ETYPE,
@@ -326,8 +311,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
 
         $variable = Variable::fromNodeInContext(
             $this->assignment_node,
-            $this->context,
-            $this->code_base
+            $this->context
         );
 
         // Set that type on the variable

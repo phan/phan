@@ -16,23 +16,20 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
     /** @var Context */
     protected $context = null;
 
-    /** @var CodeBase */
-    protected $code_base = null;
-
     protected function setUp() {
         global $internal_class_name_list;
         global $internal_interface_name_list;
         global $internal_trait_name_list;
         global $internal_function_name_list;
 
-        $this->code_base = new CodeBase(
+        $code_base = new CodeBase(
             $internal_class_name_list,
             $internal_interface_name_list,
             $internal_trait_name_list,
             $internal_function_name_list
         );
 
-        $this->context = new Context;
+        $this->context = new Context($code_base);
     }
 
     public function tearDown() {
@@ -108,7 +105,6 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
     private function typeStringFromCode(string $code) : string {
         return UnionType::fromNode(
             $this->context,
-            $this->code_base,
             \ast\parse_code(
                 $code,
                 Config::get()->ast_version

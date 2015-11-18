@@ -20,11 +20,6 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
     private $trait_name_list;
     private $function_name_list;
 
-    /**
-     * @var CodeBase
-     */
-    private $code_base;
-
     protected function setUp() {
         global $internal_class_name_list;
         global $internal_interface_name_list;
@@ -34,32 +29,19 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
         $this->interface_name_list = $internal_interface_name_list;
         $this->trait_name_list = $internal_trait_name_list;
         $this->function_name_list = $internal_function_name_list;
-
-
-        $this->code_base =
-            $code_base = new CodeBase(
-                [], // $this->class_name_list,
-                [], // $this->interface_name_list,
-                [], // $this->trait_name_list,
-                []  // $this->function_name_list
-            );
-
-
     }
 
     public function tearDown() {
     }
 
     public function testClassInCodeBase() {
-
-
         $context =
             $this->contextForCode("
                 Class A {}
             ");
 
         $this->assertTrue(
-            $this->code_base->hasClassWithFQSEN(
+            $context->getCodeBase()->hasClassWithFQSEN(
                 FQSEN::fromFullyQualifiedString('A')
             )
         );
@@ -73,7 +55,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
             ");
 
         $this->assertTrue(
-            $this->code_base->hasClassWithFQSEN(
+            $context->getCodeBase()->hasClassWithFQSEN(
                 FQSEN::fromFullyQualifiedString('\A\b')
             )
         );
@@ -94,12 +76,12 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
             FQSEN::fromFullyQualifiedString('\A\b');
 
         $this->assertTrue(
-            $this->code_base->hasClassWithFQSEN($class_fqsen),
+            $context->getCodeBase()->hasClassWithFQSEN($class_fqsen),
             "Class with FQSEN $class_fqsen not found"
         );
 
         $clazz =
-            $this->code_base->getClassByFQSEN($class_fqsen);
+            $context->getCodeBase()->getClassByFQSEN($class_fqsen);
 
         $this->assertTrue(
             $clazz->hasMethodWithName('c'),
@@ -115,14 +97,20 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
         string $code_stub
     ) : Context {
 
+        $code_base = new CodeBase(
+            [], // $this->class_name_list,
+            [], // $this->interface_name_list,
+            [], // $this->trait_name_list,
+            []  // $this->function_name_list
+        );
+
         return
             (new Phan)->parseNodeInContext(
                 \ast\parse_code(
                     '<?php ' . $code_stub,
                     Config::get()->ast_version
                 ),
-                new Context,
-                $this->code_base
+                new Context($code_base)
             );
     }
 }

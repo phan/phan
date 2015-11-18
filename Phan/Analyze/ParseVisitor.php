@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Language\AST;
@@ -33,7 +32,7 @@ use \ast\Node;
 
 /**
  * The class is a visitor for AST nodes that does parsing. Each
- * visitor populates the $code_base with any
+ * visitor populates the $context->getCodeBase() with any
  * globally accessible structural elements and will return a
  * possibly new context as modified by the given node.
  *
@@ -51,13 +50,9 @@ class ParseVisitor extends ScopeVisitor {
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
-     *
-     * @param CodeBase $code_base
-     * The global code base in which we store all
-     * state
      */
-    public function __construct(Context $context, CodeBase $code_base) {
-        parent::__construct($context, $code_base);
+    public function __construct(Context $context) {
+        parent::__construct($context);
     }
 
     /**
@@ -161,7 +156,7 @@ class ParseVisitor extends ScopeVisitor {
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while($this->code_base->hasClassWithFQSEN($class_fqsen)) {
+        while($this->context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
             $class_fqsen = $class_fqsen->withAlternateId(++$alternate_id);
         }
 
@@ -187,7 +182,7 @@ class ParseVisitor extends ScopeVisitor {
 
         // Add the class to the code base as a globally
         // accessible object
-        $this->code_base->addClass($clazz);
+        $this->context->getCodeBase()->addClass($clazz);
 
         // Look to see if we have a parent class
         if(!empty($node->children['extends'])) {
@@ -281,7 +276,7 @@ class ParseVisitor extends ScopeVisitor {
             $clazz->addTraitFQSEN($trait_fqsen);
         }
 
-        $this->code_base->incrementTraits();
+        $this->context->getCodeBase()->incrementTraits();
 
         return $this->context;
     }
@@ -310,22 +305,19 @@ class ParseVisitor extends ScopeVisitor {
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while($this->code_base->hasMethodWithFQSEN($method_fqsen)) {
+        while($this->context->getCodeBase()->hasMethodWithFQSEN($method_fqsen)) {
             $method_fqsen =
                 $method_fqsen->withAlternateId(++$alternate_id);
         }
 
-        $method = Method::fromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        $method =
+            Method::fromNode($this->context, $node);
 
         // Override the FQSEN with the found alternate ID
         $method->setFQSEN($method_fqsen);
 
         $clazz->addMethod($method);
-        $this->code_base->addMethod($method);
+        $this->context->getCodeBase()->addMethod($method);
 
         if ('__construct' === $method_name) {
             $clazz->setIsParentConstructorCalled(false);
@@ -381,7 +373,6 @@ class ParseVisitor extends ScopeVisitor {
             // @var UnionType
             $type = UnionType::fromNode(
                 $this->context,
-                $this->code_base,
                 $child_node->children['default']
             );
 
@@ -461,7 +452,6 @@ class ParseVisitor extends ScopeVisitor {
                 $child_node->children['name'],
                 UnionType::fromNode(
                     $this->context,
-                    $this->code_base,
                     $child_node->children['value']
                 ),
                 $child_node->flags ?? 0
@@ -498,19 +488,18 @@ class ParseVisitor extends ScopeVisitor {
                     )
                     ->withNamespace($this->context->getNamespace())
                     ->withAlternateId($alternate_id++);
-        } while($this->code_base
+        } while($this->context->getCodeBase()
             ->hasMethodWithFQSEN($function_fqsen));
 
         $method = Method::fromNode(
             $this->context
                 ->withLineNumberStart($node->lineno ?? 0)
                 ->withLineNumberEnd($node->endLineno ?? 0),
-            $this->code_base,
             $node
         );
 
         $method->setFQSEN($function_fqsen);
-        $this->code_base->addFunction($method);
+        $this->context->getCodeBase()->addFunction($method);
 
         // Send the context into the method
         $context = $this->context->withMethodFQSEN(
@@ -554,7 +543,7 @@ class ParseVisitor extends ScopeVisitor {
                 'func_get_args', 'func_get_arg', 'func_num_args'
             ])
         ) {
-            $this->context->getMethodInScope($this->code_base)
+            $this->context->getMethodInScope()
                 ->setNumberOfOptionalParameters(999999);
         }
 
@@ -654,6 +643,6 @@ class ParseVisitor extends ScopeVisitor {
      * Get the class on this scope or fail real hard
      */
     private function getContextClass() : Clazz {
-        return $this->context->getClassInScope($this->code_base);
+        return $this->context->getClassInScope();
     }
 }

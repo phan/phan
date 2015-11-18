@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\CodeBase;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
@@ -18,21 +17,12 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
     protected $context;
 
     /**
-     * @var CodeBase
-     */
-    protected $code_base;
-
-    /**
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
-     *
-     * @param CodeBase $code_base
-     * The global code base holding all state
      */
-    public function __construct(Context $context, CodeBase $code_base) {
+    public function __construct(Context $context) {
         $this->context = $context;
-        $this->code_base = $code_base;
     }
 
     /**

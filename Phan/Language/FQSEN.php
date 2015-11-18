@@ -171,7 +171,7 @@ class FQSEN {
      */
     public static function fromFullyQualifiedString(string $fqsen_string) : FQSEN {
         return self::fromContextAndString(
-            new Context,
+            new Context(new CodeBase([], [], [], [])),
             $fqsen_string
         );
     }

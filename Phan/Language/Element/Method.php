@@ -141,7 +141,8 @@ class Method extends TypedStructuralElement {
             $reflection_function->getNumberOfParameters()
             - $number_of_required_parameters;
 
-        $context = new Context();
+        $context = new Context($code_base);
+
 
         $parts = explode('\\', $reflection_function->getName());
         $method_name = array_pop($parts);
@@ -163,7 +164,7 @@ class Method extends TypedStructuralElement {
 
         $method->setFQSEN($fqsen);
 
-        return self::methodListFromMethod($method, $code_base);
+        return self::methodListFromMethod($method);
     }
 
     /**
@@ -171,7 +172,6 @@ class Method extends TypedStructuralElement {
      */
     public static function methodListFromReflectionClassAndMethod(
         Context $context,
-        CodeBase $code_base,
         \ReflectionClass $class,
         \ReflectionMethod $method
     ) : array {
@@ -195,7 +195,7 @@ class Method extends TypedStructuralElement {
             $number_of_optional_parameters
         );
 
-        return self::methodListFromMethod($method, $code_base);
+        return self::methodListFromMethod($method);
     }
 
     /**
@@ -203,20 +203,17 @@ class Method extends TypedStructuralElement {
      * Get a list of methods hydrated with type information
      * for the given partial method
      *
-     * @param CodeBase $code_base
-     * The global code base holding all state
-     *
      * @return Method[]
      * A list of typed methods based on the given method
      */
     private static function methodListFromMethod(
-        Method $method,
-        CodeBase $code_base
+        Method $method
     ) : array {
         // See if we have any type information for this
         // internal function
         $map_list = UnionType::internalFunctionSignatureMapForFQSEN(
-            $method->getFQSEN()
+            $method->getFQSEN(),
+            $method->getContext()->getCodeBase()
         );
 
         if (!$map_list) {
@@ -293,8 +290,6 @@ class Method extends TypedStructuralElement {
      * @param Context $context
      * The context in which the node appears
      *
-     * @param CodeBase $code_base
-     *
      * @param Node $node
      * An AST node representing a method
      *
@@ -308,7 +303,6 @@ class Method extends TypedStructuralElement {
      */
     public static function fromNode(
         Context $context,
-        CodeBase $code_base,
         Node $node
     ) : Method {
 
@@ -324,11 +318,7 @@ class Method extends TypedStructuralElement {
         // The list of parameters specified on the
         // method
         $parameter_list =
-            Parameter::listFromNode(
-                $context,
-                $code_base,
-                $node->children['params']
-            );
+            Parameter::listFromNode($context, $node->children['params']);
 
         // Add each parameter to the scope of the function
         foreach ($parameter_list as $parameter) {

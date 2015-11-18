@@ -135,7 +135,7 @@ class Phan {
         );
 
         $context =
-            (new Context)->withFile($file_path);
+            (new Context($code_base))->withFile($file_path);
 
         if (empty($node)) {
             Log::err(
@@ -147,7 +147,7 @@ class Phan {
             return $context;
         }
 
-        return $this->parseNodeInContext($node, $context, $code_base);
+        return $this->parseNodeInContext($node, $context);
     }
 
     /**
@@ -162,17 +162,12 @@ class Phan {
      * @param Context $context
      * The context in which this node exists
      *
-     * @param CodeBase $code_base
-     * The global code base in which we store all
-     * state
-     *
      * @return Context
      * The context from within the node is returned
      */
     public function parseNodeInContext(
         Node $node,
-        Context $context,
-        CodeBase $code_base
+        Context $context
     ) : Context {
 
         // Visit the given node populating the code base
@@ -181,11 +176,9 @@ class Phan {
         // given node
         $context =
             (new Element($node))->acceptKindVisitor(
-                new ParseVisitor(
-                    $context
-                        ->withLineNumberStart($node->lineno ?? 0)
-                        ->withLineNumberEnd($node->endLineno ?? 0),
-                    $code_base
+                new ParseVisitor($context
+                    ->withLineNumberStart($node->lineno ?? 0)
+                    ->withLineNumberEnd($node->endLineno ?? 0)
                 )
             );
 
@@ -205,8 +198,7 @@ class Phan {
             $child_context =
                 $this->parseNodeInContext(
                     $child_node,
-                    $child_context,
-                    $code_base
+                    $child_context
                 );
 
             assert(!empty($child_context),
@@ -277,7 +269,9 @@ class Phan {
      * can scan for more complicated issues.
      *
      * @param CodeBase $code_base
-     * The global code base holding all state
+     * A code base needs to be passed in because we require
+     * it to be initialized before any classes or files are
+     * loaded.
      *
      * @param string[] $file_path_list
      * A list of files to scan
@@ -297,7 +291,8 @@ class Phan {
         );
 
         // Set the file on the context
-        $context = (new Context)->withFile($file_path);
+        $context =
+            (new Context($code_base))->withFile($file_path);
 
         // Ensure we have some content
         if (empty($node)) {
@@ -314,8 +309,7 @@ class Phan {
         // Start recursively analyzing the tree
         return $this->analyzeNodeInContext(
             $node,
-            $context,
-            $code_base
+            $context
         );
     }
 
@@ -333,7 +327,6 @@ class Phan {
     public function analyzeNodeInContext(
         Node $node,
         Context $context,
-        CodeBase $code_base,
         Node $parent_node = null,
         int $depth = 0
     ) : Context {
@@ -347,8 +340,7 @@ class Phan {
                 new DepthFirstVisitor(
                     $context
                         ->withLineNumberStart($node->lineno ?? 0)
-                        ->withLineNumberEnd($node->endLineno ?? 0),
-                    $code_base
+                        ->withLineNumberEnd($node->endLineno ?? 0)
                 )
             );
 
@@ -372,7 +364,6 @@ class Phan {
                     $child_context
                         ->withLineNumberStart($child_node->lineno ?? 0)
                         ->withLineNumberEnd($child_node->endLineno ?? 0),
-                    $code_base,
                     $node,
                     $depth + 1
                 );
@@ -385,7 +376,6 @@ class Phan {
                     $context
                         ->withLineNumberStart($node->lineno ?? 0)
                         ->withLineNumberEnd($node->endLineno ?? 0),
-                    $code_base,
                     $parent_node
                 )
             );
