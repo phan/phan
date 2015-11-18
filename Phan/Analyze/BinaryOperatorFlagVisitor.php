@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Language\AST\FlagVisitorImplementation;
 use \Phan\Language\Context;
@@ -32,10 +33,16 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
     private $context;
 
     /**
+     * @var CodeBase
+     */
+    private $code_base;
+
+    /**
      * Create a new BinaryOperatorFlagVisitor
      */
-    public function __construct(Context $context) {
+    public function __construct(Context $context, CodeBase $code_base) {
         $this->context = $context;
+        $this->code_base = $code_base;
     }
 
     /**
@@ -51,11 +58,13 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
     public function visit(Node $node) : UnionType {
         $left = UnionType::fromNode(
             $this->context,
+            $this->code_base,
             $node->children['left']
         );
 
         $right = UnionType::fromNode(
             $this->context,
+            $this->code_base,
             $node->children['right']
         );
 
@@ -144,12 +153,14 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
         $left =
             UnionType::fromNode(
                 $this->context,
+                $this->code_base,
                 $node->children['left']
             );
 
         $right =
             UnionType::fromNode(
                 $this->context,
+                $this->code_base,
                 $node->children['right']
             );
 
@@ -282,11 +293,13 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
     public function visitBinaryAdd(Node $node) : UnionType {
         $left = UnionType::fromNode(
             $this->context,
+            $this->code_base,
             $node->children['left']
         );
 
         $right = UnionType::fromNode(
             $this->context,
+            $this->code_base,
             $node->children['right']
         );
 

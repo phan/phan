@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Language\Context;
@@ -65,7 +66,7 @@ trait Analyzable {
      * Analyze the node associated with this object
      * in the given context
      */
-    public function analyze(Context $context) : Context {
+    public function analyze(Context $context, CodeBase $code_base) : Context {
         // Don't do anything if we care about being
         // fast
         if (Config::get()->quick_mode) {
@@ -85,7 +86,8 @@ trait Analyzable {
         // don't overwrite anything
         $context = (new Phan)->analyzeNodeInContext(
             $this->getNode(),
-            clone($context)
+            clone($context),
+            $code_base
         );
 
         return $context;

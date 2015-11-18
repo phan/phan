@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Language\AST;
 use \Phan\Language\Context;
@@ -39,6 +40,9 @@ class ArgumentType {
      * @param Context $context
      * The context in which we see the call
      *
+     * @param CodeBase $code_base
+     * The global code base
+     *
      * @return null
      *
      * @see \Phan\Deprecated\Pass2::arg_check
@@ -47,12 +51,18 @@ class ArgumentType {
     public static function analyze(
         Method $method,
         Node $node,
-        Context $context
+        Context $context,
+        CodeBase $code_base
     ) {
         // Special common cases where we want slightly
         // better multi-signature error messages
         if($method->getContext()->isInternal()) {
-            self::analyzeInternalArgumentType($method, $node, $context);
+            self::analyzeInternalArgumentType(
+                $method,
+                $node,
+                $context,
+                $code_base
+            );
         }
 
         // Emit an error if this method is marked as deprecated
@@ -71,7 +81,7 @@ class ArgumentType {
         // Figure out if any version of this method has any
         // parameters that are variadic
         $is_varargs = array_reduce(
-            iterator_to_array($method->alternateGenerator($context->getCodeBase())),
+            iterator_to_array($method->alternateGenerator($code_base)),
             function (bool $carry, Method $alternate_method) : bool {
                 return $carry || (
                     array_reduce($alternate_method->getParameterList(),
@@ -95,7 +105,7 @@ class ArgumentType {
             && $argcount < $method->getNumberOfRequiredParameters()
         ) {
             $alternate_found = array_reduce(
-                (array)$method->alternateGenerator($context->getCodeBase()),
+                (array)$method->alternateGenerator($code_base),
                 function (bool $carry, Method $alternate_method) use(
                     $argcount
                 ) : bool {
@@ -129,7 +139,7 @@ class ArgumentType {
             && $argcount > $method->getNumberOfParameters()
         ) {
             $alternate_found = array_reduce(
-                (array)$method->alternateGenerator($context->getCodeBase()),
+                (array)$method->alternateGenerator($code_base),
                 function (bool $carry, Method $alternate_method) use (
                     $argcount
                 ) : bool {
@@ -160,10 +170,18 @@ class ArgumentType {
         }
 
         // Check the parameter types
-        self::analyzeParameterList($method, $arglist, $context);
+        self::analyzeParameterList(
+            $code_base,
+            $method,
+            $arglist,
+            $context
+        );
     }
 
     /**
+     * @param CodeBase $code_base
+     * The global code base
+     *
      * @param Method $method
      * The method we're analyzing arguments for
      *
@@ -179,6 +197,7 @@ class ArgumentType {
      * Formerly `function arglist_type_check`
      */
     private static function analyzeParameterList(
+        CodeBase $code_base,
         Method $method,
         Node $node,
         Context $context
@@ -231,12 +250,12 @@ class ArgumentType {
             // Get the type of the argument. We'll check it against
             // the parameter in a moment
             $argument_type = UnionType::fromNode(
-                $context, $argument
+                $context, $code_base, $argument
             );
 
             // Expand it to include all parent types up the chain
             $argument_type_expanded =
-                $argument_type->asExpandedTypes($context->getCodeBase());
+                $argument_type->asExpandedTypes($code_base);
 
             // Check the method to see if it has the correct
             // parameter types. If not, keep hunting through
@@ -245,7 +264,7 @@ class ArgumentType {
             $alternate_parameter = null;
             $alternate_found = false;
 
-            foreach ($method->alternateGenerator($context->getCodeBase())
+            foreach ($method->alternateGenerator($code_base)
                 as $alternate_id => $alternate_method
             ) {
                 if (empty($alternate_method->getParameterList()[$i])) {
@@ -260,7 +279,7 @@ class ArgumentType {
                 $alternate_parameter_type_expanded =
                     $alternate_parameter
                     ->getUnionType()
-                    ->asExpandedTypes($context->getCodeBase());
+                    ->asExpandedTypes($code_base);
 
                 // See if the argument can be cast to the
                 // parameter
@@ -318,12 +337,14 @@ class ArgumentType {
     private static function analyzeNodeUnionTypeCast(
         $node,
         Context $context,
+        CodeBase $code_base,
         UnionType $cast_type,
         string $log_message
     ) : bool {
         // Get the type of the node
         $node_type = UnionType::fromNode(
             $context,
+            $code_base,
             $node
         );
 
@@ -357,6 +378,8 @@ class ArgumentType {
      * @param Context $context
      * The context in which we see the call
      *
+     * @param CodeBase $code_base
+     *
      * @return null
      *
      * @see \Phan\Deprecated\Pass2::arg_check
@@ -365,7 +388,8 @@ class ArgumentType {
     private static function analyzeInternalArgumentType(
         Method $method,
         Node $node,
-        Context $context
+        Context $context,
+        CodeBase $code_base
     ) {
         $arglist = $node->children['args'];
         $argcount = count($arglist->children);
@@ -380,6 +404,7 @@ class ArgumentType {
                 self::analyzeNodeUnionTypeCast(
                     $arglist->children[0],
                     $context,
+                    $code_base,
                     ArrayType::instance()->asUnionType(),
                     "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
                 );
@@ -387,11 +412,13 @@ class ArgumentType {
             } else if($argcount == 2) {
                 $arg1_type = UnionType::fromNode(
                     $context,
+                    $code_base,
                     $arglist->children[0]
                 );
 
                 $arg2_type = UnionType::fromNode(
                     $context,
+                    $code_base,
                     $arglist->children[1]
                 );
 
@@ -442,6 +469,7 @@ class ArgumentType {
             self::analyzeNodeUnionTypeCast(
                 $arglist->children[$argcount - 1],
                 $context,
+                $code_base,
                 CallableType::instance()->asUnionType(),
                 "The last argument to {$method->getFQSEN()} must be a callable"
             );
@@ -450,6 +478,7 @@ class ArgumentType {
                 self::analyzeNodeUnionTypeCast(
                     $arglist->children[$i],
                     $context,
+                    $code_base,
                     CallableType::instance()->asUnionType(),
                     "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                 );
@@ -473,6 +502,7 @@ class ArgumentType {
             self::analyzeNodeUnionTypeCast(
                 $arglist->children[$argcount - 1],
                 $context,
+                $code_base,
                 CallableType::instance()->asUnionType(),
                 "The last argument to {$method->getFQSEN()} must be a callable"
             );
@@ -480,6 +510,7 @@ class ArgumentType {
             self::analyzeNodeUnionTypeCast(
                 $arglist->children[$argcount - 2],
                 $context,
+                $code_base,
                 CallableType::instance()->asUnionType(),
                 "The second last argument to {$method->getFQSEN()} must be a callable"
             );
@@ -488,6 +519,7 @@ class ArgumentType {
                 self::analyzeNodeUnionTypeCast(
                     $arglist->children[$i],
                     $context,
+                    $code_base,
                     ArrayType::instance()->asUnionType(),
                     "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                 );
@@ -501,6 +533,7 @@ class ArgumentType {
                 self::analyzeNodeUnionTypeCast(
                     $arglist->children[0],
                     $context,
+                    $code_base,
                     ArrayType::instance()->asUnionType(),
                     "arg#1(token) is %s but {$method->getFQSEN()}() takes string when passed only one arg"
                 );
@@ -514,6 +547,7 @@ class ArgumentType {
                 if (!self::analyzeNodeUnionTypeCast(
                     $arglist->children[0],
                     $context,
+                    $code_base,
                     ArrayType::instance()->asUnionType(),
                     "arg#1(values) is %s but {$method->getFQSEN()}() takes array when passed only one arg"
                 )) {

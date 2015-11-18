@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
@@ -77,6 +78,8 @@ class AST {
      * @param Context $context
      * @param null|string|Node $node
      *
+     * @param CodeBase $code_base
+     *
      * @return string
      * The class name associated with nodes of various types
      *
@@ -85,11 +88,12 @@ class AST {
      */
     public static function classNameFromNode(
         Context $context,
+        CodeBase $code_base,
         Node $node
     ) : string {
         // Extract the class name
         $class_name = (new Element($node))->acceptKindVisitor(
-            new ClassNameVisitor($context)
+            new ClassNameVisitor($context, $code_base)
         );
 
         if (empty($class_name)) {
@@ -98,7 +102,11 @@ class AST {
 
         // Validate that the class name is correct
         if (!(new Element($node))->acceptKindVisitor(
-            new ClassNameValidationVisitor($context, $class_name)
+            new ClassNameValidationVisitor(
+                $context,
+                $code_base,
+                $class_name
+            )
         )) {
             return '';
         }
@@ -335,6 +343,9 @@ class AST {
      * @param Context $context
      * The context in which we found the node
      *
+     * @param CodeBase $code_base
+     * The global code base holding all state
+     *
      * @return Clazz
      * The class being referenced in the given node in
      * the given context
@@ -348,10 +359,15 @@ class AST {
      */
     public static function classFromNodeInContext(
         Node $node,
-        Context $context
+        Context $context,
+        CodeBase $code_base
     ) : Clazz {
         // Figure out the name of the class
-        $class_name = self::classNameFromNode($context, $node);
+        $class_name = self::classNameFromNode(
+            $context,
+            $code_base,
+            $node
+        );
 
         // If we can't figure out the class name (which happens
         // from time to time), then give up
@@ -365,14 +381,14 @@ class AST {
             );
 
         // Check to see if the class actually exists
-        if (!$context->getCodeBase()->hasClassWithFQSEN($class_fqsen)) {
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             throw new CodeBaseException(
                 "Can't find class {$class_fqsen}"
             );
         }
 
         $class =
-            $context->getCodeBase()->getClassByFQSEN($class_fqsen);
+            $code_base->getClassByFQSEN($class_fqsen);
 
         return $class;
     }
@@ -383,6 +399,8 @@ class AST {
      *
      * @param Context $context
      * The context in which we found the node
+     *
+     * @param CodeBase $code_base
      *
      * @param Node|string $method_name_or_node
      * Either then name of the method or a node that
@@ -402,10 +420,15 @@ class AST {
     public static function classMethodFromNodeInContext(
         Node $node,
         Context $context,
+        CodeBase $code_base,
         $method_name_or_node,
         bool $is_static
     ) : Method {
-        $clazz = self::classFromNodeInContext($node, $context);
+        $clazz = self::classFromNodeInContext(
+            $node,
+            $context,
+            $code_base
+        );
 
         if ($method_name_or_node instanceof Node) {
             // TODO: The method_name turned out to
@@ -448,6 +471,9 @@ class AST {
      * The context in which we found the reference to the
      * given function name
      *
+     * @param CodeBase $code_base
+     * The global code base holding all state
+     *
      * @param bool $is_function_declaration
      * This must be set to true if we're getting a function
      * that is being declared and false if we're getting a
@@ -463,6 +489,7 @@ class AST {
     public static function functionFromNameInContext(
         string $function_name,
         Context $context,
+        CodeBase $code_base,
         bool $is_function_declaration = false
     ) : Method {
 
@@ -472,7 +499,7 @@ class AST {
             );
 
         // Make sure the method we're calling actually exists
-        if (!$context->getCodeBase()->hasMethodWithFQSEN(
+        if (!$code_base->hasMethodWithFQSEN(
             $function_fqsen
         )) {
             throw new CodeBaseException(
@@ -480,7 +507,7 @@ class AST {
             );
         }
 
-        $method = $context->getCodeBase()->getMethodByFQSEN(
+        $method = $code_base->getMethodByFQSEN(
             $function_fqsen
         );
 
@@ -494,6 +521,8 @@ class AST {
      * @param Context $context
      * The context in which we found the reference
      *
+     * @param CodeBase $code_base
+     *
      * @return Variable
      * A variable in scope or a new variable
      *
@@ -502,7 +531,8 @@ class AST {
      */
     public static function getOrCreateVariableFromNodeInContext(
         Node $node,
-        Context $context
+        Context $context,
+        CodeBase $code_base
     ) : Variable {
 
         // Get the name of the variable
@@ -521,7 +551,7 @@ class AST {
 
         // Create a new variable
         $variable = Variable::fromNodeInContext(
-            $node, $context, false
+            $node, $context, $code_base, false
         );
 
         $context->addScopeVariable($variable);
@@ -536,6 +566,8 @@ class AST {
      * @param Context $context
      * The context in which we found the reference
      *
+     * @param CodeBase $code_base
+     *
      * @return Variable
      * A variable in scope or a new variable
      *
@@ -549,11 +581,16 @@ class AST {
     public static function getOrCreatePropertyFromNodeInContext(
         string $property_name,
         Node $node,
-        Context $context
+        Context $context,
+        CodeBase $code_base
     ) : Property {
         // Figure out the class we're looking the property
         // up for
-        $clazz = self::classFromNodeInContext($node, $context);
+        $clazz = self::classFromNodeInContext(
+            $node,
+            $context,
+            $code_base
+        );
 
         assert(is_string($property_name),
             'Property name must be a string. '

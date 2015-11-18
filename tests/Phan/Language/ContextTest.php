@@ -74,11 +74,11 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
 
         $class_node = $stmt_list_node->children[0];
 
-        $context = new Context($this->code_base);
+        $context = new Context;
 
         $context =
             (new Element($class_node))->acceptKindVisitor(
-                new ParseVisitor($context)
+                new ParseVisitor($context, $this->code_base)
             );
 
         $this->assertEquals(
@@ -91,7 +91,7 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
 
         $context =
             (new Element($method_node))->acceptKindVisitor(
-                new ParseVisitor($context)
+                new ParseVisitor($context, $this->code_base)
             );
 
         $this->assertEquals(
