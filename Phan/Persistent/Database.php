@@ -16,6 +16,10 @@ class Database extends SQLite3 {
             Config::get()->serialized_code_base_file,
             SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE
         );
+
+        $this->exec("PRAGMA synchronous = OFF");
+        $this->exec("PRAGMA journal_mode = OFF");
+        $this->exec("PRAGMA page_size = 4096");
     }
 
     public function __destruct() {
