@@ -474,7 +474,6 @@ class CodeBase extends ModelOne {
             }
         ));
 
-        /*
         // Method map
         $schema->addAssociation(new ModelAssociation(
             'CodeBase_Method', '\Phan\Language\Element\Method',
@@ -482,10 +481,9 @@ class CodeBase extends ModelOne {
                 $code_base->setMethodMap($map);
             },
             function (CodeBase $code_base) {
-                return $code_base->getMethodMap($map);
+                return $code_base->getMethodMap();
             }
         ));
-         */
 
         return $schema;
     }

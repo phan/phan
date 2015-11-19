@@ -10,6 +10,9 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
+use \Phan\Persistent\Column;
+use \Phan\Persistent\ModelAssociation;
+use \Phan\Persistent\Schema;
 use \ast\Node;
 
 class Method extends TypedStructuralElement {
@@ -624,4 +627,62 @@ class Method extends TypedStructuralElement {
 
         return $string;
     }
+
+    /**
+     * @return Schema
+     * The schema for this model
+     */
+    public static function createSchema() : Schema {
+        $schema = new Schema('Method', [
+            new Column('fqsen', 'STRING', true),
+            new Column('name', 'STRING'),
+            new Column('type', 'STRING'),
+            new Column('flags', 'INTEGER'),
+            new Column('context', 'STRING'),
+            new Column('comment', 'STRING'),
+            new Column('is_deprecated', 'BOOL'),
+            new Column('number_of_required_parameters', 'INTEGER'),
+            new Column('number_of_optional_parameters', 'INTEGER'),
+            new Column('is_dynamic', 'BOOL'),
+        ]);
+
+        $schema->addAssociation(new ModelAssociation(
+            'Method_Parameter', '\Phan\Language\Element\Parameter',
+            function (Method $method, array $map) {
+                $method->setParameterList($map);
+            },
+            function (Method $method) {
+                return $method->getParameterList();
+            }
+        ));
+
+        return $schema;
+    }
+
+    /**
+     * @return array
+     * Get a map from column name to row values for
+     * this instance
+     */
+    public function toRow() : array {
+        return array_merge(parent::toRow(), [
+            'number_of_required_parameters' =>
+                $this->number_of_required_parameters,
+            'number_of_optional_parameters' =>
+                $this->number_of_optional_parameters,
+            'is_dynamic' => $this->is_dynamic,
+        ]);
+    }
+
+    /**
+     * @param array
+     * A map from column name to value
+     *
+     * @return Model
+     * An instance of the model derived from row data
+     */
+    public static function fromRow(array $row) : array {
+        print_r($row);
+    }
+
 }
