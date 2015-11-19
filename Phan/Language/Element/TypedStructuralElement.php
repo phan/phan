@@ -6,8 +6,15 @@ use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
+use \Phan\Persistent\Column;
+use \Phan\Persistent\Schema;
 
-class TypedStructuralElement extends StructuralElement {
+/**
+ * Any PHP structural element that also has a type and is
+ * addressable such as a class, method, closure, property,
+ * constant, variable, ...
+ */
+abstract class TypedStructuralElement extends StructuralElement {
 
     /**
      * @var string
@@ -164,6 +171,61 @@ class TypedStructuralElement extends StructuralElement {
      */
     public function setFlags(int $flags) {
         $this->flags = $flags;
+    }
+
+    /**
+     * @return Schema
+     * The schema for this model
+     */
+    public static function createSchema() : Schema {
+        $schema = new Schema(__CLASS__, [
+            new Column('fqsen', 'STRING', true),
+            new Column('name', 'STRING'),
+            new Column('type', 'STRING'),
+            new Column('flags', 'INT'),
+            new Column('context', 'STRING'),
+            new Column('comment', 'STRING'),
+            new Column('is_deprecated', 'BOOL'),
+        ]);
+
+        return $schema;
+    }
+
+    /**
+     * @return array
+     * Get a map from column name to row values for
+     * this instance
+     */
+    public function toRow() : array {
+        return array_merge(parent::toRow(), [
+            'name' => (string)$this->name,
+            'type' => (string)$this->type,
+            'flags' => $this->flags,
+            'fqsen' => (string)$this->fqsen,
+            'context' => (string)$this->getContext(),
+            'comment' => (string)$this->getComment(),
+            'is_deprecated' => $this->isDeprecated(),
+        ]);
+    }
+
+    /**
+     * @param array
+     * A map from column name to value
+     *
+     * @return Model
+     * An instance of the model derived from row data
+     */
+    public static function fromRow(array $row) : array {
+        assert(false, 'fromRow');
+        return [];
+    }
+
+    /**
+     * @return string
+     * The value of the primary key for this model
+     */
+    public function primaryKeyValue() {
+        return (string)$this->fqsen;
     }
 
 }

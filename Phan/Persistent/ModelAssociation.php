@@ -30,12 +30,12 @@ class ModelAssociation extends Association {
         \Closure $read_closure,
         \Closure $write_closure
     ) {
-        $schema = new Schema(
-            $table_name, [ 'id' => 'INT' ], [
-                'source_pk' => 'STRING',
-                'key' => 'STRING',
-                'target_pk' => 'STRING',
-            ]);
+        $schema = new Schema($table_name, [
+            new Column('id', 'INTEGER', true),
+            new Column('source_pk', 'STRING'),
+            new Column('key', 'STRING'),
+            new Column('target_pk', 'STRING'),
+        ]);
 
         parent::__construct($schema, $read_closure, $write_closure);
 
@@ -114,9 +114,9 @@ class ModelAssociation extends Association {
             // Write the association
             $query =
                 $this->schema->queryForInsert([
-                    'source_pk' => "'$primary_key_value'",
-                    'key' => "'$key'",
-                    'target_pk' => "'{$model->primaryKeyValue()}'"
+                    'source_pk' => $primary_key_value,
+                    'key' => $key,
+                    'target_pk' => $model->primaryKeyValue(),
                 ]);
 
             $database->exec($query);

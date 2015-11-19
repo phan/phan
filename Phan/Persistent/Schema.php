@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Persistent;
 
+use \SQLite3;
+
 /**
  * A schema for a persistent model
  */
@@ -13,11 +15,10 @@ class Schema {
     private $table_name;
 
     /**
-     * @var string[]
-     * A map from primary key column name to SQLite
-     * data type
+     * @var string
+     * The name of the primary key column
      */
-    private $primary_key;
+    private $primary_key_name;
 
     /**
      * @var string[];
@@ -46,15 +47,19 @@ class Schema {
      */
     public function __construct(
         string $table_name,
-        array $primary_key,
-        array $column_def_map
+        array $column_list
     ) {
-        assert(1 === ($count = count($primary_key)),
-            "Primary key must have a single map. Have $count.");
-
         $this->table_name = $table_name;
-        $this->primary_key = $primary_key;
-        $this->column_def_map = $column_def_map;
+
+        foreach ($column_list as $column) {
+            $this->column_def_map[$column->name()] = $column;
+            if ($column->isPrimaryKey()) {
+                $this->primary_key_name = $column->name();
+            }
+        }
+
+        assert(!empty($this->primary_key_name),
+            "There must be a primary key column. None given for $table_name.");
     }
 
     /**
@@ -79,7 +84,9 @@ class Schema {
      * The SQLite data type for the primary key
      */
     public function primaryKeyType() : string {
-        return array_values($this->primary_key)[0];
+        return $this->column_def_map[
+            $this->primary_key_name
+        ]->sqlType();
     }
 
     /**
@@ -87,7 +94,7 @@ class Schema {
      * The name of the PK column
      */
     public function primaryKeyName() : string {
-        return array_keys($this->primary_key)[0];
+        return $this->primary_key_name;
     }
 
     /**
@@ -117,13 +124,8 @@ class Schema {
     public function queryForCreateTable() : string {
         $column_def_list = [];
 
-        foreach ($this->primary_key as $name => $type) {
-            $column_def_list[] = "$name $type PRIMARY KEY";
-        }
-
-        foreach ($this->column_def_map as $name => $type
-        ) {
-            $column_def_list[] = "$name $type";
+        foreach ($this->column_def_map as $name => $column) {
+            $column_def_list[] = (string)$column;
         }
 
         return "CREATE TABLE IF NOT EXISTS {$this->table_name} "
@@ -139,10 +141,36 @@ class Schema {
      */
     public function queryForInsert(array $row_map) : string {
         return "REPLACE INTO {$this->table_name} "
-            . '(' . implode(', ', array_keys($row_map)) . ')'
+            . '(' . implode(', ', $this->columnList($row_map)) . ')'
             . ' values '
-            . '(' . implode(', ', array_values($row_map)) . ')'
+            . '(' . implode(', ', $this->valueList($row_map)) . ')'
             ;
+    }
+
+    private function columnList(array $row_map) : array {
+        $list = [];
+        foreach ($row_map as $name => $value) {
+            $list[] = $name;
+        }
+        return $list;
+    }
+
+    private function valueList(array $row_map) : array {
+        $value_list = [];
+        foreach ($row_map as $name => $value) {
+            $column_type =
+                $this->column_def_map[$name]->sqlType();
+            if ($column_type == 'STRING') {
+                $value_list[] =
+                    '"' . SQLite3::escapeString((string)$value) . '"';
+            } else if ($column_type == 'BOOL') {
+                $value_list[] = ($value ? 1 : 0);
+            } else {
+                $value_list[] = $value;
+            }
+        }
+
+        return $value_list;
     }
 
     /**

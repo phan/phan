@@ -240,7 +240,27 @@ class Comment {
     }
 
     public function __toString() : string {
-        return $this->string;
+        $string = "/**\n";
+
+        if ($this->is_deprecated) {
+            $string  .= " * @deprecated\n";
+        }
+
+        foreach ($this->variable_list as $variable) {
+            $string  .= " * @var $variable\n";
+        }
+
+        foreach ($this->parameter_list as $parameter) {
+            $string  .= " * @var $parameter\n";
+        }
+
+        if ($this->return) {
+            $string .= " * @return {$this->return}\n";
+        }
+
+        $string .= " */\n";
+
+        return $string;
     }
 
 }

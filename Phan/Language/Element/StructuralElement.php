@@ -4,11 +4,13 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
+use \Phan\Persistent\ModelOne;
 
 /**
- *
+ * Any PHP structural element such as a property, constant
+ * class, method, closure, ...
  */
-class StructuralElement {
+abstract class StructuralElement extends ModelOne {
 
     /**
      * @var Context
@@ -101,6 +103,19 @@ class StructuralElement {
      */
     public function isInternal() : bool {
         return 'internal' === $this->getContext()->getFile();
+    }
+
+    /**
+     * @return array
+     * Get a map from column name to row values for
+     * this instance
+     */
+    public function toRow() : array {
+        return [
+            'context' => (string)$this->context,
+            'comment' => (string)$this->comment,
+            'is_deprecated' => $this->is_deprecated
+        ];
     }
 
 }

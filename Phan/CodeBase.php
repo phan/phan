@@ -6,6 +6,7 @@ use \Phan\CodeBase\File;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
+use \Phan\Persistent\Column;
 use \Phan\Persistent\Database;
 use \Phan\Persistent\ModelAssociation;
 use \Phan\Persistent\ModelOne;
@@ -162,6 +163,17 @@ class CodeBase extends ModelOne {
     }
 
     /**
+     * @param Clazz[] $class_map
+     * A map from FQSEN string to Clazz
+     *
+     * @return null
+     */
+    private function setClassMap(array $class_map) {
+        $this->class_map = $class_map;
+    }
+
+
+    /**
      * @return Clazz
      * A class with the given FQSEN
      */
@@ -181,11 +193,21 @@ class CodeBase extends ModelOne {
     }
 
     /**
-     * Get a map from FQSEN strings to the method it
+     * @return Method[]
+     * A map from FQSEN strings to the method it
      * represents for all known methods.
      */
     public function getMethodMap() : array {
         return $this->method_map;
+    }
+
+    /**
+     * @param Method[] $method_map
+     * A map from FQSEN strings to the method it
+     * represents for all known methods.
+     */
+    private function setMethodMap(array $method_map) {
+        $this->method_map = $method_map;
     }
 
     /**
@@ -425,12 +447,12 @@ class CodeBase extends ModelOne {
      * The schema for this model
      */
     public static function createSchema() : Schema {
-        $schema = new Schema(
-            'CodeBase', [ 'pk' => 'INT' ], [
-                'version' => 'INTEGER'
-            ]
-        );
+        $schema = new Schema('CodeBase', [
+            new Column('pk', 'INTEGER', true),
+            new Column('version', 'INTEGER'),
+        ]);
 
+        // File map
         $schema->addAssociation(new ModelAssociation(
             'CodeBase_File', '\Phan\CodeBase\File',
             function (CodeBase $code_base, array $file_map) {
@@ -440,6 +462,30 @@ class CodeBase extends ModelOne {
                 return $code_base->getFileMap();
             }
         ));
+
+        // Class map
+        $schema->addAssociation(new ModelAssociation(
+            'CodeBase_Clazz', '\Phan\Language\Element\Clazz',
+            function (CodeBase $code_base, array $map) {
+                $code_base->setClassMap($map);
+            },
+            function (CodeBase $code_base) {
+                return $code_base->getClassMap();
+            }
+        ));
+
+        /*
+        // Method map
+        $schema->addAssociation(new ModelAssociation(
+            'CodeBase_Method', '\Phan\Language\Element\Method',
+            function (CodeBase $code_base, array $map) {
+                $code_base->setMethodMap($map);
+            },
+            function (CodeBase $code_base) {
+                return $code_base->getMethodMap($map);
+            }
+        ));
+         */
 
         return $schema;
     }

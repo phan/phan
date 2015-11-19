@@ -12,6 +12,8 @@ use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
+use \Phan\Persistent\Column;
+use \Phan\Persistent\Schema;
 
 class Clazz extends TypedStructuralElement {
     use \Phan\Memoize;
@@ -724,6 +726,51 @@ class Clazz extends TypedStructuralElement {
         $string .= (string)$this->getFQSEN()->getCanonicalFQSEN();
 
         return $string;
+    }
+
+    /**
+     * @return Schema
+     * The schema for this model
+     */
+    public static function createSchema() : Schema {
+        $schema = new Schema('Clazz', [
+            new Column('fqsen', 'STRING', true),
+            new Column('name', 'STRING'),
+            new Column('type', 'STRING'),
+            new Column('flags', 'INT'),
+            new Column('context', 'STRING'),
+            new Column('comment', 'STRING'),
+            new Column('is_deprecated', 'BOOL'),
+            new Column('parent_class_fqsen', 'STRING'),
+            new Column('is_parent_constructor_called', 'STRING'),
+        ]);
+
+        return $schema;
+    }
+
+    /**
+     * @return array
+     * Get a map from column name to row values for
+     * this instance
+     */
+    public function toRow() : array {
+        return array_merge(parent::toRow(), [
+            'parent_class_fqsen' =>
+                (string)$this->parent_class_fqsen,
+            'is_parent_constructor_called' =>
+                $this->is_parent_constructor_called,
+        ]);
+    }
+
+    /**
+     * @param array
+     * A map from column name to value
+     *
+     * @return Model
+     * An instance of the model derived from row data
+     */
+    public static function fromRow(array $row) : array {
+        print_r($row);
     }
 
 }

@@ -30,11 +30,11 @@ class ListAssociation extends Association {
         \Closure $read_closure,
         \Closure $write_closure
     ) {
-        $schema = new Schema(
-            $table_name, [ 'id' => 'INT' ], [
-                'source_pk' => 'STRING',
-                'value' => $item_sql_type
-            ]);
+        $schema = new Schema($table_name, [
+            new Column('id', 'INTEGER', true),
+            new Column('source_pk', 'STRING'),
+            new Column('value', $item_sql_type)
+        ]);
 
         parent::__construct($schema, $read_closure, $write_closure);
     }
@@ -97,8 +97,8 @@ class ListAssociation extends Association {
             // Write the association
             $query =
                 $this->schema->queryForInsert([
-                    'source_pk' => "'$primary_key_value'",
-                    'value' => "'$value'",
+                    'source_pk' => $primary_key_value,
+                    'value' => $value,
                 ]);
 
             $database->exec($query);

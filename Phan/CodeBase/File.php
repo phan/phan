@@ -5,6 +5,7 @@ use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
 use \Phan\Persistent\ListAssociation;
+use \Phan\Persistent\Column;
 use \Phan\Persistent\Model;
 use \Phan\Persistent\ModelOne;
 use \Phan\Persistent\ModelStringListMap;
@@ -164,12 +165,11 @@ class File extends ModelOne {
      * The schema for this model
      */
     public static function createSchema() : Schema {
-        $schema = new Schema(
-            'File', [ 'file_path' => 'STRING' ], [
-                'modification_time' => 'INTEGER',
-                'analysis_time' => 'INTEGER',
-            ]
-        );
+        $schema = new Schema('File', [
+            new Column('file_path', 'STRING', true),
+            new Column('modification_time', 'INTEGER'),
+            new Column('analysis_time', 'INTEGER'),
+        ]);
 
         $schema->addAssociation(new ListAssociation(
             'File_class_fqsen_list', 'STRING',
@@ -209,7 +209,7 @@ class File extends ModelOne {
      */
     public function toRow() : array {
         return [
-            'file_path' => "'{$this->file_path}'",
+            'file_path' => $this->file_path,
             'modification_time' => $this->modification_time,
             'analysis_time' => $this->analysis_time,
         ];
