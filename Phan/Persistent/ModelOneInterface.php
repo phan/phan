@@ -12,7 +12,7 @@ interface ModelOneInterface {
      * Get a map from column name to row values for
      * this instance
      */
-    abstract public function columnNameRowValueMap() : array;
+    abstract public function toRow() : array;
 
     /**
      * @return string

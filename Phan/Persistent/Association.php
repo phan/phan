@@ -1,35 +1,26 @@
 <?php declare(strict_types=1);
 namespace Phan\Persistent;
 
-class Association {
-    use \Phan\Memoize;
+abstract class Association {
 
     /**
      * @var Schema
      */
-    private $schema;
-
-    /**
-     * @var string
-     */
-    private $associated_class_name;
+    protected $schema;
 
     /**
      * @var \Closure
      */
-    private $read_closure;
+    protected $read_closure;
 
     /**
      * @var \Closure
      */
-    private $write_closure;
+    protected $write_closure;
 
     /**
-     * @param string $table_name
-     * The table we'll be interacting with
-     *
-     * @param string $associated_class_name
-     * The name of hte class we're associating with
+     * @param Schema $schema
+     * The schema for the table backing this association
      *
      * @param \Closure $read_closure
      * A closure that accepts a map from keys to models
@@ -40,102 +31,35 @@ class Association {
      * to model objects that will be written.
      */
     public function __construct(
-        string $table_name,
-        string $associated_class_name,
+        Schema $schema,
         \Closure $read_closure,
         \Closure $write_closure
     ) {
-        $this->associated_class_name = $associated_class_name;
+        $this->schema = $schema;
         $this->read_closure = $read_closure;
         $this->write_closure = $write_closure;
-
-        $this->schema = new Schema(
-            $table_name, [ 'id' => 'INT' ], [
-                'source_pk' => 'STRING',
-                'key' => 'STRING',
-                'target_pk' => 'STRING',
-            ]);
     }
 
     /**
      * @param Database $database
      * The database to read from
      *
-     * @param Model $model
+     * @param ModelOne $model
      * The source model of the association
      *
      * @return Model
      * Read a model from the database with the given pk
      */
-    public function read(Database $database, Model $model) {
-
-        // Select all rows for this PK from the
-        // association table
-        $select_query =
-            $this->schema->queryForSelect($model->primaryKeyValue());
-
-        $result =
-            $database->query($select_query);
-
-        if (!$result || !$result->fetchArray()) {
-            return;
-        }
-
-        $associated_class =
-            $this->associated_class_name;
-
-        // Hydrate each association row to the associated
-        // object
-        $map = [];
-        foreach ($result->fetchArray() as $row) {
-            $key = $row['key'];
-            $target_pk = $row['target_pk'];
-
-            $map[$key] =
-                $associated_class::read($database, $target_pk);
-        }
-
-        // Write the map to the model
-        $read_closure = $this->read_closure;
-        $read_closure($model, $map);
-    }
+    abstract public function read(Database $database, ModelOne $model);
 
     /**
      * @param Database $database
      * The database to write to
      *
-     * @param Model $model
+     * @param ModelOne $model
      * The source model of the association
      *
      * @return null
      */
-    public function write(Database $database, Model $model) {
-        // Ensure that we've initialized this model
-        $this->schema->initializeOnce($database);
-
-        $write_closure = $this->write_closure;
-
-        $primary_key_value =
-            $model->primaryKeyValue();
-
-        foreach ($write_closure($model) as $key => $target_model) {
-
-            $ascn = $this->associated_class_name;
-            $target_schema = $ascn::schema();
-
-            // Write the model
-            $target_model->write($database);
-
-            // Write the association
-            $query =
-                $this->schema->queryForInsert([
-                    'source_pk' => "'$primary_key_value'",
-                    'key' => "'$key'",
-                    'target_pk' => "'{$model->primaryKeyValue()}'"
-                ]);
-
-            $database->exec($query);
-        }
-    }
-
+    abstract public function write(Database $database, ModelOne $model);
 }

@@ -11,7 +11,7 @@ abstract class ModelOne extends Model implements ModelOneInterface {
      * @param Database $database
      * The database to read from
      *
-     * @param string $pirmary_key_value
+     * @param mixed $pirmary_key_value
      * The PKID of the the value to read
      *
      * @return Model
@@ -46,9 +46,7 @@ abstract class ModelOne extends Model implements ModelOneInterface {
 
         // Write the data for his model
         $insert_query =
-            $this->schema()->queryForInsert(
-                $this->columnNameRowValueMap()
-            );
+            $this->schema()->queryForInsert($this->toRow());
 
         // Write the model's data
         $database->exec($insert_query);

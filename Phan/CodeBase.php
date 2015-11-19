@@ -6,8 +6,8 @@ use \Phan\CodeBase\File;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
-use \Phan\Persistent\Association;
 use \Phan\Persistent\Database;
+use \Phan\Persistent\ModelAssociation;
 use \Phan\Persistent\ModelOne;
 use \Phan\Persistent\Schema;
 
@@ -431,7 +431,7 @@ class CodeBase extends ModelOne {
             ]
         );
 
-        $schema->addAssociation(new Association(
+        $schema->addAssociation(new ModelAssociation(
             'CodeBase_File', '\Phan\CodeBase\File',
             function (CodeBase $code_base, array $file_map) {
                 $code_base->setFileMap($file_map);
@@ -449,7 +449,7 @@ class CodeBase extends ModelOne {
      * Get a map from column name to row values for
      * this instance
      */
-    public function columnNameRowValueMap() : array {
+    public function toRow() : array {
         return [
             'pk' => 1,
             'version' => $this->getVersion()

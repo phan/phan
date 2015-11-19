@@ -4,6 +4,7 @@ namespace Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
+use \Phan\Persistent\ListAssociation;
 use \Phan\Persistent\Model;
 use \Phan\Persistent\ModelOne;
 use \Phan\Persistent\ModelStringListMap;
@@ -111,6 +112,16 @@ class File extends ModelOne {
     }
 
     /**
+     * @param FQSEN[] $class_fqsen_list
+     * The set of class FQSENs associated with this file
+     *
+     * @return null
+     */
+    private function setClassFQSENList(array $class_fqsen_list) {
+        $this->class_fqsen_list = $class_fqsen_list;
+    }
+
+    /**
      * @param FQSEN $fqsen
      * A class FQSEN associated with this file
      *
@@ -126,6 +137,16 @@ class File extends ModelOne {
      */
     public function getMethodFQSENList() : array {
         return $this->method_fqsen_list;
+    }
+
+    /**
+     * @param FQSEN[] $method_fqsen_list
+     * The set of method FQSENs associated with this file
+     *
+     * @return null
+     */
+    private function setMethodFQSENList(array $method_fqsen_list) {
+        $this->method_fqsen_list = $method_fqsen_list;
     }
 
     /**
@@ -150,41 +171,33 @@ class File extends ModelOne {
             ]
         );
 
-        /*
-        $schema->addAssociation(new Association(
-            'File_class_fqsen_list', '...',
-            function (CodeBase $code_base, array $file_map) {
-                $code_base->setFileMap($file_map);
+        $schema->addAssociation(new ListAssociation(
+            'File_class_fqsen_list', 'STRING',
+            function (File $file, array $fqsen_list) {
+                $file->setClassFQSENList(
+                    array_map(function (string $fqsen_string) {
+                        return FQSEN::fromFullyQualifiedString($fqsen_string);
+                    }, $fqsen_list)
+                );
             },
-            function (CodeBase $code_base) {
-                return $code_base->getFileMap();
-            }
-        ));
-         */
-
-        /*
-        $this->addAssociation(new ModelStringListMap(
-            'File_class_fqsen_list',
-            $this,
-            function() : array {
-                return $this->class_fqsen_list;
-            },
-            function(array $list) {
-                $this->class_fqsen_list = $list;
+            function (File $file) {
+                return $file->getClassFQSENList();
             }
         ));
 
-        $this->addAssociation(new ModelStringListMap(
-            'File_method_fqsen_list',
-            $this,
-            function() : array {
-                return $this->method_fqsen_list;
+        $schema->addAssociation(new ListAssociation(
+            'File_method_fqsen_list', 'STRING',
+            function (File $file, array $fqsen_list) {
+                $file->setMethodFQSENList(
+                    array_map(function (string $fqsen_string) {
+                        return FQSEN::fromFullyQualifiedString($fqsen_string);
+                    }, $fqsen_list)
+                );
             },
-            function(array $list) {
-                $this->method_fqsen_list = $list;
+            function (File $file) {
+                return $file->getMethodFQSENList();
             }
         ));
-         */
 
         return $schema;
     }
@@ -194,7 +207,7 @@ class File extends ModelOne {
      * Get a map from column name to row values for
      * this instance
      */
-    public function columnNameRowValueMap() : array {
+    public function toRow() : array {
         return [
             'file_path' => "'{$this->file_path}'",
             'modification_time' => $this->modification_time,
