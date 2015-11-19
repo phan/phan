@@ -13,4 +13,10 @@ interface ModelListInterface {
      */
     abstract public function modelOneList() : array;
 
+    /**
+     * @return string
+     * The name of the model class for the elements
+     */
+    abstract static public function elementModelClassName() : string;
+
 }

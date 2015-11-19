@@ -9,41 +9,35 @@ abstract class Model {
     use \Phan\Memoize;
 
     /**
-     * @var Model[]
-     * A list of associated models for this model
+     * @return Schema
+     * The schema for this model
      */
-    private $association_list = [];
+    abstract public static function createSchema() : Schema;
 
     /**
      * @return Schema
      * Get the schema for this model
      */
-    public function schema() : Schema {
-        return $this->memoize(__METHOD__, function() {
-            return $this->createSchema();
+    public static function schema() : Schema {
+        return self::memoizeStatic(get_called_class(). '::' . __METHOD__, function() {
+            return static::createSchema();
         });
     }
 
     /**
+     * @param Database $database
+     * The database to read from
      *
+     * @param string $pirmary_key_value
+     * The PKID of the the value to read
+     *
+     * @return Model
+     * Read a model from the database with the given pk
      */
-    public function initializeOnce(Database $database) {
-        $this->memoize(__METHOD__, function() use ($database) {
-
-            $query = $this->schema()->queryForCreateTable();
-
-            // Make sure the table has been created
-            $database->exec($query);
-
-            return 1;
-        });
-    }
-
-    /**
-     * @return Schema
-     * The schema for this model
-     */
-    abstract public function createSchema() : Schema;
+    abstract public static function read(
+        Database $database,
+        $primary_key_value
+    );
 
     /**
      * @param Database $database
@@ -51,24 +45,30 @@ abstract class Model {
      *
      * @return null
      */
-    public function write(Database $database) {
-        // Ensure that we've initialized this model
-        $this->initializeOnce($database);
+    abstract public function write(Database $database);
 
-        // Write each association
-        foreach ($this->association_list as $model) {
-            $model->write($database);
+    /**
+     *
+     * @param Database $database
+     * A database to write this model to
+     *
+     * @return null
+     */
+    public function writeAssociationList(Database $database) {
+        foreach (static::schema()->getAssociationList() as $key => $association) {
+            $association->write(
+                $database,
+                $this
+            );
         }
     }
 
     /**
-     * @param Model $model
-     * A model to associate with this model
+     * @param array
+     * A map from column name to value
      *
-     * @return null
+     * @return Model
+     * An instance of the model derived from row data
      */
-    public function addAssociation(Model $model) {
-        $this->association_list[] = $model;
-    }
-
+    abstract public static function fromRow(array $row);
 }

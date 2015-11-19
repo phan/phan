@@ -5,6 +5,7 @@ namespace Phan\Persistent;
  * A schema for a persistent model
  */
 class Schema {
+    use \Phan\Memoize;
 
     /**
      * @var string
@@ -22,6 +23,12 @@ class Schema {
      * @var string[];
      */
     private $column_def_map;
+
+    /**
+     * @var Association[]
+     * A list of associated models for this model
+     */
+    private $association_list = [];
 
     /**
      * Create a schema
@@ -51,12 +58,56 @@ class Schema {
     }
 
     /**
+     * @param Association $model
+     * A model to associate with this model
+     *
+     * @return null
+     */
+    public function addAssociation(Association $model) {
+        $this->association_list[] = $model;
+    }
+
+    /**
+     * @return Association[]
+     */
+    public function getAssociationList() : array {
+        return $this->association_list;
+    }
+
+    /**
      * @return string
      * The SQLite data type for the primary key
      */
     public function primaryKeyType() : string {
         return array_values($this->primary_key)[0];
     }
+
+    /**
+     * @return string
+     * The name of the PK column
+     */
+    public function primaryKeyName() : string {
+        return array_keys($this->primary_key)[0];
+    }
+
+    /**
+     * Initialize this table in the given database the first
+     * time the method is called and never again.
+     *
+     * @return null
+     */
+    public function initializeOnce(Database $database) {
+        $this->memoize(__METHOD__, function() use ($database) {
+
+            $query = $this->queryForCreateTable();
+
+            // Make sure the table has been created
+            $database->exec($query);
+
+            return 1;
+        });
+    }
+
 
     /**
      * @return string
@@ -87,7 +138,7 @@ class Schema {
      * A query for inserting a row for this schema
      */
     public function queryForInsert(array $row_map) : string {
-        return "INSERT INTO {$this->table_name} "
+        return "REPLACE INTO {$this->table_name} "
             . '(' . implode(', ', array_keys($row_map)) . ')'
             . ' values '
             . '(' . implode(', ', array_values($row_map)) . ')'
@@ -102,9 +153,9 @@ class Schema {
      * A query for getting all values for the row with the
      * given primary key
      */
-    public function queryForSelect(string $primary_key) : string {
+    public function queryForSelect($primary_key) : string {
         return "SELECT * FROM {$this->table_name} "
-            . "WHERE {$this->primary_key_column_name} = '$primary_key'"
+            . "WHERE {$this->primaryKeyName()} = $primary_key"
             ;
     }
 }

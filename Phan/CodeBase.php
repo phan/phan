@@ -6,10 +6,8 @@ use \Phan\CodeBase\File;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
+use \Phan\Persistent\Association;
 use \Phan\Persistent\Database;
-use \Phan\Persistent\Map;
-use \Phan\Persistent\Model;
-use \Phan\Persistent\ModelModelListMap;
 use \Phan\Persistent\ModelOne;
 use \Phan\Persistent\Schema;
 
@@ -98,6 +96,24 @@ class CodeBase extends ModelOne {
         // files
         $this->code_base_version =
             CodeBase::CODE_BASE_VERSION;
+    }
+
+    /**
+     * @return File[]
+     * A map from file path to File
+     */
+    protected function getFileMap() : array {
+        return $this->file_map;
+    }
+
+    /**
+     * @param File[] $file_map
+     * A map from file path to File
+     *
+     * @return null
+     */
+    protected function setFileMap(array $file_map) {
+        $this->file_map = $file_map;
     }
 
     /**
@@ -358,6 +374,14 @@ class CodeBase extends ModelOne {
     }
 
     /**
+     * @return int
+     * The version number of this code base
+     */
+    public function getVersion() : int {
+        return $this->code_base_version ?? -1;
+    }
+
+    /**
      * Store the given code base to the location defined in the
      * configuration (serialized_code_base_file).
      *
@@ -366,7 +390,9 @@ class CodeBase extends ModelOne {
      * to the file, or FALSE on failure.
      */
     public function store() {
-        // $this->write(Database::get());
+        if (Config::get()->serialized_code_base_file) {
+            $this->write(Database::get());
+        }
     }
 
     /**
@@ -375,15 +401,10 @@ class CodeBase extends ModelOne {
      * else false
      */
     public static function storedCodeBaseExists() : bool {
-        // TODO
-    }
-
-    /**
-     * @return int
-     * The version number of this code base
-     */
-    public function getVersion() : int {
-        return $this->code_base_version ?? -1;
+        return (
+            Config::get()->serialized_code_base_file
+            && file_exists(Config::get()->serialized_code_base_file)
+        );
     }
 
     /**
@@ -396,40 +417,27 @@ class CodeBase extends ModelOne {
             throw new \Exception("No serialized_code_base_file defined");
         }
 
-        $code_base = unserialize(
-            file_get_contents(
-                Config::get()->serialized_code_base_file
-            )
-        );
-
-        if ($code_base->getVersion() !== self::CODE_BASE_VERSION) {
-            throw new \Exception(
-                "Stored code base has bad version number {$code_base->getVersion()}"
-            );
-        }
-
-        return $code_base;
+        return CodeBase::read(Database::get(), 1);
     }
 
     /**
      * @return Schema
      * The schema for this model
      */
-    public function createSchema() : Schema {
+    public static function createSchema() : Schema {
         $schema = new Schema(
             'CodeBase', [ 'pk' => 'INT' ], [
                 'version' => 'INTEGER'
             ]
         );
 
-        $this->addAssociation(new ModelModelListMap(
-            'CodeBase_File',
-            $this,
-            function() : array {
-                return $this->file_map;
+        $schema->addAssociation(new Association(
+            'CodeBase_File', '\Phan\CodeBase\File',
+            function (CodeBase $code_base, array $file_map) {
+                $code_base->setFileMap($file_map);
             },
-            function(array $list) {
-                $this->file_map = $list;
+            function (CodeBase $code_base) {
+                return $code_base->getFileMap();
             }
         ));
 
@@ -446,6 +454,17 @@ class CodeBase extends ModelOne {
             'pk' => 1,
             'version' => $this->getVersion()
         ];
+    }
+
+    /**
+     * @param array
+     * A map from column name to value
+     *
+     * @return CodeBase
+     * An instance of the model derived from row data
+     */
+    public static function fromRow(array $row) : CodeBase {
+        return new CodeBase([], [], [], []);
     }
 
     /**

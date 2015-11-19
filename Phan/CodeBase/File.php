@@ -50,8 +50,14 @@ class File extends ModelOne {
      * @param string $file_path
      * The path to the file we're tracking
      */
-    public function __construct(string $file_path) {
+    public function __construct(
+        string $file_path,
+        int $modification_time = 0,
+        int $analysis_time = 0
+    ) {
         $this->file_path = $file_path;
+        $this->modification_time = $modification_time;
+        $this->analysis_time = $analysis_time;
     }
 
     /**
@@ -136,7 +142,7 @@ class File extends ModelOne {
      * @return Schema
      * The schema for this model
      */
-    public function createSchema() : Schema {
+    public static function createSchema() : Schema {
         $schema = new Schema(
             'File', [ 'file_path' => 'STRING' ], [
                 'modification_time' => 'INTEGER',
@@ -144,6 +150,19 @@ class File extends ModelOne {
             ]
         );
 
+        /*
+        $schema->addAssociation(new Association(
+            'File_class_fqsen_list', '...',
+            function (CodeBase $code_base, array $file_map) {
+                $code_base->setFileMap($file_map);
+            },
+            function (CodeBase $code_base) {
+                return $code_base->getFileMap();
+            }
+        ));
+         */
+
+        /*
         $this->addAssociation(new ModelStringListMap(
             'File_class_fqsen_list',
             $this,
@@ -165,6 +184,7 @@ class File extends ModelOne {
                 $this->method_fqsen_list = $list;
             }
         ));
+         */
 
         return $schema;
     }
@@ -183,7 +203,23 @@ class File extends ModelOne {
     }
 
     /**
-     * There is only one CodeBase per database
+     * @param array
+     * A map from column name to value
+     *
+     * @return File
+     * An instance of the model derived from row data
+     */
+    public static function fromRow(array $row) : File {
+        return new File(
+            $row['file_path'],
+            $row['modification_time'],
+            $row['analysis_time']
+        );
+    }
+
+    /**
+     * @return string
+     * The primary key of this model
      */
     public function primaryKeyValue() : string {
         return $this->file_path;

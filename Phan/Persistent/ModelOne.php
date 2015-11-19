@@ -7,8 +7,42 @@ namespace Phan\Persistent;
  */
 abstract class ModelOne extends Model implements ModelOneInterface {
 
+    /**
+     * @param Database $database
+     * The database to read from
+     *
+     * @param string $pirmary_key_value
+     * The PKID of the the value to read
+     *
+     * @return Model
+     * Read a model from the database with the given pk
+     */
+    public static function read(Database $database, $primary_key_value) {
+
+        $select_query =
+            static::schema()->queryForSelect($primary_key_value);
+
+        $row = $database->querySingle($select_query, true);
+
+        $model = static::fromRow($row);
+
+        // Write each association
+        foreach (static::schema()->getAssociationList() as $key => $association) {
+            $association->read($database, $model);
+        }
+
+        return $model;
+    }
+
+    /**
+     * @param Database $database
+     * A database to write this model to
+     *
+     * @return null
+     */
     public function write(Database $database) {
-        parent::write($database);
+        // Ensure that we've initialized this model
+        static::schema()->initializeOnce($database);
 
         // Write the data for his model
         $insert_query =
@@ -18,6 +52,9 @@ abstract class ModelOne extends Model implements ModelOneInterface {
 
         // Write the model's data
         $database->exec($insert_query);
+
+        // Write the associations
+        $this->writeAssociationList($database);
     }
 
 }
