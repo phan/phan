@@ -20,7 +20,8 @@ $cli = new CLI();
 
 // Read the code base from a saved state or create a
 // new one if none exists
-if (CodeBase::storedCodeBaseExists()) {
+print "not reading\n";
+if (false && CodeBase::storedCodeBaseExists()) {
     $code_base = CodeBase::fromStoredCodeBase();
 } else {
     $code_base = new CodeBase(

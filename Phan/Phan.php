@@ -66,11 +66,6 @@ class Phan {
             }
         }
 
-        // Store a serialized version of the code base if there
-        // is a configured serialized file path. This allows
-        // us to save some time on the next run.
-        $code_base->store();
-
         // Take a pass over all classes verifying various
         // states now that we have the whole state in
         // memory

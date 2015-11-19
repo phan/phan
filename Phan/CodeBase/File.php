@@ -2,13 +2,17 @@
 namespace Phan\CodeBase;
 
 use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
 use \Phan\Language\Element\{Clazz, Element, Method};
+use \Phan\Language\FQSEN;
+use \Phan\Persistent\Model;
+use \Phan\Persistent\ModelOne;
+use \Phan\Persistent\ModelStringListMap;
+use \Phan\Persistent\Schema;
 
 /**
  * Information pertaining to PHP code files that we've read
  */
-class File {
+class File extends ModelOne {
 
     /**
      * @var string
@@ -128,4 +132,60 @@ class File {
         $this->method_fqsen_list[] = $fqsen;
     }
 
+    /**
+     * @return Schema
+     * The schema for this model
+     */
+    public function createSchema() : Schema {
+        $schema = new Schema(
+            'File', [ 'file_path' => 'STRING' ], [
+                'modification_time' => 'INTEGER',
+                'analysis_time' => 'INTEGER',
+            ]
+        );
+
+        $this->addAssociation(new ModelStringListMap(
+            'File_class_fqsen_list',
+            $this,
+            function() : array {
+                return $this->class_fqsen_list;
+            },
+            function(array $list) {
+                $this->class_fqsen_list = $list;
+            }
+        ));
+
+        $this->addAssociation(new ModelStringListMap(
+            'File_method_fqsen_list',
+            $this,
+            function() : array {
+                return $this->method_fqsen_list;
+            },
+            function(array $list) {
+                $this->method_fqsen_list = $list;
+            }
+        ));
+
+        return $schema;
+    }
+
+    /**
+     * @return array
+     * Get a map from column name to row values for
+     * this instance
+     */
+    public function columnNameRowValueMap() : array {
+        return [
+            'file_path' => "'{$this->file_path}'",
+            'modification_time' => $this->modification_time,
+            'analysis_time' => $this->analysis_time,
+        ];
+    }
+
+    /**
+     * There is only one CodeBase per database
+     */
+    public function primaryKeyValue() : string {
+        return $this->file_path;
+    }
 }

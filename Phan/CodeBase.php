@@ -6,6 +6,12 @@ use \Phan\CodeBase\File;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
+use \Phan\Persistent\Database;
+use \Phan\Persistent\Map;
+use \Phan\Persistent\Model;
+use \Phan\Persistent\ModelModelListMap;
+use \Phan\Persistent\ModelOne;
+use \Phan\Persistent\Schema;
 
 /**
  * A CodeBase represents the known state of a code base
@@ -36,7 +42,7 @@ use \Phan\Language\FQSEN;
  *  // Do stuff ...
  * ```
  */
-class CodeBase {
+class CodeBase extends ModelOne {
 
     /**
      * Set a version on this class so that we can
@@ -360,15 +366,7 @@ class CodeBase {
      * to the file, or FALSE on failure.
      */
     public function store() {
-        if (!Config::get()->serialized_code_base_file) {
-            return false;
-        }
-
-        return file_put_contents(
-            Config::get()->serialized_code_base_file,
-            serialize($this),
-            LOCK_EX
-        );
+        $this->write(Database::get());
     }
 
     /**
@@ -377,13 +375,7 @@ class CodeBase {
      * else false
      */
     public static function storedCodeBaseExists() : bool {
-        if (!Config::get()->serialized_code_base_file) {
-            return false;
-        }
-
-        return file_exists(
-            Config::get()->serialized_code_base_file
-        );
+        // TODO
     }
 
     /**
@@ -417,5 +409,49 @@ class CodeBase {
         }
 
         return $code_base;
+    }
+
+    /**
+     * @return Schema
+     * The schema for this model
+     */
+    public function createSchema() : Schema {
+        $schema = new Schema(
+            'CodeBase', [ 'pk' => 'INT' ], [
+                'version' => 'INTEGER'
+            ]
+        );
+
+        $this->addAssociation(new ModelModelListMap(
+            'CodeBase_File',
+            $this,
+            function() : array {
+                return $this->file_map;
+            },
+            function(array $list) {
+                $this->file_map = $list;
+            }
+        ));
+
+        return $schema;
+    }
+
+    /**
+     * @return array
+     * Get a map from column name to row values for
+     * this instance
+     */
+    public function columnNameRowValueMap() : array {
+        return [
+            'pk' => 1,
+            'version' => $this->getVersion()
+        ];
+    }
+
+    /**
+     * There is only one CodeBase per database
+     */
+    public function primaryKeyValue() : int {
+        return 1;
     }
 }
