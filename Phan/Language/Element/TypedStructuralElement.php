@@ -202,8 +202,8 @@ abstract class TypedStructuralElement extends StructuralElement {
             'type' => (string)$this->type,
             'flags' => $this->flags,
             'fqsen' => (string)$this->fqsen,
-            'context' => (string)$this->getContext(),
-            'comment' => (string)$this->getComment(),
+            'context' => base64_encode(serialize($this->getContext())),
+            'comment' => base64_encode(serialize($this->getComment())),
             'is_deprecated' => $this->isDeprecated(),
         ]);
     }
@@ -215,9 +215,8 @@ abstract class TypedStructuralElement extends StructuralElement {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : array {
+    public static function fromRow(array $row) {
         assert(false, 'fromRow');
-        return [];
     }
 
     /**

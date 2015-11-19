@@ -436,7 +436,7 @@ class FQSEN {
      * element name.
      */
     public function asUnionType() : UnionType {
-        return new UnionType([$this->__toString()]);
+        return new UnionType([(string)$this]);
     }
 
     /**
@@ -473,7 +473,7 @@ class FQSEN {
         // Append an alternate ID if we need to disambiguate
         // multiple definitions
         if ($this->alternate_id) {
-            $fqsen_string .= '\'' . $this->alternate_id;
+            $fqsen_string .= ',' . $this->alternate_id;
         }
 
         assert(!empty($fqsen_string),

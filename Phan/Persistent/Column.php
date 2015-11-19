@@ -6,21 +6,21 @@ class Column {
     private $name;
     private $sql_type;
     private $is_primary_key;
-    private $is_unique;
     private $is_auto_increment;
+    private $is_unique;
 
     public function __construct(
         string $name,
         string $sql_type,
         bool $is_primary_key = false,
-        bool $is_unique = false,
-        bool $is_auto_increment = false
+        bool $is_auto_increment = false,
+        bool $is_unique = false
     ) {
         $this->name = $name;
         $this->sql_type = $sql_type;
         $this->is_primary_key = $is_primary_key;
-        $this->is_unique = $is_unique;
         $this->is_auto_increment = $is_auto_increment;
+        $this->is_unique = $is_unique;
     }
 
     public function name() : string {
@@ -44,16 +44,18 @@ class Column {
     }
 
     public function __toString() : string {
-        $string = $this->name;
+        $string = $this->name();
 
-        if ($this->isAutoIncrement()) {
-            $string .= ' AUTOINCREMENT';
-        }
+        $string .= " {$this->sqlType()}";
 
         if ($this->isPrimaryKey()) {
             $string .= ' PRIMARY KEY';
         } else if ($this->isUnique()) {
             $string .= ' UNIQUE';
+        }
+
+        if ($this->isAutoIncrement()) {
+            $string .= ' AUTOINCREMENT';
         }
 
         return $string;

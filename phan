@@ -31,6 +31,8 @@ if (CodeBase::storedCodeBaseExists()) {
     );
 }
 
+// print "exiting early in phan\n"; exit;
+
 // Analyze the file list provided via the CLI
 (new Phan)->analyzeFileList(
     $code_base,

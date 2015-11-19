@@ -143,6 +143,16 @@ class Type {
         string $type_name
     ) : Type {
 
+        // If this is a generic type (like int[]), return
+        // a generic of internal types.
+        if (false !== ($pos = strpos($type_name, '[]'))) {
+            return new GenericArrayType(
+                self::fromInternalTypeName(
+                    substr($type_name, 0, $pos)
+                )
+            );
+        }
+
         $type_name =
             self::canonicalNameFromName($type_name);
 
@@ -190,8 +200,10 @@ class Type {
     ) : Type {
         assert(!empty($fully_qualified_string),
             "Type cannot be empty");
-        assert('\\' === $fully_qualified_string[0],
-            "fromFullyQualifiedString() called without fully qualified string '$fully_qualified_string'");
+
+        if (0 !== strpos($fully_qualified_string, '\\')) {
+            return self::fromInternalTypeName($fully_qualified_string);
+        }
 
         list($namespace, $type_name) =
             self::namespaceAndTypeFromString(

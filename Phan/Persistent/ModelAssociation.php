@@ -31,7 +31,7 @@ class ModelAssociation extends Association {
         \Closure $write_closure
     ) {
         $schema = new Schema($table_name, [
-            new Column('id', 'INTEGER', true),
+            new Column('id', 'INTEGER', true, true),
             new Column('source_pk', 'STRING'),
             new Column('key', 'STRING'),
             new Column('target_pk', 'STRING'),
@@ -57,22 +57,23 @@ class ModelAssociation extends Association {
         // Select all rows for this PK from the
         // association table
         $select_query =
-            $this->schema->queryForSelect($model->primaryKeyValue());
+            $this->schema->queryForSelectColumnValue(
+                'source_pk',
+                $model->primaryKeyValue()
+            );
 
-        $result =
-            $database->query($select_query);
+        $result = $database->query($select_query);
 
-        if (!$result || !$result->fetchArray()) {
+        if (!$result) {
             return;
         }
 
-        $associated_class =
-            $this->associated_class_name;
+        $associated_class = $this->associated_class_name;
 
         // Hydrate each association row to the associated
         // object
         $map = [];
-        foreach ($result->fetchArray() as $row) {
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
             $key = $row['key'];
             $target_pk = $row['target_pk'];
 
@@ -105,8 +106,8 @@ class ModelAssociation extends Association {
 
         foreach ($write_closure($model) as $key => $target_model) {
 
-            $ascn = $this->associated_class_name;
-            $target_schema = $ascn::schema();
+            $associated_class = $this->associated_class_name;
+            $target_schema = $associated_class::schema();
 
             // Write the model
             $target_model->write($database);
@@ -116,7 +117,7 @@ class ModelAssociation extends Association {
                 $this->schema->queryForInsert([
                     'source_pk' => $primary_key_value,
                     'key' => $key,
-                    'target_pk' => $model->primaryKeyValue(),
+                    'target_pk' => $target_model->primaryKeyValue(),
                 ]);
 
             $database->exec($query);

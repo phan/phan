@@ -31,7 +31,7 @@ class ListAssociation extends Association {
         \Closure $write_closure
     ) {
         $schema = new Schema($table_name, [
-            new Column('id', 'INTEGER', true),
+            new Column('id', 'INTEGER', true, true),
             new Column('source_pk', 'STRING'),
             new Column('value', $item_sql_type)
         ]);
@@ -55,18 +55,21 @@ class ListAssociation extends Association {
         // Select all rows for this PK from the
         // association table
         $select_query =
-            $this->schema->queryForSelect($model->primaryKeyValue());
+            $this->schema->queryForSelectColumnValue(
+                'source_pk',
+                $model->primaryKeyValue()
+            );
 
         $result =
             $database->query($select_query);
 
-        if (!$result || !$result->fetchArray()) {
+        if (!$result) {
             $read_closure($model, []);
             return;
         }
 
         $column = [];
-        foreach ($result->fetchArray() as $row) {
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
             $column[] = $row['value'];
         }
 

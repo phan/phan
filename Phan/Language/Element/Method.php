@@ -65,6 +65,8 @@ class Method extends TypedStructuralElement {
      * @param int $number_of_required_parameters
      *
      * @param int $number_of_optional_parameters
+     *
+     * @param bool $is_dynamic
      */
     public function __construct(
         Context $context,
@@ -73,7 +75,8 @@ class Method extends TypedStructuralElement {
         UnionType $type,
         int $flags,
         int $number_of_required_parameters = 0,
-        int $number_of_optional_parameters = 0
+        int $number_of_optional_parameters = 0,
+        bool $is_dynamic = false
     ) {
         parent::__construct(
             $context,
@@ -88,6 +91,8 @@ class Method extends TypedStructuralElement {
 
         $this->number_of_optional_parameters =
             $number_of_optional_parameters;
+
+        $this->is_dynamic = $is_dynamic;
     }
 
     /**
@@ -681,8 +686,17 @@ class Method extends TypedStructuralElement {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : array {
-        print_r($row);
+    public static function fromRow(array $row) : Method {
+        return new Method(
+            unserialize(base64_decode($row['context'])),
+            unserialize(base64_decode($row['comment'])),
+            $row['name'],
+            UnionType::fromFullyQualifiedString($row['type']),
+            (int)$row['flags'],
+            $row['number_of_required_parameters'],
+            $row['number_of_optional_parameters'],
+            (bool)$row['is_dynamic']
+        );
     }
 
 }

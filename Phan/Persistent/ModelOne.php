@@ -24,6 +24,9 @@ abstract class ModelOne extends Model implements ModelOneInterface {
 
         $row = $database->querySingle($select_query, true);
 
+        assert(!empty($row),
+            "Got an empty row from query $select_query");
+
         $model = static::fromRow($row);
 
         // Write each association

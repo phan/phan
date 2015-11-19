@@ -105,7 +105,6 @@ class Schema {
      */
     public function initializeOnce(Database $database) {
         $this->memoize(__METHOD__, function() use ($database) {
-
             $query = $this->queryForCreateTable();
 
             // Make sure the table has been created
@@ -174,6 +173,21 @@ class Schema {
     }
 
     /**
+     * @param string $primary_key_value
+     * The primary key to get a select query for
+     *
+     * @return string
+     * A query for getting all values for the row with the
+     * given primary key
+     */
+    public function queryForSelect($primary_key_value) : string {
+        return $this->queryForSelectColumnValue(
+            $this->primaryKeyName(),
+            $primary_key_value
+        );
+    }
+
+    /**
      * @param string $primary_key
      * The primary key to get a select query for
      *
@@ -181,9 +195,14 @@ class Schema {
      * A query for getting all values for the row with the
      * given primary key
      */
-    public function queryForSelect($primary_key) : string {
+    public function queryForSelectColumnValue(string $column, $value) : string {
+
+        if ($this->column_def_map[$column]->sqlType() == 'STRING') {
+            $value = '"' . SQLite3::escapeString((string)$value) . '"';
+        }
+
         return "SELECT * FROM {$this->table_name} "
-            . "WHERE {$this->primaryKeyName()} = $primary_key"
-            ;
+            . "WHERE $column = $value";
     }
+
 }

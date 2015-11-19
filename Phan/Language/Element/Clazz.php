@@ -769,8 +769,14 @@ class Clazz extends TypedStructuralElement {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : array {
-        print_r($row);
+    public static function fromRow(array $row) : Clazz {
+        return new Clazz(
+            unserialize(base64_decode($row['context'])),
+            unserialize(base64_decode($row['comment'])),
+            $row['name'],
+            UnionType::fromFullyQualifiedString($row['type']),
+            (int)$row['flags']
+        );
     }
 
 }
