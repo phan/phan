@@ -366,7 +366,7 @@ class CodeBase extends ModelOne {
      * to the file, or FALSE on failure.
      */
     public function store() {
-        $this->write(Database::get());
+        // $this->write(Database::get());
     }
 
     /**
