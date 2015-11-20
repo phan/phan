@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\Analyze\Analyzable;
 use \Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Parameter;
@@ -15,7 +14,8 @@ use \Phan\Persistent\Schema;
 use \ast\Node;
 
 class Method extends TypedStructuralElement {
-    use Analyzable;
+    use \Phan\Language\Element\Access;
+    use \Phan\Analyze\Analyzable;
 
     /**
      * @var int

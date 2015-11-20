@@ -28,13 +28,25 @@ class FQSEN {
      * string otherwise.
      */
     private $method_name = '';
+
     /**
-     *
      * @var string
      * A closure name if one is in scope or the empty
      * string otherwise.
      */
     private $closure_name = '';
+
+    /**
+     * @var string
+     * The name of a constant
+     */
+    private $constant_name = '';
+
+    /**
+     * @var string
+     * The name of a property
+     */
+    private $property_name = '';
 
     /**
      * @var int
@@ -58,17 +70,27 @@ class FQSEN {
      * @param string $closure_name
      * A closure name if one is in scope or the empty
      * string otherwise.
+     *
+     * @param string $constant_name
+     * The name of a constant
+     *
+     * @param string $property_name
+     * The name of a property
      */
     public function __construct(
         string $namespace = '\\',
         string $class_name = '',
         string $method_name = '',
-        string $closure_name = ''
+        string $closure_name = '',
+        string $constant_name = '',
+        string $property_name = ''
     ) {
         $this->namespace = self::cleanNamespace($namespace);
         $this->class_name = $class_name;
         $this->method_name = $method_name;
         $this->closure_name = $closure_name;
+        $this->constant_name = $constant_name;
+        $this->property_name = $property_name;
     }
 
     /**
@@ -399,6 +421,42 @@ class FQSEN {
     }
 
     /**
+     * @return FQSEN
+     * A clone of this FQSEN with the given constant
+     */
+    public function withConstantName(string $constant_name) : FQSEN {
+        $fqsen = clone($this);
+        $fqsen->constant_name = $constant_name;
+        return $fqsen;
+    }
+
+    /**
+     * @return string
+     * The constant name associated with this FQSEN
+     */
+    public function getConstantName() : string {
+        return $this->constant_name;
+    }
+
+    /**
+     * @return FQSEN
+     * A clone of this FQSEN with the given property
+     */
+    public function withPropertyName(string $property_name) : FQSEN {
+        $fqsen = clone($this);
+        $fqsen->property_name = $property_name;
+        return $fqsen;
+    }
+
+    /**
+     * @return string
+     * The property name associated with this FQSEN
+     */
+    public function getPropertyName() : string {
+        return $this->property_name;
+    }
+
+    /**
      * @return int
      * An alternate identifier associated with this
      * FQSEN or zero if none if this is not an
@@ -468,6 +526,13 @@ class FQSEN {
             if ($this->closure_name) {
                 $fqsen_string .= '{' . $this->closure_name . '}';
             }
+        }
+
+        if ($this->constant_name) {
+            $fqsen_string .= '::' . $this->constant_name;
+
+        } else if ($this->property_name) {
+            $fqsen_string .= '->' . $this->property_name;
         }
 
         // Append an alternate ID if we need to disambiguate

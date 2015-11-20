@@ -2,11 +2,13 @@
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
+use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
 use \Phan\Persistent\Column;
 use \Phan\Persistent\Schema;
 
 class Property extends TypedStructuralElement {
+    use \Phan\Language\Element\Access;
 
     /**
      * @param \phan\Context $context
@@ -36,36 +38,6 @@ class Property extends TypedStructuralElement {
             $name,
             $type,
             $flags
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this is a public property
-     */
-    public function isPublic() {
-        return !(
-            $this->isProtected() || $this->isPrivate()
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this is a protected property
-     */
-    public function isProtected() {
-        return (bool)(
-            $this->getFlags() & \ast\flags\MODIFIER_PROTECTED
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this is a private property
-     */
-    public function isPrivate() {
-        return (bool)(
-            $this->getFlags() & \ast\flags\MODIFIER_PRIVATE
         );
     }
 
@@ -121,6 +93,22 @@ class Property extends TypedStructuralElement {
      */
     public static function fromRow(array $row) : array {
         print_r($row);
+    }
+
+    /**
+     * @return FQSEN
+     * The fully-qualified structural element name of this
+     * structural element
+     */
+    public function getFQSEN() : FQSEN {
+        // Get the stored FQSEN if it exists
+        if ($this->fqsen) {
+            return $this->fqsen;
+        }
+
+        return $this->getContext()
+            ->getScopeFQSEN()
+            ->withPropertyName($this->getName());
     }
 
 }

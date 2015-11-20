@@ -3,11 +3,9 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
+use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
 
-/**
- *
- */
 class Constant extends TypedStructuralElement {
 
     /**
@@ -39,6 +37,22 @@ class Constant extends TypedStructuralElement {
             $type,
             $flags
         );
+    }
+
+    /**
+     * @return FQSEN
+     * The fully-qualified structural element name of this
+     * structural element
+     */
+    public function getFQSEN() : FQSEN {
+        // Get the stored FQSEN if it exists
+        if ($this->fqsen) {
+            return $this->fqsen;
+        }
+
+        return $this->getContext()
+            ->getScopeFQSEN()
+            ->withConstantName($this->getName());
     }
 
     public function __toString() : string {

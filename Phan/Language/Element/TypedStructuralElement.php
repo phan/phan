@@ -114,15 +114,6 @@ abstract class TypedStructuralElement extends StructuralElement {
     }
 
     /**
-     * @return string
-     * A string representing the fully-qualified structural
-     * element name of this structural element.
-     */
-    public function getFQSENString() : string {
-        return (string)$this->getFQSEN();
-    }
-
-    /**
      * @param FQSEN $fqsen
      * A fully qualified structural element name to set on
      * this element

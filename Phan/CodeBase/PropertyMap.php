@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
-use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
 
 /**
