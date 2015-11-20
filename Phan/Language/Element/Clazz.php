@@ -604,6 +604,22 @@ class Clazz extends TypedStructuralElement {
                 );
             }
 
+            // Copy information from the interfaces
+            foreach ($this->getInterfaceClassFQSENList() as $interface_fqsen) {
+                // Let the parent class finder worry about this
+                if (!$code_base->hasClassWithFQSEN($interface_fqsen)) {
+                    continue;
+                }
+
+                assert($code_base->hasClassWithFQSEN($interface_fqsen),
+                    "Trait $interface_fqsen should already have been proven to exist");
+
+                $this->importAncestorClass(
+                    $code_base->getClassByFQSEN($interface_fqsen)
+                );
+            }
+
+
             // Copy information from the parent(s)
             $this->importParentClass($code_base);
         });

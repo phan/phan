@@ -27,7 +27,7 @@ abstract class ModelOne extends Model implements ModelOneInterface {
         assert(!empty($row),
             "Got an empty row from query $select_query");
 
-        $model = static::fromRow($row);
+        $model = static::fromRow((array)$row);
 
         // Write each association
         foreach (static::schema()->getAssociationList() as $key => $association) {
