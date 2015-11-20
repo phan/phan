@@ -448,7 +448,6 @@ class Context extends FileRef implements \Serializable {
         );
     }
 
-
     /**
      * Get a string representation of the context
      *

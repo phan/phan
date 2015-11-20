@@ -42,6 +42,12 @@ use \Phan\Persistent\Schema;
  * ```
  */
 class CodeBase extends ModelOne {
+    use \Phan\CodeBase\ClassMap;
+    use \Phan\CodeBase\MethodMap;
+    use \Phan\CodeBase\ConstantMap;
+    use \Phan\CodeBase\PropertyMap;
+    use \Phan\CodeBase\GlobalVariableMap;
+    use \Phan\CodeBase\FileMap;
 
     /**
      * Set a version on this class so that we can
@@ -51,46 +57,16 @@ class CodeBase extends ModelOne {
     const CODE_BASE_VERSION = 2;
     private $code_base_version;
 
-    /**
-     * @var File[]
-     * A map from file name to info such as its last
-     * modification date used to determine if a file
-     * needs to be re-parsed
-     */
-    private $file_map = [];
-
-    /**
-     * @var Class[]
-     * A map from fqsen string to the class it
-     * represents
-     */
-    private $class_map = [];
-
-    /**
-     * @var Method[]
-     * A map from fqsen string to the method it
-     * represents
-     */
-    private $method_map = [];
-
-    /**
-     * @var int[]
-     * Summary information about the code base
-     */
-    private $summary = [];
-
     public function __construct(
         array $internal_class_name_list,
         array $internal_interface_name_list,
         array $internal_trait_name_list,
         array $internal_function_name_list
     ) {
-        $this->resetSummary();
         $this->addClassesByNames($internal_class_name_list);
         $this->addClassesByNames($internal_interface_name_list);
         $this->addClassesByNames($internal_trait_name_list);
         $this->addFunctionsByNames($internal_function_name_list);
-        $this->resetSummary();
 
         // Set a version on this class so that we can
         // error out when reading old versions of serialized
@@ -99,186 +75,6 @@ class CodeBase extends ModelOne {
             CodeBase::CODE_BASE_VERSION;
     }
 
-    /**
-     * @return File[]
-     * A map from file path to File
-     */
-    protected function getFileMap() : array {
-        return $this->file_map;
-    }
-
-    /**
-     * @param File[] $file_map
-     * A map from file path to File
-     *
-     * @return null
-     */
-    protected function setFileMap(array $file_map) {
-        $this->file_map = $file_map;
-    }
-
-    /**
-     * Reset summary statistics
-     *
-     * @return null
-     */
-    private function resetSummary() {
-        $this->summary = [
-            'conditionals' => 0,
-            'classes'      => 0,
-            'traits'       => 0,
-            'methods'      => 0,
-            'functions'    => 0,
-            'closures'     => 0,
-        ];
-
-    }
-
-    /**
-     * Add a class to the code base
-     *
-     * @return null
-     */
-    public function addClass(Clazz $class) {
-        $this->class_map[(string)$class->getFQSEN()]
-            = $class;
-
-        if (!$class->getContext()->isInternal()) {
-            $this->file_map[$class->getContext()->getFile()]
-                ->addClassFQSEN($class->getFQSEN());
-        }
-
-        $this->incrementClasses();
-    }
-
-    /**
-     * Get a map from FQSEN strings to the class it
-     * represents for all known classes.
-     *
-     * @return Clazz[]
-     * A map from FQSEN string to Clazz
-     */
-    public function getClassMap() : array {
-        return $this->class_map;
-    }
-
-    /**
-     * @param Clazz[] $class_map
-     * A map from FQSEN string to Clazz
-     *
-     * @return null
-     */
-    private function setClassMap(array $class_map) {
-        $this->class_map = $class_map;
-    }
-
-
-    /**
-     * @return Clazz
-     * A class with the given FQSEN
-     */
-    public function getClassByFQSEN(FQSEN $fqsen) : Clazz {
-        assert(isset($this->class_map[(string)$fqsen]),
-            "Class with fqsen $fqsen not found");
-
-        return $this->class_map[(string)$fqsen];
-    }
-
-    /**
-     * @return bool
-     * True if the exlass exists else false
-     */
-    public function hasClassWithFQSEN(FQSEN $fqsen) : bool {
-        return !empty($this->class_map[$fqsen->__toString()]);
-    }
-
-    /**
-     * @return Method[]
-     * A map from FQSEN strings to the method it
-     * represents for all known methods.
-     */
-    public function getMethodMap() : array {
-        return $this->method_map;
-    }
-
-    /**
-     * @param Method[] $method_map
-     * A map from FQSEN strings to the method it
-     * represents for all known methods.
-     */
-    private function setMethodMap(array $method_map) {
-        $this->method_map = $method_map;
-    }
-
-    /**
-     * @param Method $method
-     * A method to add to the code base
-     */
-    private function addMethodCommon(Method $method) {
-        $this->method_map[(string)$method->getFQSEN()] = $method;
-
-        if (!$method->getContext()->isInternal()) {
-            $this->file_map[$method->getContext()->getFile()]
-                ->addMethodFQSEN($method->getFQSEN());
-        }
-    }
-
-    /**
-     * @param Method $method
-     * A method to add to the code base
-     */
-    public function addMethod(Method $method) {
-        $this->addMethodCommon($method);
-        $this->incrementMethods();
-    }
-
-    /**
-     * @param Method $method
-     * A method to add to the code base
-     */
-    public function addFunction(Method $method) {
-        $this->addMethodCommon($method);
-        $this->incrementFunctions();
-    }
-
-
-    /**
-     * @param Method $method
-     * A method to add to the code base
-     */
-    public function addClosure(Method $method) {
-        $this->addMethodCommon($method);
-        $this->incrementClosures();
-    }
-
-    /**
-     * @return bool
-     * True if a method exists with the given FQSEN
-     */
-    public function hasMethodWithFQSEN(FQSEN $fqsen) : bool {
-        return !empty($this->method_map[(string)$fqsen]);
-    }
-
-    /**
-     * @return Method
-     * Get the method with the given FQSEN
-     */
-    public function getMethodByFQSEN(FQSEN $fqsen) : Method {
-        return $this->method_map[(string)$fqsen];
-    }
-
-    /**
-     * @param string[] $class_name_list
-     * A list of class names to load type information for
-     *
-     * @return null
-     */
-    private function addClassesByNames(array $class_name_list) {
-        foreach ($class_name_list as $i => $class_name) {
-            $clazz = Clazz::fromClassName($this, $class_name);
-            $this->class_map[(string)$clazz->getFQSEN()] = $clazz;
-        }
-    }
 
     /**
      * @param string[] $function_name_list
@@ -293,46 +89,6 @@ class CodeBase extends ModelOne {
             }
         }
     }
-
-    public function incrementConditionals() {
-        $this->summary['conditionals']++;
-    }
-
-    public function incrementClasses() {
-        $this->summary['classes']++;
-    }
-
-    public function incrementTraits() {
-        $this->summary['traits']++;
-    }
-
-    public function incrementMethods() {
-        $this->summary['methods']++;
-    }
-
-    public function incrementFunctions() {
-        $this->summary['functions']++;
-    }
-
-    public function incrementClosures() {
-        $this->summary['closures']++;
-    }
-
-    /**
-     * @param string $file_path
-     * A path to a file name
-     *
-     * @return File
-     * An object tracking state for the given $file_path
-     */
-    private function getFileForFile(string $file_path) : File {
-        if (empty($this->file_map[$file_path])) {
-            $this->file_map[$file_path] = new File($file_path);
-        }
-
-        return $this->file_map[$file_path];
-    }
-
     /**
      * Remove any objects we have associated with the
      * given file so that we can re-read it
@@ -340,7 +96,7 @@ class CodeBase extends ModelOne {
      * @return null
      */
     public function flushDependenciesForFile(string $file_path) {
-        $code_file = $this->getFileForFile($file_path);
+        $code_file = $this->getFileByPath($file_path);
 
         // Flush all classes from the file
         foreach ($code_file->getClassFQSENList() as $fqsen) {
@@ -359,7 +115,7 @@ class CodeBase extends ModelOne {
      * code base, else false
      */
     public function isParseUpToDateForFile(string $file_path) : bool {
-        return $this->getFileForFile($file_path)
+        return $this->getFileByPath($file_path)
             ->isParseUpToDate();
     }
 
@@ -370,7 +126,7 @@ class CodeBase extends ModelOne {
      * @return null
      */
     public function setParseUpToDateForFile(string $file_path) {
-        return $this->getFileForFile($file_path)
+        return $this->getFileByPath($file_path)
             ->setParseUpToDate();
     }
 
@@ -380,7 +136,7 @@ class CodeBase extends ModelOne {
      * code base, else false
      */
     public function isAnalysisUpToDateForFile(string $file_path) : bool {
-        return $this->getFileForFile($file_path)
+        return $this->getFileByPath($file_path)
             ->isAnalysisUpToDate();
     }
 
@@ -391,7 +147,7 @@ class CodeBase extends ModelOne {
      * @return null
      */
     public function setAnalysisUpToDateForFile(string $file_path) {
-        return $this->getFileForFile($file_path)
+        return $this->getFileByPath($file_path)
             ->setAnalysisUpToDate();
     }
 

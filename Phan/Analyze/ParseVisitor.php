@@ -61,79 +61,6 @@ class ParseVisitor extends ScopeVisitor {
     }
 
     /**
-     * Visit a node with kind `\ast\AST_DIM`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitDim(Node $node) : Context {
-        if (!Config::get()->backward_compatibility_checks) {
-            return $this->context;
-        }
-
-        if(!($node->children['expr'] instanceof Node
-            && ($node->children['expr']->children['name'] ?? null) instanceof Node)
-        ) {
-            return $this->context;
-        }
-
-        // check for $$var[]
-        if($node->children['expr']->kind == \ast\AST_VAR
-            && $node->children['expr']->children['name']->kind == \ast\AST_VAR
-        ) {
-            $temp = $node->children['expr']->children['name'];
-            $depth = 1;
-            while($temp instanceof Node) {
-                $temp = $temp->children[0];
-                $depth++;
-            }
-            $dollars = str_repeat('$',$depth);
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno-1);
-            $line = $ftemp->current();
-            unset($ftemp);
-            if(strpos($line,'{') === false
-                || strpos($line,'}') === false
-            ) {
-                Log::err(
-                    Log::ECOMPAT,
-                    "{$dollars}{$temp}[] expression may not be PHP 7 compatible",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-            }
-
-        // $foo->$bar['baz'];
-        } else if(!empty($node->children['expr']->children[1])
-            && ($node->children['expr']->children[1] instanceof Node)
-            && ($node->children['expr']->kind == \ast\AST_PROP)
-            && ($node->children['expr']->children[0]->kind == \ast\AST_VAR)
-            && ($node->children['expr']->children[1]->kind == \ast\AST_VAR)
-        ) {
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno-1);
-            $line = $ftemp->current();
-            unset($ftemp);
-            if(strpos($line,'{') === false
-                || strpos($line,'}') === false
-            ) {
-                Log::err(
-                    Log::ECOMPAT,
-                    "expression may not be PHP 7 compatible",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-            }
-        }
-
-        return $this->context;
-    }
-
-    /**
      * Visit a node with kind `\ast\AST_CLASS`
      *
      * @param Node $node
@@ -276,8 +203,6 @@ class ParseVisitor extends ScopeVisitor {
 
             $clazz->addTraitFQSEN($trait_fqsen);
         }
-
-        $this->code_base->incrementTraits();
 
         return $this->context;
     }
@@ -526,10 +451,6 @@ class ParseVisitor extends ScopeVisitor {
      * parsing the node
      */
     public function visitCall(Node $node) : Context {
-
-        if(Config::get()->backward_compatibility_checks) {
-            AST::backwardCompatibilityCheck($this->context, $node);
-        }
 
         // If this is a call to a method that indicates that we
         // are treating the method in scope as a varargs method,
