@@ -5,7 +5,6 @@ namespace Phan\Language\Element;
 use \Phan\CodeBase;
 use \Phan\Exception\AccessException;
 use \Phan\Language\Context;
-use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Constant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
@@ -65,9 +64,6 @@ class Clazz extends TypedStructuralElement {
      * @param Context $context
      * The context in which the structural element lives
      *
-     * @param CommentElement $comment,
-     * Any comment block associated with the class
-     *
      * @param string $name,
      * The name of the typed structural element
      *
@@ -83,7 +79,6 @@ class Clazz extends TypedStructuralElement {
      */
     public function __construct(
         Context $context,
-        Comment $comment,
         string $name,
         UnionType $type,
         int $flags
@@ -92,7 +87,6 @@ class Clazz extends TypedStructuralElement {
         $context =
             $context->withScopeVariable(new Variable(
                 $context,
-                Comment::none(),
                 'this',
                 $type,
                 0
@@ -100,7 +94,6 @@ class Clazz extends TypedStructuralElement {
 
         parent::__construct(
             $context,
-            $comment,
             $name,
             $type,
             $flags
@@ -166,7 +159,6 @@ class Clazz extends TypedStructuralElement {
         // Build a base class element
         $clazz = new Clazz(
             $context,
-            Comment::none(),
             $class->getName(),
             UnionType::fromStringInContext($class->getName(), $context),
             $flags
@@ -190,7 +182,6 @@ class Clazz extends TypedStructuralElement {
             $property_element =
                 new Property(
                     $context->withClassFQSEN($clazz->getFQSEN()),
-                    Comment::none(),
                     $name,
                     Type::fromObject($value)->asUnionType(),
                     0
@@ -221,7 +212,6 @@ class Clazz extends TypedStructuralElement {
             $clazz->constant_map[$name] =
                 new Constant(
                     $context,
-                    Comment::none(),
                     $name,
                     Type::fromObject($value)->asUnionType(),
                     0
@@ -739,7 +729,6 @@ class Clazz extends TypedStructuralElement {
             new Column('type', 'STRING'),
             new Column('flags', 'INT'),
             new Column('context', 'STRING'),
-            new Column('comment', 'STRING'),
             new Column('is_deprecated', 'BOOL'),
             new Column('parent_class_fqsen', 'STRING'),
             new Column('is_parent_constructor_called', 'STRING'),
@@ -772,7 +761,6 @@ class Clazz extends TypedStructuralElement {
     public static function fromRow(array $row) : Clazz {
         return new Clazz(
             unserialize(base64_decode($row['context'])),
-            unserialize(base64_decode($row['comment'])),
             $row['name'],
             UnionType::fromFullyQualifiedString($row['type']),
             (int)$row['flags']

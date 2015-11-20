@@ -4,7 +4,6 @@ namespace Phan\Language\Element;
 use \Phan\Analyze\Analyzable;
 use \Phan\CodeBase;
 use \Phan\Language\Context;
-use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type\NullType;
@@ -46,9 +45,6 @@ class Method extends TypedStructuralElement {
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
-     * @param CommentElement $comment,
-     * Any comment block associated with the class
-     *
      * @param string $name,
      * The name of the typed structural element
      *
@@ -70,7 +66,6 @@ class Method extends TypedStructuralElement {
      */
     public function __construct(
         Context $context,
-        Comment $comment,
         string $name,
         UnionType $type,
         int $flags,
@@ -80,7 +75,6 @@ class Method extends TypedStructuralElement {
     ) {
         parent::__construct(
             $context,
-            $comment,
             $name,
             $type,
             $flags
@@ -105,7 +99,6 @@ class Method extends TypedStructuralElement {
     ) : Method {
         return new Method(
             $context,
-            Comment::none(),
             '__construct',
             $clazz->getUnionType(),
             0
@@ -161,7 +154,6 @@ class Method extends TypedStructuralElement {
 
         $method = new Method(
             $context,
-            Comment::none(),
             $fqsen->getMethodName(),
             new UnionType(),
             0,
@@ -195,7 +187,6 @@ class Method extends TypedStructuralElement {
 
         $method = new Method(
             $context,
-            Comment::none(),
             $method->name,
             new UnionType(),
             $reflection_method->getModifiers(),
@@ -276,7 +267,6 @@ class Method extends TypedStructuralElement {
 
                 $parameter = new Parameter(
                     $method->getContext(),
-                    Comment::none(),
                     $parameter_name,
                     $parameter_type,
                     $flags
@@ -349,7 +339,6 @@ class Method extends TypedStructuralElement {
         // we know so far
         $method = new Method(
             $context,
-            $comment,
             $node->name,
             new UnionType(),
             $node->flags ?? 0
@@ -644,7 +633,6 @@ class Method extends TypedStructuralElement {
             new Column('type', 'STRING'),
             new Column('flags', 'INTEGER'),
             new Column('context', 'STRING'),
-            new Column('comment', 'STRING'),
             new Column('is_deprecated', 'BOOL'),
             new Column('number_of_required_parameters', 'INTEGER'),
             new Column('number_of_optional_parameters', 'INTEGER'),
@@ -689,7 +677,6 @@ class Method extends TypedStructuralElement {
     public static function fromRow(array $row) : Method {
         return new Method(
             unserialize(base64_decode($row['context'])),
-            unserialize(base64_decode($row['comment'])),
             $row['name'],
             UnionType::fromFullyQualifiedString($row['type']),
             (int)$row['flags'],

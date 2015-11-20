@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
-use \Phan\Language\Element\Comment;
 use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
 use \Phan\Persistent\Column;
@@ -48,9 +47,6 @@ abstract class TypedStructuralElement extends StructuralElement {
      * @param Context $context
      * The context in which the structural element lives
      *
-     * @param CommentElement $comment,
-     * Any comment block associated with the class
-     *
      * @param string $name,
      * The name of the typed structural element
      *
@@ -66,14 +62,11 @@ abstract class TypedStructuralElement extends StructuralElement {
      */
     public function __construct(
         Context $context,
-        Comment $comment,
         string $name,
         UnionType $type,
         int $flags
     ) {
-        parent::__construct(
-            $context, $comment
-        );
+        parent::__construct($context);
 
         $this->name = $name;
         $this->type = $type;
@@ -184,7 +177,6 @@ abstract class TypedStructuralElement extends StructuralElement {
             new Column('type', 'STRING'),
             new Column('flags', 'INT'),
             new Column('context', 'STRING'),
-            new Column('comment', 'STRING'),
             new Column('is_deprecated', 'BOOL'),
         ]);
 
@@ -203,7 +195,6 @@ abstract class TypedStructuralElement extends StructuralElement {
             'flags' => $this->flags,
             'fqsen' => (string)$this->fqsen,
             'context' => base64_encode(serialize($this->getContext())),
-            'comment' => base64_encode(serialize($this->getComment())),
             'is_deprecated' => $this->isDeprecated(),
         ]);
     }

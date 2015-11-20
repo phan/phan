@@ -21,7 +21,7 @@ $cli = new CLI();
 // Read the code base from a saved state or create a
 // new one if none exists
 if (CodeBase::storedCodeBaseExists()) {
-    $code_base = CodeBase::fromStoredCodeBase();
+    $code_base = CodeBase::fromDisk();
 } else {
     $code_base = new CodeBase(
         $internal_class_name_list,

@@ -149,10 +149,6 @@ class AssignmentVisitor extends KindVisitorImplementation {
 
                     $variable = new Variable(
                         $this->context,
-                        Comment::fromStringInContext(
-                            $node->docComment ?? '',
-                            $this->context
-                        ),
                         $dim,
                         $this->right_type,
                         $node->flags ?? 0

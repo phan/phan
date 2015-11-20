@@ -3,7 +3,6 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
-use \Phan\Language\Element\Comment;
 use \Phan\Persistent\Column;
 use \Phan\Persistent\Schema;
 
@@ -12,9 +11,6 @@ class Property extends TypedStructuralElement {
     /**
      * @param \phan\Context $context
      * The context in which the structural element lives
-     *
-     * @param CommentElement $comment,
-     * Any comment block associated with the class
      *
      * @param string $name,
      * The name of the typed structural element
@@ -31,14 +27,12 @@ class Property extends TypedStructuralElement {
      */
     public function __construct(
         Context $context,
-        Comment $comment,
         string $name,
         UnionType $type,
         int $flags
     ) {
         parent::__construct(
             $context,
-            $comment,
             $name,
             $type,
             $flags
@@ -102,7 +96,6 @@ class Property extends TypedStructuralElement {
             new Column('type', 'STRING'),
             new Column('flags', 'INTEGER'),
             new Column('context', 'STRING'),
-            new Column('comment', 'STRING'),
             new Column('is_deprecated', 'BOOL'),
         ]);
 

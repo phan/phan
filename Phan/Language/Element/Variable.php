@@ -14,9 +14,6 @@ class Variable extends TypedStructuralElement {
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
-     * @param CommentElement $comment,
-     * Any comment block associated with the class
-     *
      * @param string $name,
      * The name of the typed structural element
      *
@@ -32,14 +29,12 @@ class Variable extends TypedStructuralElement {
      */
     public function __construct(
         Context $context,
-        Comment $comment,
         string $name,
         UnionType $type,
         int $flags
     ) {
         parent::__construct(
             $context,
-            $comment,
             $name,
             $type,
             $flags
@@ -76,10 +71,6 @@ class Variable extends TypedStructuralElement {
             $context
                 ->withLineNumberStart($node->lineno ?? 0)
                 ->withLineNumberEnd($node->endLineno ?? 0),
-                    Comment::fromStringInContext(
-                        $node->docComment ?? '',
-                        $context
-                    ),
             $variable_name,
             $union_type,
             $node->flags

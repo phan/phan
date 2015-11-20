@@ -30,9 +30,6 @@ class Parameter extends Variable {
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
-     * @param CommentElement $comment,
-     * Any comment block associated with the class
-     *
      * @param string $name,
      * The name of the typed structural element
      *
@@ -48,14 +45,12 @@ class Parameter extends Variable {
      */
     public function __construct(
         Context $context,
-        Comment $comment,
         string $name,
         UnionType $type,
         int $flags
     ) {
         parent::__construct(
             $context,
-            $comment,
             $name,
             $type,
             $flags
@@ -187,7 +182,6 @@ class Parameter extends Variable {
         // Create the skeleton parameter from what we know so far
         $parameter = new Parameter(
             $context,
-            $comment,
             (string)$node->children['name'],
             $type,
             $node->flags
@@ -301,7 +295,6 @@ class Parameter extends Variable {
             new Column('type', 'STRING'),
             new Column('flags', 'INTEGER'),
             new Column('context', 'STRING'),
-            new Column('comment', 'STRING'),
             new Column('is_deprecated', 'BOOL'),
         ]);
 

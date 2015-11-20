@@ -170,10 +170,6 @@ class ParseVisitor extends ScopeVisitor {
             $this->context
                 ->withLineNumberStart($node->lineno)
                 ->withLineNumberEnd($node->endLineno ?: -1),
-                Comment::fromStringInContext(
-                    $node->docComment ?: '',
-                    $this->context
-                ),
             $node->name,
             UnionType::fromStringInContext(
                 $node->name,
@@ -399,10 +395,6 @@ class ParseVisitor extends ScopeVisitor {
                     $this->context
                         ->withLineNumberStart($child_node->lineno)
                         ->withLineNumberEnd($child_node->endLineno ?? -1),
-                    Comment::fromStringInContext(
-                        $child_node->docComment ?? '',
-                        $this->context
-                    ),
                     is_string($child_node->children['name'])
                         ? $child_node->children['name']
                         : '_error_',
@@ -454,10 +446,6 @@ class ParseVisitor extends ScopeVisitor {
                 $this->context
                     ->withLineNumberStart($child_node->lineno ?? 0)
                     ->withLineNumberEnd($child_node->endLineno ?? 0),
-                Comment::fromStringInContext(
-                    $child_node->docComment ?? '',
-                    $this->context
-                ),
                 $child_node->children['name'],
                 UnionType::fromNode(
                     $this->context,

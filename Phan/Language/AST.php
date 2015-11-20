@@ -9,7 +9,6 @@ use \Phan\Language\AST\Element;
 use \Phan\Analyze\ClassNameVisitor;
 use \Phan\Analyze\ClassNameValidationVisitor;
 use \Phan\Language\Element\Clazz;
-use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
@@ -615,7 +614,6 @@ class AST {
         // Otherwise, we'll create it
         $property = new Property(
             $context,
-            Comment::none(),
             $property_name,
             new UnionType(),
             $flags

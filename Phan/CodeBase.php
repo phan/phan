@@ -404,20 +404,6 @@ class CodeBase extends ModelOne {
     }
 
     /**
-     * Store the given code base to the location defined in the
-     * configuration (serialized_code_base_file).
-     *
-     * @return int|bool
-     * This function returns the number of bytes that were written
-     * to the file, or FALSE on failure.
-     */
-    public function store() {
-        if (Config::get()->serialized_code_base_file) {
-            $this->write(Database::get());
-        }
-    }
-
-    /**
      * @return bool
      * True if a serialized code base exists and can be read
      * else false
@@ -430,13 +416,29 @@ class CodeBase extends ModelOne {
     }
 
     /**
+     * Store the given code base to the location defined in the
+     * configuration (serialized_code_base_file).
+     *
+     * @return int|bool
+     * This function returns the number of bytes that were written
+     * to the file, or FALSE on failure.
+     */
+    public function toDisk() {
+        if (!Config::get()->serialized_code_base_file) {
+            return;
+        }
+
+        $this->write(Database::get());
+    }
+
+    /**
      * @return CodeBase|bool
      * A stored code base if its successful or false if
      * unserialize fucks up
      */
-    public static function fromStoredCodeBase() : CodeBase {
+    public static function fromDisk() : CodeBase {
         if (!self::storedCodeBaseExists()) {
-            throw new \Exception("No serialized_code_base_file defined");
+            return;
         }
 
         return CodeBase::read(Database::get(), 1);

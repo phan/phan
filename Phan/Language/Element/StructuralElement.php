@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
-use \Phan\Language\Element\Comment;
 use \Phan\Persistent\ModelOne;
 
 /**
@@ -19,13 +18,6 @@ abstract class StructuralElement extends ModelOne {
     private $context = null;
 
     /**
-     * @var Comment
-     * Any comment block associated with the structural
-     * element
-     */
-    private $comment = null;
-
-    /**
      * @var bool
      * True if this element is marked as deprecated
      */
@@ -34,16 +26,11 @@ abstract class StructuralElement extends ModelOne {
     /**
      * @param Context $context
      * The context in which the structural element lives
-     *
-     * @param Comment $comment,
-     * Any comment block associated with the class
      */
     public function __construct(
-        Context $context,
-        Comment $comment
+        Context $context
     ) {
         $this->context = $context;
-        $this->comment = $comment;
     }
 
     /**
@@ -56,10 +43,6 @@ abstract class StructuralElement extends ModelOne {
         $this->context = $this->context
             ? clone($this->context)
             : $this->context;
-
-        $this->comment = $this->comment
-            ? clone($this->comment)
-            : $this->comment;
     }
 
     /**
@@ -68,15 +51,6 @@ abstract class StructuralElement extends ModelOne {
      */
     public function getContext() : Context {
         return $this->context;
-    }
-
-    /**
-     * @return Comment
-     * A possibly null comment associated with this structural
-     * element.
-     */
-    public function getComment() : Comment {
-        return $this->comment;
     }
 
     /**
@@ -113,7 +87,6 @@ abstract class StructuralElement extends ModelOne {
     public function toRow() : array {
         return [
             'context' => (string)$this->context,
-            'comment' => (string)$this->comment,
             'is_deprecated' => $this->is_deprecated
         ];
     }
