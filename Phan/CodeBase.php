@@ -89,67 +89,6 @@ class CodeBase extends ModelOne {
             }
         }
     }
-    /**
-     * Remove any objects we have associated with the
-     * given file so that we can re-read it
-     *
-     * @return null
-     */
-    public function flushDependenciesForFile(string $file_path) {
-        $code_file = $this->getFileByPath($file_path);
-
-        // Flush all classes from the file
-        foreach ($code_file->getClassFQSENList() as $fqsen) {
-            unset($this->class_map[(string)$fqsen]);
-        }
-
-        // Flush all methods from the file
-        foreach ($code_file->getMethodFQSENList() as $fqsen) {
-            unset($this->method_map[(string)$fqsen]);
-        }
-    }
-
-    /**
-     * @return bool
-     * True if the given file is up to date within this
-     * code base, else false
-     */
-    public function isParseUpToDateForFile(string $file_path) : bool {
-        return $this->getFileByPath($file_path)
-            ->isParseUpToDate();
-    }
-
-    /**
-     * Mark the file at the given path as up to date so
-     * that we know if its changed on subsequent runs
-     *
-     * @return null
-     */
-    public function setParseUpToDateForFile(string $file_path) {
-        return $this->getFileByPath($file_path)
-            ->setParseUpToDate();
-    }
-
-    /**
-     * @return bool
-     * True if the given file is up to date within this
-     * code base, else false
-     */
-    public function isAnalysisUpToDateForFile(string $file_path) : bool {
-        return $this->getFileByPath($file_path)
-            ->isAnalysisUpToDate();
-    }
-
-    /**
-     * Mark the file at the given path as up to date so
-     * that we know if its changed on subsequent runs
-     *
-     * @return null
-     */
-    public function setAnalysisUpToDateForFile(string $file_path) {
-        return $this->getFileByPath($file_path)
-            ->setAnalysisUpToDate();
-    }
 
     /**
      * @return int

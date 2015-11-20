@@ -94,4 +94,18 @@ trait MethodMap {
         return $this->method_map[(string)$fqsen];
     }
 
+    /**
+     * @param string[] $function_name_list
+     * A list of function names to load type information for
+     */
+    protected function addFunctionsByNames(array $function_name_list) {
+        foreach ($function_name_list as $i => $function_name) {
+            foreach (Method::methodListFromFunctionName($this, $function_name)
+                as $method
+            ) {
+                $this->addMethod($method);
+            }
+        }
+    }
+
 }
