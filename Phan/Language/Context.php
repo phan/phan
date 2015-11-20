@@ -12,13 +12,7 @@ use \Phan\Log;
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
  */
-class Context implements \Serializable {
-
-    /**
-     * @var string
-     * The path to the file in which this element is defined
-     */
-    private $file = 'internal';
+class Context extends FileRef implements \Serializable {
 
     /**
      * @var string
@@ -61,63 +55,24 @@ class Context implements \Serializable {
      */
     private $is_conditional = false;
 
-    /**
-     * @var int
-     * The starting line number of the element within the $file
-     */
-    private $line_number_start = 0;
-
-    /**
-     * @var int
-     * The ending line number of the element within the $file
-     */
-    private $line_number_end = 0;
 
     /**
      * @var Scope
      */
     private $scope = null;
 
+
+    /**
+     * Create a new context
+     */
     public function __construct() {
-        $this->file = 'internal';
         $this->namespace = '';
         $this->namespace_map = [];
         $this->class_fqsen = null;
         $this->method_fqsen = null;
         $this->closure_fqsen = null;
         $this->is_conditional = false;
-        $this->line_number_start = 0;
-        $this->line_number_end = 0;
         $this->scope = new Scope();
-    }
-
-    /**
-     * @param string $file
-     * The path to the file in which this element is defined
-     *
-     * @return Context
-     * This context with the given value is returned
-     */
-    public function withFile(string $file) : Context {
-        $context = clone($this);
-        $context->file = $file;
-        return $context;
-    }
-
-    /**
-     * @return string
-     * The path to the file in which the element is defined
-     */
-    public function getFile() : string {
-        return $this->file;
-    }
-
-    /**
-     * @return bool
-     * True if this object is internal to PHP
-     */
-    public function isInternal() : bool {
-        return ('internal' === $this->getFile());
     }
 
     /*
@@ -191,46 +146,6 @@ class Context implements \Serializable {
     ) : Context {
         $this->namespace_map[$flags][strtolower($alias)] = $target;
         return $this;
-    }
-
-    /**
-     * @var int $line_number
-     * The starting line number of the element within the file
-     *
-     * @return Context
-     * This context with the given value is returned
-     */
-    public function withLineNumberStart(int $line_number) : Context {
-        $this->line_number_start = $line_number;
-        return $this;
-    }
-
-    /*
-     * @return int
-     * The starting line number of the element within the file
-     */
-    public function getLineNumberStart() : int {
-        return $this->line_number_start;
-    }
-
-    /**
-     * @param int $line_number
-     * The ending line number of the element within the $file
-     *
-     * @return Context
-     * This context with the given value is returned
-     */
-    public function withLineNumberEnd(int $line_number) : Context {
-        $this->line_number_end = $line_number;
-        return $this;
-    }
-
-    /**
-     * @return int
-     * The ending line number of the element within the $file
-     */
-    public function getLineNumberEnd() : int {
-        return $this->line_number_end;
     }
 
     /**
@@ -548,52 +463,5 @@ class Context implements \Serializable {
             ;
     }
 
-    public function serialize() {
-        return serialize([
-            (string)$this->file,
-            $this->namespace,
-            $this->namespace_map,
-            (string)$this->class_fqsen,
-            (string)$this->method_fqsen,
-            (string)$this->closure_fqsen,
-            $this->is_conditional,
-            $this->line_number_start,
-            $this->line_number_end,
-            // $this->scope,
-        ]);
-
-        /*
-        $namespace_map_elements = [];
-        foreach ($this->namespace_map as $alias => $fqsen) {
-            $namespace_map_elements[] = "$alias:$fqsen";
-        }
-
-        return implode('|', [
-            (string)$this->file,
-            $this->namespace,
-            implode(',', $namespace_map_elements,
-            (string)$this->class_fqsen,
-            (string)$this->method_fqsen,
-            (string)$this->closure_fqsen,
-            $this->is_conditional,
-            $this->line_number_start,
-            $this->line_number_end,
-        ]);
-         */
-    }
-
-    public function unserialize($serialized) {
-        $map = unserialize($serialized);
-        $this->file = $map[0];
-        $this->namespace = $map[1];
-        $this->namespace_map = $map[2];
-        $this->class_fqsen = FQSEN::fromFullyQualifiedString($map[3]);
-        $this->method_fqsen = FQSEN::fromFullyQualifiedString($map[4]);
-        $this->closure_fqsen = FQSEN::fromFullyQualifiedString($map[5]);
-        $this->is_conditional = (bool)$map[6];
-        $this->line_number_start = (int)$map[7];
-        $this->line_number_end = (int)$map[8];
-        // $this->scope = $map[9];
-    }
 
 }

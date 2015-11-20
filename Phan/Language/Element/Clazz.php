@@ -12,6 +12,7 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 use \Phan\Persistent\Column;
+use \Phan\Persistent\ListAssociation;
 use \Phan\Persistent\Schema;
 
 class Clazz extends TypedStructuralElement {
@@ -749,6 +750,38 @@ class Clazz extends TypedStructuralElement {
             new Column('parent_class_fqsen', 'STRING'),
             new Column('is_parent_constructor_called', 'STRING'),
         ]);
+
+        /*
+        $schema->addAssociation(new ListAssociation(
+            'Clazz_interface_fqsen_list', 'STRING',
+            function (Clazz $clazz, array $fqsen_list) {
+                $clazz->interface_fqsen_list =
+                    array_map(function (string $fqsen_string) {
+                        return FQSEN::fromFullyQualifiedString($fqsen_string);
+                    }, $fqsen_list);
+            },
+            function (Clazz $clazz) {
+                return $clazz->getInterfaceClassFQSENList();
+            }
+        ));
+
+        $schema->addAssociation(new ListAssociation(
+            'Clazz_trait_fqsen_list', 'STRING',
+            function (Clazz $clazz, array $fqsen_list) {
+                $clazz->trait_fqsen_list =
+                    array_map(function (string $fqsen_string) {
+                        return FQSEN::fromFullyQualifiedString($fqsen_string);
+                    }, $fqsen_list);
+            },
+            function (Clazz $clazz) {
+                return $clazz->getTraitFQSENList();
+            }
+        ));
+         */
+
+        // private $method_map = [];
+        // private $constant_map = [];
+        // private $property_map = [];
 
         return $schema;
     }
