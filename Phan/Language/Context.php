@@ -12,7 +12,7 @@ use \Phan\Log;
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
  */
-class Context {
+class Context implements \Serializable {
 
     /**
      * @var string
@@ -364,7 +364,7 @@ class Context {
      * scope.
      */
     public function getScope() : Scope {
-        return $this->scope;
+        return $this->scope ?? new Scope();
     }
 
     /**
@@ -547,4 +547,53 @@ class Context {
             . ' in scope ' . (string)$this->getScopeFQSEN()
             ;
     }
+
+    public function serialize() {
+        return serialize([
+            (string)$this->file,
+            $this->namespace,
+            $this->namespace_map,
+            (string)$this->class_fqsen,
+            (string)$this->method_fqsen,
+            (string)$this->closure_fqsen,
+            $this->is_conditional,
+            $this->line_number_start,
+            $this->line_number_end,
+            // $this->scope,
+        ]);
+
+        /*
+        $namespace_map_elements = [];
+        foreach ($this->namespace_map as $alias => $fqsen) {
+            $namespace_map_elements[] = "$alias:$fqsen";
+        }
+
+        return implode('|', [
+            (string)$this->file,
+            $this->namespace,
+            implode(',', $namespace_map_elements,
+            (string)$this->class_fqsen,
+            (string)$this->method_fqsen,
+            (string)$this->closure_fqsen,
+            $this->is_conditional,
+            $this->line_number_start,
+            $this->line_number_end,
+        ]);
+         */
+    }
+
+    public function unserialize($serialized) {
+        $map = unserialize($serialized);
+        $this->file = $map[0];
+        $this->namespace = $map[1];
+        $this->namespace_map = $map[2];
+        $this->class_fqsen = FQSEN::fromFullyQualifiedString($map[3]);
+        $this->method_fqsen = FQSEN::fromFullyQualifiedString($map[4]);
+        $this->closure_fqsen = FQSEN::fromFullyQualifiedString($map[5]);
+        $this->is_conditional = (bool)$map[6];
+        $this->line_number_start = (int)$map[7];
+        $this->line_number_end = (int)$map[8];
+        // $this->scope = $map[9];
+    }
+
 }
