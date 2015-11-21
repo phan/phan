@@ -4,5 +4,3 @@
     --colors=auto \
     --strict-global-state \
     tests/Phan
-
-./phan -p -s test.state Phan/**/*.php

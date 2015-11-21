@@ -444,71 +444,30 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return StringType::instance()->asUnionType(); // class name fetch
         }
 
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
-
-        if(!$class_name) {
-            Log::err(
-                Log::EUNDEF,
-                "Can't access undeclared constant {$class_name}::{$constant_name}",
-                $this->context->getFile(),
-                $node->lineno
-            );
-
-            return new UnionType();
-        }
-
-        $class_fqsen =
-            $this->context->getScopeFQSEN()->withClassName(
+        try {
+            $defining_clazz = AST::classFromNodeInContext(
+                $node,
                 $this->context,
-                $class_name
+                $this->code_base
             );
-
-        // Make sure the class exists
-        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
+        } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,
-                "Can't access undeclared constant {$class_name}::{$constant_name}",
+                $exception->getMessage(),
                 $this->context->getFile(),
                 $node->lineno
             );
-
+            return new UnionType();
+        } catch (NodeException $exception) {
+            // If we can't figure out what kind of a call
+            // this is, don't worry about it
             return new UnionType();
         }
 
-        // Get a reference to the class defining the constant
-        $defining_clazz =
-            $this->code_base->getClassByFQSEN($class_fqsen);
-
-        // Climb the parent tree to find the definition of the
-        // constant
-        while(!$defining_clazz->hasConstantWithName($constant_name)) {
-            // Make sure the class has a parent
-            if (!$defining_clazz->hasParentClassFQSEN()) {
-                return new UnionType();
-            }
-
-            // Make sure that parent exists
-            if (!$this->code_base->hasClassWithFQSEN(
-                $defining_clazz->getParentClassFQSEN()
-            )) {
-                return new UnionType();
-            }
-
-            // Climb to that parent
-            $defining_clazz = $this->code_base
-                ->getClassByFQSEN($defining_clazz->getParentClassFQSEN());
-        }
-
-        if (!$defining_clazz
-            || !$defining_clazz->hasConstantWithName($constant_name)
-        ) {
+        if (!$defining_clazz->hasConstantWithName($constant_name)) {
             Log::err(
                 Log::EUNDEF,
-                "Can't access undeclared constant {$class_name}::{$constant_name}",
+                "Can't access undeclared constant {$defining_clazz->getName()}::{$constant_name}",
                 $this->context->getFile(),
                 $node->lineno
             );
