@@ -3,6 +3,8 @@ namespace Phan\Analyze;
 
 use \Phan\CodeBase;
 use \Phan\Debug;
+use \Phan\Exception\NodeException;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\AccessException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
@@ -464,7 +466,10 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return new UnionType();
         }
 
-        if (!$defining_clazz->hasConstantWithName($constant_name)) {
+        if (!$defining_clazz->hasConstantWithName(
+            $this->code_base,
+            $constant_name
+        )) {
             Log::err(
                 Log::EUNDEF,
                 "Can't access undeclared constant {$defining_clazz->getName()}::{$constant_name}",
@@ -475,7 +480,10 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         return $defining_clazz
-            ->getConstantWithName($constant_name)
+            ->getConstantWithName(
+                $this->code_base,
+                $constant_name
+            )
             ->getUnionType();
     }
 
@@ -521,12 +529,16 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         $property_name = $node->children['prop'];
 
         // Property not found :(
-        if (!$clazz->hasPropertyWithName($property_name)) {
+        if (!$clazz->hasPropertyWithName(
+            $this->code_base,
+            $property_name
+        )) {
             return new UnionType();
         }
 
         try {
             $property = $clazz->getPropertyWithNameFromContext(
+                $this->code_base,
                 $property_name,
                 $this->context
             );
@@ -590,12 +602,16 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         $property_name = $node->children['prop'];
 
         // Property not found :(
-        if (!$clazz->hasPropertyWithName($property_name)) {
+        if (!$clazz->hasPropertyWithName(
+            $this->code_base,
+            $property_name
+        )) {
             return new UnionType();
         }
 
         try {
             $property = $clazz->getPropertyWithNameFromContext(
+                $this->code_base,
                 $property_name,
                 $this->context
             );

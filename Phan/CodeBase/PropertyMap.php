@@ -10,17 +10,29 @@ use \Phan\Language\FQSEN;
 trait PropertyMap {
 
     /**
-     * @var Property[]
-     * A map from FQSEN to a property
+     * @var Property[][]
+     * A map from FQSEN  to name to a property
      */
     protected $property_map = [];
 
     /**
-     * @return Property[]
-     * A map from FQSEN to property
+     * @return Property[][]
+     * A map from FQSEN to name to property
      */
     public function getPropertyMap() : array {
         return $this->property_map;
+    }
+
+    /**
+     * @return Property[]
+     * A map from name to property
+     */
+    public function getPropertyMapForScope(FQSEN $fqsen) {
+        if (empty($this->property_map[(string)$fqsen])) {
+            return [];
+        }
+
+        return $this->property_map[(string)$fqsen];
     }
 
     /**
@@ -36,26 +48,47 @@ trait PropertyMap {
     /**
      * @return bool
      */
-    public function hasPropertyWithFQSEN(FQSEN $fqsen) : bool {
-        return !empty($this->property_map[(string)$fqsen]);
+    public function hasProperty(FQSEN $fqsen, string $name) : bool {
+        return !empty($this->property_map[(string)$fqsen][$name]);
     }
 
     /**
      * @return Property
      * Get the property with the given FQSEN
      */
-    public function getPropertyByFQSEN(FQSEN $fqsen) : Property {
-        return $this->property_map[(string)$fqsen];
+    public function getProperty(FQSEN $fqsen, string $name) : Property {
+        return $this->property_map[(string)$fqsen][$name];
     }
 
     /**
      * @param Property $property
-     * Any global or class-scoped property
+     * Any property
      *
      * @return null
      */
     public function addProperty(Property $property) {
-        $this->property_map[(string)$property->getFQSEN()] = $property;
+        $this->addPropertyWithNameInScope(
+            $property,
+            $property->getName(),
+            $property->getFQSEN()
+        );
+    }
+
+    /**
+     * @param Property $property
+     * Any property
+     *
+     * @param FQSEN $fqsen
+     * The FQSEN to index the property by
+     *
+     * @return null
+     */
+    public function addPropertyWithNameInScope(
+        Property $property,
+        string $name,
+        FQSEN $fqsen
+    ) {
+        $this->property_map[(string)$fqsen][$name] = $property;
     }
 }
 

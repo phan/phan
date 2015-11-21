@@ -599,8 +599,9 @@ class AST {
             . $context);
 
         // Return it if the property exists on the class
-        if ($clazz->hasPropertyWithName($property_name)) {
+        if ($clazz->hasPropertyWithName($code_base, $property_name)) {
             return $clazz->getPropertyWithNameFromContext(
+                $code_base,
                 $property_name,
                 $context
             );
@@ -619,7 +620,7 @@ class AST {
             $flags
         );
 
-        $clazz->addProperty($property);
+        $clazz->addProperty($code_base, $property);
 
         return $property;
     }

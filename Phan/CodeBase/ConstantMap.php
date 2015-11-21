@@ -10,13 +10,13 @@ use \Phan\Language\FQSEN;
 trait ConstantMap {
 
     /**
-     * @var Constant[]
-     * A map from FQSEN to a constant
+     * @var Constant[][]
+     * A map from FQSEN to name to a constant
      */
     protected $constant_map = [];
 
     /**
-     * @return Constant[]
+     * @return Constant[][]
      * A map from FQSEN to constant
      */
     public function getConstantMap() : array {
@@ -24,7 +24,19 @@ trait ConstantMap {
     }
 
     /**
-     * @param Constant[] $constant_map
+     * @return Constant[]
+     * A map from name to constant
+     */
+    public function getConstantMapForScope(FQSEN $fqsen) {
+        if (empty($this->constant_map[(string)$fqsen])) {
+            return [];
+        }
+
+        return $this->constant_map[(string)$fqsen];
+    }
+
+    /**
+     * @param Constant[][] $constant_map
      * A map from FQSEN to Constant
      *
      * @return null
@@ -36,16 +48,16 @@ trait ConstantMap {
     /**
      * @return bool
      */
-    public function hasConstantWithFQSEN(FQSEN $fqsen) : bool {
-        return !empty($this->constant_map[(string)$fqsen]);
+    public function hasConstant(FQSEN $fqsen, string $name) : bool {
+        return !empty($this->constant_map[(string)$fqsen][$name]);
     }
 
     /**
      * @return Constant
      * Get the constant with the given FQSEN
      */
-    public function getConstantByFQSEN(FQSEN $fqsen) : Constant {
-        return $this->constant_map[(string)$fqsen];
+    public function getConstant(FQSEN $fqsen, string $name) : Constant {
+        return $this->constant_map[(string)$fqsen][$name];
     }
 
     /**
@@ -55,7 +67,28 @@ trait ConstantMap {
      * @return null
      */
     public function addConstant(Constant $constant) {
-        $this->constant_map[(string)$constant->getFQSEN()] = $constant;
+        $this->addConstantWithNameInScope(
+            $constant,
+            $constant->getName(),
+            $constant->getFQSEN()
+        );
+    }
+
+    /**
+     * @param Constant $constant
+     * Any constant
+     *
+     * @param FQSEN $fqsen
+     * The FQSEN to index the constant by
+     *
+     * @return null
+     */
+    public function addConstantWithNameInScope(
+        Constant $constant,
+        string $name,
+        FQSEN $fqsen
+    ) {
+        $this->constant_map[(string)$fqsen][$name] = $constant;
     }
 
 }

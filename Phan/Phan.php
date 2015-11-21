@@ -188,7 +188,7 @@ class Phan {
 
         // Recurse into each child node
         $child_context = $context;
-        foreach($node->children as $child_node) {
+        foreach($node->children ?? [] as $child_node) {
 
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
@@ -353,7 +353,7 @@ class Phan {
         assert(!empty($context), 'Context cannot be null');
 
         // Go depth first on that first set of analyses
-		foreach($node->children as $child_node) {
+		foreach($node->children ?? [] as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;

@@ -268,9 +268,13 @@ class ClassNameVisitor extends KindVisitorImplementation {
 
                 $property_name = $prop->children['prop'];
 
-                if ($clazz->hasPropertyWithName($property_name)) {
+                if ($clazz->hasPropertyWithName(
+                    $this->code_base,
+                    $property_name
+                )) {
                     try {
                         $property = $clazz->getPropertyWithNameFromContext(
+                            $this->code_base,
                             $property_name,
                             $this->context
                         );

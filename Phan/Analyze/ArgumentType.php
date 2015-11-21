@@ -202,7 +202,7 @@ class ArgumentType {
         Node $node,
         Context $context
     ) {
-        foreach($node->children as $i => $argument) {
+        foreach($node->children ?? [] as $i => $argument) {
 
             // Get the parameter associated with this argument
             $parameter = $method->getParameterList()[$i] ?? null;

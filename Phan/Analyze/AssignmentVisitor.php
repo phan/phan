@@ -93,7 +93,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
         $element_type =
             $this->right_type->asNonGenericTypes();
 
-        foreach($node->children as $child_node) {
+        foreach($node->children ?? [] as $child_node) {
             // Some times folks like to pass a null to
             // a list to throw the element away. I'm not
             // here to judge.
@@ -216,7 +216,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-        if (!$clazz->hasPropertyWithName($property_name)) {
+        if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
 
             // Check to see if the class has a __set method
             if (!$clazz->hasMethodWithName('__set')) {
@@ -243,6 +243,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
 
         try {
             $property = $clazz->getPropertyWithNameFromContext(
+                $this->code_base,
                 $property_name,
                 $this->context
             );

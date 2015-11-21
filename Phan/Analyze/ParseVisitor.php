@@ -293,7 +293,7 @@ class ParseVisitor extends ScopeVisitor {
             $this->context
         );
 
-        foreach($node->children as $i => $child_node) {
+        foreach($node->children ?? [] as $i => $child_node) {
             // Ignore children which are not property elements
             if (!$child_node || $child_node->kind != \ast\AST_PROP_ELEM) {
                 continue;
@@ -328,7 +328,7 @@ class ParseVisitor extends ScopeVisitor {
                 );
 
             // Add the property to the class
-            $clazz->addProperty($property);
+            $clazz->addProperty($this->code_base, $property);
 
             // TODO: rm above
             $this->code_base->addProperty($property);
@@ -369,7 +369,7 @@ class ParseVisitor extends ScopeVisitor {
     public function visitClassConstDecl(Node $node) : Context {
         $clazz = $this->getContextClass();
 
-        foreach($node->children as $child_node) {
+        foreach($node->children ?? [] as $child_node) {
             $constant = new Constant(
                 $this->context
                     ->withLineNumberStart($child_node->lineno ?? 0)
@@ -383,10 +383,10 @@ class ParseVisitor extends ScopeVisitor {
                 $child_node->flags ?? 0
             );
 
-            $clazz->addConstant($constant);
-
-            // TODO: rm above
-            $this->code_base->addConstant($constant);
+            $clazz->addConstant(
+                $this->code_base,
+                $constant
+            );
         }
 
         return $this->context;

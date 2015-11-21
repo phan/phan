@@ -37,18 +37,6 @@ class Clazz extends TypedStructuralElement {
     private $trait_fqsen_list = [];
 
     /**
-     * @var Constant[]
-     * A list of constants defined on this class
-     */
-    private $constant_map = [];
-
-    /**
-     * @var Property[]
-     * A list of properties defined on this class
-     */
-    private $property_map = [];
-
-    /**
      * @var Method[]
      * A list of methods defined on this class
      */
@@ -177,20 +165,18 @@ class Clazz extends TypedStructuralElement {
         }
 
         foreach($class->getDefaultProperties() as $name => $value) {
-            $property =
+            // TODO: whats going on here?
+            $reflection_property =
                 new \ReflectionProperty($class->getName(), $name);
 
-            $property_element =
-                new Property(
-                    $context->withClassFQSEN($clazz->getFQSEN()),
-                    $name,
-                    Type::fromObject($value)->asUnionType(),
-                    0
-                );
+            $property = new Property(
+                $context->withClassFQSEN($clazz->getFQSEN()),
+                $name,
+                Type::fromObject($value)->asUnionType(),
+                0
+            );
 
-            $clazz->property_map[
-                $property_element->getFQSEN()->__toString()
-            ] = $property_element;
+            $clazz->addProperty($code_base, $property);
         }
 
         foreach ($class->getInterfaceNames() as $name) {
@@ -210,13 +196,15 @@ class Clazz extends TypedStructuralElement {
         }
 
         foreach($class->getConstants() as $name => $value) {
-            $clazz->constant_map[$name] =
+            $clazz->addConstant(
+                $code_base,
                 new Constant(
                     $context,
                     $name,
                     Type::fromObject($value)->asUnionType(),
                     0
-                );
+                )
+            );
         }
 
         foreach($class->getMethods() as $reflection_method) {
@@ -297,15 +285,28 @@ class Clazz extends TypedStructuralElement {
     /**
      * @return void
      */
-    public function addProperty(Property $property) {
-        $this->property_map[$property->getName()] = $property;
+    public function addProperty(
+        CodeBase $code_base,
+        Property $property
+    ) {
+        $code_base->addPropertyWithNameInScope(
+            $property,
+            $property->getName(),
+            $this->getFQSEN()
+        );
     }
 
     /**
      * @return bool
      */
-    public function hasPropertyWithName(string $name) : bool {
-        return !empty($this->property_map[$name]);
+    public function hasPropertyWithName(
+        CodeBase $code_base,
+        string $name
+    ) : bool {
+        return $code_base->hasProperty(
+            $this->getFQSEN(),
+            $name
+        );
     }
 
     /**
@@ -324,10 +325,15 @@ class Clazz extends TypedStructuralElement {
      * context
      */
     public function getPropertyWithNameFromContext(
+        CodeBase $code_base,
         string $name,
         Context $context
     ) : Property {
-        $property = $this->property_map[$name];
+
+        $property = $code_base->getProperty(
+            $this->getFQSEN(),
+            $name
+        );
 
         // If we're getting the property from outside of this
         // class and the property isn't public and we don't
@@ -356,8 +362,10 @@ class Clazz extends TypedStructuralElement {
      * @return Property[]
      * The list of properties on this class
      */
-    public function getPropertyMap() : array {
-        return $this->property_map;
+    public function getPropertyMap(CodeBase $code_base) : array {
+        return $code_base->getPropertyMapForScope(
+            $this->getFQSEN()
+        );
     }
 
     /**
@@ -365,9 +373,15 @@ class Clazz extends TypedStructuralElement {
      *
      * @return null;
      */
-    public function addConstant(Constant $constant) {
-        $this->constant_map[$constant->getName()] =
-            $constant;
+    public function addConstant(
+        CodeBase $code_base,
+        Constant $constant
+    ) {
+        $code_base->addConstantWithNameInScope(
+            $constant,
+            $constant->getName(),
+            $this->getFQSEN()
+        );
     }
 
     /**
@@ -375,24 +389,38 @@ class Clazz extends TypedStructuralElement {
      * True if a constant with the given name is defined
      * on this class.
      */
-    public function hasConstantWithName(string $name) : bool {
-        return !empty($this->constant_map[$name]);
+    public function hasConstantWithName(
+        CodeBase $code_base,
+        string $name
+    ) : bool {
+        return $code_base->hasConstant(
+            $this->getFQSEN(),
+            $name
+        );
     }
 
     /**
      * @return Constant
      * The class constant with the given name.
      */
-    public function getConstantWithName(string $name) : Constant {
-        return $this->constant_map[$name];
+    public function getConstantWithName(
+        CodeBase $code_base,
+        string $name
+    ) : Constant {
+        return $code_base->getConstant(
+            $this->getFQSEN(),
+            $name
+        );
     }
 
     /**
      * @return Constant[]
      * The constants associated with this class
      */
-    public function getConstantMap() : array {
-        return $this->constant_map;
+    public function getConstantMap(CodeBase $code_base) : array {
+        return $code_base->getConstantMapForScope(
+            $this->getFQSEN()
+        );
     }
 
     /**
@@ -601,6 +629,7 @@ class Clazz extends TypedStructuralElement {
                     "Trait $trait_fqsen should already have been proven to exist");
 
                 $this->importAncestorClass(
+                    $code_base,
                     $code_base->getClassByFQSEN($trait_fqsen)
                 );
             }
@@ -616,6 +645,7 @@ class Clazz extends TypedStructuralElement {
                     "Trait $interface_fqsen should already have been proven to exist");
 
                 $this->importAncestorClass(
+                    $code_base,
                     $code_base->getClassByFQSEN($interface_fqsen)
                 );
             }
@@ -661,7 +691,10 @@ class Clazz extends TypedStructuralElement {
             $parent->importParentClass($code_base);
 
             // Import elements from the parent
-            $this->importAncestorClass($parent);
+            $this->importAncestorClass(
+                $code_base,
+                $parent
+            );
         });
     }
 
@@ -674,17 +707,26 @@ class Clazz extends TypedStructuralElement {
      *
      * @return null
      */
-    public function importAncestorClass(Clazz $superclazz) {
+    public function importAncestorClass(
+        CodeBase $code_base,
+        Clazz $superclazz
+    ) {
         $this->memoize((string)$superclazz->getFQSEN(),
-            function() use ($superclazz) {
+            function() use ($code_base, $superclazz) {
                 // Copy properties
-                foreach ($superclazz->getPropertyMap() as $property) {
-                    $this->addProperty($property);
+                foreach ($superclazz->getPropertyMap($code_base) as $property) {
+                    $this->addProperty(
+                        $code_base,
+                        $property
+                    );
                 }
 
                 // Copy constants
-                foreach ($superclazz->getConstantMap() as $constant) {
-                    $this->addConstant($constant);
+                foreach ($superclazz->getConstantMap($code_base) as $constant) {
+                    $this->addConstant(
+                        $code_base,
+                        $constant
+                    );
                 }
 
                 // Copy methods

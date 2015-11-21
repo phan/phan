@@ -150,7 +150,7 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
             'Method takes AST_USE nodes');
 
         $map = [];
-        foreach($node->children as $child_node) {
+        foreach($node->children ?? [] as $child_node) {
             $target = $child_node->children['name'];
 
             if(empty($child_node->children['alias'])) {

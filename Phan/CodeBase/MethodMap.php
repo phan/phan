@@ -42,14 +42,22 @@ trait MethodMap {
 
     /**
      * @param Method $method
-     * A method to add to the code base
+     * Any method
+     *
+     * @param FQSEN $fqsen
+     * The FQSEN to index the constant by
+     *
+     * @return null
      */
-    private function addMethodCommon(Method $method) {
-        $this->method_map[(string)$method->getFQSEN()] = $method;
+    public function addMethodWithFQSEN(
+        Method $method,
+        FQSEN $fqsen
+    ) {
+        $this->method_map[(string)$fqsen] = $method;
 
         if (!$method->getContext()->isInternal()) {
             $this->getFileByPath($method->getContext()->getFile())
-                ->addMethodFQSEN($method->getFQSEN());
+                ->addMethodFQSEN($fqsen);
         }
     }
 
@@ -58,7 +66,10 @@ trait MethodMap {
      * A method to add to the code base
      */
     public function addMethod(Method $method) {
-        $this->addMethodCommon($method);
+        $this->addMethodWithFQSEN(
+            $method,
+            $method->getFQSEN()
+        );
     }
 
     /**
@@ -66,7 +77,10 @@ trait MethodMap {
      * A method to add to the code base
      */
     public function addFunction(Method $method) {
-        $this->addMethodCommon($method);
+        $this->addMethodWithFQSEN(
+            $method,
+            $method->getFQSEN()
+        );
     }
 
 
@@ -75,7 +89,10 @@ trait MethodMap {
      * A method to add to the code base
      */
     public function addClosure(Method $method) {
-        $this->addMethodCommon($method);
+        $this->addMethodWithFQSEN(
+            $method,
+            $method->getFQSEN()
+        );
     }
 
     /**
