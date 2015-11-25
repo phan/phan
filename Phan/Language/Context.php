@@ -16,7 +16,7 @@ use \Phan\Log;
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
  */
-class Context extends FileRef {
+class Context extends FileRef implements \Serializable {
 
     /**
      * @var string
@@ -29,6 +29,17 @@ class Context extends FileRef {
      * ...
      */
     private $namespace_map = [];
+
+    /**
+     * @var bool
+     */
+    private $is_conditional = false;
+
+
+    /**
+     * @var Scope
+     */
+    private $scope = null;
 
     /**
      * @var FullyQualifiedClassName
@@ -53,17 +64,6 @@ class Context extends FileRef {
      * in a closure.
      */
     private $closure_fqsen = null;
-
-    /**
-     * @var bool
-     */
-    private $is_conditional = false;
-
-
-    /**
-     * @var Scope
-     */
-    private $scope = null;
 
 
     /**
@@ -349,14 +349,6 @@ class Context extends FileRef {
     }
 
     /**
-     * @return bool
-     * True if we're currently within a class scope
-     */
-    public function isClassScope() : bool {
-        return $this->hasClassFQSEN();
-    }
-
-    /**
      * @param CodeBase $code_base
      * The global code base holding all state
      *
@@ -364,7 +356,7 @@ class Context extends FileRef {
      * Get the class in this scope, or fail real hard
      */
     public function getClassInScope(CodeBase $code_base) : Clazz {
-        assert($this->isClassScope(),
+        assert($this->isInClassScope(),
             "Must be in class scope to get class");
 
         if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
@@ -427,5 +419,17 @@ class Context extends FileRef {
         return $code_base->getMethod(
             $this->getClosureFQSEN()
         );
+    }
+
+    public function serialize() {
+        $serialized = parent::serialize();
+        $serialized .= '|' . $this->getNamespace();
+        return $serialized;
+    }
+
+    public function unserialize($serialized) {
+        list($file_ref, $namespace) = explode('|', $serialized);
+        parent::unserialize($file_ref);
+        $this->namespace = $namespace;
     }
 }

@@ -55,7 +55,8 @@ trait FileMap {
 
         // Flush all classes from the file
         foreach ($code_file->getClassFQSENList() as $fqsen) {
-            unset($this->class_map[(string)$fqsen]);
+            $this->flushClassWithFQSEN($fqsen);
+            $code_file->flushClassWithFQSEN($fqsen);
         }
 
         // Flush all methods from the file
@@ -68,8 +69,6 @@ trait FileMap {
 
             // Remove it from the file's depdendency list
             $code_file->flushMethodWithFQSEN($fqsen);
-
-            // TODO: remove it from the database?
         }
 
         // TODO: Flush global constants

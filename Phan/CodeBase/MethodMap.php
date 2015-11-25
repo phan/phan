@@ -2,6 +2,7 @@
 namespace Phan\CodeBase;
 
 use \Phan\Database;
+use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -109,7 +110,21 @@ trait MethodMap {
         string $scope,
         string $name
     ) {
-        return !empty($this->method_map[$scope][$name]);
+        if (!empty($this->method_map[$scope][$name])) {
+            return true;
+        }
+
+        if (Database::isEnabled()) {
+            // Otherwise, check the database
+            try {
+                MethodModel::read(Database::get(), $scope . '|' . $name);
+                return true;
+            } catch (NotFoundException $exception) {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -165,11 +180,22 @@ trait MethodMap {
      *
      * @return Method
      * Get the method with the given FQSEN
+     *
+     * @throws NotFoundException
+     * An exception is thrown if the class cannot be
+     * found
      */
     private function getMethodByScopeAndName(
         string $scope,
         string $name
     ) : Method {
+
+        if (empty($this->method_map[$scope][$name])) {
+            $this->method_map[$scope][$name] =
+                MethodModel::read(Database::get(), $scope . '|' . $name)
+                ->getMethod();
+        }
+
         return $this->method_map[$scope][$name];
     }
 
@@ -279,7 +305,9 @@ trait MethodMap {
         string $name
     ) {
         if (Database::isEnabled()) {
-            MethodModel::delete(Database::get(), [$scope, $name]);
+            MethodModel::delete(Database::get(),
+                $scope . '|' .  $name
+            );
         }
 
         unset($this->method_map[$scope][$name]);

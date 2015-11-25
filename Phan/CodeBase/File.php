@@ -157,4 +157,12 @@ class File {
         unset($this->method_fqsen_list[(string)$fqsen]);
     }
 
+    /**
+     * Remove the class with the given FQSEN from our
+     * list of associated classes
+     */
+    public function flushClassWithFQSEN(FullyQualifiedClassName $fqsen) {
+        unset($this->class_fqsen_list[(string)$fqsen]);
+    }
+
 }

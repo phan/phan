@@ -40,13 +40,16 @@ class Method extends ModelOne {
         $this->scope_name = $scope_name;
     }
 
+    public function getMethod() : MethodElement {
+        return $this->method;
+    }
+
     /**
      * @return Schema
      * The schema for this model
      */
     public static function createSchema() : Schema {
         $schema = new Schema('Method', [
-            new Column('scope', Column::TYPE_STRING, true),
             new Column('scope_name', Column::TYPE_STRING, true),
             new Column('fqsen', Column::TYPE_STRING),
             new Column('name', Column::TYPE_STRING),
@@ -77,8 +80,7 @@ class Method extends ModelOne {
      */
     public function toRow() : array {
         return [
-            'scope' => $this->scope,
-            'scope_name' => $this->scope_name,
+            'scope_name' => $this->scope . '|' . $this->scope_name,
             'name' => (string)$this->method->getName(),
             'type' => (string)$this->method->getUnionType(),
             'flags' => $this->method->getFlags(),
@@ -100,8 +102,10 @@ class Method extends ModelOne {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : MethodElement {
-        return new MethodElement(
+    public static function fromRow(array $row) : Method {
+        list($scope, $name) = explode('|', $row['scope_name']);
+
+        return new Method(new MethodElement(
             unserialize(base64_decode($row['context'])),
             $row['name'],
             UnionType::fromFullyQualifiedString($row['type']),
@@ -109,6 +113,6 @@ class Method extends ModelOne {
             $row['number_of_required_parameters'],
             $row['number_of_optional_parameters'],
             (bool)$row['is_dynamic']
-        );
+        ), $scope, $name);
     }
 }
