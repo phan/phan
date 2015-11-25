@@ -6,9 +6,9 @@ use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Scope;
 use \Phan\Log;
 
@@ -16,7 +16,7 @@ use \Phan\Log;
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
  */
-class Context extends FileRef implements \Serializable {
+class Context extends FileRef {
 
     /**
      * @var string
@@ -338,45 +338,6 @@ class Context extends FileRef implements \Serializable {
 
     /**
      * @return bool
-     * True if there is a scope FQSEN defined
-     */
-    public function hasScopeFQSEN() : bool {
-        return (
-            $this->hasClassFQSEN()
-            || $this->hasMethodFQSEN()
-            || $this->hasClosureFQSEN()
-        );
-    }
-
-    /**
-     * @return string
-     * A fully-qualified structural element name describing
-     * the current scope.
-     */
-    public function getScopeFQSEN() : FQSEN {
-
-        // If we're in a closure, return it's FQSEN
-        if ($this->hasClosureFQSEN()) {
-            return $this->getClosureFQSEN();
-        }
-
-        // If we're in a method, return it's FQSEN
-        if ($this->hasMethodFQSEN()) {
-            return $this->getMethodFQSEN();
-        }
-
-        // If we're in a class, return it's FQSEN
-        if ($this->hasClassFQSEN()) {
-            return $this->getClassFQSEN();
-        }
-
-        debug_print_backtrace(3);
-        assert(false, "No scope FQSEN defined");
-        return null;
-    }
-
-    /**
-     * @return bool
      * True if we are currently within the global scope
      * i.e. Not within a class
      */
@@ -467,25 +428,4 @@ class Context extends FileRef implements \Serializable {
             $this->getClosureFQSEN()
         );
     }
-
-    /**
-     * Get a string representation of the context
-     *
-     * @return string
-     */
-    public function __toString() : string {
-        $string = $this->file
-            . ':' . (string)$this->line_number_start
-            . ($this->line_number_end
-                ? (':' . (string)$this->line_number_end) : '')
-            ;
-
-        if ($this->hasScopeFQSEN()) {
-            $string .= ' in scope ' . (string)$this->getScopeFQSEN();
-        }
-
-        return $string;
-    }
-
-
 }

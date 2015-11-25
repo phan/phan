@@ -102,8 +102,8 @@ class FileRef implements \Serializable {
     public function __toString() : string {
         return implode(':', [
             $this->file,
-            $this->line_number_start,
-            $this->line_number_end,
+            $this->line_number_start ?? 0,
+            $this->line_number_end ?? 0,
         ]);
     }
 
