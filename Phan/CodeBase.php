@@ -75,7 +75,6 @@ class CodeBase extends ModelOne {
             CodeBase::CODE_BASE_VERSION;
     }
 
-
     /**
      * @param string[] $function_name_list
      * A list of function names to load type information for

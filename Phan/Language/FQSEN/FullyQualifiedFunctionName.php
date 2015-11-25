@@ -30,7 +30,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement {
 
         // Check to see if we're fully qualified
         if (0 === strpos($fqsen_string, '\\')) {
-            return self::fromFullyQualifiedString($fqsen_string);
+            return static::fromFullyQualifiedString($fqsen_string);
         }
 
         // Split off the alternate ID
@@ -74,7 +74,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement {
             $context->getLineNumberStart()
         ])), 0, 8);
 
-        return self::fromStringInContext(
+        return static::fromStringInContext(
             $name,
             $context
         );

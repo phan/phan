@@ -37,7 +37,6 @@ class File extends ModelOne {
      */
     private $analysis_time = 0;
 
-
     /**
      * @var FQSEN[]
      * A list of class FQSENs associated with this file

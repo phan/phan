@@ -151,7 +151,7 @@ class Context extends FileRef {
     public function withNamespaceMap(
         int $flags,
         string $alias,
-        FQSEN $target
+        FullyQualifiedGlobalStructuralElement $target
     ) : Context {
         $this->namespace_map[$flags][strtolower($alias)] = $target;
         return $this;

@@ -3,6 +3,7 @@ namespace Phan\CodeBase;
 
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
 
 trait ClassMap {
 
@@ -44,7 +45,7 @@ trait ClassMap {
      * @return Clazz
      * A class with the given FQSEN
      */
-    public function getClassByFQSEN(FQSEN $fqsen) : Clazz {
+    public function getClassByFQSEN(FullyQualifiedClassName $fqsen) : Clazz {
         assert(isset($this->class_map[(string)$fqsen]),
             "Class with fqsen $fqsen not found");
 
@@ -55,8 +56,8 @@ trait ClassMap {
      * @return bool
      * True if the exlass exists else false
      */
-    public function hasClassWithFQSEN(FQSEN $fqsen) : bool {
-        return !empty($this->class_map[$fqsen->__toString()]);
+    public function hasClassWithFQSEN(FullyQualifiedClassName $fqsen) : bool {
+        return !empty($this->class_map[(string)$fqsen]);
     }
 
     /**

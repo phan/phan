@@ -68,9 +68,9 @@ trait MethodMap {
     private function hasMethodWithMethodFQSEN(
         FullyQualifiedMethodName $fqsen
     ) : bool {
-        return !empty($this->method_map
-            [(string)$fqsen->getFullyQualifiedClassName()]
-            [$fqsen->getNameWithAlternateId()]
+        return $this->hasMethodWithScopeAndName(
+            (string)$fqsen->getFullyQualifiedClassName(),
+            $fqsen->getNameWithAlternateId()
         );
     }
 
@@ -82,9 +82,26 @@ trait MethodMap {
     private function hasMethodWithFunctionFQSEN(
         FullyQualifiedFunctionName $fqsen
     ) : bool {
-        return !empty($this->method_map
-            [$fqsen->getNamespace()]
-            [$fqsen->getNameWithAlternateId()]);
+        return $this->hasMethodWithScopeAndName(
+            $fqsen->getNamespace(),
+            $fqsen->getNameWithAlternateId()
+        );
+    }
+
+    /**
+     * @param string $scope
+     * The scope of the method or function
+     *
+     * @param string $name
+     * The name of the method (with an optional alternate id)
+     *
+     * @return bool
+     */
+    private function hasMethodWithScopeAndName(
+        string $scope,
+        string $name
+    ) {
+        return !empty($this->method_map[$scope][$name]);
     }
 
     /**
@@ -110,9 +127,10 @@ trait MethodMap {
     private function getMethodByMethodFQSEN(
         FullyQualifiedMethodName $fqsen
     ) : Method {
-        return $this->method_map
-            [(string)$fqsen->getFullyQualifiedClassName()]
-            [$fqsen->getNameWithAlternateId()];
+        return $this->getMethodByScopeAndName(
+            (string)$fqsen->getFullyQualifiedClassName(),
+            $fqsen->getNameWithAlternateId()
+        );
     }
 
     /**
@@ -124,9 +142,27 @@ trait MethodMap {
     private function getMethodByFunctionFQSEN(
         FullyQualifiedFunctionName $fqsen
     ) : Method {
-        return $this->method_map
-            [$fqsen->getNamespace()]
-            [$fqsen->getNameWithAlternateId()];
+        return $this->getMethodByScopeAndName(
+            $fqsen->getNamespace(),
+            $fqsen->getNameWithAlternateId()
+        );
+    }
+
+    /**
+     * @param string $scope
+     * The scope of the method or function
+     *
+     * @param string $name
+     * The name of the method (with an optional alternate id)
+     *
+     * @return Method
+     * Get the method with the given FQSEN
+     */
+    private function getMethodByScopeAndName(
+        string $scope,
+        string $name
+    ) : Method {
+        return $this->method_map[$scope][$name];
     }
 
     /**
@@ -183,10 +219,11 @@ trait MethodMap {
         Method $method,
         FullyQualifiedFunctionName $fqsen
     ) {
-        $this->method_map
-            [$fqsen->getNamespace()]
-            [$fqsen->getNameWithAlternateId()]
-            = $method;
+        $this->addMethodWithScopeAndName(
+            $method,
+            $fqsen->getNamespace(),
+            $fqsen->getNameWithAlternateId()
+        );
     }
 
     /**
@@ -202,8 +239,19 @@ trait MethodMap {
         Method $method,
         FullyQualifiedClassName $fqsen
     ) {
-        $name = $method->getFQSEN()->getNameWithAlternateId();
-        $this->method_map[(string)$fqsen][$name] = $method;
+        $this->addMethodWithScopeAndName(
+            $method,
+            (string)$fqsen,
+            $method->getFQSEN()->getNameWithAlternateId()
+        );
+    }
+
+    private function addMethodWithScopeAndName(
+        Method $method,
+        string $scope,
+        string $name
+    ) {
+        $this->method_map[$scope][$name] = $method;
     }
 
 }

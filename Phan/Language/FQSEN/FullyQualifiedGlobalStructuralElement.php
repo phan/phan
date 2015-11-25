@@ -65,7 +65,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         string $namespace,
         string $name,
         int $alternate_id = 0
-    ) {
+    ) : FullyQualifiedGlobalStructuralElement {
         $key = implode('|', [
             get_called_class(),
             __FUNCTION__,
@@ -74,7 +74,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
             $alternate_id,
         ]);
 
-        return self::memoizeStatic($key, function() use (
+        return static::memoizeStatic($key, function() use (
             $namespace, $name, $alternate_id
         ) {
             return new static(
@@ -91,7 +91,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
-    ) {
+    ) : FullyQualifiedGlobalStructuralElement {
         // Split off the alternate_id
         $parts = explode(',', $fully_qualified_string);
         $fqsen_string = $parts[0];
@@ -131,11 +131,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
     public static function fromStringInContext(
         string $fqsen_string,
         Context $context
-    ) {
+    ) : FullyQualifiedGlobalStructuralElement {
 
         // Check to see if we're fully qualified
         if (0 === strpos($fqsen_string, '\\')) {
-            return self::fromFullyQualifiedString($fqsen_string);
+            return static::fromFullyQualifiedString($fqsen_string);
         }
 
         // Split off the alternate ID

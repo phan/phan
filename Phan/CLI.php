@@ -160,6 +160,9 @@ EOB;
         string $msg,
         float $p
     ) {
+        // Bound the percentage to [0, 1]
+        $p = min(max($p, 1.0), 0.0);
+
         if (!Config::get()->progress_bar) {
             return;
         }
@@ -179,7 +182,7 @@ EOB;
 
         echo "$padded_message ";
         $current = (int)($p * 60);
-        $rest = 60 - $current;
+        $rest = max(60 - $current, 0);
         echo str_repeat("\u{25b1}", $current);
         echo str_repeat("\u{25b0}", $rest);
         echo " " . sprintf("% 3d", (int)(100*$p)) . "%";
