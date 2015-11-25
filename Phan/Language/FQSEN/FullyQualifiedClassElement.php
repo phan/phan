@@ -35,8 +35,8 @@ abstract class FullyQualifiedClassElement extends FQSEN {
         string $name,
         int $alternate_id = 0
     ) {
-
         parent::__construct($name);
+
         $this->fully_qualified_class_name =
             $fully_qualified_class_name;
         $this->alternate_id = $alternate_id;
@@ -74,7 +74,7 @@ abstract class FullyQualifiedClassElement extends FQSEN {
         ) {
             return new static(
                 $fully_qualified_class_name,
-                $name,
+                strtolower($name),
                 $alternate_id
             );
         });

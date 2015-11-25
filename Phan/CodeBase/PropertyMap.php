@@ -3,15 +3,13 @@ namespace Phan\CodeBase;
 
 use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
 
-/**
- * Information pertaining to PHP code files that we've read
- */
 trait PropertyMap {
 
     /**
      * @var Property[][]
-     * A map from FQSEN  to name to a property
+     * A map from FQSEN to name to a property
      */
     protected $property_map = [];
 
@@ -67,10 +65,9 @@ trait PropertyMap {
      * @return null
      */
     public function addProperty(Property $property) {
-        $this->addPropertyWithNameInScope(
+        $this->addPropertyInScope(
             $property,
-            $property->getName(),
-            $property->getFQSEN()
+            $property->getFQSEN()->getFullyQualifiedClassName()
         );
     }
 
@@ -78,17 +75,17 @@ trait PropertyMap {
      * @param Property $property
      * Any property
      *
-     * @param FQSEN $fqsen
+     * @param FullyQualifiedClassName $fqsen
      * The FQSEN to index the property by
      *
      * @return null
      */
-    public function addPropertyWithNameInScope(
+    public function addPropertyInScope(
         Property $property,
-        string $name,
-        FQSEN $fqsen
+        FullyQualifiedClassName $fqsen
     ) {
+        $name =
+            $property->getFQSEN()->getNameWithAlternateId();
         $this->property_map[(string)$fqsen][$name] = $property;
     }
 }
-

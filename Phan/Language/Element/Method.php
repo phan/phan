@@ -597,8 +597,9 @@ class Method extends TypedStructuralElement {
     public function alternateGenerator(CodeBase $code_base) : \Generator {
         $alternate_id = 0;
         $fqsen = $this->getFQSEN();
-        while ($code_base->hasMethodWithFQSEN($fqsen)) {
-            yield $code_base->getMethodByFQSEN($fqsen);
+
+        while ($code_base->hasMethod($fqsen)) {
+            yield $code_base->getMethod($fqsen);
             $fqsen = $fqsen->withAlternateId(++$alternate_id);
         }
     }

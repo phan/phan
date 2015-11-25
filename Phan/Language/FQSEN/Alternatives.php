@@ -7,6 +7,12 @@ use \Phan\Language\FQSEN;
  * A Fully-Qualified Global Structural Element
  */
 trait Alternatives {
+
+    /**
+     * Implementers must have a getName() method
+     */
+    abstract public function getName() : string;
+
     /**
      * @var int
      * An alternate ID for the elemnet for use when
@@ -22,6 +28,19 @@ trait Alternatives {
      */
     public function getAlternateId() : int {
         return $this->alternate_id;
+    }
+
+    /**
+     * @return string
+     * Get the name of this element with its alternate id
+     * attached
+     */
+    public function getNameWithAlternateId() : string {
+        if ($this->alternate_id) {
+            return "{$this->getName()},{$this->alternate_id}";
+        }
+
+        return $this->getName();
     }
 
     /**

@@ -608,11 +608,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
                 $closure_fqsen = $type->asFQSEN();
 
-                if ($this->code_base->hasMethodWithFQSEN(
+                if ($this->code_base->hasMethod(
                     $closure_fqsen
                 )) {
                     // Get the closure
-                    $method = $this->code_base->getMethodByFQSEN(
+                    $method = $this->code_base->getMethod(
                         $closure_fqsen
                     );
 

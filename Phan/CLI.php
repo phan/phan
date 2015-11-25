@@ -22,7 +22,7 @@ class CLI {
         // Parse command line args
         $opts = getopt("f:m:o:c:hqbpis:3:t::");
 
-        foreach($opts as $key => $value) {
+        foreach($opts ?? [] as $key => $value) {
             switch($key) {
             case 'h':
                 $this->usage();
@@ -77,7 +77,7 @@ class CLI {
         }
 
         $pruneargv = array();
-        foreach($opts as $opt => $value) {
+        foreach($opts ?? [] as $opt => $value) {
             foreach($argv as $key => $chunk) {
                 $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
 

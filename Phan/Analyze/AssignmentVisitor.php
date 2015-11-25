@@ -219,7 +219,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
         if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
 
             // Check to see if the class has a __set method
-            if (!$clazz->hasMethodWithName('__set')) {
+            if (!$clazz->hasMethodWithName($this->code_base, '__set')) {
                 if (Config::get()->allow_missing_properties) {
                     // Create the property
                     AST::getOrCreatePropertyFromNodeInContext(
@@ -242,7 +242,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
         }
 
         try {
-            $property = $clazz->getPropertyWithNameFromContext(
+            $property = $clazz->getPropertyByNameInContext(
                 $this->code_base,
                 $property_name,
                 $this->context

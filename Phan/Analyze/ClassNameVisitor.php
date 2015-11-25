@@ -273,7 +273,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
                     $property_name
                 )) {
                     try {
-                        $property = $clazz->getPropertyWithNameFromContext(
+                        $property = $clazz->getPropertyByNameInContext(
                             $this->code_base,
                             $property_name,
                             $this->context

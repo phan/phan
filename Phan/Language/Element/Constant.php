@@ -47,7 +47,7 @@ class Constant extends TypedStructuralElement {
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FQSEN {
+    public function getFQSEN() {
         // Get the stored FQSEN if it exists
         if ($this->fqsen) {
             return $this->fqsen;

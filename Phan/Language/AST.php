@@ -448,7 +448,7 @@ class AST {
         assert(is_string($method_name),
             "Method name must be a string. Found non-string at {$context}");
 
-        if (!$clazz->hasMethodWithName($method_name)) {
+        if (!$clazz->hasMethodWithName($code_base, $method_name)) {
             if ($is_static) {
                 throw new CodeBaseException(
                     "static call to undeclared method {$clazz->getFQSEN()}::$method_name()"
@@ -460,7 +460,11 @@ class AST {
             }
         }
 
-        $method = $clazz->getMethodByName($method_name);
+        $method = $clazz->getMethodByNameInContext(
+            $code_base,
+            $method_name,
+            $context
+        );
 
         return $method;
     }
@@ -510,17 +514,13 @@ class AST {
         }
 
         // Make sure the method we're calling actually exists
-        if (!$code_base->hasMethodWithFQSEN(
-            $function_fqsen
-        )) {
+        if (!$code_base->hasMethod($function_fqsen)) {
             throw new CodeBaseException(
                 "call to undefined function {$function_fqsen}()"
             );
         }
 
-        $method = $code_base->getMethodByFQSEN(
-            $function_fqsen
-        );
+        $method = $code_base->getMethod($function_fqsen);
 
         return $method;
     }
@@ -612,7 +612,7 @@ class AST {
 
         // Return it if the property exists on the class
         if ($clazz->hasPropertyWithName($code_base, $property_name)) {
-            return $clazz->getPropertyWithNameFromContext(
+            return $clazz->getPropertyByNameInContext(
                 $code_base,
                 $property_name,
                 $context

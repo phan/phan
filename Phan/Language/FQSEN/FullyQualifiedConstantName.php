@@ -7,6 +7,7 @@ use \Phan\Language\FQSEN2;
  * A Fully-Qualified Constant Name
  */
 class FullyQualifiedConstantName extends FullyQualifiedGlobalStructuralElement {
+    use \Phan\Language\FQSEN\Alternatives;
 
     /**
      * @return int

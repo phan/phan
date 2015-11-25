@@ -3,10 +3,10 @@ namespace Phan\CodeBase;
 
 use \Phan\Language\Element\Constant;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 
-/**
- * Information pertaining to PHP code files that we've read
- */
 trait ConstantMap {
 
     /**
@@ -67,9 +67,8 @@ trait ConstantMap {
      * @return null
      */
     public function addConstant(Constant $constant) {
-        $this->addConstantWithNameInScope(
+        $this->addConstantInScope(
             $constant,
-            $constant->getName(),
             $constant->getFQSEN()
         );
     }
@@ -78,16 +77,16 @@ trait ConstantMap {
      * @param Constant $constant
      * Any constant
      *
-     * @param FQSEN $fqsen
+     * @param FullyQualifiedClassName $fqsen
      * The FQSEN to index the constant by
      *
      * @return null
      */
-    public function addConstantWithNameInScope(
+    public function addConstantInScope(
         Constant $constant,
-        string $name,
-        FQSEN $fqsen
+        FullyQualifiedClassName $fqsen
     ) {
+        $name = $constant->getFQSEN()->getNameWithAlternateId();
         $this->constant_map[(string)$fqsen][$name] = $constant;
     }
 

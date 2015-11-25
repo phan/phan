@@ -535,7 +535,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         try {
-            $property = $clazz->getPropertyWithNameFromContext(
+            $property = $clazz->getPropertyByNameInContext(
                 $this->code_base,
                 $property_name,
                 $this->context
@@ -608,7 +608,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         try {
-            $property = $clazz->getPropertyWithNameFromContext(
+            $property = $clazz->getPropertyByNameInContext(
                 $this->code_base,
                 $property_name,
                 $this->context
@@ -678,7 +678,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // If the function doesn't exist, check to see if its
         // a call to a builtin method
-        if (!$this->code_base->hasMethodWithFQSEN(
+        if (!$this->code_base->hasMethod(
             $function_fqsen
         )) {
             $function_fqsen =
@@ -687,13 +687,13 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 );
         }
 
-        if (!$this->code_base->hasMethodWithFQSEN($function_fqsen)) {
+        if (!$this->code_base->hasMethod($function_fqsen)) {
             // Missing internal (bulitin) method.
             return new UnionType();
         }
 
         $function =
-            $this->code_base->getMethodByFQSEN(
+            $this->code_base->getMethod(
                 $function_fqsen
             );
 
@@ -760,15 +760,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 $method_name
             );
 
-        if (!$this->code_base->hasMethodWithFQSEN(
-            $method_fqsen
-        )) {
+        if (!$this->code_base->hasMethod($method_fqsen)) {
             return new UnionType();
         }
 
-        $method = $this->code_base->getMethodByFQSEN(
-            $method_fqsen
-        );
+        $method = $this->code_base->getMethod($method_fqsen);
 
         return $method->getUnionType();
     }
@@ -824,7 +820,10 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         assert(is_string($method_name),
             "Method name must be a string. Something else given.");
 
-        if (!$clazz->hasMethodWithName($method_name)) {
+        if (!$clazz->hasMethodWithName(
+            $this->code_base,
+            $method_name
+        )) {
             Log::err(
                 Log::EUNDEF,
                 "call to undeclared method {$class_fqsen}->{$method_name}()",
@@ -835,7 +834,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return new UnionType();
         }
 
-        $method = $clazz->getMethodByName($method_name);
+        $method = $clazz->getMethodByNameInContext(
+            $this->code_base,
+            $method_name,
+            $this->context
+        );
 
         return $method->getUnionType();
     }

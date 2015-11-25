@@ -1,1 +1,1 @@
-%s:9 ParamError call with 0 arg(s) to \a::testA() which requires 1 arg(s) defined at %s:3
+%s:9 ParamError call with 0 arg(s) to \a::testa() which requires 1 arg(s) defined at %s:3

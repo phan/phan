@@ -400,7 +400,7 @@ class Context extends FileRef {
         assert($this->isMethodScope(),
             "Must be in method scope to get method. Actually in {$this}");
 
-        return $code_base->getMethodByFQSEN(
+        return $code_base->getMethod(
             $this->getMethodFQSEN()
         );
     }
@@ -424,7 +424,7 @@ class Context extends FileRef {
         assert($this->isClosureScope(),
             "Must be in closure scope to get closure. Actually in {$this}");
 
-        return $code_base->getMethodByFQSEN(
+        return $code_base->getMethod(
             $this->getClosureFQSEN()
         );
     }

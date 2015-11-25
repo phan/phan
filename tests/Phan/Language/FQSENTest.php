@@ -112,7 +112,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         $this->assertFQSENEqual(
             FullyQualifiedMethodName::fromStringInContext(
                 'a::methodName', $this->context
-            ), '\\a::methodName'
+            ), '\\a::methodname'
         );
     }
 
@@ -188,7 +188,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         $this->assertFQSENEqual(
             FullyQualifiedClassConstantName::fromStringInContext(
                 'a::methodName', $this->context
-            ), '\\a::methodName'
+            ), '\\a::methodname'
         );
     }
 

@@ -4,6 +4,8 @@ namespace Phan\Analyze;
 use \Phan\CodeBase;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Log;
 
 trait DuplicateFunction {
@@ -25,13 +27,12 @@ trait DuplicateFunction {
 
         $original_fqsen = $fqsen->getCanonicalFQSEN();
 
-        if (!$code_base->hasMethodWithFQSEN($original_fqsen)) {
-            // ...
+        if (!$code_base->hasMethod($original_fqsen)) {
             return;
         }
 
         $original_method =
-            $code_base->getMethodByFQSEN($original_fqsen);
+            $code_base->getMethod($original_fqsen);
 
         $method_name = $method->getName();
 

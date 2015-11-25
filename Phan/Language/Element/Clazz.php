@@ -4,12 +4,14 @@ namespace Phan\Language\Element;
 
 use \Phan\CodeBase;
 use \Phan\Exception\AccessException;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Constant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 use \Phan\Persistent\Column;
@@ -37,12 +39,6 @@ class Clazz extends TypedStructuralElement {
      * A possibly empty list of traits used by this class
      */
     private $trait_fqsen_list = [];
-
-    /**
-     * @var Method[]
-     * A list of methods defined on this class
-     */
-    private $method_map = [];
 
     /**
      * @var bool
@@ -75,13 +71,12 @@ class Clazz extends TypedStructuralElement {
         int $flags
     ) {
         // Add variable '$this' to the scope
-        $context =
-            $context->withScopeVariable(new Variable(
-                $context,
-                'this',
-                $type,
-                0
-            ));
+        $context = $context->withScopeVariable(new Variable(
+            $context,
+            'this',
+            $type,
+            0
+        ));
 
         parent::__construct(
             $context,
@@ -89,7 +84,6 @@ class Clazz extends TypedStructuralElement {
             $type,
             $flags
         );
-
     }
 
     /**
@@ -220,8 +214,7 @@ class Clazz extends TypedStructuralElement {
                 );
 
             foreach ($method_list as $method) {
-                $code_base->addMethod($method);
-                $clazz->addMethod($method);
+                $clazz->addMethod($code_base, $method);
             }
         }
 
@@ -292,9 +285,8 @@ class Clazz extends TypedStructuralElement {
         CodeBase $code_base,
         Property $property
     ) {
-        $code_base->addPropertyWithNameInScope(
+        $code_base->addPropertyInScope(
             $property,
-            $property->getName(),
             $this->getFQSEN()
         );
     }
@@ -327,7 +319,7 @@ class Clazz extends TypedStructuralElement {
      * have access to the given property from the given
      * context
      */
-    public function getPropertyWithNameFromContext(
+    public function getPropertyByNameInContext(
         CodeBase $code_base,
         string $name,
         Context $context
@@ -343,8 +335,8 @@ class Clazz extends TypedStructuralElement {
         // have a getter or setter, emit an access error
         if ((!$context->hasClassFQSEN() || $context->getClassFQSEN() != $this->getFQSEN())
             && !$property->isPublic()
-            && !$this->hasMethodWithName('__get')
-            && !$this->hasMethodWithName('__set')
+            && !$this->hasMethodWithName($code_base, '__get')
+            && !$this->hasMethodWithName($code_base, '__set')
         ) {
             if ($property->isPrivate()) {
                 throw new AccessException(
@@ -380,9 +372,8 @@ class Clazz extends TypedStructuralElement {
         CodeBase $code_base,
         Constant $constant
     ) {
-        $code_base->addConstantWithNameInScope(
+        $code_base->addConstantInScope(
             $constant,
-            $constant->getName(),
             $this->getFQSEN()
         );
     }
@@ -429,67 +420,96 @@ class Clazz extends TypedStructuralElement {
     /**
      * @return null
      */
-    public function addMethod(Method $method) {
-        $name = strtolower($method->getName());
+    public function addMethod(
+        CodeBase $code_base,
+        Method $method
+    ) {
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $this->getFQSEN(),
+            $method->getName()
+        );
 
-        if (empty($this->method_map[$name])) {
-            $this->method_map[$name] = $method;
+        // Don't overwrite overridden methods with
+        // parent methods
+        if ($code_base->hasMethod($method_fqsen)) {
+            return;
         }
+
+        $code_base->addMethodInScope(
+            $method, $this->getFQSEN()
+        );
     }
 
     /**
      * @return bool
      * True if this class has a method with the given name
      */
-    public function hasMethodWithName(string $name) : bool {
-        $name = strtolower($name);
-
+    public function hasMethodWithName(
+        CodeBase $code_base,
+        string $name
+    ) : bool {
         // All classes have a constructor even if it hasn't
         // been declared yet
-        if ('__construct' === $name) {
+        if ('__construct' === strtolower($name)) {
             return true;
         }
 
-        return !empty($this->method_map[$name]);
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $this->getFQSEN(),
+            $name
+        );
+
+        return $code_base->hasMethod($method_fqsen);
     }
 
     /**
      * @return Method
      * The method with the given name
      */
-    public function getMethodByName(string $name) : Method {
-        $name = strtolower($name);
+    public function getMethodByNameInContext(
+        CodeBase $code_base,
+        string $name,
+        Context $context
+    ) : Method {
 
-        if (!empty($this->method_map[$name])) {
-            return $this->method_map[$name];
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $this->getFQSEN(),
+            $name
+        );
+
+        if (!$code_base->hasMethod($method_fqsen)) {
+            if ('__construct' === $name) {
+                // Create a default constructor if its requested
+                // but doesn't exist yet
+                $default_constructor =
+                    Method::defaultConstructorForClassInContext(
+                        $this,
+                        $this->getContext()->withClassFQSEN(
+                            $this->getFQSEN()
+                        )
+                    );
+
+                $this->addMethod($code_base, $default_constructor);
+
+                return $default_constructor;
+            }
+
+            throw new CodeBaseException(
+                "Method with name $name does not exist for class {$this->getFQSEN()}."
+            );
         }
 
-        if ('__construct' === $name) {
-            // Create a default constructor if its requested
-            // but doesn't exist yet
-            $default_constructor =
-                Method::defaultConstructorForClassInContext(
-                    $this,
-                    $this->getContext()->withClassFQSEN(
-                        $this->getFQSEN()
-                    )
-                );
-
-            $this->addMethod($default_constructor);
-
-            return $default_constructor;
-        }
-
-        // Error out
-        return null;
+        return $code_base->getMethod($method_fqsen);
     }
 
     /**
      * @return Method[]
      * A list of methods on this class
      */
-    public function getMethodMap() : array {
-        return $this->method_map;
+    public function getMethodMap(CodeBase $code_base) : array {
+        return $code_base->getMethodMapForScope(
+            $this->getFQSEN()
+        );
     }
 
     /**
@@ -580,7 +600,12 @@ class Clazz extends TypedStructuralElement {
 
         // Propagate the type to the constructor
         if (!empty($this->method_map['__construct'])) {
-            $method = $this->getMethodByName('__construct');
+            // TODO: $code_base isn't defined. fuck.
+            $method = $this->getMethodByNameInContext(
+                $code_base,
+                '__construct',
+                $this->getContext()
+            );
             $method->setUnionType($union_type);
         }
 
@@ -595,7 +620,12 @@ class Clazz extends TypedStructuralElement {
 
         // Propagate the type to the constructor
         if (!empty($this->method_map['__construct'])) {
-            $method = $this->getMethodByName('__construct');
+            // TODO: $code_base isn't defined. fuck.
+            $method = $this->getMethodByNameInContext(
+                $code_base,
+                '__construct',
+                $this->getContext()
+            );
             $method->setFQSEN($fqsen);
         }
 
@@ -725,23 +755,17 @@ class Clazz extends TypedStructuralElement {
             function() use ($code_base, $superclazz) {
                 // Copy properties
                 foreach ($superclazz->getPropertyMap($code_base) as $property) {
-                    $this->addProperty(
-                        $code_base,
-                        $property
-                    );
+                    $this->addProperty($code_base, $property);
                 }
 
                 // Copy constants
                 foreach ($superclazz->getConstantMap($code_base) as $constant) {
-                    $this->addConstant(
-                        $code_base,
-                        $constant
-                    );
+                    $this->addConstant($code_base, $constant);
                 }
 
                 // Copy methods
-                foreach ($superclazz->getMethodMap() as $method) {
-                    $this->addMethod($method);
+                foreach ($superclazz->getMethodMap($code_base) as $method) {
+                    $this->addMethod($code_base, $method);
                 }
             });
     }

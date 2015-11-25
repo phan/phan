@@ -102,7 +102,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
             $this->code_base->getClassByFQSEN($class_fqsen);
 
         $this->assertTrue(
-            $clazz->hasMethodWithName('c'),
+            $clazz->hasMethodWithName($this->code_base, 'c'),
             "Method with FQSEN not found"
         );
     }

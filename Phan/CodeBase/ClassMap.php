@@ -4,9 +4,6 @@ namespace Phan\CodeBase;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 
-/**
- * Information pertaining to PHP code files that we've read
- */
 trait ClassMap {
 
     /**

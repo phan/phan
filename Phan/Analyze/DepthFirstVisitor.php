@@ -94,7 +94,7 @@ class DepthFirstVisitor extends ScopeVisitor {
     }
 
     /**
-     * Visit a node with kind `\ast\AST_METHOD_REFERENCE`
+     * Visit a node with kind `\ast\AST_METHOD`
      *
      * @param Node $node
      * A node to parse
@@ -107,7 +107,10 @@ class DepthFirstVisitor extends ScopeVisitor {
         $method_name = $node->name;
         $clazz = $this->getContextClass();
 
-        if (!$clazz->hasMethodWithName($method_name)) {
+        if (!$clazz->hasMethodWithName(
+            $this->code_base,
+            $method_name
+        )) {
             Log::err(
                 Log::EFATAL,
                 "Can't find method {$clazz->getFQSEN()}::$method_name() - aborting",
@@ -116,7 +119,11 @@ class DepthFirstVisitor extends ScopeVisitor {
             );
         }
 
-        $method = $clazz->getMethodByName($method_name);
+        $method = $clazz->getMethodByNameInContext(
+            $this->code_base,
+            $method_name,
+            $this->context
+        );
 
         return $method->getContext()->withMethodFQSEN(
             $method->getFQSEN()
@@ -202,7 +209,7 @@ class DepthFirstVisitor extends ScopeVisitor {
         $method->setFQSEN($closure_fqsen);
 
         // Make the closure reachable by FQSEN from anywhere
-        $this->code_base->addClosure($method);
+        $this->code_base->addMethod($method);
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure

@@ -219,7 +219,7 @@ class ParseVisitor extends ScopeVisitor {
     }
 
     /**
-     * Visit a node with kind `\ast\AST_METHOD_REFERENCE`
+     * Visit a node with kind `\ast\AST_METHOD`
      *
      * @param Node $node
      * A node to parse
@@ -242,7 +242,7 @@ class ParseVisitor extends ScopeVisitor {
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while($this->code_base->hasMethodWithFQSEN($method_fqsen)) {
+        while($this->code_base->hasMethod($method_fqsen)) {
             $method_fqsen =
                 $method_fqsen->withAlternateId(++$alternate_id);
         }
@@ -256,8 +256,7 @@ class ParseVisitor extends ScopeVisitor {
         // Override the FQSEN with the found alternate ID
         $method->setFQSEN($method_fqsen);
 
-        $clazz->addMethod($method);
-        $this->code_base->addMethod($method);
+        $clazz->addMethod($this->code_base, $method);
 
         if ('__construct' === $method_name) {
             $clazz->setIsParentConstructorCalled(false);
@@ -429,7 +428,7 @@ class ParseVisitor extends ScopeVisitor {
                 ->withAlternateId($alternate_id++);
 
         } while($this->code_base
-            ->hasMethodWithFQSEN($function_fqsen));
+            ->hasMethod($function_fqsen));
 
         $method = Method::fromNode(
             $this->context
@@ -440,7 +439,7 @@ class ParseVisitor extends ScopeVisitor {
         );
 
         $method->setFQSEN($function_fqsen);
-        $this->code_base->addFunction($method);
+        $this->code_base->addMethod($method);
 
         // Send the context into the method
         $context = $this->context->withMethodFQSEN(

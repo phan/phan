@@ -256,14 +256,16 @@ class Phan {
     private function analyzeFunctions(CodeBase $code_base) {
         $function_count = count($code_base->getMethodMap());
         $i = 0;
-        foreach ($code_base->getMethodMap() as $fqsen_string => $method) {
-            CLI::progress('functions',  (++$i)/$function_count);
+        foreach ($code_base->getMethodMap() as $fqsen_string => $method_map) {
+            foreach ($method_map as $name => $method) {
+                CLI::progress('method',  (++$i)/$function_count);
 
-            if ($method->getContext()->isInternal()) {
-                continue;
+                if ($method->getContext()->isInternal()) {
+                    continue;
+                }
+
+                self::analyzeDuplicateFunction($code_base, $method);
             }
-
-            self::analyzeDuplicateFunction($code_base, $method);
         }
     }
 
@@ -346,9 +348,6 @@ class Phan {
                     $code_base
                 )
             );
-
-        // Debug::printNodeName($node, $depth);
-        // Debug::print((string)$child_context, $depth);
 
         assert(!empty($context), 'Context cannot be null');
 
