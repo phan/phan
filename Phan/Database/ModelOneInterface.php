@@ -15,7 +15,7 @@ interface ModelOneInterface {
     abstract public function toRow() : array;
 
     /**
-     * @return string
+     * @return string|array
      * The value of the primary key for this model
      */
     abstract public function primaryKeyValue();

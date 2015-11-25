@@ -57,7 +57,7 @@ class Column {
         }
 
         if ($this->isAutoIncrement()) {
-            $string .= ' AUTOINCREMENT';
+            $string .= ' PRIMARY KEY AUTOINCREMENT';
         }
 
         return $string;

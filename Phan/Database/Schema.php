@@ -125,18 +125,33 @@ class Schema {
             return (string)$column;
         }, $this->column_def_map);
 
-        // Get the list of primary keys for the table
-        $primary_key_list =
-            array_map(function (Column $column) {
-                return $column->name();
-            }, array_filter($this->column_def_map, function (Column $column) {
-                return $column->isPrimaryKey();
-            }));
+
+        $has_autoincrement =
+            array_reduce($this->column_def_map,
+                function (bool $carry, Column $column) {
+                    return ($carry || $column->isAutoIncrement());
+                }, false);
+
+        $primary_key_list = '';
+        if (!$has_autoincrement) {
+
+            // Get the list of primary keys for the table
+            $primary_key_list =
+                array_map(function (Column $column) {
+                    return $column->name();
+                }, array_filter($this->column_def_map, function (Column $column) {
+                    return $column->isPrimaryKey();
+                }));
+
+            $primary_key_list =
+                ', PRIMARY KEY (' . implode(', ', $primary_key_list) . ')';
+
+        }
 
         return "CREATE TABLE IF NOT EXISTS {$this->table_name} "
             . '('
             . implode(', ', $column_def_list)
-            . ', PRIMARY KEY (' . implode(', ', $primary_key_list) . ')'
+            . $primary_key_list
             . ')'
             ;
     }
@@ -214,5 +229,39 @@ class Schema {
         return "SELECT * FROM {$this->table_name} "
             . "WHERE $column = $value";
     }
+
+    /**
+     * @param string|array $primary_key_value
+     * The primary key to get a select query for
+     *
+     * @return string
+     * A query for deleting all values for the row with the
+     * given primary key
+     */
+    public function queryForDelete($primary_key_value) : string {
+        return $this->queryForDeleteColumnValue(
+            $this->primaryKeyName(),
+            $primary_key_value
+        );
+    }
+
+    /**
+     * @param string|array $value
+     * The primary key to get a select query for
+     *
+     * @return string
+     * A query for deleting all values for the row with the
+     * given primary key
+     */
+    public function queryForDeleteColumnValue(string $column, $value) : string {
+
+        if ($this->column_def_map[$column]->sqlType() == 'STRING') {
+            $value = '"' . SQLite3::escapeString((string)$value) . '"';
+        }
+
+        return "DELETE FROM {$this->table_name} "
+            . "WHERE $column = $value";
+    }
+
 
 }

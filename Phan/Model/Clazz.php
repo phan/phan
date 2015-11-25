@@ -22,6 +22,10 @@ class Clazz extends ModelOne {
         $this->clazz = $clazz;
     }
 
+    public function getClass() : ClazzElement {
+        return $this->clazz;
+    }
+
     public static function createSchema() : Schema {
         return new Schema('Clazz', [
             new Column('fqsen', Column::TYPE_STRING, true),
@@ -88,7 +92,7 @@ class Clazz extends ModelOne {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : ClazzElement {
+    public static function fromRow(array $row) : Clazz {
         $parent_fqsen = $row['parent_class_fqsen']
             ? FullyQualifiedClassName::fromFullyQualifiedString($row['parent_class_fqsen'])
             : null;
@@ -117,7 +121,7 @@ class Clazz extends ModelOne {
             $trait_fqsen_list
         );
 
-        return $clazz;
+        return new Clazz($clazz);
     }
 
 }

@@ -57,7 +57,7 @@ trait ClassMap {
         // the database
         if (empty($this->class_map[(string)$fqsen])) {
             $this->class_map[(string)$fqsen] =
-                ClazzModel::read(Database::get(), (string)$fqsen);
+                ClazzModel::read(Database::get(), (string)$fqsen)->getClass();
         }
 
         return $this->class_map[(string)$fqsen];
@@ -132,5 +132,20 @@ trait ClassMap {
                 (new ClazzModel($class))->write(Database::get());
             }
         }
+    }
+
+    /**
+     * @return null
+     */
+    protected function flushClassWithFQSEN(
+        FullyQualifiedClassName $fqsen
+    ) {
+        // Remove it from the database
+        if (Database::isEnabled()) {
+            ClazzModel::delete(Database::get(), (string)$fqsen);
+        }
+
+        // Remove it from memory
+        unset($this->class_map[(string)$fqsen]);
     }
 }

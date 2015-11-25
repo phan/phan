@@ -12,6 +12,12 @@ use \Phan\Model\Method as MethodModel;
 trait MethodMap {
 
     /**
+     * Implementing classes must support a mechanism for
+     * getting a File by its path
+     */
+    abstract function getFileByPath(string $file_path) : File;
+
+    /**
      * @var Method[][]
      * A map from FQSEN to name to a method
      */
@@ -254,7 +260,31 @@ trait MethodMap {
         string $name
     ) {
         $this->method_map[$scope][$name] = $method;
+
+        // For classes that aren't internal PHP classes
+        if (!$method->getContext()->isInternal()) {
+
+            // Associate the class with the file it was found in
+            $this->getFileByPath($method->getContext()->getFile())
+                ->addMethodFQSEN($method->getFQSEN());
+        }
+
     }
+
+    /**
+     * @return null
+     */
+    protected function flushMethodWithScopeAndName(
+        string $scope,
+        string $name
+    ) {
+        if (Database::isEnabled()) {
+            MethodModel::delete(Database::get(), [$scope, $name]);
+        }
+
+        unset($this->method_map[$scope][$name]);
+    }
+
 
     /**
      * Write each object to the database

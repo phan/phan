@@ -20,7 +20,7 @@ abstract class ModelOne extends Model implements ModelOneInterface {
      * @return Model
      * Read a model from the database with the given pk
      */
-    public static function read(Database $database, $primary_key_value) {
+    public static function read(Database $database, $primary_key_value) : Model {
         // Ensure that we've initialized this model
         static::schema()->initializeOnce($database);
 
@@ -64,6 +64,26 @@ abstract class ModelOne extends Model implements ModelOneInterface {
 
         // Write the associations
         $this->writeAssociationList($database);
+    }
+
+    /**
+     * @param Database $database
+     * The database to read from
+     *
+     * @param string|array $pirmary_key_value
+     * The PKID of the the row to delete
+     */
+    public static function delete(
+        Database $database,
+        $primary_key_value
+    ) {
+        // Ensure that we've initialized this model
+        static::schema()->initializeOnce($database);
+
+        $query =
+            static::schema()->queryForDelete($primary_key_value);
+
+        $database->exec($query);
     }
 
 }

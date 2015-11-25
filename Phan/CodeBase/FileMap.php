@@ -5,12 +5,36 @@ use \Phan\Database;
 use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Model\File as FileModel;
 
 /**
  * Information pertaining to PHP code files that we've read
  */
 trait FileMap {
+
+    /**
+     * Implementing class must have a method for removing
+     * all details of methods with the given scope and
+     * name
+     *
+     * @return null
+     */
+    abstract protected function flushMethodWithScopeAndName(
+        string $scope,
+        string $name
+    );
+
+    /**
+     * Implementing class must have a method for removing
+     * all details of methods with the given scope and
+     * name
+     *
+     * @return null
+     */
+    abstract protected function flushClassWithFQSEN(
+        FullyQualifiedClassName $fqsen
+    );
 
     /**
      * @var File[]
@@ -36,7 +60,16 @@ trait FileMap {
 
         // Flush all methods from the file
         foreach ($code_file->getMethodFQSENList() as $fqsen) {
-            unset($this->method_map[(string)$fqsen]);
+            // Remove it from memory
+            $this->flushMethodWithScopeAndName(
+                (string)$fqsen->getFullyQualifiedClassName(),
+                $fqsen->getName()
+            );
+
+            // Remove it from the file's depdendency list
+            $code_file->flushMethodWithFQSEN($fqsen);
+
+            // TODO: remove it from the database?
         }
 
         // TODO: Flush global constants
@@ -93,7 +126,10 @@ trait FileMap {
 
             if (Database::isEnabled()) {
                 try {
-                    $file = FileModel::read(Database::get(), $file_path);
+                    $file_model =
+                        FileModel::read(Database::get(), $file_path);
+
+                    $file = $file_model->getFile();
                 } catch (NotFoundException $exception) {
                     // Create the file
                     $file = new File($file_path);

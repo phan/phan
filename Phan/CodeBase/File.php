@@ -107,7 +107,7 @@ class File {
      *
      * @return null
      */
-    private function setClassFQSENList(array $class_fqsen_list) {
+    public function setClassFQSENList(array $class_fqsen_list) {
         $this->class_fqsen_list = $class_fqsen_list;
     }
 
@@ -135,7 +135,7 @@ class File {
      *
      * @return null
      */
-    private function setMethodFQSENList(array $method_fqsen_list) {
+    public function setMethodFQSENList(array $method_fqsen_list) {
         $this->method_fqsen_list = $method_fqsen_list;
     }
 
@@ -146,7 +146,15 @@ class File {
      * @return null
      */
     public function addMethodFQSEN(FQSEN $fqsen) {
-        $this->method_fqsen_list[] = $fqsen;
+        $this->method_fqsen_list[(string)$fqsen] = $fqsen;
+    }
+
+    /**
+     * Remove the method with the given FQSEN from our
+     * list of associated methods
+     */
+    public function flushMethodWithFQSEN(FQSEN $fqsen) {
+        unset($this->method_fqsen_list[(string)$fqsen]);
     }
 
 }

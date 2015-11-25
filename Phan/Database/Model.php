@@ -50,6 +50,18 @@ abstract class Model {
     abstract public function write(Database $database);
 
     /**
+     * @param Database $database
+     * The database to read from
+     *
+     * @param string|array $pirmary_key_value
+     * The PKID of the the row to delete
+     */
+    abstract public static function delete(
+        Database $database,
+        $primary_key_value
+    );
+
+    /**
      *
      * @param Database $database
      * A database to write this model to
