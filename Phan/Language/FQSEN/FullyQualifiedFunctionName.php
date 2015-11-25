@@ -66,5 +66,18 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement {
         );
     }
 
+    public static function fromClosureInContext(
+        Context $context
+    ) : FullyQualifiedFunctionName {
+        $name = 'closure_' . substr(md5(implode('|', [
+            $context->getFile(),
+            $context->getLineNumberStart()
+        ])), 0, 8);
+
+        return self::fromStringInContext(
+            $name,
+            $context
+        );
+    }
 
 }

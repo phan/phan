@@ -1,1 +1,1 @@
-%s:6 TypeError arg#1(arg) is int[] but \::test() takes int defined at %s:5
+%s:6 TypeError arg#1(arg) is int[] but \test() takes int defined at %s:5

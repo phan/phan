@@ -1,6 +1,2 @@
 %s:7 RedefineError Trait \test defined at %s:7 was previously defined as Interface \test at %s:2
 %s:12 RedefineError Class \test defined at %s:12 was previously defined as Interface \test at %s:2
-%s:8 RedefineError Function foo defined at %s:8 was previously defined at %s:3
-%s:9 RedefineError Function bar defined at %s:9 was previously defined at %s:4
-%s:13 RedefineError Function foo defined at %s:13 was previously defined at %s:3
-%s:14 RedefineError Function bar defined at %s:14 was previously defined at %s:4

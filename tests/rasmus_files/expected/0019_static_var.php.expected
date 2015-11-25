@@ -1,1 +1,1 @@
-%s:7 TypeError arg#1(arg) is float but \::test2() takes int defined at %s:6
+%s:7 TypeError arg#1(arg) is float but \test2() takes int defined at %s:6

@@ -188,8 +188,7 @@ class DepthFirstVisitor extends ScopeVisitor {
      */
     public function visitClosure(Node $node) : Context {
         $closure_fqsen =
-            FullyQualifiedFunctionName::fromStringInContext(
-                'callable_' . $node->lineno,
+            FullyQualifiedFunctionName::fromClosureInContext(
                 $this->context
             );
 

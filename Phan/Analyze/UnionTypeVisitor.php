@@ -359,8 +359,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         // The type of a closure is the fqsen pointing
         // at its definition
         $closure_fqsen =
-            FullyQualifiedFunctionName::fromStringInContext(
-                'callable_' . $node->lineno,
+            FullyQualifiedFunctionName::fromClosureInContext(
                 $this->context
             );
 

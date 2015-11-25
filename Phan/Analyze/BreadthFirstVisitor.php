@@ -438,8 +438,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
     public function visitClosure(Node $node) : Context {
         $this->analyzeNoOp($node, "no-op closure");
         return $this->context->withClosureFQSEN(
-            FullyQualifiedFunctionName::fromStringInContext(
-                'callable_' . $node->lineno,
+            FullyQualifiedFunctionName::fromClosureInContext(
                 $this->context
             )
         );

@@ -202,7 +202,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         string $namespace
     ) : FullyQualifiedGlobalStructuralElement {
         $fqsen = clone($this);
-        $fqsen->namespace = $namespace;
+        $fqsen->namespace = self::cleanNamespace($namespace);
         return $fqsen;
     }
 
