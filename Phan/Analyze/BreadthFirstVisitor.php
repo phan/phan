@@ -455,7 +455,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
     public function visitReturn(Node $node) : Context {
 
         // Don't check return types in traits
-        if ($this->context->isClassScope()) {
+        if ($this->context->isInClassScope()) {
             $clazz = $this->context->getClassInScope($this->code_base);
             if ($clazz->isTrait()) {
                 return $this->context;

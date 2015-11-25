@@ -90,7 +90,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
             );
         }
 
-        if (!$this->context->isClassScope()) {
+        if (!$this->context->isInClassScope()) {
             Log::err(
                 Log::ESTATIC,
                 "Cannot access {$class_name}:: when no class scope is active",
@@ -182,7 +182,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
 
             // $var->method()
             if($node->children['expr']->children['name'] == 'this') {
-                if(!$this->context->isClassScope()) {
+                if(!$this->context->isInClassScope()) {
                     Log::err(
                         Log::ESTATIC,
                         'Using $this when not in object context',
@@ -245,7 +245,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
             if($var->children['name'] == 'this') {
 
                 // If we're not in a class scope, 'this' won't work
-                if(!$this->context->isClassScope()) {
+                if(!$this->context->isInClassScope()) {
                     Log::err(
                         Log::ESTATIC,
                         'Using $this when not in object context',
