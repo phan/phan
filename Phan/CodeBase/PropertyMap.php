@@ -84,8 +84,7 @@ trait PropertyMap {
         Property $property,
         FullyQualifiedClassName $fqsen
     ) {
-        $name =
-            $property->getFQSEN()->getNameWithAlternateId();
+        $name = $property->getFQSEN()->getNameWithAlternateId();
         $this->property_map[(string)$fqsen][$name] = $property;
     }
 }

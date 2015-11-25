@@ -14,6 +14,7 @@ use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\Type\MixedType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
@@ -630,6 +631,13 @@ class AST {
             $property_name,
             new UnionType(),
             $flags
+        );
+
+        $property->setFQSEN(
+            FullyQualifiedPropertyName::make(
+                $clazz->getFQSEN(),
+                $property_name
+            )
         );
 
         $clazz->addProperty($code_base, $property);
