@@ -422,14 +422,43 @@ class Context extends FileRef implements \Serializable {
     }
 
     public function serialize() {
+
         $serialized = parent::serialize();
-        $serialized .= '|' . $this->getNamespace();
+
+        $serialized .= '^' . implode('|', [
+            $this->getNamespace(),
+            $this->is_conditional,
+            (string)$this->class_fqsen,
+            (string)$this->method_fqsen,
+            (string)$this->closure_fqsen
+        ]);
+
         return $serialized;
     }
 
     public function unserialize($serialized) {
-        list($file_ref, $namespace) = explode('|', $serialized);
+        list($file_ref, $serialized) = explode('^', $serialized);
         parent::unserialize($file_ref);
+
+        list($namespace,
+            $is_conditional,
+            $class_fqsen,
+            $method_fqsen,
+            $closure_fqsen) = explode('|', $serialized);
+
         $this->namespace = $namespace;
+        $this->is_conditional = (bool)$is_conditional;
+
+        $this->class_fqsen = $class_fqsen
+            ? FullyQualifiedClassName::fromFullyQualifiedString($class_fqsen)
+            : null;
+
+        $this->method_fqsen = $method_fqsen
+            ? FullyQualifiedMethodName::fromFullyQualifiedString($method_fqsen)
+            : null;
+
+        $this->closure_fqsen = $closure_fqsen
+            ? FullyQualifiedFunctionName::fromFullyQualifiedString($closure_fqsen)
+            : null;
     }
 }
