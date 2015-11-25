@@ -52,22 +52,39 @@ trait MethodMap {
      *
      * @return bool
      */
-    public function hasMethod(
-        $fqsen
-    ) : bool {
+    public function hasMethod($fqsen) : bool {
         if ($fqsen instanceof FullyQualifiedMethodName) {
-            return !empty($this->method_map
-                [(string)$fqsen->getFullyQualifiedClassName()]
-                [$fqsen->getNameWithAlternateId()]
-            );
+            return $this->hasMethodWithMethodFQSEN($fqsen);
         } else {
-            assert($fqsen instanceof FullyQualifiedFunctionName,
-                "Method given must have FQSEN of type FullyQualifiedMethodName");
-
-            return !empty($this->method_map
-                [$fqsen->getNamespace()]
-                [$fqsen->getNameWithAlternateId()]);
+            return $this->hasMethodWithFunctionFQSEN($fqsen);
         }
+    }
+
+    /**
+     * @param FullyQualifiedMethodName $fqsen
+     *
+     * @return bool
+     */
+    private function hasMethodWithMethodFQSEN(
+        FullyQualifiedMethodName $fqsen
+    ) : bool {
+        return !empty($this->method_map
+            [(string)$fqsen->getFullyQualifiedClassName()]
+            [$fqsen->getNameWithAlternateId()]
+        );
+    }
+
+    /**
+     * @param FullyQualifiedFunctionName $fqsen
+     *
+     * @return bool
+     */
+    private function hasMethodWithFunctionFQSEN(
+        FullyQualifiedFunctionName $fqsen
+    ) : bool {
+        return !empty($this->method_map
+            [$fqsen->getNamespace()]
+            [$fqsen->getNameWithAlternateId()]);
     }
 
     /**
@@ -76,21 +93,40 @@ trait MethodMap {
      * @return Method
      * Get the method with the given FQSEN
      */
-    public function getMethod(
-        $fqsen
-    ) : Method {
+    public function getMethod($fqsen) : Method {
         if ($fqsen instanceof FullyQualifiedMethodName) {
-            return $this->method_map
-                [(string)$fqsen->getFullyQualifiedClassName()]
-                [$fqsen->getNameWithAlternateId()];
+            return $this->getMethodByMethodFQSEN($fqsen);
         } else {
-            assert($fqsen instanceof FullyQualifiedFunctionName,
-                "Method given must have FQSEN of type FullyQualifiedMethodName");
-
-            return $this->method_map
-                [$fqsen->getNamespace()]
-                [$fqsen->getNameWithAlternateId()];
+            return $this->getMethodByFunctionFQSEN($fqsen);
         }
+    }
+
+    /**
+     * @param FullyQualifiedMethodName $fqsen
+     *
+     * @return Method
+     * Get the method with the given FQSEN
+     */
+    private function getMethodByMethodFQSEN(
+        FullyQualifiedMethodName $fqsen
+    ) : Method {
+        return $this->method_map
+            [(string)$fqsen->getFullyQualifiedClassName()]
+            [$fqsen->getNameWithAlternateId()];
+    }
+
+    /**
+     * @param FullyQualifiedFunctionName $fqsen
+     *
+     * @return Method
+     * Get the method with the given FQSEN
+     */
+    private function getMethodByFunctionFQSEN(
+        FullyQualifiedFunctionName $fqsen
+    ) : Method {
+        return $this->method_map
+            [$fqsen->getNamespace()]
+            [$fqsen->getNameWithAlternateId()];
     }
 
     /**
@@ -101,19 +137,56 @@ trait MethodMap {
      */
     public function addMethod(Method $method) {
         if ($method->getFQSEN() instanceof FullyQualifiedMethodName) {
-            $this->addMethodInScope(
+            $this->addMethodWithMethodFQSEN(
                 $method,
-                $method->getFQSEN()->getFullyQualifiedClassName()
+                $method->getFQSEN()
             );
         } else {
             assert($method->getFQSEN() instanceof FullyQualifiedFunctionName,
                 "Method given must have FQSEN of type FullyQualifiedMethodName");
-
-            $this->method_map
-                [$method->getFQSEN()->getNamespace()]
-                [$method->getFQSEN()->getNameWithAlternateId()]
-                = $method;
+            $this->addMethodWithFunctionFQSEN(
+                $method,
+                $method->getFQSEN()
+            );
         }
+    }
+
+    /**
+     * @param Method $method
+     * Any method
+     *
+     * @param FullyQualifiedMethodName $fqsen
+     * The FQSEN for the method
+     *
+     * @return null
+     */
+    private function addMethodWithMethodFQSEN(
+        Method $method,
+        FullyQualifiedMethodName $fqsen
+    ) {
+        $this->addMethodInScope(
+            $method,
+            $fqsen->getFullyQualifiedClassName()
+        );
+    }
+
+    /**
+     * @param Method $method
+     * Any method
+     *
+     * @param FullyQualifiedFunctionName $fqsen
+     * The FQSEN for the method
+     *
+     * @return null
+     */
+    private function addMethodWithFunctionFQSEN(
+        Method $method,
+        FullyQualifiedFunctionName $fqsen
+    ) {
+        $this->method_map
+            [$fqsen->getNamespace()]
+            [$fqsen->getNameWithAlternateId()]
+            = $method;
     }
 
     /**
