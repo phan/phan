@@ -6,11 +6,6 @@ use \Phan\CodeBase\File;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
-use \Phan\Persistent\Column;
-use \Phan\Persistent\Database;
-use \Phan\Persistent\ModelAssociation;
-use \Phan\Persistent\ModelOne;
-use \Phan\Persistent\Schema;
 
 /**
  * A CodeBase represents the known state of a code base
@@ -41,7 +36,7 @@ use \Phan\Persistent\Schema;
  *  // Do stuff ...
  * ```
  */
-class CodeBase extends ModelOne {
+class CodeBase {
     use \Phan\CodeBase\ClassMap;
     use \Phan\CodeBase\MethodMap;
     use \Phan\CodeBase\ConstantMap;
@@ -107,110 +102,5 @@ class CodeBase extends ModelOne {
             Config::get()->serialized_code_base_file
             && file_exists(Config::get()->serialized_code_base_file)
         );
-    }
-
-    /**
-     * Store the given code base to the location defined in the
-     * configuration (serialized_code_base_file).
-     *
-     * @return int|bool
-     * This function returns the number of bytes that were written
-     * to the file, or FALSE on failure.
-     */
-    public function toDisk() {
-        if (!Config::get()->serialized_code_base_file) {
-            return;
-        }
-
-        $this->write(Database::get());
-    }
-
-    /**
-     * @return CodeBase|bool
-     * A stored code base if its successful or false if
-     * unserialize fucks up
-     */
-    public static function fromDisk() : CodeBase {
-        if (!self::storedCodeBaseExists()) {
-            return;
-        }
-
-        return CodeBase::read(Database::get(), 1);
-    }
-
-    /**
-     * @return Schema
-     * The schema for this model
-     */
-    public static function createSchema() : Schema {
-        $schema = new Schema('CodeBase', [
-            new Column('pk', 'INTEGER', true),
-            new Column('version', 'INTEGER'),
-        ]);
-
-        // File map
-        $schema->addAssociation(new ModelAssociation(
-            'CodeBase_File', '\Phan\CodeBase\File',
-            function (CodeBase $code_base, array $file_map) {
-                $code_base->setFileMap($file_map);
-            },
-            function (CodeBase $code_base) {
-                return $code_base->getFileMap();
-            }
-        ));
-
-        // Class map
-        $schema->addAssociation(new ModelAssociation(
-            'CodeBase_Clazz', '\Phan\Language\Element\Clazz',
-            function (CodeBase $code_base, array $map) {
-                $code_base->setClassMap($map);
-            },
-            function (CodeBase $code_base) {
-                return $code_base->getClassMap();
-            }
-        ));
-
-        // Method map
-        $schema->addAssociation(new ModelAssociation(
-            'CodeBase_Method', '\Phan\Language\Element\Method',
-            function (CodeBase $code_base, array $map) {
-                $code_base->setMethodMap($map);
-            },
-            function (CodeBase $code_base) {
-                return $code_base->getMethodMap();
-            }
-        ));
-
-        return $schema;
-    }
-
-    /**
-     * @return array
-     * Get a map from column name to row values for
-     * this instance
-     */
-    public function toRow() : array {
-        return [
-            'pk' => 1,
-            'version' => $this->getVersion()
-        ];
-    }
-
-    /**
-     * @param array
-     * A map from column name to value
-     *
-     * @return CodeBase
-     * An instance of the model derived from row data
-     */
-    public static function fromRow(array $row) : CodeBase {
-        return new CodeBase([], [], [], []);
-    }
-
-    /**
-     * There is only one CodeBase per database
-     */
-    public function primaryKeyValue() : int {
-        return 1;
     }
 }

@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\CodeBase;
@@ -8,8 +7,6 @@ use \Phan\Language\Context;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
-use \Phan\Persistent\Column;
-use \Phan\Persistent\Schema;
 use \ast\Node;
 
 class Parameter extends Variable {

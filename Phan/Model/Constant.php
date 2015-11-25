@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Model;
 
+use \Phan\Database\Column;
+use \Phan\Database\ModelOne;
+use \Phan\Database\Schema;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\UnionType;
-use \Phan\Persistent\Column;
-use \Phan\Persistent\ModelOne;
-use \Phan\Persistent\Schema;
 
 class Constant extends ModelOne {
 

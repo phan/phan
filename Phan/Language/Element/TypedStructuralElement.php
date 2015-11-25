@@ -4,8 +4,6 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
-use \Phan\Persistent\Column;
-use \Phan\Persistent\Schema;
 
 /**
  * Any PHP structural element that also has a type and is

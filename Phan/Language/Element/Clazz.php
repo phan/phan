@@ -13,9 +13,6 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
-use \Phan\Persistent\Column;
-use \Phan\Persistent\ListAssociation;
-use \Phan\Persistent\Schema;
 
 class Clazz extends TypedStructuralElement {
     use \Phan\Language\Element\Addressable;

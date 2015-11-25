@@ -10,9 +10,6 @@ use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
-use \Phan\Persistent\Column;
-use \Phan\Persistent\ModelAssociation;
-use \Phan\Persistent\Schema;
 use \ast\Node;
 
 class Method extends TypedStructuralElement {

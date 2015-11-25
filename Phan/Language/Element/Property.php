@@ -5,8 +5,6 @@ use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\UnionType;
-use \Phan\Persistent\Column;
-use \Phan\Persistent\Schema;
 
 class Property extends TypedStructuralElement {
     use \Phan\Language\Element\Addressable;

@@ -94,11 +94,6 @@ class Phan {
             }
         }
 
-        // Store a serialized version of the code base if there
-        // is a configured serialized file path. This allows
-        // us to save some time on the next run.
-        $code_base->toDisk();
-
         // Emit all log messages
         Log::display();
     }
