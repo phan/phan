@@ -59,44 +59,6 @@ class Property extends TypedStructuralElement {
     }
 
     /**
-     * @return Schema
-     * The schema for this model
-     */
-    public static function createSchema() : Schema {
-        $schema = new Schema('Property', [
-            new Column('fqsen', 'STRING', true),
-            new Column('name', 'STRING'),
-            new Column('type', 'STRING'),
-            new Column('flags', 'INTEGER'),
-            new Column('context', 'STRING'),
-            new Column('is_deprecated', 'BOOL'),
-        ]);
-
-        return $schema;
-    }
-
-    /**
-     * @return array
-     * Get a map from column name to row values for
-     * this instance
-     */
-    public function toRow() : array {
-        return array_merge(parent::toRow(), [
-        ]);
-    }
-
-    /**
-     * @param array
-     * A map from column name to value
-     *
-     * @return Model
-     * An instance of the model derived from row data
-     */
-    public static function fromRow(array $row) : array {
-        print_r($row);
-    }
-
-    /**
      * @return FQSEN
      * The fully-qualified structural element name of this
      * structural element

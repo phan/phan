@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\CodeBase;
@@ -63,12 +62,19 @@ class Clazz extends TypedStructuralElement {
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
      * a certain kind has a meaningful flags value.
+     *
+     * @param FullyQualifiedClassName|null $parent_class_fqsen
+     * @param FullyQualifiedClassName[]|null $interface_fqsen_list
+     * @param FullyQualifiedClassName[]|null $trait_fqsen_list
      */
     public function __construct(
         Context $context,
         string $name,
         UnionType $type,
-        int $flags
+        int $flags,
+        FullyQualifiedClassName $parent_class_fqsen = null,
+        array $interface_fqsen_list = [],
+        array $trait_fqsen_list = []
     ) {
         // Add variable '$this' to the scope
         $context = $context->withScopeVariable(new Variable(
@@ -84,6 +90,10 @@ class Clazz extends TypedStructuralElement {
             $type,
             $flags
         );
+
+        $this->parent_class_fqsen = $parent_class_fqsen;
+        $this->interface_fqsen_list = $interface_fqsen_list;
+        $this->trait_fqsen_list = $trait_fqsen_list;
     }
 
     /**
@@ -274,7 +284,7 @@ class Clazz extends TypedStructuralElement {
      * @return FQSEN[]
      * Get the list of interfaces implemented by this class
      */
-    public function getInterfaceClassFQSENList() : array {
+    public function getInterfaceFQSENList() : array {
         return $this->interface_fqsen_list;
     }
 
@@ -675,7 +685,7 @@ class Clazz extends TypedStructuralElement {
             }
 
             // Copy information from the interfaces
-            foreach ($this->getInterfaceClassFQSENList() as $interface_fqsen) {
+            foreach ($this->getInterfaceFQSENList() as $interface_fqsen) {
                 // Let the parent class finder worry about this
                 if (!$code_base->hasClassWithFQSEN($interface_fqsen)) {
                     continue;
@@ -810,86 +820,4 @@ class Clazz extends TypedStructuralElement {
 
         return $string;
     }
-
-    /**
-     * @return Schema
-     * The schema for this model
-     */
-    public static function createSchema() : Schema {
-        $schema = new Schema('Clazz', [
-            new Column('fqsen', 'STRING', true),
-            new Column('name', 'STRING'),
-            new Column('type', 'STRING'),
-            new Column('flags', 'INT'),
-            new Column('context', 'STRING'),
-            new Column('is_deprecated', 'BOOL'),
-            new Column('parent_class_fqsen', 'STRING'),
-            new Column('is_parent_constructor_called', 'STRING'),
-        ]);
-
-        /*
-        $schema->addAssociation(new ListAssociation(
-            'Clazz_interface_fqsen_list', 'STRING',
-            function (Clazz $clazz, array $fqsen_list) {
-                $clazz->interface_fqsen_list =
-                    array_map(function (string $fqsen_string) {
-                        return FullyQualifiedClassName::fromFullyQualifiedString($fqsen_string);
-                    }, $fqsen_list);
-            },
-            function (Clazz $clazz) {
-                return $clazz->getInterfaceClassFQSENList();
-            }
-        ));
-
-        $schema->addAssociation(new ListAssociation(
-            'Clazz_trait_fqsen_list', 'STRING',
-            function (Clazz $clazz, array $fqsen_list) {
-                $clazz->trait_fqsen_list =
-                    array_map(function (string $fqsen_string) {
-                        return FullyQualifiedClassName::fromFullyQualifiedString($fqsen_string);
-                    }, $fqsen_list);
-            },
-            function (Clazz $clazz) {
-                return $clazz->getTraitFQSENList();
-            }
-        ));
-         */
-
-        // private $method_map = [];
-        // private $constant_map = [];
-        // private $property_map = [];
-
-        return $schema;
-    }
-
-    /**
-     * @return array
-     * Get a map from column name to row values for
-     * this instance
-     */
-    public function toRow() : array {
-        return array_merge(parent::toRow(), [
-            'parent_class_fqsen' =>
-                (string)$this->parent_class_fqsen,
-            'is_parent_constructor_called' =>
-                $this->is_parent_constructor_called,
-        ]);
-    }
-
-    /**
-     * @param array
-     * A map from column name to value
-     *
-     * @return Model
-     * An instance of the model derived from row data
-     */
-    public static function fromRow(array $row) : Clazz {
-        return new Clazz(
-            unserialize(base64_decode($row['context'])),
-            $row['name'],
-            UnionType::fromFullyQualifiedString($row['type']),
-            (int)$row['flags']
-        );
-    }
-
 }

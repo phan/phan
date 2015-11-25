@@ -1,15 +1,13 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
-use \Phan\Persistent\ModelOne;
 
 /**
  * Any PHP structural element such as a property, constant
  * class, method, closure, ...
  */
-abstract class StructuralElement extends ModelOne {
+abstract class StructuralElement {
 
     /**
      * @var Context
@@ -78,17 +76,4 @@ abstract class StructuralElement extends ModelOne {
     public function isInternal() : bool {
         return 'internal' === $this->getContext()->getFile();
     }
-
-    /**
-     * @return array
-     * Get a map from column name to row values for
-     * this instance
-     */
-    public function toRow() : array {
-        return [
-            'context' => (string)$this->context,
-            'is_deprecated' => $this->is_deprecated
-        ];
-    }
-
 }

@@ -1,7 +1,11 @@
 <?php declare(strict_types=1);
-namespace Phan\Persistent;
+namespace Phan\Database;
 
 class Column {
+
+    const TYPE_STRING = 'STRING';
+    const TYPE_INT = 'INTEGER';
+    const TYPE_BOOL = 'BOOL';
 
     private $name;
     private $sql_type;

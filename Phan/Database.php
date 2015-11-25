@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Persistent;
+namespace Phan;
 
 use \Phan\CodeBase;
 use \Phan\Config;

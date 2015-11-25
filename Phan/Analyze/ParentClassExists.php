@@ -31,7 +31,7 @@ trait ParentClassExists {
             );
         }
 
-        foreach ($clazz->getInterfaceClassFQSENList() as $fqsen) {
+        foreach ($clazz->getInterfaceFQSENList() as $fqsen) {
             self::fqsenExistsForClass(
                 $fqsen,
                 $code_base,

@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
-namespace Phan\Persistent;
+namespace Phan\Database;
+
+use \Phan\Database;
 
 /**
  * Objects implementing this interface can be
