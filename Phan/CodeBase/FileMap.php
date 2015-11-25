@@ -1,8 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
+use \Phan\Database;
+use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
+use \Phan\Model\File as FileModel;
 
 /**
  * Information pertaining to PHP code files that we've read
@@ -35,6 +38,8 @@ trait FileMap {
         foreach ($code_file->getMethodFQSENList() as $fqsen) {
             unset($this->method_map[(string)$fqsen]);
         }
+
+        // TODO: Flush global constants
     }
 
     /**
@@ -57,29 +62,6 @@ trait FileMap {
         return $this->getFileByPath($file_path)
             ->setParseUpToDate();
     }
-
-    /**
-     * @return bool
-     * True if the given file is up to date within this
-     * code base, else false
-     */
-    public function isAnalysisUpToDateForFile(string $file_path) : bool {
-        return $this->getFileByPath($file_path)
-            ->isAnalysisUpToDate();
-    }
-
-    /**
-     * Mark the file at the given path as up to date so
-     * that we know if its changed on subsequent runs
-     *
-     * @return null
-     */
-    public function setAnalysisUpToDateForFile(string $file_path) {
-        return $this->getFileByPath($file_path)
-            ->setAnalysisUpToDate();
-    }
-
-
 
     /**
      * @return File[]
@@ -108,7 +90,23 @@ trait FileMap {
      */
     protected function getFileByPath(string $file_path) : File {
         if (empty($this->file_map[$file_path])) {
-            $this->file_map[$file_path] = new File($file_path);
+
+            if (Database::isEnabled()) {
+                try {
+                    $file = FileModel::read(Database::get(), $file_path);
+                } catch (NotFoundException $exception) {
+                    // Create the file
+                    $file = new File($file_path);
+
+                    // Write it to the database immediately
+                    (new FileModel($file))->write(Database::get());
+                }
+            } else {
+                $file = new File($file_path);
+            }
+
+            // Save it in memory
+            $this->file_map[$file_path] = $file;
         }
 
         return $this->file_map[$file_path];

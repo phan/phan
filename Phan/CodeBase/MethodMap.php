@@ -1,11 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
+use \Phan\Database;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Model\Method as MethodModel;
 
 trait MethodMap {
 
@@ -252,6 +254,27 @@ trait MethodMap {
         string $name
     ) {
         $this->method_map[$scope][$name] = $method;
+    }
+
+    /**
+     * Write each object to the database
+     *
+     * @return null
+     */
+    protected function storeMethodMap() {
+        if (!Database::isEnabled()) {
+            return;
+        }
+
+        foreach ($this->method_map as $scope => $map) {
+            foreach ($map as $name => $method) {
+                if (!$method->getContext()->isInternal()) {
+                    (new MethodModel($method, $scope, $name))->write(
+                        Database::get()
+                    );
+                }
+            }
+        }
     }
 
 }

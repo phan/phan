@@ -52,9 +52,7 @@ class Column {
 
         $string .= " {$this->sqlType()}";
 
-        if ($this->isPrimaryKey()) {
-            $string .= ' PRIMARY KEY';
-        } else if ($this->isUnique()) {
+        if ($this->isUnique()) {
             $string .= ' UNIQUE';
         }
 

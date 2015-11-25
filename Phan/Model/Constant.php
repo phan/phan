@@ -50,7 +50,7 @@ class Constant extends ModelOne {
      */
     public function toRow() : array {
         return [
-            'name' => (string)$this->constant->getName,
+            'name' => (string)$this->constant->getName(),
             'type' => (string)$this->constant->getUnionType(),
             'flags' => $this->constant->getFlags(),
             'fqsen' => (string)$this->constant->getFQSEN(),

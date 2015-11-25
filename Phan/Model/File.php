@@ -6,19 +6,20 @@ use \Phan\Database\ModelOne;
 use \Phan\Database\Schema;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;
+use \Phan\CodeBase\File as CodeBaseFile;
 
 class File extends ModelOne {
 
     /**
-     * @var \Phan\CodeBase\File
+     * @var CodeBaseFile
      */
     private $file;
 
     /**
-     * @param \Phan\CodeBase\File $file
+     * @param CodeBaseFile $file
      */
     public function __construct(
-        \Phan\CodeBase\File $file
+        CodeBaseFile $file
     ) {
         $this->file = $file;
     }
@@ -26,8 +27,7 @@ class File extends ModelOne {
     public static function createSchema() : Schema {
         return new Schema('File', [
             new Column('file_path', Column::TYPE_STRING, true),
-            new Column('modification_time', Column::TYPE_INT),
-            new Column('analysis_time', Column::TYPE_INT),
+            new Column('modification_time', Column::TYPE_INT)
         ]);
     }
 
@@ -46,9 +46,8 @@ class File extends ModelOne {
      */
     public function toRow() : array {
         return [
-            'file_path' => $this->file_path,
-            'modification_time' => $this->modification_time,
-            'analysis_time' => $this->analysis_time,
+            'file_path' => $this->file->getFilePath(),
+            'modification_time' => $this->file->getModificationTime(),
         ];
     }
 
@@ -59,11 +58,10 @@ class File extends ModelOne {
      * @return File
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : \Phan\CodeBase\File {
-        return new \Phan\CodeBase\File(
+    public static function fromRow(array $row) : CodeBaseFile {
+        return new CodeBaseFile(
             $row['file_path'],
-            (int)$row['modification_time'],
-            (int)$row['analysis_time']
+            (int)$row['modification_time']
         );
     }
 

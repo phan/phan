@@ -1,9 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
+use \Phan\Database;
+use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Model\Clazz as ClazzModel;
 
 trait ClassMap {
 
@@ -44,10 +47,18 @@ trait ClassMap {
     /**
      * @return Clazz
      * A class with the given FQSEN
+     *
+     * @throws NotFoundException
+     * An exception is thrown if the class cannot be
+     * found
      */
     public function getClassByFQSEN(FullyQualifiedClassName $fqsen) : Clazz {
-        assert(isset($this->class_map[(string)$fqsen]),
-            "Class with fqsen $fqsen not found");
+        // If we can't find the class, attempt to read it from
+        // the database
+        if (empty($this->class_map[(string)$fqsen])) {
+            $this->class_map[(string)$fqsen] =
+                ClazzModel::read(Database::get(), (string)$fqsen);
+        }
 
         return $this->class_map[(string)$fqsen];
     }
@@ -57,7 +68,22 @@ trait ClassMap {
      * True if the exlass exists else false
      */
     public function hasClassWithFQSEN(FullyQualifiedClassName $fqsen) : bool {
-        return !empty($this->class_map[(string)$fqsen]);
+        // Check memory for the class
+        if (!empty($this->class_map[(string)$fqsen])) {
+            return true;
+        }
+
+        if (Database::isEnabled()) {
+            // Otherwise, check the database
+            try {
+                ClazzModel::read(Database::get(), (string)$fqsen);
+                return true;
+            } catch (NotFoundException $exception) {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -69,7 +95,10 @@ trait ClassMap {
         $this->class_map[(string)$class->getFQSEN()]
             = $class;
 
+        // For classes that aren't internal PHP classes
         if (!$class->getContext()->isInternal()) {
+
+            // Associate the class with the file it was found in
             $this->getFileByPath($class->getContext()->getFile())
                 ->addClassFQSEN($class->getFQSEN());
         }
@@ -88,4 +117,20 @@ trait ClassMap {
         }
     }
 
+    /**
+     * Write each object to the database
+     *
+     * @return null
+     */
+    protected function storeClassMap() {
+        if (!Database::isEnabled()) {
+            return;
+        }
+
+        foreach ($this->class_map as $fqsen_string => $class) {
+            if (!$class->getContext()->isInternal()) {
+                (new ClazzModel($class))->write(Database::get());
+            }
+        }
+    }
 }

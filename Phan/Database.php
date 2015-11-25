@@ -33,9 +33,24 @@ class Database extends SQLite3 {
         static $instance = null;
 
         if (!$instance) {
+            // If no database is configured, don't return
+            // one
+            if (!static::isEnabled()) {
+                return null;
+            }
+
             $instance = new Database();
         }
 
         return $instance;
     }
+
+    /**
+     * @return bool
+     * True if the database is enabled
+     */
+    public static function isEnabled() : bool {
+        return (bool)Config::get()->serialized_code_base_file;
+    }
+
 }

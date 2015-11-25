@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Database;
 
+use \Phan\Database;
 use \SQLite3;
 
 /**
@@ -114,21 +115,30 @@ class Schema {
         });
     }
 
-
     /**
      * @return string
      * A query string that creates this table if it doesn't
      * yet exist
      */
     public function queryForCreateTable() : string {
-        $column_def_list = [];
+        $column_def_list = array_map(function (Column $column) {
+            return (string)$column;
+        }, $this->column_def_map);
 
-        foreach ($this->column_def_map as $name => $column) {
-            $column_def_list[] = (string)$column;
-        }
+        // Get the list of primary keys for the table
+        $primary_key_list =
+            array_map(function (Column $column) {
+                return $column->name();
+            }, array_filter($this->column_def_map, function (Column $column) {
+                return $column->isPrimaryKey();
+            }));
 
         return "CREATE TABLE IF NOT EXISTS {$this->table_name} "
-            . '(' . implode(', ', $column_def_list) . ')';
+            . '('
+            . implode(', ', $column_def_list)
+            . ', PRIMARY KEY (' . implode(', ', $primary_key_list) . ')'
+            . ')'
+            ;
     }
 
     /**

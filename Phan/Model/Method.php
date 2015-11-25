@@ -4,6 +4,7 @@ namespace Phan\Model;
 use \Phan\Database\Column;
 use \Phan\Database\ModelOne;
 use \Phan\Database\Schema;
+use \Phan\Language\Element\Method as MethodElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\UnionType;
@@ -11,15 +12,32 @@ use \Phan\Language\UnionType;
 class Method extends ModelOne {
 
     /**
-     * @var \Phan\Language\Element\Method
+     * @var MethodElement
      */
     private $method;
 
     /**
-     * @param \Phan\Language\Element\Method $method
+     * @var string
      */
-    public function __construct(\Phan\Language\Element\Method $method) {
+    private $scope;
+
+    /**
+     * @var string
+     */
+    private $scope_name;
+
+    /**
+     * @param MethodElement $method
+     * @param string $scope
+     */
+    public function __construct(
+        MethodElement $method,
+        string $scope,
+        string $scope_name
+    ) {
         $this->method = $method;
+        $this->scope = $scope;
+        $this->scope_name = $scope_name;
     }
 
     /**
@@ -29,7 +47,8 @@ class Method extends ModelOne {
     public static function createSchema() : Schema {
         $schema = new Schema('Method', [
             new Column('scope', Column::TYPE_STRING, true),
-            new Column('fqsen', Column::TYPE_STRING, true),
+            new Column('scope_name', Column::TYPE_STRING, true),
+            new Column('fqsen', Column::TYPE_STRING),
             new Column('name', Column::TYPE_STRING),
             new Column('type', Column::TYPE_STRING),
             new Column('flags', Column::TYPE_INT),
@@ -58,7 +77,9 @@ class Method extends ModelOne {
      */
     public function toRow() : array {
         return [
-            'name' => (string)$this->method->getName,
+            'scope' => $this->scope,
+            'scope_name' => $this->scope_name,
+            'name' => (string)$this->method->getName(),
             'type' => (string)$this->method->getUnionType(),
             'flags' => $this->method->getFlags(),
             'fqsen' => (string)$this->method->getFQSEN(),
@@ -79,8 +100,8 @@ class Method extends ModelOne {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : \Phan\Language\Element\Method {
-        return new \Phan\Language\Element\Method(
+    public static function fromRow(array $row) : MethodElement {
+        return new MethodElement(
             unserialize(base64_decode($row['context'])),
             $row['name'],
             UnionType::fromFullyQualifiedString($row['type']),

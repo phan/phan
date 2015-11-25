@@ -104,15 +104,15 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         $name = array_pop($parts);
 
         assert(!empty($name),
-            "The name cannot be empty in $fully_qualified_string");
+            "The name cannot be empty in the FQSEN '$fully_qualified_string'");
 
         $namespace = '\\' . implode('\\', array_filter($parts));
 
         assert(!empty($namespace),
-            "The namespace cannot be empty in $fully_qualified_string");
+            "The namespace cannot be empty in the FQSEN '$fully_qualified_string'");
 
         assert($namespace[0] === '\\',
-            "The first character of a namespace must be \\");
+            "The first character of the namespace '$namespace' must be \\");
 
         return static::make(
             $namespace,

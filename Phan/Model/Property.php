@@ -50,7 +50,7 @@ class Property extends ModelOne {
      */
     public function toRow() : array {
         return [
-            'name' => (string)$this->property->getName,
+            'name' => (string)$this->property->getName(),
             'type' => (string)$this->property->getUnionType(),
             'flags' => $this->property->getFlags(),
             'fqsen' => (string)$this->property->getFQSEN(),

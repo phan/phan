@@ -256,7 +256,7 @@ class Clazz extends TypedStructuralElement {
      * @return FQSEN
      * The parent class of this class if one exists
      */
-    public function getParentClassFQSEN() : FQSEN {
+    public function getParentClassFQSEN() : FullyQualifiedClassName {
         return $this->parent_class_fqsen;
     }
 

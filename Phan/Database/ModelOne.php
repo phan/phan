@@ -2,6 +2,7 @@
 namespace Phan\Database;
 
 use \Phan\Database;
+use \Phan\Exception\NotFoundException;
 
 /**
  * Objects implementing this interface can be
@@ -20,14 +21,19 @@ abstract class ModelOne extends Model implements ModelOneInterface {
      * Read a model from the database with the given pk
      */
     public static function read(Database $database, $primary_key_value) {
+        // Ensure that we've initialized this model
+        static::schema()->initializeOnce($database);
 
         $select_query =
             static::schema()->queryForSelect($primary_key_value);
 
         $row = $database->querySingle($select_query, true);
 
-        assert(!empty($row),
-            "Got an empty row from query $select_query");
+        if (empty($row)) {
+            throw new NotFoundException(
+                "No row found for query $select_query"
+            );
+        }
 
         $model = static::fromRow((array)$row);
 

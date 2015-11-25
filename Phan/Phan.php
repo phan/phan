@@ -45,6 +45,10 @@ class Phan {
     ) {
         $file_count = count($file_path_list);
 
+        // We'll construct a set of files that we'll
+        // want to run an analysis on
+        $analyze_file_path_list = [];
+
         // This first pass parses code and populates the
         // global state we'll need for doing a second
         // analysis after.
@@ -53,6 +57,10 @@ class Phan {
 
             // Check to see if we need to re-parse this file
             if (!$code_base->isParseUpToDateForFile($file_path)) {
+
+                // Save this to the set of files to analyze
+                $analyze_file_path_list[] = $file_path;
+
                 // Kick out anything we read from the former version
                 // of this file
                 $code_base->flushDependenciesForFile($file_path);
@@ -76,22 +84,24 @@ class Phan {
         // state in memory
         $this->analyzeFunctions($code_base);
 
+        // We can only save classes, methods, properties and
+        // constants after we've merged parent classes in.
+        $code_base->store();
+
         // Once we know what the universe looks like we
         // can scan for more complicated issues.
-        foreach ($file_path_list as $i => $file_path) {
+        $file_count = count($analyze_file_path_list);
+        foreach ($analyze_file_path_list as $i => $file_path) {
             CLI::progress('analyze',  ($i+1)/$file_count);
 
+            // We skip anything defined as 3rd party code
+            // to save a lil' time
             if (self::isThirdPartyFile($file_path)) {
                 continue;
             }
 
-            if (!$code_base->isAnalysisUpToDateForFile($file_path)) {
-                // Analyze the file
-                $this->analyzeFile($code_base, $file_path);
-
-                // Mark that its analysis is up to date
-                $code_base->setAnalysisUpToDateForFile($file_path);
-            }
+            // Analyze the file
+            $this->analyzeFile($code_base, $file_path);
         }
 
         // Emit all log messages

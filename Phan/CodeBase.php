@@ -103,4 +103,15 @@ class CodeBase {
             && file_exists(Config::get()->serialized_code_base_file)
         );
     }
+
+    public function store() {
+        if (!Database::isEnabled()) {
+            return;
+        }
+
+        $this->storeClassMap();
+        $this->storeMethodMap();
+        // $this->storeConstantMap();
+        // $this->storePropertyMap();
+    }
 }

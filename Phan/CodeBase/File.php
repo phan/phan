@@ -1,11 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
+use \Phan\Database;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Model\File as FileModel;
 
 /**
  * Information pertaining to PHP code files that we've read
@@ -25,13 +27,6 @@ class File {
     private $modification_time = 0;
 
     /**
-     * @var int
-     * The last known modification date of the file when it
-     * was last analyzed.
-     */
-    private $analysis_time = 0;
-
-    /**
      * @var FQSEN[]
      * A list of class FQSENs associated with this file
      */
@@ -49,12 +44,27 @@ class File {
      */
     public function __construct(
         string $file_path,
-        int $modification_time = 0,
-        int $analysis_time = 0
+        int $modification_time = 0
     ) {
         $this->file_path = $file_path;
         $this->modification_time = $modification_time;
-        $this->analysis_time = $analysis_time;
+    }
+
+    /**
+     * @return string
+     * The file path
+     */
+    public function getFilePath() : string {
+        return $this->file_path;
+    }
+
+    /**
+     * @return int
+     * The time of the last known modification of this
+     * file
+     */
+    public function getModificationTime() : int {
+        return $this->modification_time;
     }
 
     /**
@@ -76,27 +86,11 @@ class File {
      */
     public function setParseUpToDate() {
         $this->modification_time = filemtime($this->file_path);
-    }
 
-    /**
-     * @return bool
-     * True if the given file is up to date within this
-     * code base, else false
-     */
-    public function isAnalysisUpToDate() : bool {
-        return (
-            filemtime($this->file_path) <= $this->analysis_time
-        );
-    }
-
-    /**
-     * Mark the file at the given path as up to date so
-     * that we know if its changed on subsequent runs
-     *
-     * @return null
-     */
-    public function setAnalysisUpToDate() {
-        $this->analysis_time = filemtime($this->file_path);
+        if (Database::isEnabled()) {
+            // Write it to disk
+            (new FileModel($this))->write(Database::get());
+        }
     }
 
     /**
