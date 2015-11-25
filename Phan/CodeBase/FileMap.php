@@ -132,9 +132,6 @@ trait FileMap {
                 } catch (NotFoundException $exception) {
                     // Create the file
                     $file = new File($file_path);
-
-                    // Write it to the database immediately
-                    (new FileModel($file))->write(Database::get());
                 }
             } else {
                 $file = new File($file_path);
@@ -145,6 +142,22 @@ trait FileMap {
         }
 
         return $this->file_map[$file_path];
+    }
+
+
+    /**
+     * Save all file state
+     *
+     * @return null
+     */
+    public function storeFileMap() {
+        if (!Database::isEnabled()) {
+            return;
+        }
+
+        foreach ($this->file_map as $file) {
+            (new FileModel($file))->write(Database::get());
+        }
     }
 
 }

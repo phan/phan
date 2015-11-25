@@ -113,5 +113,6 @@ class CodeBase {
         $this->storeMethodMap();
         // $this->storeConstantMap();
         // $this->storePropertyMap();
+        $this->storeFileMap();
     }
 }
