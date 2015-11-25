@@ -20,12 +20,6 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
     private $namespace = '\\';
 
     /**
-     * @var string
-     * The name of this structural element
-     */
-    private $name = '';
-
-    /**
      * @param string $namespace
      * The namespace in this element's scope
      *
@@ -41,7 +35,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         string $name,
         int $alternate_id = 0
     ) {
-        parent::__construct();
+        parent::__construct($name);
 
         assert(!empty($name),
             "The name cannot be empty");
@@ -53,7 +47,6 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
             "The first character of a namespace must be \\, but got $namespace");
 
         $this->namespace = $namespace;
-        $this->name = $name;
         $this->alternate_id = $alternate_id;
     }
 
@@ -204,15 +197,6 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         $fqsen = clone($this);
         $fqsen->namespace = self::cleanNamespace($namespace);
         return $fqsen;
-    }
-
-    /**
-     * @return string
-     * The class associated with this FQSEN or
-     * null if not defined
-     */
-    public function getName() : string {
-        return $this->name;
     }
 
     /**

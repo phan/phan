@@ -19,13 +19,6 @@ abstract class FullyQualifiedClassElement extends FQSEN {
     private $fully_qualified_class_name;
 
     /**
-     * @var string
-     * A name if one is in scope or the empty
-     * string otherwise.
-     */
-    private $name = '';
-
-    /**
      * @param FullyQualifiedClassName $fully_qualified_class_name
      * The fully qualified class name of the class in whic
      * this element exists
@@ -42,9 +35,10 @@ abstract class FullyQualifiedClassElement extends FQSEN {
         string $name,
         int $alternate_id = 0
     ) {
+
+        parent::__construct($name);
         $this->fully_qualified_class_name =
             $fully_qualified_class_name;
-        $this->name = $name;
         $this->alternate_id = $alternate_id;
     }
 
@@ -169,15 +163,6 @@ abstract class FullyQualifiedClassElement extends FQSEN {
     }
 
     /**
-     * @return string
-     * The class associated with this FQSEN or
-     * null if not defined
-     */
-    public function getName() {
-        return $this->name;
-    }
-
-    /**
      * @return FullyQualifiedClassName
      * The fully qualified class name associated with this
      * class element.
@@ -208,7 +193,7 @@ abstract class FullyQualifiedClassElement extends FQSEN {
      */
     public function __toString() : string {
         $fqsen_string = (string)$this->getFullyQualifiedClassName();
-        $fqsen_string .= '::' . $this->name;
+        $fqsen_string .= '::' . $this->getName();
 
         if ($this->alternate_id) {
             $fqsen_string .= ",{$this->alternate_id}";

@@ -10,7 +10,19 @@ use \Phan\Language\UnionType;
  */
 abstract class FQSEN {
 
-    protected function __construct() {}
+    /**
+     * @var string
+     * The name of this structural element
+     */
+    private $name = '';
+
+    /**
+     * @param string $name
+     * The name of this structural element
+     */
+    protected function __construct(string $name) {
+        $this->name = $name;
+    }
 
     /**
      * @param $fqsen_string
@@ -37,6 +49,15 @@ abstract class FQSEN {
         string $string,
         Context $context
     );
+
+    /**
+     * @return string
+     * The class associated with this FQSEN or
+     * null if not defined
+     */
+    public function getName() : string {
+        return $this->name;
+    }
 
     /**
      * @return string
