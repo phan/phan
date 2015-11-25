@@ -1,14 +1,13 @@
 <?php declare(strict_types=1);
 
-// Grab these before we define our own classes
-$internal_class_name_list = get_declared_classes();
-$internal_interface_name_list = get_declared_interfaces();
-$internal_trait_name_list = get_declared_traits();
-$internal_function_name_list = get_defined_functions()['internal'];
-
-use \Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
 class FQSENTest extends \PHPUnit_Framework_TestCase {
 
@@ -16,73 +15,241 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
     protected $context = null;
 
     protected function setUp() {
-        global $internal_class_name_list;
-        global $internal_interface_name_list;
-        global $internal_trait_name_list;
-        global $internal_function_name_list;
-
-        $code_base = new CodeBase(
-            $internal_class_name_list,
-            $internal_interface_name_list,
-            $internal_trait_name_list,
-            $internal_function_name_list
-        );
-
-        $this->context = new Context($code_base);
+        $this->context = (new Context)
+            /*
+            ->withNamespace('\\Name\\Space')
+            ->withNamespaceMap(
+                T_CLASS,
+                'B',
+                FullyQualifiedClassName::fromfullyQualifiedString('\\Name\\Space\\B')
+            )
+            ->withNamespaceMap(
+                T_FUNCTION,
+                'g',
+                FullyQualifiedFunctionName::fromfullyQualifiedString('\\Name\\Space\\g')
+            )
+             */
+            ;
     }
 
     public function tearDown() {
         $this->context = null;
     }
 
-    public function testSimple() {
+    public function testFullyQualifiedClassName() {
         $this->assertFQSENEqual(
-            new FQSEN('', 'A'),
-            '\a'
+            FullyQualifiedClassName::make('Name\\Space', 'A'),
+            '\\Name\\Space\\a'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassName::make('', 'A'),
+            '\\a'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassName::fromFullyQualifiedString('A'),
+            '\\a'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassName::fromFullyQualifiedString(
+                '\\Name\\Space\\A'
+            ), '\\Name\\Space\\a'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassName::fromFullyQualifiedString(
+                '\\Namespace\\A,1'
+            ), '\\Namespace\\a,1'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassName::fromStringInContext(
+                '\\Namespace\\A', $this->context
+            ), '\\Namespace\\a'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassName::fromStringInContext(
+                'A', $this->context
+            ), '\\a'
         );
     }
 
-    public function testNamespace() {
+    public function testFullyQualifiedMethodName() {
         $this->assertFQSENEqual(
-            new FQSEN('\A', 'B'),
-            '\A\b'
+            FullyQualifiedMethodName::make(
+                FullyQualifiedClassName::make('\\Name\\Space', 'a'),
+                'f'
+            ), '\\Name\\Space\\a::f'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedMethodName::fromFullyQualifiedString(
+                '\\Name\\a::f'
+            ), '\\Name\\a::f'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedMethodName::fromFullyQualifiedString(
+                'Name\\a::f'
+            ), '\\Name\\a::f'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedMethodName::fromFullyQualifiedString(
+                '\\Name\\Space\\a::f,2'
+            ), '\\Name\\Space\\a::f,2'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedMethodName::fromFullyQualifiedString(
+                '\\Name\\Space\\a,1::f,2'
+            ), '\\Name\\Space\\a,1::f,2'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedMethodName::fromStringInContext(
+                'a::methodName', $this->context
+            ), '\\a::methodName'
         );
     }
 
-    public function testMethod() {
+    public function testFullyQualifiedPropertyName() {
         $this->assertFQSENEqual(
-            new FQSEN('\A', 'B', 'C'),
-            '\A\b::C'
+            FullyQualifiedPropertyName::make(
+                FullyQualifiedClassName::make('\\Name\\Space', 'a'), 'p'
+            ), '\\Name\\Space\\a::p'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedPropertyName::fromFullyQualifiedString(
+                '\\Name\\a::p'
+            ), '\\Name\\a::p'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedPropertyName::fromFullyQualifiedString(
+                'Name\\a::p'
+            ), '\\Name\\a::p'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedPropertyName::fromFullyQualifiedString(
+                '\\Name\\Space\\a::p,2'
+            ), '\\Name\\Space\\a::p,2'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedPropertyName::fromFullyQualifiedString(
+                '\\Name\\Space\\a,1::p,2'
+            ), '\\Name\\Space\\a,1::p,2'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedPropertyName::fromStringInContext(
+                'a::p', $this->context
+            ), '\\a::p'
         );
     }
 
-    public function testFromContext() {
+    public function testFullyQualifiedClassConstantName() {
         $this->assertFQSENEqual(
-            FQSEN::fromContext(
-                $this->context->withClassFQSEN(new FQSEN('\A', 'B'))
-            ),
-            '\A\b'
+            FullyQualifiedClassConstantName::make(
+                FullyQualifiedClassName::make('\\Name\\Space', 'a'), 'c'
+            ), '\\Name\\Space\\a::c'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassConstantName::fromFullyQualifiedString(
+                '\\Name\\a::c'
+            ), '\\Name\\a::c'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassConstantName::fromFullyQualifiedString(
+                'Name\\a::c'
+            ), '\\Name\\a::c'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassConstantName::fromFullyQualifiedString(
+                '\\Name\\Space\\a::c,2'
+            ), '\\Name\\Space\\a::c,2'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassConstantName::fromFullyQualifiedString(
+                '\\Name\\Space\\a,1::c,2'
+            ), '\\Name\\Space\\a,1::c,2'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedClassConstantName::fromStringInContext(
+                'a::methodName', $this->context
+            ), '\\a::methodName'
         );
     }
 
-    public function testFromString() {
-        $tests = [
-            '\a',
-            '\A\b',
-            '\A\b::c',
-            '\A\B\c',
-            '\A\B\c::d',
-            '\A\B\c::d{e}',
-            '\d{e}',
-            '\A\d{e}',
-        ];
+    public function testFullyQualifiedConstantName() {
+        $this->assertFQSENEqual(
+            FullyQualifiedConstantName::make(
+                '\\Name\\Space', 'c'
+            ), '\\Name\\Space\\c'
+        );
 
-        foreach ($tests as $test) {
-            $this->assertEquals(
-                $test,
-                (string)FQSEN::fromFullyQualifiedString($test)
-            );
-        }
+        $this->assertFQSENEqual(
+            FullyQualifiedConstantName::make(
+                '', 'c'
+            ), '\\c'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedConstantName::make(
+                '', 'c'
+            ), '\\c'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedConstantName::fromFullyQualifiedString('\\c'),
+            '\\c'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedConstantName::fromStringInContext('c', $this->context),
+            '\\c'
+        );
+    }
+
+    public function testFullyQualifiedFunctionName() {
+        $this->assertFQSENEqual(
+            FullyQualifiedFunctionName::make(
+                '\\Name\\Space', 'g'
+            ), '\\Name\\Space\\g'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedFunctionName::make(
+                '', 'g'
+            ), '\\g'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedConstantName::make(
+                '', 'g'
+            ), '\\g'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedFunctionName::fromFullyQualifiedString('\\g'),
+            '\\g'
+        );
+
+        $this->assertFQSENEqual(
+            FullyQualifiedFunctionName::fromStringInContext('g', $this->context),
+            '\\g'
+        );
     }
 
     /**
@@ -96,3 +263,5 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
     }
 
 }
+
+

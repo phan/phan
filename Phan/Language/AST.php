@@ -1,17 +1,19 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use \Phan\Analyze\ClassNameValidationVisitor;
+use \Phan\Analyze\ClassNameVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Language\AST\Element;
-use \Phan\Analyze\ClassNameVisitor;
-use \Phan\Analyze\ClassNameValidationVisitor;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\Type\MixedType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
@@ -375,8 +377,9 @@ class AST {
         }
 
         $class_fqsen =
-            $context->getScopeFQSEN()->withClassName(
-                $context, $class_name
+            FullyQualifiedClassName::fromStringInContext(
+                $class_name,
+                $context
             );
 
         // Check to see if the class actually exists
@@ -492,10 +495,19 @@ class AST {
         bool $is_function_declaration = false
     ) : Method {
 
-        $function_fqsen =
-            $context->getScopeFQSEN()->withFunctionName(
-                $context, $function_name, $is_function_declaration
-            );
+        if ($is_function_declaration) {
+            $function_fqsen =
+                FullyQualifiedFunctionName::make(
+                    $context->getNamespace(),
+                    $function_name
+                );
+        } else {
+            $function_fqsen =
+                FullyQualifiedFunctionName::fromStringInContext(
+                    $function_name,
+                    $context
+                );
+        }
 
         // Make sure the method we're calling actually exists
         if (!$code_base->hasMethodWithFQSEN(

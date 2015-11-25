@@ -1,10 +1,33 @@
-<?php declare(strict_types=1);
+<?php
+declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 
-trait Access {
+trait Addressable {
+
+    /**
+     * @var FQSEN
+     */
+    protected $fqsen;
+
+    /**
+     * @return FQSEN
+     * The fully-qualified structural element name of this
+     * structural element
+     */
+    abstract public function getFQSEN() : FQSEN;
+
+    /**
+     * @param FQSEN $fqsen
+     * A fully qualified structural element name to set on
+     * this element
+     *
+     * @return null
+     */
+    public function setFQSEN(FQSEN $fqsen) {
+        $this->fqsen = $fqsen;
+    }
 
     /**
      * Implementing classes must have a getFlags() method

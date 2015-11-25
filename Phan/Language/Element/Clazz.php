@@ -9,6 +9,7 @@ use \Phan\Language\Element\Constant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 use \Phan\Persistent\Column;
@@ -16,6 +17,7 @@ use \Phan\Persistent\ListAssociation;
 use \Phan\Persistent\Schema;
 
 class Clazz extends TypedStructuralElement {
+    use \Phan\Language\Element\Addressable;
     use \Phan\Memoize;
 
     /**
@@ -157,9 +159,10 @@ class Clazz extends TypedStructuralElement {
         // class info
         if(($parent_class = $class->getParentClass())) {
 
-            $parent_class_fqsen = FQSEN::fromFullyQualifiedString(
-                '\\' . $parent_class->getName()
-            );
+            $parent_class_fqsen =
+                FullyQualifiedClassName::fromFullyQualifiedString(
+                    '\\' . $parent_class->getName()
+                );
 
             $clazz->setParentClassFQSEN($parent_class_fqsen);
         }
@@ -181,7 +184,7 @@ class Clazz extends TypedStructuralElement {
 
         foreach ($class->getInterfaceNames() as $name) {
             $clazz->addInterfaceClassFQSEN(
-                FQSEN::fromFullyQualifiedString(
+                FullyQualifiedClassName::fromFullyQualifiedString(
                     '\\' . $name
                 )
             );
@@ -189,7 +192,7 @@ class Clazz extends TypedStructuralElement {
 
         foreach ($class->getTraitNames() as $name) {
             $clazz->addTraitFQSEN(
-                FQSEN::fromFullyQualifiedString(
+                FullyQualifiedClassName::fromFullyQualifiedString(
                     '\\' . $name
                 )
             );
@@ -587,8 +590,8 @@ class Clazz extends TypedStructuralElement {
         $variable->setUnionType($union_type);
     }
 
-    public function setFQSEN(FQSEN $fqsen) {
-        parent::setFQSEN($fqsen);
+    public function setFQSEN(FullyQualifiedClassName $fqsen) {
+        $this->fqsen = $fqsen;
 
         // Propagate the type to the constructor
         if (!empty($this->method_map['__construct'])) {
@@ -601,9 +604,16 @@ class Clazz extends TypedStructuralElement {
     /**
      * @return FQSEN
      */
-    public function getFQSEN() : FQSEN {
-        return parent::getFQSEN()
-            ->withClassName($this->getContext(), $this->getName());
+    public function getFQSEN() : FullyQualifiedClassName {
+        // Allow overrides
+        if ($this->fqsen) {
+            return $this->fqsen;
+        }
+
+        return FullyQualifiedClassName::fromStringInContext(
+            $this->getName(),
+            $this->getContext()
+        );
     }
 
     /**
@@ -688,7 +698,7 @@ class Clazz extends TypedStructuralElement {
             );
 
             // Tell the parent to import its own parents first
-            $parent->importParentClass($code_base);
+            $parent->importAncestorClasses($code_base);
 
             // Import elements from the parent
             $this->importAncestorClass(
@@ -799,7 +809,7 @@ class Clazz extends TypedStructuralElement {
             function (Clazz $clazz, array $fqsen_list) {
                 $clazz->interface_fqsen_list =
                     array_map(function (string $fqsen_string) {
-                        return FQSEN::fromFullyQualifiedString($fqsen_string);
+                        return FullyQualifiedClassName::fromFullyQualifiedString($fqsen_string);
                     }, $fqsen_list);
             },
             function (Clazz $clazz) {
@@ -812,7 +822,7 @@ class Clazz extends TypedStructuralElement {
             function (Clazz $clazz, array $fqsen_list) {
                 $clazz->trait_fqsen_list =
                     array_map(function (string $fqsen_string) {
-                        return FQSEN::fromFullyQualifiedString($fqsen_string);
+                        return FullyQualifiedClassName::fromFullyQualifiedString($fqsen_string);
                     }, $fqsen_list);
             },
             function (Clazz $clazz) {

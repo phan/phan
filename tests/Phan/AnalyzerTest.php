@@ -11,7 +11,7 @@ use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Language\Context;
 use \Phan\Language\Type;
-use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
 
 class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
@@ -60,7 +60,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertTrue(
             $this->code_base->hasClassWithFQSEN(
-                FQSEN::fromFullyQualifiedString('A')
+                FullyQualifiedClassName::fromFullyQualifiedString('A')
             )
         );
     }
@@ -74,7 +74,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertTrue(
             $this->code_base->hasClassWithFQSEN(
-                FQSEN::fromFullyQualifiedString('\A\b')
+                FullyQualifiedClassName::fromFullyQualifiedString('\A\b')
             )
         );
     }
@@ -91,7 +91,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
             ");
 
         $class_fqsen =
-            FQSEN::fromFullyQualifiedString('\A\b');
+            FullyQualifiedClassName::fromFullyQualifiedString('\A\b');
 
         $this->assertTrue(
             $this->code_base->hasClassWithFQSEN($class_fqsen),

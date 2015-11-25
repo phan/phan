@@ -4,8 +4,10 @@ namespace Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
-use \Phan\Persistent\ListAssociation;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Persistent\Column;
+use \Phan\Persistent\ListAssociation;
 use \Phan\Persistent\Model;
 use \Phan\Persistent\ModelOne;
 use \Phan\Persistent\ModelStringListMap;
@@ -176,7 +178,8 @@ class File extends ModelOne {
             function (File $file, array $fqsen_list) {
                 $file->setClassFQSENList(
                     array_map(function (string $fqsen_string) {
-                        return FQSEN::fromFullyQualifiedString($fqsen_string);
+                        return FullyQualifiedClassName
+                            ::fromFullyQualifiedString($fqsen_string);
                     }, $fqsen_list)
                 );
             },
@@ -190,7 +193,8 @@ class File extends ModelOne {
             function (File $file, array $fqsen_list) {
                 $file->setMethodFQSENList(
                     array_map(function (string $fqsen_string) {
-                        return FQSEN::fromFullyQualifiedString($fqsen_string);
+                        return FullyQualifiedMethodName
+                            ::fromFullyQualifiedString($fqsen_string);
                     }, $fqsen_list)
                 );
             },

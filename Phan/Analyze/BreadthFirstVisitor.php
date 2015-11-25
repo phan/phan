@@ -23,6 +23,7 @@ use \Phan\Language\Element\{
 };
 use \Phan\Langauge\Type;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\Type\ArrayType;
 use \Phan\Language\Type\CallableType;
 use \Phan\Language\UnionType;
@@ -437,9 +438,9 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
     public function visitClosure(Node $node) : Context {
         $this->analyzeNoOp($node, "no-op closure");
         return $this->context->withClosureFQSEN(
-            $this->context->getScopeFQSEN()->withClosureName(
-                $this->context,
-                'closure_' . $node->lineno
+            FullyQualifiedFunctionName::fromStringInContext(
+                'callable_' . $node->lineno,
+                $this->context
             )
         );
     }

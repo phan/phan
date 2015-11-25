@@ -7,6 +7,8 @@ use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type;
 use \Phan\Language\Type\{
     ArrayType,
@@ -174,19 +176,27 @@ class UnionType {
      * A list of types for parameters associated with the
      * given builtin function with the given name
      *
+     * @param FullyQualifiedMethodName|FullyQualifiedFunctionName $function_fqsen
+     *
      * @see internal_varargs_check
      * Formerly `function internal_varargs_check`
      */
     public static function internalFunctionSignatureMapForFQSEN(
-        FQSEN $function_fqsen
+        $function_fqsen
     ) : array {
         $context = new Context;
 
         $map = self::internalFunctionSignatureMap();
 
-        $class_name = $function_fqsen->getClassName();
-        $function_name = ($class_name ? $class_name . '::' :  '')
-            .  $function_fqsen->getMethodName();
+        if ($function_fqsen instanceof FullyQualifiedMethodName) {
+            $class_fqsen =
+                $function_fqsen->getFullyQualifiedClassName();
+            $class_name = $class_fqsen->getName();
+            $function_name =
+                $class_name . '::' . $function_fqsen->getName();
+        } else {
+            $function_name = $function_fqsen->getName();
+        }
 
         $function_name_original = $function_name;
         $alternate_id = 0;

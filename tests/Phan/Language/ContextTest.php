@@ -1,18 +1,14 @@
 <?php declare(strict_types=1);
 
-// Grab these before we define our own classes
-$internal_class_name_list = get_declared_classes();
-$internal_interface_name_list = get_declared_interfaces();
-$internal_trait_name_list = get_declared_traits();
-$internal_function_name_list = get_defined_functions()['internal'];
-
+use \Phan\Analyze\ParseVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Language\AST\Element;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
-use \Phan\Analyze\ParseVisitor;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 
 class ContextTest extends \PHPUnit_Framework_TestCase {
 
@@ -20,17 +16,7 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
     protected $code_base = null;
 
     protected function setUp() {
-        global $internal_class_name_list;
-        global $internal_interface_name_list;
-        global $internal_trait_name_list;
-        global $internal_function_name_list;
-
-        $this->code_base = new CodeBase(
-            [], // $internal_class_name_list,
-            [], // $internal_interface_name_list,
-            [], // $internal_trait_name_list,
-            []  // $internal_function_name_list
-        );
+        $this->code_base = new CodeBase([], [], [], []);
     }
 
     public function tearDown() {
@@ -45,12 +31,12 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
 
         $context_class =
             $context_namespace->withClassFQSEN(
-                new FQSEN('\A', 'B')
+                FullyQualifiedClassName::fromFullyQualifiedString('\\A\\B')
             );
 
         $context_method =
             $context_namespace->withMethodFQSEN(
-                new FQSEN('\A', 'B', 'c')
+                FullyQualifiedMethodName::fromFullyQualifiedString('\\A\\b::c')
             );
 
         $this->assertTrue(!empty($context));

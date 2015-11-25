@@ -5,8 +5,11 @@ namespace Phan\Language\Element;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
+use \Phan\Language\FQSEN\FullyQualifiedConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 
 class Constant extends TypedStructuralElement {
+    use \Phan\Language\Element\Addressable;
 
     /**
      * @param \phan\Context $context
@@ -40,7 +43,7 @@ class Constant extends TypedStructuralElement {
     }
 
     /**
-     * @return FQSEN
+     * @return FullyQualifiedClassConstantName|FullyQualifiedConstantName
      * The fully-qualified structural element name of this
      * structural element
      */
@@ -50,9 +53,10 @@ class Constant extends TypedStructuralElement {
             return $this->fqsen;
         }
 
-        return $this->getContext()
-            ->getScopeFQSEN()
-            ->withConstantName($this->getName());
+        return FullyQualifiedConstantName::fromStringInContext(
+            $this->getName(),
+            $this->getContext()
+        );
     }
 
     public function __toString() : string {

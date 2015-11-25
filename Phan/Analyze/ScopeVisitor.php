@@ -5,6 +5,7 @@ use \Phan\CodeBase;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Log;
 use \ast\Node;
 
@@ -166,13 +167,12 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
             if ($node->flags == T_FUNCTION) {
                 $parts = explode('\\', $target);
                 $function_name = array_pop($parts);
-                $target = new FQSEN(
+                $target = FullyQualifiedFunctionName::make(
                     implode('\\', $parts),
-                    '',
                     $function_name
                 );
             } else {
-                $target = FQSEN::fromFullyQualifiedString(
+                $target = FullyQualifiedFunctionName::fromFullyQualifiedString(
                     $prefix . '\\' . $target
                 );
             }

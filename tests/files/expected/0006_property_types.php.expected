@@ -1,1 +1,1 @@
-%s:6 TypeError assigning string[] to property but \a->property is \bad
+%s:6 TypeError assigning string[] to property but \a::property is \bad

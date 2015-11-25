@@ -5,6 +5,10 @@ use \Phan\CodeBase;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Variable;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use \Phan\Language\Scope;
 use \Phan\Log;
 
@@ -27,7 +31,7 @@ class Context extends FileRef implements \Serializable {
     private $namespace_map = [];
 
     /**
-     * @var FQSEN
+     * @var FullyQualifiedClassName
      * A fully-qualified structural element name describing
      * the current class or the empty-string if we are not
      * in a class scope.
@@ -43,7 +47,7 @@ class Context extends FileRef implements \Serializable {
     private $method_fqsen = null;
 
     /**
-     * @var FQSEN
+     * @var FullyQualifiedFunctionName
      * A fully-qualified structural element name describing
      * the current closure we're in or null if we're not
      * in a closure.
@@ -121,16 +125,21 @@ class Context extends FileRef implements \Serializable {
     }
 
     /**
-     * @return string
+     * @return FullyQualifiedGlobalStructuralElement
      * The namespace mapped name for the given flags and name
      */
-    public function getNamespaceMapFor(int $flags, string $name) : FQSEN {
+    public function getNamespaceMapFor(
+        int $flags, string $name
+    ) : FullyQualifiedGlobalStructuralElement {
         $name = strtolower($name);
 
         assert(
             !empty($this->namespace_map[$flags][$name]),
             "No namespace defined for $name"
         );
+
+        assert($this->namespace_map[$flags][$name] instanceof FQSEN,
+            "Namespace map for $flags $name was not an FQSEN");
 
         return $this->namespace_map[$flags][$name];
     }
@@ -149,14 +158,14 @@ class Context extends FileRef implements \Serializable {
     }
 
     /**
-     * @param FQSEN $fqsen
+     * @param FullyQualifiedClassName $fqsen
      * A fully-qualified structural element name describing
      * the current class in scope.
      *
      * @return Context
      * A clone of this context with the given value is returned
      */
-    public function withClassFQSEN(FQSEN $fqsen) : Context {
+    public function withClassFQSEN(FullyQualifiedClassName $fqsen) : Context {
         $context = clone($this);
         $context->class_fqsen = $fqsen;
         return $context;
@@ -171,11 +180,11 @@ class Context extends FileRef implements \Serializable {
     }
 
     /**
-     * @return FQSEN
+     * @return FullyQualifiedClassName
      * A fully-qualified structural element name describing
      * the current class in scope.
      */
-    public function getClassFQSEN() : FQSEN {
+    public function getClassFQSEN() : FullyQualifiedClassName {
         return $this->class_fqsen;
     }
 
@@ -189,7 +198,7 @@ class Context extends FileRef implements \Serializable {
     }
 
     /*
-     * @param FQSEN $fqsen
+     * @param FullyQualifiedMethodName $fqsen
      * A fully-qualified structural element name describing
      * the current function or method in scope.
      *
@@ -211,7 +220,7 @@ class Context extends FileRef implements \Serializable {
     }
 
     /*
-     * @return FQSEN
+     * @return FullyQualifiedMethodName
      * A fully-qualified structural element name describing
      * the current function or method in scope.
      */
@@ -220,14 +229,14 @@ class Context extends FileRef implements \Serializable {
     }
 
     /*
-     * @param FQSEN $fqsen
+     * @param FullyQualifiedFunctionName $fqsen
      * A fully-qualified structural element name describing
      * the current closure in scope.
      *
      * @return Context
      * A clone of this context with the given value is returned
      */
-    public function withClosureFQSEN(FQSEN $fqsen = null) : Context {
+    public function withClosureFQSEN(FullyQualifiedFunctionName $fqsen = null) : Context {
         $context = clone($this);
         $context->closure_fqsen = $fqsen;
         return $context;
@@ -242,11 +251,11 @@ class Context extends FileRef implements \Serializable {
     }
 
     /*
-     * @return FQSEN
+     * @return FullyQualifiedFunctionName
      * A fully-qualified structural element name describing
      * the current closure in scope
      */
-    public function getClosureFQSEN() : FQSEN {
+    public function getClosureFQSEN() : FullyQualifiedFunctionName {
         return $this->closure_fqsen;
     }
 
@@ -328,11 +337,28 @@ class Context extends FileRef implements \Serializable {
     }
 
     /**
+     * @return bool
+     * True if there is a scope FQSEN defined
+     */
+    public function hasScopeFQSEN() : bool {
+        return (
+            $this->hasClassFQSEN()
+            || $this->hasMethodFQSEN()
+            || $this->hasClosureFQSEN()
+        );
+    }
+
+    /**
      * @return string
      * A fully-qualified structural element name describing
      * the current scope.
      */
     public function getScopeFQSEN() : FQSEN {
+
+        // If we're in a closure, return it's FQSEN
+        if ($this->hasClosureFQSEN()) {
+            return $this->getClosureFQSEN();
+        }
 
         // If we're in a method, return it's FQSEN
         if ($this->hasMethodFQSEN()) {
@@ -344,15 +370,9 @@ class Context extends FileRef implements \Serializable {
             return $this->getClassFQSEN();
         }
 
-        // If we have a namespace defined, return a
-        // partial FQSEN
-        if ($this->hasNamespace()) {
-            return new FQSEN($this->getNamespace());
-        }
-
-        // Otherwise, pass the current namespace map
-        // along
-        return new FQSEN();
+        debug_print_backtrace(3);
+        assert(false, "No scope FQSEN defined");
+        return null;
     }
 
     /**
@@ -454,12 +474,17 @@ class Context extends FileRef implements \Serializable {
      * @return string
      */
     public function __toString() : string {
-        return $this->file
+        $string = $this->file
             . ':' . (string)$this->line_number_start
             . ($this->line_number_end
                 ? (':' . (string)$this->line_number_end) : '')
-            . ' in scope ' . (string)$this->getScopeFQSEN()
             ;
+
+        if ($this->hasScopeFQSEN()) {
+            $string .= ' in scope ' . (string)$this->getScopeFQSEN();
+        }
+
+        return $string;
     }
 
 

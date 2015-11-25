@@ -20,6 +20,8 @@ use \Phan\Language\Element\{
     Variable
 };
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\Type;
 use \Phan\Language\Scope;
 use \Phan\Language\UnionType;
@@ -65,8 +67,9 @@ class DepthFirstVisitor extends ScopeVisitor {
         // in this file
         do {
             $class_fqsen =
-                $this->context->getScopeFQSEN()->withClassName(
-                    $this->context, $class_name
+                FullyQualifiedClassName::fromStringInContext(
+                    $class_name,
+                    $this->context
                 )->withAlternateId($alternate_id++);
 
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
@@ -184,12 +187,10 @@ class DepthFirstVisitor extends ScopeVisitor {
      * parsing the node
      */
     public function visitClosure(Node $node) : Context {
-        $closure_name = 'callable_' . $node->lineno;
-
         $closure_fqsen =
-            $this->context->getScopeFQSEN()->withClosureName(
-                $this->context,
-                $closure_name
+            FullyQualifiedFunctionName::fromStringInContext(
+                'callable_' . $node->lineno,
+                $this->context
             );
 
         $method = Method::fromNode(
@@ -406,8 +407,9 @@ class DepthFirstVisitor extends ScopeVisitor {
         // from time to time), then give up
         if (!empty($class_name)) {
             $class_fqsen =
-                $this->context->getScopeFQSEN()->withClassName(
-                    $this->context, $class_name
+                FullyQualifiedClassName::fromStringInContext(
+                    $class_name,
+                    $this->context
                 );
 
             // Check to see if the class actually exists

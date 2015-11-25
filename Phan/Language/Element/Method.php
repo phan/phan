@@ -5,6 +5,8 @@ use \Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
@@ -14,7 +16,7 @@ use \Phan\Persistent\Schema;
 use \ast\Node;
 
 class Method extends TypedStructuralElement {
-    use \Phan\Language\Element\Access;
+    use \Phan\Language\Element\Addressable;
     use \Phan\Analyze\Analyzable;
 
     /**
@@ -148,13 +150,13 @@ class Method extends TypedStructuralElement {
         $method_name = array_pop($parts);
         $namespace = '\\' . implode('\\', $parts);
 
-        $fqsen = FQSEN::fromFullyQualifiedString(
-            $namespace . '::' . $method_name
+        $fqsen = FullyQualifiedFunctionName::make(
+            $namespace, $method_name
         );
 
         $method = new Method(
             $context,
-            $fqsen->getMethodName(),
+            $fqsen->getName(),
             new UnionType(),
             0,
             $number_of_required_parameters,
@@ -574,18 +576,17 @@ class Method extends TypedStructuralElement {
     }
 
     /**
-     * @return FQSEN
+     * @return FullyQualifiedFunctionName|FullyQualifiedMethodName
      */
-    public function getFQSEN() : FQSEN {
+    public function getFQSEN() {
         // Allow overrides
         if ($this->fqsen) {
             return $this->fqsen;
         }
 
-        // Otherwise, construct it
-        return parent::getFQSEN()->withMethodName(
-            $this->getContext(),
-            $this->getName()
+        return FullyQualifiedMethodName::fromStringInContext(
+            $this->getName(),
+            $this->getContext()
         );
     }
 

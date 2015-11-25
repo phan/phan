@@ -5,6 +5,7 @@ use \Phan\CodeBase;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\Type\NodeTypeKindVisitor;
 use \Phan\Language\Type\{
     ArrayType,
@@ -261,7 +262,7 @@ class Type {
 
             return new Type(
                 $fqsen->getNamespace(),
-                $fqsen->getClassName()
+                $fqsen->getName()
             );
         }
 
@@ -321,7 +322,7 @@ class Type {
      * from this type
      */
     public function asFQSEN() : FQSEN {
-        return FQSEN::fromType($this);
+        return FullyQualifiedClassName::fromType($this);
     }
 
     /**

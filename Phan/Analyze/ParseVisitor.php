@@ -10,6 +10,9 @@ use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type;
 use \Phan\Language\Type\{
     ArrayType,
@@ -83,8 +86,16 @@ class ParseVisitor extends ScopeVisitor {
         assert(!empty($class_name),
             "Class must have name in {$this->context}");
 
-        $class_fqsen = FQSEN::fromContext($this->context)
-            ->withClassName($this->context, $class_name);
+        $class_fqsen =
+            FullyQualifiedClassName::fromStringInContext(
+                $class_name,
+                $this->context
+            );
+
+        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+            print_r($class_fqsen);
+            exit;
+        }
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
@@ -142,9 +153,9 @@ class ParseVisitor extends ScopeVisitor {
             }
 
             $parent_fqsen =
-                $this->context->getScopeFQSEN()->withClassName(
-                    $this->context,
-                    $parent_class_name
+                FullyQualifiedClassName::fromStringInContext(
+                    $parent_class_name,
+                    $this->context
                 );
 
             // Set the parent for the class
@@ -159,7 +170,7 @@ class ParseVisitor extends ScopeVisitor {
             );
             foreach ($interface_list as $name) {
                 $clazz->addInterfaceClassFQSEN(
-                    FQSEN::fromFullyQualifiedString($name)
+                    FullyQualifiedClassName::fromFullyQualifiedString($name)
                 );
             }
         }
@@ -196,9 +207,9 @@ class ParseVisitor extends ScopeVisitor {
         // Add each trait to the class
         foreach ($trait_fqsen_string_list as $trait_fqsen_string) {
             $trait_fqsen =
-                FQSEN::fromContextAndString(
-                    $clazz->getContext(),
-                    $trait_fqsen_string
+                FullyQualifiedClassName::fromStringInContext(
+                    $trait_fqsen_string,
+                    $clazz->getContext()
                 );
 
             $clazz->addTraitFQSEN($trait_fqsen);
@@ -224,9 +235,9 @@ class ParseVisitor extends ScopeVisitor {
         $method_name = $node->name;
 
         $method_fqsen =
-            $this->context->getScopeFQSEN()->withMethodName(
-                $this->context,
-                $method_name
+            FullyQualifiedMethodName::fromStringInContext(
+                $method_name,
+                $this->context
             );
 
         // Hunt for an available alternate ID if necessary
@@ -410,13 +421,13 @@ class ParseVisitor extends ScopeVisitor {
         $function_fqsen = null;
         do {
             $function_fqsen =
-                $this->context->getScopeFQSEN()
-                    ->withFunctionName(
-                        $this->context,
-                        $function_name
-                    )
-                    ->withNamespace($this->context->getNamespace())
-                    ->withAlternateId($alternate_id++);
+                FullyQualifiedFunctionName::fromStringInContext(
+                    $function_name,
+                    $this->context
+                )
+                ->withNamespace($this->context->getNamespace())
+                ->withAlternateId($alternate_id++);
+
         } while($this->code_base
             ->hasMethodWithFQSEN($function_fqsen));
 

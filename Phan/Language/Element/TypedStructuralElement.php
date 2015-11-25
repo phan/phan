@@ -3,7 +3,6 @@ declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
 use \Phan\Persistent\Column;
 use \Phan\Persistent\Schema;
@@ -38,12 +37,6 @@ abstract class TypedStructuralElement extends StructuralElement {
     private $flags = 0;
 
     /**
-     * @var FQSEN
-     * The fully-qualified structural element name
-     */
-    protected $fqsen = null;
-
-    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -67,7 +60,6 @@ abstract class TypedStructuralElement extends StructuralElement {
         int $flags
     ) {
         parent::__construct($context);
-
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
@@ -85,9 +77,12 @@ abstract class TypedStructuralElement extends StructuralElement {
             ? clone($this->type)
             : $this->type;
 
-        $this->fqsen = $this->fqsen
-            ? clone($this->fqsen)
-            : $this->fqsen;
+        // Clone the FQSEN if it exists
+        if (isset($this->fqsen)) {
+            $this->fqsen = $this->fqsen
+                ? clone($this->fqsen)
+                : $this->fqsen;
+        }
     }
 
     /**
@@ -96,32 +91,6 @@ abstract class TypedStructuralElement extends StructuralElement {
      */
     public function getName() : string {
         return $this->name;
-    }
-
-    /**
-     * @return FQSEN
-     * The fully-qualified structural element name of this
-     * structural element
-     */
-    public function getFQSEN() : FQSEN {
-        // Get the stored FQSEN if it exists
-        if ($this->fqsen) {
-            return $this->fqsen;
-        }
-
-        // else generate it
-        return $this->getContext()->getScopeFQSEN();
-    }
-
-    /**
-     * @param FQSEN $fqsen
-     * A fully qualified structural element name to set on
-     * this element
-     *
-     * @return null
-     */
-    public function setFQSEN(FQSEN $fqsen) {
-        $this->fqsen = $fqsen;
     }
 
     /**

@@ -7,6 +7,7 @@ use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -64,9 +65,9 @@ class ClassNameValidationVisitor
 
         // Compute the FQSEN based on the current context
         $this->class_fqsen =
-            $this->context->getScopeFQSEN()->withClassName(
-                $this->context,
-                $this->class_name
+            FullyQualifiedClassName::fromStringInContext(
+                $this->class_name,
+                $this->context
             );
     }
 

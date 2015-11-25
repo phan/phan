@@ -3,14 +3,17 @@ namespace Phan\Analyze;
 
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Exception\NodeException;
-use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\AccessException;
+use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\NodeException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type;
 use \Phan\Language\Type\{
     ArrayType,
@@ -226,9 +229,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return ObjectType::instance()->asUnionType();
         }
 
-        $class_fqsen = FQSEN::fromContextAndString(
-            $this->context,
-            $class_name
+        $class_fqsen = FullyQualifiedClassName::fromStringInContext(
+            $class_name,
+            $this->context
         );
 
         if ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
@@ -307,9 +310,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 continue;
             }
 
-            $class_fqsen = FQSEN::fromFullyQualifiedString(
-                (string)$type
-            );
+            $class_fqsen = FullyQualifiedClassName::fromType($type);
 
             // If we can't find the class, the type probably
             // wasn't a class.
@@ -355,14 +356,12 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitClosure(Node $node) : UnionType {
-        $closure_name = 'callable_' . $node->lineno;
-
         // The type of a closure is the fqsen pointing
         // at its definition
         $closure_fqsen =
-            $this->context->getScopeFQSEN()->withClosureName(
-                $this->context,
-                $closure_name
+            FullyQualifiedFunctionName::fromStringInContext(
+                'callable_' . $node->lineno,
+                $this->context
             );
 
         $type = CallableType::instanceWithClosureFQSEN(
@@ -512,9 +511,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         $class_fqsen =
-            $this->context->getScopeFQSEN()->withClassName(
-                $this->context,
-                $class_name
+            FullyQualifiedClassName::fromStringInContext(
+                $class_name,
+                $this->context
             );
 
         assert(
@@ -585,9 +584,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         $class_fqsen =
-            $this->context->getScopeFQSEN()->withClassName(
-                $this->context,
-                $class_name
+            FullyQualifiedClassName::fromStringInContext(
+                $class_name,
+                $this->context
             );
 
         assert(
@@ -664,15 +663,18 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                     );
             } else {
                 $function_fqsen =
-                    $this->context->getScopeFQSEN()->withMethodName(
-                        $this->context, $function_name
+                    FullyQualifiedFunctionName::fromStringInContext(
+                        $function_name,
+                        $this->context
                     );
             }
 
         // If the name is fully qualified
         } else {
             $function_fqsen =
-                FQSEN::fromFullyQualifiedString($function_name);
+                FullyQualifiedFunctionName::fromFullyQualifiedString(
+                    $function_name
+                );
         }
 
         // If the function doesn't exist, check to see if its
@@ -681,7 +683,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $function_fqsen
         )) {
             $function_fqsen =
-                FQSEN::fromFullyQualifiedString('\\::' . $function_name);
+                FullyQualifiedFunctionName::make(
+                    '', $function_name
+                );
         }
 
         if (!$this->code_base->hasMethodWithFQSEN($function_fqsen)) {
@@ -748,9 +752,14 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             "Method name must be a string. Something else given.");
 
 
-        $method_fqsen = $this->context->getScopeFQSEN()
-            ->withClassName($this->context, $class_name)
-            ->withMethodName($this->context, $method_name);
+        $method_fqsen =
+            FullyQualifiedMethodName::make(
+                FullyQualifiedClassName::fromStringInContext(
+                    $class_name,
+                    $this->context
+                ),
+                $method_name
+            );
 
         if (!$this->code_base->hasMethodWithFQSEN(
             $method_fqsen
@@ -788,9 +797,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         $class_fqsen =
-            $this->context->getScopeFQSEN()->withClassName(
-                $this->context,
-                $class_name
+            FullyQualifiedClassName::fromstringInContext(
+                $class_name,
+                $this->context
             );
 
         assert(

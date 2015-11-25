@@ -8,6 +8,7 @@ use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
+use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -213,16 +214,15 @@ class ClassNameVisitor extends KindVisitorImplementation {
             // first found class is correct
             foreach($variable->getUnionType()->nonGenericTypes()->getTypeList() as $type) {
                 $child_class_fqsen =
-                    $this->context->getScopeFQSEN()->withClassName(
-                        $this->context,
-                        (string)$type
+                    FullyQualifiedClassName::fromStringInContext(
+                        (string)$type,
+                        $this->context
                     );
 
-
                 if ($this->code_base->hasClassWithFQSEN($child_class_fqsen)) {
-                    return (string)$this->context->getScopeFQSEN()->withClassName(
-                        $this->context,
-                        (string)$type
+                    return (string)FullyQualifiedClassName::fromStringInContext(
+                        (string)$type,
+                        $this->context
                     );
                 }
             }
@@ -292,9 +292,9 @@ class ClassNameVisitor extends KindVisitorImplementation {
                     // Find the first viable property type
                     foreach ($property->getUnionType()->nonGenericTypes()->getTypeList() as $type) {
                         $class_fqsen =
-                            $this->context->getScopeFQSEN()->withClassName(
-                                $this->context,
-                                (string)$type
+                            FullyQualifiedClassName::fromStringInContext(
+                                (string)$type,
+                                $this->context
                             );
 
                         if ($this->code_base->hasClassWithFQSEN($class_fqsen)) {

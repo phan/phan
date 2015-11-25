@@ -3,12 +3,13 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\UnionType;
 use \Phan\Persistent\Column;
 use \Phan\Persistent\Schema;
 
 class Property extends TypedStructuralElement {
-    use \Phan\Language\Element\Access;
+    use \Phan\Language\Element\Addressable;
 
     /**
      * @param \phan\Context $context
@@ -100,15 +101,16 @@ class Property extends TypedStructuralElement {
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FQSEN {
+    public function getFQSEN() : FullyQualifiedPropertyName {
         // Get the stored FQSEN if it exists
         if ($this->fqsen) {
             return $this->fqsen;
         }
 
-        return $this->getContext()
-            ->getScopeFQSEN()
-            ->withPropertyName($this->getName());
+        return FullyQualifiedPropertyName::fromStringInContext(
+            $this->getName(),
+            $this->getContext()
+        );
     }
 
 }
