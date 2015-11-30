@@ -2,6 +2,7 @@
 namespace Phan\CodeBase;
 
 use \Phan\Database;
+use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -49,7 +50,24 @@ trait PropertyMap {
      * @return bool
      */
     public function hasProperty(FQSEN $fqsen, string $name) : bool {
-        return !empty($this->property_map[(string)$fqsen][$name]);
+        if (!empty($this->property_map[(string)$fqsen][$name])) {
+            return true;
+        }
+
+        if (Database::isEnabled()) {
+            // Otherwise, check the database
+            try {
+                PropertyModel::read(Database::get(),
+                    ((string)$fqsen) . '|' . $name
+                );
+                return true;
+            } catch (NotFoundException $exception) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
     }
 
     /**
@@ -57,6 +75,14 @@ trait PropertyMap {
      * Get the property with the given FQSEN
      */
     public function getProperty(FQSEN $fqsen, string $name) : Property {
+        if (empty($this->property_map[(string)$fqsen][$name])) {
+            $this->property_map[(string)$scope][$name] =
+                PropertyModel::read(Database::get(),
+                    ((string)$fqsen). '|' . $name
+                )
+                ->getProperty();
+        }
+
         return $this->property_map[(string)$fqsen][$name];
     }
 
@@ -88,6 +114,14 @@ trait PropertyMap {
     ) {
         $name = $property->getFQSEN()->getNameWithAlternateId();
         $this->property_map[(string)$fqsen][$name] = $property;
+
+
+        // For elements that aren't internal PHP classes
+        if (!$property->getContext()->isInternal()) {
+            // Associate the element with the file it was found in
+            $this->getFileByPath($property->getContext()->getFile())
+                ->addPropertyFQSEN($property->getFQSEN());
+        }
     }
 
     /**

@@ -55,6 +55,13 @@ class Property extends ModelOne {
     }
 
     /**
+     * @return PropertyElement
+     */
+    public function getProperty() : PropertyElement {
+        return $this->property;
+    }
+
+    /**
      * @return string
      * The value of the primary key for this model
      */

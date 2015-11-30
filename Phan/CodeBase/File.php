@@ -6,7 +6,10 @@ use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Model\File as FileModel;
 
 /**

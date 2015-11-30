@@ -2,6 +2,7 @@
 namespace Phan\CodeBase;
 
 use \Phan\Database;
+use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Constant;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;

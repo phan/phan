@@ -72,8 +72,18 @@ abstract class ModelOne extends Model implements ModelOneInterface {
         $insert_query =
             $this->schema()->queryForInsert($this->toRow());
 
-        // Write the model's data
-        $database->exec($insert_query);
+        if (false !== strpos($insert_query, 'feature')) {
+            print "$insert_query\n";
+        }
+
+        try {
+            // Write the model's data
+            $database->exec($insert_query);
+        } catch (\Exception $exception) {
+            print "$exception\n";
+            debug_print_backtrace(3);
+            print "$insert_query\n";
+        }
 
         // Write the associations
         $this->writeAssociationList($database);
