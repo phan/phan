@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
+use \Phan\Database;
 use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Model\Property as PropertyModel;
 
 trait PropertyMap {
 
@@ -87,4 +89,44 @@ trait PropertyMap {
         $name = $property->getFQSEN()->getNameWithAlternateId();
         $this->property_map[(string)$fqsen][$name] = $property;
     }
+
+    /**
+     * Write each object to the database
+     *
+     * @return null
+     */
+    protected function storePropertyMap() {
+        if (!Database::isEnabled()) {
+            return;
+        }
+
+        foreach ($this->property_map as $scope => $map) {
+            foreach ($map as $name => $property) {
+                if (!$property->getContext()->isInternal()) {
+                    (new PropertyModel(
+                        $property, $scope, $name
+                    ))->write(Database::get());
+                }
+            }
+        }
+    }
+
+    /**
+     * @return null
+     */
+    protected function flushPropertyWithScopeAndName(
+        string $scope,
+        string $name
+    ) {
+        // Remove it from the database
+        if (Database::isEnabled()) {
+            PropertyModel::delete(Database::get(),
+                $scope . '|' . $name
+            );
+        }
+
+        // Remove it from memory
+        unset($this->property_map[$scope][$name]);
+    }
+
 }

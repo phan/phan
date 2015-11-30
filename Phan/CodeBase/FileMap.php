@@ -20,9 +20,8 @@ trait FileMap {
      *
      * @return null
      */
-    abstract protected function flushMethodWithScopeAndName(
-        string $scope,
-        string $name
+    abstract protected function flushClassWithFQSEN(
+        FullyQualifiedClassName $fqsen
     );
 
     /**
@@ -32,8 +31,33 @@ trait FileMap {
      *
      * @return null
      */
-    abstract protected function flushClassWithFQSEN(
-        FullyQualifiedClassName $fqsen
+    abstract protected function flushMethodWithScopeAndName(
+        string $scope,
+        string $name
+    );
+
+    /**
+     * Implementing class must have a method for removing
+     * all details of properties with the given scope and
+     * name
+     *
+     * @return null
+     */
+    abstract protected function flushPropertyWithScopeAndName(
+        string $scope,
+        string $name
+    );
+
+    /**
+     * Implementing class must have a method for removing
+     * all details of constants with the given scope and
+     * name
+     *
+     * @return null
+     */
+    abstract protected function flushConstantWithScopeAndName(
+        string $scope,
+        string $name
     );
 
     /**
@@ -71,7 +95,23 @@ trait FileMap {
             $code_file->flushMethodWithFQSEN($fqsen);
         }
 
-        // TODO: Flush global constants
+        foreach ($code_file->getPropertyFQSENList() as $fqsen) {
+            $this->flushPropertyWithScopeAndName(
+                (string)$fqsen->getFullyQualifiedPropertyName(),
+                $fqsen->getName()
+            );
+
+            $code_file->flushPropertyWithFQSEN($fqsen);
+        }
+
+        foreach ($code_file->getConstantFQSENList() as $fqsen) {
+            $this->flushConstantWithScopeAndName(
+                (string)$fqsen->getFullyQualifiedConstantName(),
+                $fqsen->getName()
+            );
+
+            $code_file->flushConstantWithFQSEN($fqsen);
+        }
     }
 
     /**

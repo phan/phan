@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Database;
 
+use \Exception;
 use \Phan\Database;
 use \Phan\Exception\NotFoundException;
 
@@ -33,7 +34,13 @@ abstract class ModelOne extends Model implements ModelOneInterface {
         }
         */
 
-        $row = $database->querySingle($select_query, true);
+        try {
+            $row = $database->querySingle($select_query, true);
+        } catch (\Exception $exception) {
+            print "$exception\n";
+            debug_print_backtrace(3);
+            print "$select_query\n";
+        }
 
         if (empty($row)) {
             throw new NotFoundException(

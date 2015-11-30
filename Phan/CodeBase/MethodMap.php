@@ -298,23 +298,6 @@ trait MethodMap {
     }
 
     /**
-     * @return null
-     */
-    protected function flushMethodWithScopeAndName(
-        string $scope,
-        string $name
-    ) {
-        if (Database::isEnabled()) {
-            MethodModel::delete(Database::get(),
-                $scope . '|' .  $name
-            );
-        }
-
-        unset($this->method_map[$scope][$name]);
-    }
-
-
-    /**
      * Write each object to the database
      *
      * @return null
@@ -333,6 +316,22 @@ trait MethodMap {
                 }
             }
         }
+    }
+
+    /**
+     * @return null
+     */
+    protected function flushMethodWithScopeAndName(
+        string $scope,
+        string $name
+    ) {
+        if (Database::isEnabled()) {
+            MethodModel::delete(Database::get(),
+                $scope . '|' .  $name
+            );
+        }
+
+        unset($this->method_map[$scope][$name]);
     }
 
 }

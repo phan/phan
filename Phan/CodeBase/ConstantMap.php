@@ -1,11 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
+use \Phan\Database;
 use \Phan\Language\Element\Constant;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedConstantName;
+use \Phan\Model\Constant as ConstantModel;
 
 trait ConstantMap {
 
@@ -27,7 +29,7 @@ trait ConstantMap {
      * @return Constant[]
      * A map from name to constant
      */
-    public function getConstantMapForScope(FQSEN $fqsen) {
+    public function getConstantMapForScope(FQSEN $fqsen) : array {
         if (empty($this->constant_map[(string)$fqsen])) {
             return [];
         }
@@ -88,6 +90,43 @@ trait ConstantMap {
     ) {
         $name = $constant->getFQSEN()->getNameWithAlternateId();
         $this->constant_map[(string)$fqsen][$name] = $constant;
+    }
+
+    /**
+     * Write each object to the database
+     *
+     * @return null
+     */
+    protected function storeConstantMap() {
+        if (!Database::isEnabled()) {
+            return;
+        }
+
+        foreach ($this->constant_map as $scope => $map) {
+            foreach ($map as $name => $constant) {
+                if (!$constant->getContext()->isInternal()) {
+                    (new ConstantModel($constant, $scope, $name))->write(Database::get());
+                }
+            }
+        }
+    }
+
+    /**
+     * @return null
+     */
+    protected function flushConstantWithScopeAndName(
+        string $scope,
+        string $name
+    ) {
+        // Remove it from the database
+        if (Database::isEnabled()) {
+            ConstantModel::delete(Database::get(),
+                $scope . '|' .  $name
+            );
+        }
+
+        // Remove it from memory
+        unset($this->constant_map[$scope][$name]);
     }
 
 }

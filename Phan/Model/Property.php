@@ -4,6 +4,7 @@ namespace Phan\Model;
 use \Phan\Database\Column;
 use \Phan\Database\ModelOne;
 use \Phan\Database\Schema;
+use \Phan\Language\Element\Property as PropertyElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\UnionType;
@@ -11,22 +12,40 @@ use \Phan\Language\UnionType;
 class Property extends ModelOne {
 
     /**
-     * @var \Phan\Language\Element\Property
+     * @var PropertyElement
      */
     private $property;
 
     /**
-     * @param \Phan\Language\Element\Property $property
+     * @var string
+     */
+    private $scope;
+
+    /**
+     * @var string
+     */
+    private $scope_name;
+
+
+    /**
+     * @param PropertyElement $property
+     * @param string $scope
+     * @param string $scope_name
      */
     public function __construct(
-        \Phan\Language\Element\Property $property
+        PropertyElement $property,
+        string $scope,
+        string $scope_name
     ) {
         $this->property = $property;
+        $this->scope = $scope;
+        $this->scope_name = $scope_name;
     }
 
     public static function createSchema() : Schema {
         return new Schema('Property', [
-            new Column('fqsen', Column::TYPE_STRING, true),
+            new Column('scope_name', Column::TYPE_STRING, true),
+            new Column('fqsen', Column::TYPE_STRING),
             new Column('name', Column::TYPE_STRING),
             new Column('type', Column::TYPE_STRING),
             new Column('flags', Column::TYPE_INT),
@@ -40,7 +59,7 @@ class Property extends ModelOne {
      * The value of the primary key for this model
      */
     public function primaryKeyValue() {
-        return (string)$this->property->getFQSEN();
+        return $this->scope . '|' . $this->scope_name;
     }
 
     /**
@@ -50,10 +69,11 @@ class Property extends ModelOne {
      */
     public function toRow() : array {
         return [
+            'scope_name' => $this->primaryKeyValue(),
+            'fqsen' => (string)$this->property->getFQSEN(),
             'name' => (string)$this->property->getName(),
             'type' => (string)$this->property->getUnionType(),
             'flags' => $this->property->getFlags(),
-            'fqsen' => (string)$this->property->getFQSEN(),
             'context' => base64_encode(serialize($this->property->getContext())),
             'is_deprecated' => $this->property->isDeprecated(),
         ];
@@ -66,13 +86,15 @@ class Property extends ModelOne {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : \Phan\Language\Element\Property {
-        $property = new \Phan\Language\Element\Property(
+    public static function fromRow(array $row) : Property {
+        list($scope, $name) = explode('|', $row['scope_name']);
+
+        $property = new Property(new PropertyElement(
             unserialize(base64_decode($row['context'])),
             $row['name'],
             UnionType::fromFullyQualifiedString($row['type']),
             (int)$row['flags']
-        );
+        ), $scope, $name);
 
         return $property;
     }

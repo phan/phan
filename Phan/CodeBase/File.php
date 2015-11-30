@@ -27,16 +27,28 @@ class File {
     private $modification_time = 0;
 
     /**
-     * @var FQSEN[]
+     * @var FullyQualifiedClassName[]
      * A list of class FQSENs associated with this file
      */
     private $class_fqsen_list = [];
 
     /**
-     * @var FQSEN[]
+     * @var FullyQualifiedMethodName[]
      * A list of method FQSENs associated with this file
      */
     private $method_fqsen_list = [];
+
+    /**
+     * @var FullyQualifiedPropertyName[]
+     * A list of property FQSENs associated with this file
+     */
+    private $property_fqsen_list = [];
+
+    /**
+     * @var FullyQualifiedConstantName[]
+     * A list of constant FQSENs associated with this file
+     */
+    private $constant_fqsen_list = [];
 
     /**
      * @param string $file_path
@@ -122,7 +134,15 @@ class File {
     }
 
     /**
-     * @return FQSEN[]
+     * Remove the class with the given FQSEN from our
+     * list of associated classes
+     */
+    public function flushClassWithFQSEN(FullyQualifiedClassName $fqsen) {
+        unset($this->class_fqsen_list[(string)$fqsen]);
+    }
+
+    /**
+     * @return FullyQualifiedMethodName[]|FullyQualifiedFunctionName[]
      * A list of method FQSENs associated with this file
      */
     public function getMethodFQSENList() : array {
@@ -158,11 +178,75 @@ class File {
     }
 
     /**
-     * Remove the class with the given FQSEN from our
-     * list of associated classes
+     * @return FullyQualifiedPropertyName[]
+     * A list of property FQSENs associated with this file
      */
-    public function flushClassWithFQSEN(FullyQualifiedClassName $fqsen) {
-        unset($this->class_fqsen_list[(string)$fqsen]);
+    public function getPropertyFQSENList() : array {
+        return $this->property_fqsen_list;
+    }
+
+    /**
+     * @param FullyQualifiedPropertyName[] $property_fqsen_list
+     * The set of property FQSENs associated with this file
+     *
+     * @return null
+     */
+    public function setPropertyFQSENList(array $property_fqsen_list) {
+        $this->property_fqsen_list = $property_fqsen_list;
+    }
+
+    /**
+     * @param FullyQualifiedPropertyName $fqsen
+     * A property FQSEN associated with this file
+     *
+     * @return null
+     */
+    public function addPropertyFQSEN(FullyQualifiedPropertyName $fqsen) {
+        $this->property_fqsen_list[(string)$fqsen] = $fqsen;
+    }
+
+    /**
+     * Remove the property with the given FQSEN from our
+     * list of associated properties
+     */
+    public function flushPropertyWithFQSEN(FullyQualifiedPropertyName $fqsen) {
+        unset($this->property_fqsen_list[(string)$fqsen]);
+    }
+
+    /**
+     * @return FullyQualifiedConstantName[]
+     * A list of constant FQSENs associated with this file
+     */
+    public function getConstantFQSENList() : array {
+        return $this->constant_fqsen_list;
+    }
+
+    /**
+     * @param FullyQualifiedConstantName[] $constant_fqsen_list
+     * The set of constant FQSENs associated with this file
+     *
+     * @return null
+     */
+    public function setConstantFQSENList(array $constant_fqsen_list) {
+        $this->constant_fqsen_list = $constant_fqsen_list;
+    }
+
+    /**
+     * @param FullyQualifiedConstantName $fqsen
+     * A constant FQSEN associated with this file
+     *
+     * @return null
+     */
+    public function addConstantFQSEN(FullyQualifiedConstantName $fqsen) {
+        $this->constant_fqsen_list[(string)$fqsen] = $fqsen;
+    }
+
+    /**
+     * Remove the constant with the given FQSEN from our
+     * list of associated constants
+     */
+    public function flushConstantWithFQSEN(FQSEN $fqsen) {
+        unset($this->constant_fqsen_list[(string)$fqsen]);
     }
 
     public function __toString() : string {

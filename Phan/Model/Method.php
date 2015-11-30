@@ -29,6 +29,7 @@ class Method extends ModelOne {
     /**
      * @param MethodElement $method
      * @param string $scope
+     * @param string $scope_name
      */
     public function __construct(
         MethodElement $method,
@@ -70,7 +71,7 @@ class Method extends ModelOne {
      * The value of the primary key for this model
      */
     public function primaryKeyValue() {
-        return (string)$this->clazz->getFQSEN();
+        return $this->scope . '|' . $this->scope_name;
     }
 
     /**
@@ -80,11 +81,11 @@ class Method extends ModelOne {
      */
     public function toRow() : array {
         return [
-            'scope_name' => $this->scope . '|' . $this->scope_name,
+            'scope_name' => $this->primaryKeyValue(),
+            'fqsen' => (string)$this->method->getFQSEN(),
             'name' => (string)$this->method->getName(),
             'type' => (string)$this->method->getUnionType(),
             'flags' => $this->method->getFlags(),
-            'fqsen' => (string)$this->method->getFQSEN(),
             'context' => base64_encode(serialize($this->method->getContext())),
             'is_deprecated' => $this->method->isDeprecated(),
             'number_of_required_parameters' =>

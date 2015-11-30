@@ -11,6 +11,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\UnionType;
 
 class File extends ModelOne {
@@ -87,6 +89,57 @@ class File extends ModelOne {
             )
         );
 
+        $schema->addAssociation(
+            new ListAssociation(
+                'FilePropertyFQSEN', Column::TYPE_STRING,
+                function (File $file, array $fqsen_string_list) {
+                    $file->getFile()->setPropertyFQSENList(
+                        array_map(function (string $fqsen_string) {
+                            if (false !== strpos($fqsen_string, '::')) {
+                                return FullyQualifiedPropertyName::fromFullyQualifiedString(
+                                    $fqsen_string
+                                );
+                            } else {
+                                return FullyQualifiedFunctionName::fromFullyQualifiedString(
+                                    $fqsen_string
+                                );
+                            }
+                        }, $fqsen_string_list)
+                    );
+                },
+                function (File $file) {
+                    return array_map(function (FQSEN $fqsen) {
+                        return (string)$fqsen;
+                    }, $file->getFile()->getPropertyFQSENList());
+                }
+            )
+        );
+
+        $schema->addAssociation(
+            new ListAssociation(
+                'FileConstantFQSEN', Column::TYPE_STRING,
+                function (File $file, array $fqsen_string_list) {
+                    $file->getFile()->setConstantFQSENList(
+                        array_map(function (string $fqsen_string) {
+                            if (false !== strpos($fqsen_string, '::')) {
+                                return FullyQualifiedConstantName::fromFullyQualifiedString(
+                                    $fqsen_string
+                                );
+                            } else {
+                                return FullyQualifiedFunctionName::fromFullyQualifiedString(
+                                    $fqsen_string
+                                );
+                            }
+                        }, $fqsen_string_list)
+                    );
+                },
+                function (File $file) {
+                    return array_map(function (FQSEN $fqsen) {
+                        return (string)$fqsen;
+                    }, $file->getFile()->getConstantFQSENList());
+                }
+            )
+        );
 
         return $schema;
     }
