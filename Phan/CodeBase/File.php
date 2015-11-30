@@ -165,4 +165,8 @@ class File {
         unset($this->class_fqsen_list[(string)$fqsen]);
     }
 
+    public function __toString() : string {
+        return $this->file_path;
+    }
+
 }

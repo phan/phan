@@ -33,6 +33,12 @@ class Schema {
     private $association_list = [];
 
     /**
+     * @var string[]
+     * A list of queries to execute at table creation time
+     */
+    private $create_query_list = [];
+
+    /**
      * Create a schema
      *
      * @param string $table_name
@@ -61,6 +67,15 @@ class Schema {
 
         assert(!empty($this->primary_key_name),
             "There must be a primary key column. None given for $table_name.");
+    }
+
+    /**
+     * @param string $query
+     * A query to execute at table creation time, such as a query
+     * to create a key.
+     */
+    public function addCreateQuery(string $query) {
+        $this->create_query_list[] = $query;
     }
 
     /**
@@ -110,6 +125,12 @@ class Schema {
 
             // Make sure the table has been created
             $database->exec($query);
+
+            // Execute each creation query to add additional
+            // table constraints, etc.
+            foreach ($this->create_query_list as $query) {
+                $database->exec($query);
+            }
 
             return 1;
         });
@@ -262,6 +283,5 @@ class Schema {
         return "DELETE FROM {$this->table_name} "
             . "WHERE $column = $value";
     }
-
 
 }

@@ -31,7 +31,7 @@ abstract class ModelOne extends Model implements ModelOneInterface {
         if (false !== strpos($select_query, 'feature')) {
             print "$select_query\n";
         }
-         */
+        */
 
         $row = $database->querySingle($select_query, true);
 
@@ -86,10 +86,16 @@ abstract class ModelOne extends Model implements ModelOneInterface {
         // Ensure that we've initialized this model
         static::schema()->initializeOnce($database);
 
-        $query =
-            static::schema()->queryForDelete($primary_key_value);
+        $query = static::schema()->queryForDelete(
+            $primary_key_value
+        );
 
         $database->exec($query);
+
+        // Delete everything associated with the key
+        foreach (static::schema()->getAssociationList() as $key => $association) {
+            $association->delete($database, $primary_key_value);
+        }
     }
 
 }

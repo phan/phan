@@ -67,9 +67,15 @@ class File extends ModelOne {
                 function (File $file, array $method_fqsen_string_list) {
                     $file->getFile()->setMethodFQSENList(
                         array_map(function (string $fqsen_string) {
-                            return FullyQualifiedMethodName::fromFullyQualifiedString(
-                                $fqsen_string
-                            );
+                            if (false !== strpos($fqsen_string, '::')) {
+                                return FullyQualifiedMethodName::fromFullyQualifiedString(
+                                    $fqsen_string
+                                );
+                            } else {
+                                return FullyQualifiedFunctionName::fromFullyQualifiedString(
+                                    $fqsen_string
+                                );
+                            }
                         }, $method_fqsen_string_list)
                     );
                 },

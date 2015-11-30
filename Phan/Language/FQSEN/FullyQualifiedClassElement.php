@@ -87,7 +87,6 @@ abstract class FullyQualifiedClassElement extends FQSEN {
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) {
-
         assert(false !== strpos($fully_qualified_string, '::'),
             "Fully qualified class element lacks '::' delimiter in $fully_qualified_string.");
 

@@ -64,4 +64,17 @@ abstract class Association {
      * @return null
      */
     abstract public function write(Database $database, ModelOne $model);
+
+    /**
+     * @param Database $database
+     * The database to read from
+     *
+     * @param string|array $pirmary_key_value
+     * The PKID of the the row to delete
+     */
+    abstract public static function delete(
+        Database $database,
+        $primary_key_value
+    );
+
 }

@@ -38,6 +38,11 @@ class ListAssociation extends Association {
             new Column('value', $item_sql_type)
         ]);
 
+        $schema->addCreateQuery(
+            "CREATE UNIQUE INDEX IF NOT EXISTS {$table_name}_source_pk_value ON `$table_name` "
+            . " (source_pk, value)"
+        );
+
         parent::__construct($schema, $read_closure, $write_closure);
     }
 
@@ -108,6 +113,27 @@ class ListAssociation extends Association {
 
             $database->exec($query);
         }
+    }
+
+    /**
+     * @param Database $database
+     * The database to read from
+     *
+     * @param string|array $pirmary_key_value
+     * The PKID of the the row to delete
+     */
+    public static function delete(
+        Database $database,
+        $primary_key_value
+    ) {
+        // Ensure that we've initialized this model
+        $this->schema->initializeOnce($database);
+
+        $query = $this->schema->queryForDeleteColumnValue(
+            'source_pk', $primary_key_value
+        );
+
+        $database->exec($query);
     }
 
 }
