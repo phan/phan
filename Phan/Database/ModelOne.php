@@ -28,11 +28,9 @@ abstract class ModelOne extends Model implements ModelOneInterface {
         $select_query =
             static::schema()->queryForSelect($primary_key_value);
 
-        /*
         if (false !== strpos($select_query, 'feature')) {
             print "$select_query\n";
         }
-        */
 
         try {
             $row = $database->querySingle($select_query, true);

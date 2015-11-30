@@ -11,6 +11,12 @@ use \Phan\Model\Property as PropertyModel;
 trait PropertyMap {
 
     /**
+     * Implementing classes must support a mechanism for
+     * getting a File by its path
+     */
+    abstract function getFileByPath(string $file_path) : File;
+
+    /**
      * @var Property[][]
      * A map from FQSEN to name to a property
      */
@@ -76,7 +82,7 @@ trait PropertyMap {
      */
     public function getProperty(FQSEN $fqsen, string $name) : Property {
         if (empty($this->property_map[(string)$fqsen][$name])) {
-            $this->property_map[(string)$scope][$name] =
+            $this->property_map[(string)$fqsen][$name] =
                 PropertyModel::read(Database::get(),
                     ((string)$fqsen). '|' . $name
                 )

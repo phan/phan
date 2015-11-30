@@ -205,6 +205,7 @@ class Schema {
         foreach ($row_map as $name => $value) {
             $column_type =
                 $this->column_def_map[$name]->sqlType();
+
             if ($column_type == 'STRING') {
                 $value_list[] =
                     '"' . SQLite3::escapeString((string)$value) . '"';
@@ -213,6 +214,7 @@ class Schema {
             } else {
                 $value_list[] = $value;
             }
+
         }
 
         return $value_list;

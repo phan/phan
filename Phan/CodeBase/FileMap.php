@@ -97,7 +97,7 @@ trait FileMap {
 
         foreach ($code_file->getPropertyFQSENList() as $fqsen) {
             $this->flushPropertyWithScopeAndName(
-                (string)$fqsen->getFullyQualifiedPropertyName(),
+                (string)$fqsen->getFullyQualifiedClassName(),
                 $fqsen->getName()
             );
 

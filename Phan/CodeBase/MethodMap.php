@@ -288,12 +288,12 @@ trait MethodMap {
         $this->method_map[$scope][$name] = $method;
 
         // For elements that aren't internal PHP classes
-        if (!$method->getContext()->isInternal()) {
+        // if (!$method->getContext()->isInternal()) {
 
             // Associate the element with the file it was found in
             $this->getFileByPath($method->getContext()->getFile())
                 ->addMethodFQSEN($method->getFQSEN());
-        }
+        // }
     }
 
     /**

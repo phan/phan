@@ -13,6 +13,12 @@ use \Phan\Model\Constant as ConstantModel;
 trait ConstantMap {
 
     /**
+     * Implementing classes must support a mechanism for
+     * getting a File by its path
+     */
+    abstract function getFileByPath(string $file_path) : File;
+
+    /**
      * @var Constant[][]
      * A map from FQSEN to name to a constant
      */

@@ -760,6 +760,7 @@ class Clazz extends TypedStructuralElement {
     ) {
         $this->memoize((string)$superclazz->getFQSEN(),
             function() use ($code_base, $superclazz) {
+
                 // Copy properties
                 foreach ($superclazz->getPropertyMap($code_base) as $property) {
                     $this->addProperty($code_base, $property);

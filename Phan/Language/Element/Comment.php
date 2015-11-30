@@ -84,13 +84,27 @@ class Comment {
         $parameter_list = [];
         $return = null;
 
+        // A legal type identifier
+        $simple_type_regex =
+            '[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*';
+
+        // A legal type identifier optionally with a []
+        // indicating that its a generic typed array
+        $generic_type_regex =
+            "$simple_type_regex(\[\])?";
+
+        // A list of one or more types delimited by the '|'
+        // character
+        $union_type_regex =
+            "$generic_type_regex(\|$generic_type_regex)*";
+
         $lines = explode("\n",$comment);
 
         foreach($lines as $line) {
 
             if(($pos=strpos($line, '@param')) !== false) {
                 $match = [];
-                if(preg_match('/@param\s+(\S+)\s*(?:(\$\S+))*/', $line, $match)) {
+                if(preg_match("/@param\s+($union_type_regex)\s*(?:(\$\S+))*/", $line, $match)) {
                     $type = null;
                     if(stripos($match[1],'\\') === 0
                         && strpos($match[1],'\\', 1) === false) {
@@ -121,13 +135,18 @@ class Comment {
                         $variable_name, $union_type, $line
                     );
 
-                    $parameter_list[] = $comment_parameter;
+                } else {
+                    $comment_parameter = new CommentParameter(
+                        '', new UnionType(), $line
+                    );
                 }
+
+                $parameter_list[] = $comment_parameter;
             }
 
             if(($pos=stripos($line, '@var')) !== false) {
                 $match = [];
-                if(preg_match('/@var\s+(\S+)\s*(?:(\S+))*/', $line, $match)) {
+                if(preg_match("/@var\s+($union_type_regex)\s*(?:(\S+))*/", $line, $match)) {
                     $type = null;
                     if(strpos($match[1], '\\') === 0 &&
                         strpos($match[1], '\\', 1) === false
@@ -149,13 +168,18 @@ class Comment {
                         $var_name, $var_type, $line
                     );
 
-                    $variable_list[] = $comment_parameter;
+                } else {
+                    $comment_parameter = new CommentParameter(
+                        '', new UnionType(), $line
+                    );
                 }
+
+                $variable_list[] = $comment_parameter;
             }
 
             if(($pos=stripos($line, '@return')) !== false) {
                 $match = [];
-                if(preg_match('/@return\s+(\S+)/', $line, $match)) {
+                if(preg_match("/@return\s+($union_type_regex+)/", $line, $match)) {
                     if(strpos($match[1],'\\')===0 && strpos($match[1],'\\',1)===false) {
                         $return = trim($match[1],'\\');
                     } else {
