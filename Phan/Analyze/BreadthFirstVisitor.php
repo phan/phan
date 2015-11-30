@@ -6,6 +6,7 @@ use \Phan\Analyze\ArgumentType;
 use \Phan\Analyze\AssignmentVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
+use \Phan\Database;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
@@ -28,6 +29,7 @@ use \Phan\Language\Type\ArrayType;
 use \Phan\Language\Type\CallableType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
+use \Phan\Model\CalledBy;
 use \ast\Node;
 
 /**
@@ -907,6 +909,14 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         Method $method,
         Node $node
     ) {
+
+        // Store the call to the method so we can track
+        // dependencies later
+        (new CalledBy(
+            (string)$method->getFQSEN(),
+            $this->context
+        ))->write(Database::get());
+
         // Create variables for any pass-by-reference
         // parameters
         $argument_list = $node->children['args'];
