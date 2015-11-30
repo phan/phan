@@ -28,17 +28,13 @@ abstract class ModelOne extends Model implements ModelOneInterface {
         $select_query =
             static::schema()->queryForSelect($primary_key_value);
 
+        /*
         if (false !== strpos($select_query, 'feature')) {
             print "$select_query\n";
         }
+         */
 
-        try {
-            $row = $database->querySingle($select_query, true);
-        } catch (\Exception $exception) {
-            print "$exception\n";
-            debug_print_backtrace(3);
-            print "$select_query\n";
-        }
+        $row = $database->querySingle($select_query, true);
 
         if (empty($row)) {
             throw new NotFoundException(
@@ -70,18 +66,14 @@ abstract class ModelOne extends Model implements ModelOneInterface {
         $insert_query =
             $this->schema()->queryForInsert($this->toRow());
 
+        /*
         if (false !== strpos($insert_query, 'feature')) {
             print "$insert_query\n";
         }
+         */
 
-        try {
-            // Write the model's data
-            $database->exec($insert_query);
-        } catch (\Exception $exception) {
-            print "$exception\n";
-            debug_print_backtrace(3);
-            print "$insert_query\n";
-        }
+        // Write the model's data
+        $database->exec($insert_query);
 
         // Write the associations
         $this->writeAssociationList($database);
