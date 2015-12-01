@@ -134,8 +134,7 @@ class Phan {
             Config::get()->ast_version
         );
 
-        $context =
-            (new Context)->withFile($file_path);
+        $context = (new Context)->withFile($file_path);
 
         if (empty($node)) {
             Log::err(
@@ -179,15 +178,14 @@ class Phan {
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $context =
-            (new Element($node))->acceptKindVisitor(
-                new ParseVisitor(
-                    $context
-                        ->withLineNumberStart($node->lineno ?? 0)
-                        ->withLineNumberEnd($node->endLineno ?? 0),
-                    $code_base
-                )
-            );
+        $context = (new Element($node))->acceptKindVisitor(
+            new ParseVisitor(
+                $context
+                    ->withLineNumberStart($node->lineno ?? 0)
+                    ->withLineNumberEnd($node->endLineno ?? 0),
+                $code_base
+            )
+        );
 
         assert(!empty($context), 'Context cannot be null');
 

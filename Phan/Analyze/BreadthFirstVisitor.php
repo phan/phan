@@ -910,12 +910,14 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         Node $node
     ) {
 
-        // Store the call to the method so we can track
-        // dependencies later
-        (new CalledBy(
-            (string)$method->getFQSEN(),
-            $this->context
-        ))->write(Database::get());
+        if (Database::isEnabled()) {
+            // Store the call to the method so we can track
+            // dependencies later
+            (new CalledBy(
+                (string)$method->getFQSEN(),
+                $this->context
+            ))->write(Database::get());
+        }
 
         // Create variables for any pass-by-reference
         // parameters
