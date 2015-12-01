@@ -85,8 +85,10 @@ class DepthFirstVisitor extends ScopeVisitor {
                 $class_fqsen
             );
 
-        } while($this->context->getFile()
-            != $clazz->getContext()->getFile());
+        } while(
+            $this->context->getFile() != $clazz->getContext()->getFile()
+            || $this->context->getLineNumberStart() != $clazz->getContext()->getLineNumberStart()
+        );
 
         return $clazz->getContext()->withClassFQSEN(
             $class_fqsen

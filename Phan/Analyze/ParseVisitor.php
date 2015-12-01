@@ -92,11 +92,6 @@ class ParseVisitor extends ScopeVisitor {
                 $this->context
             );
 
-        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-            print_r($class_fqsen);
-            exit;
-        }
-
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
         while($this->code_base->hasClassWithFQSEN($class_fqsen)) {
