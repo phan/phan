@@ -20,7 +20,7 @@ class CLI {
         global $argv;
 
         // Parse command line args
-        $opts = getopt("f:m:o:c:hqbpis:3:t::");
+        $opts = getopt("f:m:o:c:hqbrpis:3:t::");
 
         foreach($opts ?? [] as $key => $value) {
             switch($key) {
@@ -70,6 +70,9 @@ class CLI {
                 break;
             case 's':
                 Config::get()->serialized_code_base_file = $value;
+                break;
+            case 'r':
+                Config::get()->reanalyze_file_list = true;
                 break;
             default:
                 $this->usage("Unknown option '-$key'"); break;

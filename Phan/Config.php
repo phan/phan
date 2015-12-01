@@ -53,6 +53,11 @@ class Config {
         // done. Only changed files will get analyzed if
         // the file is read
         'serialized_code_base_file' => null,
+
+        // Set to true in order to force a re-analysis of
+        // any file passed in via the CLI even if our
+        // internal state is up-to-date
+        'reanalyze_file_list' => false,
     ];
 
     /**

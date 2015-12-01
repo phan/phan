@@ -56,7 +56,8 @@ class Phan {
             CLI::progress('parse',  ($i+1)/$file_count);
 
             // Check to see if we need to re-parse this file
-            if (!$code_base->isParseUpToDateForFile($file_path)) {
+            if (Config::get()->reanalyze_file_list
+                || !$code_base->isParseUpToDateForFile($file_path)) {
 
                 // Save this to the set of files to analyze
                 $analyze_file_path_list[] = $file_path;
