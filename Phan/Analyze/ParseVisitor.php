@@ -75,7 +75,16 @@ class ParseVisitor extends ScopeVisitor {
      */
     public function visitClass(Node $node) : Context {
 
-        $class_name = $node->name;
+        if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
+            $class_name =
+                AST::unqualifiedNameForAnonymousClassNode(
+                    $node,
+                    $this->context
+                );
+        } else {
+            $class_name = $node->name;
+        }
+
 
         // This happens now and then and I have no idea
         // why.
@@ -103,9 +112,9 @@ class ParseVisitor extends ScopeVisitor {
             $this->context
                 ->withLineNumberStart($node->lineno)
                 ->withLineNumberEnd($node->endLineno ?: -1),
-            $node->name,
+            $class_name,
             UnionType::fromStringInContext(
-                $node->name,
+                $class_name,
                 $this->context
             ),
             $node->flags

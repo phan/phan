@@ -111,5 +111,4 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement {
             $property_name
         );
     }
-
 }

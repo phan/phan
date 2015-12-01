@@ -59,7 +59,18 @@ class DepthFirstVisitor extends ScopeVisitor {
      * parsing the node
      */
     public function visitClass(Node $node) : Context {
-        $class_name = $node->name;
+
+        if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
+            $class_name =
+                AST::unqualifiedNameForAnonymousClassNode(
+                    $node,
+                    $this->context
+                );
+        } else {
+            $class_name = $node->name;
+        }
+
+        assert(!empty($class_name), "Class name cannot be empty");
 
         $alternate_id = 0;
 

@@ -645,4 +645,24 @@ class AST {
         return $property;
     }
 
+    /**
+     * @return string
+     * A unique and stable name for an anonymous class
+     */
+    public static function unqualifiedNameForAnonymousClassNode(
+        Node $node,
+        Context $context
+    ) : string {
+        assert((bool)($node->flags & \ast\flags\CLASS_ANONYMOUS),
+            "Node must be an anonymous class node");
+
+        $class_name = 'anonymous_class_'
+            . substr(md5(implode('|', [
+                $context->getFile(),
+                $context->getLineNumberStart()
+            ])), 0, 8);
+
+        return $class_name;
+    }
+
 }
