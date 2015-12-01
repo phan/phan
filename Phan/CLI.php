@@ -137,6 +137,10 @@ Usage: {$argv[0]} [options] [files...]
   -o <filename>   Output filename
   -p              Show progress bar
   -t              Emit trace IDs on messages (for grouping error types)
+  -s <filename>   Safe state to the given file and read from it to speed up
+                  future executions
+  -r              Force a re-analysis of any files passed in even if they haven't
+                  changed since the last analysis
   -h			  This help
 
 EOB;
