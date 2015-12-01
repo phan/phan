@@ -119,7 +119,7 @@ class ClassNameValidationVisitor
             if (!UnionType::fromStringInContext(
                 $this->class_name,
                 $this->context
-            )::isNativeType()) {
+            )->isNativeType()) {
                 Log::err(
                     Log::ETYPE,
                     "Cannot instantiate interface {$this->class_name}",
