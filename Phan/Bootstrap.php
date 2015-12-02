@@ -12,7 +12,15 @@ define('CLASS_DIR', __DIR__ . '/../');
 set_include_path(get_include_path().PATH_SEPARATOR.CLASS_DIR);
 
 // Use the composer autoloader
-require_once(__DIR__.'/../vendor/autoload.php');
+foreach ([
+    __DIR__.'/../vendor/autoload.php',          // autoloader is in this project
+    __DIR__.'/../../../../vendor/autoload.php', // autoloader is in parent project
+    ] as $file) {
+    if (file_exists($file)) {
+        require_once($file);
+        break;
+    }
+}
 
 // Customize assertions
 assert_options(ASSERT_ACTIVE,   true);
