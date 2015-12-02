@@ -37,7 +37,7 @@ trait ParentClassExists {
                 $fqsen,
                 $code_base,
                 $clazz,
-                "Trying to implement unknown class %s"
+                "Trying to implement unknown interface %s"
             );
         }
 
@@ -46,7 +46,7 @@ trait ParentClassExists {
                 $fqsen,
                 $code_base,
                 $clazz,
-                "Trying to use unknown class %s"
+                "Trying to use unknown trait %s"
             );
         }
     }
