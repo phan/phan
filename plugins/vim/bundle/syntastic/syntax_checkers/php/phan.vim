@@ -32,7 +32,7 @@ endfunction
 
 function! SyntaxCheckers_php_phan_GetLocList() dict
     let makeprg = self.makeprgBuild({
-                \ 'args': '-q -b -i -c JobWorker -s phan.sqlite',
+                \ 'args': '-r -q -b -i -c JobWorker -s `git rev-parse --show-toplevel`/phan.sqlite',
                 \ 'args_after': '' })
 
     let errorformat = '%f:%l %m'
