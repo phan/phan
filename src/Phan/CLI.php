@@ -141,7 +141,7 @@ Usage: {$argv[0]} [options] [files...]
                   future executions
   -r              Force a re-analysis of any files passed in even if they haven't
                   changed since the last analysis
-  -h			  This help
+  -h              This help
 
 EOB;
         exit;
