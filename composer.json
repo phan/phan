@@ -1,5 +1,5 @@
 {
-    "name": "morria/phan",
+    "name": "etsy/phan",
     "description": "A static analyzer for PHP",
     "keywords": ["php", "static", "analyzer"],
     "type": "project",
