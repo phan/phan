@@ -20,7 +20,7 @@ class CLI {
         global $argv;
 
         // Parse command line args
-        $opts = getopt("f:m:o:c:hqbrpis:3:t::");
+        $opts = getopt("f:m:o:c:haqbrpis:3:t::");
 
         foreach($opts ?? [] as $key => $value) {
             switch($key) {
@@ -54,6 +54,9 @@ class CLI {
                 break;
             case 'p':
                 Config::get()->progress_bar = true;
+                break;
+            case 'a':
+                Config::get()->dump_ast = true;
                 break;
             case 'o':
                 Log::setFilename($value);
@@ -170,7 +173,7 @@ EOB;
         // Bound the percentage to [0, 1]
         $p = min(max($p, 1.0), 0.0);
 
-        if (!Config::get()->progress_bar) {
+        if (!Config::get()->progress_bar || Config::get()-dump_ast) {
             return;
         }
 

@@ -75,6 +75,12 @@ class Phan {
             }
         }
 
+        // Don't continue on to analysis if the user has
+        // chosen to just dump the AST
+        if (Config::get()->dump_ast) {
+            exit;
+        }
+
         // Take a pass over all classes verifying various
         // states now that we have the whole state in
         // memory
@@ -136,6 +142,14 @@ class Phan {
         );
 
         $context = (new Context)->withFile($file_path);
+
+        if (Config::get()->dump_ast) {
+            echo $file_path . "\n"
+                . str_repeat("\u{00AF}", strlen($file_path))
+                . "\n";
+            Debug::printNode($node);
+            return $context;
+        }
 
         if (empty($node)) {
             Log::err(

@@ -58,6 +58,10 @@ class Config {
         // any file passed in via the CLI even if our
         // internal state is up-to-date
         'reanalyze_file_list' => false,
+
+        // If set to true, we'll dump the AST instead of
+        // analyzing files
+        'dump_ast' => false,
     ];
 
     /**
