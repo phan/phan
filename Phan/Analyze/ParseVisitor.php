@@ -252,7 +252,7 @@ class ParseVisitor extends ScopeVisitor {
         }
 
         $method = Method::fromNode(
-            $this->context,
+            clone($this->context),
             $this->code_base,
             $node
         );

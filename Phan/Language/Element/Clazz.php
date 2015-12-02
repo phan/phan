@@ -234,7 +234,7 @@ class Clazz extends TypedStructuralElement {
      *
      * @return null
      */
-    public function setParentClassFQSEN(FQSEN $fqsen) {
+    public function setParentClassFQSEN(FullyQualifiedClassName $fqsen) {
         $this->parent_class_fqsen = $fqsen;
 
         // Add the parent to the union type of this
