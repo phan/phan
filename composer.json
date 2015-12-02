@@ -21,7 +21,7 @@
         "phpunit/phpunit": "5.0.*"
     },
     "autoload": {
-        "psr-4": {"Phan\\": "src/"}
+        "psr-4": {"Phan\\": "src/Phan"}
     },
     "bin": ["phan"]
 }
