@@ -1,33 +1,18 @@
-# PHAN
+Phan is a static analyzer for PHP.
 
-**Phan** is a static analyzer for PHP.
+# Getting it running
 
-It requires PHP 7 with the [php-ast][phpast] extension loaded. The code you
-analyze with it can be written for any version of PHP, of course.
+Phan requires PHP 7+ with the [php-ast][phpast] extension loaded. The code you
+analyze can be written for any version of PHP.
 
+To get phan running;
 
-## Features
+1. Clone the repo
+2. Run `composer install` to load dependencies
+3. Run `./test` to run the test suite
+4. Test phan on itself by running `./phan Phan/*.php Phan/**/*.php`
 
-* Checks for calls and instantiations of undeclared functions, methods, closures and classes
-* Checks types of all arguments and return values to/from functions, closures and methods
-* Supports `@param`, `@return`, `@var` and `@deprecated` [phpdoc][doctypes] comments including union and void/null types
-* Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
-* Undefined variable tracking
-* Supports namespaces, traits and variadics
-* Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
-
-See the [tests][tests] directory for some examples of the various checks.
-
-## Planned
-
-* JSON, csv and possibly other output formats
-* Perhaps a genlist feature that will automatically figure out dependency files starting
-  from a single entry point file
-
-## Getting it working
-
-If you already have PHP 7 somewhere, it should be trivial. If not, you could grab
-my [php7dev][php7dev] Vagrant image or one of the many Docker builds out there.
+If you don't have a version of PHP 7 installed, you can grab a [php7dev][php7dev] Vagrant image or one of the many Docker builds out there.
 
 Then compile [php-ast][phpast]. Something along these lines should do it:
 
@@ -42,6 +27,20 @@ make install
 And add `extension=ast.so` to your `php.ini` file. Check that it is there with `php -m`.
 If it isn't you probably added it to the wrong `php.ini` file. Check `php --ini` to see
 where it is looking.
+
+
+## Features
+
+* Checks for calls and instantiations of undeclared functions, methods, closures and classes
+* Checks types of all arguments and return values to/from functions, closures and methods
+* Supports `@param`, `@return`, `@var` and `@deprecated` [phpdoc][doctypes] comments including union and void/null types
+* Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
+* Undefined variable tracking
+* Supports namespaces, traits and variadics
+* Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
+
+See the [tests][tests] directory for some examples of the various checks.
+
 
 ## Usage
 
@@ -71,8 +70,11 @@ test3.php:14 TypeError arg#1(separator) is int but explode() takes string
 test3.php:14 TypeError arg#2(str) is int but explode() takes string
 ```
 
-To make sure it works you can run `phan` on itself with `phan -f filelist.txt` using
-`filelist.txt` provided here. But a better way to check is to run `./run-tests.php`.
+You can see the full list of command line options by running `phan -h`.
+
+To make sure it works you can run `phan` on itself with `phan -f Phan/*.php Phan/**/*.php`.
+You can also run tests by running `./test` which will execute the tests within the `tests/`
+directory.
 
 ## Generating a file list
 
@@ -91,11 +93,10 @@ various entry points, then all your library files containing your classes.
 
 ## Bugs
 
-There are plenty of them. Especially related to assumptions made during variable tracking.
-
-When you find one, please take the time to create a tiny reproducing code snippet that illustrates
+When you find an issue, please take the time to create a tiny reproducing code snippet that illustrates
 the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to
-[tests][tests] then `./run-tests.php` and send me a PR with your fix and test.
+[tests][tests] then `./test` and send a PR with your fix and test. Alternatively, you can open an Issue with
+details.
 
 ## More on phpdoc types
 
