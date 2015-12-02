@@ -284,25 +284,25 @@ class AST {
         Context $context,
         Node $node
     ) {
-        if(!($node->children['expr'] instanceof \node\Node)) {
+        if(!($node->children['expr'] instanceof Node)) {
             return;
         }
 
-        if($node->children['expr']->kind !== \node\node_DIM) {
+        if($node->children['expr']->kind !== \ast\AST_DIM) {
             return;
         }
 
         $temp = $node->children['expr']->children['expr'];
         $lnode = $temp;
-        if(!($temp->kind == \node\node_PROP
-            || $temp->kind == \node\node_STATIC_PROP
+        if(!($temp->kind == \ast\AST_PROP
+            || $temp->kind == \ast\AST_STATIC_PROP
         )) {
             return;
         }
 
-        while($temp instanceof \node\Node
-            && ($temp->kind == \node\node_PROP
-            || $temp->kind == \node\node_STATIC_PROP)
+        while($temp instanceof Node
+            && ($temp->kind == \ast\AST_PROP
+            || $temp->kind == \ast\AST_STATIC_PROP)
         ) {
             $lnode = $temp;
 
@@ -311,14 +311,14 @@ class AST {
             $temp = array_values($temp->children)[0];
         }
 
-        if(!($temp instanceof \node\Node)) {
+        if(!($temp instanceof Node)) {
             return;
         }
 
-        if(($lnode->children['prop'] instanceof \node\Node
-            && $lnode->children['prop']->kind == \node\node_VAR
-            ) && ($temp->kind == \node\node_VAR
-            || $temp->kind == \node\node_NAME)
+        if(($lnode->children['prop'] instanceof Node
+            && $lnode->children['prop']->kind == \ast\AST_VAR
+            ) && ($temp->kind == \ast\AST_VAR
+            || $temp->kind == \ast\AST_NAME)
         ) {
             $ftemp = new \SplFileObject($context->getFile());
             $ftemp->seek($node->lineno-1);
