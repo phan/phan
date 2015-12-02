@@ -1,0 +1,3 @@
+%s:3 UndefError Trying to inherit from unknown class \a
+%s:6 UndefError Trying to implement unknown class \a
+%s:9 UndefError Trying to use unknown class \a

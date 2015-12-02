@@ -27,7 +27,8 @@ trait ParentClassExists {
             self::fqsenExistsForClass(
                 $clazz->getParentClassFQSEN(),
                 $code_base,
-                $clazz
+                $clazz,
+                "Trying to inherit from unknown class %s"
             );
         }
 
@@ -35,7 +36,8 @@ trait ParentClassExists {
             self::fqsenExistsForClass(
                 $fqsen,
                 $code_base,
-                $clazz
+                $clazz,
+                "Trying to implement unknown class %s"
             );
         }
 
@@ -43,7 +45,8 @@ trait ParentClassExists {
             self::fqsenExistsForClass(
                 $fqsen,
                 $code_base,
-                $clazz
+                $clazz,
+                "Trying to use unknown class %s"
             );
         }
     }
@@ -55,13 +58,14 @@ trait ParentClassExists {
     private static function fqsenExistsForClass(
         FQSEN $fqsen,
         CodeBase $code_base,
-        Clazz $clazz
+        Clazz $clazz,
+        string $message_template
     ) : bool {
 
         if (!$code_base->hasClassWithFQSEN($fqsen)) {
             Log::err(
                 Log::EUNDEF,
-                "Trying to inherit from unknown class {$fqsen}",
+                sprintf($message_template, $fqsen),
                 $clazz->getContext()->getFile(),
                 $clazz->getContext()->getLineNumberStart()
             );
