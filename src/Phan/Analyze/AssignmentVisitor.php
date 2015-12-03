@@ -47,20 +47,46 @@ class AssignmentVisitor extends KindVisitorImplementation {
     private $right_type;
 
     /**
+     * @var bool
+     * True if this assignment is to an array parameter such as
+     * in `$foo[3] = 42`. We need to know this in order to decide
+     * if we're replacing the union type or if we're adding a
+     * type to the union type.
+     */
+    private $is_dim_assignment = false;
+
+    /**
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
+     *
+     * @param CodeBase $code_base
+     * The global code base we're operating within
+     *
+     * @param Node $assignment_node
+     * The AST node containing the assignment
+     *
+     * @param UnionType $right_type
+     * The type of the element on the right side of the assignment
+     *
+     * @param bool $is_dim_assignment
+     * True if this assignment is to an array parameter such as
+     * in `$foo[3] = 42`. We need to know this in order to decide
+     * if we're replacing the union type or if we're adding a
+     * type to the union type.
      */
     public function __construct(
         Context $context,
         CodeBase $code_base,
         Node $assignment_node,
-        UnionType $right_type
+        UnionType $right_type,
+        bool $is_dim_assignment = false
     ) {
         $this->context = $context;
         $this->code_base = $code_base;
         $this->assignment_node = $assignment_node;
         $this->right_type = $right_type;
+        $this->is_dim_assignment = $is_dim_assignment;
     }
 
     /**
@@ -170,7 +196,8 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     $this->context,
                     $this->code_base,
                     $node,
-                    $right_type
+                    $right_type,
+                    true
                 )
             );
 
@@ -313,11 +340,24 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     $variable_name
                 );
 
-            if ($variable instanceof Parameter) {
+            // If we're assigning to an array element then we don't
+            // know what the constitutation of the parameter is
+            // outside of the scope of this assignment, so we add to
+            // its union type rather than replace it.
+            if ($this->is_dim_assignment) {
                 $variable->getUnionType()->addUnionType(
                     $this->right_type
                 );
+
             } else {
+                // If the variable isn't a pass-by-reference paramter
+                // we clone it so as to not disturb its previous types
+                // as we replace it.
+                if (!(($variable instanceof Parameter)
+                    && $variable->isPassByReference()
+                )) {
+                    $variable = clone($variable);
+                }
                 $variable->setUnionType($this->right_type);
             }
 
