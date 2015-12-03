@@ -4,7 +4,11 @@ namespace Phan\Language\FQSEN;
 use \Phan\Language\FQSEN;
 
 /**
- * A Fully-Qualified Global Structural Element
+ * This trait allows an FQSEN to have an alternate ID for when
+ * there are multiple colliding definitions of the same name.
+ * An alternate ID will be appended to a name such as in
+ * `\Name\Space\class,1` or `\Name\Space\class::function,1`
+ * or when composed as `\Name\Space\class,1::function,1`.
  */
 trait Alternatives {
 
