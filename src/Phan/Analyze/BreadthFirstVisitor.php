@@ -848,6 +848,8 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             $temp = $node->children['expr']->children['name'];
             $depth = 1;
             while($temp instanceof Node) {
+                assert(isset($temp->children['name']),
+                    "Expected to find a name at {$this->context}, something else found.");
                 $temp = $temp->children['name'];
                 $depth++;
             }
