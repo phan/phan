@@ -848,7 +848,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             $temp = $node->children['expr']->children['name'];
             $depth = 1;
             while($temp instanceof Node) {
-                $temp = $temp->children[0];
+                $temp = $temp->children['name'];
                 $depth++;
             }
             $dollars = str_repeat('$',$depth);
