@@ -7,6 +7,9 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
+assert(extension_loaded('ast'),
+    "The php-ast extension must be loaded in order for Phan to work. See https://github.com/etsy/phan#getting-it-running for more details.");
+
 require_once(__DIR__.'/src/Phan/Bootstrap.php');
 
 use \Phan\CLI;

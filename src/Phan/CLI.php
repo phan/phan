@@ -101,7 +101,7 @@ class CLI {
         }
 
         if(empty($this->file_list) && count($argv) < 2) {
-            Log::err(Log::EFATAL, "No files to analyze");
+            // Log::err(Log::EFATAL, "No files to analyze");
         }
 
         foreach($argv as $arg) if($arg[0]=='-') {

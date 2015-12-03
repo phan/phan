@@ -14,6 +14,7 @@ use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{
     Comment,
+    Parameter,
     Property,
     Variable
 };
@@ -312,7 +313,13 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     $variable_name
                 );
 
-            $variable->setUnionType($this->right_type);
+            if ($variable instanceof Parameter) {
+                $variable->getUnionType()->addUnionType(
+                    $this->right_type
+                );
+            } else {
+                $variable->setUnionType($this->right_type);
+            }
 
             $this->context->addScopeVariable(
                 $variable
