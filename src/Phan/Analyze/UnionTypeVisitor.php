@@ -462,7 +462,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return new UnionType();
         } catch (NodeException $exception) {
             $class_name =
-                $node->children['class']->children['name'];
+                $node->children['class']->children['name'] ?? '';
 
             Log::err(
                 Log::EUNDEF,
