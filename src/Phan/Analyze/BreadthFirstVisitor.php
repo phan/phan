@@ -608,7 +608,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                     return $this->context;
                 }
 
-                $closure_fqsen = $type->asFQSEN();
+
+                $closure_fqsen =
+                    FullyQualifiedFunctionName::fromFullyQualifiedString(
+                        (string)$type->asFQSEN()
+                    );
 
                 if ($this->code_base->hasMethod(
                     $closure_fqsen
