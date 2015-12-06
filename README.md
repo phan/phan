@@ -72,7 +72,7 @@ test3.php:14 TypeError arg#2(str) is int but explode() takes string
 
 You can see the full list of command line options by running `phan -h`.
 
-To make sure it works you can run `phan` on itself with `phan -f src/**/*.php`.
+To make sure it works you can run `phan` on itself with `phan src/**/*.php src/**/**/*.php`.
 You can also run tests by running `./test` which will execute the tests within the `tests/`
 directory.
 
