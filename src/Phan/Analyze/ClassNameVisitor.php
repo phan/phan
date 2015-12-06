@@ -159,11 +159,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
      * The class name represented by the given call
      */
     public function visitInstanceOf(Node $node) : string {
-        if($node->children[1]->kind == \ast\AST_NAME) {
-            return AST::qualifiedName($this->context, $node);
-        }
-
-        return '';
+        return $this->visitNew($node);
     }
 
     /**

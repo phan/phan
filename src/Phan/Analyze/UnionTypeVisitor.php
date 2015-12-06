@@ -249,6 +249,26 @@ class UnionTypeVisitor extends KindVisitorImplementation {
     }
 
     /**
+     * Visit a node with kind `\ast\AST_INSTANCEOF`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitInstanceOf(Node $node) : UnionType {
+        $class_name = AST::classNameFromNode(
+            $this->context,
+            $this->code_base,
+            $node
+        );
+        return BoolType::instance()->asUnionType();
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_DIM`
      *
      * @param Node $node
