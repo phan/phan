@@ -171,8 +171,9 @@ class Log {
                         array_values(array_map(function($e) {
                             return [
                                 'type' => 'issue',
-                                'description' => $e['msg'],
-                                'categories' => [self::ERRS[$e['etype']]],
+                                'description' =>
+                                    self::ERRS[$e['etype']] . ' ' . $e['msg'],
+                                'categories' => ['Bug Risk'],
                                 'location' => [
                                     'path' => $e['file'],
                                     'lines' => [
