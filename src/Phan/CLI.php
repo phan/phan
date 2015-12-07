@@ -36,7 +36,7 @@ class CLI {
                 }
                 break;
             case 'm':
-                if(!in_array($value, ['verbose','short','json','csv'])) {
+                if(!in_array($value, ['codeclimate'])) {
                     $this->usage("Unknown output mode: $value");
                 }
                 Log::setOutputMode($value);

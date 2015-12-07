@@ -10,7 +10,7 @@ use \Phan\Config;
  */
 class Log {
 	protected static $instance;
-	protected $output_mode  = 'verbose'; // 'json', 'csv', ?
+	protected $output_mode  = 'text'; // 'text, 'codeclimate'
 	protected $output_order = 'chrono';  // 'type', 'file' ?
 	protected $output_filename = '';
 	protected $output_mask = -1;
@@ -156,27 +156,34 @@ class Log {
         }
 
 		switch($log->output_mode) {
-			case 'verbose':
-				if(!empty($summary)) {
-					$t = round($summary['time'],2);
-					$out .= "Files scanned: {$summary['total_files']}\n";
-					$out .= "Time:		{$t}s\n";
-					$out .= "Classes:	{$summary['classes']}\n";
-					$out .= "Methods:	{$summary['methods']}\n";
-					$out .= "Functions:	{$summary['functions']}\n";
-					$out .= "Closures:	{$summary['closures']}\n";
-					$out .= "Traits:		{$summary['traits']}\n";
-					$out .= "Conditionals:	{$summary['conditionals']}\n";
-					$out .= "Issues found:	".count($log->msgs)."\n\n";
-                    $print_closure($out);
-				}
-				// Fall-through
-			case 'short':
+			case 'text':
 				foreach($log->msgs as $e) {
-					$print_closure("{$e['file']}:{$e['lineno']} ".self::ERRS[$e['etype']]." {$e['msg']}\n");
+                    $print_closure(
+                        "{$e['file']}:{$e['lineno']} "
+                        . self::ERRS[$e['etype']]
+                        . " {$e['msg']}\n"
+                    );
 				}
 				break;
-			// TODO: json and csv
+            case 'codeclimate':
+                $print_closure(
+                    json_encode(
+                        array_values(array_map(function($e) {
+                            return [
+                                'type' => 'issue',
+                                'description' => $e['msg'],
+                                'categories' => [self::ERRS[$e['etype']]],
+                                'location' => [
+                                    'path' => $e['file'],
+                                    'lines' => [
+                                        'begin' => $e['lineno'],
+                                    ],
+                                ],
+                            ];
+                        }, $log->msgs)
+                    ))
+                );
+                break;
 		}
 
         $log->msgs = [];
