@@ -185,6 +185,7 @@ class Comment {
                     } else {
                         $return = $match[1];
                     }
+
                 }
             }
 
@@ -230,7 +231,7 @@ class Comment {
      * directive specifying a type.
      */
     public function hasReturnUnionType() : bool {
-        return !empty($this->return);
+        return !empty($this->return) && !$this->return->isEmpty();
     }
 
     /**

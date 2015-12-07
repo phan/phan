@@ -413,7 +413,8 @@ class Type {
      */
     public function isSelfType() : bool {
         return in_array((string)$this, [
-            'static', 'self', '$this'
+            'static', 'self', '$this',
+            '\static', '\self', '\$this'
         ]);
     }
 

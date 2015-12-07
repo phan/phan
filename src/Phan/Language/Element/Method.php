@@ -387,10 +387,13 @@ class Method extends TypedStructuralElement {
                 // point, but fill it in regardless. It will be partially
                 // correct
                 if ($context->hasClassFQSEN()) {
-                    $union_type =
-                        $union_type->addUnionType(
-                            $context->getClassFQSEN()->asUnionType()
-                        );
+                    // n.b.: We're leaving the reference to self, static
+                    //       or $this in the type because I'm guessing
+                    //       it doesn't really matter. Apologies if it
+                    //       ends up being an issue.
+                    $union_type->addUnionType(
+                        $context->getClassFQSEN()->asUnionType()
+                    );
                 }
             }
 
