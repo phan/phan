@@ -136,7 +136,7 @@ Usage: {$argv[0]} [options] [files...]
   -b              Check for potential PHP 5 -> PHP 7 BC issues
   -i              Ignore undeclared functions and classes
   -c              Comma-separated list of classes that require parent::__construct() to be called
-  -m <mode>       Output mode: verbose, short, json, csv
+  -m <mode>       Output mode: text, codeclimate
   -o <filename>   Output filename
   -p              Show progress bar
   -t              Emit trace IDs on messages (for grouping error types)
