@@ -114,7 +114,7 @@ class Type {
 
                 // If this looks like a generic type string, explicitly
                 // make it as such
-                if (self::isGenericString($type_name)
+                if (self::isGenericArrayString($type_name)
                     && ($pos = strpos($type_name, '[]')) !== false
                 ) {
                     return new GenericArrayType(new Type(
@@ -326,22 +326,6 @@ class Type {
     }
 
     /**
-     * @return Type
-     * Get a new type which is the generic array version of
-     * this type. For instance, 'int' will produce 'int[]'.
-     */
-    public function asGenericType() : Type {
-        if ($this->name == 'array'
-            || $this->name == 'mixed'
-            || strpos($this->name, '[]') !== false
-        ) {
-            return ArrayType::instance();
-        }
-
-        return new \Phan\Language\Type\GenericArrayType($this);
-    }
-
-    /**
      * @return string
      * The name associated with this type
      */
@@ -441,8 +425,8 @@ class Type {
      * True if this is a generic type such as 'int[]' or
      * 'string[]'.
      */
-    public function isGeneric() : bool {
-        return self::isGenericString($this->name);
+    public function isGenericArray() : bool {
+        return self::isGenericArrayString($this->name);
     }
 
     /**
@@ -453,7 +437,7 @@ class Type {
      * True if this is a generic type such as 'int[]' or
      * 'string[]'.
      */
-    private static function isGenericString(string $type_name) : bool {
+    private static function isGenericArrayString(string $type_name) : bool {
         if (in_array($type_name, ['[]', 'array'])) {
             return false;
         }
@@ -465,7 +449,10 @@ class Type {
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
      */
-    public function asNonGenericType() : Type {
+    public function genericArrayElementType() : Type {
+        assert($this->isGenericArray(),
+            "Cannot call genericArrayElementType on non-generic array");
+
         if (($pos = strpos($this->name, '[]')) !== false) {
             assert($this->name !== '[]' && $this->name !== 'array',
                 "Non-generic type '{$this->name}' requested to be non-generic");
@@ -478,6 +465,23 @@ class Type {
 
         return $this;
     }
+
+    /**
+     * @return Type
+     * Get a new type which is the generic array version of
+     * this type. For instance, 'int' will produce 'int[]'.
+     */
+    public function asGenericArrayType() : Type {
+        if ($this->name == 'array'
+            || $this->name == 'mixed'
+            || strpos($this->name, '[]') !== false
+        ) {
+            return ArrayType::instance();
+        }
+
+        return new \Phan\Language\Type\GenericArrayType($this);
+    }
+
 
     /**
      * @param CodeBase
@@ -509,8 +513,8 @@ class Type {
 
             $union_type = $this->asUnionType();
 
-            $class_fqsen = $this->isGeneric()
-                ? $this->asNonGenericType()->asFQSEN()
+            $class_fqsen = $this->isGenericArray()
+                ? $this->genericArrayElementType()->asFQSEN()
                 : $this->asFQSEN();
 
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
@@ -520,8 +524,8 @@ class Type {
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
             $union_type->addUnionType(
-                $this->isGeneric()
-                    ?  $clazz->getUnionType()->asGenericTypes()
+                $this->isGenericArray()
+                    ?  $clazz->getUnionType()->asGenericArrayTypes()
                     : $clazz->getUnionType()
             );
 

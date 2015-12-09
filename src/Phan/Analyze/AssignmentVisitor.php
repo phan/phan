@@ -118,7 +118,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
     public function visitList(Node $node) : Context {
         // Figure out the type of elements in the list
         $element_type =
-            $this->right_type->asNonGenericTypes();
+            $this->right_type->genericArrayElementTypes();
 
         foreach($node->children ?? [] as $child_node) {
             // Some times folks like to pass a null to
@@ -159,7 +159,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
 
         // Make the right type a generic (i.e. int -> int[])
         $right_type =
-            $this->right_type->asGenericTypes();
+            $this->right_type->asGenericArrayTypes();
 
         if ($node->children['expr']->kind == \ast\AST_VAR) {
             $variable_name = AST::variableName($node);

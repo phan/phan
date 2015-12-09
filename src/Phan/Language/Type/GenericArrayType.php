@@ -21,7 +21,7 @@ class GenericArrayType extends ArrayType {
         $this->element_type = $type;
     }
 
-    public function isGeneric() : bool {
+    public function isGenericArray() : bool {
         return true;
     }
 
@@ -30,7 +30,7 @@ class GenericArrayType extends ArrayType {
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
      */
-    public function asNonGenericType() : Type {
+    public function genericArrayElementType() : Type {
         return $this->element_type;
     }
 

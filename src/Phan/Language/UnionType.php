@@ -503,35 +503,6 @@ class UnionType {
     }
 
     /**
-     * Takes "a|b[]|c|d[]|e" and returns "b|d"
-     *
-     * @return UnionType
-     * The subset of types in this
-     */
-    public function asNonGenericTypes() : UnionType {
-        // If array is in there, then it can be any type
-        // Same for |mixed|
-        if ($this->hasType(ArrayType::instance())
-            || $this->hasType(MixedType::instance())
-        ) {
-            return MixedType::instance()->asUnionType();
-        }
-
-        if ($this->hasType(ArrayType::instance())) {
-            return NullType::instance()->toUnionType();
-        }
-
-        return new UnionType(array_filter(array_map(
-            function(Type $type) {
-                if (!$type->isGeneric()) {
-                    return null;
-                }
-                return $type->asNonGenericType();
-            }, $this->getTypeList()))
-        );
-    }
-
-    /**
      * @return UnionType
      * Get the subset of types which are not native
      */
@@ -552,10 +523,10 @@ class UnionType {
      * @see \Phan\Deprecated\Pass2::nongenerics
      * Formerly `function nongenerics`
      */
-    public function nonGenericTypes() : UnionType {
+    public function nonGenericArrayTypes() : UnionType {
         return new UnionType(
             array_filter($this->getTypeList(), function(Type $type) {
-                return !$type->isGeneric();
+                return !$type->isGenericArray();
             })
         );
     }
@@ -564,15 +535,44 @@ class UnionType {
      * @return bool
      * True if this is exclusively generic types
      */
-    public function isGeneric() : bool {
+    public function isGenericArray() : bool {
         if ($this->isEmpty()) {
             return false;
         }
 
         return array_reduce($this->getTypeList(),
             function (bool $carry, Type $type) : bool {
-                return ($carry && $type->isGeneric());
+                return ($carry && $type->isGenericArray());
             }, true);
+    }
+
+    /**
+     * Takes "a|b[]|c|d[]|e" and returns "b|d"
+     *
+     * @return UnionType
+     * The subset of types in this
+     */
+    public function genericArrayElementTypes() : UnionType {
+        // If array is in there, then it can be any type
+        // Same for mixed
+        if ($this->hasType(ArrayType::instance())
+            || $this->hasType(MixedType::instance())
+        ) {
+            return MixedType::instance()->asUnionType();
+        }
+
+        if ($this->hasType(ArrayType::instance())) {
+            return NullType::instance()->toUnionType();
+        }
+
+        return new UnionType(array_filter(array_map(
+            function(Type $type) {
+                if (!$type->isGenericArray()) {
+                    return null;
+                }
+                return $type->genericArrayElementType();
+            }, $this->getTypeList()))
+        );
     }
 
     /**
@@ -581,10 +581,10 @@ class UnionType {
      * the generic array version of this type. For instance,
      * 'int|float' will produce 'int[]|float[]'.
      */
-    public function asGenericTypes() : UnionType {
+    public function asGenericArrayTypes() : UnionType {
         return new UnionType(
             array_map(function (Type $type) : Type {
-                return $type->asGenericType();
+                return $type->asGenericArrayType();
             }, $this->getTypeList())
         );
     }

@@ -114,7 +114,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 array_values(array_unique($element_types));
 
             if(count($element_types) == 1) {
-                return $element_types[0]->asGenericTypes();
+                return $element_types[0]->asGenericArrayTypes();
             }
         }
 
@@ -294,7 +294,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         // Figure out what the types of accessed array
         // elements would be
         $generic_types =
-            $union_type->asNonGenericTypes();
+            $union_type->genericArrayElementTypes();
 
         // If we have generics, we're all set
         if(!$generic_types->isEmpty()) {

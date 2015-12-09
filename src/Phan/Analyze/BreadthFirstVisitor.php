@@ -377,7 +377,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         );
 
         if ($type->isType(ArrayType::instance())
-            || $type->isGeneric()
+            || $type->isGenericArray()
         ) {
             Log::err(
                 Log::ETYPE,

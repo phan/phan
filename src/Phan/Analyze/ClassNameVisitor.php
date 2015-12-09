@@ -208,7 +208,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
 
             // Hack - loop through the possible types of the var and assume
             // first found class is correct
-            foreach($variable->getUnionType()->nonGenericTypes()->getTypeList() as $type) {
+            foreach($variable->getUnionType()->nonGenericArrayTypes()->getTypeList() as $type) {
                 $child_class_fqsen =
                     FullyQualifiedClassName::fromStringInContext(
                         (string)$type,
@@ -286,7 +286,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
                     }
 
                     // Find the first viable property type
-                    foreach ($property->getUnionType()->nonGenericTypes()->getTypeList() as $type) {
+                    foreach ($property->getUnionType()->nonGenericArrayTypes()->getTypeList() as $type) {
                         $class_fqsen =
                             FullyQualifiedClassName::fromStringInContext(
                                 (string)$type,
@@ -320,7 +320,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
             // classes
             $viable_class_types = $union_type
                 ->nonNativeTypes()
-                ->nonGenericTypes();
+                ->nonGenericArrayTypes();
 
             // If there are no non-native types, give up
             if ($viable_class_types->isEmpty()) {

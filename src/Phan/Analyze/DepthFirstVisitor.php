@@ -366,7 +366,7 @@ class DepthFirstVisitor extends ScopeVisitor {
 
             // Filter out the non-generic types of the
             // expression
-            $non_generic_type = $type->asNonGenericTypes();
+            $non_generic_type = $type->genericArrayElementTypes();
 
             // If we were able to figure out the type and its
             // a generic type, then set its element types as

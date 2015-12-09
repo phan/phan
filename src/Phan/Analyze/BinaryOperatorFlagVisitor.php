@@ -164,8 +164,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
                 $node->children['right']
             );
 
-        if (!$left->asNonGenericTypes()->isEmpty()
-            && $left->nonGenericTypes()->isEmpty()
+        if (!$left->genericArrayElementTypes()->isEmpty()
+            && $left->nonGenericArrayTypes()->isEmpty()
             && !$right->canCastToUnionType(
                 ArrayType::instance()->asUnionType()
             )
@@ -176,8 +176,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
                 $this->context->getFile(),
                 $node->lineno
             );
-        } else if (!$right->asNonGenericTypes()->isEmpty()
-            && $right->nonGenericTypes()->isEmpty()
+        } else if (!$right->genericArrayElementTypes()->isEmpty()
+            && $right->nonGenericArrayTypes()->isEmpty()
             && !$left->canCastToUnionType(
                 ArrayType::instance()->asUnionType()
             )
@@ -319,13 +319,13 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
         }
 
         $left_is_array = (
-            !empty($left->asNonGenericTypes())
-            && empty($left->nonGenericTypes())
+            !empty($left->genericArrayElementTypes())
+            && empty($left->nonGenericArrayTypes())
         );
 
         $right_is_array = (
-            !empty($right->asNonGenericTypes())
-            && empty($right->nonGenericTypes())
+            !empty($right->genericArrayElementTypes())
+            && empty($right->nonGenericArrayTypes())
         );
 
         if($left_is_array
