@@ -30,6 +30,13 @@ class Comment {
     private $parameter_list = [];
 
     /**
+     * @var CommentParameter[]
+     * A map from variable name to CommentParameters from
+     * param declarations
+     */
+    private $parameter_map = [];
+
+    /**
      * @var UnionType
      * A UnionType defined by a @return directive
      */
@@ -43,8 +50,8 @@ class Comment {
      * Set to true if the comment contains a 'deprecated'
      * directive.
      *
-     * @param array $variable_list
-     * @param array $parameter_list
+     * @param Variable[] $variable_list
+     * @param CommentParameter[] $parameter_list
      * @param UnionType $return
      */
     private function __construct(
@@ -57,6 +64,17 @@ class Comment {
         $this->variable_list = $variable_list;
         $this->parameter_list = $parameter_list;
         $this->return = $return;
+
+        foreach ($this->parameter_list as $i => $parameter) {
+            $name = $parameter->getName();
+            if (!empty($name)) {
+                // Add it to the named map
+                $this->parameter_map[$name] = $parameter;
+
+                // Remove it from the offset map
+                unset($this->parameter_list[$i]);
+            }
+        }
     }
 
     /**
@@ -90,13 +108,13 @@ class Comment {
 
         // A legal type identifier optionally with a []
         // indicating that its a generic typed array
-        $generic_type_regex =
+        $generic_array_type_regex =
             "$simple_type_regex(\[\])?";
 
         // A list of one or more types delimited by the '|'
         // character
         $union_type_regex =
-            "$generic_type_regex(\|$generic_type_regex)*";
+            "$generic_array_type_regex(\|$generic_array_type_regex)*";
 
         $lines = explode("\n",$comment);
 
@@ -104,7 +122,7 @@ class Comment {
 
             if(($pos=strpos($line, '@param')) !== false) {
                 $match = [];
-                if(preg_match("/@param\s+($union_type_regex)\s*(?:(\$\S+))*/", $line, $match)) {
+                if(preg_match("/@param\s+($union_type_regex)(\s+(\\$\S+))?/", $line, $match)) {
                     $type = null;
                     if(stripos($match[1],'\\') === 0
                         && strpos($match[1],'\\', 1) === false) {
@@ -114,7 +132,7 @@ class Comment {
                     }
 
                     $variable_name =
-                        empty($match[2]) ? '' : trim($match[2], '$');
+                        empty($match[6]) ? '' : trim($match[6], '$');
 
                     // If the type looks like a variable name,
                     // make it an empty type so that other stuff
@@ -245,7 +263,14 @@ class Comment {
      * @return bool
      * True if we have a parameter at the given offset
      */
-    public function hasParameterAtOffset(int $offset) : bool {
+    public function hasParameterWithNameOrOffset(
+        string $name,
+        int $offset
+    ) : bool {
+        if (!empty($this->parameter_map[$name])) {
+            return true;
+        }
+
         return !empty($this->parameter_list[$offset]);
     }
 
@@ -253,7 +278,14 @@ class Comment {
      * @return CommentParameter
      * The paramter at the given offset
      */
-    public function getParameterAtOffset(int $offset) : CommentParameter {
+    public function getParameterWithNameOrOffset(
+        string $name,
+        int $offset
+    ) : CommentParameter {
+        if (!empty($this->parameter_map[$name])) {
+            return $this->parameter_map[$name];
+        }
+
         return $this->parameter_list[$offset];
     }
 

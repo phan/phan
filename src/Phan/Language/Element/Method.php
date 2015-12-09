@@ -404,15 +404,19 @@ class Method extends TypedStructuralElement {
         if($context->getFile() != 'internal') {
 
             $parameter_offset = 0;
-            foreach ($method->parameter_list as $i => $parameter) {
+            foreach ($method->getParameterList() as $i => $parameter) {
                 if ($parameter->getUnionType()->isEmpty()) {
                     // If there is no type specified in PHP, check
                     // for a docComment with @param declarations. We
                     // assume order in the docComment matches the
                     // parameter order in the code
-                    if ($comment->hasParameterAtOffset($parameter_offset)) {
+                    if ($comment->hasParameterWithNameOrOffset(
+                        $parameter->getName(),
+                        $parameter_offset
+                    )) {
                         $comment_type =
-                            $comment->getParameterAtOffset(
+                            $comment->getParameterWithNameOrOffset(
+                                $parameter->getName(),
                                 $parameter_offset
                             )->getUnionType();
 
