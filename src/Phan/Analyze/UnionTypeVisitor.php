@@ -470,15 +470,20 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $defining_clazz = AST::classFromNodeInContext(
                 $node,
                 $this->context,
-                $this->code_base
+                $this->code_base,
+                false
             );
         } catch (CodeBaseException $exception) {
+            $class_name =
+                $node->children['class']->children['name'] ?? '';
+
             Log::err(
                 Log::EUNDEF,
-                $exception->getMessage(),
+                "Can't access constant {$constant_name} from undeclared class $class_name",
                 $this->context->getFile(),
                 $node->lineno
             );
+
             return new UnionType();
         } catch (NodeException $exception) {
             $class_name =
@@ -497,8 +502,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         if (!$defining_clazz->hasConstantWithName(
-            $this->code_base,
-            $constant_name
+                $this->code_base,
+                $constant_name
         )) {
             Log::err(
                 Log::EUNDEF,

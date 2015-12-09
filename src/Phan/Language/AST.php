@@ -82,6 +82,10 @@ class AST {
      *
      * @param CodeBase $code_base
      *
+     * @param bool $validate_class_name
+     * If true, we'll validate that the name of the class
+     * is valid.
+     *
      * @return string
      * The class name associated with nodes of various types
      *
@@ -91,7 +95,8 @@ class AST {
     public static function classNameFromNode(
         Context $context,
         CodeBase $code_base,
-        Node $node
+        Node $node,
+        bool $validate_class_name = true
     ) : string {
         // Extract the class name
         $class_name = (new Element($node))->acceptKindVisitor(
@@ -100,6 +105,10 @@ class AST {
 
         if (empty($class_name)) {
             return '';
+        }
+
+        if (!$validate_class_name) {
+            return $class_name;
         }
 
         // Validate that the class name is correct
@@ -348,6 +357,10 @@ class AST {
      * @param CodeBase $code_base
      * The global code base holding all state
      *
+     * @param bool $validate_class_name
+     * If true, we'll validate that the name of the class
+     * is valid.
+     *
      * @return Clazz
      * The class being referenced in the given node in
      * the given context
@@ -362,13 +375,15 @@ class AST {
     public static function classFromNodeInContext(
         Node $node,
         Context $context,
-        CodeBase $code_base
+        CodeBase $code_base,
+        bool $validate_class_name = true
     ) : Clazz {
         // Figure out the name of the class
         $class_name = self::classNameFromNode(
             $context,
             $code_base,
-            $node
+            $node,
+            $validate_class_name
         );
 
         // If we can't figure out the class name (which happens
