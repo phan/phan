@@ -41,6 +41,13 @@ class Method extends TypedStructuralElement {
     private $is_dynamic = false;
 
     /**
+     * @var bool
+     * This should be set to true if the method signature and
+     * comment do not define a return type for the method.
+     */
+    private $is_return_type_undefined = false;
+
+    /**
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
@@ -536,14 +543,45 @@ class Method extends TypedStructuralElement {
         $this->parameter_list = $parameter_list;
     }
 
+    /**
+     * @return bool
+     * True if this is a dynamically created method
+     */
     public function isDynamic() : bool {
         return $this->is_dynamic;
     }
 
+    /**
+     * @return bool
+     * True if this is a static method
+     */
     public function isStatic() : bool {
         return (bool)(
             $this->getFlags() & \ast\flags\MODIFIER_STATIC
         );
+    }
+
+    /**
+     * @return bool
+     * True if this method had no return type defined when it
+     * was defined (either in the signature itself or in the
+     * docblock).
+     */
+    public function isReturnTypeUndefined() : bool {
+        return $this->is_return_type_undefined;
+    }
+
+    /**
+     * @param bool $is_return_type_undefined
+     * True if this method had no return type defined when it
+     * was defined (either in the signature itself or in the
+     * docblock).
+     */
+    public function setIsReturnTypeUndefined(
+        bool $is_return_type_undefined
+    ) {
+        $this->is_return_type_undefined =
+            $is_return_type_undefined;
     }
 
     /**

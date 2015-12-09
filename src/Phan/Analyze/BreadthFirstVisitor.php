@@ -455,7 +455,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitReturn(Node $node) : Context {
-
         // Don't check return types in traits
         if ($this->context->isInClassScope()) {
             $clazz = $this->context->getClassInScope($this->code_base);
@@ -493,7 +492,10 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
         // If there is no declared type, see if we can deduce
         // what it should be based on the return type
-        if ($method_return_type->isEmpty()) {
+        if ($method_return_type->isEmpty()
+            || $method->isReturnTypeUndefined()
+        ) {
+            $method->setIsReturnTypeUndefined(true);
 
             // Set the inferred type of the method based
             // on what we're returning
@@ -504,7 +506,8 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-        if (!$expression_type->canCastToExpandedUnionType(
+        if (!$method->isReturnTypeUndefined()
+            && !$expression_type->canCastToExpandedUnionType(
             $method_return_type,
             $this->code_base
         )) {
