@@ -6,6 +6,9 @@ use \ast\Node;
 
 class Element {
 
+    /**
+     * @var Node
+     */
     private $node = null;
 
     /**
@@ -262,7 +265,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -274,7 +277,7 @@ class Element {
      * @return null
      */
     public function acceptBinaryFlagVisitor(FlagVisitor $visitor) {
-        switch ($this->node->flags) {
+        switch ($this->node->flags ?? 0) {
         case \ast\flags\BINARY_ADD:
             return $visitor->visitBinaryAdd($this->node);
         case \ast\flags\BINARY_BITWISE_AND:
@@ -326,7 +329,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -352,7 +355,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -380,7 +383,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -402,7 +405,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -422,7 +425,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -454,7 +457,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -480,7 +483,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -506,7 +509,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -538,7 +541,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -560,7 +563,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }
@@ -740,7 +743,7 @@ class Element {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags));
+                . Debug::astFlagDescription($this->node->flags ?? 0));
             break;
         }
     }

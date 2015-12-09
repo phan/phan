@@ -137,7 +137,7 @@ class Parameter extends Variable {
                     Log::EPARAM,
                     "required arg follows optional",
                     $context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0
                 );
             } else if ($parameter->isOptional()) {
                 $is_optional_seen = true;
@@ -181,7 +181,7 @@ class Parameter extends Variable {
             $context,
             (string)$node->children['name'],
             $type,
-            $node->flags
+            $node->flags ?? 0
         );
 
         // If there is a default value, store it and its type

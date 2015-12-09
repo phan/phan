@@ -110,14 +110,14 @@ class ParseVisitor extends ScopeVisitor {
         // Build the class from what we know so far
         $clazz = new Clazz(
             $this->context
-                ->withLineNumberStart($node->lineno)
-                ->withLineNumberEnd($node->endLineno ?: -1),
+                ->withLineNumberStart($node->lineno ?? 0)
+                ->withLineNumberEnd($node->endLineno ?? -1),
             $class_name,
             UnionType::fromStringInContext(
                 $class_name,
                 $this->context
             ),
-            $node->flags
+            $node->flags ?? 0
         );
 
         // Override the FQSEN with the found alternate ID
@@ -332,13 +332,13 @@ class ParseVisitor extends ScopeVisitor {
             $property =
                 new Property(
                     $this->context
-                        ->withLineNumberStart($child_node->lineno)
+                        ->withLineNumberStart($child_node->lineno ?? 0)
                         ->withLineNumberEnd($child_node->endLineno ?? -1),
                     is_string($child_node->children['name'])
                         ? $child_node->children['name']
                         : '_error_',
                     $type,
-                    $node->flags
+                    $node->flags ?? 0
                 );
 
             // Add the property to the class

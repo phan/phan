@@ -227,7 +227,7 @@ class AST {
                     Log::EVAR,
                     "Variable \$$variable_name is not defined",
                     $context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0
                 );
             }
         } else {
@@ -341,7 +341,7 @@ class AST {
                     Log::ECOMPAT,
                     "expression may not be PHP 7 compatible",
                     $context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0
                 );
             }
         }

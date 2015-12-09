@@ -97,13 +97,16 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitGroupUse(Node $node) : Context {
+        $children = $node->children ?? [];
 
-        $prefix = array_shift($node->children);
+        $prefix = array_shift($children);
 
         $context = $this->context;
 
-        foreach ($this->aliasTargetMapFromUseNode($node->children['uses'], $prefix)
-            as $alias => $map
+        foreach ($this->aliasTargetMapFromUseNode(
+                $children['uses'],
+                $prefix
+            ) as $alias => $map
         ) {
             list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
@@ -133,7 +136,7 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
         ) {
             list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
-                $node->flags, $alias, $target
+                $node->flags ?? 0, $alias, $target
             );
         }
 

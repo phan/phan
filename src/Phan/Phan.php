@@ -297,12 +297,12 @@ class Phan {
      * @param string[] $file_path_list
      * A list of files to scan
      *
-     * @return null
+     * @return Context
      */
     public function analyzeFile(
         CodeBase $code_base,
         string $file_path
-    ) {
+    ) : Context {
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
         // of this method

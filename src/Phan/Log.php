@@ -4,10 +4,6 @@ namespace Phan;
 
 use \Phan\Config;
 
-/**
- * Log
- *
- */
 class Log {
 	protected static $instance;
 	protected $output_mode  = 'text'; // 'text, 'codeclimate'
@@ -82,13 +78,28 @@ class Log {
 		$log->output_mask = $mask;
 	}
 
+    /**
+     * @param int $etype
+     * The error type such as Log::EUNDEF.
+     *
+     * @param string $msg
+     * The error message
+     *
+     * @param string $file
+     * The name of the file with the issue
+     *
+     * @param int|null $lineno
+     * The line number where the issue occurs
+     */
     public static function err(
         int $etype,
         string $msg,
-        string $file = '',
-        int $lineno = 0
+        string $file = null,
+        $lineno = 0
     ) {
 		$log = self::getInstance();
+
+        $lineno = (int)$lineno;
 
 		if($etype == self::EFATAL) {
 			self::display();

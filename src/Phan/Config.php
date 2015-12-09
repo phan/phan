@@ -62,6 +62,10 @@ class Config {
         // If set to true, we'll dump the AST instead of
         // analyzing files
         'dump_ast' => false,
+
+        // Allow null to be cast as any type and for any
+        // type to be cast to null.
+        'null_casts_as_any_type' => true,
     ];
 
     /**

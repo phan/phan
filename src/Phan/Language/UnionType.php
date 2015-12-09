@@ -2,6 +2,7 @@
 namespace Phan\Language;
 
 use \Phan\CodeBase;
+use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
@@ -443,11 +444,13 @@ class UnionType {
             return true;
         }
 
-        // null <-> null
-        if ($this->isType(NullType::instance())
-            || $target->isType(NullType::instance())
-        ) {
-            return true;
+        if (Config::get()->null_casts_as_any_type) {
+            // null <-> null
+            if ($this->isType(NullType::instance())
+                || $target->isType(NullType::instance())
+            ) {
+                return true;
+            }
         }
 
         // mixed <-> mixed
@@ -566,6 +569,9 @@ class UnionType {
         }
 
         return new UnionType(array_filter(array_map(
+            /**
+             * @return Type|null
+             */
             function(Type $type) {
                 if (!$type->isGenericArray()) {
                     return null;

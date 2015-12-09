@@ -36,7 +36,7 @@ class Database extends SQLite3 {
             // If no database is configured, don't return
             // one
             if (!static::isEnabled()) {
-                return null;
+                throw new \Exception("Database not enabled");
             }
 
             $instance = new Database();

@@ -73,7 +73,7 @@ class Variable extends TypedStructuralElement {
                 ->withLineNumberEnd($node->endLineno ?? 0),
             $variable_name,
             $union_type,
-            $node->flags
+            $node->flags ?? 0
         );
 
         return $variable;

@@ -432,14 +432,23 @@ class Method extends TypedStructuralElement {
                 if ($parameter->hasDefaultValue()) {
                     $default_type = $parameter->getDefaultValueType();
 
-                    if (!$default_type->canCastToUnionType(
-                        $parameter->getUnionType()
+                    if ($default_type->isEqualTo(
+                        NullType::instance()->asUnionType()
+                    )) {
+                        $parameter->getUnionType()->addUnionType(
+                            $default_type
+                        );
+                    }
+
+                    if (!$default_type->isEqualTo(NullType::instance()->asUnionType())
+                        && !$default_type->canCastToUnionType(
+                            $parameter->getUnionType()
                     )) {
                         Log::err(
                             Log::ETYPE,
                             "Default value for {$parameter->getUnionType()} \${$parameter->getName()} can't be {$default_type}",
                             $context->getFile(),
-                            $node->lineno
+                            $node->lineno ?? 0
                         );
                     }
 
