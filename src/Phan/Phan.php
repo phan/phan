@@ -412,7 +412,7 @@ class Phan {
      * configured via the CLI flag '-3 [paths]'.
      */
     public static function isThirdPartyFile(string $file_path) : bool {
-        foreach (Config::get()->third_party_directory_list
+        foreach (Config::get()->exclude_analysis_directory_list
             as $directory
         ) {
             if (0 === strpos($file_path, $directory)) {

@@ -10,12 +10,48 @@ class Config {
      * Configuration options
      */
     private $configuration = [
+        // The base directory from which config values are
+        // based. Leave as null to default to `getcwd()`.
+        'project_root_directory' => null,
+
+        // A list of directories holding code that we want
+        // to parse, but not analyze
+        'exclude_analysis_directory_list' => [],
+
         // Backwards Compatibility Checking
         'backward_compatibility_checks' => true,
 
         // A set of fully qualified class-names for which
         // a call to parent::__construct() is required
         'parent_constructor_required' => [],
+
+        // Run a quick version of checks that takes less
+        // time
+        'quick_mode' => false,
+
+        // If true, missing properties will be created when
+        // they are first seen. If false, we'll report an
+        // error message.
+        'allow_missing_properties' => true,
+
+        // Allow null to be cast as any type and for any
+        // type to be cast to null.
+        'null_casts_as_any_type' => true,
+
+        // If a file path is given, the code base will be
+        // read from and written to the given location in
+        // order to attempt to save some work from being
+        // done. Only changed files will get analyzed if
+        // the file is read
+        'stored_state_file_path' => null,
+
+        // Set to true in order to force a re-analysis of
+        // any file passed in via the CLI even if our
+        // internal state is up-to-date
+        'reanalyze_file_list' => false,
+        // If set to true, we'll dump the AST instead of
+        // analyzing files
+        'dump_ast' => false,
 
         // Include a progress bar in the output
         'progress_bar' => false,
@@ -24,48 +60,15 @@ class Config {
         // progress bar update
         'progress_bar_sample_rate' => 0.1,
 
-        // Run a quick version of checks that takes less
-        // time
-        'quick_mode' => false,
-
-        // The vesion of the AST (defined in php-ast)
-        // we're using
-        'ast_version' => 30,
-
         // Set to true in order to prepend all emitted error
         // messages with an ID indicating the distinct class
         // of issue seen. This allows us to get counts of
         // distinct error types.
         'emit_trace_id' => false,
 
-        // A list of directories holding 3rd party code that
-        // we only want to parse, but not analyze
-        'third_party_directory_list' => [],
-
-        // If true, missing properties will be created when
-        // they are first seen. If false, we'll report an
-        // error message.
-        'allow_missing_properties' => true,
-
-        // If a file path is given, the code base will be
-        // read from and written to the given location in
-        // order to attempt to save some work from being
-        // done. Only changed files will get analyzed if
-        // the file is read
-        'serialized_code_base_file' => null,
-
-        // Set to true in order to force a re-analysis of
-        // any file passed in via the CLI even if our
-        // internal state is up-to-date
-        'reanalyze_file_list' => false,
-
-        // If set to true, we'll dump the AST instead of
-        // analyzing files
-        'dump_ast' => false,
-
-        // Allow null to be cast as any type and for any
-        // type to be cast to null.
-        'null_casts_as_any_type' => true,
+        // The vesion of the AST (defined in php-ast)
+        // we're using
+        'ast_version' => 30,
     ];
 
     /**

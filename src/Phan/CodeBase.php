@@ -98,8 +98,8 @@ class CodeBase {
      */
     public static function storedCodeBaseExists() : bool {
         return (
-            Config::get()->serialized_code_base_file
-            && file_exists(Config::get()->serialized_code_base_file)
+            Config::get()->stored_state_file_path
+            && file_exists(Config::get()->stored_state_file_path)
         );
     }
 

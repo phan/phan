@@ -20,7 +20,17 @@ class CLI {
         global $argv;
 
         // Parse command line args
-        $opts = getopt("f:m:o:c:haqbrpis:3:t::");
+        $opts = getopt("f:m:o:c:haqbrpid:s:3:t::");
+
+        // Determine the root directory of the project from which
+        // we root all relative paths passed in as args
+        Config::get()->project_root_directory = isset($opts['d'])
+            ? $opts['d']
+            : getcwd();
+
+        // Now that we have a root directory, attempt to read a
+        // configuration file `.phan/config.php` if it exists
+        $this->maybeReadConfigFile();
 
         foreach($opts ?? [] as $key => $value) {
             switch($key) {
@@ -42,8 +52,7 @@ class CLI {
                 Log::setOutputMode($value);
                 break;
             case 'c':
-                Config::get()
-                    ->parent_constructor_required =
+                Config::get()->parent_constructor_required =
                     explode(',', $value);
                 break;
             case 'q':
@@ -68,14 +77,19 @@ class CLI {
                 Config::get()->emit_trace_id = true;
                 break;
             case '3':
-                Config::get()->third_party_directory_list =
+                Config::get()->exclude_analysis_directory_list =
                     explode(',', $value);
                 break;
             case 's':
-                Config::get()->serialized_code_base_file = $value;
+                Config::get()->stored_state_file_path = $value;
                 break;
             case 'r':
                 Config::get()->reanalyze_file_list = true;
+                break;
+            case 'd':
+                // We handle this flag before parsing options so
+                // that we can get the project root directory to
+                // base other config flags values on
                 break;
             default:
                 $this->usage("Unknown option '-$key'"); break;
@@ -144,6 +158,9 @@ Usage: {$argv[0]} [options] [files...]
                   future executions
   -r              Force a re-analysis of any files passed in even if they haven't
                   changed since the last analysis
+  -d              Hunt for a directory named .phan in the current or parent
+                  directory and read configuration file config.php from that
+                  path.
   -h              This help
 
 EOB;
@@ -198,6 +215,35 @@ EOB;
         echo " " . sprintf("% 3d", (int)(100*$p)) . "%";
         echo sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
         echo "\r";
+    }
+
+    /**
+     * Look for a .phan/config file up to a few directories
+     * up the hierarchy and apply anything in there to
+     * the configuration.
+     */
+    private function maybeReadConfigFile() {
+
+        // If the file doesn't exist here, try a directory up
+        $config_file_name =
+            implode(DIRECTORY_SEPARATOR, [
+                Config::get()->project_root_directory,
+                '.phan',
+                'config.php'
+            ]);
+
+        // Totally cool if the file isn't there
+        if (!file_exists($config_file_name)) {
+            return;
+        }
+
+        // Read the configuration file
+        $config = require($config_file_name);
+
+        // Write each value to the config
+        foreach ($config as $key => $value) {
+            Config::get()->__set($key, $value);
+        }
     }
 
 }

@@ -13,7 +13,7 @@ class Database extends SQLite3 {
 
     public function __construct() {
         parent::__construct(
-            Config::get()->serialized_code_base_file,
+            Config::get()->stored_state_file_path,
             SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE
         );
 
@@ -50,7 +50,7 @@ class Database extends SQLite3 {
      * True if the database is enabled
      */
     public static function isEnabled() : bool {
-        return (bool)Config::get()->serialized_code_base_file;
+        return (bool)Config::get()->stored_state_file_path;
     }
 
 }

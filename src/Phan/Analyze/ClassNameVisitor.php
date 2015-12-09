@@ -28,7 +28,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
     /**
      * @var CodeBase
      */
-    private $code_basae;
+    private $code_base;
 
     /**
      * @param Context $context
