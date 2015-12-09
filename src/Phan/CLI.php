@@ -19,6 +19,8 @@ class CLI {
     public function __construct() {
         global $argv;
 
+        // file_put_contents('/tmp/file', implode("\n", $argv));
+
         // Parse command line args
         $opts = getopt("f:m:o:c:haqbrpid:s:3:t::");
 
@@ -39,8 +41,10 @@ class CLI {
                 break;
             case 'f':
                 if(is_file($value) && is_readable($value)) {
-                    $this->file_list =
-                        file($value, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
+                    $this->file_list = file(
+                        $value,
+                        FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES
+                    );
                 } else {
                     Log::err(Log::EFATAL, "Unable to open $value");
                 }

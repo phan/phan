@@ -103,7 +103,7 @@ class Phan {
 
             // We skip anything defined as 3rd party code
             // to save a lil' time
-            if (self::isThirdPartyFile($file_path)) {
+            if (self::isExcludedAnalysisFile($file_path)) {
                 continue;
             }
 
@@ -411,7 +411,7 @@ class Phan {
      * True if this file is a member of a third party directory as
      * configured via the CLI flag '-3 [paths]'.
      */
-    public static function isThirdPartyFile(string $file_path) : bool {
+    public static function isExcludedAnalysisFile(string $file_path) : bool {
         foreach (Config::get()->exclude_analysis_directory_list
             as $directory
         ) {

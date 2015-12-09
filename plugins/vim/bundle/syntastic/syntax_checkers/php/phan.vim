@@ -32,14 +32,16 @@ endfunction
 
 function! SyntaxCheckers_php_phan_GetLocList() dict
     let makeprg = self.makeprgBuild({
-                \ 'args': '-d `git rev-parse --show-toplevel` -r',
-                \ 'args_after': '' })
+                \ 'args': '-r -d ' . system("git rev-parse --show-toplevel | tr -d '\\n'") })
 
     let errorformat = '%f:%l %m'
-
     let env = { }
 
-    return SyntasticMake({ 'makeprg': makeprg, 'errorformat': errorformat, 'env': env })
+    return SyntasticMake({
+                \ 'makeprg': makeprg,
+                \ 'errorformat': errorformat,
+                \ 'env': env })
+" \ 'cwd': system("git rev-parse --show-toplevel | tr -d '\\n'"),
 endfunction
 
 call g:SyntasticRegistry.CreateAndRegisterChecker({

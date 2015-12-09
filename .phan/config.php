@@ -26,7 +26,7 @@ return [
     // order to attempt to save some work from being
     // done. Only changed files will get analyzed if
     // the file is read
-    "stored_state_file_path" => ".phan/database",
+    // "stored_state_file_path" => ".phan/database",
 
     // Run a quick version of checks that takes less
     // time
