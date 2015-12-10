@@ -139,7 +139,11 @@ class Parameter extends Variable {
                     $context->getFile(),
                     $node->lineno ?? 0
                 );
-            } else if ($parameter->isOptional()) {
+            } else if (
+                $parameter->isOptional()
+                && !$is_optional_seen
+                && $parameter->getUnionType()->isEmpty()
+            ) {
                 $is_optional_seen = true;
             }
 
