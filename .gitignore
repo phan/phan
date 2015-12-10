@@ -1,2 +1,3 @@
 vendor
 /.phan/database
+composer.phar
