@@ -12,6 +12,18 @@ class Database extends SQLite3 {
     use \Phan\Memoize;
 
     public function __construct() {
+        assert(!is_dir(Config::get()->stored_state_file_path),
+            "State file '{Config::get()->stored_state_file_path}' cannot be a directory"
+        );
+
+        assert(!file_exists(Config::get()->stored_state_file_path)
+            || (
+                is_writable(Config::get()->stored_state_file_path)
+                && is_readable(Config::get()->stored_state_file_path)
+            ),
+            "State file '{Config::get()->stored_state_file_path}' must be readable and writable"
+        );
+
         parent::__construct(
             Config::get()->stored_state_file_path,
             SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE
