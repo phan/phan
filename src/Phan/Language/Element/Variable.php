@@ -96,7 +96,8 @@ class Variable extends TypedStructuralElement {
             '_ENV',
             '_FILES',
             '_SESSION',
-            'GLOBALS'
+            'GLOBALS',
+            'http_response_header' // Revisit when we implement sub-block type refining
         ]);
     }
 
