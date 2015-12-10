@@ -147,6 +147,10 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 )
             );
 
+        if(Config::get()->backward_compatibility_checks) {
+            AST::backwardCompatibilityCheck($this->context, $node);
+        }
+
         return $context;
     }
 
@@ -557,6 +561,15 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
     public function visitCall(Node $node) : Context {
         $expression = $node->children['expr'];
 
+        if(Config::get()->backward_compatibility_checks) {
+            AST::backwardCompatibilityCheck($this->context, $node);
+            foreach($node->children['args']->children as $arg_node) {
+                if($arg_node instanceof Node) {
+                    AST::backwardCompatibilityCheck($this->context, $arg_node);
+                }
+            }
+        }
+
         if($expression->kind == \ast\AST_NAME) {
             try {
                 $method = AST::functionFromNameInContext(
@@ -581,10 +594,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 $method,
                 $node
             );
-
-            if(Config::get()->backward_compatibility_checks) {
-                AST::backwardCompatibilityCheck($this->context, $node);
-            }
         }
 
         else if ($expression->kind == \ast\AST_VAR) {
@@ -611,7 +620,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                     return $this->context;
                 }
 
-
                 $closure_fqsen =
                     FullyQualifiedFunctionName::fromFullyQualifiedString(
                         (string)$type->asFQSEN()
@@ -634,7 +642,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 }
             }
         }
-
         return $this->context;
     }
 

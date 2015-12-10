@@ -293,16 +293,26 @@ class AST {
         Context $context,
         Node $node
     ) {
-        if(!($node->children['expr'] instanceof Node)) {
+        if(empty($node->children['expr'])) {
             return;
         }
 
-        if($node->children['expr']->kind !== \ast\AST_DIM) {
-            return;
-        }
+        if($node->kind !== \ast\AST_DIM) {
+            if(!($node->children['expr'] instanceof Node)) {
+                return;
+            }
 
-        $temp = $node->children['expr']->children['expr'];
-        $lnode = $temp;
+            if($node->children['expr']->kind !== \ast\AST_DIM) {
+                AST::backwardCompatibilityCheck($context, $node->children['expr']);
+                return;
+            }
+
+            $temp = $node->children['expr']->children['expr'];
+            $lnode = $temp;
+        } else {
+            $temp = $node->children['expr'];
+            $lnode = $temp;
+        }
         if(!($temp->kind == \ast\AST_PROP
             || $temp->kind == \ast\AST_STATIC_PROP
         )) {
@@ -324,10 +334,10 @@ class AST {
             return;
         }
 
-        if(($lnode->children['prop'] instanceof Node
-            && $lnode->children['prop']->kind == \ast\AST_VAR
-            ) && ($temp->kind == \ast\AST_VAR
-            || $temp->kind == \ast\AST_NAME)
+        if(
+           (($lnode->children['prop'] instanceof Node && $lnode->children['prop']->kind == \ast\AST_VAR) ||
+            (!empty($lnode->children['class']) && $lnode->children['class'] instanceof Node && ($lnode->children['class']->kind == \ast\AST_VAR || $lnode->children['class']->kind == \ast\AST_NAME))) &&
+                ($temp->kind == \ast\AST_VAR || $temp->kind == \ast\AST_NAME)
         ) {
             $ftemp = new \SplFileObject($context->getFile());
             $ftemp->seek($node->lineno-1);
