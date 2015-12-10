@@ -301,6 +301,16 @@ class Type {
             return \Phan\Language\Type\VoidType::instance();
         }
 
+        // If this is a type referencing the current class
+        // in scope such as 'self' or 'static', return that.
+        if (self::isSelfTypeString($type_name)
+            && $context->isInClassScope()
+        ) {
+            return static::fromFullyQualifiedString(
+                (string)$context->getClassFQSEN()
+            );
+        }
+
         // Attach the context's namespace to the type name
         return self::fromNamespaceAndName(
             $context->getNamespace() ?: '\\',
@@ -396,7 +406,21 @@ class Type {
      * or 'self'.
      */
     public function isSelfType() : bool {
-        return in_array((string)$this, [
+        return self::isSelfTypeString((string)$this);
+    }
+
+    /**
+     * @param string $type_string
+     * A string defining a type such as 'self' or 'int'.
+     *
+     * @return bool
+     * True if the given type references the class context
+     * in which it exists such as 'static' or 'self'.
+     */
+    public static function isSelfTypeString(
+        string $type_string
+    ) : bool {
+        return in_array($type_string, [
             'static', 'self', '$this',
             '\static', '\self', '\$this'
         ]);
