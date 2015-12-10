@@ -185,7 +185,7 @@ class ClassNameValidationVisitor
 
         Log::err(
             Log::EUNDEF,
-            "call to undeclared class {$this->class_fqsen}",
+            "reference to undeclared class {$this->class_fqsen}",
             $this->context->getFile(),
             $node->lineno
         );

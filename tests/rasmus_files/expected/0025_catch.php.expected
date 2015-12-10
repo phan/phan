@@ -1,2 +1,2 @@
-%s:4 UndefError call to undeclared class \ex
-%s:5 UndefError call to method on undeclared class Exceptio
+%s:4 UndefError reference to undeclared class \ex
+%s:5 UndefError reference to undeclared class \exceptio

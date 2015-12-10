@@ -419,18 +419,29 @@ class DepthFirstVisitor extends ScopeVisitor {
     public function visitCatch(Node $node) : Context {
 
         // Get the name of the class
-        $class_name = $node->children['class']->children['name'];
+
+        // $class_name = $node->children['class']->children['name'];
+        $class_name = AST::classNameFromNode(
+            $this->context,
+            $this->code_base,
+            $node
+        );
 
         $clazz = null;
 
         // If we can't figure out the class name (which happens
         // from time to time), then give up
         if (!empty($class_name)) {
-            $class_fqsen =
-                FullyQualifiedClassName::fromStringInContext(
-                    $class_name,
-                    $this->context
-                );
+            if ($node->children['class']->flags & \ast\flags\NAME_FQ) {
+                Debug::printNode($node);
+                $class_fqsen = $node->children['class'];
+            } else {
+                $class_fqsen =
+                    FullyQualifiedClassName::fromStringInContext(
+                        $class_name,
+                        $this->context
+                    );
+            }
 
             // Check to see if the class actually exists
             if ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
@@ -440,7 +451,7 @@ class DepthFirstVisitor extends ScopeVisitor {
             } else {
                 Log::err(
                     Log::EUNDEF,
-                    "call to method on undeclared class $class_name",
+                    "reference to undeclared class $class_fqsen",
                     $this->context->getFile(),
                     $node->lineno
                 );
