@@ -433,7 +433,6 @@ class DepthFirstVisitor extends ScopeVisitor {
         // from time to time), then give up
         if (!empty($class_name)) {
             if ($node->children['class']->flags & \ast\flags\NAME_FQ) {
-                Debug::printNode($node);
                 $class_fqsen = $node->children['class'];
             } else {
                 $class_fqsen =
