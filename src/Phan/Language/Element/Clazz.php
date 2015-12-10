@@ -312,6 +312,18 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
+     * @return Property[]
+     * The list of properties defined on this class
+     */
+    public function getPropertyList(
+        CodeBase $code_base
+    ) : array {
+        return $code_base->getPropertyMapForScope(
+            $this->getFQSEN()
+        );
+    }
+
+    /**
      * @param string $name
      * The name of the property
      *

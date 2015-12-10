@@ -81,12 +81,14 @@ trait PropertyMap {
      * Get the property with the given FQSEN
      */
     public function getProperty(FQSEN $fqsen, string $name) : Property {
-        if (empty($this->property_map[(string)$fqsen][$name])) {
-            $this->property_map[(string)$fqsen][$name] =
-                PropertyModel::read(Database::get(),
-                    ((string)$fqsen). '|' . $name
-                )
-                ->getProperty();
+        if (Database::isEnabled()) {
+            if (empty($this->property_map[(string)$fqsen][$name])) {
+                $this->property_map[(string)$fqsen][$name] =
+                    PropertyModel::read(Database::get(),
+                        ((string)$fqsen). '|' . $name
+                    )
+                    ->getProperty();
+            }
         }
 
         return $this->property_map[(string)$fqsen][$name];

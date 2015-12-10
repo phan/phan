@@ -19,8 +19,10 @@ use \ast\Node;
 class Phan {
     use \Phan\Analyze\DuplicateClass;
     use \Phan\Analyze\DuplicateFunction;
+    use \Phan\Analyze\ParameterTypes;
     use \Phan\Analyze\ParentClassExists;
     use \Phan\Analyze\ParentConstructorCalled;
+    use \Phan\Analyze\PropertyTypes;
 
     /**
      * Analyze the given set of files and emit any issues
@@ -264,6 +266,7 @@ class Phan {
 
             self::analyzeDuplicateClass($code_base, $clazz);
             self::analyzeParentConstructorCalled($code_base, $clazz);
+            self::analyzePropertyTypes($code_base, $clazz);
         }
     }
 
@@ -285,6 +288,7 @@ class Phan {
                 }
 
                 self::analyzeDuplicateFunction($code_base, $method);
+                self::analyzeParameterTypes($code_base, $method);
             }
         }
     }

@@ -238,6 +238,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
 
             // $var->prop->method()
             $var = $prop->children['expr'];
+
             if($var->children['name'] == 'this') {
 
                 // If we're not in a class scope, 'this' won't work
@@ -252,51 +253,57 @@ class ClassNameVisitor extends KindVisitorImplementation {
                     return '';
                 }
 
-                // Get the class in scope
-                $clazz = $this->code_base->getClassByFQSEN(
-                    $this->context->getClassFQSEN()
-                );
-
+                // $this->$prop->method()
                 if($prop->children['prop'] instanceof Node) {
-                    // $this->$prop->method() - too dynamic, give up
+                    // Too hard. Giving up.
                     return '';
                 }
 
+                $class = $this->context->getClassInScope(
+                    $this->code_base
+                );
+
+
                 $property_name = $prop->children['prop'];
 
-                if ($clazz->hasPropertyWithName(
+                if (!$class->hasPropertyWithName(
                     $this->code_base,
                     $property_name
                 )) {
-                    try {
-                        $property = $clazz->getPropertyByNameInContext(
-                            $this->code_base,
-                            $property_name,
-                            $this->context
-                        );
-                    } catch (AccessException $exception) {
-                        Log::err(
-                            Log::EACCESS,
-                            $exception->getMessage(),
-                            $this->context->getFile(),
-                            $node->lineno
-                        );
+                    // If we can't find the property, there's
+                    // no type. Thie issue should be caught
+                    // elsewhere.
+                    return '';
+                }
 
-                        return '';
-                    }
+                try {
+                    $property = $class->getPropertyByNameInContext(
+                        $this->code_base,
+                        $property_name,
+                        $this->context
+                    );
+                } catch (AccessException $exception) {
+                    Log::err(
+                        Log::EACCESS,
+                        $exception->getMessage(),
+                        $this->context->getFile(),
+                        $node->lineno
+                    );
 
-                    // Find the first viable property type
-                    foreach ($property->getUnionType()->nonGenericArrayTypes()->getTypeList() as $type) {
-                        $class_fqsen =
-                            FullyQualifiedClassName::fromStringInContext(
-                                (string)$type,
-                                $this->context
-                            );
+                    return '';
+                }
 
-                        if ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
-                            return (string)$class_fqsen;
-                        }
-                    }
+                $union_type = $property->getUnionType()
+                    ->nonNativeTypes();
+
+                if ($union_type->isEmpty()) {
+                    // If we don't have a type on the property we
+                    // can't figure out the class type.
+                    return '';
+                } else {
+                    // Return the first type on the property
+                    // that could be a reference to a class
+                    return (string)$union_type->head()->asFQSEN();
                 }
 
                 // No such property was found, or none were classes

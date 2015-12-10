@@ -823,7 +823,8 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             return $this->context;
         } catch (NodeException $exception) {
             // If we can't figure out what kind of a call
-            // this is, don't worry about it
+            // this is, don't worry about it. Errors should
+            // have been emitted from elsewhere.
             return $this->context;
         }
 

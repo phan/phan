@@ -45,6 +45,11 @@ return [
     // the file is read
     // "stored_state_file_path" => Config::projectPath(".phan/database"),
 
+    // Set to true in order to force a re-analysis of
+    // any file passed in via the CLI even if our
+    // internal state is up-to-date
+    // 'reanalyze_file_list' => true,
+
     // Run a quick version of checks that takes less
     // time
     "quick_mode" => false,
