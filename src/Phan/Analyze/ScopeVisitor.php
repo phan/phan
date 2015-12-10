@@ -81,8 +81,6 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
      */
     public function visitIf(Node $node) : Context {
         return $this->context;
-        // $context = $this->context->withIsConditional(true);
-        // return $context;
     }
 
     /**

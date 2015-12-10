@@ -97,7 +97,8 @@ class DepthFirstVisitor extends ScopeVisitor {
             );
 
         } while(
-            $this->context->getFile() != $clazz->getContext()->getFile()
+            $this->context->getProjectRelativePath()
+                != $clazz->getContext()->getProjectRelativePath()
             || $this->context->getLineNumberStart() != $clazz->getContext()->getLineNumberStart()
         );
 
@@ -176,8 +177,8 @@ class DepthFirstVisitor extends ScopeVisitor {
         foreach ($method->alternateGenerator($this->code_base)
             as $i => $alternate_method
         ) {
-            if ($alternate_method->getContext()->getFile()
-                === $this->context->getFile()
+            if ($alternate_method->getContext()->getProjectRelativePath()
+                === $this->context->getProjectRelativePath()
             ) {
                 return $method->getContext()->withMethodFQSEN(
                     $alternate_method->getFQSEN()

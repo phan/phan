@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use \Phan\CodeBase\File;
+use \Phan\Config;
+
 /**
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
@@ -44,6 +47,25 @@ class FileRef implements \Serializable {
      */
     public function getFile() : string {
         return $this->file;
+    }
+
+    /**
+     * @return string
+     * The full path of the file
+     */
+    public function getRealPath() : string {
+        return realpath($this->file) ?: $this->file;
+    }
+
+    /**
+     * @return string
+     * The path of the file relative to the project
+     * root directory
+     */
+    public function getProjectRelativePath() : string {
+        return File::projectRelativePathFromCWDRelativePath(
+            $this->file
+        );
     }
 
     /**

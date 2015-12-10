@@ -70,11 +70,22 @@ trait FileMap {
 
     /**
      * Remove any objects we have associated with the
-     * given file so that we can re-read it
+     * given file so that we can re-read it.
+     *
+     * @param string $cwd_relative_file_path
+     * A file path relative to the current working directory of
+     * the phan executable.
      *
      * @return null
      */
-    public function flushDependenciesForFile(string $file_path) {
+    public function flushDependenciesForFile(string $cwd_relative_file_path) {
+
+        // Map the relative path to a project path
+        $file_path =
+            File::projectRelativePathFromCWDRelativePath(
+                $cwd_relative_file_path
+            );
+
         $code_file = $this->getFileByPath($file_path);
 
         // Flush all classes from the file

@@ -159,7 +159,7 @@ class File extends ModelOne {
      */
     public function toRow() : array {
         return [
-            'file_path' => $this->file->getFilePath(),
+            'file_path' => $this->file->getProjectRelativePath(),
             'modification_time' => $this->file->getModificationTime(),
         ];
     }

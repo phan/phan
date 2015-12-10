@@ -26,9 +26,9 @@ class CLI {
 
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
-        Config::get()->project_root_directory = isset($opts['d'])
-            ? $opts['d']
-            : getcwd();
+        Config::get()->setProjectRootDirectory(
+            $opts['d'] ?? getcwd()
+        );
 
         // Now that we have a root directory, attempt to read a
         // configuration file `.phan/config.php` if it exists
@@ -231,7 +231,7 @@ EOB;
         // If the file doesn't exist here, try a directory up
         $config_file_name =
             implode(DIRECTORY_SEPARATOR, [
-                Config::get()->project_root_directory,
+                Config::get()->getProjectRootDirectory(),
                 '.phan',
                 'config.php'
             ]);

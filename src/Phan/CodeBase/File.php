@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
+use \Phan\Config;
 use \Phan\Database;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Element, Method};
@@ -71,6 +72,56 @@ class File {
      */
     public function getFilePath() : string {
         return $this->file_path;
+    }
+
+    /**
+     * @return string
+     * The full path of the file
+     */
+    public function getRealPath() : string {
+        return realpath($this->file_path) ?: $this->file_path;
+    }
+
+    /**
+     * @return string
+     * The path of the file relative to the project
+     * root directory
+     */
+    public function getProjectRelativePath() : string {
+        return self::projectRelativePathFromCWDRelativePath(
+            $this->file_path
+        );
+    }
+
+    /**
+     * @param string $cwd_relative_path
+     * A path relative to the current working directory of
+     * the phan executable.
+     *
+     * @return string
+     * A path relative to the project root directory. For example
+     * if cwd is 'src/Phan/' and phan is executed as
+     * `phan -d ../../ Debug.php`, and we wanted to get the
+     * project relative path for 'Debug.php', you'd get
+     * 'src/Phan/Debug.php'.
+     */
+    public static function projectRelativePathFromCWDRelativePath(
+        string $cwd_relative_path
+    ) : string {
+
+        // Get a path relative to the project root
+        $path = str_replace(
+            Config::get()->getProjectRootDirectory(),
+            '',
+            realpath($cwd_relative_path) ?: $cwd_relative_path
+        );
+
+        // Strip any beginning directory separators
+        if (0 === ($pos = strpos($path, DIRECTORY_SEPARATOR))) {
+            $path = substr($path, $pos + 1);
+        }
+
+        return $path;
     }
 
     /**

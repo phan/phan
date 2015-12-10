@@ -7,12 +7,16 @@ namespace Phan;
 class Config {
 
     /**
+     * @var string
+     * The root directory of the project. This is used to
+     * store canonical path names and find project resources
+     */
+    private $project_root_directory = null;
+
+    /**
      * Configuration options
      */
     private $configuration = [
-        // The base directory from which config values are
-        // based. Leave as null to default to `getcwd()`.
-        'project_root_directory' => null,
 
         // A list of directories holding code that we want
         // to parse, but not analyze
@@ -77,6 +81,28 @@ class Config {
     private function __construct() {}
 
     /**
+     * @return string
+     * Get the root directory of the project that we're
+     * scanning
+     */
+    public function getProjectRootDirectory() : string {
+        return $this->project_root_directory ?? getcwd();
+    }
+
+    /**
+     * @param string $project_root_directory
+     * Set the root directory of the project that we're
+     * scanning
+     *
+     * @return void
+     */
+    public function setProjectRootDirectory(
+        string $project_root_directory
+    ) {
+        $this->project_root_directory = $project_root_directory;
+    }
+
+    /**
      * @return Configuration
      * Get a Configuration singleton
      */
@@ -97,5 +123,16 @@ class Config {
 
     public function __set(string $name, $value) {
         $this->configuration[$name] = $value;
+    }
+
+    /**
+     * @return string
+     * The relative path appended to the project root directory.
+     */
+    public static function projectPath(string $relative_path) {
+        return implode(DIRECTORY_SEPARATOR, [
+            Config::get()->getProjectRootDirectory(),
+            $relative_path
+        ]);
     }
 }

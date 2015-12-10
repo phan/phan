@@ -64,7 +64,9 @@ class Phan {
 
                 // Kick out anything we read from the former version
                 // of this file
-                $code_base->flushDependenciesForFile($file_path);
+                $code_base->flushDependenciesForFile(
+                    $file_path
+                );
 
                 // Parse the file
                 $this->parseFile($code_base, $file_path);
