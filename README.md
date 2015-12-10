@@ -10,7 +10,7 @@ To get phan running;
 1. Clone the repo
 2. Run `composer install` to load dependencies
 3. Run `./test` to run the test suite
-4. Test phan on itself by running `./phan src/**.php`
+4. Test phan on itself by running `./phan src/**/*.php`
 
 If you don't have a version of PHP 7 installed, you can grab a [php7dev][php7dev] Vagrant image or one of the many Docker builds out there.
 
