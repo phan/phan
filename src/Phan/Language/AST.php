@@ -533,10 +533,21 @@ class AST {
                 );
         } else {
             $function_fqsen =
-                FullyQualifiedFunctionName::fromStringInContext(
-                    $function_name,
-                    $context
+                FullyQualifiedFunctionName::make(
+                    $context->getNamespace(),
+                    $function_name
                 );
+
+            // If it doesn't exist in the local namespace, try it
+            // in the global namespace
+            if (!$code_base->hasMethod($function_fqsen)) {
+                $function_fqsen =
+                    FullyQualifiedFunctionName::fromStringInContext(
+                        $function_name,
+                        $context
+                    );
+            }
+
         }
 
         // Make sure the method we're calling actually exists

@@ -471,7 +471,6 @@ class ParseVisitor extends ScopeVisitor {
      * parsing the node
      */
     public function visitCall(Node $node) : Context {
-
         // If this is a call to a method that indicates that we
         // are treating the method in scope as a varargs method,
         // then set its optional args to something very high so
