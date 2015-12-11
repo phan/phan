@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use \Phan\Analyze\ClassNameValidationVisitor;
+use \Phan\Analyze\ClassName\ValidationVisitor as ClassNameValidationVisitor;
 use \Phan\Analyze\ClassNameVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;

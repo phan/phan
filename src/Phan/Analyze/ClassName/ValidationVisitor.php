@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Analyze;
+namespace Phan\Analyze\ClassName;
 
 use \Phan\CodeBase;
 use \Phan\Debug;
@@ -16,7 +16,7 @@ use \ast\Node;
  * A visitor that can extract a class name from a few
  * types of nodes
  */
-class ClassNameValidationVisitor
+class ValidationVisitor
     extends KindVisitorImplementation
 {
     /**

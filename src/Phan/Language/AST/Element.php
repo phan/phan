@@ -22,8 +22,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the kind value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptKindVisitor(KindVisitor $visitor) {
         switch ($this->node->kind) {
@@ -233,8 +231,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptAssignFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -273,8 +269,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptBinaryFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags ?? 0) {
@@ -337,8 +331,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptClassFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -363,8 +355,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptModifierFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -391,8 +381,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptNameFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -413,8 +401,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptParamFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -433,8 +419,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptTypeFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -465,8 +449,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptUnaryFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -491,8 +473,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptExecFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -517,8 +497,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptMagicFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -549,8 +527,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptUseFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -571,8 +547,6 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @return null
      */
     public function acceptAnyFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {

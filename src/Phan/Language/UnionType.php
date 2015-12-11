@@ -153,8 +153,7 @@ class UnionType {
         }
 
         return (new Element($node))->acceptKindVisitor(
-            new UnionTypeVisitor($context, $code_base),
-            $code_base
+            new UnionTypeVisitor($context, $code_base)
         );
 	}
 
