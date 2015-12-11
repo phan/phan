@@ -929,7 +929,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         Method $method,
         Node $node
     ) {
-
         if (Database::isEnabled()) {
             // Store the call to the method so we can track
             // dependencies later

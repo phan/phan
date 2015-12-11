@@ -507,10 +507,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         )) {
             Log::err(
                 Log::EUNDEF,
-                "Can't access undeclared constant {$defining_clazz->getName()}::{$constant_name}",
+                "Can't access undeclared constant {$defining_clazz->getFQSEN()}::{$constant_name}",
                 $this->context->getFile(),
                 $node->lineno
             );
+
             return new UnionType();
         }
 

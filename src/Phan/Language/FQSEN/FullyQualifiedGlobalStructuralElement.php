@@ -35,6 +35,12 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         string $name,
         int $alternate_id = 0
     ) {
+        // Transfer any relative namespace stuff from the
+        // name to the namespace.
+        $name_parts= explode('\\', $name);
+        $name = array_pop($name_parts);
+        $namespace = implode('\\', array_merge([$namespace], $name_parts));
+
         parent::__construct($name);
 
         assert(!empty($name),

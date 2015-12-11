@@ -101,7 +101,6 @@ class Type {
         string $namespace,
         string $type_name
     ) : Type {
-        $type_name = strtolower(trim($type_name));
         $namespace = trim($namespace);
 
         return self::memoizeStatic($namespace . '\\' . $type_name,
@@ -248,7 +247,7 @@ class Type {
                 self::namespaceAndTypeFromString($string);
         }
 
-        $type_name = strtolower($string);
+        $type_name = $string;
 
         // Check to see if the type name is mapped via
         // a using clause.
