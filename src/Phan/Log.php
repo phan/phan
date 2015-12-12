@@ -166,7 +166,7 @@ class Log {
             };
         } else {
             if(Config::get()->progress_bar) {
-                $print_closure("\n");
+                fwrite(STDERR, "\n");
             }
         }
 
