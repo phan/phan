@@ -1,5 +1,7 @@
 Phan is a static analyzer for PHP.
 
+[![Build Status](https://travis-ci.org/etsy/phan.svg?branch=master)](https://travis-ci.org/etsy/phan)
+
 # Getting it running
 
 Phan requires PHP 7+ with the [php-ast][phpast] extension loaded. The code you
