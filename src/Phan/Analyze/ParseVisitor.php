@@ -272,6 +272,12 @@ class ParseVisitor extends ScopeVisitor {
             );
         }
 
+        if ('__toString' === $method_name) {
+            $clazz->getUnionType()->addType(
+                StringType::instance()
+            );
+        }
+
         // Send the context into the method
         $context = $this->context->withMethodFQSEN(
             $method->getFQSEN()
