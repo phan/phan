@@ -164,6 +164,10 @@ class Log {
             $print_closure = function($message) use ($fp) {
                 fputs($fp, $message);
             };
+        } else {
+            if(Config::get()->progress_bar) {
+                $print_closure("\n");
+            }
         }
 
 		switch($log->output_mode) {

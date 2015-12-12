@@ -211,14 +211,13 @@ EOB;
 
         $padded_message = str_pad ($msg, 10, ' ', STR_PAD_LEFT);
 
-        echo "$padded_message ";
+        fwrite(STDERR, "$padded_message ");
         $current = (int)($p * 60);
         $rest = max(60 - $current, 0);
-        echo str_repeat("\u{25b1}", $current);
-        echo str_repeat("\u{25b0}", $rest);
-        echo " " . sprintf("% 3d", (int)(100*$p)) . "%";
-        echo sprintf(' %0.2dMB/%0.2dMB', $memory, $peak);
-        echo "\r";
+        fwrite(STDERR, str_repeat("\u{25b1}", $current));
+        fwrite(STDERR, str_repeat("\u{25b0}", $rest));
+        fwrite(STDERR, " " . sprintf("% 3d", (int)(100*$p)) . "%");
+        fwrite(STDERR, sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r");
     }
 
     /**
