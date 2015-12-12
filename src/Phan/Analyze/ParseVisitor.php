@@ -596,10 +596,10 @@ class ParseVisitor extends ScopeVisitor {
         $name = $declares->children[0]->children['name'];
         $value = $declares->children[0]->children['value'];
         if ('strict_types' === $name) {
-            $context = $this->context->withStrictTypes($value);
+            return $this->context->withStrictTypes($value);
         }
 
-        return $context;
+        return $this->context;
     }
 
 
