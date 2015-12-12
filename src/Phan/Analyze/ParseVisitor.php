@@ -265,14 +265,12 @@ class ParseVisitor extends ScopeVisitor {
         if ('__construct' === $method_name) {
             $clazz->setIsParentConstructorCalled(false);
         }
-
-        if ('__invoke' === $method_name) {
+        else if ('__invoke' === $method_name) {
             $clazz->getUnionType()->addType(
                 CallableType::instance()
             );
         }
-
-        if ('__toString' === $method_name) {
+        else if ('__toString' === $method_name) {
             $clazz->getUnionType()->addType(
                 StringType::instance()
             );
