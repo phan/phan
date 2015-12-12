@@ -20,3 +20,16 @@ install:
 script:
   - mkdir -p build
   - phpunit --colors -c phpunit.xml
+  - php package.php
+
+before_deploy:
+  - mkdir -p build
+  - php package.php
+
+deploy:
+  provider: releases
+  api_key: $API_KEY
+  file: build/phan.phar
+  skip_cleanup: true
+  on:
+    tags: true
