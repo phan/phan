@@ -221,3 +221,9 @@ that it is actually returning the passed in `string` instead of an `int` as decl
   [php7ast]: https://wiki.php.net/rfc/abstract_syntax_tree
   [php7dev]: https://github.com/rlerdorf/php7dev
   [uniform]: https://wiki.php.net/rfc/uniform_variable_syntax
+
+# Running tests
+
+```sh
+vendor/bin/phpunit
+```
