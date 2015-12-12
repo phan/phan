@@ -77,7 +77,11 @@ class ValidationVisitor
      */
     public function visit(Node $node) : bool {
         if (isset($node->children['class'])) {
-            return $this->visitNew($node);
+            if ($node->kind == \ast\AST_STATIC_PROP) {
+                return $this->visitStaticProp($node);
+            } else {
+                return $this->visitNew($node);
+            }
         }
 
         Log::err(
@@ -152,6 +156,29 @@ class ValidationVisitor
 
     public function visitProp(Node $node) : bool {
         return $this->classExistsOrIsNative($node);
+    }
+
+    public function visitStaticProp(Node $node) : bool {
+        if (!$this->classExists()) {
+            return $this->classExistsOrIsNative($node);
+        }
+
+        $clazz =
+            $this->code_base->getClassByFQSEN(
+                $this->class_fqsen
+            );
+
+        if (!$clazz->hasPropertyWithName($this->code_base, $node->children['prop'])) {
+            Log::err(
+                Log::ETYPE,
+                "Access to undeclared static property {$node->children['prop']} on {$this->class_name}",
+                $this->context->getFile(),
+                $node->lineno
+            );
+            return false;
+        }
+
+        return true;
     }
 
     /**
