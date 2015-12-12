@@ -257,6 +257,25 @@ class ArgumentType {
             $argument_type_expanded =
                 $argument_type->asExpandedTypes($code_base);
 
+            /* TODO see issue #42
+               If argument is an object and it has a String union type,
+               then we need to ignore that in strict_types=1 mode.
+            if ($argument instanceof \ast\Node) {
+                if(!empty($argument->children['class'])) {
+                    // arg is an object
+                    if ($method->getContext()->getStrictTypes()) {
+                        ...
+                    }
+                }
+            }
+              or maybe UnionType::fromNode should check strict_types and
+              not return the string union type
+
+              or we shouldn't add the string type at all when a class
+              has a __toString() and instead set a flag and check that
+              instead
+            */
+
             // Check the method to see if it has the correct
             // parameter types. If not, keep hunting through
             // alternates of the method until we find one that

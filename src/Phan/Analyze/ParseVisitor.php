@@ -582,6 +582,28 @@ class ParseVisitor extends ScopeVisitor {
     }
 
     /**
+     * Visit a node with kind `\ast\AST_DECLARE`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitDeclare(Node $node) : Context {
+        $declares = $node->children['declares'];
+        $name = $declares->children[0]->children['name'];
+        $value = $declares->children[0]->children['value'];
+        if ('strict_types' === $name) {
+            $context = $this->context->withStrictTypes($value);
+        }
+
+        return $context;
+    }
+
+
+    /**
      * @return Clazz
      * Get the class on this scope or fail real hard
      */
