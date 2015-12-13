@@ -194,7 +194,7 @@ EOB;
         float $p
     ) {
         // Bound the percentage to [0, 1]
-        $p = min(max($p, 1.0), 0.0);
+        $p = min(max($p, 0.0), 1.0);
 
         if (!Config::get()->progress_bar || Config::get()->dump_ast) {
             return;

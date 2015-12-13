@@ -277,7 +277,7 @@ class Phan {
      * @return null
      */
     private function analyzeFunctions(CodeBase $code_base) {
-        $function_count = count($code_base->getMethodMap());
+        $function_count = count($code_base->getMethodMap(), COUNT_RECURSIVE);
         $i = 0;
         foreach ($code_base->getMethodMap() as $fqsen_string => $method_map) {
             foreach ($method_map as $name => $method) {
