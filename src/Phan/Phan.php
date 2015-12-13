@@ -421,7 +421,7 @@ class Phan {
         foreach (Config::get()->exclude_analysis_directory_list
             as $directory
         ) {
-            if (0 === strpos($file_path, $directory)) {
+            if (0 === strpos($file_path, $directory) || 0 === strpos($file_path, "./$directory")) {
                 return true;
             }
         }
