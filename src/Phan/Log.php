@@ -112,6 +112,11 @@ class Log {
             }
 		}
 
+        // Don't report anything for excluded files
+        if(Phan::isExcludedAnalysisFile($file)) {
+            return;
+        }
+
         // If configured to do so, prepend the message
         // with a trace ID which indicates where the issue
         // came from allowing us to group on unique classes
