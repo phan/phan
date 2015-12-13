@@ -140,7 +140,7 @@ class File {
      */
     public function isParseUpToDate() : bool {
         return (
-            filemtime($this->file_path) <= $this->modification_time
+            filemtime(realpath($this->file_path)) <= $this->modification_time
         );
     }
 
@@ -151,7 +151,7 @@ class File {
      * @return null
      */
     public function setParseUpToDate() {
-        $this->modification_time = filemtime($this->file_path);
+        $this->modification_time = filemtime(realpath($this->file_path));
 
         if (Database::isEnabled()) {
             // Write it to disk
