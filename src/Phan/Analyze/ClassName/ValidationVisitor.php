@@ -168,7 +168,7 @@ class ValidationVisitor
                 $this->class_fqsen
             );
 
-        if (!$clazz->hasPropertyWithName($this->code_base, $node->children['prop'])) {
+        if (is_string($node->children['prop']) && !$clazz->hasPropertyWithName($this->code_base, $node->children['prop'])) {
             Log::err(
                 Log::ETYPE,
                 "Access to undeclared static property {$node->children['prop']} on {$this->class_name}",
