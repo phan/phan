@@ -173,7 +173,7 @@ class Config {
             return $instance;
         }
 
-        $instance = new Config();
+        $instance = new static();
         return $instance;
     }
 
@@ -196,5 +196,16 @@ class Config {
             Config::get()->getProjectRootDirectory(),
             $relative_path
         ]);
+    }
+
+    /**
+     * @param array $configuration
+     * @return Config
+     */
+    public static function fromArray(array $configuration):Config
+    {
+        $config = self::get();
+        $config->configuration = $configuration;
+        return $config;
     }
 }

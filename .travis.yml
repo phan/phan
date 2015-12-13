@@ -5,11 +5,12 @@ php:
   - nightly
 
 env:
-  - TEST_SUITE="AnalyzerTest"
-  - TEST_SUITE="PhanTest"
-  - TEST_SUITE="RasmusTest"
-  - TEST_SUITE="LanguageTest"
-
+  - PHAN_TEST="PhpUnit" TEST_SUITE="AnalyzerTest"
+  - PHAN_TEST="PhpUnit" TEST_SUITE="PhanTest"
+  - PHAN_TEST="PhpUnit" TEST_SUITE="RasmusTest"
+  - PHAN_TEST="PhpUnit" TEST_SUITE="LanguageTest"
+  - PHAN_TEST="PhanDatabaseTest"
+  - PHAN_TEST="SelfTest"
 sudo: false
 
 matrix:
@@ -29,10 +30,22 @@ install:
   - composer --prefer-source install
 
 script:
-  - ./vendor/bin/phpunit --colors --testsuite "$TEST_SUITE"
+  - if [ "$PHAN_TEST" = "PhpUnit" ]; then ./vendor/bin/phpunit --colors --testsuite "$TEST_SUITE"; fi;
+
+  # Build package to some self-test and packaging test
   - php package.php
 
+  # Test phan alanyzing on itself
+  - if [ "$PHAN_TEST" = "SelfTest" ]; then php -dmemory_limit=2G build/phan.phar analyze -e vendor/ -r vendor/ -r src/; fi;
+
+  # Test passes with DB enabled
+  - if [ "$PHAN_TEST" = "PhanDatabaseTest" ]; then  php -dmemory_limit=2G build/phan.phar analyze --database phan.db -e vendor/ -r vendor/ -r src/; fi;
+  - if [ "$PHAN_TEST" = "PhanDatabaseTest" ]; then  php -dmemory_limit=2G build/phan.phar analyze --database phan.db -e vendor/ -r vendor/ -r src/; fi;
+
+
+
 before_deploy:
+  # Package PHAR package for deployment
   - php package.php
 
 deploy:

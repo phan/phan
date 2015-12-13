@@ -148,7 +148,7 @@ class Analysis {
         // Take a pass to import all details from ancestors
         $i = 0;
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
-            CLI::progress('classes',  ++$i/$class_count);
+//            CLI::progress('classes',  ++$i/$class_count);
 
             // Make sure the parent classes exist
             ParentClassExistsAnalyzer::analyzeParentClassExists($code_base, $clazz);
@@ -163,7 +163,7 @@ class Analysis {
 
         // Run a few checks on all of the classes
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
-            CLI::progress('classes',  ++$i/$class_count);
+//            CLI::progress('classes',  ++$i/$class_count);
 
             if ($clazz->getContext()->isInternal()) {
                 continue;
@@ -186,7 +186,7 @@ class Analysis {
         $i = 0;
         foreach ($code_base->getMethodMap() as $fqsen_string => $method_map) {
             foreach ($method_map as $name => $method) {
-                CLI::progress('method',  (++$i)/$function_count);
+//                CLI::progress('method',  (++$i)/$function_count);
 
                 if ($method->getContext()->isInternal()) {
                     continue;
