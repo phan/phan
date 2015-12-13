@@ -4,3 +4,4 @@ abstract class AbstractProperties {
 }
 
 $test = AbstractProperties::$things;
+$test = AbstractProperties::$things2;
