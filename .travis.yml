@@ -31,7 +31,7 @@ install:
   - composer --prefer-source install
 
 script:
-  - phpunit --colors -c phpunit.xml
+  - ./vendor/bin/phpunit --colors -c phpunit.xml
   - php package.php
 
 before_deploy:
