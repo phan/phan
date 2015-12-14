@@ -17,7 +17,7 @@ cache:
 
 before_install:
   - mkdir build
-  - git clone https://github.com/nikic/php-ast.git build/ast
+  - git clone --depth 1 https://github.com/nikic/php-ast.git build/ast
   - cd ./build/ast/
   - phpize
   - ./configure
