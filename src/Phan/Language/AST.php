@@ -334,6 +334,12 @@ class AST {
             return;
         }
 
+        // Foo::$bar['baz'](); is a problem
+        // Foo::$bar['baz'] is not
+        if($lnode->kind === \ast\AST_STATIC_PROP && $node->kind !== \ast\AST_CALL) {
+            return;
+        }
+
         if(
            (($lnode->children['prop'] instanceof Node && $lnode->children['prop']->kind == \ast\AST_VAR) ||
             (!empty($lnode->children['class']) && $lnode->children['class'] instanceof Node && ($lnode->children['class']->kind == \ast\AST_VAR || $lnode->children['class']->kind == \ast\AST_NAME))) &&
