@@ -2,28 +2,37 @@ language: php
 
 php:
   - 7
+  - nightly
+
+env:
+  - TEST_SUITE="AnalyzerTest"
+  - TEST_SUITE="PhanTest"
+  - TEST_SUITE="RasmusTest"
+  - TEST_SUITE="LanguageTest"
+
+sudo: false
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: "nightly"
+
+cache:
+  directories:
+    - ./vendor
+    - ./build/ast
 
 before_install:
-  - git clone https://github.com/nikic/php-ast.git build/ast
-  - cd ./build/ast/
-  - phpize
-  - ./configure
-  - make
-  - sudo make install
-  - echo "extension=ast.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - cd ./../../
-  - travis_retry composer self-update
+  - ./tests/setup.sh
 
 install:
   - composer --prefer-source install
 
 script:
-  - mkdir -p build
-  - phpunit --colors -c phpunit.xml
+  - ./vendor/bin/phpunit --colors --testsuite "$TEST_SUITE"
   - php package.php
 
 before_deploy:
-  - mkdir -p build
   - php package.php
 
 deploy:

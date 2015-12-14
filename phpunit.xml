@@ -17,8 +17,17 @@
 
         verbose="false">
     <testsuites>
-        <testsuite name="Phan tests">
-            <directory>tests/Phan</directory>
+        <testsuite name="AnalyzerTest">
+            <file>tests/Phan/AnalyzerTest.php</file>
+        </testsuite>
+        <testsuite name="PhanTest">
+            <file>tests/Phan/PhanTest.php</file>
+        </testsuite>
+        <testsuite name="RasmusTest">
+            <file>tests/Phan/RasmusTest.php</file>
+        </testsuite>
+        <testsuite name="LanguageTest">
+            <directory>tests/Phan/Language</directory>
         </testsuite>
     </testsuites>
     <filter>
