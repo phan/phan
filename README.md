@@ -222,7 +222,7 @@ that it is actually returning the passed in `string` instead of an `int` as decl
   [phpast]: https://github.com/nikic/php-ast
   [scrutinizer]: https://scrutinizer-ci.com/docs/guides/php/automated-code-reviews
   [doctypes]: http://www.phpdoc.org/docs/latest/guides/types.html
-  [tests]: https://github.com/etsy/phan/blob/master/tests
+  [tests]: https://github.com/etsy/phan/blob/master/tests/files
   [php7ast]: https://wiki.php.net/rfc/abstract_syntax_tree
   [php7dev]: https://github.com/rlerdorf/php7dev
   [uniform]: https://wiki.php.net/rfc/uniform_variable_syntax
