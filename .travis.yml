@@ -3,6 +3,8 @@ language: php
 php:
   - 7
 
+sudo: false
+
 before_install:
   - mkdir build
   - git clone https://github.com/nikic/php-ast.git build/ast
@@ -10,7 +12,7 @@ before_install:
   - phpize
   - ./configure
   - make
-  - sudo make install
+  - make install
   - echo "extension=ast.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - cd ./../../
   - travis_retry composer self-update
