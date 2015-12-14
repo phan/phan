@@ -11,6 +11,10 @@ matrix:
   allow_failures:
     - php: "nightly"
 
+cache:
+  directories:
+    - ./vendor
+
 before_install:
   - mkdir build
   - git clone https://github.com/nikic/php-ast.git build/ast
