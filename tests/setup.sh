@@ -15,5 +15,3 @@ pushd ./build/ast
   echo "extension=ast.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 popd
 
-# Update composer.
-travis_retry composer self-update
