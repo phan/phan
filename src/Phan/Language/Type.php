@@ -274,7 +274,7 @@ class Type {
             );
         }
 
-        if(self::isGenericArrayString($type_name) && self::isNativeTypeString('\\'.ltrim($type_name,'\\'))) {
+        if(self::isGenericArrayString($type_name) && self::isNativeTypeString($type_name)) {
             return self::fromInternalTypeName($type_name);
         } else {
             // Check to see if its a builtin type
@@ -394,18 +394,18 @@ class Type {
     private static function isNativeTypeString(string $type_name) : bool {
         return in_array(
             str_replace('[]', '', $type_name), [
-                '\\int',
-                '\\float',
-                '\\bool',
-                '\\true',
-                '\\string',
-                '\\callable',
-                '\\array',
-                '\\null',
-                '\\object',
-                '\\resource',
-                '\\mixed',
-                '\\void'
+                'int',
+                'float',
+                'bool',
+                'true',
+                'string',
+                'callable',
+                'array',
+                'null',
+                'object',
+                'resource',
+                'mixed',
+                'void'
             ]
         );
     }
@@ -446,12 +446,12 @@ class Type {
      */
     public function isScalar() : bool {
         return in_array((string)$this, [
-            '\\int',
-            '\\float',
-            '\\bool',
-            '\\true',
-            '\\string',
-            '\\null'
+            'int',
+            'float',
+            'bool',
+            'true',
+            'string',
+            'null'
         ]);
     }
 
