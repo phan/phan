@@ -1,6 +1,2 @@
 #!/bin/sh
-./vendor/bin/phpunit \
-    --bootstrap src/Phan/Bootstrap.php \
-    --colors=auto \
-    --strict-global-state \
-    tests/Phan
+./vendor/bin/phpunit
