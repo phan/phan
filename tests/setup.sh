@@ -15,3 +15,6 @@ pushd ./build/ast
   echo "extension=ast.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 popd
 
+# Disable xdebug, since we aren't currently gathering code coverage data and
+# having xdebug slows down Composer a bit.
+phpenv config-rm xdebug.ini
