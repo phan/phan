@@ -2,25 +2,77 @@ Phan is a static analyzer for PHP.
 
 [![Build Status](https://travis-ci.org/etsy/phan.svg?branch=master)](https://travis-ci.org/etsy/phan)
 
+# Features
+
+* Checks for calls and instantiations of undeclared functions, methods, closures and classes
+* Checks types of all arguments and return values to/from functions, closures and methods
+* Supports `@param`, `@return`, `@var` and `@deprecated` [phpdoc][doctypes] comments including union and void/null types
+* Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
+* Undefined variable tracking
+* Supports namespaces, traits and variadics
+* Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
+
+See the [tests][tests] directory for some examples of the various checks.
+
 # Getting it running
 
 Phan requires PHP 7+ with the [php-ast][phpast] extension loaded. The code you
 analyze can be written for any version of PHP.
 
+## Standalone usage
+
 To get phan running;
 
 1. Clone the repo
 2. Run `composer install` to load dependencies
-3. Run `./test` to run the test suite
-4. Test phan on itself by running the following
+3. Test phan on itself by running the following
 
-```
+```sh
 ./phan `find src/ -type f -path '*.php'`
 ```
 
+You can see the full list of command line options by running `phan -h`.
+
+## Attaching it to your project integration process
+
+Require a dependency:
+```sh
+composer require --dev "etsy/phan:dev-master"
+```
+
+Define a step or run manually
+```sh
+find src/ -type f -name '*.php' > phan.in
+./vendor/bin/phan -f phan.in -3 vendor -o phan.out
+```
+
+The `phan.out` file will contain the analyzer output. This should look like this:
+
+```
+test1.php:191 UndefError call to undefined function get_real_size()
+test1.php:232 UndefError static call to undeclared class core\session\manager
+test1.php:386 UndefError Trying to instantiate undeclared class lang_installer
+test2.php:4 TypeError arg#1(arg) is object but escapeshellarg() takes string
+test2.php:4 TypeError arg#1(msg) is int but logmsg() takes string defined at sth.php:5
+test2.php:4 TypeError arg#2(level) is string but logmsg() takes int defined at sth.php:5
+test3.php:11 TypeError arg#1(number) is string but number_format() takes float
+test3.php:12 TypeError arg#1(string) is int but htmlspecialchars() takes string
+test3.php:13 TypeError arg#1(str) is int but md5() takes string
+test3.php:14 TypeError arg#1(separator) is int but explode() takes string
+test3.php:14 TypeError arg#2(str) is int but explode() takes string
+```
+
+You can see the full list of command line options by running `./vendor/bin/phan -h`.
+
+## Getting requirements
+
+### PHP 7
+
 If you don't have a version of PHP 7 installed, you can grab a [php7dev][php7dev] Vagrant image or one of the many Docker builds out there.
 
-Then compile [php-ast][phpast]. Something along these lines should do it:
+### AST extension
+
+Compile [php-ast][phpast]. Something along these lines should do it:
 
 ```sh
 git clone https://github.com/nikic/php-ast.git
@@ -37,50 +89,7 @@ where it is looking.
 If `phpize` is unavailable on your system, you may need to install the PHP developer
 packages which are often available with names such as `php-dev`.
 
-
-## Features
-
-* Checks for calls and instantiations of undeclared functions, methods, closures and classes
-* Checks types of all arguments and return values to/from functions, closures and methods
-* Supports `@param`, `@return`, `@var` and `@deprecated` [phpdoc][doctypes] comments including union and void/null types
-* Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
-* Undefined variable tracking
-* Supports namespaces, traits and variadics
-* Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
-
-See the [tests][tests] directory for some examples of the various checks.
-
-
-## Usage
-
-```sh
-phan *.php
-```
-
-or give it a text file containing a list of files (but see the next section) to scan:
-
-```sh
-phan -f filelist.txt
-```
-
-and it might generate output that looks like this:
-
-```php
-test1.php:191 UndefError call to undefined function get_real_size()
-test1.php:232 UndefError static call to undeclared class core\session\manager
-test1.php:386 UndefError Trying to instantiate undeclared class lang_installer
-test2.php:4 TypeError arg#1(arg) is object but escapeshellarg() takes string
-test2.php:4 TypeError arg#1(msg) is int but logmsg() takes string defined at sth.php:5
-test2.php:4 TypeError arg#2(level) is string but logmsg() takes int defined at sth.php:5
-test3.php:11 TypeError arg#1(number) is string but number_format() takes float
-test3.php:12 TypeError arg#1(string) is int but htmlspecialchars() takes string
-test3.php:13 TypeError arg#1(str) is int but md5() takes string
-test3.php:14 TypeError arg#1(separator) is int but explode() takes string
-test3.php:14 TypeError arg#2(str) is int but explode() takes string
-```
-
-You can see the full list of command line options by running `phan -h`.
-
+Windows users can grab `ast.dll` directly from [PECL snaps](http://windows.php.net/downloads/pecl/snaps/ast/)
 
 ## Generating a file list
 
@@ -164,7 +173,8 @@ help it out by adding a `@var` doc-type comment before the function:
  * @var string|array $var
  */
 function test() {
-	...
+	//...
+}
 ```
 
 This tells the analyzer that along with the `int` that it figures out on its own, `$var` can
@@ -206,7 +216,7 @@ a call is seen. This means that the problem here won't be detected:
 function test($arg):int {
 	return $arg;
 }
-test("abc")
+test("abc");
 ```
 
 This would normally generate:
@@ -230,5 +240,6 @@ that it is actually returning the passed in `string` instead of an `int` as decl
 # Running tests
 
 ```sh
-vendor/bin/phpunit
+composer install
+./vendor/bin/phpunit
 ```
