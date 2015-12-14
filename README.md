@@ -34,6 +34,9 @@ And add `extension=ast.so` to your `php.ini` file. Check that it is there with `
 If it isn't you probably added it to the wrong `php.ini` file. Check `php --ini` to see
 where it is looking.
 
+If `phpize` is unavailable on your system, you may need to install the PHP developer
+packages which are often available with names such as `php-dev`.
+
 
 ## Features
 
