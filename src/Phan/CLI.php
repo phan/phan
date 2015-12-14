@@ -151,7 +151,7 @@ class CLI {
 Usage: {$argv[0]} [options] [files...]
   -f <filename>   A file containing a list of PHP files to be analyzed
   -3 <dir_list>   A comma-separated list of directories for which any files
-                  therein should be parsed but but not analyzed.
+                  therein should be parsed but not analyzed.
   -q              Quick mode - doesn't recurse into all function calls
   -b              Check for potential PHP 5 -> PHP 7 BC issues
   -i              Ignore undeclared functions and classes
