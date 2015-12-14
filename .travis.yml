@@ -4,6 +4,7 @@ php:
   - 7
 
 before_install:
+  - mkdir build
   - git clone https://github.com/nikic/php-ast.git build/ast
   - cd ./build/ast/
   - phpize
@@ -18,12 +19,10 @@ install:
   - composer --prefer-source install
 
 script:
-  - mkdir -p build
   - phpunit --colors -c phpunit.xml
   - php package.php
 
 before_deploy:
-  - mkdir -p build
   - php package.php
 
 deploy:
