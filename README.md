@@ -232,4 +232,3 @@ that it is actually returning the passed in `string` instead of an `int` as decl
 ```sh
 vendor/bin/phpunit
 ```
-
