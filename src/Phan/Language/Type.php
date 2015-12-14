@@ -274,32 +274,35 @@ class Type {
             );
         }
 
-        // Check to see if its a builtin type
-        switch (self::canonicalNameFromName($type_name)) {
-        case 'array':
-            return \Phan\Language\Type\ArrayType::instance();
-        case 'bool':
-            return \Phan\Language\Type\BoolType::instance();
-        case 'callable':
-            return \Phan\Language\Type\CallableType::instance();
-        case 'float':
-            return \Phan\Language\Type\FloatType::instance();
-        case 'int':
-            return \Phan\Language\Type\IntType::instance();
-        case 'mixed':
-            return \Phan\Language\Type\MixedType::instance();
-        case 'null':
-            return \Phan\Language\Type\NullType::instance();
-        case 'object':
-            return \Phan\Language\Type\ObjectType::instance();
-        case 'resource':
-            return \Phan\Language\Type\ResourceType::instance();
-        case 'string':
-            return \Phan\Language\Type\StringType::instance();
-        case 'void':
-            return \Phan\Language\Type\VoidType::instance();
+        if(self::isGenericArrayString($type_name) && self::isNativeTypeString('\\'.ltrim($type_name,'\\'))) {
+            return self::fromInternalTypeName($type_name);
+        } else {
+            // Check to see if its a builtin type
+            switch (self::canonicalNameFromName($type_name)) {
+            case 'array':
+                return \Phan\Language\Type\ArrayType::instance();
+            case 'bool':
+                return \Phan\Language\Type\BoolType::instance();
+            case 'callable':
+                return \Phan\Language\Type\CallableType::instance();
+            case 'float':
+                return \Phan\Language\Type\FloatType::instance();
+            case 'int':
+                return \Phan\Language\Type\IntType::instance();
+            case 'mixed':
+                return \Phan\Language\Type\MixedType::instance();
+            case 'null':
+                return \Phan\Language\Type\NullType::instance();
+            case 'object':
+                return \Phan\Language\Type\ObjectType::instance();
+            case 'resource':
+                return \Phan\Language\Type\ResourceType::instance();
+            case 'string':
+                return \Phan\Language\Type\StringType::instance();
+            case 'void':
+                return \Phan\Language\Type\VoidType::instance();
+            }
         }
-
         // If this is a type referencing the current class
         // in scope such as 'self' or 'static', return that.
         if (self::isSelfTypeString($type_name)
@@ -376,12 +379,21 @@ class Type {
      * @return bool
      * True if this is a native type (like int, string, etc.)
      *
+     */
+    public function isNativeType() : bool {
+        return self::isNativeTypeString((string)$this);
+    }
+
+    /**
+     * @return bool
+     * True if this is a native type (like int, string, etc.)
+     *
      * @see \Phan\Deprecated\Util::is_native_type
      * Formerly `function is_native_type`
      */
-    public function isNativeType() : bool {
+    private static function isNativeTypeString(string $type_name) : bool {
         return in_array(
-            str_replace('[]', '', (string)$this), [
+            str_replace('[]', '', $type_name), [
                 '\\int',
                 '\\float',
                 '\\bool',
