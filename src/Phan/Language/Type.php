@@ -399,6 +399,7 @@ class Type {
                 'bool',
                 'true',
                 'string',
+                'closure',
                 'callable',
                 'array',
                 'null',
@@ -593,18 +594,18 @@ class Type {
             return true;
         }
 
+        $s = (string)$this;
+        $d = (string)$type;
+
         /*
-        if(substr($source,0,9) == 'callable:') {
+        if(substr($s,0,9) == 'callable:') {
             $s = 'callable';
         }
 
         if(substr($d,0,9)=='callable:') {
             $d = 'callable';
         }
-        */
-
-        $s = (string)$this;
-        $d = (string)$type;
+         */
 
         if($s[0]=='\\') {
             $s = substr($s,1);
@@ -653,6 +654,10 @@ class Type {
         if(strpos($d,'[]') !== false
             && $s==='array'
         ) {
+            return true;
+        }
+
+        if($s === 'callable' && $d === 'closure') {
             return true;
         }
 
@@ -715,9 +720,9 @@ class Type {
     ) : string {
         static $repmaps = [
             ['integer', 'double', 'boolean', 'false',
-            'true', 'callback', 'closure', 'NULL'],
+            'true', 'callback', 'NULL'],
             ['int', 'float', 'bool', 'bool', 'bool',
-            'callable', 'callable', 'null']
+            'callable', 'null']
         ];
 
         if (empty($name)) {
