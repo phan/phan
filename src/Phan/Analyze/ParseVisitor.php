@@ -506,11 +506,14 @@ class ParseVisitor extends ScopeVisitor {
         if($call->kind == \ast\AST_NAME) {
             $func_name = strtolower($call->children['name']);
             if($func_name == 'parent') {
-                $meth = strtolower($node->children['method']);
+                // Make sure it is not a crazy dynamic parent method call
+                if(!($node->children['method'] instanceof Node)) {
+                    $meth = strtolower($node->children['method']);
 
-                if($meth == '__construct') {
-                    $clazz = $this->getContextClass();
-                    $clazz->setIsParentConstructorCalled(true);
+                    if($meth == '__construct') {
+                        $clazz = $this->getContextClass();
+                        $clazz->setIsParentConstructorCalled(true);
+					}
                 }
             }
         }
