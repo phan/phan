@@ -56,6 +56,7 @@ trait PropertyMap {
      * @return bool
      */
     public function hasProperty(FQSEN $fqsen, string $name) : bool {
+
         if (!empty($this->property_map[(string)$fqsen][$name])) {
             return true;
         }
@@ -122,7 +123,6 @@ trait PropertyMap {
     ) {
         $name = $property->getFQSEN()->getNameWithAlternateId();
         $this->property_map[(string)$fqsen][$name] = $property;
-
 
         // For elements that aren't internal PHP classes
         if (!$property->getContext()->isInternal()) {

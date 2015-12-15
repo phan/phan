@@ -74,10 +74,19 @@ abstract class FullyQualifiedClassElement extends FQSEN {
         ) {
             return new static(
                 $fully_qualified_class_name,
-                strtolower($name),
+                static::canonicalName($name),
                 $alternate_id
             );
         });
+    }
+
+    /**
+     * @return string
+     * The canonical representation of the name of the object. Functions
+     * and Methods, for instance, lowercase their names.
+     */
+    public static function canonicalName(string $name) : string {
+        return $name;
     }
 
     /**

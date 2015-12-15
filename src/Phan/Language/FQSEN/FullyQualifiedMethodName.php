@@ -7,4 +7,15 @@ use \Phan\Language\FQSEN2;
 /**
  * A Fully-Qualified Method Name
  */
-class FullyQualifiedMethodName extends FullyQualifiedClassElement {}
+class FullyQualifiedMethodName extends FullyQualifiedClassElement {
+
+    /**
+     * @return string
+     * The canonical representation of the name of the object. Functions
+     * and Methods, for instance, lowercase their names.
+     */
+    public static function canonicalName(string $name) : string {
+        return strtolower($name);
+    }
+
+}

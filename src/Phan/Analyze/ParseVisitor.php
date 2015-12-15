@@ -348,9 +348,6 @@ class ParseVisitor extends ScopeVisitor {
             // Add the property to the class
             $clazz->addProperty($this->code_base, $property);
 
-            // TODO: rm above
-            $this->code_base->addProperty($property);
-
             // Look for any @var declarations
             if ($variable = $comment->getVariableList()[$i] ?? null) {
                 if ((string)$type != 'null'
