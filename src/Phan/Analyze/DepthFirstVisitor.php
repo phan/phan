@@ -335,7 +335,7 @@ class DepthFirstVisitor extends ScopeVisitor {
      */
     public function visitForeach(Node $node) : Context {
         if($node->children['value']->kind == \ast\AST_LIST) {
-            foreach($node->children['value']->children as $child_node) {
+            foreach($node->children['value']->children ?? [] as $child_node) {
                 $variable =
                     Variable::fromNodeInContext(
                         $child_node,

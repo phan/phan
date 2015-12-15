@@ -22,7 +22,7 @@ class Schema {
     private $primary_key_name;
 
     /**
-     * @var string[];
+     * @var Column[];
      */
     private $column_def_map;
 
@@ -45,16 +45,12 @@ class Schema {
      * The name of the table that this model is associated
      * with
      *
-     * @param string[]
-     * A map from primary key column name to SQLite
-     * data type
-     *
-     * @param string[] $column_def_map
-     * A map from column name to its SQLITE3 type
+     * @param Column[] $column_list
+     * A list of columns on the table
      */
     public function __construct(
         string $table_name,
-        array $column_list
+        $column_list
     ) {
         $this->table_name = $table_name;
 

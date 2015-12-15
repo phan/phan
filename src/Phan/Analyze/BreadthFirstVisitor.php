@@ -563,7 +563,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
         if(Config::get()->backward_compatibility_checks) {
             AST::backwardCompatibilityCheck($this->context, $node);
-            foreach($node->children['args']->children as $arg_node) {
+            foreach($node->children['args']->children ?? [] as $arg_node) {
                 if($arg_node instanceof Node) {
                     AST::backwardCompatibilityCheck($this->context, $arg_node);
                 }

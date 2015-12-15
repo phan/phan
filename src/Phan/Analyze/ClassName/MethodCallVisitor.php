@@ -57,12 +57,35 @@ class MethodCallVisitor extends KindVisitorImplementation {
         return '';
     }
 
+    /**
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return string
+     * The class name represented by the given call
+     */
     public function visitStaticCall(Node $node) : string {
         return $this->visitMethodCall($node);
     }
 
+    /**
+     * This is things like j
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return string
+     * The class name represented by the given call
+     */
     public function visitDim(Node $node) : string {
-        return '';
+        // Return the class name of the expression behind the dim
+        return (new Element($node->children['expr']))->acceptKindVisitor(
+            new MethodCallVisitor(
+                $this->context,
+                $this->code_base
+            )
+        );
     }
 
     /**
