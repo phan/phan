@@ -54,6 +54,15 @@ class MethodCallVisitor extends KindVisitorImplementation {
      * The class name represented by the given call
      */
     public function visit(Node $node) : string {
+        Debug::printNode($node);
+        return '';
+    }
+
+    public function visitStaticCall(Node $node) : string {
+        return '';
+    }
+
+    public function visitDim(Node $node) : string {
         return '';
     }
 
@@ -85,6 +94,7 @@ class MethodCallVisitor extends KindVisitorImplementation {
     public function visitVar(Node $node) : string {
         // $$var->method()
         if(($node->children['name'] instanceof Node)) {
+            return "visitVar\n";
             return '';
         }
 
@@ -134,7 +144,8 @@ class MethodCallVisitor extends KindVisitorImplementation {
             }
         }
 
-        // Could not find name
+        // We land here if we have a variable
+        // with a native type or no known type.
         return '';
     }
 

@@ -8419,7 +8419,7 @@ return [
 'SplFileInfo::setFileClass' => ['', 'class_name='=>'string'],
 'SplFileInfo::setInfoClass' => ['', 'class_name='=>'string'],
 'SplFileInfo::__toString' => [''],
-'SplFileObject::__construct' => ['SplFileObject', 'filename'=>'string', 'mode'=>'string', 'use_include_path'=>'bool', 'context'=>''],
+'SplFileObject::__construct' => ['SplFileObject', 'filename'=>'string'],
 'SplFileObject::current' => ['string|array'],
 'SplFileObject::eof' => ['bool'],
 'SplFileObject::fflush' => ['bool'],
