@@ -559,7 +559,7 @@ class AST {
         // Make sure the method we're calling actually exists
         if (!$code_base->hasMethod($function_fqsen)) {
             throw new CodeBaseException(
-                "call to undefined function {$function_fqsen}()"
+                "call to undefined function {$function_fqsen}() from $context"
             );
         }
 
@@ -638,6 +638,13 @@ class AST {
         Context $context,
         CodeBase $code_base
     ) : Property {
+        assert(is_string($property_name),
+            'Property name must be a string. '
+            . 'Got '
+            . print_r($property_name, true)
+            . ' at '
+            . $context);
+
         // Figure out the class we're looking the property
         // up for
         $clazz = self::classFromNodeInContext(
@@ -645,13 +652,6 @@ class AST {
             $context,
             $code_base
         );
-
-        assert(is_string($property_name),
-            'Property name must be a string. '
-            . 'Got '
-            . print_r($property_name, true)
-            . ' at '
-            . $context);
 
         // Return it if the property exists on the class
         if ($clazz->hasPropertyWithName($code_base, $property_name)) {
