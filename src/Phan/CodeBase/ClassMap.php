@@ -57,7 +57,10 @@ trait ClassMap {
         // the database
         if (empty($this->class_map[(string)$fqsen])) {
             $this->class_map[(string)$fqsen] =
-                ClazzModel::read(Database::get(), (string)$fqsen)->getClass();
+                ClazzModel::read(
+                    Database::get(),
+                    (string)$fqsen
+                )->getClass();
         }
 
         return $this->class_map[(string)$fqsen];

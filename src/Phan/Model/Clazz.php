@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Model;
 
+use \Phan\Database;
 use \Phan\Database\Column;
 use \Phan\Database\ModelOne;
 use \Phan\Database\Schema;
@@ -24,6 +25,17 @@ class Clazz extends ModelOne {
 
     public function getClass() : ClazzElement {
         return $this->clazz;
+    }
+
+    /**
+     * We include this method in order to narrow the return
+     * type
+     */
+    public static function read(
+        Database $database,
+        $primary_key_value
+    ) : Clazz {
+        return parent::read($database, $primary_key_value);
     }
 
     public static function createSchema() : Schema {

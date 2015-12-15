@@ -58,12 +58,10 @@ class MethodCallVisitor extends KindVisitorImplementation {
     }
 
     public function visitStaticCall(Node $node) : string {
-        // TODO
-        return '';
+        return $this->visitMethodCall($node);
     }
 
     public function visitDim(Node $node) : string {
-        // TODO
         return '';
     }
 

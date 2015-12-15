@@ -564,7 +564,7 @@ class UnionType {
         }
 
         if ($this->hasType(ArrayType::instance())) {
-            return NullType::instance()->toUnionType();
+            return NullType::instance()->asUnionType();
         }
 
         return new UnionType(array_filter(array_map(
