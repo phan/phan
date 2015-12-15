@@ -686,54 +686,13 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         $function_name =
             $node->children['expr']->children['name'];
 
-        $function_fqsen = null;
+        $function = AST::functionFromNameInContext(
+            $function_name,
+            $this->context,
+            $this->code_base
+        );
 
-        // If its not fully qualified
-        if($node->children['expr']->flags & \ast\flags\NAME_NOT_FQ) {
-            // Check to see if we have a mapped name
-            if ($this->context->hasNamespaceMapFor(
-                T_FUNCTION, $function_name
-            )) {
-                $function_fqsen =
-                    $this->context->getNamespaceMapFor(
-                        T_FUNCTION, $function_name
-                    );
-            } else {
-                $function_fqsen =
-                    FullyQualifiedFunctionName::fromStringInContext(
-                        $function_name,
-                        $this->context
-                    );
-            }
-
-        // If the name is fully qualified
-        } else {
-            $function_fqsen =
-                FullyQualifiedFunctionName::fromFullyQualifiedString(
-                    $function_name
-                );
-        }
-
-        // If the function doesn't exist, check to see if its
-        // a call to a builtin method
-        if (!$this->code_base->hasMethod(
-            $function_fqsen
-        )) {
-            $function_fqsen =
-                FullyQualifiedFunctionName::make(
-                    '', $function_name
-                );
-        }
-
-        if (!$this->code_base->hasMethod($function_fqsen)) {
-            // Missing internal (bulitin) method.
-            return new UnionType();
-        }
-
-        $function =
-            $this->code_base->getMethod(
-                $function_fqsen
-            );
+        $function_fqsen = $function->getFQSEN();
 
         // If this is an internal function, see if we can get
         // its types from the static dataset.
@@ -741,7 +700,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             && $function->getUnionType()->isEmpty()
         ) {
             $map = UnionType::internalFunctionSignatureMapForFQSEN(
-                $function_fqsen
+                $function->getFQSEN()
             );
 
             return $map[$function_name] ?? new UnionType();
