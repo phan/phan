@@ -104,16 +104,13 @@ class ArgumentType {
         if(!$is_unpack
             && $argcount < $method->getNumberOfRequiredParameters()
         ) {
-            $alternate_found = array_reduce(
-                (array)$method->alternateGenerator($code_base),
-                function (bool $carry, Method $alternate_method) use(
-                    $argcount
-                ) : bool {
-                    return $carry || (
-                        $argcount >=
-                        $alternate_method->getNumberOfParameters()
-                    );
-                }, false);
+            $alternate_found = false;
+            foreach ($method->alternateGenerator($code_base) as $alternate_method) {
+                $alternate_found = $alternate_found || (
+                    $argcount >=
+                    $alternate_method->getNumberOfParameters()
+                );
+            }
 
             if(!$alternate_found) {
                 if($method->getContext()->isInternal()) {
@@ -138,16 +135,13 @@ class ArgumentType {
         if(!$is_varargs
             && $argcount > $method->getNumberOfParameters()
         ) {
-            $alternate_found = array_reduce(
-                (array)$method->alternateGenerator($code_base),
-                function (bool $carry, Method $alternate_method) use (
-                    $argcount
-                ) : bool {
-                    return $carry || (
-                        $argcount <=
-                        $alternate_method->getNumberOfParameters()
-                    );
-                }, false);
+            $alternate_found = false;
+            foreach ($method->alternateGenerator($code_base) as $alternate_method) {
+                $alternate_found = $alternate_found || (
+                    $argcount <=
+                    $alternate_method->getNumberOfParameters()
+                );
+            }
 
             if (!$alternate_found) {
                 $max = $method->getNumberOfParameters();

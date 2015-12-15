@@ -289,6 +289,21 @@ class Method extends TypedStructuralElement {
                 $alternate_method->parameter_list[] = $parameter;
             }
 
+            $alternate_method->setNumberOfRequiredParameters(
+                array_reduce($alternate_method->parameter_list,
+                    function(int $carry, Parameter $parameter) : int {
+                        return ($carry + (
+                            $parameter->isOptional() ? 0 : 1
+                        ));
+                    }, 0
+                )
+            );
+
+            $alternate_method->setNumberOfOptionalParameters(
+                count($alternate_method->parameter_list) -
+                $alternate_method->getNumberOfRequiredParameters()
+            );
+
             return $alternate_method;
         }, $map_list);
     }
