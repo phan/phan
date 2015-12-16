@@ -22,7 +22,7 @@ class Comment {
     // A list of one or more types delimited by the '|'
     // character
     const union_type_regex =
-        self::generic_array_type_regex . '(\|'.self::generic_array_type_regex.')*';
+        self::generic_array_type_regex . '(\|' . self::generic_array_type_regex . ')*';
 
     /**
      * @var bool
@@ -176,18 +176,9 @@ class Comment {
         string $line
     ) {
         $match = [];
-        if(preg_match('/@(param|var)\s+('.self::union_type_regex.')(\s+(\\$\S+))?/', $line, $match)) {
+        if(preg_match('/@(param|var)\s+(' . self::union_type_regex . ')(\s+(\\$\S+))?/', $line, $match)) {
             $type = null;
 
-            /*
-            if(stripos($match[2],'\\') === 0
-                && strpos($match[2],'\\', 1) === false
-            ) {
-                $type = trim($match[2], '\\');
-            } else {
-                $type = $match[2];
-            }
-            */
             $type = $match[2];
 
             $variable_name =
