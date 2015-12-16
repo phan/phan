@@ -77,14 +77,14 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         $union_type->addUnionType(UnionType::fromNode(
             $this->context,
             $this->code_base,
-            $node->children['trueExpr']
+            $node->children['trueExpr'] ?: ''
         ));
 
         // Add the type for the 'false' side
         $union_type->addUnionType(UnionType::fromNode(
             $this->context,
             $this->code_base,
-            $node->children['falseExpr']
+            $node->children['falseExpr'] ?: ''
         ));
 
         return $union_type;
