@@ -10,6 +10,7 @@ use \Phan\Database;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
+use \Phan\Exception\TypeException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -822,9 +823,23 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             );
             return $this->context;
         } catch (NodeException $exception) {
+            // Note to future me:
+            // You keep debugging for a long time and landing
+            // here. Lets start keeping a counter of how often
+            // this turns out to be a problem but you ignore it
+            // count = 1
+
             // If we can't figure out what kind of a call
             // this is, don't worry about it. Errors should
             // have been emitted from elsewhere.
+            return $this->context;
+        } catch (TypeException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
             return $this->context;
         }
 

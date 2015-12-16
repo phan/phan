@@ -6,6 +6,7 @@ use \Phan\Debug;
 use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
+use \Phan\Exception\TypeException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -553,11 +554,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitProp(Node $node) : UnionType {
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        try {
+            $class_name = AST::classNameFromNode(
+                $this->context,
+                $this->code_base,
+                $node
+            );
+        } catch (TypeException $exception) {
+            return new UnionType();
+        }
 
         if(!($class_name
             && !($node->children['prop'] instanceof Node))
@@ -802,11 +807,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitMethodCall(Node $node) : UnionType {
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        try {
+            $class_name = AST::classNameFromNode(
+                $this->context,
+                $this->code_base,
+                $node
+            );
+        } catch (TypeException $exception) {
+            return new UnionType();
+        }
 
         if (empty($class_name)) {
             return new UnionType();

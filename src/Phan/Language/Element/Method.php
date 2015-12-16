@@ -575,7 +575,7 @@ class Method extends TypedStructuralElement {
      * @return Parameter[]
      * A list of parameters on the method
      */
-    public function getParameterList() : array {
+    public function getParameterList() {
         return $this->parameter_list;
     }
 

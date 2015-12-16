@@ -5,6 +5,7 @@ use \Phan\Analyze\ClassNameVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
+use \Phan\Exception\TypeException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -12,6 +13,8 @@ use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\Type;
+use \Phan\Language\Type\ArrayType;
+use \Phan\Language\Type\MixedType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -164,10 +167,24 @@ abstract class ClassElementVisitor extends KindVisitorImplementation {
         $variable =
             $this->context->getScope()->getVariableWithName($variable_name);
 
-        $union_type =
-            $variable->getUnionType()->nonGenericArrayTypes();
+        $union_type = $variable->getUnionType()
+            ->nonNativeTypes()
+            ->nonGenericArrayTypes();
 
+        // If there are no candidate classes, we'll emit whatever
+        // we have so that we can differentiate between
+        // no-known-type and a shitty type
         if ($union_type->isEmpty()) {
+            if (!$variable->getUnionType()->isEmpty()
+                && !$variable->getUnionType()->hasType(MixedType::instance())
+                && !$variable->getUnionType()->hasType(ArrayType::instance())
+            ) {
+                $type = (string)$variable->getUnionType();
+                throw new TypeException(
+                    "Calling method on non-class type $type"
+                );
+            }
+
             // No viable class types for the variable.
             return '';
         }

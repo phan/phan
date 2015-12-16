@@ -317,7 +317,7 @@ class Clazz extends TypedStructuralElement {
      */
     public function getPropertyList(
         CodeBase $code_base
-    ) : array {
+    ) {
         return $code_base->getPropertyMapForScope(
             $this->getFQSEN()
         );

@@ -252,7 +252,7 @@ class UnionType {
      * The list of simple types associated with this
      * union type.
      */
-    public function getTypeList() : array {
+    public function getTypeList() {
         return $this->type_list;
     }
 

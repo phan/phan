@@ -7,6 +7,7 @@ use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
+use \Phan\Exception\TypeException;
 use \Phan\Language\AST\Element;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Method;
@@ -91,6 +92,10 @@ class AST {
      *
      * @see \Phan\Deprecated\Util::find_class_name
      * Formerly `function find_class_name`
+     *
+     * @throws TypeException
+     * An exception may be thrown if the only viable candidate
+     * is a non-class type.
      */
     public static function classNameFromNode(
         Context $context,
@@ -241,6 +246,8 @@ class AST {
     }
 
     /**
+     * @param mixed|Node $node
+     *
      * @return string
      * A variable name associated with the given node
      */
@@ -257,7 +264,7 @@ class AST {
             && ($node->kind != \ast\AST_MAGIC_CONST)
         ) {
             $parent = $node;
-            $node = array_values($node->children)[0];
+            $node = array_values($node->children ?? [])[0];
         }
 
         if(!$node instanceof \ast\Node) {
