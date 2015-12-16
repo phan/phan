@@ -10,6 +10,20 @@ use \Phan\Language\UnionType;
  */
 class Comment {
 
+    // A legal type identifier
+    const simple_type_regex =
+        '[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*';
+
+    // A legal type identifier optionally with a []
+    // indicating that its a generic typed array
+    const generic_array_type_regex =
+        self::simple_type_regex . '(\[\])?';
+
+    // A list of one or more types delimited by the '|'
+    // character
+    const union_type_regex =
+        self::generic_array_type_regex . '(\|'.self::generic_array_type_regex.')*';
+
     /**
      * @var bool
      * Set to true if the comment contains a 'deprecated'
@@ -102,102 +116,22 @@ class Comment {
         $parameter_list = [];
         $return = null;
 
-        // A legal type identifier
-        $simple_type_regex =
-            '[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*';
-
-        // A legal type identifier optionally with a []
-        // indicating that its a generic typed array
-        $generic_array_type_regex =
-            "$simple_type_regex(\[\])?";
-
-        // A list of one or more types delimited by the '|'
-        // character
-        $union_type_regex =
-            "$generic_array_type_regex(\|$generic_array_type_regex)*";
-
         $lines = explode("\n",$comment);
 
         foreach($lines as $line) {
 
-            if(($pos=strpos($line, '@param')) !== false) {
-                $match = [];
-                if(preg_match("/@param\s+($union_type_regex)(\s+(\\$\S+))?/", $line, $match)) {
-                    $type = null;
-                    if(stripos($match[1],'\\') === 0
-                        && strpos($match[1],'\\', 1) === false) {
-                        $type = trim($match[1], '\\');
-                    } else {
-                        $type = $match[1];
-                    }
-
-                    $variable_name =
-                        empty($match[6]) ? '' : trim($match[6], '$');
-
-                    // If the type looks like a variable name,
-                    // make it an empty type so that other stuff
-                    // can match it. We can't just skip it or
-                    // we'd mess up the parameter order.
-                    $union_type = null;
-                    if (0 !== strpos($type, '$')) {
-                        $union_type =
-                            UnionType::fromStringInContext(
-                                $type,
-                                $context
-                            );
-                    } else {
-                        $union_type = new UnionType();
-                    }
-
-                    $comment_parameter = new CommentParameter(
-                        $variable_name, $union_type, $line
-                    );
-
-                } else {
-                    $comment_parameter = new CommentParameter(
-                        '', new UnionType(), $line
-                    );
-                }
-
-                $parameter_list[] = $comment_parameter;
+            if (strpos($line, '@param') !== false) {
+                $parameter_list[] =
+                    self::parameterFromCommentLine($context, $line);
             }
 
-            if(($pos=stripos($line, '@var')) !== false) {
-                $match = [];
-                if(preg_match("/@var\s+($union_type_regex)\s*(?:(\S+))*/", $line, $match)) {
-                    $type = null;
-                    if(strpos($match[1], '\\') === 0 &&
-                        strpos($match[1], '\\', 1) === false
-                    ) {
-                        $type = trim($match[1],'\\');
-                    } else {
-                        $type = $match[1];
-                    }
-
-                    $var_name =
-                        empty($match[2])?'':trim($match[2],'$');
-
-                    $var_type = UnionType::fromStringInContext(
-                        $type,
-                        $context
-                    );
-
-                    $comment_parameter = new CommentParameter(
-                        $var_name, $var_type, $line
-                    );
-
-                } else {
-                    $comment_parameter = new CommentParameter(
-                        '', new UnionType(), $line
-                    );
-                }
-
-                $variable_list[] = $comment_parameter;
+            else if (stripos($line, '@var') !== false) {
+                $variable_list[] =
+                    self::parameterFromCommentLine($context, $line);
             }
 
-            if(($pos=stripos($line, '@return')) !== false) {
-                $match = [];
-                if(preg_match("/@return\s+($union_type_regex+)/", $line, $match)) {
+            else if (stripos($line, '@return') !== false) {
+                if(preg_match('/@return\s+(' . self::union_type_regex . '+)/', $line, $match)) {
                     if(strpos($match[1],'\\')===0 && strpos($match[1],'\\',1)===false) {
                         $return = trim($match[1],'\\');
                     } else {
@@ -223,6 +157,64 @@ class Comment {
             $variable_list,
             $parameter_list,
             $return_type
+        );
+    }
+
+    /**
+     * @param Context $context
+     * The context in which the comment line appears
+     *
+     * @param string $line
+     * An individual line of a comment
+     *
+     * @return CommentParameter
+     * A CommentParameter associated with a line that has a var
+     * or param reference.
+     */
+    private static function parameterFromCommentLine(
+        Context $context,
+        string $line
+    ) {
+        $match = [];
+        if(preg_match('/@(param|var)\s+('.self::union_type_regex.')(\s+(\\$\S+))?/', $line, $match)) {
+            $type = null;
+
+            /*
+            if(stripos($match[2],'\\') === 0
+                && strpos($match[2],'\\', 1) === false
+            ) {
+                $type = trim($match[2], '\\');
+            } else {
+                $type = $match[2];
+            }
+            */
+            $type = $match[2];
+
+            $variable_name =
+                empty($match[7]) ? '' : trim($match[7], '$');
+
+            // If the type looks like a variable name,
+            // make it an empty type so that other stuff
+            // can match it. We can't just skip it or
+            // we'd mess up the parameter order.
+            $union_type = null;
+            if (0 !== strpos($type, '$')) {
+                $union_type =
+                    UnionType::fromStringInContext(
+                        $type,
+                        $context
+                    );
+            } else {
+                $union_type = new UnionType();
+            }
+
+            return new CommentParameter(
+                $variable_name, $union_type, $line
+            );
+        }
+
+        return  new CommentParameter(
+            '', new UnionType(), $line
         );
     }
 

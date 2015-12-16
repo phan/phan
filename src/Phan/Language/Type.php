@@ -249,15 +249,43 @@ class Type {
 
         $type_name = $string;
 
+        // @var bool
+        // True if this type name if of the form 'C[]'
+        $is_generic_array_type =
+            self::isGenericArrayString($type_name);
+
+        // If this is a generic array type, get the name of
+        // the type of each element
+        $non_generic_array_type_name = $type_name;
+        if($is_generic_array_type
+           && false !== ($pos = strpos($type_name, '[]'))
+        ) {
+            $non_generic_array_type_name =
+                substr($type_name, 0, $pos);
+        }
+
         // Check to see if the type name is mapped via
         // a using clause.
         //
         // Gotta check this before checking for native types
         // because there are monsters out there that will
         // remap the names via things like `use \Foo\String`.
-        if ($context->hasNamespaceMapFor(T_CLASS, $type_name)) {
+        if ($context->hasNamespaceMapFor(
+            T_CLASS,
+            $non_generic_array_type_name
+        )) {
             $fqsen =
-                $context->getNamespaceMapFor(T_CLASS, $type_name);
+                $context->getNamespaceMapFor(
+                    T_CLASS,
+                    $non_generic_array_type_name
+                );
+
+            if ($is_generic_array_type) {
+                return new GenericArrayType(new Type(
+                    $fqsen->getNamespace(),
+                    $fqsen->getName()
+                ));
+            }
 
             return new Type(
                 $fqsen->getNamespace(),
@@ -274,7 +302,9 @@ class Type {
             );
         }
 
-        if(self::isGenericArrayString($type_name) && self::isNativeTypeString($type_name)) {
+        if($is_generic_array_type
+           && self::isNativeTypeString($type_name)
+        ) {
             return self::fromInternalTypeName($type_name);
         } else {
             // Check to see if its a builtin type
@@ -303,6 +333,7 @@ class Type {
                 return \Phan\Language\Type\VoidType::instance();
             }
         }
+
         // If this is a type referencing the current class
         // in scope such as 'self' or 'static', return that.
         if (self::isSelfTypeString($type_name)

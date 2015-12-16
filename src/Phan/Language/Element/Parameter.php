@@ -12,7 +12,7 @@ use \ast\Node;
 class Parameter extends Variable {
 
     /**
-     * @var \mixed
+     * @var mixed
      * The default value for a parameter
      */
     private $default_value = null;
