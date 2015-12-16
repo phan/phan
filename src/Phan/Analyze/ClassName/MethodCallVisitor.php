@@ -237,6 +237,14 @@ class MethodCallVisitor extends KindVisitorImplementation {
 
         $property_name = $node->children['prop'];
 
+        if (!is_string($property_name)) {
+            // This'll happen for things like `$foo->{'prop_' . $name}`.
+            return '';
+        }
+
+        assert(is_string($property_name),
+            "Property name should be a string.");
+
         if (!$class->hasPropertyWithName(
             $this->code_base,
             $property_name
