@@ -559,7 +559,7 @@ class AST {
         // Make sure the method we're calling actually exists
         if (!$code_base->hasMethod($function_fqsen)) {
             throw new CodeBaseException(
-                "call to undefined function {$function_fqsen}() from $context"
+                "call to undefined function {$function_fqsen}()"
             );
         }
 

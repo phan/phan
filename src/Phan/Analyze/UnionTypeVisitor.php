@@ -686,11 +686,21 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         $function_name =
             $node->children['expr']->children['name'];
 
-        $function = AST::functionFromNameInContext(
-            $function_name,
-            $this->context,
-            $this->code_base
-        );
+        try {
+            $function = AST::functionFromNameInContext(
+                $function_name,
+                $this->context,
+                $this->code_base
+            );
+        } catch (CodeBaseException $exception) {
+            // If the function wasn't declared, it'll be caught
+            // and reported elsewhere
+            return new UnionType();
+        } catch (NodeException $exception) {
+            // We were unable to figure out the function name
+            // for some reason.
+            return new UnionType();
+        }
 
         $function_fqsen = $function->getFQSEN();
 
