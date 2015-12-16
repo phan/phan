@@ -685,8 +685,12 @@ class UnionType {
      */
     public static function internalFunctionSignatureMap() {
         static $map = false;
-        return $map ?:
-            ($map = require(__DIR__.'/Internal/FunctionSignatureMap.php'));
+
+        if (!$map) {
+            $map = require(__DIR__.'/Internal/FunctionSignatureMap.php');
+        }
+
+        return $map;
     }
 
     /**
@@ -697,8 +701,12 @@ class UnionType {
      */
     private static function internalClassSignatureMap() {
         static $map = false;
-        return $map ?:
-            ($map = require(__DIR__.'/Internal/ClassSignatureMap.php'));
+
+        if (!$map) {
+            $map = require(__DIR__.'/Internal/ClassSignatureMap.php');
+        }
+
+        return $map;
     }
 
 }

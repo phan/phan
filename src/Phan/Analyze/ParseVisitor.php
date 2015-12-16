@@ -85,7 +85,6 @@ class ParseVisitor extends ScopeVisitor {
             $class_name = $node->name;
         }
 
-
         // This happens now and then and I have no idea
         // why.
         if (empty($class_name)) {

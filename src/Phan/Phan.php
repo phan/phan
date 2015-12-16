@@ -358,7 +358,6 @@ class Phan {
         Node $parent_node = null,
         int $depth = 0
     ) : Context {
-
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the
@@ -396,7 +395,6 @@ class Phan {
                 );
 		}
 
-        // Do another pass across siblings
         $context =
             (new Element($node))->acceptKindVisitor(
                 new BreadthFirstVisitor(

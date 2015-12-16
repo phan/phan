@@ -77,6 +77,18 @@ class ClassNameVisitor extends KindVisitorImplementation {
             return '';
         }
 
+        // Anonymous class
+        // $v = new class { ... }
+        if ($node->children['class']->kind == \ast\AST_CLASS
+            && $node->children['class']->flags & \ast\flags\CLASS_ANONYMOUS
+        ) {
+            return
+                AST::unqualifiedNameForAnonymousClassNode(
+                    $node->children['class'],
+                    $this->context
+                );
+        }
+
         // Things of the form `new $method->name()`
         if($node->children['class']->kind !== \ast\AST_NAME) {
             return '';
@@ -173,10 +185,16 @@ class ClassNameVisitor extends KindVisitorImplementation {
      * The class name represented by the given call
      */
     public function visitMethodCall(Node $node) : string {
+
+        // Get the name of the method we're looking for
+        $method_name = is_string($node->children['method'])
+            ? $node->children['method'] : null;
+
         return (new Element($node->children['expr']))->acceptKindVisitor(
             new MethodCallVisitor(
                 $this->context,
-                $this->code_base
+                $this->code_base,
+                $method_name
             )
         );
     }
@@ -190,7 +208,12 @@ class ClassNameVisitor extends KindVisitorImplementation {
      * The class name represented by the given call
      */
     public function visitProp(Node $node) : string {
-        return $this->visitMethodCall($node);
+        return (new Element($node->children['expr']))->acceptKindVisitor(
+            new MethodCallVisitor(
+                $this->context,
+                $this->code_base
+            )
+        );
     }
 
 }

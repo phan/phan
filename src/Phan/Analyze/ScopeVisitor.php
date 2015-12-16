@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\CodeBase;
+use \Phan\Debug;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
@@ -80,6 +81,7 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitIf(Node $node) : Context {
+        // $this->context->setIsConditional(true);
         return $this->context;
     }
 

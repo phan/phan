@@ -269,8 +269,24 @@ class Context extends FileRef implements \Serializable {
      */
     public function withIsConditional(bool $is_conditional) : Context {
         $context = clone($this);
-        $context->is_conditional = $is_conditional;
+        $context->setIsConditional($is_conditional);
         return $context;
+    }
+
+    /**
+     * @param bool $is_conditional
+     * True if the current context is within a conditional
+     * else false.
+     *
+     * @return void
+     */
+    public function setIsConditional(bool $is_conditional) {
+        /*
+        if ($this->is_conditional) {
+            debug_print_backtrace(3);
+        }
+         */
+        $this->is_conditional = $is_conditional;
     }
 
     /**

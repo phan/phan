@@ -263,11 +263,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             )->getUnionType();
         }
 
-        /*
-        assert(false,
-            "Class $class_fqsen not found at {$this->context}");
-        */
-
         return ObjectType::instance()->asUnionType();
     }
 
