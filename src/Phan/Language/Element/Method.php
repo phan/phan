@@ -174,6 +174,37 @@ class Method extends TypedStructuralElement {
 
     /**
      * @return Method[]
+     * One or more (alternate) methods begotten from
+     * reflection info and internal method data
+     */
+    public static function methodListFromSignature(
+        CodeBase $code_base,
+        FullyQualifiedFunctionName $fqsen,
+        array $signature
+    ) : array {
+
+        $context = new Context();
+
+        $return_type =
+            UnionType::fromStringInContext(
+                array_shift($signature),
+                $context
+            );
+
+        $method = new Method(
+            $context,
+            $fqsen->getName(),
+            $return_type,
+            0
+        );
+
+        $method->setFQSEN($fqsen);
+
+        return self::methodListFromMethod($method, $code_base);
+    }
+
+    /**
+     * @return Method[]
      */
     public static function methodListFromReflectionClassAndMethod(
         Context $context,

@@ -683,7 +683,7 @@ class UnionType {
      *
      * @see \Phan\Language\Internal\FunctionSignatureMap
      */
-    private static function internalFunctionSignatureMap() {
+    public static function internalFunctionSignatureMap() {
         static $map = false;
         return $map ?:
             ($map = require(__DIR__.'/Internal/FunctionSignatureMap.php'));
