@@ -69,6 +69,27 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         return new UnionType();
     }
 
+    public function visitConditional(Node $node) : UnionType {
+
+        $union_type = new UnionType();
+
+        // Add the type for the 'true' side
+        $union_type->addUnionType(UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['trueExpr']
+        ));
+
+        // Add the type for the 'false' side
+        $union_type->addUnionType(UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['falseExpr']
+        ));
+
+        return $union_type;
+    }
+
     /**
      * Visit a node with kind `\ast\AST_ARRAY`
      *
