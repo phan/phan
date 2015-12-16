@@ -696,10 +696,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             // If the function wasn't declared, it'll be caught
             // and reported elsewhere
             return new UnionType();
-        } catch (NodeException $exception) {
-            // We were unable to figure out the function name
-            // for some reason.
-            return new UnionType();
         }
 
         $function_fqsen = $function->getFQSEN();
