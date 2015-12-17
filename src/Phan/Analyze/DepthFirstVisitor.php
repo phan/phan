@@ -6,6 +6,7 @@ use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
+use \Phan\Exception\TypeException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -421,11 +422,15 @@ class DepthFirstVisitor extends ScopeVisitor {
         // Get the name of the class
 
         // $class_name = $node->children['class']->children['name'];
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        try {
+            $class_name = AST::classNameFromNode(
+                $this->context,
+                $this->code_base,
+                $node
+            );
+        } catch (TypeException $exception) {
+            $class_name = '';
+        }
 
         $clazz = null;
 

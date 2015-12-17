@@ -243,11 +243,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitNew(Node $node) : UnionType {
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        try {
+            $class_name = AST::classNameFromNode(
+                $this->context,
+                $this->code_base,
+                $node
+            );
+        } catch (TypeException $exception) {
+            return ObjectType::instance()->asUnionType();
+        }
 
         if(empty($class_name)) {
             return ObjectType::instance()->asUnionType();
@@ -279,11 +283,16 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitInstanceOf(Node $node) : UnionType {
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        try {
+            $class_name = AST::classNameFromNode(
+                $this->context,
+                $this->code_base,
+                $node
+            );
+        } catch (TypeException $exception) {
+            // swallow it
+        }
+
         return BoolType::instance()->asUnionType();
     }
 
@@ -631,11 +640,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return new UnionType();
         }
 
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        try {
+            $class_name = AST::classNameFromNode(
+                $this->context,
+                $this->code_base,
+                $node
+            );
+        } catch (TypeException $exception) {
+            return new UnionType();
+        }
 
         if(!($class_name
             && !($node->children['prop'] instanceof Node))
@@ -750,13 +763,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitStaticCall(Node $node) : UnionType {
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
-
-        // assert(!empty($class_name), 'Class name cannot be empty');
+        try {
+            $class_name = AST::classNameFromNode(
+                $this->context,
+                $this->code_base,
+                $node
+            );
+        } catch (TypeException $exception) {
+            return new UnionType();
+        }
 
         if (!$class_name) {
             return new UnionType();

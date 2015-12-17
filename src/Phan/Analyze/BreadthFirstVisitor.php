@@ -697,11 +697,15 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitInstanceof(Node $node) : Context {
         // Make sure the class name exists
-        $class_name = AST::classNameFromNode(
-            $this->context,
-            $this->code_base,
-            $node
-        );
+        try {
+            $class_name = AST::classNameFromNode(
+                $this->context,
+                $this->code_base,
+                $node
+            );
+        } catch (TypeException $exception) {
+            // Ignore these errors
+        }
 
         return $this->context;
     }
