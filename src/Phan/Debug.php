@@ -132,6 +132,23 @@ class Debug {
     }
 
     /**
+     * @return string
+     * Pretty-printer for debug_backtrace
+     */
+    public static function backtrace(int $levels=0) {
+       $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $levels+1);
+       foreach($bt as $level=>$context) {
+           if(!$level) continue;
+           echo "#".($level-1)." {$context['file']}:{$context['line']} {$context['class']} ";
+           if(!empty($context['type'])) {
+               echo $context['class'].$context['type'];
+           }
+           echo $context['function'];
+           echo "\n";
+       }
+    }
+
+    /**
      * Note that flag IDs are not unique. You're likely going to get
      * an incorrect name back from this. So sorry.
      */
