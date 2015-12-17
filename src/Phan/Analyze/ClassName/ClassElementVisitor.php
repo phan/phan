@@ -15,6 +15,7 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\Type;
 use \Phan\Language\Type\ArrayType;
 use \Phan\Language\Type\MixedType;
+use \Phan\Language\Type\ObjectType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -178,6 +179,7 @@ abstract class ClassElementVisitor extends KindVisitorImplementation {
             if (!$variable->getUnionType()->isEmpty()
                 && !$variable->getUnionType()->hasType(MixedType::instance())
                 && !$variable->getUnionType()->hasType(ArrayType::instance())
+                && !$variable->getUnionType()->hasType(ObjectType::instance())
             ) {
                 $type = (string)$variable->getUnionType();
                 throw new TypeException(
