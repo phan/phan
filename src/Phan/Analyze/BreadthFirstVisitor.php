@@ -678,7 +678,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 $node->lineno
             );
             return $this->context;
-        } catch (NodeException $exception) {
+        } catch (\Exception $exception) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
             return $this->context;
@@ -792,7 +792,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 $node->lineno
             );
             return $this->context;
-        } catch (NodeException $exception) {
+        } catch (\Exception $exception) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
             return $this->context;
@@ -844,6 +844,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 $this->context->getFile(),
                 $node->lineno
             );
+
             return $this->context;
         }
 
@@ -1001,7 +1002,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                                  $this->context->getFile(),
                                  $node->lineno
                              );
-                         } catch (NodeException $exception) {
+                         } catch (\Exception $exception) {
                              // If we can't figure out what kind of a call
                              // this is, don't worry about it
                          }
@@ -1064,7 +1065,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                                  $this->context->getFile(),
                                  $node->lineno
                              );
-                         } catch (NodeException $exception) {
+                         } catch (\Exception $exception) {
                              // If we can't figure out what kind of a call
                              // this is, don't worry about it
                          }

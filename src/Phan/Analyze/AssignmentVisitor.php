@@ -8,6 +8,7 @@ use \Phan\Debug;
 use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
+use \Phan\Exception\TypeException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -238,7 +239,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
                 $this->context->getFile(),
                 $node->lineno
             );
-        } catch (NodeException $exception) {
+        } catch (\Exception $exception) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
             return $this->context;
@@ -249,13 +250,17 @@ class AssignmentVisitor extends KindVisitorImplementation {
             // Check to see if the class has a __set method
             if (!$clazz->hasMethodWithName($this->code_base, '__set')) {
                 if (Config::get()->allow_missing_properties) {
-                    // Create the property
-                    AST::getOrCreatePropertyFromNodeInContext(
-                        $property_name,
-                        $node,
-                        $this->context,
-                        $this->code_base
-                    );
+                    try {
+                        // Create the property
+                        AST::getOrCreatePropertyFromNodeInContext(
+                            $property_name,
+                            $node,
+                            $this->context,
+                            $this->code_base
+                        );
+                    } catch (\Exception $exception) {
+                        // swallow it
+                    }
                 } else {
                     Log::err(
                         Log::EAVAIL,

@@ -461,6 +461,10 @@ class AST {
      * @throws CodeBaseExtension
      * An exception is thrown if we can't find the given
      * method
+     *
+     * @throws TypeException
+     * An exception may be thrown if the only viable candidate
+     * is a non-class type.
      */
     public static function classMethodFromNodeInContext(
         Node $node,
@@ -642,6 +646,10 @@ class AST {
      * @throws CodeBaseExtension
      * An exception is thrown if we can't find the given
      * class
+     *
+     * @throws TypeException
+     * An exception may be thrown if the only viable candidate
+     * is a non-class type.
      */
     public static function getOrCreatePropertyFromNodeInContext(
         string $property_name,

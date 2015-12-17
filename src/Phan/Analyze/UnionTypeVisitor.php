@@ -501,7 +501,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 $this->code_base,
                 false
             );
-        } catch (CodeBaseException $exception) {
+        } catch (\Exception $exception) {
             $class_name =
                 $node->children['class']->children['name'] ?? '';
 
@@ -512,20 +512,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 $node->lineno
             );
 
-            return new UnionType();
-        } catch (NodeException $exception) {
-            $class_name =
-                $node->children['class']->children['name'] ?? '';
-
-            Log::err(
-                Log::EUNDEF,
-                "Can't access constant {$constant_name} from undeclared class $class_name",
-                $this->context->getFile(),
-                $node->lineno
-            );
-
-            // If we can't figure out what kind of a call
-            // this is, don't worry about it
             return new UnionType();
         }
 
