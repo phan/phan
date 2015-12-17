@@ -133,6 +133,7 @@ class UnionType {
      * @param Context $context
      * @param CodeBase $code_base
      * @param Node|string|null $node
+     * @param bool $throw_code_base_exceptions
      *
      * @return UnionType
      *
@@ -142,7 +143,8 @@ class UnionType {
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
-        $node
+        $node,
+        bool $throw_code_base_exceptions = false
     ) : UnionType {
         if(!($node instanceof Node)) {
             if($node === null) {
@@ -153,7 +155,11 @@ class UnionType {
         }
 
         return (new Element($node))->acceptKindVisitor(
-            new UnionTypeVisitor($context, $code_base)
+            new UnionTypeVisitor(
+                $context,
+                $code_base,
+                $throw_code_base_exceptions
+            )
         );
 	}
 

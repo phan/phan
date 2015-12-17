@@ -9,6 +9,7 @@ use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
+use \Phan\Exception\CodeBaseException;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -316,12 +317,17 @@ class ParseVisitor extends ScopeVisitor {
                 continue;
             }
 
-            // @var UnionType
-            $type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $child_node->children['default']
-            );
+            try {
+                // @var UnionType
+                $type = UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $child_node->children['default'],
+                    true
+                );
+            } catch (CodeBaseException $exception) {
+                $type = MixedType::instance()->asUnionType();
+            }
 
             $property_name = $child_node->children['name'];
 
@@ -384,16 +390,24 @@ class ParseVisitor extends ScopeVisitor {
         $clazz = $this->getContextClass();
 
         foreach($node->children ?? [] as $child_node) {
+
+            try {
+                $type = UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $child_node->children['value'],
+                    true
+                );
+            } catch (CodeBaseException $exception) {
+                $type = MixedType::instance()->asUnionType();
+            }
+
             $constant = new Constant(
                 $this->context
                     ->withLineNumberStart($child_node->lineno ?? 0)
                     ->withLineNumberEnd($child_node->endLineno ?? 0),
                 $child_node->children['name'],
-                UnionType::fromNode(
-                    $this->context,
-                    $this->code_base,
-                    $child_node->children['value']
-                ),
+                $type,
                 $child_node->flags ?? 0
             );
 
