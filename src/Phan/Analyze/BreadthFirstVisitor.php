@@ -699,31 +699,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitInstanceof(Node $node) : Context {
         try {
-            // Make sure the class name exists
-            $union_type =
-                UnionTypeVisitor::unionTypeFromClassNode(
-                    $this->code_base,
-                    $this->context,
-                    $node->children['class']
-                );
-
-            // Make sure there's at least one type
-            if ($union_type->nonNativeTypes()->isEmpty()) {
-                Log::err(
-                    Log::EUNDEF,
-                    "instanceof on undeclared class",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-            }
-
-            // Make sure the types are known classes
-            foreach ($union_type->asClassList($this->code_base)
-                as $i => $clazz
-            ) {
-                // Just make sure at least one exists
-                break;
-            }
+            $class_list = AST::classListFromNodeInContext(
+                $this->code_base,
+                $this->context,
+                $node->children['class']
+            );
         } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,

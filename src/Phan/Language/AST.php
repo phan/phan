@@ -301,6 +301,47 @@ class AST {
     }
 
     /**
+     * @param CodeBase $code_base
+     * The code base in which we're looking for classes
+     *
+     * @param Context $context
+     * The context in which the node exists
+     *
+     * @param Node $node
+     * The node we want to get a type for and classes from
+     * the types
+     *
+     * @return Clazz[]
+     * A list of classes representing the non-native types
+     * associated with the given node
+     *
+     * @throws CodeBaseException
+     * An exception is thrown if a non-native type does not have
+     * an associated class
+     */
+    public static function classListFromNodeInContext(
+        CodeBase $code_base,
+        Context $context,
+        $node
+    ) {
+        $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+            $code_base,
+            $context,
+            $node
+        );
+
+        $class_list = [];
+
+        foreach ($union_type->asClassList($code_base)
+            as $i => $clazz
+        ) {
+            $class_list[] = $clazz;
+        }
+
+        return $class_list;
+    }
+
+    /**
      * @param Node $node
      * The node that has a reference to a class
      *

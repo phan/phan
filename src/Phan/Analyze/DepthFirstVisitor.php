@@ -419,31 +419,17 @@ class DepthFirstVisitor extends ScopeVisitor {
      */
     public function visitCatch(Node $node) : Context {
         try {
-            // Make sure the class name exists
-            $union_type =
-                UnionTypeVisitor::unionTypeFromClassNode(
-                    $this->code_base,
-                    $this->context,
-                    $node->children['class']
-                );
+            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+                $this->code_base,
+                $this->context,
+                $node->children['class']
+            );
 
-            // Make sure there's at least one type
-            if ($union_type->nonNativeTypes()->isEmpty()) {
-                Log::err(
-                    Log::EUNDEF,
-                    "instanceof on undeclared class",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-            }
-
-            // Make sure the types are known classes
-            foreach ($union_type->asClassList($this->code_base)
-                as $i => $clazz
-            ) {
-                // Just make sure at least one exists
-                break;
-            }
+            $class_list = AST::classListFromNodeInContext(
+                $this->code_base,
+                $this->context,
+                $node->children['class']
+            );
         } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,
@@ -452,49 +438,6 @@ class DepthFirstVisitor extends ScopeVisitor {
                 $node->lineno
             );
         }
-
-        /*
-        try {
-            $class_name = AST::classNameFromNode(
-                $this->context,
-                $this->code_base,
-                $node
-            );
-        } catch (TypeException $exception) {
-            $class_name = '';
-        }
-
-        $clazz = null;
-
-        // If we can't figure out the class name (which happens
-        // from time to time), then give up
-        if (!empty($class_name)) {
-            if ($node->children['class']->flags & \ast\flags\NAME_FQ) {
-                $class_fqsen = $node->children['class'];
-            } else {
-                $class_fqsen =
-                    FullyQualifiedClassName::fromStringInContext(
-                        $class_name,
-                        $this->context
-                    );
-            }
-
-            // Check to see if the class actually exists
-            if ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
-                $clazz = $this->code_base->getClassByFQSEN(
-                    $class_fqsen
-                );
-            } else {
-                Log::err(
-                    Log::EUNDEF,
-                    "reference to undeclared class $class_fqsen",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-            }
-
-        }
-        */
 
         $variable_name =
             AST::variableName($node->children['var']);

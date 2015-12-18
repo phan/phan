@@ -116,10 +116,13 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types associated with the given node
      */
     public function visit(Node $node) : UnionType {
+        /*
         throw new NodeException($node,
             'Visitor not implemented for node of type '
             . Debug::nodeName($node)
         );
+        */
+        return new UnionType();
     }
 
     /**
