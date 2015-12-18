@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\UnionTypeVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
@@ -417,10 +418,42 @@ class DepthFirstVisitor extends ScopeVisitor {
      * parsing the node
      */
     public function visitCatch(Node $node) : Context {
+        try {
+            // Make sure the class name exists
+            $union_type =
+                UnionTypeVisitor::unionTypeFromClassNode(
+                    $this->code_base,
+                    $this->context,
+                    $node->children['class']
+                );
 
-        // Get the name of the class
+            // Make sure there's at least one type
+            if ($union_type->nonNativeTypes()->isEmpty()) {
+                Log::err(
+                    Log::EUNDEF,
+                    "instanceof on undeclared class",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
 
-        // $class_name = $node->children['class']->children['name'];
+            // Make sure the types are known classes
+            foreach ($union_type->asClassList($this->code_base)
+                as $i => $clazz
+            ) {
+                // Just make sure at least one exists
+                break;
+            }
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                "catching undeclared class {$exception->getFQSEN()}",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
+
+        /*
         try {
             $class_name = AST::classNameFromNode(
                 $this->context,
@@ -461,6 +494,7 @@ class DepthFirstVisitor extends ScopeVisitor {
             }
 
         }
+        */
 
         $variable_name =
             AST::variableName($node->children['var']);
@@ -473,8 +507,8 @@ class DepthFirstVisitor extends ScopeVisitor {
                 false
             );
 
-            if ($clazz) {
-                $variable->setUnionType($clazz->getUnionType());
+            if (!$union_type->isEmpty()) {
+                $variable->setUnionType($union_type);
             }
 
             $this->context->addScopeVariable($variable);

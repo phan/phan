@@ -725,12 +725,12 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 break;
             }
         } catch (CodeBaseException $exception) {
-                Log::err(
-                    Log::EUNDEF,
-                    "instanceof check on undeclared class {$exception->getFQSEN()}",
-                    $this->context->getFile(),
-                    $node->lineno
-                );
+            Log::err(
+                Log::EUNDEF,
+                "instanceof check on undeclared class {$exception->getFQSEN()}",
+                $this->context->getFile(),
+                $node->lineno
+            );
         }
 
         return $this->context;

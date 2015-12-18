@@ -1,2 +1,3 @@
 %s:4 UndefError reference to undeclared class \ex
-%s:5 UndefError reference to undeclared class \exceptio
+%s:5 UndefError catching undeclared class \exceptio
+%s:6 UndefError Can't access method getMessage from undeclared class \exceptio

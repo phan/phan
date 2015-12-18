@@ -142,6 +142,44 @@ class UnionTypeVisitor extends KindVisitorImplementation {
     }
 
     /**
+     * Visit a node with kind `\ast\AST_POST_DEC`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitPostDec(Node $node) : UnionType {
+        return self::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['var']
+        );
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_PRE_DEC`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitPreDec(Node $node) : UnionType {
+        return self::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['var']
+        );
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_PRE_INC`
      *
      * @param Node $node
