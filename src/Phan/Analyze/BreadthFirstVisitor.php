@@ -20,6 +20,7 @@ use \Phan\Language\Element\{
     Comment,
     Constant,
     Method,
+    PassByReferenceVariable,
     Property,
     Variable
 };
@@ -1140,10 +1141,34 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                         $argument_type
                     );
 
-                    // Overwrite the method's variable representation
-                    // of the parameter with the parameter with the
-                    // new type
-                    $method->getContext()->addScopeVariable($parameter);
+                    // If we're passing by reference, get the variable
+                    // we're dealing with wrapped up and shoved into
+                    // the scope of the method
+                    if ($parameter->isPassByReference()) {
+                        if ($argument->kind == \ast\AST_VAR) {
+                            // Get the variable
+                            $variable =
+                                AST::getOrCreateVariableFromNodeInContext(
+                                    $argument,
+                                    $this->context,
+                                    $this->code_base
+                                );
+
+                            // Add it to the scope of the function wrapped
+                            // in a way that makes it addressable as the
+                            // parameter its mimicking
+                            $method->getContext()->addScopeVariable(
+                                new PassByReferenceVariable(
+                                    $parameter, $variable
+                                )
+                            );
+                        }
+                    } else {
+                        // Overwrite the method's variable representation
+                        // of the parameter with the parameter with the
+                        // new type
+                        $method->getContext()->addScopeVariable($parameter);
+                    }
                 }
             }
         }
