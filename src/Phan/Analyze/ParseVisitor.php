@@ -16,25 +16,24 @@ use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Scope;
 use \Phan\Language\Type;
-use \Phan\Language\Type\{
-    ArrayType,
-    BoolType,
-    CallableType,
-    FloatType,
-    GenericArrayType,
-    IntType,
-    MixedType,
-    NativeType,
-    NullType,
-    ObjectType,
-    ResourceType,
-    ScalarType,
-    StringType,
-    VoidType
-};
+use \Phan\Language\Type\ArrayType;
+use \Phan\Language\Type\BoolType;
+use \Phan\Language\Type\CallableType;
+use \Phan\Language\Type\FloatType;
+use \Phan\Language\Type\GenericArrayType;
+use \Phan\Language\Type\IntType;
+use \Phan\Language\Type\MixedType;
+use \Phan\Language\Type\NativeType;
+use \Phan\Language\Type\NullType;
+use \Phan\Language\Type\ObjectType;
+use \Phan\Language\Type\ResourceType;
+use \Phan\Language\Type\ScalarType;
+use \Phan\Language\Type\StringType;
+use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 /**
  * The class is a visitor for AST nodes that does parsing. Each
@@ -75,7 +74,7 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClass(Node $node) : Context {
+    public function visitClass(Decl $node) : Context {
 
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name =
@@ -84,7 +83,7 @@ class ParseVisitor extends ScopeVisitor {
                     $this->context
                 );
         } else {
-            $class_name = $node->name;
+            $class_name = (string)$node->name;
         }
 
         // This happens now and then and I have no idea
@@ -237,11 +236,11 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Node $node) : Context {
+    public function visitMethod(Decl $node) : Context {
         // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
-        $method_name = $node->name;
+        $method_name = (string)$node->name;
 
         $method_fqsen =
             FullyQualifiedMethodName::fromStringInContext(
@@ -439,8 +438,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Node $node) : Context {
-        $function_name = $node->name;
+    public function visitFuncDecl(Decl $node) : Context {
+        $function_name = (string)$node->name;
 
         // Hunt for an un-taken alternate ID
         $alternate_id = 0;

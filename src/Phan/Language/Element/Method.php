@@ -11,6 +11,7 @@ use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 class Method extends TypedStructuralElement {
     use \Phan\Language\Element\Addressable;
@@ -359,7 +360,7 @@ class Method extends TypedStructuralElement {
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
-        Node $node
+        Decl $node
     ) : Method {
 
         // Parse the comment above the method to get
@@ -391,7 +392,7 @@ class Method extends TypedStructuralElement {
         // we know so far
         $method = new Method(
             $context,
-            $node->name,
+            (string)$node->name,
             new UnionType(),
             $node->flags ?? 0
         );

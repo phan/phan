@@ -339,7 +339,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         default:
             assert(false,
                 "All flags must match. Found "
-                . Debug::astFlagDescription($this->node->flags ?? 0));
+                . Debug::astFlagDescription($node->flags ?? 0));
             break;
         }
     }
@@ -865,6 +865,14 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                         $this->code_base,
                         $property_name
                 )) {
+                    // If there's a getter on properties than all
+                    // bets are off.
+                    if ($class->hasMethodWithName(
+                        $this->code_base, '__get'
+                    )) {
+                        return new UnionType();
+                    }
+
                     continue;
                 }
 

@@ -26,6 +26,7 @@ use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 /**
  * # Example Usage
@@ -57,7 +58,7 @@ class DepthFirstVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClass(Node $node) : Context {
+    public function visitClass(Decl $node) : Context {
 
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name =
@@ -66,7 +67,7 @@ class DepthFirstVisitor extends ScopeVisitor {
                     $this->context
                 );
         } else {
-            $class_name = $node->name;
+            $class_name = (string)$node->name;
         }
 
         assert(!empty($class_name), "Class name cannot be empty");
@@ -116,8 +117,8 @@ class DepthFirstVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Node $node) : Context {
-        $method_name = $node->name;
+    public function visitMethod(Decl $node) : Context {
+        $method_name = (string)$node->name;
         $clazz = $this->getContextClass();
 
         if (!$clazz->hasMethodWithName(
@@ -153,8 +154,8 @@ class DepthFirstVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Node $node) : Context {
-        $function_name = $node->name;
+    public function visitFuncDecl(Decl $node) : Context {
+        $function_name = (string)$node->name;
 
         try {
             $method = AST::functionFromNameInContext(

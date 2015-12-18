@@ -364,16 +364,6 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     $variable = clone($variable);
                 }
 
-                /*
-                if (($variable instanceof Parameter)
-                    && $variable->isPassByReference()
-                ) {
-                    $variable->getUnionType()->addUnionType(
-                        $this->right_type
-                    );
-                } else
-                 */
-
                 if ($this->context->getIsConditional()) {
                     // If we're within a conditional, we shouldn't
                     // replace the type since the other side of

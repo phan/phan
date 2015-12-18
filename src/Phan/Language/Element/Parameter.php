@@ -9,6 +9,7 @@ use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 class Parameter extends Variable {
 
@@ -175,6 +176,10 @@ class Parameter extends Variable {
             $code_base,
             $node->children['type']
         );
+
+        if (!isset($node->docComemnt)) {
+            $node->docComment =  null;
+        }
 
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
