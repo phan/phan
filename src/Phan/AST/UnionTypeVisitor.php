@@ -293,6 +293,22 @@ class UnionTypeVisitor extends KindVisitorImplementation {
     }
 
     /**
+     * Visit a node with kind `\ast\AST_SHELL_EXEC`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitShellExec(Node $node) : UnionType {
+        return StringType::instance()->asUnionType();
+    }
+
+
+    /**
      * Visit a node with kind `\ast\AST_NAME`
      *
      * @param Node $node
