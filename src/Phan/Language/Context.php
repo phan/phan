@@ -318,6 +318,15 @@ class Context extends FileRef implements \Serializable {
     }
 
     /**
+     * Set the scope on the context
+     *
+     * @return void
+     */
+    public function setScope(Scope $scope) {
+        $this->scope = $scope;
+    }
+
+    /**
      * @param Variable $variable
      * A variable to add to the scope for the new
      * context

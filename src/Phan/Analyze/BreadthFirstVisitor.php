@@ -1104,6 +1104,10 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         // back to it after
         $original_parameter_list = $method->getParameterList();
 
+        // Create a backup of the method's scope so that we can
+        // reset it after fucking with it below
+        $original_method_scope = $method->getContext()->getScope();
+
         foreach ($argument_list->children as $i => $argument) {
             $parameter = $method->getParameterList()[$i] ?? null;
 
@@ -1135,6 +1139,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                     $parameter->getUnionType()->addUnionType(
                         $argument_type
                     );
+
+                    // Overwrite the method's variable representation
+                    // of the parameter with the parameter with the
+                    // new type
+                    $method->getContext()->addScopeVariable($parameter);
                 }
             }
         }
@@ -1155,6 +1164,10 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         // Reset to the original parameter list after having
         // tested the parameters with the types passed in
         $method->setParameterList($original_parameter_list);
+
+        // Reset the scope to its original version before we
+        // put new parameters in it
+        $method->getContext()->setScope($original_method_scope);
     }
 
     /**
