@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use \Phan\AST\UnionTypeVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
@@ -11,16 +12,20 @@ use \Phan\Language\Context;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type;
-use \Phan\Language\Type\{
-    ArrayType,
-    FloatType,
-    IntType,
-    MixedType,
-    NullType,
-    StringType,
-    VoidType
-};
-use \Phan\Analyze\UnionTypeVisitor;
+use \Phan\Language\Type\ArrayType;
+use \Phan\Language\Type\BoolType;
+use \Phan\Language\Type\CallableType;
+use \Phan\Language\Type\FloatType;
+use \Phan\Language\Type\GenericArrayType;
+use \Phan\Language\Type\IntType;
+use \Phan\Language\Type\MixedType;
+use \Phan\Language\Type\NativeType;
+use \Phan\Language\Type\NullType;
+use \Phan\Language\Type\ObjectType;
+use \Phan\Language\Type\ResourceType;
+use \Phan\Language\Type\ScalarType;
+use \Phan\Language\Type\StringType;
+use \Phan\Language\Type\VoidType;
 use \ast\Node;
 
 class UnionType {
@@ -113,23 +118,6 @@ class UnionType {
     }
 
     /**
-     * ast_node_type() is for places where an actual type
-     * name appears. This returns that type name. Use node_type()
-     * instead to figure out the type of a node
-     *
-     * @param Context $context
-     * @param null|string|Node $node
-     *
-     * @see \Phan\Deprecated\AST::ast_node_type
-     */
-    public static function fromSimpleNode(
-        Context $context,
-        $node
-    ) : UnionType {
-        return AST::unionTypeFromSimpleNode($context, $node);
-    }
-
-    /**
      * @param Context $context
      * @param CodeBase $code_base
      * @param Node|string|null $node
@@ -144,16 +132,10 @@ class UnionType {
         CodeBase $code_base,
         $node
     ) : UnionType {
-        if(!($node instanceof Node)) {
-            if($node === null) {
-                return new UnionType();
-            }
-
-            return Type::fromObject($node)->asUnionType();
-        }
-
-        return (new Element($node))->acceptKindVisitor(
-            new UnionTypeVisitor($context, $code_base)
+        return UnionTypeVisitor::unionTypeFromNode(
+            $code_base,
+            $context,
+            $node
         );
 	}
 

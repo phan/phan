@@ -464,8 +464,8 @@ class Type {
         string $type_string
     ) : bool {
         return in_array($type_string, [
-            'static', 'self', '$this',
-            '\static', '\self', '\$this'
+            'static', 'self', '$this', 'parent',
+            '\static', '\self', '\$this', '\parent'
         ]);
     }
 

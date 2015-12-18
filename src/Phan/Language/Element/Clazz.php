@@ -514,6 +514,7 @@ class Clazz extends TypedStructuralElement {
             }
 
             throw new CodeBaseException(
+                $method_fqsen,
                 "Method with name $name does not exist for class {$this->getFQSEN()}."
             );
         }

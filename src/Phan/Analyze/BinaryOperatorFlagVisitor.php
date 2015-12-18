@@ -335,7 +335,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
             Log::err(
                 Log::ETYPE,
                 "invalid operator: left operand is array and right is not",
-                $context->getFile(),
+                $this->context->getFile(),
                 $node->lineno
             );
             return new UnionType();
@@ -345,7 +345,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
             Log::err(
                 Log::ETYPE,
                 "invalid operator: right operand is array and left is not",
-                $context->getFile(),
+                $this->context->getFile(),
                 $node->lineno
             );
             return new UnionType();

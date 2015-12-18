@@ -32,6 +32,8 @@ assert_options(ASSERT_CALLBACK,
         // debug_print_backtrace(0, 4);
     });
 
+/*
 set_exception_handler(function(\Exception $exception) {
     print $exception;
 });
+ */

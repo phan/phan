@@ -104,7 +104,7 @@ class Config {
     }
 
     /**
-     * @return Configuration
+     * @return Config
      * Get a Configuration singleton
      */
     public static function get() : Config {

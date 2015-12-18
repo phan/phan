@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\UnionTypeVisitor;
+use \Phan\Analyze\ClassName\MethodCallVisitor;
+use \Phan\Analyze\ClassName\ValidationVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
@@ -12,8 +15,6 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
-use \Phan\Analyze\ClassName\MethodCallVisitor;
-use \Phan\Analyze\ClassName\ValidationVisitor;
 
 /**
  * A visitor that can extract a class name from a few
@@ -98,7 +99,8 @@ class ClassNameVisitor extends KindVisitorImplementation {
             $node->children['class']->children['name'];
 
         if(!in_array($class_name, ['self', 'static', 'parent'])) {
-            return AST::qualifiedName(
+            return (string)UnionTypeVisitor::unionTypeFromClassNode(
+                $this->code_base,
                 $this->context,
                 $node->children['class']
             );

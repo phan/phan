@@ -424,13 +424,17 @@ class Method extends TypedStructuralElement {
 
         // Take a look at method return types
         if($node->children['returnType'] !== null) {
-            $union_type = UnionType::fromSimpleNode(
+            // Get the type of the parameter
+            $union_type = UnionType::fromNode(
                 $context,
+                $code_base,
                 $node->children['returnType']
             );
 
             $method->getUnionType()->addUnionType($union_type);
-        } else if ($comment->hasReturnUnionType()) {
+        }
+
+        if ($comment->hasReturnUnionType()) {
 
             // See if we have a return type specified in the comment
             $union_type = $comment->getReturnType();
@@ -688,7 +692,7 @@ class Method extends TypedStructuralElement {
     }
 
     /**
-     * @return Method[]
+     * @return Method[]|\Generator
      * The set of all alternates to this method
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator {

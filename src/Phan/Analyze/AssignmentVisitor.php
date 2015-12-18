@@ -380,6 +380,17 @@ class AssignmentVisitor extends KindVisitorImplementation {
                 $variable
             );
 
+            /*
+            if ($node->lineno >= 229 && $node->lineno <= 229
+                && $this->context->getFile() == 'src/Phan/Analyze/DepthFirstVisitor.php'
+            ) {
+                $scope = $this->context->getScope();
+                print_r(array_keys($scope->getVariableMap()));
+                print $variable. "\n";
+                print "class: " . get_class($variable) . "\n";
+            }
+             */
+
             return $this->context;
         }
 

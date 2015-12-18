@@ -11,20 +11,18 @@ use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
-use \Phan\Language\Element\{
-    Clazz,
-    Comment,
-    Constant,
-    Method,
-    Parameter,
-    Property,
-    Variable
-};
+use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Comment;
+use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Parameter;
+use \Phan\Language\Element\Property;
+use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \Phan\Language\Type;
 use \Phan\Language\Scope;
+use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -214,8 +212,17 @@ class DepthFirstVisitor extends ScopeVisitor {
                 $this->context
             );
 
+        // If we have a 'this' variable in our current scope,
+        // pass it down into the closure
+        $context = $this->context->withScope(new Scope());
+        if ($this->context->getScope()->hasVariableWithName('this')) {
+            $context->addScopeVariable(
+                $this->context->getScope()->getVariableWithName('this')
+            );
+        }
+
         $method = Method::fromNode(
-            $this->context,
+            $context,
             $this->code_base,
             $node
         );
@@ -225,15 +232,6 @@ class DepthFirstVisitor extends ScopeVisitor {
 
         // Make the closure reachable by FQSEN from anywhere
         $this->code_base->addMethod($method);
-
-        // If we have a 'this' variable in our current scope,
-        // pass it down into the closure
-        $context = $this->context->withScope(new Scope());
-        if ($context->getScope()->hasVariableWithName('this')) {
-            $context = $context->addScopeVariable(
-                $this->context->getScope()->getVariableWithName('this')
-            );
-        }
 
         if(!empty($node->children['uses'])
             && $node->children['uses']->kind == \ast\AST_CLOSURE_USES
