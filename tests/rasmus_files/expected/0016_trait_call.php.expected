@@ -1,4 +1,4 @@
-%s:12 UndefError static call to undeclared method \c::unknown()
+%s:12 UndefError static call to undeclared method \c::unknown
 %s:13 ParamError call with 0 arg(s) to \t::t1() which requires 1 arg(s) defined at %s:3
 %s:14 ParamError call with 3 arg(s) to \t::t1() which only takes 2 arg(s) defined at %s:3
 %s:14 TypeError arg#2(arg2) is int but \t::t1() takes string defined at %s:3

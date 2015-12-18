@@ -289,6 +289,13 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      */
     public function visitName(Node $node) : UnionType {
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
+            if ('parent' === $node->children['name']) {
+                $class = $this->context->getClassInScope($this->code_base);
+                return Type::fromFullyQualifiedString(
+                    (string)$class->getParentClassFQSEN()
+                )->asUnionType();
+            }
+
             return Type::fromStringInContext(
                 $node->children['name'],
                 $this->context
@@ -712,15 +719,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 $variable_name
             );
 
-            /*
-            if ($node->lineno >= 300 && $node->lineno <= 304
-                && $this->context->getFile() == 'src/Phan/Analyze/DepthFirstVisitor.php'
-            ) {
-                print "class: " . get_class($variable) . "\n";
-                print $variable. "\n";
-            }
-             */
-
             return $variable->getUnionType();
         }
 
@@ -817,14 +815,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
         }
 
-        /*
-        Log::err(
-            Log::EUNDEF,
-            "Can't access undeclared constant {$class_fqsen}::{$constant_name}",
-            $this->context->getFile(),
-            $node->lineno
-        );
-        */
+        // If no class is found, we'll emit the error elsewhere
+        if ($class_fqsen) {
+            Log::err(
+                Log::EUNDEF,
+                "Can't access undeclared constant {$class_fqsen}::{$constant_name}",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
 
         return new UnionType();
     }
@@ -842,6 +841,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      */
     public function visitProp(Node $node) : UnionType {
         $property_name = $node->children['prop'];
+
+        // Give up for things like C::$prop_name
+        if (!is_string($property_name)) {
+            return new UnionType();
+        }
 
         assert(is_string($property_name),
             "Found non-string property name in {$this->context}");
@@ -891,14 +895,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
         }
 
-        /*
-        Log::err(
-            Log::EUNDEF,
-            "Can't access undeclared property {$class_fqsen}->{$property_name}",
-            $this->context->getFile(),
-            $node->lineno
-        );
-        */
+        // If the class isn't found, we'll get the message elsewhere
+        if ($class_fqsen) {
+            Log::err(
+                Log::EUNDEF,
+                "Can't access undeclared property {$class_fqsen}->{$property_name}",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
 
         return new UnionType();
     }

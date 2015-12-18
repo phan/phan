@@ -112,8 +112,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
             \ast\parse_code(
                 $code,
                 Config::get()->ast_version
-            )
-            ->children[0]
-        )->__toString();
+            )->children[0]
+        )->asExpandedTypes($this->code_base)->__toString();
     }
 }

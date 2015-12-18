@@ -1,2 +1,2 @@
-%s:16 UndefError call to undeclared method \a->g()
-%s:21 UndefError call to undeclared method \b->f()
+%s:16 UndefError call to undeclared method \a::g
+%s:21 UndefError call to undeclared method \b::f

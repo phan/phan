@@ -364,6 +364,16 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     $variable = clone($variable);
                 }
 
+                /*
+                if (($variable instanceof Parameter)
+                    && $variable->isPassByReference()
+                ) {
+                    $variable->getUnionType()->addUnionType(
+                        $this->right_type
+                    );
+                } else
+                 */
+
                 if ($this->context->getIsConditional()) {
                     // If we're within a conditional, we shouldn't
                     // replace the type since the other side of
@@ -379,17 +389,6 @@ class AssignmentVisitor extends KindVisitorImplementation {
             $this->context->addScopeVariable(
                 $variable
             );
-
-            /*
-            if ($node->lineno >= 229 && $node->lineno <= 229
-                && $this->context->getFile() == 'src/Phan/Analyze/DepthFirstVisitor.php'
-            ) {
-                $scope = $this->context->getScope();
-                print_r(array_keys($scope->getVariableMap()));
-                print $variable. "\n";
-                print "class: " . get_class($variable) . "\n";
-            }
-             */
 
             return $this->context;
         }

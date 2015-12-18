@@ -339,9 +339,14 @@ class Type {
         if (self::isSelfTypeString($type_name)
             && $context->isInClassScope()
         ) {
-            return static::fromFullyQualifiedString(
-                (string)$context->getClassFQSEN()
-            );
+            if ('parent' === $type_name) {
+                assert('parent' !== $type_name,
+                    __METHOD__ . ' does not know how to handle the type name "parent"');
+            } else {
+                return static::fromFullyQualifiedString(
+                    (string)$context->getClassFQSEN()
+                );
+            }
         }
 
         // Attach the context's namespace to the type name

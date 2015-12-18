@@ -1,1 +1,1 @@
-%s:2 UndefError Can't access constant CONST from undeclared class UndefinedClass
+%s:2 UndefError Can't access constant CONST from undeclared class \undefinedclass

@@ -316,7 +316,7 @@ class ArgumentType {
                     Log::err(
                         Log::ETYPE,
                         "arg#".($i+1)."($parameter_name) is "
-                        . "$argument_type but {$method->getFQSEN()}() "
+                        . "$argument_type_expanded but {$method->getFQSEN()}() "
                         . "takes $parameter_type",
                         $context->getFile(),
                         $node->lineno
@@ -325,7 +325,7 @@ class ArgumentType {
                     Log::err(
                         Log::ETYPE,
                         "arg#".($i+1)."($parameter_name) is "
-                        . "$argument_type but {$method->getFQSEN()}() "
+                        . "$argument_type_expanded but {$method->getFQSEN()}() "
                         . "takes $parameter_type "
                         . "defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
                         $context->getFile(),

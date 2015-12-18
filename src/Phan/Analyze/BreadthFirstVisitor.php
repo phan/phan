@@ -1119,7 +1119,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                     $this->context, $this->code_base, $argument
                 );
 
-
                 // If this isn't an internal function or method
                 // and it has no type, add the argument's type
                 // to it so we can compare it to subsequent
