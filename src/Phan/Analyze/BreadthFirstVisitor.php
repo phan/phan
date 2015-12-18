@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\UnionTypeVisitor;
 use \Phan\Analyze\Analyzable;
 use \Phan\Analyze\ArgumentType;
 use \Phan\Analyze\AssignmentVisitor;
@@ -697,15 +698,39 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitInstanceof(Node $node) : Context {
-        // Make sure the class name exists
         try {
-            $class_name = AST::classNameFromNode(
-                $this->context,
-                $this->code_base,
-                $node
-            );
-        } catch (TypeException $exception) {
-            // Ignore these errors
+            // Make sure the class name exists
+            $union_type =
+                UnionTypeVisitor::unionTypeFromClassNode(
+                    $this->code_base,
+                    $this->context,
+                    $node->children['class']
+                );
+
+            // Make sure there's at least one type
+            if ($union_type->nonNativeTypes()->isEmpty()) {
+                Log::err(
+                    Log::EUNDEF,
+                    "instanceof on undeclared class",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
+
+            // Make sure the types are known classes
+            foreach ($union_type->asClassList($this->code_base)
+                as $i => $clazz
+            ) {
+                // Just make sure at least one exists
+                break;
+            }
+        } catch (CodeBaseException $exception) {
+                Log::err(
+                    Log::EUNDEF,
+                    "instanceof check on undeclared class {$exception->getFQSEN()}",
+                    $this->context->getFile(),
+                    $node->lineno
+                );
         }
 
         return $this->context;

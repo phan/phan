@@ -307,7 +307,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         return StringType::instance()->asUnionType();
     }
 
-
     /**
      * Visit a node with kind `\ast\AST_NAME`
      *

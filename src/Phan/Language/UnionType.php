@@ -5,6 +5,7 @@ use \Phan\AST\UnionTypeVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
@@ -496,6 +497,38 @@ class UnionType {
                 return !$type->isNativeType();
             })
         );
+    }
+
+    /**
+     * @return Clazz[]
+     * A list of classes representing the non-native types
+     * associated with this UnionType
+     *
+     * @throws CodeBaseException
+     * An exception is thrown if a non-native type does not have
+     * an associated class
+     */
+    public function asClassList(
+        CodeBase $code_base
+    ) {
+        // Iterate over each viable class type to see if any
+        // have the constant we're looking for
+        foreach ($this->nonNativeTypes()->getTypeList()
+            as $class_type
+        ) {
+            // Get the class FQSEN
+            $class_fqsen = $class_type->asFQSEN();
+
+            // See if the class exists
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                throw new CodeBaseException(
+                    $class_fqsen,
+                    "Cannot find class $class_fqsen"
+                );
+            }
+
+            yield $code_base->getClassByFQSEN($class_fqsen);
+        }
     }
 
     /**
