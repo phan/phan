@@ -11,23 +11,22 @@ use \Phan\Language\AST;
 use \Phan\Language\AST\Element;
 use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
-use \Phan\Language\Element\{
-    Clazz,
-    Comment,
-    Constant,
-    Method,
-    Parameter,
-    Property,
-    Variable
-};
+use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Comment;
+use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Parameter;
+use \Phan\Language\Element\Property;
+use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \Phan\Language\Type;
 use \Phan\Language\Scope;
+use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 /**
  * # Example Usage
@@ -59,7 +58,7 @@ class DepthFirstVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClass(Node $node) : Context {
+    public function visitClass(Decl $node) : Context {
 
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name =
@@ -68,7 +67,7 @@ class DepthFirstVisitor extends ScopeVisitor {
                     $this->context
                 );
         } else {
-            $class_name = $node->name;
+            $class_name = (string)$node->name;
         }
 
         assert(!empty($class_name), "Class name cannot be empty");
@@ -118,8 +117,8 @@ class DepthFirstVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Node $node) : Context {
-        $method_name = $node->name;
+    public function visitMethod(Decl $node) : Context {
+        $method_name = (string)$node->name;
         $clazz = $this->getContextClass();
 
         if (!$clazz->hasMethodWithName(
@@ -155,8 +154,8 @@ class DepthFirstVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Node $node) : Context {
-        $function_name = $node->name;
+    public function visitFuncDecl(Decl $node) : Context {
+        $function_name = (string)$node->name;
 
         try {
             $method = AST::functionFromNameInContext(
@@ -214,8 +213,17 @@ class DepthFirstVisitor extends ScopeVisitor {
                 $this->context
             );
 
+        // If we have a 'this' variable in our current scope,
+        // pass it down into the closure
+        $context = $this->context->withScope(new Scope());
+        if ($this->context->getScope()->hasVariableWithName('this')) {
+            $context->addScopeVariable(
+                $this->context->getScope()->getVariableWithName('this')
+            );
+        }
+
         $method = Method::fromNode(
-            $this->context,
+            $context,
             $this->code_base,
             $node
         );
@@ -225,15 +233,6 @@ class DepthFirstVisitor extends ScopeVisitor {
 
         // Make the closure reachable by FQSEN from anywhere
         $this->code_base->addMethod($method);
-
-        // If we have a 'this' variable in our current scope,
-        // pass it down into the closure
-        $context = $this->context->withScope(new Scope());
-        if ($context->getScope()->hasVariableWithName('this')) {
-            $context = $context->addScopeVariable(
-                $this->context->getScope()->getVariableWithName('this')
-            );
-        }
 
         if(!empty($node->children['uses'])
             && $node->children['uses']->kind == \ast\AST_CLOSURE_USES

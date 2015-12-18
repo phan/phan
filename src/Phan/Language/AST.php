@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use \Phan\Analyze\ClassName\ValidationVisitor as ClassNameValidationVisitor;
+use \Phan\AST\UnionTypeVisitor;
 use \Phan\Analyze\ClassNameVisitor;
+use \Phan\Analyze\ClassName\ValidationVisitor as ClassNameValidationVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
@@ -15,6 +16,7 @@ use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\Type\MixedType;
 use \Phan\Language\UnionType;
@@ -25,57 +27,6 @@ use \ast\Node;
  * A set of methods for extracting details from AST nodes.
  */
 class AST {
-
-    /**
-     * ast_node_type() is for places where an actual type
-     * name appears. This returns that type name. Use node_type()
-     * instead to figure out the type of a node
-     *
-     * @param Context $context
-     * @param null|string|Node $node
-     *
-     * @see \Phan\Deprecated\AST::ast_node_type
-     */
-    public static function unionTypeFromSimpleNode(
-        Context $context,
-        $node
-    ) : UnionType {
-        $type_string = null;
-        if($node instanceof \ast\Node) {
-            switch($node->kind) {
-            case \ast\AST_NAME:
-                $type_string =
-                    self::qualifiedName(
-                        $context,
-                        $node
-                    );
-                break;
-            case \ast\AST_TYPE:
-                if($node->flags == \ast\flags\TYPE_CALLABLE) {
-                    $type_string = 'callable';
-                } else if($node->flags == \ast\flags\TYPE_ARRAY) {
-                    $type_string = 'array';
-                } else {
-                    assert(false, "Unknown type: {$node->flags}");
-                }
-                break;
-            default:
-                Log::err(
-                    Log::EFATAL,
-                    "ast_node_type: unknown node type: "
-                    . \ast\get_kind_name($node->kind)
-                );
-                break;
-            }
-        } else {
-            $type_string = (string)$node;
-        }
-
-        return UnionType::fromStringInContext(
-            $type_string,
-            $context
-        );
-    }
 
     /**
      * @param Context $context
@@ -134,11 +85,9 @@ class AST {
      * Get a list of fully qualified names from a node
      *
      * @return string[]
-     *
-     * @see \Phan\Deprecated\node_namelist
-     * Formerly `function node_namelist`
      */
     public static function qualifiedNameList(
+        CodeBase $code_base,
         Context $context,
         $node
     ) : array {
@@ -146,8 +95,8 @@ class AST {
             return [];
         }
 
-        return array_map(function($name_node) use ($context) {
-            return self::qualifiedName($context, $name_node);
+        return array_map(function($name_node) use ($code_base, $context) {
+            return self::qualifiedName($code_base, $context, $name_node);
         }, $node->children);
     }
 
@@ -155,38 +104,17 @@ class AST {
      * Get a fully qualified name form a node
      *
      * @return string
-     *
-     * @see \Phan\Deprecated\Util::qualified_name
-     * From `function qualified_name`
      */
     public static function qualifiedName(
+        CodeBase $code_base,
         Context $context,
         $node
     ) : string {
-        if(!($node instanceof \ast\Node)
-            || $node->kind != \ast\AST_NAME
-        ) {
-            return (string)self::varUnionType($context, $node);
-        }
-
-        $type_name = $node->children['name'];
-        $type = null;
-
-        // Check to see if the name is fully qualified
-        if(!($node->flags & \ast\flags\NAME_NOT_FQ)) {
-            if (0 !== strpos($type_name, '\\')) {
-                $type_name = '\\' . $type_name;
-            }
-            return (string) UnionType::fromFullyQualifiedString(
-                $type_name
-            );
-        }
-
-        $type = UnionType::fromStringInContext(
-            $type_name, $context
+        return (string)UnionTypeVisitor::unionTypeFromClassNode(
+            $code_base,
+            $context,
+            $node
         );
-
-        return (string)$type;
     }
 
     /**
@@ -204,6 +132,8 @@ class AST {
      *
      * @see \Phan\Deprecated\Pass2::var_type
      * From `function var_type`
+     *
+     * @deprecated
      */
     public static function varUnionType(
         Context $context,
@@ -428,6 +358,7 @@ class AST {
         // Check to see if the class actually exists
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             throw new CodeBaseException(
+                $class_fqsen,
                 "Can't find class {$class_fqsen}"
             );
         }
@@ -496,13 +427,21 @@ class AST {
             "Method name must be a string. Found non-string at {$context}");
 
         if (!$clazz->hasMethodWithName($code_base, $method_name)) {
+
+            $method_fqsen = FullyQualifiedMethodName::make(
+                $clazz->getFQSEN(),
+                $method_name
+            );
+
             if ($is_static) {
                 throw new CodeBaseException(
-                    "static call to undeclared method {$clazz->getFQSEN()}::$method_name()"
+                    $method_fqsen,
+                    "static call to undeclared method $method_fqsen"
                 );
             } else {
                 throw new CodeBaseException(
-                    "call to undeclared method {$clazz->getFQSEN()}->$method_name()"
+                    $method_fqsen,
+                    "call to undeclared method $method_fqsen"
                 );
             }
         }
@@ -574,6 +513,7 @@ class AST {
         // Make sure the method we're calling actually exists
         if (!$code_base->hasMethod($function_fqsen)) {
             throw new CodeBaseException(
+                $function_fqsen,
                 "call to undefined function {$function_fqsen}()"
             );
         }

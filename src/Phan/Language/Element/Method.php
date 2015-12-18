@@ -11,6 +11,7 @@ use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 class Method extends TypedStructuralElement {
     use \Phan\Language\Element\Addressable;
@@ -359,7 +360,7 @@ class Method extends TypedStructuralElement {
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
-        Node $node
+        Decl $node
     ) : Method {
 
         // Parse the comment above the method to get
@@ -391,7 +392,7 @@ class Method extends TypedStructuralElement {
         // we know so far
         $method = new Method(
             $context,
-            $node->name,
+            (string)$node->name,
             new UnionType(),
             $node->flags ?? 0
         );
@@ -424,13 +425,17 @@ class Method extends TypedStructuralElement {
 
         // Take a look at method return types
         if($node->children['returnType'] !== null) {
-            $union_type = UnionType::fromSimpleNode(
+            // Get the type of the parameter
+            $union_type = UnionType::fromNode(
                 $context,
+                $code_base,
                 $node->children['returnType']
             );
 
             $method->getUnionType()->addUnionType($union_type);
-        } else if ($comment->hasReturnUnionType()) {
+        }
+
+        if ($comment->hasReturnUnionType()) {
 
             // See if we have a return type specified in the comment
             $union_type = $comment->getReturnType();
@@ -688,7 +693,7 @@ class Method extends TypedStructuralElement {
     }
 
     /**
-     * @return Method[]
+     * @return Method[]|\Generator
      * The set of all alternates to this method
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator {

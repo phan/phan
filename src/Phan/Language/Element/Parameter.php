@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\AST\UnionTypeVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Language\Context;
@@ -8,6 +9,7 @@ use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 class Parameter extends Variable {
 
@@ -169,22 +171,26 @@ class Parameter extends Variable {
         assert($node instanceof Node, "node was not an \\ast\\Node");
 
         // Get the type of the parameter
-        $type = UnionType::fromSimpleNode(
+        $union_type = UnionType::fromNode(
             $context,
+            $code_base,
             $node->children['type']
         );
 
-        $comment =
-            Comment::fromStringInContext(
-                $node->docComment ?? '',
-                $context
-            );
+        if (!isset($node->docComemnt)) {
+            $node->docComment =  null;
+        }
+
+        $comment = Comment::fromStringInContext(
+            $node->docComment ?? '',
+            $context
+        );
 
         // Create the skeleton parameter from what we know so far
         $parameter = new Parameter(
             $context,
             (string)$node->children['name'],
-            $type,
+            $union_type,
             $node->flags ?? 0
         );
 
@@ -198,14 +204,18 @@ class Parameter extends Variable {
                 || $default_node->kind == \ast\AST_UNARY_OP
                 || $default_node->kind == \ast\AST_ARRAY
             ) {
-                // Set the default value
-                $parameter->setDefaultValue(
-                    $node->children['default'],
+                // Get the type of the default
+                $union_type =
                     UnionType::fromNode(
                         $context,
                         $code_base,
                         $node->children['default']
-                    )
+                    );
+
+                // Set the default value
+                $parameter->setDefaultValue(
+                    $node->children['default'],
+                    $union_type
                 );
             } else {
                 // Nodes here may be of type \ast\AST_CLASS_CONST

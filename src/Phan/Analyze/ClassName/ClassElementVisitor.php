@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze\ClassName;
 
+use \Phan\AST\UnionTypeVisitor;
 use \Phan\Analyze\ClassNameVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
@@ -250,10 +251,11 @@ abstract class ClassElementVisitor extends KindVisitorImplementation {
         } else {
             // Get the list of viable class types for the
             // variable
-            $union_type =
-                AST::varUnionType($this->context, $var)
-                    ->nonNativeTypes()
-                    ->nonGenericArrayTypes();
+            $union_type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $var
+            );
 
             if ($union_type->isEmpty()) {
                 return '';

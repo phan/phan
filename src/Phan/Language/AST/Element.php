@@ -148,7 +148,7 @@ class Element {
         case \ast\AST_SWITCH_LIST:
             return $visitor->visitSwitchList($this->node);
         case \ast\AST_TYPE:
-            return $visitor->visitUnionType($this->node);
+            return $visitor->visitType($this->node);
         case \ast\AST_UNARY_MINUS:
             return $visitor->visitUnaryMinus($this->node);
         case \ast\AST_UNARY_OP:

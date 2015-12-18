@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\UnionTypeVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
@@ -13,26 +14,26 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\Scope;
 use \Phan\Language\Type;
-use \Phan\Language\Type\{
-    ArrayType,
-    BoolType,
-    CallableType,
-    FloatType,
-    GenericArrayType,
-    IntType,
-    MixedType,
-    NativeType,
-    NullType,
-    ObjectType,
-    ResourceType,
-    ScalarType,
-    StringType,
-    VoidType
-};
+use \Phan\Language\Type\ArrayType;
+use \Phan\Language\Type\BoolType;
+use \Phan\Language\Type\CallableType;
+use \Phan\Language\Type\FloatType;
+use \Phan\Language\Type\GenericArrayType;
+use \Phan\Language\Type\IntType;
+use \Phan\Language\Type\MixedType;
+use \Phan\Language\Type\NativeType;
+use \Phan\Language\Type\NullType;
+use \Phan\Language\Type\ObjectType;
+use \Phan\Language\Type\ResourceType;
+use \Phan\Language\Type\ScalarType;
+use \Phan\Language\Type\StringType;
+use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 /**
  * The class is a visitor for AST nodes that does parsing. Each
@@ -73,7 +74,7 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClass(Node $node) : Context {
+    public function visitClass(Decl $node) : Context {
 
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name =
@@ -82,7 +83,7 @@ class ParseVisitor extends ScopeVisitor {
                     $this->context
                 );
         } else {
-            $class_name = $node->name;
+            $class_name = (string)$node->name;
         }
 
         // This happens now and then and I have no idea
@@ -168,12 +169,15 @@ class ParseVisitor extends ScopeVisitor {
         // Add any implemeneted interfaces
         if (!empty($node->children['implements'])) {
             $interface_list = AST::qualifiedNameList(
+                $this->code_base,
                 $this->context,
                 $node->children['implements']
             );
             foreach ($interface_list as $name) {
                 $clazz->addInterfaceClassFQSEN(
-                    FullyQualifiedClassName::fromFullyQualifiedString($name)
+                    FullyQualifiedClassName::fromFullyQualifiedString(
+                        $name
+                    )
                 );
             }
         }
@@ -203,6 +207,7 @@ class ParseVisitor extends ScopeVisitor {
 
         $trait_fqsen_string_list =
             AST::qualifiedNameList(
+                $this->code_base,
                 $this->context,
                 $node->children['traits']
             );
@@ -231,11 +236,11 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Node $node) : Context {
+    public function visitMethod(Decl $node) : Context {
         // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
-        $method_name = $node->name;
+        $method_name = (string)$node->name;
 
         $method_fqsen =
             FullyQualifiedMethodName::fromStringInContext(
@@ -250,8 +255,23 @@ class ParseVisitor extends ScopeVisitor {
                 $method_fqsen->withAlternateId(++$alternate_id);
         }
 
+        // Create a new context with a new scope
+        $context = $this->context->withScope(new Scope);
+
+        // Add $this to the scope of non-static methods
+        if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
+            assert($clazz->getContext()->getScope()
+                ->hasVariableWithName('this'),
+                "Classes must have a \$this variable.");
+
+            $context = $context->withScopeVariable(
+                $clazz->getContext()->getScope()
+                ->getVariableWithName('this')
+            );
+        }
+
         $method = Method::fromNode(
-            clone($this->context),
+            $context,
             $this->code_base,
             $node
         );
@@ -275,17 +295,17 @@ class ParseVisitor extends ScopeVisitor {
             );
         }
 
-        // Send the context into the method
-        $context = $this->context->withMethodFQSEN(
-            $method->getFQSEN()
-        );
-
         // Add each method parameter to the scope. We clone it
         // so that changes to the variable don't alter the
         // parameter definition
         foreach ($method->getParameterList() as $parameter) {
-            $context->addScopeVariable(clone($parameter));
+            $method->getContext()->addScopeVariable(clone($parameter));
         }
+
+        // Send the context into the method and reset the scope
+        $context = $method->getContext()->withMethodFQSEN(
+            $method->getFQSEN()
+        );
 
         return $context;
     }
@@ -316,8 +336,8 @@ class ParseVisitor extends ScopeVisitor {
                 continue;
             }
 
-            // @var UnionType
-            $type = UnionType::fromNode(
+            // Get the type of the default
+            $union_type = UnionType::fromNode(
                 $this->context,
                 $this->code_base,
                 $child_node->children['default']
@@ -340,7 +360,7 @@ class ParseVisitor extends ScopeVisitor {
                     is_string($child_node->children['name'])
                         ? $child_node->children['name']
                         : '_error_',
-                    $type,
+                    $union_type,
                     $node->flags ?? 0
                 );
 
@@ -349,11 +369,11 @@ class ParseVisitor extends ScopeVisitor {
 
             // Look for any @var declarations
             if ($variable = $comment->getVariableList()[$i] ?? null) {
-                if ((string)$type != 'null'
-                    && !$type->canCastToUnionType($variable->getUnionType())
+                if ((string)$union_type != 'null'
+                    && !$union_type->canCastToUnionType($variable->getUnionType())
                 ) {
                     Log::err(Log::ETYPE,
-                        "assigning $type to property but {$property->getFQSEN()} is {$variable->getUnionType()}",
+                        "assigning $union_type to property but {$property->getFQSEN()} is {$variable->getUnionType()}",
                         $this->context->getFile(),
                         $child_node->lineno
                     );
@@ -384,16 +404,18 @@ class ParseVisitor extends ScopeVisitor {
         $clazz = $this->getContextClass();
 
         foreach($node->children ?? [] as $child_node) {
+            $union_type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $child_node->children['value']
+            );
+
             $constant = new Constant(
                 $this->context
                     ->withLineNumberStart($child_node->lineno ?? 0)
                     ->withLineNumberEnd($child_node->endLineno ?? 0),
                 $child_node->children['name'],
-                UnionType::fromNode(
-                    $this->context,
-                    $this->code_base,
-                    $child_node->children['value']
-                ),
+                $union_type,
                 $child_node->flags ?? 0
             );
 
@@ -416,8 +438,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Node $node) : Context {
-        $function_name = $node->name;
+    public function visitFuncDecl(Decl $node) : Context {
+        $function_name = (string)$node->name;
 
         // Hunt for an un-taken alternate ID
         $alternate_id = 0;
@@ -445,10 +467,10 @@ class ParseVisitor extends ScopeVisitor {
         $method->setFQSEN($function_fqsen);
         $this->code_base->addMethod($method);
 
-        // Send the context into the method
+        // Send the context into the function and reset the scope
         $context = $this->context->withMethodFQSEN(
             $function_fqsen
-        );
+        )->withScope(new Scope);
 
         // Add each method parameter to the scope. We clone it
         // so that changes to the variable don't alter the

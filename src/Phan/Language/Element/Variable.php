@@ -69,8 +69,7 @@ class Variable extends TypedStructuralElement {
 
         $variable = new Variable(
             $context
-                ->withLineNumberStart($node->lineno ?? 0)
-                ->withLineNumberEnd($node->endLineno ?? 0),
+                ->withLineNumberStart($node->lineno ?? 0),
             $variable_name,
             $union_type,
             $node->flags ?? 0

@@ -200,8 +200,7 @@ class Phan {
         $context = (new Element($node))->acceptKindVisitor(
             new ParseVisitor(
                 $context
-                    ->withLineNumberStart($node->lineno ?? 0)
-                    ->withLineNumberEnd($node->endLineno ?? 0),
+                    ->withLineNumberStart($node->lineno ?? 0),
                 $code_base
             )
         );
@@ -366,8 +365,7 @@ class Phan {
             (new Element($node))->acceptKindVisitor(
                 new DepthFirstVisitor(
                     $context
-                        ->withLineNumberStart($node->lineno ?? 0)
-                        ->withLineNumberEnd($node->endLineno ?? 0),
+                        ->withLineNumberStart($node->lineno ?? 0),
                     $code_base
                 )
             );
@@ -387,8 +385,7 @@ class Phan {
                 $this->analyzeNodeInContext(
                     $child_node,
                     $child_context
-                        ->withLineNumberStart($child_node->lineno ?? 0)
-                        ->withLineNumberEnd($child_node->endLineno ?? 0),
+                        ->withLineNumberStart($child_node->lineno ?? 0),
                     $code_base,
                     $node,
                     $depth + 1
@@ -399,8 +396,7 @@ class Phan {
             (new Element($node))->acceptKindVisitor(
                 new BreadthFirstVisitor(
                     $context
-                        ->withLineNumberStart($node->lineno ?? 0)
-                        ->withLineNumberEnd($node->endLineno ?? 0),
+                        ->withLineNumberStart($node->lineno ?? 0),
                     $code_base,
                     $parent_node
                 )
