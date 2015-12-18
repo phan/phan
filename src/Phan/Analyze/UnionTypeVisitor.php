@@ -51,15 +51,28 @@ class UnionTypeVisitor extends KindVisitorImplementation {
     private $code_base;
 
     /**
+     * @var bool
+     * True if we should throw CodeBaseExceptions when we can't
+     * find an element in the code base. If false, we'll emit
+     * errors to the log instead.
+     */
+    private $throw_code_base_exceptions = false;
+
+    /**
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
      * @param CodeBase $code_base
      */
-    public function __construct(Context $context, CodeBase $code_base) {
+    public function __construct(
+        Context $context,
+        CodeBase $code_base,
+        bool $throw_code_base_exceptions = false
+    ) {
         $this->context = $context;
         $this->code_base = $code_base;
+        $this->throw_code_base_exceptions = $throw_code_base_exceptions;
     }
 
     /**
@@ -505,6 +518,12 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $class_name =
                 $node->children['class']->children['name'] ?? '';
 
+            if ($exception instanceof CodeBaseException
+                && $this->throw_code_base_exceptions
+            ) {
+                throw $exception;
+            }
+
             Log::err(
                 Log::EUNDEF,
                 "Can't access constant {$constant_name} from undeclared class $class_name",
@@ -715,6 +734,10 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 $this->code_base
             );
         } catch (CodeBaseException $exception) {
+            if ($this->throw_code_base_exceptions) {
+                throw $exception;
+            }
+
             // If the function wasn't declared, it'll be caught
             // and reported elsewhere
             return new UnionType();
