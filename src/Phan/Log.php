@@ -186,24 +186,23 @@ class Log {
 				}
 				break;
             case 'codeclimate':
-                $print_closure(
-                    json_encode(
-                        array_values(array_map(function($e) {
-                            return [
-                                'type' => 'issue',
-                                'description' =>
-                                    self::ERRS[$e['etype']] . ' ' . $e['msg'],
-                                'categories' => ['Bug Risk'],
-                                'location' => [
-                                    'path' => $e['file'],
-                                    'lines' => [
-                                        'begin' => $e['lineno'],
-                                    ],
+                foreach($log->msgs as $e) {
+                    $print_closure(
+                        json_encode([
+                            'type' => 'issue',
+                            'check_name' => self::ERRS[$e['etype']],
+                            'description' => self::ERRS[$e['etype']] . ' ' . $e['msg'],
+                            'categories' => ['Bug Risk'],
+                            'location' => [
+                                'path' => preg_replace('/^\/code\//', '', $e['file']),
+                                'lines' => [
+                                    'begin' => $e['lineno'],
+                                    'end' => $e['lineno'],
                                 ],
-                            ];
-                        }, $log->msgs)
-                    ))
-                );
+                            ],
+                        ], JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE) . chr(0)
+                    );
+                }
                 break;
 		}
 
