@@ -1,0 +1,76 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+assert(extension_loaded('ast'),
+    "The php-ast extension must be loaded in order for Phan to work. See https://github.com/etsy/phan#getting-it-running for more details.");
+
+assert((int)phpversion()[0] >= 7,
+    "Phan requires PHP version 7 or greater. See https://github.com/etsy/phan#getting-it-running for more details.");
+
+// Grab these before we define our own classes
+$internal_class_name_list = get_declared_classes();
+$internal_interface_name_list = get_declared_interfaces();
+$internal_trait_name_list = get_declared_traits();
+$internal_function_name_list = get_defined_functions()['internal'];
+
+require_once(__DIR__.'/../../src/Phan/Bootstrap.php');
+
+use \Phan\CLI;
+use \Phan\CodeBase;
+use \Phan\Config;
+use \Phan\Log;
+use \Phan\Phan;
+
+// Create our CLI interface and load arguments
+$cli = new CLI();
+
+// Set output mode to codeclimate
+Log::setOutputMode('codeclimate');
+
+// Enable PHP5 -> PHP7 checks
+Config::get()->backward_compatibility_checks = true;
+
+// Re-analyze all files
+Config::get()->reanalyze_file_list = true;
+
+// Ignore undeclared functions and classes
+Log::setOutputMask(Log::getOutputMask()^Log::EUNDEF);
+
+$code_base = new CodeBase(
+    $internal_class_name_list,
+    $internal_interface_name_list,
+    $internal_trait_name_list,
+    $internal_function_name_list
+);
+
+// Obtain the config
+$codeclimate_config = json_decode(file_get_contents('/config.json'), true);
+
+$include_paths = [];
+
+$queueWithIncludePaths = function($dir_path) use ($include_paths, &$queueWithIncludePaths) {
+	foreach (scandir($dir_path) as $f) {
+		if ($f !== '.' and $f !== '..') {
+			if (is_dir("$dir_path/$f")) {
+				$queueWithIncludePaths("$dir_path/$f");
+			} else {
+				$include_paths[] = "$dir_path/$f";
+			}
+		}
+	}
+};
+
+foreach ($codeclimate_config['include_paths'] as $path)
+{
+	if (is_dir('/code/' . $path)) {
+		$queueWithIncludePaths('/code/' . $path);
+	} else {
+		$include_paths[] = "/code/$path";
+	}
+}
+
+// Analyze the file list provided via the CLI
+(new Phan)->analyzeFileList(
+    $code_base,
+    $include_paths
+);
