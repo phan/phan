@@ -29,7 +29,7 @@ abstract class FQSEN {
      * An FQSEN string like '\Namespace\Class::method' or
      * 'Class' or 'Class::method'.
      *
-     * @return FQSEN2
+     * @return FQSEN
      */
     abstract public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -43,7 +43,7 @@ abstract class FQSEN {
      * An FQSEN string like '\Namespace\Class::method' or
      * 'Class' or 'Class::method'.
      *
-     * @return FQSEN2
+     * @return FQSEN
      */
     abstract public static function fromStringInContext(
         string $string,
