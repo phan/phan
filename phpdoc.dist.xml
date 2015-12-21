@@ -6,7 +6,6 @@
         <encoding>utf8</encoding>
         <markers>
             <item>TODO</item>
-            <item>FIXME</item>
         </markers>
         <visibility>public,protected</visibility>
         <extensions>
