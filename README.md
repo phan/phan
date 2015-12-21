@@ -175,6 +175,37 @@ also be a string or an array inside that function. This is a departure from the 
 But it can be handy to shut up the analyzer without having to refactor the code to not overload the
 same variable with many different types.
 
+## Quick Mode Explained
+
+In Quick-mode the scanner doesn't rescan a function or a method's code block every time
+a call is seen. This means that the problem here won't be detected:
+
+```php
+<?php
+function test($arg):int {
+	return $arg;
+}
+test("abc");
+```
+
+This would normally generate:
+
+```sh
+test.php:3 TypeError return string but `test()` is declared to return int
+```
+
+The initial scan of the function's code block has no type information for `$arg`. It
+isn't until we see the call and rescan test()'s code block that we can detect
+that it is actually returning the passed in `string` instead of an `int` as declared.
+
+  [phpast]: https://github.com/nikic/php-ast
+  [scrutinizer]: https://scrutinizer-ci.com/docs/guides/php/automated-code-reviews
+  [doctypes]: http://www.phpdoc.org/docs/latest/guides/types.html
+  [tests]: https://github.com/etsy/phan/blob/master/tests/files
+  [php7ast]: https://wiki.php.net/rfc/abstract_syntax_tree
+  [php7dev]: https://github.com/rlerdorf/php7dev
+  [uniform]: https://wiki.php.net/rfc/uniform_variable_syntax
+
 # Development
 
 Take a look at [Developer's Guide to Phan](https://github.com/etsy/phan/wiki/Developer's-Guide-To-Phan) for help getting started hacking on Phan.
@@ -207,37 +238,6 @@ and check that, before doing the same to `c()`.
 There is a Scope object which keeps track of all variables. It mimics PHP's scope handling in that it
 has a globals along with entries for each function, method and closure. This is used to detect
 undefined variables and also type-checked on a `return $var`.
-
-## Quick Mode Explained
-
-In Quick-mode the scanner doesn't rescan a function or a method's code block every time
-a call is seen. This means that the problem here won't be detected:
-
-```php
-<?php
-function test($arg):int {
-	return $arg;
-}
-test("abc");
-```
-
-This would normally generate:
-
-```sh
-test.php:3 TypeError return string but `test()` is declared to return int
-```
-
-The initial scan of the function's code block has no type information for `$arg`. It
-isn't until we see the call and rescan test()'s code block that we can detect
-that it is actually returning the passed in `string` instead of an `int` as declared.
-
-  [phpast]: https://github.com/nikic/php-ast
-  [scrutinizer]: https://scrutinizer-ci.com/docs/guides/php/automated-code-reviews
-  [doctypes]: http://www.phpdoc.org/docs/latest/guides/types.html
-  [tests]: https://github.com/etsy/phan/blob/master/tests/files
-  [php7ast]: https://wiki.php.net/rfc/abstract_syntax_tree
-  [php7dev]: https://github.com/rlerdorf/php7dev
-  [uniform]: https://wiki.php.net/rfc/uniform_variable_syntax
 
 ## Running tests
 
