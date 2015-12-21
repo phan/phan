@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpdoc>
+    <title>Phan</title>
+    <parser>
+        <target>build/phpdoc</target>
+        <encoding>utf8</encoding>
+        <markers>
+            <item>TODO</item>
+            <item>FIXME</item>
+        </markers>
+        <visibility>public,protected</visibility>
+    </parser>
+    <transformer>
+        <target>build/phpdoc</target>
+    </transformer>
+    <files>
+        <directory>src</directory>
+    </files>
+</phpdoc>
