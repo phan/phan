@@ -105,14 +105,6 @@ setting things in the global scope at the top of your file list. If you have a `
 that sets global variables that everything else needs put that first in the list followed by your
 various entry points, then all your library files containing your classes.
 
-
-## Bugs
-
-When you find an issue, please take the time to create a tiny reproducing code snippet that illustrates
-the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to
-[tests][tests] then `./test` and send a PR with your fix and test. Alternatively, you can open an Issue with
-details.
-
 ## More on phpdoc types
 
 All the [phpdoc][doctypes] types listed on that page should work with one exception.
@@ -183,6 +175,16 @@ also be a string or an array inside that function. This is a departure from the 
 But it can be handy to shut up the analyzer without having to refactor the code to not overload the
 same variable with many different types.
 
+# Development
+
+Take a look at [Developer's Guide to Phan](https://github.com/etsy/phan/wiki/Developer's-Guide-To-Phan) for help getting started hacking on Phan.
+
+## Bugs
+
+When you find an issue, please take the time to create a tiny reproducing code snippet that illustrates
+the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to
+[tests][tests] then `./test` and send a PR with your fix and test. Alternatively, you can open an Issue with
+details.
 
 ## How it works
 
@@ -237,7 +239,7 @@ that it is actually returning the passed in `string` instead of an `int` as decl
   [php7dev]: https://github.com/rlerdorf/php7dev
   [uniform]: https://wiki.php.net/rfc/uniform_variable_syntax
 
-# Running tests
+## Running tests
 
 ```sh
 composer install
