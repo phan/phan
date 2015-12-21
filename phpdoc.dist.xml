@@ -9,11 +9,24 @@
             <item>FIXME</item>
         </markers>
         <visibility>public,protected</visibility>
+        <extensions>
+            <extension>php</extension>
+        </extensions>
     </parser>
     <transformer>
         <target>build/phpdoc</target>
     </transformer>
+    <transformations>
+        <template name="clean"/>
+    </transformations>
     <files>
         <directory>src</directory>
     </files>
+    <logging>
+        <level>err</level>
+        <paths>
+            <default>build//log/{DATE}.log</default>
+            <errors>build/log/{DATE}.errors.log</errors>
+        </paths>
+    </logging>
 </phpdoc>
