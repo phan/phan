@@ -710,11 +710,20 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitNew(Node $node) : Context {
         try {
-            $method = (new ContextNode(
+            $context_node = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod('__construct', false);
+            ));
+
+            $method = $context_node->getMethod(
+                '__construct', false
+            );
+
+            // Get the class and increase its reference
+            // count
+            $class = $context_node->getClass();
+            $class->addReference($this->context);
 
             $this->analyzeCallToMethod(
                 $this->code_base,

@@ -805,6 +805,37 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
+     * @return int
+     * The number of references to this typed structural element
+     */
+    public function getReferenceCount(
+        CodeBase $code_base
+    ) : int {
+        $count = parent::getReferenceCount($code_base);
+
+        // A function that maps a list of elements to the
+        // total reference count for all elements
+        $list_count = function(array $list) use ($code_base) {
+            return array_reduce($list, function(
+                int $count,
+                TypedStructuralElement $element
+            ) use ($code_base) {
+                return (
+                    $count
+                    + $element->getReferenceCount($code_base)
+                );
+            }, 0);
+        };
+
+        // Sum up counts for all dependent elements
+        $count += $list_count($this->getPropertyList($code_base));
+        $count += $list_count($this->getMethodMap($code_base));
+        $count += $list_count($this->getConstantMap($code_base));
+
+        return $count;
+    }
+
+    /**
      * @return string
      * A string describing this class
      */

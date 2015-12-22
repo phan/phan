@@ -6,7 +6,7 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\UnionType;
 
-class Property extends TypedStructuralElement {
+class Property extends ClassElement {
     use \Phan\Language\Element\Addressable;
 
     /**

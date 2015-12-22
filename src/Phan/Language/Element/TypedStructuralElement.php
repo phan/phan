@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\CodeBase;
 use \Phan\Database;
 use \Phan\Language\Context;
 use \Phan\Language\FileRef;
@@ -163,10 +164,16 @@ abstract class TypedStructuralElement extends StructuralElement {
     }
 
     /**
+     * @param CodeBase $code_base
+     * Some elements may need access to the code base to
+     * figure out their total reference count.
+     *
      * @return int
      * The number of references to this typed structural element
      */
-    public function getReferenceCount() : int {
+    public function getReferenceCount(
+        CodeBase $code_base
+    ) : int {
         return count($this->reference_list);
     }
 

@@ -7,7 +7,6 @@ use \Phan\Config;
 class Log {
 	protected static $instance;
 	protected $output_mode  = 'text'; // 'text, 'codeclimate'
-	protected $output_order = 'chrono';  // 'type', 'file' ?
 	protected $output_filename = '';
 	protected $output_mask = -1;
 

@@ -38,6 +38,16 @@ return [
     // Backwards Compatibility Checking
     'backward_compatibility_checks' => true,
 
+
+    // Set to true in order to attempt to detect dead
+    // (unreferenced) code. Keep in mind that the
+    // results will only be a guess given that classes,
+    // properties, constants and methods can be referenced
+    // as variables (like `$class->$property` or
+    // `$class->$method()`) in ways that we're unable
+    // to make sense of.
+    'dead_code_detection' => false,
+
     // If a file path is given, the code base will be
     // read from and written to the given location in
     // order to attempt to save some work from being

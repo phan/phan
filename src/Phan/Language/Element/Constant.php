@@ -8,7 +8,7 @@ use \Phan\Language\UnionType;
 use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 
-class Constant extends TypedStructuralElement {
+class Constant extends ClassElement {
     use \Phan\Language\Element\Addressable;
 
     /**

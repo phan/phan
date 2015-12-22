@@ -23,6 +23,7 @@ class Phan {
     use \Phan\Analyze\ParentClassExists;
     use \Phan\Analyze\ParentConstructorCalled;
     use \Phan\Analyze\PropertyTypes;
+    use \Phan\Analyze\ReferenceCounts;
 
     /**
      * Analyze the given set of files and emit any issues
@@ -114,6 +115,11 @@ class Phan {
             // Analyze the file
             $this->analyzeFile($code_base, $file_path);
         }
+
+        // Scan through all globally accessible elements
+        // in the code base and emit errors for dead
+        // code.
+        $this->analyzeDeadCode($code_base);
 
         // Emit all log messages
         Log::display();
@@ -404,6 +410,24 @@ class Phan {
 
         // Pass the context back up to our parent
         return $context;
+    }
+
+    /**
+     * Take a look at all globally accessible elements and see if
+     * we can find any dead code that is never referenced
+     *
+     * @return void
+     */
+    public function analyzeDeadCode(CodeBase $code_base) {
+        // Check to see if dead code detection is enabled. Keep
+        // in mind that the results here are just a guess and
+        // we can't tell with certainty that anything is
+        // definitely unreferenced.
+        if (!Config::get()->dead_code_detection) {
+            return;
+        }
+
+        self::analyzeReferenceCounts($code_base);
     }
 
     /**

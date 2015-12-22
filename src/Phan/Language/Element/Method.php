@@ -7,13 +7,14 @@ use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\Type\CallableType;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 
-class Method extends TypedStructuralElement {
+class Method extends ClassElement {
     use \Phan\Language\Element\Addressable;
     use \Phan\Analyze\Analyzable;
 
@@ -636,36 +637,6 @@ class Method extends TypedStructuralElement {
     }
 
     /**
-     * @return bool
-     * True if this is a public property
-     */
-    public function isPublic() {
-        return !(
-            $this->isProtected() || $this->isPrivate()
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this is a protected property
-     */
-    public function isProtected() {
-        return (bool)(
-            $this->getFlags() & \ast\flags\MODIFIER_PROTECTED
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this is a private property
-     */
-    public function isPrivate() {
-        return (bool)(
-            $this->getFlags() & \ast\flags\MODIFIER_PRIVATE
-        );
-    }
-
-    /**
      * Mark this method as dynamic
      *
      * @param bool $is_dynamic
@@ -675,6 +646,32 @@ class Method extends TypedStructuralElement {
      */
     public function setIsDynamic(bool $is_dynamic) {
         $this->is_dynamic = $is_dynamic;
+    }
+
+    /**
+     * @return bool
+     * True if this is a magic method
+     */
+    public function getIsMagic() : bool {
+        return in_array($this->getName(), [
+            '__get',
+            '__set',
+            '__construct',
+            '__destruct',
+            '__call',
+            '__callStatic',
+            '__get',
+            '__set',
+            '__isset',
+            '__unset',
+            '__sleep',
+            '__wakeup',
+            '__toString',
+            '__invoke',
+            '__set_state',
+            '__clone',
+            '__debugInfo'
+        ]);
     }
 
     /**
