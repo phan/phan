@@ -72,7 +72,7 @@ abstract class Association {
      * @param string|array $pirmary_key_value
      * The PKID of the the row to delete
      */
-    abstract public static function delete(
+    abstract public function delete(
         Database $database,
         $primary_key_value
     );

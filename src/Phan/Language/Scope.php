@@ -70,8 +70,23 @@ class Scope {
      */
     public function withVariable(Variable $variable) : Scope {
         $scope = clone($this);
-        $scope->variable_map[$variable->getName()] = $variable;
+        $scope->addVariable($variable);
         return $scope;
+    }
+
+    /**
+     * @return void
+     */
+    public function addVariable(Variable $variable) {
+        $this->variable_map[$variable->getName()] = $variable;
+    }
+
+    /**
+     * @return string
+     * A string representation of this scope
+     */
+    public function __toString() : string {
+        return implode(',', $this->getVariableMap());
     }
 
 }

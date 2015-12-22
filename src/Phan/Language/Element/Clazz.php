@@ -609,49 +609,6 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
-     * @param UnionType $union_type
-     * Set the type represented by this class
-     *
-     * @return null
-     */
-    public function setUnionType(UnionType $union_type) {
-        // Set the class's type
-        parent::setUnionType($union_type);
-
-        // Propagate the type to the constructor
-        if (!empty($this->method_map['__construct'])) {
-            // TODO: $code_base isn't defined. fuck.
-            $method = $this->getMethodByNameInContext(
-                $code_base,
-                '__construct',
-                $this->getContext()
-            );
-            $method->setUnionType($union_type);
-        }
-
-        // Propagate the type to the 'this' variable
-        $variable = $this->getContext()->getScope()
-            ->getVariableWithName('this');
-        $variable->setUnionType($union_type);
-    }
-
-    public function setFQSEN(FullyQualifiedClassName $fqsen) {
-        $this->fqsen = $fqsen;
-
-        // Propagate the type to the constructor
-        if (!empty($this->method_map['__construct'])) {
-            // TODO: $code_base isn't defined. fuck.
-            $method = $this->getMethodByNameInContext(
-                $code_base,
-                '__construct',
-                $this->getContext()
-            );
-            $method->setFQSEN($fqsen);
-        }
-
-    }
-
-    /**
      * @return FQSEN
      */
     public function getFQSEN() : FullyQualifiedClassName {

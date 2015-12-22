@@ -532,10 +532,10 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             $method = $this->context->getClosureInScope($this->code_base);
         } else if ($this->context->isMethodScope()) {
             $method = $this->context->getMethodInScope($this->code_base);
-        } else {
-            assert(false,
-                "We're supposed to be in either method or closure scope.");
         }
+
+        assert(!empty($method),
+            "We're supposed to be in either method or closure scope.");
 
         // Figure out what we intend to return
         $method_return_type = $method->getUnionType();

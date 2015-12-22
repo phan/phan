@@ -177,10 +177,6 @@ class Parameter extends Variable {
             $node->children['type']
         );
 
-        if (!isset($node->docComemnt)) {
-            $node->docComment =  null;
-        }
-
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
             $context

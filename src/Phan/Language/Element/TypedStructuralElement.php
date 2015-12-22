@@ -149,7 +149,7 @@ abstract class TypedStructuralElement extends StructuralElement {
         // database
         if (Database::isEnabled()) {
             (new CalledBy(
-                (string)$method->getFQSEN(),
+                (string)$this->getFQSEN(),
                 $file_ref
             ))->write(Database::get());
         }

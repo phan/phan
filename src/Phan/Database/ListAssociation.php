@@ -122,7 +122,7 @@ class ListAssociation extends Association {
      * @param string|array $pirmary_key_value
      * The PKID of the the row to delete
      */
-    public static function delete(
+    public function delete(
         Database $database,
         $primary_key_value
     ) {
