@@ -958,6 +958,17 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitProp(Node $node) : Context {
+        try {
+            $property = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getProperty($node->children['prop']);
+        } catch (\Exception $exception) {
+            // Swallow any exceptions. We'll log the errors
+            // elsewhere.
+        }
+
         return $this->context;
     }
 

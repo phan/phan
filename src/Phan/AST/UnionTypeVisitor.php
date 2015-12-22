@@ -11,6 +11,7 @@ use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
+use \Phan\Exception\UnanalyzableException;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Variable;
@@ -912,79 +913,37 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitProp(Node $node) : UnionType {
-        $property_name = $node->children['prop'];
-
-        // Give up for things like C::$prop_name
-        if (!is_string($property_name)) {
-            return new UnionType();
-        }
-
-        assert(is_string($property_name),
-            "Found non-string property name in {$this->context}");
-
         try {
-            $class_fqsen = null;
-            foreach ($this->classListFromNode(
-                $node->children['expr'] ?? $node->children['class']
-            )
-                as $i => $class
-            ) {
-                $class_fqsen = $class->getFQSEN();
+            $property = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getProperty($node->children['prop']);
 
-                // Keep hunting if this class doesn't have the given
-                // property
-                if (!$class->hasPropertyWithName(
-                        $this->code_base,
-                        $property_name
-                )) {
-                    // If there's a getter on properties than all
-                    // bets are off.
-                    if ($class->hasMethodWithName(
-                        $this->code_base, '__get'
-                    )) {
-                        return new UnionType();
-                    }
-
-                    continue;
-                }
-
-                try {
-                    $property = $class->getPropertyByNameInContext(
-                        $this->code_base,
-                        $property_name,
-                        $this->context
-                    );
-
-                    $property->addReference($this->context);
-                } catch (AccessException $exception) {
-                    Log::err(
-                        Log::EACCESS,
-                        $exception->getMessage(),
-                        $this->context->getFile(),
-                        $node->lineno
-                    );
-                    return new UnionType();
-                }
-
-                return $property->getUnionType();
-            }
+            return $property->getUnionType();
+        } catch (AccessException $exception) {
+            Log::err(
+                Log::EACCESS,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
         } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                "Can't access property {$property_name} from undeclared class {$exception->getFQSEN()}",
-                $this->context->getFile(),
-                $node->lineno
-            );
-        }
+            $property_name = $node->children['prop'];
 
-        // If the class isn't found, we'll get the message elsewhere
-        if ($class_fqsen) {
             Log::err(
                 Log::EUNDEF,
-                "Can't access undeclared property {$class_fqsen}->{$property_name}",
+                "Can't access undeclared property {$exception->getFQSEN()}->{$property_name}",
+                // "Can't access property {$property_name} from undeclared class {$exception->getFQSEN()}",
                 $this->context->getFile(),
                 $node->lineno
             );
+        } catch (UnanalyzableException $exception) {
+            // Swallow it. There are some constructs that we
+            // just can't figure out.
+        } catch (NodeException $exception) {
+            // Swallow it. There are some constructs that we
+            // just can't figure out.
         }
 
         return new UnionType();
@@ -1354,6 +1313,17 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return UnionType::fromFullyQualifiedString(
                 $class_name
             );
+        }
+
+        if ('parent' === $class_name) {
+            $class = $context->getClassInScope($code_base);
+            $parent_class_fqsen = $class->getParentClassFQSEN();
+
+            $parent_class = $code_base->getClassByFQSEN(
+                $parent_class_fqsen
+            );
+
+            return $parent_class->getUnionType();
         }
 
         return UnionType::fromStringInContext(

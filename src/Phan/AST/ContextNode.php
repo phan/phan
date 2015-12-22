@@ -11,6 +11,7 @@ use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
+use \Phan\Exception\UnanalyzableException;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Method;
@@ -421,7 +422,101 @@ class ContextNode {
     }
 
     /**
-     * @return Variable
+     * @param string|Node $property_name
+     * The name of the property we're looking up
+     *
+     * @return Property 
+     * A variable in scope or a new variable
+     *
+     * @throws NodeException
+     * An exception is thrown if we can't understand the node
+     *
+     * @throws CodeBaseExtension
+     * An exception is thrown if we can't find the given
+     * class
+     *
+     * @throws TypeException
+     * An exception may be thrown if the only viable candidate
+     * is a non-class type.
+     *
+     * @throws AccessException
+     * An exception is thrown if the property is private or
+     * protected and we don't have access to it from this
+     * context
+     *
+     * @throws UnanalyzableException
+     * An exception is thrown if we hit a construct in which
+     * we can't determine if the property exists or not
+     */
+    public function getProperty(
+        $property_name
+    ) : Property {
+
+        $property_name = $this->node->children['prop'];
+
+        // Give up for things like C::$prop_name
+        if (!is_string($property_name)) {
+            throw new NodeException(
+                $this->node,
+                "Cannot figure out non-string property name"
+            );
+        }
+
+        $class_fqsen = null;
+
+        $class_list = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $this->node->children['expr'] ??
+                $this->node->children['class']
+        ))->getClassList();
+
+        foreach ($class_list as $i => $class) {
+            $class_fqsen = $class->getFQSEN();
+
+            // Keep hunting if this class doesn't have the given
+            // property
+            if (!$class->hasPropertyWithName(
+                    $this->code_base,
+                    $property_name
+            )) {
+                // If there's a getter on properties than all
+                // bets are off.
+                if ($class->hasMethodWithName(
+                    $this->code_base, '__get'
+                )) {
+                    throw new UnanalyzableException(
+                        $this->node,
+                        "Can't determine if property {$property_name} exists in class {$class->getFQSEN()} with __get defined"
+                    );
+                }
+
+                continue;
+            }
+
+            return $class->getPropertyByNameInContext(
+                $this->code_base,
+                $property_name,
+                $this->context
+            );
+        }
+
+        // If the class isn't found, we'll get the message elsewhere
+        if ($class_fqsen) {
+            throw new CodeBaseException(
+                $class->getFQSEN(),
+                "Can't find property {$property_name} in class {$class_fqsen}"
+            );
+        }
+
+        throw new NodeException(
+            $this->node,
+            "Cannot figure out property"
+        );
+    }
+
+    /**
+     * @return Property 
      * A variable in scope or a new variable
      *
      * @throws NodeException
@@ -438,25 +533,20 @@ class ContextNode {
     public function getOrCreateProperty(
         string $property_name
     ) : Property {
-        assert(is_string($property_name),
-            'Property name must be a string. '
-            . 'Got '
-            . print_r($property_name, true)
-            . ' at '
-            . $this->context);
+
+        try {
+            return $this->getProperty($property_name);
+        } catch (CodeBaseException $exception) {
+            // Ignore it, because we'll create our own
+            // property
+        } catch (UnanalyzableException $exception) {
+            // Ignore it, because we'll create our own
+            // property
+        }
 
         // Figure out the class we're looking the property
         // up for
-        $clazz = $this->getClass();
-
-        // Return it if the property exists on the class
-        if ($clazz->hasPropertyWithName($this->code_base, $property_name)) {
-            return $clazz->getPropertyByNameInContext(
-                $this->code_base,
-                $property_name,
-                $this->context
-            );
-        }
+        $class = $this->getClass();
 
         $flags = 0;
         if ($this->node->kind == \ast\AST_STATIC_PROP) {
@@ -473,12 +563,12 @@ class ContextNode {
 
         $property->setFQSEN(
             FullyQualifiedPropertyName::make(
-                $clazz->getFQSEN(),
+                $class->getFQSEN(),
                 $property_name
             )
         );
 
-        $clazz->addProperty($this->code_base, $property);
+        $class->addProperty($this->code_base, $property);
 
         return $property;
     }
