@@ -964,6 +964,15 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 $this->context,
                 $node
             ))->getProperty($node->children['prop']);
+
+            // Check to make sure we're doing something with the
+            // property
+            $this->analyzeNoOp($node, "no-op property");
+
+            // Mark that this property has been referenced from
+            // this context
+            $property->addReference($this->context);
+
         } catch (\Exception $exception) {
             // Swallow any exceptions. We'll log the errors
             // elsewhere.
@@ -971,7 +980,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
         return $this->context;
     }
-
 
     /**
      * Analyze the parameters and arguments for a call
@@ -1243,7 +1251,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 $node->lineno
             );
         }
-
     }
 
 }
