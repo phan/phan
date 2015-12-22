@@ -3,7 +3,7 @@ namespace Phan\Analyze;
 
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Language\AST\FlagVisitorImplementation;
+use \Phan\AST\Visitor\FlagVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \Phan\Language\Type\{

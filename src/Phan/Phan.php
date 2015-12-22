@@ -8,7 +8,7 @@ use \Phan\CLI;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
-use \Phan\Language\AST\Element;
+use \Phan\AST\Visitor\Element;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \ast\Node;

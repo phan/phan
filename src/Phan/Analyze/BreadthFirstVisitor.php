@@ -1,38 +1,34 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
+use \Phan\AST\Visitor\Element;
+use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\Analyzable;
 use \Phan\Analyze\ArgumentType;
 use \Phan\Analyze\AssignmentVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
-use \Phan\Database;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
-use \Phan\Language\AST;
-use \Phan\Language\AST\Element;
-use \Phan\Language\AST\KindVisitorImplementation;
-use \Phan\Language\Context;
-use \Phan\Language\Element\{
-    Clazz,
-    Comment,
-    Constant,
-    Method,
-    PassByReferenceVariable,
-    Property,
-    Variable
-};
 use \Phan\Langauge\Type;
+use \Phan\Language\Context;
+use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Comment;
+use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\Method;
+use \Phan\Language\Element\PassByReferenceVariable;
+use \Phan\Language\Element\Property;
+use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\Type\ArrayType;
 use \Phan\Language\Type\CallableType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
-use \Phan\Model\CalledBy;
 use \ast\Node;
 
 /**
@@ -150,9 +146,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 )
             );
 
-        if(Config::get()->backward_compatibility_checks) {
-            AST::backwardCompatibilityCheck($this->context, $node);
-        }
+        (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node
+        ))->analyzeBackwardCompatibility();
 
         return $context;
     }
@@ -564,21 +562,30 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
     public function visitCall(Node $node) : Context {
         $expression = $node->children['expr'];
 
-        if(Config::get()->backward_compatibility_checks) {
-            AST::backwardCompatibilityCheck($this->context, $node);
-            foreach($node->children['args']->children ?? [] as $arg_node) {
-                if($arg_node instanceof Node) {
-                    AST::backwardCompatibilityCheck($this->context, $arg_node);
-                }
+        (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node
+        ))->analyzeBackwardCompatibility();
+
+        foreach($node->children['args']->children ?? [] as $arg_node) {
+            if($arg_node instanceof Node) {
+                (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $arg_node
+                ))->analyzeBackwardCompatibility();
             }
         }
 
         if($expression->kind == \ast\AST_NAME) {
             try {
-                $method = AST::functionFromNameInContext(
-                    $expression->children['name'],
+                $method = (new ContextNode(
+                    $this->code_base,
                     $this->context,
-                    $this->code_base
+                    $expression
+                ))->getFunction(
+                    $expression->children['name']
                 );
             } catch (CodeBaseException $exception) {
                 Log::err(
@@ -600,7 +607,12 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         }
 
         else if ($expression->kind == \ast\AST_VAR) {
-            $variable_name = AST::variableName($expression);
+            $variable_name = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $expression
+            ))->getVariableName();
+
             if(empty($variable_name)) {
                 return $this->context;
             }
@@ -658,13 +670,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitNew(Node $node) : Context {
         try {
-            $method = AST::classMethodFromNodeInContext(
-                $node,
-                $this->context,
+            $method = (new ContextNode(
                 $this->code_base,
-                '__construct',
-                false
-            );
+                $this->context,
+                $node
+            ))->getMethod('__construct', false);
 
             $this->analyzeCallToMethod(
                 $this->code_base,
@@ -699,11 +709,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitInstanceof(Node $node) : Context {
         try {
-            $class_list = AST::classListFromNodeInContext(
+            $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node->children['class']
-            );
+            ))->getClassList();
         } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,
@@ -757,22 +767,21 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
 
         try {
             // Get a reference to the method being called
-            $method = AST::classMethodFromNodeInContext(
-                $node,
-                $this->context,
+            $method = (new ContextNode(
                 $this->code_base,
-                $method_name,
-                true
-            );
+                $this->context,
+                $node
+            ))->getMethod($method_name, true);
 
             // If the method isn't static and we're not calling
             // it on 'parent', we're in a bad spot.
             if(!$method->isStatic() && 'parent' !== $static_class) {
-                $clazz = AST::classFromNodeInContext(
-                    $node,
+
+                $clazz = (new ContextNode(
+                    $this->code_base,
                     $this->context,
-                    $this->code_base
-                );
+                    $node
+                ))->getClass();
 
                 Log::err(
                     Log::ESTATIC,
@@ -817,13 +826,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      */
     public function visitMethodCall(Node $node) : Context {
         try {
-            $method = AST::classMethodFromNodeInContext(
-                $node,
-                $this->context,
+            $method = (new ContextNode(
                 $this->code_base,
-                $node->children['method'],
-                false
-            );
+                $this->context,
+                $node
+            ))->getMethod($node->children['method'], false);
         } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,
@@ -939,6 +946,21 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_PROP`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitProp(Node $node) : Context {
+        return $this->context;
+    }
+
 
     /**
      * Analyze the parameters and arguments for a call
@@ -955,14 +977,7 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         Method $method,
         Node $node
     ) {
-        if (Database::isEnabled()) {
-            // Store the call to the method so we can track
-            // dependencies later
-            (new CalledBy(
-                (string)$method->getFQSEN(),
-                $this->context
-            ))->write(Database::get());
-        }
+        $method->addReference($this->context);
 
         // Create variables for any pass-by-reference
         // parameters
@@ -980,11 +995,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 if ($argument->kind == \ast\AST_VAR) {
                     // We don't do anything with it; just create it
                     // if it doesn't exist
-                    $variable = AST::getOrCreateVariableFromNodeInContext(
-                        $argument,
+                    $variable = (new ContextNode(
+                        $this->code_base,
                         $this->context,
-                        $this->code_base
-                    );
+                        $argument
+                    ))->getOrCreateVariable();
                 } else if (
                     $argument->kind == \ast\AST_STATIC_PROP
                     || $argument->kind == \ast\AST_PROP
@@ -995,12 +1010,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                         // We don't do anything with it; just create it
                         // if it doesn't exist
                          try {
-                            $property = AST::getOrCreatePropertyFromNodeInContext(
-                                $argument->children['prop'],
-                                $argument,
-                                $this->context,
-                                $this->code_base
-                            );
+                             $property = (new ContextNode(
+                                 $this->code_base,
+                                 $this->context,
+                                 $argument
+                             ))->getOrCreateProperty($argument->children['prop']);
                          } catch (CodeBaseException $exception) {
                              Log::err(
                                  Log::EUNDEF,
@@ -1043,11 +1057,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             $variable = null;
             if ($parameter->isPassByReference()) {
                 if ($argument->kind == \ast\AST_VAR) {
-                    $variable = AST::getOrCreateVariableFromNodeInContext(
-                        $argument,
+                    $variable = (new ContextNode(
+                        $this->code_base,
                         $this->context,
-                        $this->code_base
-                    );
+                        $argument
+                    ))->getOrCreateVariable();
                 } else if (
                     $argument->kind == \ast\AST_STATIC_PROP
                     || $argument->kind == \ast\AST_PROP
@@ -1058,13 +1072,12 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                         // We don't do anything with it; just create it
                         // if it doesn't exist
                         try {
-                            $variable = AST::getOrCreatePropertyFromNodeInContext(
-                                $argument->children['prop'],
-                                $argument,
+                            $variable = (new ContextNode(
+                                $this->code_base,
                                 $this->context,
-                                $this->code_base
-                            );
-                         } catch (CodeBaseException $exception) {
+                                $argument
+                            ))->getOrCreateProperty($argument->children['prop']);
+                        } catch (CodeBaseException $exception) {
                              Log::err(
                                  Log::EUNDEF,
                                  $exception->getMessage(),
@@ -1152,12 +1165,11 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                     if ($parameter->isPassByReference()) {
                         if ($argument->kind == \ast\AST_VAR) {
                             // Get the variable
-                            $variable =
-                                AST::getOrCreateVariableFromNodeInContext(
-                                    $argument,
-                                    $this->context,
-                                    $this->code_base
-                                );
+                            $variable = (new ContextNode(
+                                $this->code_base,
+                                $this->context,
+                                $argument
+                            ))->getOrCreateVariable();
 
                             // Add it to the scope of the function wrapped
                             // in a way that makes it addressable as the

@@ -2,8 +2,11 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\Database;
 use \Phan\Language\Context;
+use \Phan\Language\FileRef;
 use \Phan\Language\UnionType;
+use \Phan\Model\CalledBy;
 
 /**
  * Any PHP structural element that also has a type and is
@@ -33,6 +36,13 @@ abstract class TypedStructuralElement extends StructuralElement {
      * a certain kind has a meaningful flags value.
      */
     private $flags = 0;
+
+    /**
+     * @var FileRef[]
+     * A list of locations in which this typed structural
+     * element is referenced from.
+     */
+    private $reference_list = [];
 
     /**
      * @param Context $context
@@ -123,4 +133,41 @@ abstract class TypedStructuralElement extends StructuralElement {
     public function setFlags(int $flags) {
         $this->flags = $flags;
     }
+
+    /**
+     * @param FileRef $file_ref
+     * A reference to a location in which this typed structural
+     * element is referenced.
+     *
+     * @return void
+     */
+    public function addReference(FileRef $file_ref) {
+        $this->reference_list[] = $file_ref;
+
+        // If requested, save the reference to the
+        // database
+        if (Database::isEnabled()) {
+            (new CalledBy(
+                (string)$method->getFQSEN(),
+                $file_ref
+            ))->write(Database::get());
+        }
+    }
+
+    /**
+     * @return FileRef[]
+     * A list of references to this typed structural element.
+     */
+    public function getReferenceList() : array {
+        return $this->reference_list;
+    }
+
+    /**
+     * @return int
+     * The number of references to this typed structural element
+     */
+    public function getReferenceCount() : int {
+        return count($this->reference_list);
+    }
+
 }

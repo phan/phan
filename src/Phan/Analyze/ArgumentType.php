@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\ContextNode;
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Language\AST;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Parameter;
@@ -222,8 +222,9 @@ class ArgumentType {
                         $node->lineno
                     );
                 } else {
-                    $variable_name =
-                        AST::variableName($argument);
+                    $variable_name = (new ContextNode(
+                        $code_base, $context, $argument
+                    ))->getVariableName();
 
                     if($argument->kind == \ast\AST_STATIC_PROP) {
                         if (in_array($variable_name, [

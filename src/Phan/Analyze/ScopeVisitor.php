@@ -3,7 +3,7 @@ namespace Phan\Analyze;
 
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Language\AST\KindVisitorImplementation;
+use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;

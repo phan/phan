@@ -1,28 +1,26 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
+use \Phan\AST\ContextNode;
+use \Phan\AST\Visitor\Element;
+use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
-use \Phan\Language\AST;
-use \Phan\Language\AST\Element;
-use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\Type\ArrayType;
+use \Phan\Language\Type\BoolType;
+use \Phan\Language\Type\CallableType;
+use \Phan\Language\Type\FloatType;
+use \Phan\Language\Type\GenericArrayType;
+use \Phan\Language\Type\IntType;
+use \Phan\Language\Type\MixedType;
+use \Phan\Language\Type\NativeType;
 use \Phan\Language\Type\NodeTypeKindVisitor;
-use \Phan\Language\Type\{
-    ArrayType,
-    BoolType,
-    CallableType,
-    FloatType,
-    GenericArrayType,
-    IntType,
-    MixedType,
-    NativeType,
-    NullType,
-    ObjectType,
-    ResourceType,
-    ScalarType,
-    StringType,
-    VoidType
-};
+use \Phan\Language\Type\NullType;
+use \Phan\Language\Type\ObjectType;
+use \Phan\Language\Type\ResourceType;
+use \Phan\Language\Type\ScalarType;
+use \Phan\Language\Type\StringType;
+use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
 use \ast\Node;
 

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\AST\ContextNode;
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Language\AST;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \ast\Node;

@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
+use \Phan\AST\Visitor\Element;
+use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
-use \Phan\Language\AST;
-use \Phan\Language\AST\Element;
-use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
 use \Phan\Language\FQSEN;
@@ -77,11 +77,11 @@ class ParseVisitor extends ScopeVisitor {
     public function visitClass(Decl $node) : Context {
 
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
-            $class_name =
-                AST::unqualifiedNameForAnonymousClassNode(
-                    $node,
-                    $this->context
-                );
+            $class_name = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getUnqualifiedNameForAnonymousClass();
         } else {
             $class_name = (string)$node->name;
         }
@@ -168,11 +168,12 @@ class ParseVisitor extends ScopeVisitor {
 
         // Add any implemeneted interfaces
         if (!empty($node->children['implements'])) {
-            $interface_list = AST::qualifiedNameList(
+            $interface_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node->children['implements']
-            );
+            ))->getQualifiedNameList();
+
             foreach ($interface_list as $name) {
                 $clazz->addInterfaceClassFQSEN(
                     FullyQualifiedClassName::fromFullyQualifiedString(
@@ -205,12 +206,11 @@ class ParseVisitor extends ScopeVisitor {
         // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
-        $trait_fqsen_string_list =
-            AST::qualifiedNameList(
-                $this->code_base,
-                $this->context,
-                $node->children['traits']
-            );
+        $trait_fqsen_string_list = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['traits']
+        ))->getQualifiedNameList();
 
         // Add each trait to the class
         foreach ($trait_fqsen_string_list as $trait_fqsen_string) {
@@ -554,7 +554,11 @@ class ParseVisitor extends ScopeVisitor {
      */
     public function visitReturn(Node $node) : Context {
         if (Config::get()->backward_compatibility_checks) {
-            AST::backwardCompatibilityCheck($this->context, $node);
+            (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->analyzeBackwardCompatibility();
         }
 
         return $this->context;

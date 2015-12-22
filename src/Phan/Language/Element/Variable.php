@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\AST\ContextNode;
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Language\AST;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \ast\Node;
@@ -60,7 +60,11 @@ class Variable extends TypedStructuralElement {
         bool $should_check_type = true
     ) : Variable {
 
-        $variable_name = AST::variableName($node);
+        $variable_name = (new ContextNode(
+            $code_base,
+            $context,
+            $node
+        ))->getVariableName();
 
         // Get the type of the assignment
         $union_type = $should_check_type

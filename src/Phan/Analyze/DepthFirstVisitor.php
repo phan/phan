@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
+use \Phan\AST\Visitor\Element;
+use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
-use \Phan\Language\AST;
-use \Phan\Language\AST\Element;
-use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Comment;
@@ -63,10 +63,11 @@ class DepthFirstVisitor extends ScopeVisitor {
 
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name =
-                AST::unqualifiedNameForAnonymousClassNode(
-                    $node,
-                    $this->context
-                );
+                (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node
+                ))->getUnqualifiedNameForAnonymousClass();
         } else {
             $class_name = (string)$node->name;
         }
@@ -159,9 +160,11 @@ class DepthFirstVisitor extends ScopeVisitor {
         $function_name = (string)$node->name;
 
         try {
-            $method = AST::functionFromNameInContext(
-                $function_name, $this->context, $this->code_base, true
-            );
+            $method = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getFunction($function_name, true);
         } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EFATAL,
@@ -251,8 +254,11 @@ class DepthFirstVisitor extends ScopeVisitor {
                     continue;
                 }
 
-                $variable_name =
-                    AST::variableName($use->children['name']);
+                $variable_name = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $use->children['name']
+                ))->getVariableName();
 
                 if(empty($variable_name)) {
                     continue;
@@ -425,11 +431,11 @@ class DepthFirstVisitor extends ScopeVisitor {
                 $node->children['class']
             );
 
-            $class_list = AST::classListFromNodeInContext(
+            $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node->children['class']
-            );
+            ))->getClassList();
         } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,
@@ -439,8 +445,11 @@ class DepthFirstVisitor extends ScopeVisitor {
             );
         }
 
-        $variable_name =
-            AST::variableName($node->children['var']);
+        $variable_name = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['var']
+        ))->getVariableName();
 
         if (!empty($variable_name)) {
             $variable = Variable::fromNodeInContext(

@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze\ClassName;
 
+use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
+use \Phan\AST\Visitor\Element;
+use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\ClassNameVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
 use \Phan\Exception\TypeException;
-use \Phan\Language\AST;
-use \Phan\Language\AST\Element;
-use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;

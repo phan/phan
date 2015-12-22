@@ -1,6 +1,9 @@
 <?php
 namespace Phan\AST;
 
+use \Phan\AST\ContextNode;
+use \Phan\AST\Visitor\Element;
+use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\BinaryOperatorFlagVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
@@ -8,9 +11,6 @@ use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
-use \Phan\Language\AST;
-use \Phan\Language\AST\Element;
-use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Variable;
@@ -954,6 +954,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                         $property_name,
                         $this->context
                     );
+
+                    $property->addReference($this->context);
                 } catch (AccessException $exception) {
                     Log::err(
                         Log::EACCESS,
@@ -1025,11 +1027,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $node->children['expr']->children['name'];
 
         try {
-            $function = AST::functionFromNameInContext(
-                $function_name,
+            $function = (new ContextNode(
+                $this->code_base,
                 $this->context,
-                $this->code_base
-            );
+                $node->children['expr']
+            ))->getFunction($function_name);
         } catch (CodeBaseException $exception) {
             // If the function wasn't declared, it'll be caught
             // and reported elsewhere
@@ -1231,10 +1233,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         ) {
             // Generate a stable name for the anonymous class
             $anonymous_class_name =
-                AST::unqualifiedNameForAnonymousClassNode(
-                    $node,
-                    $this->context
-                );
+                (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node
+                ))->getUnqualifiedNameForAnonymousClass();
 
             // Turn that into a fully qualified name
             $fqsen = FullyQualifiedClassName::fromStringInContext(

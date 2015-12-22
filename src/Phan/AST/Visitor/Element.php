@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Language\AST;
+namespace Phan\AST\Visitor;
 
 use \Phan\Debug;
 use \ast\Node;

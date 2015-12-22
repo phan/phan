@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
+use \Phan\AST\Visitor\Element;
+use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\ClassName\MethodCallVisitor;
 use \Phan\Analyze\ClassName\ValidationVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
-use \Phan\Language\AST;
-use \Phan\Language\AST\Element;
-use \Phan\Language\AST\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;
@@ -83,11 +83,11 @@ class ClassNameVisitor extends KindVisitorImplementation {
         if ($node->children['class']->kind == \ast\AST_CLASS
             && $node->children['class']->flags & \ast\flags\CLASS_ANONYMOUS
         ) {
-            return
-                AST::unqualifiedNameForAnonymousClassNode(
-                    $node->children['class'],
-                    $this->context
-                );
+            return (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node->children['class']
+            ))->getUnqualifiedNameForAnonymousClass();
         }
 
         // Things of the form `new $method->name()`
