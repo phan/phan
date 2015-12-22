@@ -55,17 +55,31 @@ trait ConstantMap {
     }
 
     /**
+     * @param FQSEN $fqsen
+     * The fully qualified name of the scope in which the
+     * constant is defined or null if its a global constant
+     *
+     * @param string $name
+     * The name of the constant
+     *
      * @return bool
      */
-    public function hasConstant(FQSEN $fqsen, string $name) : bool {
+    public function hasConstant(FQSEN $fqsen = null, string $name) : bool {
         return !empty($this->constant_map[(string)$fqsen][$name]);
     }
 
     /**
+     * @param FQSEN $fqsen
+     * The fully qualified name of the scope in which the
+     * constant is defined or null if its a global constant
+     *
+     * @param string $name
+     * The name of the constant
+     *
      * @return Constant
      * Get the constant with the given FQSEN
      */
-    public function getConstant(FQSEN $fqsen, string $name) : Constant {
+    public function getConstant(FQSEN $fqsen = null, string $name) : Constant {
         return $this->constant_map[(string)$fqsen][$name];
     }
 

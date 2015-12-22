@@ -14,6 +14,7 @@ use \Phan\Exception\TypeException;
 use \Phan\Exception\UnanalyzableException;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Constant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
@@ -571,6 +572,121 @@ class ContextNode {
         $class->addProperty($this->code_base, $property);
 
         return $property;
+    }
+
+    /**
+     * @return Constant
+     * Get the (non-class) constant associated with this node
+     * in this context
+     *
+     * @throws NodeException
+     * An exception is thrown if we can't understand the node
+     *
+     * @throws CodeBaseExtension
+     * An exception is thrown if we can't find the given
+     * class
+     */
+    public function getConst() : Constant {
+        assert($this->node->kind === \ast\AST_CONST,
+            "Node must be of type \ast\AST_CONST");
+
+        if($this->node->children['name']->kind !== \ast\AST_NAME) {
+            throw new NodeException(
+                $this->node,
+                "Can't determine constant name"
+            );
+        }
+
+        // Get an FQSEN for the root namespace
+        $fqsen = null;
+
+        $constant_name =
+            $this->node->children['name']->children['name'];
+
+        if (!$this->code_base->hasConstant($fqsen, $constant_name)) {
+            throw new CodeBaseException(
+                $fqsen,
+                "Cannot find constant with name $constant_name"
+            );
+        }
+
+        return $this->code_base->getConstant($fqsen, $constant_name);
+    }
+
+    /**
+     * @return Constant
+     * Get the (non-class) constant associated with this node
+     * in this context
+     *
+     * @throws NodeException
+     * An exception is thrown if we can't understand the node
+     *
+     * @throws CodeBaseExtension
+     * An exception is thrown if we can't find the given
+     * class
+     *
+     * @throws UnanalyzableException
+     * An exception is thrown if we hit a construct in which
+     * we can't determine if the property exists or not
+     */
+    public function getClassConst() : Constant {
+        assert($this->node->kind === \ast\AST_CLASS_CONST,
+            "Node must be of type \ast\AST_CLASS_CONST");
+
+        $constant_name = $this->node->children['const'];
+
+        // class name fetch
+        if($constant_name == 'class') {
+            throw new UnanalyzableException(
+                $this->node,
+                "Can't get class constant for implicit 'class'"
+            );
+        }
+
+        $class_fqsen = null;
+
+        try {
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $this->node->children['class']
+            ))->getClassList();
+        } catch (CodeBaseException $exception) {
+            throw new CodeBaseException(
+                $exception->getFQSEN(),
+                "Can't access constant $constant_name from undeclared class {$exception->getFQSEN()}"
+            );
+        }
+
+        foreach ($class_list as $i => $class) {
+            $class_fqsen = $class->getFQSEN();
+
+            // Check to see if the class has the constant
+            if (!$class->hasConstantWithName(
+                $this->code_base,
+                $constant_name
+            )) {
+                continue;
+            }
+
+            return $class->getConstantWithName(
+                $this->code_base,
+                $constant_name
+            );
+        }
+
+        // If no class is found, we'll emit the error elsewhere
+        if ($class_fqsen) {
+            throw new CodeBaseException(
+                $class->getFQSEN(),
+                "Can't access undeclared constant {$class_fqsen}::{$constant_name}"
+            );
+        }
+
+        throw new NodeException(
+            $this->node,
+            "Can't figure out constant {$constant_name} in node"
+        );
     }
 
     /**

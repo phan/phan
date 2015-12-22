@@ -430,7 +430,59 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitConst(Node $node) : Context {
+
+        try {
+            $constant = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getConst();
+
+            // Mark that this constant has been referenced from
+            // this context
+            $constant->addReference($this->context);
+
+        } catch (\Exception $exception) {
+            // Swallow any exceptions. We'll log the errors
+            // elsewhere.
+        }
+
+        // Check to make sure we're doing something with the
+        // constant
         $this->analyzeNoOp($node, "no-op constant");
+
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitClassConst(Node $node) : Context {
+        try {
+            $constant = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getClassConst();
+
+            // Mark that this class constant has been referenced
+            // from this context
+            $constant->addReference($this->context);
+
+        } catch (\Exception $exception) {
+            // Swallow any exceptions. We'll log the errors
+            // elsewhere.
+        }
+
+        // Check to make sure we're doing something with the
+        // class constant
+        $this->analyzeNoOp($node, "no-op constant");
+
         return $this->context;
     }
 
@@ -524,18 +576,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             );
         }
 
-        return $this->context;
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitClassConstDecl(Node $node) : Context {
         return $this->context;
     }
 
@@ -965,10 +1005,6 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
                 $node
             ))->getProperty($node->children['prop']);
 
-            // Check to make sure we're doing something with the
-            // property
-            $this->analyzeNoOp($node, "no-op property");
-
             // Mark that this property has been referenced from
             // this context
             $property->addReference($this->context);
@@ -977,6 +1013,10 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
             // Swallow any exceptions. We'll log the errors
             // elsewhere.
         }
+
+        // Check to make sure we're doing something with the
+        // property
+        $this->analyzeNoOp($node, "no-op property");
 
         return $this->context;
     }

@@ -6,24 +6,30 @@ use \Phan\Language\FQSEN;
 
 class CodeBaseException extends \Exception {
 
-    /**
-     * @var FQSEN
-     */
+    /** @var FQSEN|null */
     private $missing_fqsen;
 
     /**
-     * @param FQSEN $missing_fqsen
+     * @param FQSEN|null $missing_fqsen
      * The FQSEN that cannot be found in the code base
      *
      * @param string $message
      * The error message
      */
     public function __construct(
-        FQSEN $missing_fqsen,
+        FQSEN $missing_fqsen = null,
         string $message = null
     ) {
         parent::__construct($message);
         $this->missing_fqsen = $missing_fqsen;
+    }
+
+    /**
+     * @return bool
+     * True if we have an FQSEN defined
+     */
+    public function hasFQSEN() : bool {
+        return !empty($this->missing_fqsen);
     }
 
     /**

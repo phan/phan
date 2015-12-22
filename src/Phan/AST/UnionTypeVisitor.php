@@ -850,6 +850,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitClassConst(Node $node) : UnionType {
+
         $constant_name = $node->children['const'];
 
         // class name fetch
@@ -858,44 +859,33 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         try {
-            $class_fqsen = null;
-            foreach ($this->classListFromNode(
-                $node->children['class']
-            )
-                as $i => $class
-            ) {
-                $class_fqsen = $class->getFQSEN();
+            $constant = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getClassConst();
 
-                // Check to see if the class has the constant
-                if (!$class->hasConstantWithName(
-                    $this->code_base,
-                    $constant_name
-                )) {
-                    continue;
-                }
-
-                return $class->getConstantWithName(
-                    $this->code_base,
-                    $constant_name
-                )->getUnionType();
-            }
+            return $constant->getUnionType();
         } catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,
-                "Can't access constant {$constant_name} from undeclared class {$exception->getFQSEN()}",
+                $exception->getMessage(),
                 $this->context->getFile(),
                 $node->lineno
             );
-        }
-
-        // If no class is found, we'll emit the error elsewhere
-        if ($class_fqsen) {
+        } catch (NodeException $exception) {
             Log::err(
                 Log::EUNDEF,
                 "Can't access undeclared constant {$class_fqsen}::{$constant_name}",
                 $this->context->getFile(),
                 $node->lineno
             );
+        } catch (UnanalyzableException $exception) {
+            // Swallow it. There are some constructs that we
+            // just can't figure out.
+        } catch (NodeException $exception) {
+            // Swallow it. There are some constructs that we
+            // just can't figure out.
         }
 
         return new UnionType();
@@ -934,7 +924,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             Log::err(
                 Log::EUNDEF,
                 "Can't access undeclared property {$exception->getFQSEN()}->{$property_name}",
-                // "Can't access property {$property_name} from undeclared class {$exception->getFQSEN()}",
                 $this->context->getFile(),
                 $node->lineno
             );
