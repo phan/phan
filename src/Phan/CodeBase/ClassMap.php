@@ -52,7 +52,9 @@ trait ClassMap {
      * An exception is thrown if the class cannot be
      * found
      */
-    public function getClassByFQSEN(FullyQualifiedClassName $fqsen) : Clazz {
+    public function getClassByFQSEN(
+        FullyQualifiedClassName $fqsen
+    ) : Clazz {
         // If we can't find the class, attempt to read it from
         // the database
         if (empty($this->class_map[(string)$fqsen])) {

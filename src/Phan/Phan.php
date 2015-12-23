@@ -1,8 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\AST\ChooseContext;
-use \Phan\Analyze\MergeVisitor;
+use \Phan\Analyze\ContextMergeVisitor;
 use \Phan\Analyze\ParseVisitor;
 use \Phan\Analyze\PostOrderAnalysisVisitor;
 use \Phan\Analyze\PreOrderAnalysisVisitor;
@@ -374,7 +373,7 @@ class Phan {
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $child_context = (new PreOrderAnalysisVisitor(
+        $node_context = (new PreOrderAnalysisVisitor(
             $code_base,
             $context->withLineNumberStart($node->lineno ?? 0)
         ))($node);
@@ -386,23 +385,25 @@ class Phan {
         // them
         $child_context_list = [];
 
-        // Go depth first on that first set of analyses
+        $child_context = $node_context;
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
 		foreach($node->children ?? [] as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
             }
 
-            /*
-            // Some nodes don't share state between child nodes
-            // such as conditionals where we treat them as if
-            // the branches share no state
-            switch ($node->kind) {
-            case \ast\AST_IF:
-                $child_context = $parent_context;
+            // All nodes but conditionals pass context to
+            // their siblings. Child nodes of conditionals
+            // operate in a context independent of eachother
+            switch ($child_node->kind) {
+            case \ast\AST_IF_ELEM:
+                $child_context = $node_context;
                 break;
             }
-            */
 
             // Step into each child node and get an
             // updated context for the node
@@ -418,23 +419,36 @@ class Phan {
             $child_context_list[] = $child_context;
 		}
 
-        /*
-        // Now that we have n child contexts, we merge them
-        // into a single context before doing the breadth
-        // first analysis
-        $context = MergeVisitor::merge(
-            $code_base, $context, $child_context_list, $node
-        );
-        */
-
-        $context = (new PostOrderAnalysisVisitor(
+        // For if statements, we need to merge the contexts
+        // of all child context into a single scope based
+        // on any possible branching structure
+        $node_context = (new ContextMergeVisitor(
             $code_base,
-            $context->withLineNumberStart($node->lineno ?? 0),
+            $node_context,
+            $child_context_list
+        ))($node);
+
+        // Now that we know all about our context (like what
+        // 'self' means), we can analyze statements like
+        // assignments and method calls.
+        $node_context = (new PostOrderAnalysisVisitor(
+            $code_base,
+            $node_context->withLineNumberStart($node->lineno ?? 0),
             $parent_node
         ))($node);
 
-        // Pass the context back up to our parent
-        return $context;
+        // When coming out of a scoped element, we pop the
+        // context to be the incoming context. Otherwise,
+        // we pass our new context up to our parent
+        switch ($node->kind) {
+        case \ast\AST_CLASS:
+        case \ast\AST_METHOD:
+        case \ast\AST_FUNC_DECL:
+        case \ast\AST_CLOSURE:
+            return $context;
+        default:
+            return $node_context;
+        }
     }
 
     /**

@@ -471,15 +471,24 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * parsing the node
      */
     public function visitIfElem(Node $node) : Context {
-        return $this->context;
-
-        /*
         // Clone the scope for each branch of a conditional.
         // They'll be merged upon existing all branches.
-        return $this->context->withScope(
+        $context = $this->context->withScope(
             clone($this->context->getScope())
         );
-         */
+
+        // Look to see if any proofs we do within the condition
+        // can say anything about types within the statement
+        // list.
+        if (isset($node->children['cond'])
+            && ($node->children['cond'] instanceof Node)
+        ) {
+            return (new ConditionVisitor(
+                $this->code_base, $context
+            ))($node->children['cond']);
+        }
+
+        return $context;
     }
 
     /**

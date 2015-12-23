@@ -14,7 +14,7 @@ use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
-class MergeVisitor extends KindVisitorImplementation {
+class ContextMergeVisitor extends KindVisitorImplementation {
 
     /**
      * @var CodeBase
@@ -44,7 +44,7 @@ class MergeVisitor extends KindVisitorImplementation {
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
-
+     *
      * @param Context[] $child_context_list
      * A list of the contexts returned after depth-first
      * parsing of all first-level children of this node
@@ -71,7 +71,7 @@ class MergeVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visit(Node $node) : Context {
-        return $this->context;
+        return end($this->child_context_list) ?: $this->context;
     }
 
     /**
@@ -89,10 +89,24 @@ class MergeVisitor extends KindVisitorImplementation {
             return $context->getScope();
         }, $this->child_context_list);
 
+        $has_else = array_reduce($node->children ?? [],
+            function (bool $carry, $child_node) {
+                return $carry || (
+                    $child_node instanceof Node
+                    && empty($child_node->children['cond'])
+                );
+            }, false);
+
+        // If we're not guaranteed to hit at least one
+        // branch, mark the incoming scope as a possibility
+        if (!$has_else) {
+            $scope_list[] = $this->context->getScope();
+        }
+
         // If there weren't multiple branches, continue on
         // as if the conditional never happened
         if (count($scope_list) < 2) {
-            return $this->context;
+            return array_values($this->child_context_list)[0];
         }
 
         // Get a list of all variables in all scopes
@@ -167,8 +181,8 @@ class MergeVisitor extends KindVisitorImplementation {
             $scope->addVariable($variable);
         }
 
-        // print "from> " . implode("|", $scope_list) . "\n";
-        // print "to>   " . $scope . "\n";
+        // print '<'.implode("\t", $scope_list) . "\n";
+        // print '>'.$scope."\n"; 
 
         // Set the new scope with only the variables and types
         // that are common to all branches

@@ -53,9 +53,13 @@ class UnionType {
      * @return null
      */
     public function __clone() {
-        $this->type_list = array_map(function(Type $type) : Type {
-            return $type ?  clone($type) : $type;
-        }, $this->type_list);
+        $type_list = [];
+
+        foreach ($this->type_list as $key => $type) {
+            $type_list[$key] = $type ? clone($type) : $type;
+        }
+
+        $this->type_list = $type_list;
     }
 
     /**
@@ -257,7 +261,7 @@ class UnionType {
     /**
      * Add a type name to the list of types
      *
-     * @return null
+     * @return void
      */
     public function addType(Type $type) {
         // Only allow unique elements
@@ -265,6 +269,16 @@ class UnionType {
             $this->type_list[(string)$type] = $type;
         }
     }
+
+    /**
+     * Remove a type name to the list of types
+     *
+     * @return void
+     */
+    public function removeType(Type $type) {
+        unset($this->type_list[(string)$type]);
+    }
+
 
     /**
      * @return bool
@@ -607,6 +621,22 @@ class UnionType {
             }, $this->getTypeList())
         );
     }
+
+    /**
+     * @return UnionType
+     * A new UnionType that is a copy of this UnionType without
+     * the given type.
+     */
+    public function withoutType(Type $type) : UnionType {
+        return new UnionType(
+            array_filter($this->getTypeList(),
+                function (Type $type) : bool {
+                    return ((string)$type  != (string)$type);
+                }
+            )
+        );
+    }
+
 
     /**
      * @param CodeBase

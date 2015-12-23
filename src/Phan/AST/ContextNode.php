@@ -390,21 +390,45 @@ class ContextNode {
      *
      * @throws NodeException
      * An exception is thrown if we can't understand the node
+     *
+     * @throws CodeBaseException
+     * A CodeBaseException is thrown if the variable doesn't
+     * exist
      */
-    public function getOrCreateVariable() : Variable {
-
+    public function getVariable() : Variable {
         // Get the name of the variable
         $variable_name = $this->getVariableName();
 
         if(empty($variable_name)) {
-            throw new NodeException($this->node, "Variable name not found");
+            throw new NodeException(
+                $this->node, "Variable name not found"
+            );
         }
 
         // Check to see if the variable exists in this scope
-        if ($this->context->getScope()->hasVariableWithName($variable_name)) {
-            return $this->context->getScope()->getVariableWithName(
-                $variable_name
+        if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
+            throw new CodeBaseException(
+                null, "Variable with name $variable_name doesn't exist in {$this->context}"
             );
+        }
+
+        return $this->context->getScope()->getVariableWithName(
+            $variable_name
+        );
+    }
+
+    /**
+     * @return Variable
+     * A variable in scope or a new variable
+     *
+     * @throws NodeException
+     * An exception is thrown if we can't understand the node
+     */
+    public function getOrCreateVariable() : Variable {
+        try {
+            return $this->getVariable();
+        } catch (CodeBaseException $exception) {
+            // Swallow it
         }
 
         // Create a new variable

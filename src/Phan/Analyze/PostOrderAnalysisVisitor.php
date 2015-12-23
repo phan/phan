@@ -4,9 +4,6 @@ namespace Phan\Analyze;
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
 use \Phan\AST\Visitor\KindVisitorImplementation;
-use \Phan\Analyze\Analyzable;
-use \Phan\Analyze\ArgumentType;
-use \Phan\Analyze\AssignmentVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
@@ -90,22 +87,6 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
     }
 
     /**
-     * Visit a node with kind `\ast\AST_NAMESPACE`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitNamespace(Node $node) : Context {
-        return $this->context->withNamespace(
-            '\\' . (string)$node->children['name']
-        );
-    }
-
-    /**
      * @param Node $node
      * A node to parse
      *
@@ -126,6 +107,9 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         assert($node->children['var'] instanceof Node,
             "Expected left side of assignment to be a var in {$this->context}");
 
+        // Handle the assignment based on the type of the
+        // right side of the equation and the kind of item
+        // on the left
         $context = (new AssignmentVisitor(
             $this->code_base,
             $this->context,
@@ -133,6 +117,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $right_type
         ))($node->children['var']);
 
+        // Analyze the assignment for compatibility with some
+        // breaking changes betweeen PHP5 and PHP7.
         (new ContextNode(
             $this->code_base,
             $this->context,
@@ -175,16 +161,19 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitIfElem(Node $node) : Context {
-        // Just check for errors in the expression
-        if (isset($node->children['cond'])
-            && $node->children['cond'] instanceof Node
+        if (!isset($node->children['cond'])
+            || !($node->children['cond'] instanceof Node)
         ) {
-            $expression_type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['cond']
-            );
+            return $this->context;
         }
+
+        // Get the type just to make sure everything
+        // is defined.
+        $expression_type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['cond']
+        );
 
         return $this->context;
     }
@@ -246,9 +235,6 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitDoWhile(Node $node) : Context {
-        /*
-        node_type($file, $namespace, $ast->children[1], $current_scope, $current_class, $taint);
-         */
         return $this->context;
     }
 

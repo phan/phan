@@ -155,27 +155,27 @@ class Type {
 
         switch ($type_name) {
         case 'array':
-            return \Phan\Language\Type\ArrayType::instance();
+            return ArrayType::instance();
         case 'bool':
-            return \Phan\Language\Type\BoolType::instance();
+            return BoolType::instance();
         case 'callable':
-            return \Phan\Language\Type\CallableType::instance();
+            return CallableType::instance();
         case 'float':
-            return \Phan\Language\Type\FloatType::instance();
+            return FloatType::instance();
         case 'int':
-            return \Phan\Language\Type\IntType::instance();
+            return IntType::instance();
         case 'mixed':
-            return \Phan\Language\Type\MixedType::instance();
+            return MixedType::instance();
         case 'null':
-            return \Phan\Language\Type\NullType::instance();
+            return NullType::instance();
         case 'object':
-            return \Phan\Language\Type\ObjectType::instance();
+            return ObjectType::instance();
         case 'resource':
-            return \Phan\Language\Type\ResourceType::instance();
+            return ResourceType::instance();
         case 'string':
-            return \Phan\Language\Type\StringType::instance();
+            return StringType::instance();
         case 'void':
-            return \Phan\Language\Type\VoidType::instance();
+            return VoidType::instance();
         }
 
         assert(false,

@@ -74,21 +74,6 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
     }
 
     /**
-     * Visit a node with kind `\ast\AST_IF`
-     *
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitIf(Node $node) : Context {
-        // $this->context->setIsConditional(true);
-        return $this->context;
-    }
-
-    /**
      * Visit a node with kind `\ast\AST_GROUP_USE`
      * such as `use \ast\Node;`.
      *
