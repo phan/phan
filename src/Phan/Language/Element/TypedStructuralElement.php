@@ -87,10 +87,12 @@ abstract class TypedStructuralElement extends StructuralElement {
             : $this->type;
 
         // Clone the FQSEN if it exists
-        if (isset($this->fqsen)) {
-            $this->fqsen = $this->fqsen
-                ? clone($this->fqsen)
-                : $this->fqsen;
+        if ($this instanceof Addressable) {
+            if ($this->getFQSEN()) {
+                $this->setFQSEN(
+                    clone($this->getFQSEN())
+                );
+            }
         }
     }
 
@@ -148,10 +150,12 @@ abstract class TypedStructuralElement extends StructuralElement {
         // If requested, save the reference to the
         // database
         if (Database::isEnabled()) {
-            (new CalledBy(
-                (string)$this->getFQSEN(),
-                $file_ref
-            ))->write(Database::get());
+            if ($this instanceof Addressable) {
+                (new CalledBy(
+                    (string)$this->getFQSEN(),
+                    $file_ref
+                ))->write(Database::get());
+            }
         }
     }
 

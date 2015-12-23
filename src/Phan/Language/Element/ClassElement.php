@@ -18,11 +18,16 @@ abstract class ClassElement extends TypedStructuralElement {
      */
     public function getDefiningClassFQSEN(
     ) : FullyQualifiedClassName {
-        if (!($this->getFQSEN() instanceof FullyQualifiedClassElement)) {
-            return null;
+        if ($this instanceof Addressable) {
+            $fqsen = $this->getFQSEN();
+            if ($fqsen instanceof FullyQualifiedClassElement) {
+                return $fqsen->getFullyQualifiedClassName();
+            }
         }
 
-        return $this->getFQSEN()->getFullyQualifiedClassName();
+        throw new \Exception(
+            "Cannot get defining class for non-class element $element"
+        );
     }
 
     /**

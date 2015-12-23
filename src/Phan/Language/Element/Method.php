@@ -14,8 +14,8 @@ use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 
-class Method extends ClassElement {
-    use \Phan\Language\Element\Addressable;
+class Method extends ClassElement implements Addressable {
+    use AddressableImplementation;
     use \Phan\Analyze\Analyzable;
 
     /**
@@ -677,7 +677,7 @@ class Method extends ClassElement {
     /**
      * @return FullyQualifiedFunctionName|FullyQualifiedMethodName
      */
-    public function getFQSEN() {
+    public function getFQSEN() : FQSEN {
         // Allow overrides
         if ($this->fqsen) {
             return $this->fqsen;

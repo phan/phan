@@ -6,8 +6,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\UnionType;
 
-class Property extends ClassElement {
-    use \Phan\Language\Element\Addressable;
+class Property extends ClassElement implements Addressable {
+    use AddressableImplementation;
 
     /**
      * @param \phan\Context $context
@@ -57,11 +57,11 @@ class Property extends ClassElement {
     }
 
     /**
-     * @return FQSEN
+     * @return FullyQualifiedPropertyName
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FullyQualifiedPropertyName {
+    public function getFQSEN() : FQSEN {
         // Get the stored FQSEN if it exists
         if ($this->fqsen) {
             return $this->fqsen;

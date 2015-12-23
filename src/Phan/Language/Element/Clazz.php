@@ -14,8 +14,8 @@ use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 
-class Clazz extends TypedStructuralElement {
-    use \Phan\Language\Element\Addressable;
+class Clazz extends TypedStructuralElement implements Addressable {
+    use AddressableImplementation;
     use \Phan\Memoize;
 
     /**
@@ -609,9 +609,9 @@ class Clazz extends TypedStructuralElement {
     }
 
     /**
-     * @return FQSEN
+     * @return FullyQualifiedClassName
      */
-    public function getFQSEN() : FullyQualifiedClassName {
+    public function getFQSEN() : FQSEN {
         // Allow overrides
         if ($this->fqsen) {
             return $this->fqsen;

@@ -8,8 +8,8 @@ use \Phan\Language\UnionType;
 use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 
-class Constant extends ClassElement {
-    use \Phan\Language\Element\Addressable;
+class Constant extends ClassElement implements Addressable {
+    use AddressableImplementation;
 
     /**
      * @param \phan\Context $context
@@ -47,7 +47,7 @@ class Constant extends ClassElement {
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() {
+    public function getFQSEN() : FQSEN {
         // Get the stored FQSEN if it exists
         if ($this->fqsen) {
             return $this->fqsen;

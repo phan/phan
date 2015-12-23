@@ -359,9 +359,12 @@ class AssignmentVisitor extends KindVisitorImplementation {
                 // If the variable isn't a pass-by-reference paramter
                 // we clone it so as to not disturb its previous types
                 // as we replace it.
-                if (!(($variable instanceof Parameter)
-                    && $variable->isPassByReference()
-                )) {
+                if ($variable instanceof Parameter) {
+                    if ($variable->isPassByReference()) {
+                    } else {
+                        $variable = clone($variable);
+                    }
+                } else {
                     $variable = clone($variable);
                 }
 
