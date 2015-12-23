@@ -30,7 +30,7 @@ use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
-class BreadthFirstVisitor extends KindVisitorImplementation {
+class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
     /**
      * @var CodeBase

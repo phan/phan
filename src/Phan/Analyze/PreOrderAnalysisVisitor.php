@@ -28,7 +28,7 @@ use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 
-class DepthFirstVisitor extends ScopeVisitor {
+class PreOrderAnalysisVisitor extends ScopeVisitor {
 
     /**
      * @param Context $context

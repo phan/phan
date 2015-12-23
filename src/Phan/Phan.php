@@ -2,10 +2,10 @@
 namespace Phan;
 
 use \Phan\AST\ChooseContext;
-use \Phan\Analyze\BreadthFirstVisitor;
-use \Phan\Analyze\DepthFirstVisitor;
 use \Phan\Analyze\MergeVisitor;
 use \Phan\Analyze\ParseVisitor;
+use \Phan\Analyze\PostOrderAnalysisVisitor;
+use \Phan\Analyze\PreOrderAnalysisVisitor;
 use \Phan\CLI;
 use \Phan\CodeBase;
 use \Phan\Config;
@@ -374,7 +374,7 @@ class Phan {
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $child_context = (new DepthFirstVisitor(
+        $child_context = (new PreOrderAnalysisVisitor(
             $code_base,
             $context->withLineNumberStart($node->lineno ?? 0)
         ))($node);
@@ -382,7 +382,7 @@ class Phan {
         assert(!empty($context), 'Context cannot be null');
 
         // We collect all child context so that the
-        // BreadthFirstVisitor can optionally operate on
+        // PostOrderAnalysisVisitor can optionally operate on
         // them
         $child_context_list = [];
 
@@ -427,7 +427,7 @@ class Phan {
         );
         */
 
-        $context = (new BreadthFirstVisitor(
+        $context = (new PostOrderAnalysisVisitor(
             $code_base,
             $context->withLineNumberStart($node->lineno ?? 0),
             $parent_node
