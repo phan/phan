@@ -2,7 +2,6 @@
 namespace Phan\AST;
 
 use \Phan\AST\ContextNode;
-use \Phan\AST\Visitor\Element;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\BinaryOperatorFlagVisitor;
 use \Phan\CodeBase;
