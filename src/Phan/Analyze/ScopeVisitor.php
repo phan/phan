@@ -14,6 +14,11 @@ use \ast\Node;
 abstract class ScopeVisitor extends KindVisitorImplementation {
 
     /**
+     * @var CodeBase
+     */
+    protected $code_base;
+
+    /**
      * @var Context
      * The context in which the node we're going to be looking
      * at exits.
@@ -21,21 +26,19 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
     protected $context;
 
     /**
-     * @var CodeBase
-     */
-    protected $code_base;
-
-    /**
+     * @param CodeBase $code_base
+     * The global code base holding all state
+     *
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
-     *
-     * @param CodeBase $code_base
-     * The global code base holding all state
      */
-    public function __construct(Context $context, CodeBase $code_base) {
-        $this->context = $context;
+    public function __construct(
+        CodeBase $code_base,
+        Context $context
+    ) {
         $this->code_base = $code_base;
+        $this->context = $context;
     }
 
     /**

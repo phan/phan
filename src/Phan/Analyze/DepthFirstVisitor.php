@@ -3,7 +3,6 @@ namespace Phan\Analyze;
 
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\AST\Visitor\Element;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
@@ -29,15 +28,6 @@ use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 
-/**
- * # Example Usage
- * ```
- * $context =
- *     (new Element($node))->acceptKindVisitor(
- *         new DepthFirstVisitor($context)
- *     );
- * ```
- */
 class DepthFirstVisitor extends ScopeVisitor {
 
     /**
@@ -45,8 +35,11 @@ class DepthFirstVisitor extends ScopeVisitor {
      * The context of the parser at the node for which we'd
      * like to determine a type
      */
-    public function __construct(Context $context, CodeBase $code_base) {
-        parent::__construct($context, $code_base);
+    public function __construct(
+        CodeBase $code_base,
+        Context $context
+    ) {
+        parent::__construct($code_base, $context);
     }
 
     /**
@@ -467,6 +460,26 @@ class DepthFirstVisitor extends ScopeVisitor {
         }
 
         return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitIfElem(Node $node) : Context {
+        return $this->context;
+
+        /*
+        // Clone the scope for each branch of a conditional.
+        // They'll be merged upon existing all branches.
+        return $this->context->withScope(
+            clone($this->context->getScope())
+        );
+         */
     }
 
     /**

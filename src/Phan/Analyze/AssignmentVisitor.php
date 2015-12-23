@@ -2,7 +2,6 @@
 namespace Phan\Analyze;
 
 use \Phan\AST\ContextNode;
-use \Phan\AST\Visitor\Element;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\Analyzable;
 use \Phan\CodeBase;
@@ -23,17 +22,18 @@ use \Phan\Log;
 use \ast\Node;
 
 class AssignmentVisitor extends KindVisitorImplementation {
+
+    /**
+     * @var CodeBase
+     */
+    private $code_base;
+
     /**
      * @var Context
      * The context in which the node we're going to be looking
      * at exits.
      */
     private $context;
-
-    /**
-     * @var CodeBase
-     */
-    private $code_base;
 
     /**
      * @var Node
@@ -55,12 +55,12 @@ class AssignmentVisitor extends KindVisitorImplementation {
     private $is_dim_assignment = false;
 
     /**
+     * @param CodeBase $code_base
+     * The global code base we're operating within
+     *
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
-     *
-     * @param CodeBase $code_base
-     * The global code base we're operating within
      *
      * @param Node $assignment_node
      * The AST node containing the assignment
@@ -75,14 +75,14 @@ class AssignmentVisitor extends KindVisitorImplementation {
      * type to the union type.
      */
     public function __construct(
-        Context $context,
         CodeBase $code_base,
+        Context $context,
         Node $assignment_node,
         UnionType $right_type,
         bool $is_dim_assignment = false
     ) {
-        $this->context = $context;
         $this->code_base = $code_base;
+        $this->context = $context;
         $this->assignment_node = $assignment_node;
         $this->right_type = $right_type;
         $this->is_dim_assignment = $is_dim_assignment;
@@ -193,17 +193,13 @@ class AssignmentVisitor extends KindVisitorImplementation {
         }
 
         // Recurse into whatever we're []'ing
-        $context =
-            (new Element($node->children['expr']))->acceptKindVisitor(
-                new AssignmentVisitor(
-                    $this->context,
-                    $this->code_base,
-                    $node,
-                    $right_type,
-                    true
-                )
-            );
-
+        $context = (new AssignmentVisitor(
+            $this->code_base,
+            $this->context,
+            $node,
+            $right_type,
+            true
+        ))($node->children['expr']);
 
         return $context;
     }

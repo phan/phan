@@ -3,7 +3,6 @@ namespace Phan\Analyze;
 
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\AST\Visitor\Element;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\Analyzable;
 use \Phan\Analyze\ArgumentType;
@@ -31,16 +30,12 @@ use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
 
-/**
- * # Example Usage
- * ```
- * $context =
- *     (new Element($node))->acceptKindVisitor(
- *         new BreadthFirstVisitor($context)
- *     );
- * ```
- */
 class BreadthFirstVisitor extends KindVisitorImplementation {
+
+    /**
+     * @var CodeBase
+     */
+    private $code_base;
 
     /**
      * @var Context
@@ -50,35 +45,30 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
     private $context;
 
     /**
-     * @var CodeBase
-     */
-    private $code_base;
-
-    /**
      * @var Node|null
      */
     private $parent_node;
 
     /**
-     * @param Context $context
-     * The context of the parser at the node for which we'd
-     * like to determine a type
-     *
      * @param CodeBase $code_base
      * A code base needs to be passed in because we require
      * it to be initialized before any classes or files are
      * loaded.
      *
+     * @param Context $context
+     * The context of the parser at the node for which we'd
+     * like to determine a type
+     *
      * @param Node|null $parent_node
      * The parent node of the node being analyzed
      */
     public function __construct(
-        Context $context,
         CodeBase $code_base,
+        Context $context,
         Node $parent_node = null
     ) {
-        $this->context = $context;
         $this->code_base = $code_base;
+        $this->context = $context;
         $this->parent_node = $parent_node;
     }
 
@@ -136,15 +126,12 @@ class BreadthFirstVisitor extends KindVisitorImplementation {
         assert($node->children['var'] instanceof Node,
             "Expected left side of assignment to be a var in {$this->context}");
 
-        $context =
-            (new Element($node->children['var']))->acceptKindVisitor(
-                new AssignmentVisitor(
-                    $this->context,
-                    $this->code_base,
-                    $node,
-                    $right_type
-                )
-            );
+        $context = (new AssignmentVisitor(
+            $this->code_base,
+            $this->context,
+            $node,
+            $right_type
+        ))($node->children['var']);
 
         (new ContextNode(
             $this->code_base,

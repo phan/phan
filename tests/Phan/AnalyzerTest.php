@@ -117,12 +117,12 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
         return
             (new Phan)->parseNodeInContext(
+                $this->code_base,
+                new Context,
                 \ast\parse_code(
                     '<?php ' . $code_stub,
                     Config::get()->ast_version
-                ),
-                new Context,
-                $this->code_base
+                )
             );
     }
 }

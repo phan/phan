@@ -1,14 +1,15 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use \Phan\AST\ChooseContext;
 use \Phan\Analyze\BreadthFirstVisitor;
 use \Phan\Analyze\DepthFirstVisitor;
+use \Phan\Analyze\MergeVisitor;
 use \Phan\Analyze\ParseVisitor;
 use \Phan\CLI;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
-use \Phan\AST\Visitor\Element;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \ast\Node;
@@ -171,7 +172,11 @@ class Phan {
             return $context;
         }
 
-        return $this->parseNodeInContext($node, $context, $code_base);
+        return $this->parseNodeInContext(
+            $code_base,
+            $context,
+            $node
+        );
     }
 
     /**
@@ -180,36 +185,33 @@ class Phan {
      * returned context is the new context from within the
      * given node.
      *
-     * @param Node $node
-     * A node to parse and scan for errors
+     * @param CodeBase $code_base
+     * The global code base in which we store all
+     * state
      *
      * @param Context $context
      * The context in which this node exists
      *
-     * @param CodeBase $code_base
-     * The global code base in which we store all
-     * state
+     * @param Node $node
+     * A node to parse and scan for errors
      *
      * @return Context
      * The context from within the node is returned
      */
     public function parseNodeInContext(
-        Node $node,
+        CodeBase $code_base,
         Context $context,
-        CodeBase $code_base
+        Node $node
     ) : Context {
 
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $context = (new Element($node))->acceptKindVisitor(
-            new ParseVisitor(
-                $context
-                    ->withLineNumberStart($node->lineno ?? 0),
-                $code_base
-            )
-        );
+        $context = (new ParseVisitor(
+            $code_base,
+            $context->withLineNumberStart($node->lineno ?? 0)
+        ))($node);
 
         assert(!empty($context), 'Context cannot be null');
 
@@ -224,12 +226,11 @@ class Phan {
 
             // Step into each child node and get an
             // updated context for the node
-            $child_context =
-                $this->parseNodeInContext(
-                    $child_node,
-                    $child_context,
-                    $code_base
-                );
+            $child_context = $this->parseNodeInContext(
+                $code_base,
+                $child_context,
+                $child_node
+            );
 
             assert(!empty($child_context),
                 'Context cannot be null');
@@ -339,44 +340,51 @@ class Phan {
 
         // Start recursively analyzing the tree
         return $this->analyzeNodeInContext(
-            $node,
+            $code_base,
             $context,
-            $code_base
+            $node
         );
     }
 
 
     /**
-     * @param Node $node
-     * A node to parse and scan for errors
+     * @param CodeBase $code_base
+     * A code base needs to be passed in because we require
+     * it to be initialized before any classes or files are
+     * loaded.
      *
      * @param Context $context
      * The context in which this node exists
+     *
+     * @param Node $node
+     * A node to parse and scan for errors
      *
      * @return Context
      * The context from within the node is returned
      */
     public function analyzeNodeInContext(
-        Node $node,
-        Context $context,
         CodeBase $code_base,
+        Context $context,
+        Node $node,
         Node $parent_node = null,
         int $depth = 0
     ) : Context {
+
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
-        $child_context =
-            (new Element($node))->acceptKindVisitor(
-                new DepthFirstVisitor(
-                    $context
-                        ->withLineNumberStart($node->lineno ?? 0),
-                    $code_base
-                )
-            );
+        $child_context = (new DepthFirstVisitor(
+            $code_base,
+            $context->withLineNumberStart($node->lineno ?? 0)
+        ))($node);
 
         assert(!empty($context), 'Context cannot be null');
+
+        // We collect all child context so that the
+        // BreadthFirstVisitor can optionally operate on
+        // them
+        $child_context_list = [];
 
         // Go depth first on that first set of analyses
 		foreach($node->children ?? [] as $child_node) {
@@ -385,28 +393,45 @@ class Phan {
                 continue;
             }
 
+            /*
+            // Some nodes don't share state between child nodes
+            // such as conditionals where we treat them as if
+            // the branches share no state
+            switch ($node->kind) {
+            case \ast\AST_IF:
+                $child_context = $parent_context;
+                break;
+            }
+            */
+
             // Step into each child node and get an
             // updated context for the node
-            $child_context =
-                $this->analyzeNodeInContext(
-                    $child_node,
-                    $child_context
-                        ->withLineNumberStart($child_node->lineno ?? 0),
-                    $code_base,
-                    $node,
-                    $depth + 1
-                );
+            $child_context = $this->analyzeNodeInContext(
+                $code_base,
+                $child_context
+                    ->withLineNumberStart($child_node->lineno ?? 0),
+                $child_node,
+                $node,
+                $depth + 1
+            );
+
+            $child_context_list[] = $child_context;
 		}
 
-        $context =
-            (new Element($node))->acceptKindVisitor(
-                new BreadthFirstVisitor(
-                    $context
-                        ->withLineNumberStart($node->lineno ?? 0),
-                    $code_base,
-                    $parent_node
-                )
-            );
+        /*
+        // Now that we have n child contexts, we merge them
+        // into a single context before doing the breadth
+        // first analysis
+        $context = MergeVisitor::merge(
+            $code_base, $context, $child_context_list, $node
+        );
+        */
+
+        $context = (new BreadthFirstVisitor(
+            $code_base,
+            $context->withLineNumberStart($node->lineno ?? 0),
+            $parent_node
+        ))($node);
 
         // Pass the context back up to our parent
         return $context;

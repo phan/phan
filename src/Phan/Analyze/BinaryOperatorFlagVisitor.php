@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\Visitor\Element;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\AST\Visitor\FlagVisitorImplementation;
@@ -28,21 +29,32 @@ use \ast\Node;
 class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
 
     /**
-     * @var Context
-     */
-    private $context;
-
-    /**
      * @var CodeBase
      */
     private $code_base;
 
     /**
+     * @var Context
+     */
+    private $context;
+
+    /**
      * Create a new BinaryOperatorFlagVisitor
      */
-    public function __construct(Context $context, CodeBase $code_base) {
-        $this->context = $context;
+    public function __construct(
+        CodeBase $code_base,
+        Context $context
+    ) {
         $this->code_base = $code_base;
+        $this->context = $context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to visit
+     */
+    public function __invoke(Node $node) {
+        return (new Element($node))->acceptBinaryFlagVisitor($this);
     }
 
     /**

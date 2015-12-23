@@ -22,21 +22,21 @@ class MethodCallVisitor extends ClassElementVisitor {
     private $method_name;
 
     /**
+     * @param CodeBase $code_base
+     *
      * @param Context $context
      * The context of the current execution
-     *
-     * @param CodeBase $code_base
      *
      * @param string|null $method_name
      * The name of hte method we're calling. Knowing this lets
      * us choose the right class if there are many options
      */
     public function __construct(
-        Context $context,
         CodeBase $code_base,
+        Context $context,
         string $method_name = null
     ) {
-        parent::__construct($context, $code_base);
+        parent::__construct($code_base, $context);
         $this->method_name = $method_name;
     }
 

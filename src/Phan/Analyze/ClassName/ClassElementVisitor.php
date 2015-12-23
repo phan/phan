@@ -3,7 +3,6 @@ namespace Phan\Analyze\ClassName;
 
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\AST\Visitor\Element;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\ClassNameVisitor;
 use \Phan\CodeBase;
@@ -28,28 +27,28 @@ use \ast\Node;
 abstract class ClassElementVisitor extends KindVisitorImplementation {
 
     /**
+     * @var CodeBase
+     */
+    protected $code_base;
+
+    /**
      * @var Context
      * The context of the current execution
      */
     protected $context;
 
     /**
-     * @var CodeBase
-     */
-    protected $code_base;
-
-    /**
+     * @param CodeBase $code_base
+     *
      * @param Context $context
      * The context of the current execution
-     *
-     * @param CodeBase $code_base
      */
     public function __construct(
-        Context $context,
-        CodeBase $code_base
+        CodeBase $code_base,
+        Context $context
     ) {
-        $this->context = $context;
         $this->code_base = $code_base;
+        $this->context = $context;
     }
 
     /**
@@ -101,12 +100,11 @@ abstract class ClassElementVisitor extends KindVisitorImplementation {
      */
     public function visitDim(Node $node) : string {
         // Return the class name of the expression behind the dim
-        return (new Element($node->children['expr']))->acceptKindVisitor(
-            new MethodCallVisitor(
-                $this->context,
-                $this->code_base
-            )
-        );
+        return (new MethodCallVisitor(
+            $this->code_base,
+            $this->context
+        ))($node->children['expr']);
+
     }
 
     /**
@@ -118,12 +116,10 @@ abstract class ClassElementVisitor extends KindVisitorImplementation {
      * The class name represented by the given call
      */
     public function visitNew(Node $node) : string {
-        return (new Element($node))->acceptKindVisitor(
-            new ClassNameVisitor(
-                $this->context,
-                $this->code_base
-            )
-        );
+        return (new ClassNameVisitor(
+            $this->code_base,
+            $this->context
+        ))($node);
     }
 
     /**

@@ -3,7 +3,6 @@ namespace Phan\Analyze;
 
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\AST\Visitor\Element;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
@@ -40,14 +39,6 @@ use \ast\Node\Decl;
  * visitor populates the $code_base with any
  * globally accessible structural elements and will return a
  * possibly new context as modified by the given node.
- *
- * # Example Usage
- * ```
- * $context =
- *     (new Element($node))->acceptKindVisitor(
- *         new ParseVisitor($context)
- *     );
- * ```
  */
 class ParseVisitor extends ScopeVisitor {
 
@@ -60,8 +51,11 @@ class ParseVisitor extends ScopeVisitor {
      * The global code base in which we store all
      * state
      */
-    public function __construct(Context $context, CodeBase $code_base) {
-        parent::__construct($context, $code_base);
+    public function __construct(
+        CodeBase $code_base,
+        Context $context
+    ) {
+        parent::__construct($code_base, $context);
     }
 
     /**

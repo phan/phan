@@ -3,7 +3,6 @@ namespace Phan\Language;
 
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\AST\Visitor\Element;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;

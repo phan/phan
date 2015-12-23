@@ -2,7 +2,6 @@
 namespace Phan\AST;
 
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\AST\Visitor\Element;
 use \Phan\Analyze\ClassNameVisitor;
 use \Phan\Analyze\ClassName\ValidationVisitor as ClassNameValidationVisitor;
 use \Phan\CodeBase;
@@ -77,9 +76,9 @@ class ContextNode {
         } 
 
         // Extract the class name
-        $class_name = (new Element($this->node))->acceptKindVisitor(
-            new ClassNameVisitor($this->context, $this->code_base)
-        );
+        $class_name = (new ClassNameVisitor(
+            $this->code_base, $this->context
+        ))($this->node);
 
         if (empty($class_name)) {
             return '';
@@ -90,13 +89,12 @@ class ContextNode {
         }
 
         // Validate that the class name is correct
-        if (!(new Element($this->node))->acceptKindVisitor(
-            new ClassNameValidationVisitor(
+        if (!(new ClassNameValidationVisitor(
                 $this->context,
                 $this->code_base,
                 $class_name
-            )
-        )) {
+            ))($this->node)
+        ) {
             return '';
         }
 

@@ -100,9 +100,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return Type::fromObject($node)->asUnionType();
         }
 
-        return (new Element($node))->acceptKindVisitor(
-            new self($code_base, $context)
-        );
+        return (new self($code_base, $context))($node);
     }
 
     /**
@@ -512,12 +510,10 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitBinaryOp(Node $node) : UnionType {
-        return (new Element($node))->acceptBinaryFlagVisitor(
-            new BinaryOperatorFlagVisitor(
-                $this->context,
-                $this->code_base
-            )
-        );
+        return (new BinaryOperatorFlagVisitor(
+            $this->code_base,
+            $this->context
+        ))($node);
     }
 
     /**

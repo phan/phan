@@ -3,7 +3,6 @@ namespace Phan\Analyze;
 
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\AST\Visitor\Element;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\ClassName\MethodCallVisitor;
 use \Phan\Analyze\ClassName\ValidationVisitor;
@@ -23,25 +22,28 @@ use \ast\Node;
 class ClassNameVisitor extends KindVisitorImplementation {
 
     /**
+     * @var CodeBase
+     */
+    private $code_base;
+
+    /**
      * @var Context
      * The context of the current execution
      */
     private $context;
 
     /**
-     * @var CodeBase
-     */
-    private $code_base;
-
-    /**
+     * @param CodeBase $code_base
+     *
      * @param Context $context
      * The context of the current execution
-     *
-     * @param CodeBase $code_base
      */
-    public function __construct(Context $context, CodeBase $code_base) {
-        $this->context = $context;
+    public function __construct(
+        CodeBase $code_base,
+        Context $context
+    ) {
         $this->code_base = $code_base;
+        $this->context = $context;
     }
 
     /**
@@ -192,13 +194,11 @@ class ClassNameVisitor extends KindVisitorImplementation {
         $method_name = is_string($node->children['method'])
             ? $node->children['method'] : null;
 
-        return (new Element($node->children['expr']))->acceptKindVisitor(
-            new MethodCallVisitor(
-                $this->context,
-                $this->code_base,
-                $method_name
-            )
-        );
+        return (new MethodCallVisitor(
+            $this->code_base,
+            $this->context,
+            $method_name
+        ))($node->children['expr']);
     }
 
     /**
@@ -210,12 +210,10 @@ class ClassNameVisitor extends KindVisitorImplementation {
      * The class name represented by the given call
      */
     public function visitProp(Node $node) : string {
-        return (new Element($node->children['expr']))->acceptKindVisitor(
-            new MethodCallVisitor(
-                $this->context,
-                $this->code_base
-            )
-        );
+        return (new MethodCallVisitor(
+            $this->code_base,
+            $this->context
+        ))($node->children['expr']);
     }
 
 }

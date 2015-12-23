@@ -12,6 +12,14 @@ abstract class KindVisitorImplementation implements KindVisitor {
 
     abstract public function visit(Node $node);
 
+    /**
+     * @param Node $node
+     * A node to visit
+     */
+    public function __invoke(Node $node) {
+        return (new Element($node))->acceptKindVisitor($this);
+    }
+
     public function visitArgList(Node $node) {
         return $this->visit($node);
     }

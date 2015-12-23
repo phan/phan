@@ -1,6 +1,5 @@
 <?php declare(strict_types=1);
 
-use \Phan\AST\Visitor\Element;
 use \Phan\Analyze\ParseVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
@@ -62,18 +61,16 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
 
         $context = new Context;
 
-        $context =
-            (new Element($class_node))->acceptKindVisitor(
-                new ParseVisitor($context, $this->code_base)
-            );
+        $context = (new ParseVisitor(
+            $this->code_base, $context
+        ))($class_node);
 
         $stmt_list_node = $class_node->children['stmts'];
         $method_node = $stmt_list_node->children[0];
 
-        $context =
-            (new Element($method_node))->acceptKindVisitor(
-                new ParseVisitor($context, $this->code_base)
-            );
+        $context = (new ParseVisitor(
+            $this->code_base, $context
+        ))($method_node);
     }
 
     public function testNamespaceMap() {

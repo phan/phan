@@ -85,9 +85,9 @@ trait Analyzable {
         // Analyze the node in a cloned context so that we
         // don't overwrite anything
         $context = (new Phan)->analyzeNodeInContext(
-            $this->getNode(),
+            $code_base,
             clone($context),
-            $code_base
+            $this->getNode()
         );
 
         return $context;
