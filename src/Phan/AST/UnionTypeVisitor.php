@@ -35,6 +35,7 @@ use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 /**
  * Determine the UnionType associated with a
@@ -729,7 +730,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitClosure(Node $node) : UnionType {
+    public function visitClosure(Decl $node) : UnionType {
         // The type of a closure is the fqsen pointing
         // at its definition
         $closure_fqsen =

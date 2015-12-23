@@ -204,7 +204,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClosure(Node $node) : Context {
+    public function visitClosure(Decl $node) : Context {
+
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
                 $this->context
@@ -263,6 +264,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
                 if (!$this->context->getScope()->hasVariableWithName(
                     $variable_name
                 )) {
+
+                /*
+                    if ($this->context->getFile() === 'src/Phan/Analyze/ReferenceCounts.php') {
+                        debug_print_backtrace(3);
+                        exit;
+                    }
+                 */
 
                     // If this is not pass-by-reference variable we
                     // have a problem

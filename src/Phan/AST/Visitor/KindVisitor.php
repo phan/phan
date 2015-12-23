@@ -82,7 +82,7 @@ interface KindVisitor {
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      */
-    public function visitClosure(Node $node);
+    public function visitClosure(Decl $node);
 
     /**
      * Visit a node with kind `\ast\AST_CLOSURE_USES`

@@ -77,6 +77,16 @@ trait Analyzable {
             return $context;
         }
 
+        // Closures depend on the context surrounding them such
+        // as for getting `use(...)` variables. Since we don't
+        // have them, we can't re-analyze them until we change
+        // that.
+        //
+        // TODO: Store the parent context on Analyzable objects
+        if ($this->getNode()->kind === \ast\AST_CLOSURE) {
+            return $context;
+        }
+
         // Don't go deeper than one level in
         if ($this->recursion_depth++ > 2) {
             return $context;

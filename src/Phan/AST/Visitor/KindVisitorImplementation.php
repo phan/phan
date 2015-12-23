@@ -76,7 +76,7 @@ abstract class KindVisitorImplementation implements KindVisitor {
         return $this->visit($node);
     }
 
-    public function visitClosure(Node $node) {
+    public function visitClosure(Decl $node) {
         return $this->visit($node);
     }
 

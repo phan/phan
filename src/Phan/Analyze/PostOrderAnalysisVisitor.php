@@ -26,6 +26,7 @@ use \Phan\Language\Type\CallableType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
@@ -467,7 +468,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClosure(Node $node) : Context {
+    public function visitClosure(Decl $node) : Context {
         $this->analyzeNoOp($node, "no-op closure");
         return $this->context->withClosureFQSEN(
             FullyQualifiedFunctionName::fromClosureInContext(
