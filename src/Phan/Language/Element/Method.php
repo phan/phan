@@ -50,6 +50,12 @@ class Method extends ClassElement implements Addressable {
     private $is_return_type_undefined = false;
 
     /**
+     * @var bool
+     * True if this method has a return value
+     */
+    private $has_return = false;
+
+    /**
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
@@ -605,6 +611,16 @@ class Method extends ClassElement implements Addressable {
 
     /**
      * @return bool
+     * True if this is an abstract class
+     */
+    public function isAbstract() : bool {
+        return (bool)(
+            $this->getFlags() & \ast\flags\MODIFIER_ABSTRACT
+        );
+    }
+
+    /**
+     * @return bool
      * True if this is a static method
      */
     public function isStatic() : bool {
@@ -647,6 +663,26 @@ class Method extends ClassElement implements Addressable {
     public function setIsDynamic(bool $is_dynamic) {
         $this->is_dynamic = $is_dynamic;
     }
+
+    /**
+     * @return bool
+     * True if this method returns a value
+     */
+    public function getHasReturn() : bool {
+        return $this->has_return;
+    }
+
+    /**
+     * @param bool $has_return
+     * Set to true to mark this method as having a
+     * return value
+     *
+     * @return void
+     */
+    public function setHasReturn(bool $has_return) {
+        $this->has_return = $has_return;
+    }
+
 
     /**
      * @return bool

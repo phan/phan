@@ -20,7 +20,7 @@ class A {
     /**
      * @param A $categories
      * @param A $context
-     * @return A|null
+     * @return A|void
      */
     public static function fromCategories(
         A $categories = null, A $context

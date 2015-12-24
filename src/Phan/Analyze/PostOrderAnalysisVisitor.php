@@ -23,6 +23,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\Type\ArrayType;
 use \Phan\Language\Type\CallableType;
+use \Phan\Language\Type\NullType;
+use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -470,11 +472,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      */
     public function visitClosure(Decl $node) : Context {
         $this->analyzeNoOp($node, "no-op closure");
-        return $this->context->withClosureFQSEN(
-            FullyQualifiedFunctionName::fromClosureInContext(
-                $this->context
-            )
-        );
+        return $this->context;
     }
 
     /**
@@ -837,6 +835,51 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         }
 
         return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitMethod(Decl $node) : Context {
+        $method =
+            $this->context->getMethodInScope($this->code_base);
+
+        $return_type = $method->getUnionType();
+
+        if (!$method->isAbstract()
+            && !$return_type->isEmpty()
+            && !$method->getHasReturn()
+            && !$return_type->hasType(VoidType::instance())
+            && !$return_type->hasType(NullType::instance())
+        ) {
+            Log::err(
+                Log::ETYPE,
+                "Method {$method->getFQSEN()} is declared to return {$return_type} but has no return value",
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
+
+        return $this->context;
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_FUNC_DECL`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitFuncDecl(Decl $node) : Context {
+        return $this->visitMethod($node);
     }
 
     /**

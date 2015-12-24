@@ -560,6 +560,26 @@ class ParseVisitor extends ScopeVisitor {
             ))->analyzeBackwardCompatibility();
         }
 
+        // Make sure we're actually returning from a method.
+        if (!$this->context->isMethodScope()
+            && !$this->context->isClosureScope()) {
+            return $this->context;
+        }
+
+        // Get the method/function/closure we're in
+        $method = null;
+        if ($this->context->isClosureScope()) {
+            $method = $this->context->getClosureInScope($this->code_base);
+        } else if ($this->context->isMethodScope()) {
+            $method = $this->context->getMethodInScope($this->code_base);
+        }
+
+        assert(!empty($method),
+            "We're supposed to be in either method or closure scope.");
+
+        // Mark the method as returning something
+        $method->setHasReturn(true);
+
         return $this->context;
     }
 

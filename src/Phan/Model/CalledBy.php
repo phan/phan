@@ -151,6 +151,7 @@ class CalledBy extends ModelOne {
      */
     public function primaryKeyValue() : string {
         throw new \Exception("Unimplemented");
+        return 'not implemented';
     }
 
     /**
