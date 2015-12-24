@@ -1190,7 +1190,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
 
             // Turn that into a union type
-            return Type::fromFullyQualifiedString($fqsen)->asUnionType();
+            return Type::fromFullyQualifiedString((string)$fqsen)->asUnionType();
         }
 
         // Things of the form `new $method->name()`
