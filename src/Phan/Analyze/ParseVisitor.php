@@ -283,7 +283,9 @@ class ParseVisitor extends ScopeVisitor {
                 CallableType::instance()
             );
         }
-        else if ('__toString' === $method_name) {
+        else if ('__toString' === $method_name
+            && !$this->context->getIsStrictTypes()
+        ) {
             $clazz->getUnionType()->addType(
                 StringType::instance()
             );

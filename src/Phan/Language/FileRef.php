@@ -29,12 +29,6 @@ class FileRef implements \Serializable {
     protected $line_number_end = 0;
 
     /**
-     * @var int
-     * strict_types setting for the file
-     */
-    protected $strict_types = 0;
-
-    /**
      * @param string $file
      * The path to the file in which this element is defined
      *
@@ -120,26 +114,6 @@ class FileRef implements \Serializable {
      */
     public function getLineNumberEnd() : int {
         return $this->line_number_end;
-    }
-
-    /**
-     * @param int $strict_types
-     * The strict_type setting for the file
-     *
-     * @return Context
-     * This context with the given value is returned
-     */
-    public function withStrictTypes(int $strict_types) : Context {
-        $this->strict_types = $strict_types;
-        return $this;
-    }
-
-    /**
-     * @return int
-     * The strict_types setting for the file
-     */
-    public function getStrictTypes() : int {
-        return $this->strict_types;
     }
 
     /**

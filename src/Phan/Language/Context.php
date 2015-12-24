@@ -35,6 +35,11 @@ class Context extends FileRef implements \Serializable {
      */
     private $is_conditional = false;
 
+    /**
+     * @var int
+     * strict_types setting for the file
+     */
+    protected $strict_types = 0;
 
     /**
      * @var Scope
@@ -296,6 +301,35 @@ class Context extends FileRef implements \Serializable {
      */
     public function getIsConditional() : bool {
         return $this->is_conditional;
+    }
+
+    /**
+     * @param int $strict_types
+     * The strict_type setting for the file
+     *
+     * @return Context
+     * This context with the given value is returned
+     */
+    public function withStrictTypes(int $strict_types) : Context {
+        $this->strict_types = $strict_types;
+        return $this;
+    }
+
+    /**
+     * @return int
+     * The strict_types setting for the file
+     */
+    public function getStrictTypes() : int {
+        return $this->strict_types;
+    }
+
+    /**
+     * @return bool
+     * True if strict_types is set to 1 in this
+     * context.
+     */
+    public function getIsStrictTypes() : bool {
+        return (1 === $this->strict_types);
     }
 
     /**
