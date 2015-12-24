@@ -6,6 +6,10 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\FutureUnionType;
+use \Phan\Language\Type\BoolType;
+use \Phan\Language\Type\FloatType;
+use \Phan\Language\Type\IntType;
+use \Phan\Language\Type\StringType;
 use \Phan\Language\UnionType;
 use \ast\Node;
 
@@ -55,10 +59,27 @@ class Constant extends ClassElement implements Addressable {
 
     public function getUnionType() : UnionType {
         if (!empty($this->future_union_type)) {
-            $this->setUnionType(
-                $this->future_union_type->get()
-            );
+
+            // null out the future_union_type before
+            // we compute it to avoid unbounded
+            // recursion
+            $future_union_type = $this->future_union_type;
             $this->future_union_type = null;
+
+            // Set a default value for my type in case
+            // there's some unbounded recursion
+            $this->setUnionType(
+                new UnionType([
+                    IntType::instance(),
+                    FloatType::instance(),
+                    StringType::instance(),
+                    BoolType::instance()
+                ])
+            );
+
+            $this->setUnionType(
+                $future_union_type->get()
+            );
         }
 
         return parent::getUnionType();
