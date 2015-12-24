@@ -13,6 +13,7 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FutureUnionType;
 use \Phan\Language\Scope;
 use \Phan\Language\Type;
 use \Phan\Language\Type\ArrayType;
@@ -400,19 +401,21 @@ class ParseVisitor extends ScopeVisitor {
         $clazz = $this->getContextClass();
 
         foreach($node->children ?? [] as $child_node) {
-            $union_type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $child_node->children['value']
-            );
-
             $constant = new Constant(
                 $this->context
                     ->withLineNumberStart($child_node->lineno ?? 0)
                     ->withLineNumberEnd($child_node->endLineno ?? 0),
                 $child_node->children['name'],
-                $union_type,
+                new UnionType(),
                 $child_node->flags ?? 0
+            );
+
+            $constant->setFutureUnionType(
+                new FutureUnionType(
+                    $this->code_base,
+                    $this->context,
+                    $child_node->children['value']
+                )
             );
 
             $clazz->addConstant(

@@ -127,9 +127,6 @@ class UnionType {
      * @param Node|string|null $node
      *
      * @return UnionType
-     *
-     * @see \Phan\Deprecated\Pass2::node_type
-     * Formerly 'function node_type'
      */
     public static function fromNode(
         Context $context,

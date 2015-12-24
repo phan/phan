@@ -1,15 +1,19 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
-use \Phan\Language\UnionType;
-use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedConstantName;
+use \Phan\Language\FutureUnionType;
+use \Phan\Language\UnionType;
+use \ast\Node;
 
 class Constant extends ClassElement implements Addressable {
     use AddressableImplementation;
+
+    /** @var FutureUnionType */
+    private $future_union_type = null;
 
     /**
      * @param \phan\Context $context
@@ -40,6 +44,24 @@ class Constant extends ClassElement implements Addressable {
             $type,
             $flags
         );
+    }
+
+    /** @return void */
+    public function setFutureUnionType(
+        FutureUnionType $future_union_type
+    ) {
+        $this->future_union_type = $future_union_type;
+    }
+
+    public function getUnionType() : UnionType {
+        if (!empty($this->future_union_type)) {
+            $this->setUnionType(
+                $this->future_union_type->get()
+            );
+            $this->future_union_type = null;
+        }
+
+        return parent::getUnionType();
     }
 
     /**
