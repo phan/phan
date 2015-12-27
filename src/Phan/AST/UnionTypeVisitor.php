@@ -1085,15 +1085,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
         }
 
-        /*
-        Log::err(
-            Log::EUNDEF,
-            "call to undeclared method {$class_fqsen}->{$method_name}()",
-            $this->context->getFile(),
-            $node->lineno
-        );
-        */
-
         return new UnionType();
     }
 
@@ -1344,7 +1335,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
                 throw new CodeBaseException(
                     $class_fqsen,
-                    "Cannot find class $class_fqsen"
+                    "reference to undeclared class $class_fqsen"
                 );
             }
 

@@ -220,7 +220,7 @@ class Comment {
 
     /**
      * @return UnionType
-     * A UnionType defined by a @return directive
+     * A UnionType defined by a (at)return directive
      */
     public function getReturnType() : UnionType {
         return $this->return;
@@ -228,7 +228,7 @@ class Comment {
 
     /**
      * @return bool
-     * True if this doc block contains a @return
+     * True if this doc block contains a (at)return
      * directive specifying a type.
      */
     public function hasReturnUnionType() : bool {

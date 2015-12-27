@@ -10,6 +10,12 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;
 
 abstract class ClassElement extends TypedStructuralElement {
+    /**
+     * @return FQSEN
+     * The fully-qualified structural element name of this
+     * structural element
+     */
+    abstract public function getFQSEN() : FQSEN;
 
     /**
      * @return FullyQualifiedClassName

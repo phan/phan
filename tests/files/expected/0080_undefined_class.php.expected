@@ -1,2 +1,2 @@
-%s:3 UndefError reference to undeclared class \stub
+%s:3 UndefError Can't access method __construct from undeclared class \stub
 %s:4 UndefError Can't access constant TYPE_STRING from undeclared class \stub

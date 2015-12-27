@@ -264,14 +264,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
                 if (!$this->context->getScope()->hasVariableWithName(
                     $variable_name
                 )) {
-
-                /*
-                    if ($this->context->getFile() === 'src/Phan/Analyze/ReferenceCounts.php') {
-                        debug_print_backtrace(3);
-                        exit;
-                    }
-                 */
-
                     // If this is not pass-by-reference variable we
                     // have a problem
                     if (!($use->flags & \ast\flags\PARAM_REF)) {

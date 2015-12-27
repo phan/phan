@@ -228,7 +228,10 @@ class ContextNode {
         // If we can't figure out the class name (which happens
         // from time to time), then give up
         if (empty($class_name)) {
-            throw new NodeException($this->node, 'Could not find class name');
+            throw new NodeException(
+                $this->node,
+                'Could not find class name'
+            );
         }
 
         $class_fqsen =
@@ -252,7 +255,7 @@ class ContextNode {
     }
 
     /**
-     * @param Node|string $method_name_or_node
+     * @param Node|string $method_name
      * Either then name of the method or a node that
      * produces the name of the method.
      *
@@ -275,54 +278,92 @@ class ContextNode {
      * is a non-class type.
      */
     public function getMethod(
-        $method_name_or_node,
+        $method_name,
         bool $is_static
     ) : Method {
-        $clazz = $this->getClass();
 
-        if ($method_name_or_node instanceof Node) {
-            // TODO: The method_name turned out to
-            //       be a variable. We'd have to look
-            //       that up to figure out what the
-            //       string is, but thats a drag.
+        if ($method_name instanceof Node) {
+            // The method_name turned out to be a variable.
+            // There isn't much we can do to figure out what
+            // it's referring to.
             throw new NodeException(
-                $method_name_or_node,
+                $method_name,
                 "Unexpected method node"
             );
         }
 
-        $method_name = $method_name_or_node;
-
         assert(is_string($method_name),
             "Method name must be a string. Found non-string at {$this->context}");
 
-        if (!$clazz->hasMethodWithName($this->code_base, $method_name)) {
+        try {
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $this->node->children['expr']
+                    ?? $this->node->children['class']
+            ))->getClassList();
+        } catch (CodeBaseException $exception) {
+            // We can give a more explicit message
+            throw new CodeBaseException(
+                $exception->getFQSEN(),
+                "Can't access method {$method_name} from undeclared class {$exception->getFQSEN()}"
+            );
+        }
 
-            $method_fqsen = FullyQualifiedMethodName::make(
-                $clazz->getFQSEN(),
-                $method_name
+        // If there were no classes on the left-type, figure
+        // out what we were trying to call the method on
+        // and send out an error.
+        if (empty($class_list)) {
+            $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+                $this->code_base,
+                $this->context,
+                $this->node->children['expr']
+                    ?? $this->node->children['class']
             );
 
-            if ($is_static) {
-                throw new CodeBaseException(
-                    $method_fqsen,
-                    "static call to undeclared method $method_fqsen"
+            if (!$union_type->isEmpty()
+                && $union_type->isNativeType()
+                && !$union_type->hasType(MixedType::instance())
+            ) {
+                throw new TypeException(
+                    "Calling method on non-class type $union_type"
                 );
-            } else {
-                throw new CodeBaseException(
-                    $method_fqsen,
-                    "call to undeclared method $method_fqsen"
+            }
+
+            throw new NodeException(
+                $this->node,
+                "Can't figure out method call for $method_name"
+            );
+        }
+
+        // Hunt to see if any of them have the method we're
+        // looking for
+        foreach ($class_list as $i => $class) {
+            if ($class->hasMethodWithName($this->code_base, $method_name)) {
+                return $class->getMethodByNameInContext(
+                    $this->code_base,
+                    $method_name,
+                    $this->context
                 );
             }
         }
 
-        $method = $clazz->getMethodByNameInContext(
-            $this->code_base,
-            $method_name,
-            $this->context
+        // Figure out an FQSEN for the method we couldn't find
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $class_list[0]->getFQSEN(),
+            $method_name
         );
 
-        return $method;
+        if ($is_static) {
+            throw new CodeBaseException(
+                $method_fqsen,
+                "static call to undeclared method $method_fqsen"
+            );
+        }
+        throw new CodeBaseException(
+            $method_fqsen,
+            "call to undeclared method $method_fqsen"
+        );
     }
 
     /**
@@ -569,6 +610,7 @@ class ContextNode {
 
         // Figure out the class we're looking the property
         // up for
+        // TODO: Use $this->getClassList() instead
         $class = $this->getClass();
 
         $flags = 0;

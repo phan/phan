@@ -1,3 +1,3 @@
 %s:6 UndefError property of undeclared type \client
 %s:6 UndefError parameter of undeclared type \client
-%s:8 UndefError reference to undeclared class \client
+%s:8 UndefError Can't access method test from undeclared class \client
