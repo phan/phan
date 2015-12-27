@@ -4,6 +4,8 @@ Phan is a static analyzer for PHP.
 
 # Features
 
+[![Join the chat at https://gitter.im/etsy/phan](https://badges.gitter.im/etsy/phan.svg)](https://gitter.im/etsy/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 * Checks for calls and instantiations of undeclared functions, methods, closures and classes
 * Checks types of all arguments and return values to/from functions, closures and methods
 * Supports `@param`, `@return`, `@var` and `@deprecated` [phpdoc][doctypes] comments including union and void/null types
