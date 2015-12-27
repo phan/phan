@@ -1,32 +1,24 @@
 <?php
 
-interface TestInterface
-{
-    public function testFunction(): TestInterface;
+interface I {
+    public function f() : I;
 }
 
-class TestClass
-{
-    public function otherFunction()
-    {
-        $something = new self;
-
-        if ($this instanceof TestInterface) {
-            $something = $this->testFunction();
+class C {
+    public function g() {
+        $v = new self;
+        if ($this instanceof I) {
+            $v = $this->f();
         }
-
-        return $something;
+        return $v;
     }
-
 }
 
-class TestAncestor extends TestClass implements TestInterface
-{
-    public function testFunction(): TestInterface
-    {
+class A extends C implements I {
+    public function f(): I {
         return $this;
     }
 }
 
-$ancestor = new TestAncestor();
-$ancestor->otherFunction();
+$ancestor = new A();
+$ancestor->g();
