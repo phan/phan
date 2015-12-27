@@ -21,6 +21,7 @@ use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type\ArrayType;
 use \Phan\Language\Type\CallableType;
 use \Phan\Language\Type\NullType;
@@ -851,7 +852,16 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
         $return_type = $method->getUnionType();
 
+        $has_interface_class = false;
+        if ($method->getFQSEN() instanceof FullyQualifiedMethodName) {
+            try {
+                $class = $method->getDefiningClass($this->code_base);
+                $has_interface_class = $class->isInterface();
+            } catch (\Exception $exception) {}
+        }
+
         if (!$method->isAbstract()
+            && !$has_interface_class
             && !$return_type->isEmpty()
             && !$method->getHasReturn()
             && !$return_type->hasType(VoidType::instance())
