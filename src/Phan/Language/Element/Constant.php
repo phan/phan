@@ -16,7 +16,14 @@ use \ast\Node;
 class Constant extends ClassElement implements Addressable {
     use AddressableImplementation;
 
-    /** @var FutureUnionType */
+    /**
+     * @var FutureUnionType|null
+     * A FutureUnionType is evaluated lazily only when
+     * the type is actually needed. This lets us deal
+     * with constants who's default type is another
+     * constant who's type is not yet known during
+     * parsing.
+     */
     private $future_union_type = null;
 
     /**

@@ -340,6 +340,12 @@ class ParseVisitor extends ScopeVisitor {
                 $child_node->children['default']
             );
 
+            // Don't set 'null' as the type if thats the default
+            // given that its the default default.
+            if ($union_type->isType(NullType::instance())) {
+                $union_type = new UnionType();
+            }
+
             $property_name = $child_node->children['name'];
 
             assert(is_string($property_name),

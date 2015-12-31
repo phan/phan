@@ -47,7 +47,7 @@ class Context extends FileRef implements \Serializable {
     private $scope = null;
 
     /**
-     * @var FullyQualifiedClassName
+     * @var FullyQualifiedClassName|null
      * A fully-qualified structural element name describing
      * the current class or the empty-string if we are not
      * in a class scope.
@@ -55,7 +55,7 @@ class Context extends FileRef implements \Serializable {
     private $class_fqsen = null;
 
     /**
-     * @var FQSEN
+     * @var FQSEN|null
      * A fully-qualified structural element name describing
      * the current function or method or the empty-string if
      * we are not in a function or method scope.
@@ -63,7 +63,7 @@ class Context extends FileRef implements \Serializable {
     private $method_fqsen = null;
 
     /**
-     * @var FullyQualifiedFunctionName
+     * @var FullyQualifiedFunctionName|null
      * A fully-qualified structural element name describing
      * the current closure we're in or null if we're not
      * in a closure.

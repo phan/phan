@@ -132,14 +132,6 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
             // %f allows two points "-.0.0" but that is the best *simple* expression
 
             $this->assertRegExp("/^$wanted_re\$/", $output, "Unexpected output in $test_file_path");
-
-/*
-            $this->assertEquals(
-                $expected_output,
-                $output,
-                "Unexpected output in $test_file_path"
-            );
-*/
         }
     }
 }

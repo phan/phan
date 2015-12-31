@@ -233,6 +233,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
     public function visitCoalesce(Node $node) : UnionType {
         $union_type = new UnionType();
 
+        // TODO: We should ignore EUNDEF errors when getting
+        //       the type on the left.
         $left_type = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -916,7 +918,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
         } catch (CodeBaseException $exception) {
             $property_name = $node->children['prop'];
-
             Log::err(
                 Log::EUNDEF,
                 "Can't access undeclared property {$exception->getFQSEN()}->{$property_name}",
