@@ -70,11 +70,6 @@ class ContextNode {
     public function getClassName(
         bool $validate_class_name = true
     ) : string {
-
-        if (!($this->node instanceof Node)) {
-            print $this->node . "\n";
-        } 
-
         // Extract the class name
         $class_name = (new ClassNameVisitor(
             $this->code_base, $this->context
@@ -489,7 +484,7 @@ class ContextNode {
      * @param string|Node $property_name
      * The name of the property we're looking up
      *
-     * @return Property 
+     * @return Property
      * A variable in scope or a new variable
      *
      * @throws NodeException
@@ -580,7 +575,7 @@ class ContextNode {
     }
 
     /**
-     * @return Property 
+     * @return Property
      * A variable in scope or a new variable
      *
      * @throws NodeException

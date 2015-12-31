@@ -8,6 +8,7 @@ use \Phan\Language\UnionType;
 
 class Property extends ClassElement implements Addressable {
     use AddressableImplementation;
+    use ElementFutureUnionType;
 
     /**
      * @param \phan\Context $context
@@ -54,6 +55,18 @@ class Property extends ClassElement implements Addressable {
         $string .= "{$this->getUnionType()} {$this->getName()}";
 
         return $string;
+    }
+
+    /**
+     * Override the default getter to fill in a future
+     * union type if available.
+     */
+    public function getUnionType() : UnionType {
+        if (null !== ($union_type = $this->getFutureUnionType())) {
+            $this->setUnionType($union_type);
+        }
+
+        return parent::getUnionType();
     }
 
     /**

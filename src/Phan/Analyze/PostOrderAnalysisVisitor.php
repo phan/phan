@@ -100,13 +100,25 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      */
     public function visitAssign(Node $node) : Context {
 
-        // Get the type of the right side of the
-        // assignment
-        $right_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $node->children['expr']
-        );
+        try {
+            // Get the type of the right side of the
+            // assignment
+            $right_type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $node->children['expr']
+            );
+
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+
+            $right_type = new UnionType();
+        }
 
         assert($node->children['var'] instanceof Node,
             "Expected left side of assignment to be a var in {$this->context}");
