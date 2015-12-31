@@ -7,6 +7,7 @@ use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
 use \Phan\Language\FQSEN;
@@ -333,12 +334,23 @@ class ParseVisitor extends ScopeVisitor {
                 continue;
             }
 
-            // Get the type of the default
-            $union_type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $child_node->children['default']
-            );
+            try {
+                // Get the type of the default
+                $union_type = UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $child_node->children['default']
+                );
+            } catch (CodeBaseException $exception) {
+                Log::err(
+                    Log::EUNDEF,
+                    $exception->getMessage(),
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+
+                $union_type = new UnionType();
+            }
 
             // Don't set 'null' as the type if thats the default
             // given that its the default default.

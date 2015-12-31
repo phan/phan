@@ -1259,8 +1259,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The UnionType associated with the given node
      * in the given Context within the given CodeBase
      *
-     * @return UnionType
-     * The union type for a node of type \ast\AST_CLASS
+     * @throws CodeBaseException
+     * An exception is thrown if we can't find a class for
+     * the given type
      */
     public static function unionTypeFromClassNode(
         CodeBase $code_base,
@@ -1297,8 +1298,10 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $parent_class_fqsen = $class->getParentClassFQSEN();
 
             if (!$code_base->hasClassWithFQSEN($parent_class_fqsen)) {
-                assert(false,
-                    "Could not find parent class $parent_class_fqsen in $context");
+                throw new CodeBaseException(
+                    $parent_class_fqsen,
+                    "reference to undeclared parent class $parent_class_fqsen"
+                );
             } else {
                 $parent_class = $code_base->getClassByFQSEN(
                     $parent_class_fqsen
