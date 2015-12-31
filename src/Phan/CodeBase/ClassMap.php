@@ -57,7 +57,9 @@ trait ClassMap {
     ) : Clazz {
         // If we can't find the class, attempt to read it from
         // the database
-        if (empty($this->class_map[(string)$fqsen])) {
+        if (empty($this->class_map[(string)$fqsen])
+            && Database::isEnabled()
+        ) {
             $this->class_map[(string)$fqsen] =
                 ClazzModel::read(
                     Database::get(),
@@ -86,9 +88,9 @@ trait ClassMap {
             } catch (NotFoundException $exception) {
                 return false;
             }
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

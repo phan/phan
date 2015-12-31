@@ -1296,11 +1296,16 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $class = $context->getClassInScope($code_base);
             $parent_class_fqsen = $class->getParentClassFQSEN();
 
-            $parent_class = $code_base->getClassByFQSEN(
-                $parent_class_fqsen
-            );
+            if (!$code_base->hasClassWithFQSEN($parent_class_fqsen)) {
+                assert(false,
+                    "Could not find parent class $parent_class_fqsen in $context");
+            } else {
+                $parent_class = $code_base->getClassByFQSEN(
+                    $parent_class_fqsen
+                );
 
-            return $parent_class->getUnionType();
+                return $parent_class->getUnionType();
+            }
         }
 
         return UnionType::fromStringInContext(
