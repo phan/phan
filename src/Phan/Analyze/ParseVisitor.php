@@ -334,11 +334,6 @@ class ParseVisitor extends ScopeVisitor {
                 continue;
             }
 
-            // If something goes wrong will getting the type of
-            // a property, we'll store it as a future union
-            // type and try to figure it out later
-            $future_union_type = null;
-
             try {
                 // Get the type of the default
                 $union_type = UnionType::fromNode(
@@ -347,13 +342,14 @@ class ParseVisitor extends ScopeVisitor {
                     $child_node->children['default']
                 );
             } catch (CodeBaseException $exception) {
-                $union_type = new UnionType();
-
-                $future_union_type = new FutureUnionType(
-                    $this->code_base,
-                    $this->context,
-                    $child_node->children['default']
+                Log::err(
+                    Log::EUNDEF,
+                    $exception->getMessage(),
+                    $this->context->getFile(),
+                    $node->lineno
                 );
+
+                $union_type = new UnionType();
             }
 
             // Don't set 'null' as the type if thats the default
@@ -382,10 +378,6 @@ class ParseVisitor extends ScopeVisitor {
                     $union_type,
                     $node->flags ?? 0
                 );
-
-            if (!empty($future_union_type)) {
-                $property->setFutureUnionType($future_union_type);
-            }
 
             // Add the property to the class
             $clazz->addProperty($this->code_base, $property);

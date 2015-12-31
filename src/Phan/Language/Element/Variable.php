@@ -4,10 +4,8 @@ namespace Phan\Language\Element;
 use \Phan\AST\ContextNode;
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 
 class Variable extends TypedStructuralElement {
@@ -68,22 +66,10 @@ class Variable extends TypedStructuralElement {
             $node
         ))->getVariableName();
 
-
-        try {
-            // Get the type of the assignment
-            $union_type = $should_check_type
-                ? UnionType::fromNode($context, $code_base, $node)
-                : new UnionType();
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $context->getFile(),
-                $node->lineno
-            );
-
-            $union_type = new UnionType();
-        }
+        // Get the type of the assignment
+        $union_type = $should_check_type
+            ? UnionType::fromNode($context, $code_base, $node)
+            : new UnionType();
 
         $variable = new Variable(
             $context

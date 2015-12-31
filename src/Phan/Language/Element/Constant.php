@@ -15,7 +15,16 @@ use \ast\Node;
 
 class Constant extends ClassElement implements Addressable {
     use AddressableImplementation;
-    use ElementFutureUnionType;
+
+    /**
+     * @var FutureUnionType|null
+     * A FutureUnionType is evaluated lazily only when
+     * the type is actually needed. This lets us deal
+     * with constants who's default type is another
+     * constant who's type is not yet known during
+     * parsing.
+     */
+    private $future_union_type = null;
 
     /**
      * @param \phan\Context $context
@@ -48,13 +57,36 @@ class Constant extends ClassElement implements Addressable {
         );
     }
 
-    /**
-     * Override the default getter to fill in a future
-     * union type if available.
-     */
+    /** @return void */
+    public function setFutureUnionType(
+        FutureUnionType $future_union_type
+    ) {
+        $this->future_union_type = $future_union_type;
+    }
+
     public function getUnionType() : UnionType {
-        if (null !== ($union_type = $this->getFutureUnionType())) {
-            $this->setUnionType($union_type);
+        if (!empty($this->future_union_type)) {
+
+            // null out the future_union_type before
+            // we compute it to avoid unbounded
+            // recursion
+            $future_union_type = $this->future_union_type;
+            $this->future_union_type = null;
+
+            // Set a default value for my type in case
+            // there's some unbounded recursion
+            $this->setUnionType(
+                new UnionType([
+                    IntType::instance(),
+                    FloatType::instance(),
+                    StringType::instance(),
+                    BoolType::instance()
+                ])
+            );
+
+            $this->setUnionType(
+                $future_union_type->get()
+            );
         }
 
         return parent::getUnionType();
