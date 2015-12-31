@@ -2,8 +2,10 @@
 namespace Phan\Language;
 
 use \Phan\CodeBase;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
+use \Phan\Log;
 use \ast\Node;
 
 /**
@@ -37,10 +39,21 @@ class FutureUnionType {
     }
 
     public function get() : UnionType {
-        return UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $this->node
-        );
+        try {
+            return UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $this->node
+            );
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $this->node->lineno
+            );
+
+            return new UnionType();
+        }
     }
 }

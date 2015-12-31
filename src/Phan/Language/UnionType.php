@@ -26,6 +26,7 @@ use \Phan\Language\Type\ResourceType;
 use \Phan\Language\Type\ScalarType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\Type\VoidType;
+use \Phan\Log;
 use \ast\Node;
 
 class UnionType {
@@ -125,14 +126,36 @@ class UnionType {
      * @param Context $context
      * @param CodeBase $code_base
      * @param Node|string|null $node
+     * @param bool $should_log_exception
      *
      * @return UnionType
      */
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
-        $node
+        $node,
+        bool $should_log_exception = true
     ) : UnionType {
+
+        if ($should_log_exception) {
+            try {
+                return UnionTypeVisitor::unionTypeFromNode(
+                    $code_base,
+                    $context,
+                    $node
+                );
+            } catch (CodeBaseException $exception) {
+                Log::err(
+                    Log::EUNDEF,
+                    $exception->getMessage(),
+                    $context->getFile(),
+                    $node->lineno
+                );
+
+                return new UnionType();
+            }
+        }
+
         return UnionTypeVisitor::unionTypeFromNode(
             $code_base,
             $context,

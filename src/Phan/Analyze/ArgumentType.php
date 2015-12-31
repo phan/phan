@@ -4,6 +4,7 @@ namespace Phan\Analyze;
 use \Phan\AST\ContextNode;
 use \Phan\CodeBase;
 use \Phan\Debug;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Parameter;
@@ -243,9 +244,20 @@ class ArgumentType {
 
             // Get the type of the argument. We'll check it against
             // the parameter in a moment
-            $argument_type = UnionType::fromNode(
-                $context, $code_base, $argument
-            );
+            try {
+                $argument_type = UnionType::fromNode(
+                    $context, $code_base, $argument
+                );
+            } catch (CodeBaseException $exception) {
+                Log::err(
+                    Log::EUNDEF,
+                    $exception->getMessage(),
+                    $context->getFile(),
+                    $node->lineno
+                );
+
+                $argument_type = new UnionType();
+            }
 
             // Expand it to include all parent types up the chain
             $argument_type_expanded =

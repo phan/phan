@@ -185,11 +185,20 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
         // Get the type just to make sure everything
         // is defined.
-        $expression_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $node->children['cond']
-        );
+        try {
+            $expression_type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $node->children['cond']
+            );
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+        }
 
         return $this->context;
     }
@@ -288,11 +297,21 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitForeach(Node $node) : Context {
-        $expression_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $node->children['expr']
-        );
+        try {
+            $expression_type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $node->children['expr']
+            );
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+            $expression_type = new UnionType();
+        }
 
         // Check the expression type to make sure its
         // something we can iterate over
@@ -327,13 +346,22 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         // If the element has a default, set its type
         // on the variable
         if (isset($node->children['default'])) {
-            $default_type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['default']
-            );
+            try {
+                $default_type = UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $node->children['default']
+                );
 
-            $variable->setUnionType($default_type);
+                $variable->setUnionType($default_type);
+            } catch (CodeBaseException $exception) {
+                Log::err(
+                    Log::EUNDEF,
+                    $exception->getMessage(),
+                    $this->context->getFile(),
+                    $node->lineno
+                );
+            }
         }
 
         // Note that we're not creating a new scope, just
@@ -364,11 +392,21 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitPrint(Node $node) : Context {
-        $type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $node->children['expr']
-        );
+        try {
+            $type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $node->children['expr']
+            );
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+            $type = new UnionType();
+        }
 
         if ($type->isType(ArrayType::instance())
             || $type->isGenericArray()

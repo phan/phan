@@ -4,6 +4,7 @@ namespace Phan\Language\Element;
 use \Phan\AST\UnionTypeVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
@@ -200,13 +201,22 @@ class Parameter extends Variable {
                 || $default_node->kind == \ast\AST_UNARY_OP
                 || $default_node->kind == \ast\AST_ARRAY
             ) {
-                // Get the type of the default
-                $union_type =
-                    UnionType::fromNode(
+
+                try {
+                    // Get the type of the default
+                    $union_type = UnionType::fromNode(
                         $context,
                         $code_base,
                         $node->children['default']
                     );
+                } catch (CodeBaseException $exception) {
+                    Log::err(
+                        Log::EUNDEF,
+                        $exception->getMessage(),
+                        $context->getFile(),
+                        $node->lineno
+                    );
+                }
 
                 // Set the default value
                 $parameter->setDefaultValue(

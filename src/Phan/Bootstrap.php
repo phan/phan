@@ -31,3 +31,8 @@ assert_options(ASSERT_CALLBACK,
         print "$script:$line ($expression) $message\n";
         // debug_print_backtrace(0, 4);
     });
+
+// Print more of the backtrace than is done by default
+set_exception_handler(function (Throwable $throwable) {
+    print "$throwable\n";
+});

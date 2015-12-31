@@ -2,9 +2,10 @@
 namespace Phan\Analyze;
 
 use \Phan\AST\Visitor\Element;
+use \Phan\AST\Visitor\FlagVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\AST\Visitor\FlagVisitorImplementation;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \Phan\Language\Type\{
@@ -162,19 +163,39 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
      * The resulting type(s) of the binary operation
      */
     private function visitBinaryOpCommon(Node $node) {
-        $left =
-            UnionType::fromNode(
+        try {
+            $left = UnionType::fromNode(
                 $this->context,
                 $this->code_base,
                 $node->children['left']
             );
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
 
-        $right =
-            UnionType::fromNode(
+            $left = new UnionType();
+        }
+
+        try {
+            $right = UnionType::fromNode(
                 $this->context,
                 $this->code_base,
                 $node->children['right']
             );
+        } catch (CodeBaseException $exception) {
+            Log::err(
+                Log::EUNDEF,
+                $exception->getMessage(),
+                $this->context->getFile(),
+                $node->lineno
+            );
+
+            $right = new UnionType();
+        }
 
         if (!$left->genericArrayElementTypes()->isEmpty()
             && $left->nonGenericArrayTypes()->isEmpty()

@@ -364,9 +364,20 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
             if ('parent' === $node->children['name']) {
                 $class = $this->context->getClassInScope($this->code_base);
-                return Type::fromFullyQualifiedString(
-                    (string)$class->getParentClassFQSEN()
-                )->asUnionType();
+
+                if ($class->hasParentClassFQSEN()) {
+                    return Type::fromFullyQualifiedString(
+                        (string)$class->getParentClassFQSEN()
+                    )->asUnionType();
+                } else {
+                    Log::err(
+                        Log::EUNDEF,
+                        "Reference to parent of parentless class {$class->getFQSEN()}",
+                        $this->context->getFile(),
+                        $node->lineno
+                    );
+                }
+
             }
 
             return Type::fromStringInContext(
@@ -867,14 +878,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             ))->getClassConst();
 
             return $constant->getUnionType();
-        } /* catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-        } */ catch (NodeException $exception) {
+        } catch (NodeException $exception) {
             Log::err(
                 Log::EUNDEF,
                 "Can't understand reference to constant $constant_name",
@@ -1228,7 +1232,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
             if (!$class->hasParentClassFQSEN()) {
                 Log::err(
-                    Log::ESTATIC,
+                    Log::EUNDEF,
                     "Reference to parent of parentless class {$class->getFQSEN()}",
                     $this->context->getFile(),
                     $node->lineno

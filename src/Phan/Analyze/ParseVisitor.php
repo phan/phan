@@ -344,16 +344,16 @@ class ParseVisitor extends ScopeVisitor {
                 $union_type = UnionType::fromNode(
                     $this->context,
                     $this->code_base,
-                    $child_node->children['default']
+                    $child_node->children['default'],
+                    false
                 );
             } catch (CodeBaseException $exception) {
-                $union_type = new UnionType();
-
                 $future_union_type = new FutureUnionType(
                     $this->code_base,
                     $this->context,
                     $child_node->children['default']
                 );
+                $union_type = new UnionType();
             }
 
             // Don't set 'null' as the type if thats the default
