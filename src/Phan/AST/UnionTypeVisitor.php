@@ -846,6 +846,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * @throws CodeBaseException
+     * An exception is thrown if we can't find the constant
      */
     public function visitClassConst(Node $node) : UnionType {
 
@@ -864,17 +867,17 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             ))->getClassConst();
 
             return $constant->getUnionType();
-        } catch (CodeBaseException $exception) {
+        } /* catch (CodeBaseException $exception) {
             Log::err(
                 Log::EUNDEF,
                 $exception->getMessage(),
                 $this->context->getFile(),
                 $node->lineno
             );
-        } catch (NodeException $exception) {
+        } */ catch (NodeException $exception) {
             Log::err(
                 Log::EUNDEF,
-                "Can't access undeclared constant {$class_fqsen}::{$constant_name}",
+                "Can't understand reference to constant $constant_name",
                 $this->context->getFile(),
                 $node->lineno
             );
@@ -1295,6 +1298,21 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         if ('parent' === $class_name) {
             $class = $context->getClassInScope($code_base);
+
+            if ($class->isTrait()) {
+                throw new CodeBaseException(
+                    $context->getClassFQSEN(),
+                    "Cannot reference parent from trait {$context->getClassFQSEN()}"
+                );
+            }
+
+            if (!$class->hasParentClassFQSEN()) {
+                throw new CodeBaseException(
+                    $context->getClassFQSEN(),
+                    "reference to unknown parent class from {$context->getClassFQSEN()}"
+                );
+            }
+
             $parent_class_fqsen = $class->getParentClassFQSEN();
 
             if (!$code_base->hasClassWithFQSEN($parent_class_fqsen)) {
