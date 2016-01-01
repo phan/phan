@@ -8,6 +8,7 @@ class Issue {
 
     // CLASS_UNDEFINED
     const EmptyFile                 = 'EmptyFile';
+    const NonClassMethodCall        = 'NonClassMethodCall';
     const ParentlessClass           = 'ParentlessClass';
     const TraitParentReference      = 'TraitParentReference';
     const UnanalyzableConstant      = 'UnanalyzableConstant'; // TODO: Should be Issue::UnanalyzableNode
@@ -165,7 +166,7 @@ class Issue {
                 "instanceof check on undeclared class %s"
             ),
 
-            new Issue(self::UndeclaredClassMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+            new Issue(self::NonClassMethodCall, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
                 "Calling method on non-class type %s"
             ),
 

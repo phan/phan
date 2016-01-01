@@ -331,8 +331,12 @@ class ContextNode {
                 && $union_type->isNativeType()
                 && !$union_type->hasType(MixedType::instance())
             ) {
-                throw new TypeException(
-                    "Calling method on non-class type $union_type"
+                throw new IssueException(
+                    Issue::fromType(Issue::NonClassMethodCall)(
+                        $this->context->getFile(),
+                        $this->node->lineno ?? 0,
+                        [ (string)$union_type ]
+                    )
                 );
             }
 

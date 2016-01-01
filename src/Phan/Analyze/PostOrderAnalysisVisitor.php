@@ -894,26 +894,9 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $exception->getIssueInstance()();
             return $this->context;
         } catch (NodeException $exception) {
-            // Note to future me:
-            // You keep debugging for a long time and landing
-            // here. Lets start keeping a counter of how often
-            // this turns out to be a problem but you ignore it
-            // count = 1
-
-            // If we can't figure out what kind of a call
-            // this is, don't worry about it. Errors should
-            // have been emitted from elsewhere.
+            // Swallow it
             return $this->context;
-        } catch (TypeException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-
-            return $this->context;
-        }
+        } 
 
         // Check the call for paraemter and argument types
         $this->analyzeCallToMethod(
