@@ -2,6 +2,7 @@
 namespace Phan;
 
 use \Phan\Config;
+use \Phan\Issue;
 use \Phan\Log;
 
 class CLI {
@@ -75,7 +76,7 @@ class CLI {
                 Log::setFilename($value);
                 break;
             case 'i':
-                Log::setOutputMask(Log::getOutputMask()^Log::EUNDEF);
+                Log::setOutputMask(Log::getOutputMask()^Issue::CLASS_UNDEFINED);
                 break;
             case 't':
                 Config::get()->emit_trace_id = true;

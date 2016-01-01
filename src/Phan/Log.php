@@ -3,10 +3,11 @@ declare(strict_types=1);
 namespace Phan;
 
 use \Phan\Config;
+use \Phan\Issue;
 
 class Log {
 	protected static $instance;
-	protected $output_mode  = 'text'; // 'text, 'codeclimate'
+	protected $output_mode  = 'text';
 	protected $output_filename = '';
 	protected $output_mask = -1;
 
@@ -15,36 +16,21 @@ class Log {
      */
     protected $msgs = [];
 
-	const EREDEF  =  1<<0;
-	const EUNDEF  =  1<<1;
-	const ETYPE   =  1<<2;
-	const EPARAM  =  1<<3;
-	const EVAR    =  1<<4;
-	const ENOOP   =  1<<5;
-	const EOPTREQ =  1<<6;
-	const ESTATIC =  1<<6;
-	const EAVAIL  =  1<<8;
-	const ETAINT  =  1<<9;
-	const ECOMPAT = 1<<10;
-	const EACCESS = 1<<11;
-	const EDEP    = 1<<12;
+	const EREDEF  = Issue::CLASS_REDEFINE;
+	const EUNDEF  = Issue::CLASS_UNDEFINED;
+	const ETYPE   = Issue::CLASS_TYPE;
+	const EPARAM  = Issue::CLASS_PARAMETER;
+	const EVAR    = Issue::CLASS_VARIABLE;
+	const ENOOP   = Issue::CLASS_NOOP;
+	const EOPTREQ = Issue::CLASS_OPTIONAL_REQUIRED;
+	const ESTATIC = Issue::CLASS_STATIC;
+	const EAVAIL  = Issue::CLASS_AVAILABLE;
+	const ETAINT  = Issue::CLASS_TAINT;
+	const ECOMPAT = Issue::CLASS_COMPATIBLE;
+	const EACCESS = Issue::CLASS_ACCESS;
+	const EDEP    = Issue::CLASS_DEP;
+	const EFATAL  = Issue::CLASS_FATAL;
 
-	const ERRS    = [ self::EREDEF  => 'RedefineError',
-					  self::EUNDEF  => 'UndefError',
-					  self::ETYPE   => 'TypeError',
-					  self::EPARAM  => 'ParamError',
-					  self::EVAR    => 'VarError',
-					  self::ENOOP   => 'NOOPError',
-					  self::EOPTREQ => 'ReqAfterOptError',
-					  self::ESTATIC => 'StaticCallError',
-					  self::EAVAIL  => 'AvailError',
-					  self::ETAINT  => 'TaintError',
-					  self::ECOMPAT => 'CompatError',
-					  self::EACCESS => 'AccessError',
-					  self::EDEP    => 'DeprecatedError'
-					];
-
-	const EFATAL = -1;
 
 	public function __construct() {
 		$this->msgs = [];
@@ -179,7 +165,7 @@ class Log {
 				foreach($log->msgs as $e) {
                     $print_closure(
                         "{$e['file']}:{$e['lineno']} "
-                        . self::ERRS[$e['etype']]
+                        . Issue::CLASS_NAME[$e['etype']]
                         . " {$e['msg']}\n"
                     );
 				}
@@ -189,8 +175,8 @@ class Log {
                     $print_closure(
                         json_encode([
                             'type' => 'issue',
-                            'check_name' => self::ERRS[$e['etype']],
-                            'description' => self::ERRS[$e['etype']] . ' ' . $e['msg'],
+                            'check_name' => Issue::CLASS_NAME[$e['etype']],
+                            'description' => Issue::CLASS_NAME[$e['etype']] . ' ' . $e['msg'],
                             'categories' => ['Bug Risk'],
                             'location' => [
                                 'path' => preg_replace('/^\/code\//', '', $e['file']),
