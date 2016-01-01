@@ -4,6 +4,7 @@ namespace Phan\Analyze\ClassName;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Debug;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -83,11 +84,11 @@ class ValidationVisitor
             }
         }
 
-        Log::err(
-            Log::EUNDEF,
-            "Unknown node type",
+        // TODO: Should be Issue::UnanalyzableNode
+        Issue::emit(
+            Issue::UnknownNodeType,
             $this->context->getFile(),
-            $node->lineno
+            $node->lineno ?? 0
         );
 
         return false;
@@ -216,11 +217,11 @@ class ValidationVisitor
             return true;
         }
 
-        Log::err(
-            Log::EUNDEF,
-            "reference to undeclared class {$this->class_fqsen}",
+        Issue::emit(
+            Issue::UndeclaredClassReference,
             $this->context->getFile(),
-            $node->lineno
+            $node->lineno ?? 0,
+            (string)$this->class_fqsen
         );
 
         return false;

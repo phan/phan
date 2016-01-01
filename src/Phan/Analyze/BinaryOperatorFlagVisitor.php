@@ -163,39 +163,17 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
      * The resulting type(s) of the binary operation
      */
     private function visitBinaryOpCommon(Node $node) {
-        try {
             $left = UnionType::fromNode(
                 $this->context,
                 $this->code_base,
                 $node->children['left']
             );
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
 
-            $left = new UnionType();
-        }
-
-        try {
-            $right = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['right']
-            );
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-
-            $right = new UnionType();
-        }
+        $right = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['right']
+        );
 
         if (!$left->genericArrayElementTypes()->isEmpty()
             && $left->nonGenericArrayTypes()->isEmpty()

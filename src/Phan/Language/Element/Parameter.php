@@ -202,21 +202,12 @@ class Parameter extends Variable {
                 || $default_node->kind == \ast\AST_ARRAY
             ) {
 
-                try {
-                    // Get the type of the default
-                    $union_type = UnionType::fromNode(
-                        $context,
-                        $code_base,
-                        $node->children['default']
-                    );
-                } catch (CodeBaseException $exception) {
-                    Log::err(
-                        Log::EUNDEF,
-                        $exception->getMessage(),
-                        $context->getFile(),
-                        $node->lineno
-                    );
-                }
+                // Get the type of the default
+                $union_type = UnionType::fromNode(
+                    $context,
+                    $code_base,
+                    $node->children['default']
+                );
 
                 // Set the default value
                 $parameter->setDefaultValue(
@@ -243,7 +234,10 @@ class Parameter extends Variable {
      * True if this is an optional parameter
      */
     public function isOptional() : bool {
-        return $this->hasDefaultValue();
+        return (
+            $this->hasDefaultValue()
+            || $this->isVariadic()
+        );
     }
 
     /**

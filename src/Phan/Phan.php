@@ -162,12 +162,13 @@ class Phan {
         }
 
         if (empty($node)) {
-            Log::err(
-                Log::EUNDEF,
-                "Empty or missing file  {$file_path}",
+            Issue::emit(
+                Issue::EmptyFile,
                 $file_path,
-                0
+                0,
+                $file_path
             );
+
             return $context;
         }
 
@@ -327,13 +328,12 @@ class Phan {
 
         // Ensure we have some content
         if (empty($node)) {
-            Log::err(
-                Log::EUNDEF,
-                "Empty or missing file  {$file_path}",
+            Issue::emit(
+                Issue::EmptyFile,
                 $file_path,
-                0
+                0,
+                $file_path
             );
-
             return $context;
         }
 

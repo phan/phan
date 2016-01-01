@@ -8,9 +8,11 @@ use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\IssueException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
 use \Phan\Exception\UnanalyzableException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Constant;
@@ -211,6 +213,8 @@ class ContextNode {
      * @throws TypeException
      * An exception may be thrown if the only viable candidate
      * is a non-class type.
+     *
+     * @throws IssueException
      */
     public function getClass(
         bool $validate_class_name = true
@@ -237,9 +241,12 @@ class ContextNode {
 
         // Check to see if the class actually exists
         if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
-            throw new CodeBaseException(
-                $class_fqsen,
-                "Can't find class {$class_fqsen}"
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredClassReference3)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ $class_fqsen ]
+                )
             );
         }
 
@@ -271,6 +278,8 @@ class ContextNode {
      * @throws TypeException
      * An exception may be thrown if the only viable candidate
      * is a non-class type.
+     *
+     * @throws IssueException
      */
     public function getMethod(
         $method_name,
@@ -298,10 +307,12 @@ class ContextNode {
                     ?? $this->node->children['class']
             ))->getClassList();
         } catch (CodeBaseException $exception) {
-            // We can give a more explicit message
-            throw new CodeBaseException(
-                $exception->getFQSEN(),
-                "Can't access method {$method_name} from undeclared class {$exception->getFQSEN()}"
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredClassMethod)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ $method_name, (string)$exception->getFQSEN() ]
+                )
             );
         }
 
@@ -350,14 +361,21 @@ class ContextNode {
         );
 
         if ($is_static) {
-            throw new CodeBaseException(
-                $method_fqsen,
-                "static call to undeclared method $method_fqsen"
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredStaticMethod)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ (string)$method_fqsen ]
+                )
             );
         }
-        throw new CodeBaseException(
-            $method_fqsen,
-            "call to undeclared method $method_fqsen"
+
+        throw new IssueException(
+            Issue::fromType(Issue::UndeclaredMethod)(
+                $this->context->getFile(),
+                $this->node->lineno ?? 0,
+                [ (string)$method_fqsen ]
+            )
         );
     }
 
@@ -373,7 +391,7 @@ class ContextNode {
      * @return Method
      * A method with the given name in the given context
      *
-     * @throws CodeBaseExtension
+     * @throws IssueException
      * An exception is thrown if we can't find the given
      * function
      */
@@ -409,9 +427,12 @@ class ContextNode {
 
         // Make sure the method we're calling actually exists
         if (!$this->code_base->hasMethod($function_fqsen)) {
-            throw new CodeBaseException(
-                $function_fqsen,
-                "call to undefined function {$function_fqsen}()"
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredFunction)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ "$function_fqsen()" ]
+                )
             );
         }
 
@@ -427,8 +448,8 @@ class ContextNode {
      * @throws NodeException
      * An exception is thrown if we can't understand the node
      *
-     * @throws CodeBaseException
-     * A CodeBaseException is thrown if the variable doesn't
+     * @throws IssueException
+     * A IssueException is thrown if the variable doesn't
      * exist
      */
     public function getVariable() : Variable {
@@ -443,8 +464,12 @@ class ContextNode {
 
         // Check to see if the variable exists in this scope
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
-            throw new CodeBaseException(
-                null, "Variable with name $variable_name doesn't exist in {$this->context}"
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredVariable)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ $variable_name ]
+                )
             );
         }
 
@@ -463,7 +488,7 @@ class ContextNode {
     public function getOrCreateVariable() : Variable {
         try {
             return $this->getVariable();
-        } catch (CodeBaseException $exception) {
+        } catch (IssueException $exception) {
             // Swallow it
         }
 
@@ -490,7 +515,7 @@ class ContextNode {
      * @throws NodeException
      * An exception is thrown if we can't understand the node
      *
-     * @throws CodeBaseExtension
+     * @throws IssueException
      * An exception is thrown if we can't find the given
      * class
      *
@@ -523,12 +548,22 @@ class ContextNode {
 
         $class_fqsen = null;
 
-        $class_list = (new ContextNode(
-            $this->code_base,
-            $this->context,
-            $this->node->children['expr'] ??
-                $this->node->children['class']
-        ))->getClassList();
+        try {
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $this->node->children['expr'] ??
+                    $this->node->children['class']
+            ))->getClassList();
+        } catch (CodeBaseException $exception) {
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredProperty)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ "{$exception->getFQSEN()}->$property_name" ]
+                )
+            );
+        }
 
         foreach ($class_list as $i => $class) {
             $class_fqsen = $class->getFQSEN();
@@ -562,9 +597,12 @@ class ContextNode {
 
         // If the class isn't found, we'll get the message elsewhere
         if ($class_fqsen) {
-            throw new CodeBaseException(
-                $class->getFQSEN(),
-                "Can't find property {$property_name} in class {$class_fqsen}"
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredProperty)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ "$class_fqsen->$property_name" ] 
+                )
             );
         }
 
@@ -595,7 +633,7 @@ class ContextNode {
 
         try {
             return $this->getProperty($property_name);
-        } catch (CodeBaseException $exception) {
+        } catch (IssueException $exception) {
             // Ignore it, because we'll create our own
             // property
         } catch (UnanalyzableException $exception) {
@@ -663,9 +701,12 @@ class ContextNode {
             $this->node->children['name']->children['name'];
 
         if (!$this->code_base->hasConstant($fqsen, $constant_name)) {
-            throw new CodeBaseException(
-                $fqsen,
-                "Cannot find constant with name $constant_name"
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredConstant2)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ $constant_name ]
+                )
             );
         }
 
@@ -711,9 +752,12 @@ class ContextNode {
                 $this->node->children['class']
             ))->getClassList();
         } catch (CodeBaseException $exception) {
-            throw new CodeBaseException(
-                $exception->getFQSEN(),
-                "Can't access constant $constant_name from undeclared class {$exception->getFQSEN()}"
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredClassConstant )(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ $constant_name, $exception->getFQSEN() ]
+                )
             );
         }
 
@@ -736,9 +780,12 @@ class ContextNode {
 
         // If no class is found, we'll emit the error elsewhere
         if ($class_fqsen) {
-            throw new CodeBaseException(
-                $class->getFQSEN(),
-                "Can't access undeclared constant {$class_fqsen}::{$constant_name}"
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredConstant)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ "$class_fqsen::$constant_name" ]
+                )
             );
         }
 

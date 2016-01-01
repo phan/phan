@@ -69,21 +69,10 @@ class Variable extends TypedStructuralElement {
         ))->getVariableName();
 
 
-        try {
-            // Get the type of the assignment
-            $union_type = $should_check_type
-                ? UnionType::fromNode($context, $code_base, $node)
-                : new UnionType();
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $context->getFile(),
-                $node->lineno
-            );
-
-            $union_type = new UnionType();
-        }
+        // Get the type of the assignment
+        $union_type = $should_check_type
+            ? UnionType::fromNode($context, $code_base, $node)
+            : new UnionType();
 
         $variable = new Variable(
             $context

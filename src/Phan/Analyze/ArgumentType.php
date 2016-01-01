@@ -5,6 +5,7 @@ use \Phan\AST\ContextNode;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Parameter;
@@ -244,43 +245,13 @@ class ArgumentType {
 
             // Get the type of the argument. We'll check it against
             // the parameter in a moment
-            try {
-                $argument_type = UnionType::fromNode(
-                    $context, $code_base, $argument
-                );
-            } catch (CodeBaseException $exception) {
-                Log::err(
-                    Log::EUNDEF,
-                    $exception->getMessage(),
-                    $context->getFile(),
-                    $node->lineno
-                );
-
-                $argument_type = new UnionType();
-            }
+            $argument_type = UnionType::fromNode(
+                $context, $code_base, $argument
+            );
 
             // Expand it to include all parent types up the chain
             $argument_type_expanded =
                 $argument_type->asExpandedTypes($code_base);
-
-            /* TODO see issue #42
-               If argument is an object and it has a String union type,
-               then we need to ignore that in strict_types=1 mode.
-            if ($argument instanceof \ast\Node) {
-                if(!empty($argument->children['class'])) {
-                    // arg is an object
-                    if ($method->getContext()->getStrictTypes()) {
-                        ...
-                    }
-                }
-            }
-              or maybe UnionType::fromNode should check strict_types and
-              not return the string union type
-
-              or we shouldn't add the string type at all when a class
-              has a __toString() and instead set a flag and check that
-              instead
-            */
 
             // Check the method to see if it has the correct
             // parameter types. If not, keep hunting through

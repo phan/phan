@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\CodeBase;
+use \Phan\Issue;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -37,11 +38,11 @@ trait ParameterTypes {
                 // Otherwise, make sure the class exists
                 $type_fqsen = $type->asFQSEN();
                 if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                    Log::err(
-                        Log::EUNDEF,
-                        "parameter of undeclared type {$type_fqsen}",
+                    Issue::emit(
+                        Issue::UndeclaredTypeParameter,
                         $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
+                        $method->getContext()->getLineNumberStart(),
+                        (string)$type_fqsen
                     );
                 }
             }

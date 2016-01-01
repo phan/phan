@@ -8,6 +8,7 @@ use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\IssueException;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
 use \Phan\Language\FQSEN;
@@ -330,7 +331,9 @@ class ParseVisitor extends ScopeVisitor {
 
         foreach($node->children ?? [] as $i => $child_node) {
             // Ignore children which are not property elements
-            if (!$child_node || $child_node->kind != \ast\AST_PROP_ELEM) {
+            if (!$child_node
+                || $child_node->kind != \ast\AST_PROP_ELEM
+            ) {
                 continue;
             }
 
@@ -347,7 +350,8 @@ class ParseVisitor extends ScopeVisitor {
                     $child_node->children['default'],
                     false
                 );
-            } catch (CodeBaseException $exception) {
+
+            } catch (IssueException $exception) {
                 $future_union_type = new FutureUnionType(
                     $this->code_base,
                     $this->context,

@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\CodeBase;
+use \Phan\Issue;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 use \Phan\Log;
@@ -28,7 +29,7 @@ trait ParentClassExists {
                 $clazz->getParentClassFQSEN(),
                 $code_base,
                 $clazz,
-                "Trying to inherit from unknown class %s"
+                Issue::UndeclaredClassInherit
             );
         }
 
@@ -37,7 +38,7 @@ trait ParentClassExists {
                 $fqsen,
                 $code_base,
                 $clazz,
-                "Trying to implement unknown interface %s"
+                Issue::UndeclaredInterface
             );
         }
 
@@ -46,7 +47,7 @@ trait ParentClassExists {
                 $fqsen,
                 $code_base,
                 $clazz,
-                "Trying to use unknown trait %s"
+                Issue::UndeclaredTrait
             );
         }
     }
@@ -59,16 +60,17 @@ trait ParentClassExists {
         FQSEN $fqsen,
         CodeBase $code_base,
         Clazz $clazz,
-        string $message_template
+        string $issue_type
     ) : bool {
 
         if (!$code_base->hasClassWithFQSEN($fqsen)) {
-            Log::err(
-                Log::EUNDEF,
-                sprintf($message_template, $fqsen),
+            Issue::emit(
+                $issue_type,
                 $clazz->getContext()->getFile(),
-                $clazz->getContext()->getLineNumberStart()
+                $clazz->getContext()->getLineNumberStart(),
+                (string)$fqsen
             );
+
             return false;
         }
 

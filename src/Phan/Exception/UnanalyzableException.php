@@ -33,4 +33,5 @@ class UnanalyzableException extends \Exception {
     public function getNode() : Node {
         return $this->node;
     }
+
 }

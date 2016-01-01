@@ -10,6 +10,7 @@ use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Comment;
@@ -431,11 +432,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
                 $node->children['class']
             ))->getClassList();
         } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                "catching undeclared class {$exception->getFQSEN()}",
+            Issue::emit(
+                Issue::UndeclaredClassCatch,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                (string)$exception->getFQSEN()
             );
         }
 

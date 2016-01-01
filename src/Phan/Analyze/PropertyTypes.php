@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\CodeBase;
+use \Phan\Issue;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 use \Phan\Log;
@@ -32,11 +33,11 @@ trait PropertyTypes {
                 // Otherwise, make sure the class exists
                 $type_fqsen = $type->asFQSEN();
                 if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                    Log::err(
-                        Log::EUNDEF,
-                        "property of undeclared type {$type_fqsen}",
+                    Issue::emit(
+                        Issue::UndeclaredTypeProperty,
                         $property->getContext()->getFile(),
-                        $property->getContext()->getLineNumberStart()
+                        $property->getContext()->getLineNumberStart(),
+                        (string)$type_fqsen
                     );
                 }
             }

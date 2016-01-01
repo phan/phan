@@ -1,0 +1,313 @@
+<?php declare(strict_types=1);
+namespace Phan;
+
+/**
+ * An issue emitted during the course of analysis
+ */
+class Issue {
+
+    // CLASS_UNDEFINED
+    const EmptyFile                 = 'EmptyFile';
+    const ParentlessClass           = 'ParentlessClass';
+    const TraitParentReference      = 'TraitParentReference';
+    const UnanalyzableConstant      = 'UnanalyzableConstant'; // TODO: Should be Issue::UnanalyzableNode
+    const UndeclaredClassCatch      = 'UndeclaredClassCatch';
+    const UndeclaredClassConstant   = 'UndeclaredClassConstant';
+    const UndeclaredClassInherit    = 'UndeclaredClassInherit';
+    const UndeclaredClassInstanceof = 'UndeclaredClassInstanceof';
+    const UndeclaredClassMethod     = 'UndeclaredClassMethod';
+    const UndeclaredClassParent     = 'UndeclaredClassParent';
+    const UndeclaredClassReference  = 'UndeclaredClassReference';
+    const UndeclaredClassReference2 = 'UndeclaredClassReference2';
+    const UndeclaredClassReference3 = 'UndeclaredClassReference3';
+    const UndeclaredConstant        = 'UndeclaredConstant';
+    const UndeclaredConstant2       = 'UndeclaredConstant2';
+    const UndeclaredFunction        = 'UndeclaredFunction';
+    const UndeclaredInterface       = 'UndeclaredInterface';
+    const UndeclaredMethod          = 'UndeclaredMethod';
+    const UndeclaredParentClass     = 'UndeclaredParentClass';
+    const UndeclaredProperty        = 'UndeclaredProperty';
+    const UndeclaredProperty2       = 'UndeclaredProperty2';
+    const UndeclaredStaticMethod    = 'UndeclaredStaticMethod';
+    const UndeclaredTrait           = 'UndeclaredTrait';
+    const UndeclaredTypeParameter   = 'UndeclaredTypeParameter';
+    const UndeclaredTypeProperty    = 'UndeclaredTypeProperty';
+    const UndeclaredVariable        = 'UndeclaredVariable';
+    const UnknownNodeType           = 'UnknownNodeType'; // TODO: Should be Issue::UnanalyzableNode
+
+	const CLASS_REDEFINE          =  1<<0;
+	const CLASS_UNDEFINED         =  1<<1;
+	const CLASS_TYPE              =  1<<2;
+	const CLASS_PARAMETER         =  1<<3;
+	const CLASS_VARIABLE          =  1<<4;
+	const CLASS_NOOP              =  1<<5;
+	const CLASS_OPTIONAL_REQUIRED =  1<<6;
+	const CLASS_STATIC            =  1<<6;
+	const CLASS_AVAILABLE         =  1<<8;
+	const CLASS_TAINT             =  1<<9;
+	const CLASS_COMPATIBLE        = 1<<10;
+	const CLASS_ACCESS            = 1<<11;
+	const CLASS_DEP               = 1<<12;
+	const CLASS_FATAL             = -1;
+
+    const CLASS_NAME = [
+        self::CLASS_REDEFINE          => 'RedefineError',
+        self::CLASS_UNDEFINED         => 'UndefError',
+        self::CLASS_TYPE              => 'TypeError',
+        self::CLASS_PARAMETER         => 'ParamError',
+        self::CLASS_VARIABLE          => 'VarError',
+        self::CLASS_NOOP              => 'NOOPError',
+        self::CLASS_OPTIONAL_REQUIRED => 'ReqAfterOptError',
+        self::CLASS_STATIC            => 'StaticCallError',
+        self::CLASS_AVAILABLE         => 'AvailError',
+        self::CLASS_TAINT             => 'TaintError',
+        self::CLASS_COMPATIBLE        => 'CompatError',
+        self::CLASS_ACCESS            => 'AccessError',
+        self::CLASS_DEP               => 'DeprecatedError',
+    ];
+
+    const SEVERITY_LOW      = 1<<0;
+    const SEVERITY_NORMAL   = 1<<1;
+    const SEVERITY_CRITICAL = 1<<2;
+
+    /** @var string */
+    private $type;
+
+    /** @var int */
+    private $class;
+
+    /** @var int */
+    private $severity;
+
+    /** @var string */
+    private $template;
+
+
+    /**
+     * @param string $type
+     * @param int $class
+     * @param int $severity
+     * @param string $template
+     */
+    public function __construct(
+        string $type,
+        int $class,
+        int $severity,
+        string $template
+    ) {
+        $this->type = $type;
+        $this->class = $class;
+        $this->severity = $severity;
+        $this->template = $template;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType() : string {
+        return $this->type;
+    }
+
+    /**
+     * @return int
+     */
+    public function getClass() : int {
+        return $this->class;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSeverity() : int {
+        return $this->severity;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTemplate() : string {
+        return $this->template;
+    }
+
+    /**
+     * @return Issue[]
+     */
+    private static function errorMap() {
+        static $error_map;
+
+        if (!empty($error_map)) {
+            return $error_map;
+        }
+
+        $error_list = [
+
+            new Issue(self::EmptyFile, self::CLASS_UNDEFINED, self::SEVERITY_LOW,
+                "Empty or missing file %s"
+            ),
+
+            new Issue(self::ParentlessClass, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Reference to parent of parentless class %s"
+            ),
+
+            new Issue(self::UndeclaredClassInherit, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Trying to inherit from unknown class %s"
+            ),
+
+            new Issue(self::UndeclaredClassCatch, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "catching undeclared class %s"
+            ),
+
+            new Issue(self::UndeclaredClassConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't access constant %s from undeclared class %s"
+            ),
+
+            new Issue(self::UndeclaredClassInstanceof, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "instanceof check on undeclared class %s"
+            ),
+
+            new Issue(self::UndeclaredClassMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Calling method on non-class type %s"
+            ),
+
+            new Issue(self::UndeclaredClassMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't access method %s from undeclared class %s"
+            ),
+
+            new Issue(self::UndeclaredClassReference, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "reference to undeclared class %s"
+            ),
+
+            // TODO: collapse this
+            new Issue(self::UndeclaredClassReference2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Cannot find class %s"
+            ),
+
+            // TODO: collapse this
+            new Issue(self::UndeclaredClassReference3, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't find class %s"
+            ),
+
+            new Issue(self::UndeclaredConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't access undeclared constant %s"
+            ),
+
+            // TODO: collapse this
+            new Issue(self::UndeclaredConstant2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Cannot find constant with name %s"
+            ),
+
+            new Issue(self::UndeclaredFunction, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "call to undefined function %s"
+            ),
+
+            new Issue(self::UndeclaredInterface, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Trying to implement unknown interface %s"
+            ),
+
+            new Issue(self::UndeclaredTrait, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Trying to use unknown trait %s"
+            ),
+
+            new Issue(self::UndeclaredMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "call to undeclared method %s"
+            ),
+
+            new Issue(self::UndeclaredStaticMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "static call to undeclared method %s"
+            ),
+
+            new Issue(self::UndeclaredProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't access undeclared property %s"
+            ),
+
+            // TODO: collapse this
+            new Issue(self::UndeclaredProperty2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't find property %s in class %s"
+            ),
+
+            new Issue(self::UndeclaredTypeParameter, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "parameter of undeclared type %s"
+            ),
+
+            new Issue(self::UndeclaredTypeProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "property of undeclared type %s"
+            ),
+
+            new Issue(self::TraitParentReference, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Cannot reference parent from trait %s"
+            ),
+
+            new Issue(self::UndeclaredClassParent, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "reference to unknown parent class from %s"
+            ),
+
+            new Issue(self::UndeclaredParentClass, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "reference to undeclared parent class %s"
+            ),
+
+            new Issue(self::UndeclaredVariable, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Variable with name %s doesn't exist"
+            ),
+
+            // TODO: Should be Issue::UnanalyzableNode
+            new Issue(self::UnknownNodeType, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Unknown node type"
+            ),
+
+            // TODO: Should be Issue::UnanalyzableNode
+            new Issue(self::UnanalyzableConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't understand reference to constant %s"
+            ),
+
+        ];
+
+        $error_map = [];
+        foreach ($error_list as $i => $error) {
+            $error_map[$error->getType()] = $error;
+        }
+
+        return $error_map;
+    }
+
+    /**
+     * @return IssueInstance
+     */
+    public function __invoke(
+        string $file,
+        int $line,
+        array $template_parameters = []
+    ) : IssueInstance {
+        return new IssueInstance(
+            $this,
+            $file,
+            $line,
+            $template_parameters
+        );
+    }
+
+    public static function fromType(string $type) : Issue {
+        $error_map = self::errorMap();
+
+        assert(!empty($error_map[$type]),
+            "Undefined error type $type");
+
+        return $error_map[$type];
+    }
+
+    /**
+     * @return void
+     */
+    public static function emit(
+        string $type,
+        string $file,
+        int $line,
+        ...$template_parameters
+    ) {
+        self::fromType($type)(
+            $file,
+            $line,
+            $template_parameters
+        )();
+    }
+
+}

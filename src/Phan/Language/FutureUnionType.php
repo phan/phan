@@ -39,21 +39,10 @@ class FutureUnionType {
     }
 
     public function get() : UnionType {
-        try {
-            return UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $this->node
-            );
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $this->node->lineno
-            );
-
-            return new UnionType();
-        }
+        return UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $this->node
+        );
     }
 }

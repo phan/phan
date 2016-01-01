@@ -7,6 +7,7 @@ use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
+use \Phan\Exception\IssueException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -144,14 +145,8 @@ class UnionType {
                     $context,
                     $node
                 );
-            } catch (CodeBaseException $exception) {
-                Log::err(
-                    Log::EUNDEF,
-                    $exception->getMessage(),
-                    $context->getFile(),
-                    $node->lineno
-                );
-
+            } catch (IssueException $exception) {
+                $exception->getIssueInstance()();
                 return new UnionType();
             }
         }

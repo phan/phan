@@ -1,0 +1,16 @@
+%s:22 UndefError Trying to inherit from unknown class \undef
+%s:43 UndefError Trying to inherit from unknown class \undef
+%s:22 UndefError property of undeclared type \undef
+%s:16 UndefError parameter of undeclared type \undef
+%s:34 RedefineError Function f defined at %s:34 was previously defined at %s:16
+%s:34 UndefError parameter of undeclared type \undef
+%s:6 UndefError catching undeclared class \undef
+%s:9 UndefError static call to undeclared method \c::staticmethod
+%s:13 UndefError instanceof check on undeclared class \undef
+%s:25 UndefError reference to unknown parent class from \f
+%s:25 UndefError Reference to parent of parentless class \f
+%s:28 UndefError Can't access undeclared property \c->undef
+%s:31 AvailError Missing property with name 'undef'
+%s:34 VarError Variable $v is not defined
+%s:37 UndefError Cannot reference parent from trait \t
+%s:40 UndefError reference to unknown parent class from \g

@@ -8,9 +8,11 @@ use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\IssueException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
 use \Phan\Exception\UnanalyzableException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Variable;
@@ -370,11 +372,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                         (string)$class->getParentClassFQSEN()
                     )->asUnionType();
                 } else {
-                    Log::err(
-                        Log::EUNDEF,
-                        "Reference to parent of parentless class {$class->getFQSEN()}",
+                    Issue::emit(
+                        Issue::ParentlessClass,
                         $this->context->getFile(),
-                        $node->lineno
+                        $node->lineno ?? 0,
+                        (string)$class->getFQSEN()
                     );
 
                     return new UnionType();
@@ -859,7 +861,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      *
-     * @throws CodeBaseException
+     * @throws IssueException
      * An exception is thrown if we can't find the constant
      */
     public function visitClassConst(Node $node) : UnionType {
@@ -880,16 +882,13 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
             return $constant->getUnionType();
         } catch (NodeException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                "Can't understand reference to constant $constant_name",
+            Issue::emit(
+                Issue::UnanalyzableConstant,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                $constant_name
             );
         } catch (UnanalyzableException $exception) {
-            // Swallow it. There are some constructs that we
-            // just can't figure out.
-        } catch (NodeException $exception) {
             // Swallow it. There are some constructs that we
             // just can't figure out.
         }
@@ -924,13 +923,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 $this->context->getFile(),
                 $node->lineno
             );
+        } catch (IssueException $exception) {
+            $exception->getIssueInstance()();
         } catch (CodeBaseException $exception) {
             $property_name = $node->children['prop'];
-            Log::err(
-                Log::EUNDEF,
-                "Can't access undeclared property {$exception->getFQSEN()}->{$property_name}",
+            Issue::emit(
+                Issue::UndeclaredProperty,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                "{$exception->getFQSEN()}->{$property_name}"
             );
         } catch (UnanalyzableException $exception) {
             // Swallow it. There are some constructs that we
@@ -1085,12 +1086,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                     return new UnionType();
                 }
             }
+        } catch (IssueException $exception) {
+            // Swallow it
         } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                "Can't access method {$method_name} from undeclared class {$exception->getFQSEN()}",
+            Issue::emit(
+                Issue::UndeclaredClassMethod,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                $method_name,
+                (string)$exception->getFQSEN()
             );
         }
 
@@ -1163,6 +1167,10 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * @return UnionType
      * The set of types that are possibly produced by the
      * given node
+     *
+     * @throws IssueException
+     * An exception is thrown if we can't find a class for
+     * the given type
      */
     private function visitClassNode(Node $node) : UnionType {
 
@@ -1232,11 +1240,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             );
 
             if (!$class->hasParentClassFQSEN()) {
-                Log::err(
-                    Log::EUNDEF,
-                    "Reference to parent of parentless class {$class->getFQSEN()}",
+                Issue::emit(
+                    Issue::ParentlessClass,
                     $this->context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0,
+                    (string)$class->getFQSEN()
                 );
 
                 return new UnionType();
@@ -1267,7 +1275,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The UnionType associated with the given node
      * in the given Context within the given CodeBase
      *
-     * @throws CodeBaseException
+     * @throws IssueException
      * An exception is thrown if we can't find a class for
      * the given type
      */
@@ -1305,25 +1313,34 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $class = $context->getClassInScope($code_base);
 
             if ($class->isTrait()) {
-                throw new CodeBaseException(
-                    $context->getClassFQSEN(),
-                    "Cannot reference parent from trait {$context->getClassFQSEN()}"
+                throw new IssueException(
+                    Issue::fromType(Issue::TraitParentReference)(
+                        $context->getFile(),
+                        $node->lineno ?? 0,
+                        [(string)$context->getClassFQSEN() ]
+                    )
                 );
             }
 
             if (!$class->hasParentClassFQSEN()) {
-                throw new CodeBaseException(
-                    $context->getClassFQSEN(),
-                    "reference to unknown parent class from {$context->getClassFQSEN()}"
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredClassParent)(
+                        $context->getFile(),
+                        $node->lineno ?? 0,
+                        [ (string)$context->getClassFQSEN() ]
+                    )
                 );
             }
 
             $parent_class_fqsen = $class->getParentClassFQSEN();
 
             if (!$code_base->hasClassWithFQSEN($parent_class_fqsen)) {
-                throw new CodeBaseException(
-                    $parent_class_fqsen,
-                    "reference to undeclared parent class $parent_class_fqsen"
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredParentClass)(
+                        $context->getFile(),
+                        $node->lineno ?? 0,
+                        [ (string)$parent_class_fqsen ]
+                    )
                 );
             } else {
                 $parent_class = $code_base->getClassByFQSEN(
@@ -1343,7 +1360,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * @return Clazz[]
      * A list of classes associated with the given node
      *
-     * @throws CodeBaseException
+     * @throws IssueException
      * An exception is thrown if we can't find a class for
      * the given type
      */
@@ -1365,9 +1382,12 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
             // See if the class exists
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
-                throw new CodeBaseException(
-                    $class_fqsen,
-                    "reference to undeclared class $class_fqsen"
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredClassReference)(
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        [ (string)$class_fqsen ]
+                    )
                 );
             }
 

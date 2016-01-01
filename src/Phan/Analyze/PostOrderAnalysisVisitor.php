@@ -7,9 +7,11 @@ use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
+use \Phan\Exception\IssueException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
+use \Phan\Issue;
 use \Phan\Langauge\Type;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
@@ -99,26 +101,13 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitAssign(Node $node) : Context {
-
-        try {
-            // Get the type of the right side of the
-            // assignment
-            $right_type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['expr']
-            );
-
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-
-            $right_type = new UnionType();
-        }
+        // Get the type of the right side of the
+        // assignment
+        $right_type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['expr']
+        );
 
         assert($node->children['var'] instanceof Node,
             "Expected left side of assignment to be a var in {$this->context}");
@@ -185,20 +174,11 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
         // Get the type just to make sure everything
         // is defined.
-        try {
-            $expression_type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['cond']
-            );
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-        }
+        $expression_type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['cond']
+        );
 
         return $this->context;
     }
@@ -297,21 +277,11 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitForeach(Node $node) : Context {
-        try {
-            $expression_type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['expr']
-            );
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-            $expression_type = new UnionType();
-        }
+        $expression_type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['expr']
+        );
 
         // Check the expression type to make sure its
         // something we can iterate over
@@ -346,22 +316,13 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         // If the element has a default, set its type
         // on the variable
         if (isset($node->children['default'])) {
-            try {
-                $default_type = UnionType::fromNode(
-                    $this->context,
-                    $this->code_base,
-                    $node->children['default']
-                );
+            $default_type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $node->children['default']
+            );
 
-                $variable->setUnionType($default_type);
-            } catch (CodeBaseException $exception) {
-                Log::err(
-                    Log::EUNDEF,
-                    $exception->getMessage(),
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-            }
+            $variable->setUnionType($default_type);
         }
 
         // Note that we're not creating a new scope, just
@@ -392,21 +353,11 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitPrint(Node $node) : Context {
-        try {
-            $type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['expr']
-            );
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-            $type = new UnionType();
-        }
+        $type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['expr']
+        );
 
         if ($type->isType(ArrayType::instance())
             || $type->isGenericArray()
@@ -650,14 +601,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 ))->getFunction(
                     $expression->children['name']
                 );
-            } catch (CodeBaseException $exception) {
-                Log::err(
-                    Log::EUNDEF,
-                    $exception->getMessage(),
-                    $this->context->getFile(),
-                    $node->lineno
-                );
-
+            } catch (IssueException $exception) {
+                $exception->getIssueInstance()();
                 return $this->context;
             }
 
@@ -754,14 +699,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 $node
             );
 
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-            return $this->context;
+        } catch (IssueException $exception) {
+            $exception->getIssueInstance()();
         } catch (\Exception $exception) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
@@ -787,11 +726,11 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 $node->children['class']
             ))->getClassList();
         } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                "instanceof check on undeclared class {$exception->getFQSEN()}",
+            Issue::emit(
+                Issue::UndeclaredClassInstanceof,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                (string)$exception->getFQSEN()
             );
         }
 
@@ -826,11 +765,11 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         // on something other than 'parent'
         if ($method_name === '__construct') {
             if ($static_class !== 'parent') {
-                Log::err(
-                    Log::EUNDEF,
-                    "static call to undeclared method {$static_class}::{$method_name}()",
+                Issue::emit(
+                    Issue::UndeclaredStaticMethod,
                     $this->context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0,
+                    "{$static_class}::{$method_name}()"
                 );
             }
 
@@ -870,16 +809,10 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 $method,
                 $node
             );
+        } catch (IssueException $exception) {
+            $exception->getIssueInstance()();
 
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-            return $this->context;
-        } catch (\Exception $exception) {
+        }  catch (\Exception $exception) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
             return $this->context;
@@ -957,13 +890,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 $this->context,
                 $node
             ))->getMethod($node->children['method'], false);
-        } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EUNDEF,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
+        } catch (IssueException $exception) {
+            $exception->getIssueInstance()();
             return $this->context;
         } catch (NodeException $exception) {
             // Note to future me:
@@ -1154,23 +1082,18 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                     if (is_string($property_name)) {
                         // We don't do anything with it; just create it
                         // if it doesn't exist
-                         try {
-                             $property = (new ContextNode(
-                                 $this->code_base,
-                                 $this->context,
-                                 $argument
-                             ))->getOrCreateProperty($argument->children['prop']);
-                         } catch (CodeBaseException $exception) {
-                             Log::err(
-                                 Log::EUNDEF,
-                                 $exception->getMessage(),
-                                 $this->context->getFile(),
-                                 $node->lineno
-                             );
-                         } catch (\Exception $exception) {
-                             // If we can't figure out what kind of a call
-                             // this is, don't worry about it
-                         }
+                        try {
+                            $property = (new ContextNode(
+                                $this->code_base,
+                                $this->context,
+                                $argument
+                            ))->getOrCreateProperty($argument->children['prop']);
+                        } catch (IssueException $exception) {
+                            $exception->getIssueInstance()();
+                        } catch (\Exception $exception) {
+                            // If we can't figure out what kind of a call
+                            // this is, don't worry about it
+                        }
                     } else {
                         // This is stuff like `Class->$foo`. I'm ignoring
                         // it.
@@ -1222,17 +1145,12 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                                 $this->context,
                                 $argument
                             ))->getOrCreateProperty($argument->children['prop']);
-                        } catch (CodeBaseException $exception) {
-                             Log::err(
-                                 Log::EUNDEF,
-                                 $exception->getMessage(),
-                                 $this->context->getFile(),
-                                 $node->lineno
-                             );
-                         } catch (\Exception $exception) {
-                             // If we can't figure out what kind of a call
-                             // this is, don't worry about it
-                         }
+                        } catch (IssueException $exception) {
+                            $exception->getIssueInstance()();
+                        } catch (\Exception $exception) {
+                            // If we can't figure out what kind of a call
+                            // this is, don't worry about it
+                        }
                     } else {
                         // This is stuff like `Class->$foo`. I'm ignoring
                         // it.
