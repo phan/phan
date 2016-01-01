@@ -338,7 +338,7 @@ class Type {
         ) {
             if ('parent' === $type_name) {
                 assert('parent' !== $type_name,
-                    __METHOD__ . ' does not know how to handle the type name "parent"');
+                    __METHOD__ . " does not know how to handle the type name 'parent' in $context");
             } else {
                 return static::fromFullyQualifiedString(
                     (string)$context->getClassFQSEN()
