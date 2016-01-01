@@ -9,6 +9,7 @@ use \Phan\Analyze\ClassName\ValidationVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;

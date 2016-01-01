@@ -6,7 +6,7 @@ namespace Phan;
  */
 class Issue {
 
-    // CLASS_UNDEFINED
+    // Issue::CLASS_UNDEFINED
     const EmptyFile                 = 'EmptyFile';
     const NonClassMethodCall        = 'NonClassMethodCall';
     const ParentlessClass           = 'ParentlessClass';
@@ -36,6 +36,48 @@ class Issue {
     const UndeclaredVariable        = 'UndeclaredVariable';
     const UnknownNodeType           = 'UnknownNodeType'; // TODO: Should be Issue::UnanalyzableNode
 
+    // Issue::CLASS_TYPE
+    const TypeMismatchProperty      = 'TypeMismatchProperty';
+    const TypeMismatchDefault       = 'TypeMismatchDefault';
+    const TypeMismatchParameter     = 'TypeMismatchParameter';
+    const TypeMismatchReturn        = 'TypeMismatchReturn';
+    const TypeMismatchForeach       = 'TypeMismatchForeach';
+    const TypeArrayOperator         = 'TypeArrayOperator';
+    const TypeArraySuspicious       = 'TypeArraySuspicious';
+    const TypeComparisonToArray     = 'TypeComparisonToArray';
+    const TypeComparisonFromArray   = 'TypeComparisonFromArray';
+
+    // Issue::CLASS_VARIABLE
+    const VariableUndef             = 'VariableUndef';
+
+    // Issue::CLASS_STATIC
+    const StaticCallToNonStatic     = 'StaticCallToNonStatic';
+    const NonStaticSelf             = 'NonStaticSelf';
+
+    // Issue::CLASS_DEPRECATED
+    const DeprecatedFunction        = 'DeprecatedFunction';
+
+    // Issue::CLASS_PARAMETER
+    const ParamTooMany              = 'ParamTooMany';
+    const ParamTooFew               = 'ParamTooFew';
+    const ParamSpecial1             = 'ParamSpecial1';
+    const ParamSpecial2             = 'ParamSpecial2';
+
+    // Issue::CLASS_NOOP
+    const NoopProperty              = 'NoopProperty';
+    const NoopArray                 = 'NoopArray';
+    const NoopConstant              = 'NoopConstant';
+    const NoopClosure               = 'NoopClosure';
+
+    // Issue::CLASS_REDEFINE
+    const RedefineClass             = 'RedefineClass';
+    const RedefineFunction          = 'RedefineFunction';
+
+    // Issue::CLASS_ACCESS
+    const AccessPropertyProtected   = 'AccessPropertyProtected';
+    const AccessPropertyPrivate     = 'AccessPropertyPrivate';
+
+
 	const CLASS_REDEFINE          =  1<<0;
 	const CLASS_UNDEFINED         =  1<<1;
 	const CLASS_TYPE              =  1<<2;
@@ -48,7 +90,7 @@ class Issue {
 	const CLASS_TAINT             =  1<<9;
 	const CLASS_COMPATIBLE        = 1<<10;
 	const CLASS_ACCESS            = 1<<11;
-	const CLASS_DEP               = 1<<12;
+	const CLASS_DEPRECATED        = 1<<12;
 	const CLASS_FATAL             = -1;
 
     const CLASS_NAME = [
@@ -64,7 +106,7 @@ class Issue {
         self::CLASS_TAINT             => 'TaintError',
         self::CLASS_COMPATIBLE        => 'CompatError',
         self::CLASS_ACCESS            => 'AccessError',
-        self::CLASS_DEP               => 'DeprecatedError',
+        self::CLASS_DEPRECATED        => 'DeprecatedError',
     ];
 
     const SEVERITY_LOW      = 1<<0;
@@ -103,6 +145,205 @@ class Issue {
     }
 
     /**
+     * @return Issue[]
+     */
+    private static function errorMap() {
+        static $error_map;
+
+        if (!empty($error_map)) {
+            return $error_map;
+        }
+
+        $error_list = [
+
+            // Issue::CLASS_UNDEFINED
+            new Issue(self::EmptyFile, self::CLASS_UNDEFINED, self::SEVERITY_LOW,
+                "Empty or missing file %s"
+            ),
+            new Issue(self::ParentlessClass, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Reference to parent of parentless class %s"
+            ),
+            new Issue(self::UndeclaredClassInherit, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Trying to inherit from unknown class %s"
+            ),
+            new Issue(self::UndeclaredClassCatch, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "catching undeclared class %s"
+            ),
+            new Issue(self::UndeclaredClassConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't access constant %s from undeclared class %s"
+            ),
+            new Issue(self::UndeclaredClassInstanceof, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "instanceof check on undeclared class %s"
+            ),
+            new Issue(self::NonClassMethodCall, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Calling method on non-class type %s"
+            ),
+            new Issue(self::UndeclaredClassMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't access method %s from undeclared class %s"
+            ),
+            new Issue(self::UndeclaredClassReference, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "reference to undeclared class %s"
+            ),
+            new Issue(self::UndeclaredClassReference2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Cannot find class %s"
+            ), // TODO: collapse this
+            new Issue(self::UndeclaredClassReference3, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't find class %s"
+            ), // TODO: collapse this
+            new Issue(self::UndeclaredConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't access undeclared constant %s"
+            ),
+            new Issue(self::UndeclaredConstant2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Cannot find constant with name %s"
+            ), // TODO: collapse this
+            new Issue(self::UndeclaredFunction, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "call to undefined function %s"
+            ),
+            new Issue(self::UndeclaredInterface, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Trying to implement unknown interface %s"
+            ),
+            new Issue(self::UndeclaredTrait, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Trying to use unknown trait %s"
+            ),
+            new Issue(self::UndeclaredMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "call to undeclared method %s"
+            ),
+            new Issue(self::UndeclaredStaticMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "static call to undeclared method %s"
+            ),
+            new Issue(self::UndeclaredProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't access undeclared property %s"
+            ),
+            new Issue(self::UndeclaredProperty2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't find property %s in class %s"
+            ), // TODO: collapse this
+            new Issue(self::UndeclaredTypeParameter, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "parameter of undeclared type %s"
+            ),
+            new Issue(self::UndeclaredTypeProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "property of undeclared type %s"
+            ),
+            new Issue(self::TraitParentReference, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Cannot reference parent from trait %s"
+            ),
+            new Issue(self::UndeclaredClassParent, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "reference to unknown parent class from %s"
+            ),
+            new Issue(self::UndeclaredParentClass, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "reference to undeclared parent class %s"
+            ),
+            new Issue(self::UndeclaredVariable, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Variable with name %s doesn't exist"
+            ),
+            new Issue(self::UnknownNodeType, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Unknown node type"
+            ), // TODO: Should be Issue::UnanalyzableNode
+            new Issue(self::UnanalyzableConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+                "Can't understand reference to constant %s"
+            ), // TODO: Should be Issue::UnanalyzableNode
+
+            // Issue::CLASS_TYPE
+            new Issue(self::TypeMismatchProperty, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "assigning int to property but %s is %s"
+            ),
+            new Issue(self::TypeMismatchDefault, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "Default value for %s %s can't be %s"
+            ),
+            new Issue(self::TypeMismatchParameter, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "arg#%d(%s) is string but %s takes %s defined at %s:%d"
+            ),
+            new Issue(self::TypeMismatchReturn, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "return %s but %s is declared to return %s"
+            ),
+            new Issue(self::TypeMismatchForeach, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "%s passed to foreach instead of array"
+            ),
+            new Issue(self::TypeArrayOperator, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "invalid array operator"
+            ),
+            new Issue(self::TypeArraySuspicious, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "Suspicious array access to %s"
+            ),
+            new Issue(self::TypeComparisonToArray, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "%s to array comparison"
+            ),
+            new Issue(self::TypeComparisonFromArray, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "array to %s comparison"
+            ),
+
+            // Issue::CLASS_VARIABLE
+            new Issue(self::VariableUndef, self::CLASS_VARIABLE, self::SEVERITY_NORMAL,
+                "Variable %s is not defined"
+            ),
+
+            // Issue::CLASS_STATIC
+            new Issue(self::StaticCallToNonStatic, self::CLASS_STATIC, self::SEVERITY_NORMAL,
+                "static call to non-static method %s defined at %s:%d"
+            ),
+            new Issue(self::NonStaticSelf, self::CLASS_STATIC, self::SEVERITY_NORMAL,
+                "Using self:: when not in object context"
+            ),
+
+            // Issue::CLASS_DEPRECATED
+            new Issue(self::DeprecatedFunction, self::CLASS_DEPRECATED, self::SEVERITY_NORMAL,
+                "Call to deprecated function %s defined at %s:%d"
+            ),
+
+            // Issue::CLASS_PARAMETER
+            new Issue(self::ParamTooMany, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "ParamError call with %d arg(s) to %s which only takes %d arg(s) defined at %s:%d"
+            ),
+            new Issue(self::ParamTooFew, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "ParamError call with %d arg(s) to %s which requires %d arg(s) defined at %s:%d"
+            ),
+            new Issue(self::ParamSpecial1, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "ParamError arg#%d(%s) is %s but %s takes %s when arg#%d is %s"
+            ),
+            new Issue(self::ParamSpecial2, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "ParamError arg#%d(%s) is string but %s takes %s when passed only one arg"
+            ),
+
+            // Issue::CLASS_NOOP
+            new Issue(self::NoopProperty, self::CLASS_NOOP, self::SEVERITY_NORMAL,
+                "NOOPError no-op property"
+            ),
+            new Issue(self::NoopArray, self::CLASS_NOOP, self::SEVERITY_NORMAL,
+                "NOOPError no-op array"
+            ),
+            new Issue(self::NoopConstant, self::CLASS_NOOP, self::SEVERITY_NORMAL,
+                "NOOPError no-op constant"
+            ),
+            new Issue(self::NoopClosure, self::CLASS_NOOP, self::SEVERITY_NORMAL,
+                "NOOPError no-op closure"
+            ),
+
+            // Issue::CLASS_REDEFINE
+            new Issue(self::RedefineClass, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
+                "RedefineError Class %s defined at %s:%d was previously defined as Class %s at %s:%d"
+            ),
+            new Issue(self::RedefineFunction, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
+                "RedefineError Function %s defined at %s:%d was previously defined at %s:%d"
+            ),
+
+            // Issue::CLASS_ACCESS
+            new Issue(self::AccessPropertyProtected, self::CLASS_ACCESS, self::SEVERITY_NORMAL,
+                "AccessError Cannot access protected property %s"
+            ),
+            new Issue(self::AccessPropertyPrivate, self::CLASS_ACCESS, self::SEVERITY_NORMAL,
+                "AccessError Cannot access private property %s"
+            ),
+
+        ];
+
+        $error_map = [];
+        foreach ($error_list as $i => $error) {
+            $error_map[$error->getType()] = $error;
+        }
+
+        return $error_map;
+    }
+
+    /**
      * @return string
      */
     public function getType() : string {
@@ -131,146 +372,6 @@ class Issue {
     }
 
     /**
-     * @return Issue[]
-     */
-    private static function errorMap() {
-        static $error_map;
-
-        if (!empty($error_map)) {
-            return $error_map;
-        }
-
-        $error_list = [
-
-            new Issue(self::EmptyFile, self::CLASS_UNDEFINED, self::SEVERITY_LOW,
-                "Empty or missing file %s"
-            ),
-
-            new Issue(self::ParentlessClass, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Reference to parent of parentless class %s"
-            ),
-
-            new Issue(self::UndeclaredClassInherit, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Trying to inherit from unknown class %s"
-            ),
-
-            new Issue(self::UndeclaredClassCatch, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "catching undeclared class %s"
-            ),
-
-            new Issue(self::UndeclaredClassConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Can't access constant %s from undeclared class %s"
-            ),
-
-            new Issue(self::UndeclaredClassInstanceof, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "instanceof check on undeclared class %s"
-            ),
-
-            new Issue(self::NonClassMethodCall, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Calling method on non-class type %s"
-            ),
-
-            new Issue(self::UndeclaredClassMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Can't access method %s from undeclared class %s"
-            ),
-
-            new Issue(self::UndeclaredClassReference, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "reference to undeclared class %s"
-            ),
-
-            // TODO: collapse this
-            new Issue(self::UndeclaredClassReference2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Cannot find class %s"
-            ),
-
-            // TODO: collapse this
-            new Issue(self::UndeclaredClassReference3, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Can't find class %s"
-            ),
-
-            new Issue(self::UndeclaredConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Can't access undeclared constant %s"
-            ),
-
-            // TODO: collapse this
-            new Issue(self::UndeclaredConstant2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Cannot find constant with name %s"
-            ),
-
-            new Issue(self::UndeclaredFunction, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "call to undefined function %s"
-            ),
-
-            new Issue(self::UndeclaredInterface, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Trying to implement unknown interface %s"
-            ),
-
-            new Issue(self::UndeclaredTrait, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Trying to use unknown trait %s"
-            ),
-
-            new Issue(self::UndeclaredMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "call to undeclared method %s"
-            ),
-
-            new Issue(self::UndeclaredStaticMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "static call to undeclared method %s"
-            ),
-
-            new Issue(self::UndeclaredProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Can't access undeclared property %s"
-            ),
-
-            // TODO: collapse this
-            new Issue(self::UndeclaredProperty2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Can't find property %s in class %s"
-            ),
-
-            new Issue(self::UndeclaredTypeParameter, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "parameter of undeclared type %s"
-            ),
-
-            new Issue(self::UndeclaredTypeProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "property of undeclared type %s"
-            ),
-
-            new Issue(self::TraitParentReference, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Cannot reference parent from trait %s"
-            ),
-
-            new Issue(self::UndeclaredClassParent, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "reference to unknown parent class from %s"
-            ),
-
-            new Issue(self::UndeclaredParentClass, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "reference to undeclared parent class %s"
-            ),
-
-            new Issue(self::UndeclaredVariable, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Variable with name %s doesn't exist"
-            ),
-
-            // TODO: Should be Issue::UnanalyzableNode
-            new Issue(self::UnknownNodeType, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Unknown node type"
-            ),
-
-            // TODO: Should be Issue::UnanalyzableNode
-            new Issue(self::UnanalyzableConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "Can't understand reference to constant %s"
-            ),
-
-        ];
-
-        $error_map = [];
-        foreach ($error_list as $i => $error) {
-            $error_map[$error->getType()] = $error;
-        }
-
-        return $error_map;
-    }
-
-    /**
      * @return IssueInstance
      */
     public function __invoke(
@@ -286,6 +387,9 @@ class Issue {
         );
     }
 
+    /**
+     * return Issue
+     */
     public static function fromType(string $type) : Issue {
         $error_map = self::errorMap();
 

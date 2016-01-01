@@ -28,7 +28,7 @@ class Log {
 	const ETAINT  = Issue::CLASS_TAINT;
 	const ECOMPAT = Issue::CLASS_COMPATIBLE;
 	const EACCESS = Issue::CLASS_ACCESS;
-	const EDEP    = Issue::CLASS_DEP;
+	const EDEP    = Issue::CLASS_DEPRECATED;
 	const EFATAL  = Issue::CLASS_FATAL;
 
 
