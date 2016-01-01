@@ -336,14 +336,16 @@ class Type {
         if (self::isSelfTypeString($type_name)
             && $context->isInClassScope()
         ) {
-            if ('parent' === $type_name) {
-                assert('parent' !== $type_name,
-                    __METHOD__ . " does not know how to handle the type name 'parent' in $context");
-            } else {
-                return static::fromFullyQualifiedString(
-                    (string)$context->getClassFQSEN()
-                );
-            }
+            // Callers of this method should be checking on their own
+            // to see if this type is a reference to 'parent' and
+            // dealing with it there. We don't want to have this
+            // method be dependent on the code base
+            assert('parent' !== $type_name,
+                __METHOD__ . " does not know how to handle the type name 'parent' in $context");
+
+            return static::fromFullyQualifiedString(
+                (string)$context->getClassFQSEN()
+            );
         }
 
         // Attach the context's namespace to the type name
