@@ -166,7 +166,7 @@ class Issue {
     /**
      * @return Issue[]
      */
-    private static function errorMap() {
+    public static function issueMap() {
         static $error_map;
 
         if (!empty($error_map)) {
@@ -434,6 +434,14 @@ class Issue {
     }
 
     /**
+     * @return string
+     * The name of the category
+     */
+    public function getCategoryName() : string {
+        return self::CATEGORY_NAME[$this->getCategory()];
+    }
+
+    /**
      * @return int
      */
     public function getSeverity() : int {
@@ -467,7 +475,7 @@ class Issue {
      * return Issue
      */
     public static function fromType(string $type) : Issue {
-        $error_map = self::errorMap();
+        $error_map = self::issueMap();
 
         assert(!empty($error_map[$type]),
             "Undefined error type $type");
