@@ -47,7 +47,7 @@ class CLI {
                         FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES
                     );
                 } else {
-                    Log::err(Log::EFATAL, "Unable to open $value");
+                    throw new \Exception("Unable to open $value");
                 }
                 break;
             case 'm':
@@ -120,7 +120,7 @@ class CLI {
         }
 
         if(empty($this->file_list) && count($argv) < 2) {
-            // Log::err(Log::EFATAL, "No files to analyze");
+            // Ignore
         }
 
         foreach($argv as $arg) if($arg[0]=='-') {

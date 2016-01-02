@@ -101,11 +101,12 @@ class Issue {
     const AccessPropertyProtected   = 'AccessPropertyProtected';
     const AccessPropertyPrivate     = 'AccessPropertyPrivate';
 
-    // Issue::CLASS_FATAL
-
     // Issue::CLASS_AVAILABLE
+    const MissingProperty           = 'MissingProperty';
 
     // Issue::CLASS_COMPATIBLE
+    const CompatiblePHP7            = 'CompatiblePHP7';
+    const CompatibleExpressionPHP7  = 'CompatibleExpressionPHP7';
 
 	const CLASS_REDEFINE          =  1<<0;
 	const CLASS_UNDEFINED         =  1<<1;
@@ -437,15 +438,18 @@ class Issue {
                 "Cannot access private property %s"
             ),
 
-            /*
-            new Issue(self::, self::CLASS_ACCESS, self::SEVERITY_NORMAL,
-            ),
-            */
-
             // Issue::CLASS_AVAILABLE
+            new Issue(self::MissingProperty, self::CLASS_AVAILABLE, self::SEVERITY_NORMAL,
+                "Missing property with name '%s'"
+            ),
 
             // Issue::CLASS_COMPATIBLE
-
+            new Issue(self::CompatiblePHP7, self::CLASS_COMPATIBLE, self::SEVERITY_NORMAL,
+                "expression may not be PHP 7 compatible"
+            ),
+            new Issue(self::CompatibleExpressionPHP7, self::CLASS_COMPATIBLE, self::SEVERITY_NORMAL,
+                "%s expression may not be PHP 7 compatible"
+            ),
 
         ];
 

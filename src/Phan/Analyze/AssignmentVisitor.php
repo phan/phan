@@ -258,11 +258,11 @@ class AssignmentVisitor extends KindVisitorImplementation {
                         // swallow it
                     }
                 } else {
-                    Log::err(
-                        Log::EAVAIL,
-                        "Missing property with name '$property_name'",
+                    Issue::emit(
+                        Issue::MissingProperty,
                         $this->context->getFile(),
-                        $node->lineno
+                        $node->lineno ?? 0,
+                        $property_name
                     );
                 }
             }

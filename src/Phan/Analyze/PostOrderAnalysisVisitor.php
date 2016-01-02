@@ -956,11 +956,11 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             if(strpos($line,'{') === false
                 || strpos($line,'}') === false
             ) {
-                Log::err(
-                    Log::ECOMPAT,
-                    "{$dollars}{$temp}[] expression may not be PHP 7 compatible",
+                Issue::emit(
+                    Issue::CompatibleExpressionPHP7,
                     $this->context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0,
+                    "{$dollars}{$temp}[]"
                 );
             }
 
@@ -978,11 +978,10 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             if(strpos($line,'{') === false
                 || strpos($line,'}') === false
             ) {
-                Log::err(
-                    Log::ECOMPAT,
-                    "expression may not be PHP 7 compatible",
+                Issue::emit(
+                    Issue::CompatiblePHP7,
                     $this->context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0
                 );
             }
         }

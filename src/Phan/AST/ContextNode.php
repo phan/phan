@@ -904,9 +904,8 @@ class ContextNode {
                 || strpos($line,']}') === false
                 || strpos($line,'>{') === false
             ) {
-                Log::err(
-                    Log::ECOMPAT,
-                    "expression may not be PHP 7 compatible",
+                Issue::emit(
+                    Issue::CompatiblePHP7,
                     $this->context->getFile(),
                     $this->node->lineno ?? 0
                 );
