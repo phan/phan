@@ -83,6 +83,21 @@ class RasmusTest extends \PHPUnit_Framework_TestCase {
             }
 
             $output = trim(ob_get_clean());
+
+            // Uncomment to save the output back to the expected
+            // output. This should be done for error message
+            // text changes and only if you promise to be careful.
+            /*
+            $saved_output = $output;
+            $saved_output = preg_replace('/[^ :\n]*\/'.$test_file_name.'/', '%s', $saved_output);
+            if (!empty($saved_output) && strlen($saved_output) > 0) {
+                $saved_output .= "\n";
+            }
+            file_put_contents($expected_file_path, $saved_output);
+            $expected_output =
+                trim(file_get_contents($expected_file_path));
+             */
+
             $wanted_re = preg_replace('/\r\n/', "\n", $expected_output);
 			// do preg_quote, but miss out any %r delimited sections
             $temp = "";

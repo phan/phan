@@ -1,1 +1,1 @@
-%s:21 TypeError Return string but h() is declared to return int
+%s:21 TypeError Returning type string but h() is declared to return int

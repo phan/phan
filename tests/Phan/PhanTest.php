@@ -85,6 +85,20 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
 
             $output = trim(ob_get_clean());
 
+            // Uncomment to save the output back to the expected
+            // output. This should be done for error message
+            // text changes and only if you promise to be careful.
+            /*
+            $saved_output = $output;
+            $saved_output = preg_replace('/[^ :\n]*\/'.$test_file_name.'/', '%s', $saved_output);
+            if (!empty($saved_output) && strlen($saved_output) > 0) {
+                $saved_output .= "\n";
+            }
+            file_put_contents($expected_file_path, $saved_output);
+            $expected_output =
+                trim(file_get_contents($expected_file_path));
+             */
+
             $wanted_re = preg_replace('/\r\n/', "\n", $expected_output);
 			// do preg_quote, but miss out any %r delimited sections
             $temp = "";
@@ -130,6 +144,8 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
             $wanted_re = str_replace('%f', '[+-]?\.?\d+\.?\d*(?:[Ee][+-]?\d+)?', $wanted_re);
             $wanted_re = str_replace('%c', '.', $wanted_re);
             // %f allows two points "-.0.0" but that is the best *simple* expression
+
+
 
             $this->assertRegExp("/^$wanted_re\$/", $output, "Unexpected output in $test_file_path");
         }

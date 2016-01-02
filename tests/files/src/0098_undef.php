@@ -31,7 +31,7 @@ $v = (new C)->undef;
 (new C)->undef = 'str';
 
 // TODO: Issue::UndeclaredClassMethod
-function f(Undef $v) { $v->f(); }
+function g(Undef $v) { $v->f(); }
 
 // Issue::TraitParentReference
 trait T { function f() { return parent::f(); } }

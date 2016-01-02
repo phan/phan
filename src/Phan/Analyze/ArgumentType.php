@@ -248,10 +248,10 @@ class ArgumentType {
                             'self', 'static', 'parent'
                         ])) {
                             Issue::emit(
-                                Issue::VarNotInClassScope,
+                                Issue::ContextNotObject,
                                 $context->getFile(),
                                 $node->lineno ?? 0,
-                                "$variable_name::"
+                                "\$$variable_name"
                             );
                         }
                     }

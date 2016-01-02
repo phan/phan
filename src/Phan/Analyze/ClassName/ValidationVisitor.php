@@ -84,9 +84,8 @@ class ValidationVisitor
             }
         }
 
-        // TODO: Should be Issue::UnanalyzableNode
         Issue::emit(
-            Issue::UnknownNodeType,
+            Issue::Unanalyzable,
             $this->context->getFile(),
             $node->lineno ?? 0
         );

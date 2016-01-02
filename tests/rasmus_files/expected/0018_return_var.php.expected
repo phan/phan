@@ -1,1 +1,1 @@
-%s:3 TypeError Return string but test() is declared to return int
+%s:3 TypeError Returning type string but test() is declared to return int

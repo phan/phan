@@ -110,7 +110,7 @@ class ClassNameVisitor extends KindVisitorImplementation {
 
         if (!$this->context->isInClassScope()) {
             Issue::emit(
-                Issue::NotInClassScope2,
+                Issue::ContextNotObject,
                 $this->context->getFile(),
                 $node->lineno ?? 0,
                 $class_name

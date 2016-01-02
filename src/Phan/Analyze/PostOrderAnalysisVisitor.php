@@ -363,7 +363,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             || $type->isGenericArray()
         ) {
             Issue::emit(
-                Issue::TypeComparisonFromArray2,
+                Issue::TypeConversionFromArray,
                 $this->context->getFile(),
                 $node->lineno ?? 0,
                 'string'

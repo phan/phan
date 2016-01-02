@@ -1,1 +1,1 @@
-%s:13 VarError Variable $c is not defined
+%s:13 UndefError Variable $c is undeclared

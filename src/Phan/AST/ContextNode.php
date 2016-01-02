@@ -242,7 +242,7 @@ class ContextNode {
         // Check to see if the class actually exists
         if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
             throw new IssueException(
-                Issue::fromType(Issue::UndeclaredClassReference3)(
+                Issue::fromType(Issue::UndeclaredClassReference)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
                     [ $class_fqsen ]
@@ -702,7 +702,7 @@ class ContextNode {
 
         if (!$this->code_base->hasConstant($fqsen, $constant_name)) {
             throw new IssueException(
-                Issue::fromType(Issue::UndeclaredConstant2)(
+                Issue::fromType(Issue::UndeclaredConstant)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
                     [ $constant_name ]

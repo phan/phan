@@ -259,7 +259,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     }
                 } else {
                     Issue::emit(
-                        Issue::MissingProperty,
+                        Issue::UndeclaredProperty,
                         $this->context->getFile(),
                         $node->lineno ?? 0,
                         $property_name

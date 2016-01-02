@@ -258,7 +258,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
                     // have a problem
                     if (!($use->flags & \ast\flags\PARAM_REF)) {
                         Issue::emit(
-                            Issue::VariableUndef,
+                            Issue::UndeclaredVariable,
                             $this->context->getFile(),
                             $node->lineno ?? 0,
                             $variable_name

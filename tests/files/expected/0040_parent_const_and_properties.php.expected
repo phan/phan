@@ -1,2 +1,2 @@
-%s:18 UndefError Can't access undeclared property \b->x
-%s:19 UndefError Can't access undeclared constant \a::y
+%s:18 UndefError Reference to undeclared property \b->x
+%s:19 UndefError Reference to undeclared constant \a::y

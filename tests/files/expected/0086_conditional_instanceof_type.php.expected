@@ -1,2 +1,2 @@
-%s:8 UndefError Calling method on non-class type null
-%s:14 UndefError Calling method on non-class type null
+%s:8 TypeError Call to method on non-class type null
+%s:14 TypeError Call to method on non-class type null

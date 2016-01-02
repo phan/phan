@@ -1,2 +1,2 @@
 %s:6 TypeError Assigning string[] to property but \a::property is \bad
-%s:9 UndefError Property of undeclared type \bad
+%s:9 TypeError Property of undeclared type \bad

@@ -790,7 +790,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
             if(!Variable::isSuperglobalVariableWithName($variable_name)) {
                 Issue::emit(
-                    Issue::VariableUndef,
+                    Issue::UndeclaredVariable,
                     $this->context->getFile(),
                     $node->lineno ?? 0,
                     $variable_name
@@ -880,10 +880,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return $constant->getUnionType();
         } catch (NodeException $exception) {
             Issue::emit(
-                Issue::UnanalyzableConstant,
+                Issue::Unanalyzable,
                 $this->context->getFile(),
-                $node->lineno ?? 0,
-                $constant_name
+                $node->lineno ?? 0
             );
         } catch (UnanalyzableException $exception) {
             // Swallow it. There are some constructs that we
@@ -1209,7 +1208,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         // This is a self-referential node
         if (!$this->context->isInClassScope()) {
             Issue::emit(
-                Issue::NotInClassScope,
+                Issue::ContextNotObject,
                 $this->context->getFile(),
                 $node->lineno ?? 0,
                 $class_name

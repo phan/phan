@@ -1,4 +1,4 @@
-%s:3 TypeError Return int but func() is declared to return array
+%s:3 TypeError Returning type int but func() is declared to return array
 %s:5 StaticCallError Static call to non-static method \a::func() defined at %s:3
 %s:5 ParamError Call with 0 arg(s) to \a::func() which requires 1 arg(s) defined at %s:3
 %s:6 StaticCallError Static call to non-static method \a::func() defined at %s:3

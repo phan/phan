@@ -1,2 +1,2 @@
-%s:3 UndefError Parameter of undeclared type \A\closure
+%s:3 TypeError Parameter of undeclared type \A\closure
 %s:4 TypeError Argument 1 (c) is callable but \A\f() takes \A\closure defined at %s:3

@@ -141,10 +141,10 @@ abstract class ClassElementVisitor extends KindVisitorImplementation {
         if($node->children['name'] == 'this') {
             if(!$this->context->isInClassScope()) {
                 Issue::emit(
-                    Issue::VarNotInClassScope,
+                    Issue::ContextNotObject,
                     $this->context->getFile(),
                     $node->lineno ?? 0,
-                    'this'
+                    '$this'
                 );
                 return '';
             }
@@ -226,10 +226,10 @@ abstract class ClassElementVisitor extends KindVisitorImplementation {
             // If we're not in a class scope, 'this' won't work
             if(!$this->context->isInClassScope()) {
                 Issue::emit(
-                    Issue::VarNotInClassScope,
+                    Issue::ContextNotObject,
                     $this->context->getFile(),
                     $node->lineno ?? 0,
-                    'this'
+                    '$this'
                 );
 
                 return '';

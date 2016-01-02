@@ -1,16 +1,15 @@
-%s:22 UndefError Trying to inherit from unknown class \undef
-%s:43 UndefError Trying to inherit from unknown class \undef
-%s:22 UndefError Property of undeclared type \undef
-%s:16 UndefError Parameter of undeclared type \undef
-%s:34 RedefineError Function f defined at %s:34 was previously defined at %s:16
-%s:34 UndefError Parameter of undeclared type \undef
+%s:22 UndefError Class extends undeclared class \undef
+%s:43 UndefError Class extends undeclared class \undef
+%s:22 TypeError Property of undeclared type \undef
+%s:16 TypeError Parameter of undeclared type \undef
+%s:34 TypeError Parameter of undeclared type \undef
 %s:6 UndefError Catching undeclared class \undef
 %s:9 UndefError Static call to undeclared method \c::staticmethod
-%s:13 UndefError Instanceof check on undeclared class \undef
-%s:25 UndefError Reference to unknown parent class from \f
-%s:25 UndefError Reference to parent of parentless class \f
-%s:28 UndefError Can't access undeclared property \c->undef
-%s:31 AvailError Missing property with name 'undef'
-%s:34 VarError Variable $v is not defined
-%s:37 UndefError Cannot reference parent from trait \t
-%s:40 UndefError Reference to unknown parent class from \g
+%s:13 UndefError Checking instanceof against undeclared class \undef
+%s:25 UndefError Reference to undeclared parent class from \f
+%s:25 UndefError Reference to parent of class \f that does not extend anything
+%s:28 UndefError Reference to undeclared property \c->undef
+%s:31 UndefError Reference to undeclared property undef
+%s:34 UndefError Call to method f from undeclared class \undef
+%s:37 UndefError Reference to parent from trait \t
+%s:40 UndefError Reference to undeclared parent class from \g

@@ -1,2 +1,2 @@
-%s:7 TypeError Return int|string but test() is declared to return array
+%s:7 TypeError Returning type int|string but test() is declared to return array
 %s:10 TypeError Argument 1 (arg) is int[] but \test() takes int|string defined at %s:6

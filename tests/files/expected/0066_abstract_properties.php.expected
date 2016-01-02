@@ -1,1 +1,1 @@
-%s:7 UndefError Can't access undeclared property \abstractproperties->things2
+%s:7 UndefError Reference to undeclared property \abstractproperties->things2

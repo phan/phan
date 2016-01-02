@@ -1,1 +1,1 @@
-%s:4 AvailError Missing property with name 'missing_property'
+%s:4 UndefError Reference to undeclared property missing_property

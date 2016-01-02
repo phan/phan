@@ -1,2 +1,2 @@
-%s:4 AvailError Missing property with name 'undef_prop_a'
-%s:5 UndefError Can't access undeclared property \c->undef_prop_b
+%s:4 UndefError Reference to undeclared property undef_prop_a
+%s:5 UndefError Reference to undeclared property \c->undef_prop_b
