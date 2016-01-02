@@ -1,14 +1,14 @@
-%s:22 PhanUndeclaredExtendedClass Class extends undeclared class \undef
-%s:43 PhanUndeclaredExtendedClass Class extends undeclared class \undef
-%s:22 PhanUndeclaredTypeProperty Property of undeclared type \undef
-%s:16 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
-%s:34 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
 %s:6 PhanUndeclaredClassCatch Catching undeclared class \undef
 %s:9 PhanUndeclaredStaticMethod Static call to undeclared method \c::staticmethod
 %s:13 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \undef
+%s:16 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
+%s:22 PhanUndeclaredExtendedClass Class extends undeclared class \undef
+%s:22 PhanUndeclaredTypeProperty Property of undeclared type \undef
 %s:25 PhanParentlessClass Reference to parent of class \f that does not extend anything
 %s:28 PhanUndeclaredProperty Reference to undeclared property \c->undef
 %s:31 PhanUndeclaredProperty Reference to undeclared property undef
 %s:34 PhanUndeclaredClassMethod Call to method f from undeclared class \undef
+%s:34 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
 %s:37 PhanTraitParentReference Reference to parent from trait \t
 %s:40 PhanParentlessClass Reference to parent of class \g that does not extend anything
+%s:43 PhanUndeclaredExtendedClass Class extends undeclared class \undef

@@ -88,14 +88,14 @@ class Log {
         }
 
         if($category & $log->output_mask) {
-            $ukey = md5(implode('|', [
+            // This needs to be a sortable key so that output
+            // is in the expected order
+            $ukey = implode('|', [
                 $file,
-                $lineno,
-                $category,
+                str_pad((string)$lineno, 5, '0', STR_PAD_LEFT),
                 $type,
-                $severity,
                 $message
-            ]));
+            ]);
             $log->msgs[$ukey] = [
                 'file' => $file,
                 'lineno' => $lineno,
@@ -132,40 +132,44 @@ class Log {
             }
         }
 
-		switch($log->output_mode) {
-			case 'text':
-				foreach($log->msgs as $e) {
-                    $print_closure(
-                        "{$e['file']}:{$e['lineno']}"
-                        . " {$e['type']}"
-                        . " {$e['message']}\n"
-                    );
-				}
-				break;
-            case 'codeclimate':
-                foreach($log->msgs as $e) {
-                    $severity = 'info';
-                    switch ($e['severity']) {
-                    case Issue::SEVERITY_CRITICAL:
-                        $severity = 'critical';
-                        break;
-                    case Issue::SEVERITY_NORMAL:
-                        $severity = 'normal';
-                        break;
-                    case Issue::SEVERITY_LOW:
-                        $severity = 'info';
-                        break;
-                    }
+        // Sort messages by file name and line number in
+        // ascending order
+        ksort($log->msgs);
 
-                    $print_closure(
-                        json_encode([
-                            'type' => 'issue',
-                            'check_name' => $e['type'],
-                            'description' => Issue::CATEGORY_NAME[$e['category']] . ' ' . $e['type'] . ' ' . $e['message'],
-                            'categories' => ['Bug Risk'],
-                            'severity' => $severity,
-                            'location' => [
-                                'path' => preg_replace('/^\/code\//', '', $e['file']),
+        switch($log->output_mode) {
+        case 'text':
+            foreach($log->msgs as $e) {
+                $print_closure(
+                    "{$e['file']}:{$e['lineno']}"
+                    . " {$e['type']}"
+                    . " {$e['message']}\n"
+                );
+            }
+            break;
+        case 'codeclimate':
+            foreach($log->msgs as $e) {
+                $severity = 'info';
+                switch ($e['severity']) {
+                case Issue::SEVERITY_CRITICAL:
+                    $severity = 'critical';
+                    break;
+                case Issue::SEVERITY_NORMAL:
+                    $severity = 'normal';
+                    break;
+                case Issue::SEVERITY_LOW:
+                    $severity = 'info';
+                    break;
+                }
+
+                $print_closure(
+                    json_encode([
+                        'type' => 'issue',
+                        'check_name' => $e['type'],
+                        'description' => Issue::CATEGORY_NAME[$e['category']] . ' ' . $e['type'] . ' ' . $e['message'],
+                        'categories' => ['Bug Risk'],
+                        'severity' => $severity,
+                        'location' => [
+                            'path' => preg_replace('/^\/code\//', '', $e['file']),
                                 'lines' => [
                                     'begin' => $e['lineno'],
                                     'end' => $e['lineno'],
@@ -173,16 +177,16 @@ class Log {
                             ],
                         ], JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE) . chr(0)
                     );
-                }
-                break;
-		}
+            }
+            break;
+        }
 
         $log->msgs = [];
 
         if ($fp) {
             fclose($fp);
         }
-	}
+    }
 }
 
 set_error_handler('\\phan\\Log::errorHandler', -1);

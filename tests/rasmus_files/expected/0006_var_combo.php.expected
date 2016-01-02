@@ -1,5 +1,5 @@
 %s:3 PhanTypeMismatchReturn Returning type int but func() is declared to return array
-%s:5 PhanStaticCallToNonStatic Static call to non-static method \a::func() defined at %s:3
 %s:5 PhanParamTooFew Call with 0 arg(s) to \a::func() which requires 1 arg(s) defined at %s:3
+%s:5 PhanStaticCallToNonStatic Static call to non-static method \a::func() defined at %s:3
 %s:6 PhanStaticCallToNonStatic Static call to non-static method \a::func() defined at %s:3
 %s:6 PhanTypeMismatchArgument Argument 1 (arg) is array but \a::func() takes int defined at %s:3
