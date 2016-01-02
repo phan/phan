@@ -9,3 +9,19 @@
 %s:37 PhanNoopProperty Unused property
 %s:42 PhanNoopVariable Unused variable
 %s:48 PhanParamReqAfterOpt Required argument follows optional
+%s:99 PhanTypeArraySuspicious Suspicious array access to bool
+%s:112 PhanTypeInstantiateAbstract Instantiation of abstract class \c6
+%s:115 PhanTypeInstantiateInterface Instantiation of interface \c7
+%s:136 PhanTypeMismatchDefault Default value for int $p can't be bool
+%s:139 PhanTypeMismatchReturn Returning type string but f() is declared to return int
+%s:142 PhanTypeMissingReturn Method \c9::f is declared to return int but has no return value
+%s:145 PhanUndeclaredClassMethod Call to method f from undeclared class \f
+%s:151 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
+%s:160 PhanParentlessClass Reference to parent of class \c12 that does not extend anything
+%s:160 PhanUndeclaredTypeProperty Property of undeclared type \undef
+%s:163 PhanTraitParentReference Reference to parent from trait \t1
+%s:179 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \undef
+%s:182 PhanUndeclaredClassMethod Call to method f5 from undeclared class \undef
+%s:182 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
+%s:191 PhanUndeclaredExtendedClass Class extends undeclared class \undef
+%s:204 PhanUndeclaredProperty Reference to undeclared property \c14->undef

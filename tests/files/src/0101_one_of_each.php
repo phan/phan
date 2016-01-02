@@ -11,7 +11,7 @@ print C2::$p;
 // Issue::PhanCompatibleExpressionPHP7
 
 // Issue::PhanCompatiblePHP7
-$c->$m[0]();
+$v1->$v2[0]();
 
 // Issue::PhanContextNotObject
 new parent;
@@ -38,8 +38,8 @@ class C4 {
 }
 
 // Issue::PhanNoopVariable
-$a = 42;
-$a;
+$v3 = 42;
+$v3;
 
 // Issue::PhanNoopZeroReferences
 class C5 {}
@@ -96,6 +96,7 @@ function f2($p1 = null, $p2) {}
 
 
 // Issue::PhanTypeArraySuspicious
+$v4 = false; if($v4[1]) {}
 
 
 // Issue::PhanTypeComparisonFromArray
@@ -108,10 +109,10 @@ function f2($p1 = null, $p2) {}
 
 
 // Issue::PhanTypeInstantiateAbstract
-
+abstract class C6 {} (new C6);
 
 // Issue::PhanTypeInstantiateInterface
-
+interface C7 {} (new C7);
 
 // Issue::PhanTypeInvalidLeftOperand
 
@@ -132,34 +133,34 @@ function f2($p1 = null, $p2) {}
 
 
 // Issue::PhanTypeMismatchProperty
-
+function f3(int $p = false) {}
 
 // Issue::PhanTypeMismatchReturn
-
+class C8 { function f() : int { return 'string'; } }
 
 // Issue::PhanTypeMissingReturn
-
+class C9 { function f() : int {} }
 
 // Issue::PhanTypeNonVarPassByRef
-
+class C10 { static function f(&$v) {} } F::f('string');
 
 // Issue::PhanTypeParentConstructorCalled
 
 
 // Issue::PhanUndeclaredTypeParameter
-
+function f4(Undef $p) {}
 
 // Issue::PhanUndeclaredTypeProperty
-
+class C11 { /** @var Undef */ public $p; }
 
 // Issue::PhanEmptyFile
 
 
 // Issue::PhanParentlessClass
-
+class C12 { function f() { $v = parent::f(); } }
 
 // Issue::PhanTraitParentReference
-
+trait T1 { function f() { return parent::f(); } }
 
 // Issue::PhanUnanalyzable
 
@@ -174,10 +175,11 @@ function f2($p1 = null, $p2) {}
 
 
 // Issue::PhanUndeclaredClassInstanceof
-
+$v5 = null;
+if ($v5 instanceof Undef) {}
 
 // Issue::PhanUndeclaredClassMethod
-
+function f5(Undef $p) { $p->f5(); }
 
 // Issue::PhanUndeclaredClassReference
 
@@ -186,7 +188,7 @@ function f2($p1 = null, $p2) {}
 
 
 // Issue::PhanUndeclaredExtendedClass
-
+class C13 extends Undef {}
 
 // Issue::PhanUndeclaredFunction
 
@@ -198,7 +200,8 @@ function f2($p1 = null, $p2) {}
 
 
 // Issue::PhanUndeclaredProperty
-
+class C14 {}
+$v6 = (new C14)->undef;
 
 // Issue::PhanUndeclaredStaticMethod
 
