@@ -7,7 +7,7 @@ use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\ClassNameVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Exception\AccessException;
+use \Phan\Exception\IssueException;
 use \Phan\Exception\TypeException;
 use \Phan\Issue;
 use \Phan\Language\Context;
@@ -300,14 +300,8 @@ abstract class ClassElementVisitor extends KindVisitorImplementation {
                 $property_name,
                 $this->context
             );
-        } catch (AccessException $exception) {
-            Log::err(
-                Log::EACCESS,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-
+        } catch (IssueException $exception) {
+            $exception->getIssueInstance()();
             return '';
         }
 

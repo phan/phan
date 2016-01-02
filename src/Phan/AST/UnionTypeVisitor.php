@@ -6,7 +6,6 @@ use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analyze\BinaryOperatorFlagVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Exception\NodeException;
@@ -914,14 +913,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             ))->getProperty($node->children['prop']);
 
             return $property->getUnionType();
-        } catch (AccessException $exception) {
-            Log::err(
-                Log::EACCESS,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-        } catch (IssueException $exception) {
+        }  catch (IssueException $exception) {
             $exception->getIssueInstance()();
         } catch (CodeBaseException $exception) {
             $property_name = $node->children['prop'];
@@ -1074,13 +1066,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                     );
 
                     return $method->getUnionType();
-                } catch (AccessException $exception) {
-                    Log::err(
-                        Log::EACCESS,
-                        $exception->getMessage(),
-                        $this->context->getFile(),
-                        $node->lineno
-                    );
+                }  catch (IssueException $exception) {
+                    $exception->getIssueInstance()();
                     return new UnionType();
                 }
             }

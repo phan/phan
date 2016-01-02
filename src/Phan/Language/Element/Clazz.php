@@ -2,8 +2,9 @@
 namespace Phan\Language\Element;
 
 use \Phan\CodeBase;
-use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\IssueException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Constant;
 use \Phan\Language\Element\Method;
@@ -333,7 +334,7 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return Property
      * A property with the given name
      *
-     * @throws AccessException
+     * @throws IssueException
      * An exception may be thrown if the caller does not
      * have access to the given property from the given
      * context
@@ -358,13 +359,21 @@ class Clazz extends TypedStructuralElement implements Addressable {
             && !$this->hasMethodWithName($code_base, '__set')
         ) {
             if ($property->isPrivate()) {
-                throw new AccessException(
-                    "Cannot access private property {$this->getFQSEN()}::\${$property->getName()}"
+                throw new IssueException(
+                    Issue::fromType(Issue::AccessPropertyPrivate)(
+                        $context->getFile(),
+                        $context->getLineNumberStart(),
+                        [ "{$this->getFQSEN()}::\${$property->getName()}" ]
+                    )
                 );
             }
             if ($property->isProtected()) {
-                throw new AccessException(
-                    "Cannot access protected property {$this->getFQSEN()}::\${$property->getName()}"
+                throw new IssueException(
+                    Issue::fromType(Issue::AccessPropertyProtected)(
+                        $context->getFile(),
+                        $context->getLineNumberStart(),
+                        [ "{$this->getFQSEN()}::\${$property->getName()}" ]
+                    )
                 );
             }
         }

@@ -4,7 +4,6 @@ namespace Phan\Analyze\ClassName;
 use \Phan\Analyze\ClassNameVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\Exception\AccessException;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;

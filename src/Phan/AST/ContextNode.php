@@ -521,16 +521,12 @@ class ContextNode {
      *
      * @throws IssueException
      * An exception is thrown if we can't find the given
-     * class
+     * class or if we don't have access to the property (its
+     * private or protected). 
      *
      * @throws TypeException
      * An exception may be thrown if the only viable candidate
      * is a non-class type.
-     *
-     * @throws AccessException
-     * An exception is thrown if the property is private or
-     * protected and we don't have access to it from this
-     * context
      *
      * @throws UnanalyzableException
      * An exception is thrown if we hit a construct in which

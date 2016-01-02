@@ -7,8 +7,8 @@ use \Phan\Analyze\Analyzable;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
-use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\IssueException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
 use \Phan\Issue;
@@ -279,14 +279,8 @@ class AssignmentVisitor extends KindVisitorImplementation {
                 $property_name,
                 $this->context
             );
-        } catch (AccessException $exception) {
-            Log::err(
-                Log::EACCESS,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-
+        } catch (IssueException $exception) {
+            $exception->getIssueInstance()();
             return $this->context;
         }
 
