@@ -144,12 +144,26 @@ class Log {
 				break;
             case 'codeclimate':
                 foreach($log->msgs as $e) {
+                    $severity = 'info';
+                    switch ($e['severity']) {
+                    case Issue::SEVERITY_CRITICAL:
+                        $severity = 'critical';
+                        break;
+                    case Issue::SEVERITY_NORMAL:
+                        $severity = 'normal';
+                        break;
+                    case Issue::SEVERITY_LOW:
+                        $severity = 'info';
+                        break;
+                    }
+
                     $print_closure(
                         json_encode([
                             'type' => 'issue',
                             'check_name' => $e['type'],
                             'description' => Issue::CATEGORY_NAME[$e['category']] . ' ' . $e['type'] . ' ' . $e['message'],
                             'categories' => ['Bug Risk'],
+                            'severity' => $severity,
                             'location' => [
                                 'path' => preg_replace('/^\/code\//', '', $e['file']),
                                 'lines' => [
