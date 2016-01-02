@@ -1,2 +1,2 @@
-%s:3 TypeError Parameter of undeclared type \A\closure
-%s:4 TypeError Argument 1 (c) is callable but \A\f() takes \A\closure defined at %s:3
+%s:3 PhanUndeclaredTypeParameter Parameter of undeclared type \A\closure
+%s:4 PhanTypeMismatchArgument Argument 1 (c) is callable but \A\f() takes \A\closure defined at %s:3

@@ -1,1 +1,1 @@
-%s:11 TypeError Call to method on non-class type null
+%s:11 PhanNonClassMethodCall Call to method on non-class type null

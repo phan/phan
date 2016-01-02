@@ -1,1 +1,1 @@
-%s:7 UndefError Reference to undeclared property \abstractproperties->things2
+%s:7 PhanUndeclaredProperty Reference to undeclared property \abstractproperties->things2

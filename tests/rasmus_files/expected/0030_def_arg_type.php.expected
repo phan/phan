@@ -1,1 +1,1 @@
-%s:4 TypeError Default value for int $arg2 can't be float
+%s:4 PhanTypeMismatchDefault Default value for int $arg2 can't be float

@@ -1,15 +1,15 @@
-%s:22 UndefError Class extends undeclared class \undef
-%s:43 UndefError Class extends undeclared class \undef
-%s:22 TypeError Property of undeclared type \undef
-%s:16 TypeError Parameter of undeclared type \undef
-%s:34 TypeError Parameter of undeclared type \undef
-%s:6 UndefError Catching undeclared class \undef
-%s:9 UndefError Static call to undeclared method \c::staticmethod
-%s:13 UndefError Checking instanceof against undeclared class \undef
-%s:25 UndefError Reference to undeclared parent class from \f
-%s:25 UndefError Reference to parent of class \f that does not extend anything
-%s:28 UndefError Reference to undeclared property \c->undef
-%s:31 UndefError Reference to undeclared property undef
-%s:34 UndefError Call to method f from undeclared class \undef
-%s:37 UndefError Reference to parent from trait \t
-%s:40 UndefError Reference to undeclared parent class from \g
+%s:22 PhanUndeclaredClassInherit Class extends undeclared class \undef
+%s:43 PhanUndeclaredClassInherit Class extends undeclared class \undef
+%s:22 PhanUndeclaredTypeProperty Property of undeclared type \undef
+%s:16 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
+%s:34 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
+%s:6 PhanUndeclaredClassCatch Catching undeclared class \undef
+%s:9 PhanUndeclaredStaticMethod Static call to undeclared method \c::staticmethod
+%s:13 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \undef
+%s:25 PhanUndeclaredClassParent Reference to undeclared parent class from \f
+%s:25 PhanParentlessClass Reference to parent of class \f that does not extend anything
+%s:28 PhanUndeclaredProperty Reference to undeclared property \c->undef
+%s:31 PhanUndeclaredProperty Reference to undeclared property undef
+%s:34 PhanUndeclaredClassMethod Call to method f from undeclared class \undef
+%s:37 PhanTraitParentReference Reference to parent from trait \t
+%s:40 PhanUndeclaredClassParent Reference to undeclared parent class from \g

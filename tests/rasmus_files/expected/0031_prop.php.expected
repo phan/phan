@@ -1,1 +1,1 @@
-%s:9 TypeError Argument 1 (arg) is int[] but \a::test() takes string defined at %s:4
+%s:9 PhanTypeMismatchArgument Argument 1 (arg) is int[] but \a::test() takes string defined at %s:4

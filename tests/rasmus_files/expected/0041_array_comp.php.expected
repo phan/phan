@@ -1,2 +1,2 @@
-%s:3 TypeError array to int comparison
-%s:4 TypeError array to int comparison
+%s:3 PhanTypeComparisonFromArray array to int comparison
+%s:4 PhanTypeComparisonFromArray array to int comparison

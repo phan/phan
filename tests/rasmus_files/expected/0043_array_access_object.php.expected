@@ -1,1 +1,1 @@
-%s:4 TypeError Suspicious array access to \a
+%s:4 PhanTypeArraySuspicious Suspicious array access to \a

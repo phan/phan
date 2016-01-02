@@ -6,146 +6,138 @@ namespace Phan;
  */
 class Issue {
 
-    // Issue::CLASS_UNDEFINED
-    const EmptyFile                 = 'EmptyFile';
-    const ParentlessClass           = 'ParentlessClass';
-    const TraitParentReference      = 'TraitParentReference';
-    const UndeclaredClassCatch      = 'UndeclaredClassCatch';
-    const UndeclaredClassConstant   = 'UndeclaredClassConstant';
-    const UndeclaredClassInherit    = 'UndeclaredClassInherit';
-    const UndeclaredClassInstanceof = 'UndeclaredClassInstanceof';
-    const UndeclaredClassMethod     = 'UndeclaredClassMethod';
-    const UndeclaredClassParent     = 'UndeclaredClassParent';
-    const UndeclaredClassReference  = 'UndeclaredClassReference';
-    const UndeclaredConstant        = 'UndeclaredConstant';
-    const UndeclaredFunction        = 'UndeclaredFunction';
-    const UndeclaredInterface       = 'UndeclaredInterface';
-    const UndeclaredMethod          = 'UndeclaredMethod';
-    const UndeclaredParentClass     = 'UndeclaredParentClass';
-    const UndeclaredProperty        = 'UndeclaredProperty';
-    const UndeclaredStaticMethod    = 'UndeclaredStaticMethod';
-    const UndeclaredStaticProperty  = 'UndeclaredStaticProperty';
-    const UndeclaredTrait           = 'UndeclaredTrait';
-    const UndeclaredTypeParameter   = 'UndeclaredTypeParameter';
-    const UndeclaredTypeProperty    = 'UndeclaredTypeProperty';
-    const UndeclaredVariable        = 'UndeclaredVariable';
+    // Issue::CATEGORY_UNDEFINED
+    const EmptyFile                 = 'PhanEmptyFile';
+    const ParentlessClass           = 'PhanParentlessClass';
+    const TraitParentReference      = 'PhanTraitParentReference';
+    const UndeclaredClassCatch      = 'PhanUndeclaredClassCatch';
+    const UndeclaredClassConstant   = 'PhanUndeclaredClassConstant';
+    const UndeclaredClassInherit    = 'PhanUndeclaredClassInherit';
+    const UndeclaredClassInstanceof = 'PhanUndeclaredClassInstanceof';
+    const UndeclaredClassMethod     = 'PhanUndeclaredClassMethod';
+    const UndeclaredClassParent     = 'PhanUndeclaredClassParent';
+    const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
+    const UndeclaredConstant        = 'PhanUndeclaredConstant';
+    const UndeclaredFunction        = 'PhanUndeclaredFunction';
+    const UndeclaredInterface       = 'PhanUndeclaredInterface';
+    const UndeclaredMethod          = 'PhanUndeclaredMethod';
+    const UndeclaredParentClass     = 'PhanUndeclaredParentClass';
+    const UndeclaredProperty        = 'PhanUndeclaredProperty';
+    const UndeclaredStaticMethod    = 'PhanUndeclaredStaticMethod';
+    const UndeclaredStaticProperty  = 'PhanUndeclaredStaticProperty';
+    const UndeclaredTrait           = 'PhanUndeclaredTrait';
+    const UndeclaredTypeParameter   = 'PhanUndeclaredTypeParameter';
+    const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
+    const UndeclaredVariable        = 'PhanUndeclaredVariable';
 
-    // Issue::CLASS_TYPE
-    const NonClassMethodCall        = 'NonClassMethodCall';
-    const TypeArrayOperator         = 'TypeArrayOperator';
-    const TypeArraySuspicious       = 'TypeArraySuspicious';
-    const TypeComparisonFromArray   = 'TypeComparisonFromArray';
-    const TypeComparisonToArray     = 'TypeComparisonToArray';
-    const TypeConversionFromArray   = 'TypeConversionFromArray';
-    const TypeInstantiateAbstract   = 'TypeInstantiateAbstract';
-    const TypeInstantiateInterface  = 'TypeInstantiateInterface';
-    const TypeInvalidLeftOperand    = 'TypeInvalidLeftOperand';
-    const TypeInvalidRightOperand   = 'TypeInvalidRightOperand';
-    const TypeMismatchArgument      = 'TypeMismatchArgument';
-    const TypeMismatchArgumentInternal = 'TypeMismatchArgumentInternal';
-    const TypeMismatchDefault       = 'TypeMismatchDefault';
-    const TypeMismatchForeach       = 'TypeMismatchForeach';
-    const TypeMismatchProperty      = 'TypeMismatchProperty';
-    const TypeMismatchReturn        = 'TypeMismatchReturn';
-    const TypeMissingReturn         = 'TypeMissingReturn';
-    const TypeNonVarPassByRef       = 'TypeNonVarPassByRef';
-    const TypeParentConstructorCalled = 'TypeParentConstructorCalled';
+    // Issue::CATEGORY_TYPE
+    const NonClassMethodCall        = 'PhanNonClassMethodCall';
+    const TypeArrayOperator         = 'PhanTypeArrayOperator';
+    const TypeArraySuspicious       = 'PhanTypeArraySuspicious';
+    const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
+    const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
+    const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
+    const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
+    const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
+    const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
+    const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
+    const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
+    const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
+    const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
+    const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
+    const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
+    const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
+    const TypeMissingReturn         = 'PhanTypeMissingReturn';
+    const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
+    const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
 
-    // Issue::CLASS_ANALYSIS
-    const Unanalyzable              = 'Unanalyzable';
+    // Issue::CATEGORY_ANALYSIS
+    const Unanalyzable              = 'PhanUnanalyzable';
 
-    // Issue::CLASS_VARIABLE
-    const VariableUseClause         = 'VariableUseClause';
+    // Issue::CATEGORY_VARIABLE
+    const VariableUseClause         = 'PhanVariableUseClause';
 
-    // Issue::CLASS_STATIC
-    const StaticCallToNonStatic     = 'StaticCallToNonStatic';
-    const NonStaticSelf             = 'NonStaticSelf';
+    // Issue::CATEGORY_STATIC
+    const StaticCallToNonStatic     = 'PhanStaticCallToNonStatic';
+    const NonStaticSelf             = 'PhanNonStaticSelf';
 
-    // Issue::CLASS_CONTEXT
-    const ContextNotObject          = 'ContextNotObject';
+    // Issue::CATEGORY_CONTEXT
+    const ContextNotObject          = 'PhanContextNotObject';
 
-    // Issue::CLASS_DEPRECATED
-    const DeprecatedFunction        = 'DeprecatedFunction';
+    // Issue::CATEGORY_DEPRECATED
+    const DeprecatedFunction        = 'PhanDeprecatedFunction';
 
-    // Issue::CLASS_PARAMETER
-    const ParamReqAfterOpt          = 'ParamReqAfterOpt';
-    const ParamSpecial1             = 'ParamSpecial1';
-    const ParamSpecial2             = 'ParamSpecial2';
-    const ParamSpecial3             = 'ParamSpecial3';
-    const ParamSpecial4             = 'ParamSpecial4';
-    const ParamTypeMismatch         = 'ParamTypeMismatch';
-    const ParamTooFew               = 'ParamTooFew';
-    const ParamTooFewInternal       = 'ParamTooFewInternal';
-    const ParamTooMany              = 'ParamTooMany';
-    const ParamTooManyInternal      = 'ParamTooManyInternal';
+    // Issue::CATEGORY_PARAMETER
+    const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
+    const ParamSpecial1             = 'PhanParamSpecial1';
+    const ParamSpecial2             = 'PhanParamSpecial2';
+    const ParamSpecial3             = 'PhanParamSpecial3';
+    const ParamSpecial4             = 'PhanParamSpecial4';
+    const ParamTooFew               = 'PhanParamTooFew';
+    const ParamTooFewInternal       = 'PhanParamTooFewInternal';
+    const ParamTooMany              = 'PhanParamTooMany';
+    const ParamTooManyInternal      = 'PhanParamTooManyInternal';
+    const ParamTypeMismatch         = 'PhanParamTypeMismatch';
 
-    // Issue::CLASS_NOOP
-    const NoopProperty              = 'NoopProperty';
-    const NoopArray                 = 'NoopArray';
-    const NoopConstant              = 'NoopConstant';
-    const NoopClosure               = 'NoopClosure';
-    const NoopVariable              = 'NoopVariable';
-    const NoopZeroReferences        = 'NoopZeroReferences';
+    // Issue::CATEGORY_NOOP
+    const NoopArray                 = 'PhanNoopArray';
+    const NoopClosure               = 'PhanNoopClosure';
+    const NoopConstant              = 'PhanNoopConstant';
+    const NoopProperty              = 'PhanNoopProperty';
+    const NoopVariable              = 'PhanNoopVariable';
+    const NoopZeroReferences        = 'PhanNoopZeroReferences';
 
-    // Issue::CLASS_REDEFINE
-    const RedefineClass             = 'RedefineClass';
-    const RedefineClassInternal     = 'RedefineClassInternal';
-    const RedefineFunction          = 'RedefineFunction';
-    const RedefineFunctionInternal  = 'RedefineFunctionInternal';
+    // Issue::CATEGORY_REDEFINE
+    const RedefineClass             = 'PhanRedefineClass';
+    const RedefineClassInternal     = 'PhanRedefineClassInternal';
+    const RedefineFunction          = 'PhanRedefineFunction';
+    const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
 
-    // Issue::CLASS_ACCESS
-    const AccessPropertyProtected   = 'AccessPropertyProtected';
-    const AccessPropertyPrivate     = 'AccessPropertyPrivate';
+    // Issue::CATEGORY_ACCESS
+    const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
+    const AccessPropertyProtected   = 'PhanAccessPropertyProtected';
 
+    // Issue::CATEGORY_COMPATIBLE
+    const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
+    const CompatiblePHP7            = 'PhanCompatiblePHP7';
 
-    // Issue::CLASS_COMPATIBLE
-    const CompatiblePHP7            = 'CompatiblePHP7';
-    const CompatibleExpressionPHP7  = 'CompatibleExpressionPHP7';
+	const CATEGORY_ACCESS            = 1<<1;
+	const CATEGORY_ANALYSIS          = 1<<2;
+	const CATEGORY_COMPATIBLE        = 1<<3;
+	const CATEGORY_CONTEXT           = 1<<4;
+	const CATEGORY_DEPRECATED        = 1<<5;
+	const CATEGORY_NOOP              = 1<<6;
+	const CATEGORY_PARAMETER         = 1<<7;
+	const CATEGORY_REDEFINE          = 1<<8;
+	const CATEGORY_STATIC            = 1<<9;
+	const CATEGORY_TYPE              = 1<<10;
+	const CATEGORY_UNDEFINED         = 1<<11;
+	const CATEGORY_VARIABLE          = 1<<12;
 
-	const CLASS_REDEFINE          = 1<<0;
-	const CLASS_UNDEFINED         = 1<<1;
-	const CLASS_TYPE              = 1<<2;
-	const CLASS_PARAMETER         = 1<<3;
-	const CLASS_VARIABLE          = 1<<4;
-	const CLASS_NOOP              = 1<<5;
-	const CLASS_OPTIONAL_REQUIRED = 1<<6;
-	const CLASS_STATIC            = 1<<6;
-	const CLASS_AVAILABLE         = 1<<8;
-	const CLASS_TAINT             = 1<<9;
-	const CLASS_COMPATIBLE        = 1<<10;
-	const CLASS_ACCESS            = 1<<11;
-	const CLASS_DEPRECATED        = 1<<12;
-	const CLASS_ANALYSIS          = 1<<13;
-	const CLASS_CONTEXT           = 1<<14;
-	const CLASS_FATAL             = -1;
-
-    const CLASS_NAME = [
-        self::CLASS_REDEFINE          => 'RedefineError',
-        self::CLASS_UNDEFINED         => 'UndefError',
-        self::CLASS_TYPE              => 'TypeError',
-        self::CLASS_PARAMETER         => 'ParamError',
-        self::CLASS_VARIABLE          => 'VarError',
-        self::CLASS_NOOP              => 'NOOPError',
-        self::CLASS_OPTIONAL_REQUIRED => 'ReqAfterOptError',
-        self::CLASS_STATIC            => 'StaticCallError',
-        self::CLASS_AVAILABLE         => 'AvailError',
-        self::CLASS_TAINT             => 'TaintError',
-        self::CLASS_COMPATIBLE        => 'CompatError',
-        self::CLASS_ACCESS            => 'AccessError',
-        self::CLASS_DEPRECATED        => 'DeprecatedError',
-        self::CLASS_ANALYSIS          => 'Analysis',
-        self::CLASS_CONTEXT           => 'Context',
+    const CATEGORY_NAME = [
+        self::CATEGORY_ACCESS            => 'AccessError',
+        self::CATEGORY_ANALYSIS          => 'Analysis',
+        self::CATEGORY_COMPATIBLE        => 'CompatError',
+        self::CATEGORY_CONTEXT           => 'Context',
+        self::CATEGORY_DEPRECATED        => 'DeprecatedError',
+        self::CATEGORY_NOOP              => 'NOOPError',
+        self::CATEGORY_PARAMETER         => 'ParamError',
+        self::CATEGORY_REDEFINE          => 'RedefineError',
+        self::CATEGORY_STATIC            => 'StaticCallError',
+        self::CATEGORY_TYPE              => 'TypeError',
+        self::CATEGORY_UNDEFINED         => 'UndefError',
+        self::CATEGORY_VARIABLE          => 'VarError',
     ];
 
-    const SEVERITY_LOW      = 1<<0;
-    const SEVERITY_NORMAL   = 1<<1;
-    const SEVERITY_CRITICAL = 1<<2;
+    const SEVERITY_CRITICAL = 0;
+    const SEVERITY_NORMAL   = 1;
+    const SEVERITY_LOW      = 2;
 
     /** @var string */
     private $type;
 
     /** @var int */
-    private $class;
+    private $category;
 
     /** @var int */
     private $severity;
@@ -156,18 +148,18 @@ class Issue {
 
     /**
      * @param string $type
-     * @param int $class
+     * @param int $category
      * @param int $severity
      * @param string $template
      */
     public function __construct(
         string $type,
-        int $class,
+        int $category,
         int $severity,
         string $template
     ) {
         $this->type = $type;
-        $this->class = $class;
+        $this->category = $category;
         $this->severity = $severity;
         $this->template = $template;
     }
@@ -184,240 +176,240 @@ class Issue {
 
         $error_list = [
 
-            // Issue::CLASS_UNDEFINED
-            new Issue(self::EmptyFile, self::CLASS_UNDEFINED, self::SEVERITY_LOW,
+            // Issue::CATEGORY_UNDEFINED
+            new Issue(self::EmptyFile, self::CATEGORY_UNDEFINED, self::SEVERITY_LOW,
                 "Empty file %s"
             ),
-            new Issue(self::ParentlessClass, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::ParentlessClass, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Reference to parent of class %s that does not extend anything"
             ),
-            new Issue(self::UndeclaredClassParent, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredClassParent, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Reference to undeclared parent class from %s"
             ), // TODO: merge with Issue::ParentlessClass ?
-            new Issue(self::UndeclaredParentClass, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredParentClass, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Reference to undeclared parent class %s"
             ), // TODO: merge with Issue::ParentlessClass ?
-            new Issue(self::UndeclaredClassInherit, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredClassInherit, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Class extends undeclared class %s"
             ), // TODO: rename UndeclaredClassExtend
-            new Issue(self::UndeclaredInterface, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredInterface, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Class implements undeclared interface %s"
             ),
-            new Issue(self::UndeclaredTrait, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredTrait, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Class uses undeclared trait %s"
             ),
-            new Issue(self::UndeclaredClassCatch, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredClassCatch, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Catching undeclared class %s"
             ),
-            new Issue(self::UndeclaredClassConstant, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredClassConstant, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Reference to constant %s from undeclared class %s"
             ),
-            new Issue(self::UndeclaredClassInstanceof, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredClassInstanceof, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Checking instanceof against undeclared class %s"
             ),
-            new Issue(self::UndeclaredClassMethod, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredClassMethod, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Call to method %s from undeclared class %s"
             ),
-            new Issue(self::UndeclaredClassReference, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+            new Issue(self::UndeclaredClassReference, self::CATEGORY_UNDEFINED, self::SEVERITY_NORMAL,
                 "Reference to undeclared class %s"
             ),
-            new Issue(self::UndeclaredConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+            new Issue(self::UndeclaredConstant, self::CATEGORY_UNDEFINED, self::SEVERITY_NORMAL,
                 "Reference to undeclared constant %s"
             ),
-            new Issue(self::UndeclaredFunction, self::CLASS_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredFunction, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Call to undeclared function %s"
             ),
-            new Issue(self::UndeclaredMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+            new Issue(self::UndeclaredMethod, self::CATEGORY_UNDEFINED, self::SEVERITY_NORMAL,
                 "Call to undeclared method %s"
             ),
-            new Issue(self::UndeclaredStaticMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+            new Issue(self::UndeclaredStaticMethod, self::CATEGORY_UNDEFINED, self::SEVERITY_NORMAL,
                 "Static call to undeclared method %s"
             ),
-            new Issue(self::UndeclaredProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+            new Issue(self::UndeclaredProperty, self::CATEGORY_UNDEFINED, self::SEVERITY_NORMAL,
                 "Reference to undeclared property %s"
             ),
-            new Issue(self::UndeclaredStaticProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
+            new Issue(self::UndeclaredStaticProperty, self::CATEGORY_UNDEFINED, self::SEVERITY_NORMAL,
                 "Static property '%s' on %s is undeclared"
             ),
-            new Issue(self::TraitParentReference, self::CLASS_UNDEFINED, self::SEVERITY_LOW,
+            new Issue(self::TraitParentReference, self::CATEGORY_UNDEFINED, self::SEVERITY_LOW,
                 "Reference to parent from trait %s"
             ),
-            new Issue(self::UndeclaredVariable, self::CLASS_UNDEFINED, self::SEVERITY_LOW,
+            new Issue(self::UndeclaredVariable, self::CATEGORY_UNDEFINED, self::SEVERITY_LOW,
                 "Variable \$%s is undeclared"
             ),
 
-            // Issue::CLASS_ANALYSIS
-            new Issue(self::Unanalyzable, self::CLASS_UNDEFINED, self::SEVERITY_LOW,
+            // Issue::CATEGORY_ANALYSIS
+            new Issue(self::Unanalyzable, self::CATEGORY_UNDEFINED, self::SEVERITY_LOW,
                 "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/etsy/phan/issues/new."
             ),
 
-            // Issue::CLASS_TYPE
-            new Issue(self::TypeMismatchProperty, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            // Issue::CATEGORY_TYPE
+            new Issue(self::TypeMismatchProperty, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Assigning %s to property but %s is %s"
             ),
-            new Issue(self::TypeMismatchDefault, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeMismatchDefault, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Default value for %s \$%s can't be %s"
             ),
-            new Issue(self::TypeMismatchArgument, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeMismatchArgument, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Argument %d (%s) is %s but %s() takes %s defined at %s:%d"
             ),
-            new Issue(self::TypeMismatchArgumentInternal, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeMismatchArgumentInternal, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Argument %d (%s) is %s but %s() takes %s"
             ),
-            new Issue(self::TypeMismatchReturn, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeMismatchReturn, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Returning type %s but %s() is declared to return %s"
             ),
-            new Issue(self::TypeMissingReturn, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeMissingReturn, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Method %s is declared to return %s but has no return value"
             ),
-            new Issue(self::TypeMismatchForeach, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeMismatchForeach, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "%s passed to foreach instead of array"
             ),
-            new Issue(self::TypeArrayOperator, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeArrayOperator, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Invalid array operator"
             ),
-            new Issue(self::TypeArraySuspicious, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeArraySuspicious, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Suspicious array access to %s"
             ),
-            new Issue(self::TypeComparisonToArray, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeComparisonToArray, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "%s to array comparison"
             ),
-            new Issue(self::TypeComparisonFromArray, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeComparisonFromArray, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "array to %s comparison"
             ),
-            new Issue(self::TypeConversionFromArray, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeConversionFromArray, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "array to %s conversion"
             ),
-            new Issue(self::TypeInstantiateAbstract, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeInstantiateAbstract, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Instantiation of abstract class %s"
             ),
-            new Issue(self::TypeInstantiateInterface, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeInstantiateInterface, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Instantiation of interface %s"
             ),
-            new Issue(self::TypeInvalidRightOperand, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeInvalidRightOperand, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Invalid operator: left operand is array and right is not"
             ),
-            new Issue(self::TypeInvalidLeftOperand, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeInvalidLeftOperand, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Invalid operator: right operand is array and left is not"
             ),
-            new Issue(self::TypeParentConstructorCalled, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeParentConstructorCalled, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Must call parent::__construct() from %s which extends %s"
             ),
-            new Issue(self::TypeNonVarPassByRef, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::TypeNonVarPassByRef, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Only variables can be passed by reference at argument %d of %s()"
             ),
-            new Issue(self::UndeclaredTypeParameter, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::UndeclaredTypeParameter, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Parameter of undeclared type %s"
             ),
-            new Issue(self::UndeclaredTypeProperty, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+            new Issue(self::UndeclaredTypeProperty, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Property of undeclared type %s"
             ),
-            new Issue(self::NonClassMethodCall, self::CLASS_TYPE, self::SEVERITY_CRITICAL,
+            new Issue(self::NonClassMethodCall, self::CATEGORY_TYPE, self::SEVERITY_CRITICAL,
                 "Call to method on non-class type %s"
             ),
 
-            // Issue::CLASS_VARIABLE
-            new Issue(self::VariableUseClause, self::CLASS_VARIABLE, self::SEVERITY_CRITICAL,
+            // Issue::CATEGORY_VARIABLE
+            new Issue(self::VariableUseClause, self::CATEGORY_VARIABLE, self::SEVERITY_CRITICAL,
                 "Non-variables not allowed within use clause"
             ),
 
-            // Issue::CLASS_STATIC
-            new Issue(self::StaticCallToNonStatic, self::CLASS_STATIC, self::SEVERITY_NORMAL,
+            // Issue::CATEGORY_STATIC
+            new Issue(self::StaticCallToNonStatic, self::CATEGORY_STATIC, self::SEVERITY_NORMAL,
                 "Static call to non-static method %s defined at %s:%d"
             ),
 
-            // Issue::CLASS_CONTEXT
-            new Issue(self::NonStaticSelf, self::CLASS_CONTEXT, self::SEVERITY_CRITICAL,
+            // Issue::CATEGORY_CONTEXT
+            new Issue(self::NonStaticSelf, self::CATEGORY_CONTEXT, self::SEVERITY_CRITICAL,
                 "Reference to self when not in object context"
             ),
-            new Issue(self::ContextNotObject, self::CLASS_CONTEXT, self::SEVERITY_CRITICAL,
+            new Issue(self::ContextNotObject, self::CATEGORY_CONTEXT, self::SEVERITY_CRITICAL,
                 "Cannot access %s when not in object context"
             ),
 
-            // Issue::CLASS_DEPRECATED
-            new Issue(self::DeprecatedFunction, self::CLASS_DEPRECATED, self::SEVERITY_NORMAL,
+            // Issue::CATEGORY_DEPRECATED
+            new Issue(self::DeprecatedFunction, self::CATEGORY_DEPRECATED, self::SEVERITY_NORMAL,
                 "Call to deprecated function %s() defined at %s:%d"
             ),
 
-            // Issue::CLASS_PARAMETER
-            new Issue(self::ParamReqAfterOpt, self::CLASS_PARAMETER, self::SEVERITY_LOW,
+            // Issue::CATEGORY_PARAMETER
+            new Issue(self::ParamReqAfterOpt, self::CATEGORY_PARAMETER, self::SEVERITY_LOW,
                 "Required argument follows optional"
             ),
-            new Issue(self::ParamTooMany, self::CLASS_PARAMETER, self::SEVERITY_LOW,
+            new Issue(self::ParamTooMany, self::CATEGORY_PARAMETER, self::SEVERITY_LOW,
                 "Call with %d arg(s) to %s() which only takes %d arg(s) defined at %s:%d"
             ),
-            new Issue(self::ParamTooManyInternal, self::CLASS_PARAMETER, self::SEVERITY_LOW,
+            new Issue(self::ParamTooManyInternal, self::CATEGORY_PARAMETER, self::SEVERITY_LOW,
                 "Call with %d arg(s) to %s() which only takes %d arg(s)"
             ),
-            new Issue(self::ParamTooFew, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+            new Issue(self::ParamTooFew, self::CATEGORY_PARAMETER, self::SEVERITY_NORMAL,
                 "Call with %d arg(s) to %s() which requires %d arg(s) defined at %s:%d"
             ),
-            new Issue(self::ParamTooFewInternal, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+            new Issue(self::ParamTooFewInternal, self::CATEGORY_PARAMETER, self::SEVERITY_NORMAL,
                 "Call with %d arg(s) to %s() which requires %d arg(s)"
             ),
-            new Issue(self::ParamSpecial1, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+            new Issue(self::ParamSpecial1, self::CATEGORY_PARAMETER, self::SEVERITY_NORMAL,
                 "Argument %d (%s) is %s but %s() takes %s when argument %d is %s"
             ),
-            new Issue(self::ParamSpecial2, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+            new Issue(self::ParamSpecial2, self::CATEGORY_PARAMETER, self::SEVERITY_NORMAL,
                 "Argument %d (%s) is %s but %s() takes %s when passed only one argument"
             ),
-            new Issue(self::ParamSpecial3, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+            new Issue(self::ParamSpecial3, self::CATEGORY_PARAMETER, self::SEVERITY_NORMAL,
                 "The last argument to %s must be of type %s"
             ),
-            new Issue(self::ParamSpecial4, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+            new Issue(self::ParamSpecial4, self::CATEGORY_PARAMETER, self::SEVERITY_NORMAL,
                 "The second to last argument to %s must be of type %s"
             ), // TODO: get rid of this
-            new Issue(self::ParamTypeMismatch, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+            new Issue(self::ParamTypeMismatch, self::CATEGORY_PARAMETER, self::SEVERITY_NORMAL,
                 "Argument %d is %s but %s() takes %s"
             ), // TODO: should be a type error. Merge with something else
 
-            // Issue::CLASS_NOOP
-            new Issue(self::NoopProperty, self::CLASS_NOOP, self::SEVERITY_LOW,
+            // Issue::CATEGORY_NOOP
+            new Issue(self::NoopProperty, self::CATEGORY_NOOP, self::SEVERITY_LOW,
                 "Unused property"
             ),
-            new Issue(self::NoopArray, self::CLASS_NOOP, self::SEVERITY_LOW,
+            new Issue(self::NoopArray, self::CATEGORY_NOOP, self::SEVERITY_LOW,
                 "Unused array"
             ),
-            new Issue(self::NoopConstant, self::CLASS_NOOP, self::SEVERITY_LOW,
+            new Issue(self::NoopConstant, self::CATEGORY_NOOP, self::SEVERITY_LOW,
                 "Unused constant"
             ),
-            new Issue(self::NoopClosure, self::CLASS_NOOP, self::SEVERITY_LOW,
+            new Issue(self::NoopClosure, self::CATEGORY_NOOP, self::SEVERITY_LOW,
                 "Unused closure"
             ),
-            new Issue(self::NoopVariable, self::CLASS_NOOP, self::SEVERITY_LOW,
+            new Issue(self::NoopVariable, self::CATEGORY_NOOP, self::SEVERITY_LOW,
                 "Unused variable"
             ),
-            new Issue(self::NoopZeroReferences, self::CLASS_NOOP, self::SEVERITY_LOW,
+            new Issue(self::NoopZeroReferences, self::CATEGORY_NOOP, self::SEVERITY_LOW,
                 "Possibly zero references to %s"
             ),
 
-            // Issue::CLASS_REDEFINE
-            new Issue(self::RedefineClass, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
+            // Issue::CATEGORY_REDEFINE
+            new Issue(self::RedefineClass, self::CATEGORY_REDEFINE, self::SEVERITY_NORMAL,
                 "%s defined at %s:%d was previously defined as %s at %s:%d"
             ),
-            new Issue(self::RedefineClassInternal, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
+            new Issue(self::RedefineClassInternal, self::CATEGORY_REDEFINE, self::SEVERITY_NORMAL,
                 "%s defined at %s:%d was previously defined as %s internally"
             ),
-            new Issue(self::RedefineFunction, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
+            new Issue(self::RedefineFunction, self::CATEGORY_REDEFINE, self::SEVERITY_NORMAL,
                 "Function %s defined at %s:%d was previously defined at %s:%d"
             ),
-            new Issue(self::RedefineFunctionInternal, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
+            new Issue(self::RedefineFunctionInternal, self::CATEGORY_REDEFINE, self::SEVERITY_NORMAL,
                 "Function %s defined at %s:%d was previously defined internally"
             ),
 
-            // Issue::CLASS_ACCESS
-            new Issue(self::AccessPropertyProtected, self::CLASS_ACCESS, self::SEVERITY_CRITICAL,
+            // Issue::CATEGORY_ACCESS
+            new Issue(self::AccessPropertyProtected, self::CATEGORY_ACCESS, self::SEVERITY_CRITICAL,
                 "Cannot access protected property %s"
             ),
-            new Issue(self::AccessPropertyPrivate, self::CLASS_ACCESS, self::SEVERITY_CRITICAL,
+            new Issue(self::AccessPropertyPrivate, self::CATEGORY_ACCESS, self::SEVERITY_CRITICAL,
                 "Cannot access private property %s"
             ),
 
-            // Issue::CLASS_COMPATIBLE
-            new Issue(self::CompatiblePHP7, self::CLASS_COMPATIBLE, self::SEVERITY_NORMAL,
+            // Issue::CATEGORY_COMPATIBLE
+            new Issue(self::CompatiblePHP7, self::CATEGORY_COMPATIBLE, self::SEVERITY_NORMAL,
                 "Expression may not be PHP 7 compatible"
             ),
-            new Issue(self::CompatibleExpressionPHP7, self::CLASS_COMPATIBLE, self::SEVERITY_NORMAL,
+            new Issue(self::CompatibleExpressionPHP7, self::CATEGORY_COMPATIBLE, self::SEVERITY_NORMAL,
                 "%s expression may not be PHP 7 compatible"
             ),
 
@@ -441,8 +433,8 @@ class Issue {
     /**
      * @return int
      */
-    public function getClass() : int {
-        return $this->class;
+    public function getCategory() : int {
+        return $this->category;
     }
 
     /**

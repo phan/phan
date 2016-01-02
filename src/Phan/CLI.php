@@ -23,7 +23,7 @@ class CLI {
         // file_put_contents('/tmp/file', implode("\n", $argv));
 
         // Parse command line args
-        $opts = getopt("f:m:o:c:haqbrpid:s:3:t::");
+        $opts = getopt("f:m:o:c:haqbrpid:s:3:::");
 
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
@@ -76,10 +76,7 @@ class CLI {
                 Log::setFilename($value);
                 break;
             case 'i':
-                Log::setOutputMask(Log::getOutputMask()^Issue::CLASS_UNDEFINED);
-                break;
-            case 't':
-                Config::get()->emit_trace_id = true;
+                Log::setOutputMask(Log::getOutputMask()^Issue::CATEGORY_UNDEFINED);
                 break;
             case '3':
                 Config::get()->exclude_analysis_directory_list =
@@ -160,7 +157,6 @@ Usage: {$argv[0]} [options] [files...]
   -m <mode>       Output mode: text, codeclimate
   -o <filename>   Output filename
   -p              Show progress bar
-  -t              Emit trace IDs on messages (for grouping error types)
   -s <filename>   Save state to the given file and read from it to speed up
                   future executions
   -r              Force a re-analysis of any files passed in even if they haven't

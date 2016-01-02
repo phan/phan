@@ -1,1 +1,1 @@
-%s:8 UndefError Static call to undeclared method \a::func2
+%s:8 PhanUndeclaredStaticMethod Static call to undeclared method \a::func2

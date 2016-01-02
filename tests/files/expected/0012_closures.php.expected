@@ -1,1 +1,1 @@
-%s:13 UndefError Variable $c is undeclared
+%s:13 PhanUndeclaredVariable Variable $c is undeclared

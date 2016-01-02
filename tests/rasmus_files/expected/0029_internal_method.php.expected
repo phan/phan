@@ -1,1 +1,1 @@
-%s:3 TypeError Argument 1 (format) is int but \datetime::format() takes string
+%s:3 PhanTypeMismatchArgumentInternal Argument 1 (format) is int but \datetime::format() takes string

@@ -1,1 +1,1 @@
-%s:9 ParamError Call with 0 arg(s) to \a::testa() which requires 1 arg(s) defined at %s:3
+%s:9 PhanParamTooFew Call with 0 arg(s) to \a::testa() which requires 1 arg(s) defined at %s:3

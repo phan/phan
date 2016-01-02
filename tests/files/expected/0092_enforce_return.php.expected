@@ -1,2 +1,2 @@
-%s:4 TypeError Method \a::f is declared to return int but has no return value
-%s:17 TypeError Method \h is declared to return int but has no return value
+%s:4 PhanTypeMissingReturn Method \a::f is declared to return int but has no return value
+%s:17 PhanTypeMissingReturn Method \h is declared to return int but has no return value

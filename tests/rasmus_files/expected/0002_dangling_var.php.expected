@@ -1,1 +1,1 @@
-%s:2 NOOPError Unused variable
+%s:2 PhanNoopVariable Unused variable

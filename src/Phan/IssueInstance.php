@@ -66,7 +66,8 @@ class IssueInstance {
      */
     public function __invoke() {
         Log::err(
-            $this->getIssue()->getClass(),
+            $this->getIssue()->getCategory(),
+            $this->getIssue()->getType(),
             call_user_func_array('sprintf', array_merge(
                 [ $this->getIssue()->getTemplate() ],
                 $this->getTemplateParameters()
