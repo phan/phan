@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\CodeBase;
+use \Phan\Issue;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -43,18 +44,24 @@ trait DuplicateFunction {
                 return;
             }
 
-            Log::err(
-                Log::EREDEF,
-                "Function {$method_name} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()} was previously defined internally",
+            Issue::emit(
+                Issue::RedefineFunctionInternal,
+                $method->getContext()->getFile(),
+                $method->getContext()->getLineNumberStart(),
+                $method_name,
                 $method->getContext()->getFile(),
                 $method->getContext()->getLineNumberStart()
             );
         } else {
-            Log::err(
-                Log::EREDEF,
-                "Function {$method_name} defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()} was previously defined at {$original_method->getContext()->getFile()}:{$original_method->getContext()->getLineNumberStart()}",
+            Issue::emit(
+                Issue::RedefineFunction,
                 $method->getContext()->getFile(),
-                $method->getContext()->getLineNumberStart()
+                $method->getContext()->getLineNumberStart(),
+                $method_name,
+                $method->getContext()->getFile(),
+                $method->getContext()->getLineNumberStart(),
+                $original_method->getContext()->getFile(),
+                $original_method->getContext()->getLineNumberStart()
             );
         }
     }

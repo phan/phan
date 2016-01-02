@@ -93,7 +93,9 @@ class Issue {
 
     // Issue::CLASS_REDEFINE
     const RedefineClass             = 'RedefineClass';
+    const RedefineClassInternal     = 'RedefineClassInternal';
     const RedefineFunction          = 'RedefineFunction';
+    const RedefineFunctionInternal  = 'RedefineFunctionInternal';
 
     // Issue::CLASS_ACCESS
     const AccessPropertyProtected   = 'AccessPropertyProtected';
@@ -410,10 +412,16 @@ class Issue {
 
             // Issue::CLASS_REDEFINE
             new Issue(self::RedefineClass, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
-                "Class %s defined at %s:%d was previously defined as Class %s at %s:%d"
+                "%s defined at %s:%d was previously defined as %s at %s:%d"
+            ),
+            new Issue(self::RedefineClassInternal, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
+                "%s defined at %s:%d was previously defined as %s internally"
             ),
             new Issue(self::RedefineFunction, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
                 "Function %s defined at %s:%d was previously defined at %s:%d"
+            ),
+            new Issue(self::RedefineFunctionInternal, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
+                "Function %s defined at %s:%d was previously defined internally"
             ),
 
             // Issue::CLASS_ACCESS

@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use \Phan\CodeBase;
+use \Phan\Issue;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 use \Phan\Log;
@@ -40,25 +41,30 @@ trait DuplicateClass {
         // Check to see if the original definition was from
         // an internal class
         if ($original_class->isInternal()) {
-            Log::err(Log::EREDEF,
-                "$clazz defined at "
-                . "{$clazz->getContext()->getFile()}:{$clazz->getContext()->getLineNumberStart()} "
-                . "was previously defined as $original_class internally",
-                    $clazz->getContext()->getFile(),
-                    $clazz->getContext()->getLineNumberStart()
-                );
+            Issue::emit(
+                Issue::RedefineClassInternal,
+                $clazz->getContext()->getFile(),
+                $clazz->getContext()->getLineNumberStart(),
+                (string)$clazz,
+                $clazz->getContext()->getFile(),
+                $clazz->getContext()->getLineNumberStart(),
+                (string)$original_class
+            );
 
         // Otherwise, print the coordinates of the original
         // definition
         } else {
-            Log::err(Log::EREDEF,
-                "$clazz defined at "
-                . "{$clazz->getContext()->getFile()}:{$clazz->getContext()->getLineNumberStart()} "
-                . "was previously defined as $original_class at "
-                . "{$original_class->getContext()->getFile()}:{$original_class->getContext()->getLineNumberStart()}",
-                    $clazz->getContext()->getFile(),
-                    $clazz->getContext()->getLineNumberStart()
-                );
+            Issue::emit(
+                Issue::RedefineClass,
+                $clazz->getContext()->getFile(),
+                $clazz->getContext()->getLineNumberStart(),
+                (string)$clazz,
+                $clazz->getContext()->getFile(),
+                $clazz->getContext()->getLineNumberStart(),
+                (string)$original_class,
+                $original_class->getContext()->getFile(),
+                $original_class->getContext()->getLineNumberStart()
+            );
         }
 
         return;
