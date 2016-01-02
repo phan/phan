@@ -59,6 +59,7 @@ class Issue {
 
     // Issue::CLASS_VARIABLE
     const VariableUndef             = 'VariableUndef';
+    const VariableUseClause         = 'VariableUseClause';
 
     // Issue::CLASS_STATIC
     const StaticCallToNonStatic     = 'StaticCallToNonStatic';
@@ -316,7 +317,10 @@ class Issue {
 
             // Issue::CLASS_VARIABLE
             new Issue(self::VariableUndef, self::CLASS_VARIABLE, self::SEVERITY_NORMAL,
-                "Variable %s is not defined"
+                "Variable \$%s is not defined"
+            ), // TODO: Move to undef
+            new Issue(self::VariableUseClause, self::CLASS_VARIABLE, self::SEVERITY_NORMAL,
+                "You can only have variables in a closure use() clause"
             ),
 
             // Issue::CLASS_STATIC

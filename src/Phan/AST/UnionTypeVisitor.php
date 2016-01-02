@@ -790,11 +790,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
             if(!Variable::isSuperglobalVariableWithName($variable_name)) {
-                Log::err(
-                    Log::EVAR,
-                    "Variable \$$variable_name is not defined",
+                Issue::emit(
+                    Issue::VariableUndef,
                     $this->context->getFile(),
-                    $node->lineno ?? 0
+                    $node->lineno ?? 0,
+                    $variable_name
                 );
             }
         } else {

@@ -239,13 +239,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
             $uses = $node->children['uses'];
             foreach($uses->children as $use) {
                 if($use->kind != \ast\AST_CLOSURE_VAR) {
-                    Log::err(
-                        Log::EVAR,
-                        "You can only have variables in a closure use() clause",
+                    Issue::emit(
+                        Issue::VariableUseClause,
                         $this->context->getFile(),
-                        $node->lineno
+                        $node->lineno ?? 0
                     );
-
                     continue;
                 }
 
@@ -268,13 +266,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
                     // If this is not pass-by-reference variable we
                     // have a problem
                     if (!($use->flags & \ast\flags\PARAM_REF)) {
-                        Log::err(
-                            Log::EVAR,
-                            "Variable \${$variable_name} is not defined",
+                        Issue::emit(
+                            Issue::VariableUndef,
                             $this->context->getFile(),
-                            $node->lineno
+                            $node->lineno ?? 0,
+                            $variable_name
                         );
-
                         continue;
                     } else {
                         // If the variable doesn't exist, but its
