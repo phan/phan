@@ -1,0 +1,11 @@
+%s:5 PhanAccessPropertyPrivate Cannot access private property \c1::$p
+%s:9 PhanAccessPropertyProtected Cannot access protected property \c2::$p
+%s:14 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
+%s:17 PhanContextNotObject Cannot access parent when not in object context
+%s:22 PhanDeprecatedFunction Call to deprecated function \f1() defined at %s:21
+%s:25 PhanNoopArray Unused array
+%s:28 PhanNoopClosure Unused closure
+%s:32 PhanNoopConstant Unused constant
+%s:37 PhanNoopProperty Unused property
+%s:42 PhanNoopVariable Unused variable
+%s:48 PhanParamReqAfterOpt Required argument follows optional

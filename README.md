@@ -12,6 +12,11 @@ Phan is a static analyzer for PHP.
 * Supports namespaces, traits and variadics
 * Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
 
+See [Phan Error Types](https://github.com/etsy/phan/wiki/Error-Types) for descriptions
+and examples of all issues that can be detected by Phan. Take a look at the
+[\Phan\Issue](https://github.com/etsy/phan/blob/master/src/Phan/Issue.php) to see the
+definition of each error type.
+
 See the [tests][tests] directory for some examples of the various checks.
 
 # Getting it running

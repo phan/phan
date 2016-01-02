@@ -1330,6 +1330,16 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         if ('parent' === $class_name) {
+            if (!$context->isInClassScope()) {
+                throw new IssueException(
+                    Issue::fromType(Issue::ContextNotObject)(
+                        $context->getFile(),
+                        $node->lineno ?? 0,
+                        [$class_name]
+                    )
+                );
+            }
+
             $class = $context->getClassInScope($code_base);
 
             if ($class->isTrait()) {

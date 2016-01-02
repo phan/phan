@@ -58,7 +58,6 @@ class Issue {
 
     // Issue::CATEGORY_STATIC
     const StaticCallToNonStatic     = 'PhanStaticCallToNonStatic';
-    const NonStaticSelf             = 'PhanNonStaticSelf';
 
     // Issue::CATEGORY_CONTEXT
     const ContextNotObject          = 'PhanContextNotObject';
@@ -315,9 +314,6 @@ class Issue {
             ),
 
             // Issue::CATEGORY_CONTEXT
-            new Issue(self::NonStaticSelf, self::CATEGORY_CONTEXT, self::SEVERITY_CRITICAL,
-                "Reference to self when not in object context"
-            ),
             new Issue(self::ContextNotObject, self::CATEGORY_CONTEXT, self::SEVERITY_CRITICAL,
                 "Cannot access %s when not in object context"
             ),
