@@ -11,6 +11,7 @@ use \Phan\Exception\AccessException;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Parameter;
@@ -292,11 +293,13 @@ class AssignmentVisitor extends KindVisitorImplementation {
             $property->getUnionType(),
             $this->code_base
         )) {
-            Log::err(
-                Log::ETYPE,
-                "assigning {$this->right_type} to property but {$clazz->getFQSEN()}::{$property->getName()} is {$property->getUnionType()}",
+            Issue::emit(
+                Issue::TypeMismatchProperty,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                (string)$this->right_type,
+                "{$clazz->getFQSEN()}::{$property->getName()}",
+                (string)$property->getUnionType()
             );
 
             return $this->context;

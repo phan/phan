@@ -722,11 +722,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         if ($element_types->isEmpty()) {
-            Log::err(
-                Log::ETYPE,
-                "Suspicious array access to $union_type",
+            Issue::emit(
+                Issue::TypeArraySuspicious,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                (string)$union_type
             );
         }
 

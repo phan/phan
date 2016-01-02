@@ -52,11 +52,12 @@ trait ParentConstructorCalled {
         if (!$parent_clazz->isAbstract()
             && !$clazz->getIsParentConstructorCalled()
         ) {
-            Log::err(
-                Log::ETYPE,
-                "{$clazz->getFQSEN()} extends {$parent_clazz->getFQSEN()} but doesn't call parent::__construct()",
+            Issue::emit(
+                Issue::TypeParentConstructorCalled,
                 $clazz->getContext()->getFile(),
-                $clazz->getContext()->getLineNumberStart()
+                $clazz->getContext()->getLineNumberStart(),
+                (string)$clazz->getFQSEN(),
+                (string)$parent_clazz->getFQSEN()
             );
         }
     }

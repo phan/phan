@@ -24,6 +24,7 @@ use \Phan\Language\Type\{
     StringType,
     VoidType
 };
+use \Phan\Issue;
 use \Phan\Log;
 use \ast\Node;
 
@@ -84,12 +85,12 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
         if ($left->hasType(ArrayType::instance())
             || $right->hasType(ArrayType::instance())
         ) {
-            Log::err(
-                Log::ETYPE,
-                "invalid array operator",
+            Issue::emit(
+                Issue::TypeArrayOperator,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0
             );
+
             return new UnionType();
         } else if ($left->hasType(IntType::instance())
             && $right->hasType(IntType::instance())
@@ -181,11 +182,11 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
                 ArrayType::instance()->asUnionType()
             )
         ) {
-            Log::err(
-                Log::ETYPE,
-                "array to $right comparison",
+            Issue::emit(
+                Issue::TypeComparisonFromArray,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                (string)$right
             );
         } else if (!$right->genericArrayElementTypes()->isEmpty()
             && $right->nonGenericArrayTypes()->isEmpty()
@@ -193,12 +194,12 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
                 ArrayType::instance()->asUnionType()
             )
         ) {
-            // and the same for the right side
-            Log::err(
-                Log::ETYPE,
-                "$left to array comparison",
+            // and the same for the left side
+            Issue::emit(
+                Issue::TypeComparisonToArray,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                (string)$left
             );
         }
 
@@ -343,21 +344,19 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
             && !$right->canCastToUnionType(
                 ArrayType::instance()->asUnionType())
         ) {
-            Log::err(
-                Log::ETYPE,
-                "invalid operator: left operand is array and right is not",
+            Issue::emit(
+                Issue::TypeInvalidRightOperand,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0
             );
             return new UnionType();
         } else if($right_is_array
             && !$left->canCastToUnionType(ArrayType::instance()->asUnionType())
         ) {
-            Log::err(
-                Log::ETYPE,
-                "invalid operator: right operand is array and left is not",
+            Issue::emit(
+                Issue::TypeInvalidLeftOperand,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0
             );
             return new UnionType();
         } else if($left_is_array || $right_is_array) {

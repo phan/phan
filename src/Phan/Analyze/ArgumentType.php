@@ -217,11 +217,12 @@ class ArgumentType {
                         && $argument->kind != \ast\AST_STATIC_PROP
                     )
                 ) {
-                    Log::err(
-                        Log::ETYPE,
-                        "Only variables can be passed by reference at arg#".($i+1)." of {$method->getFQSEN()}()",
+                    Issue::emit(
+                        Issue::TypeNonVarPassByRef,
                         $context->getFile(),
-                        $node->lineno
+                        $node->lineno ?? 0,
+                        ($i+1),
+                        (string)$method->getFQSEN()
                     );
                 } else {
                     $variable_name = (new ContextNode(
@@ -297,23 +298,28 @@ class ArgumentType {
                     : 'unknown';
 
                 if ($method->getContext()->isInternal()) {
-                    Log::err(
-                        Log::ETYPE,
-                        "arg#".($i+1)."($parameter_name) is "
-                        . "$argument_type_expanded but {$method->getFQSEN()}() "
-                        . "takes $parameter_type",
+                    Issue::emit(
+                        Issue::TypeMismatchArgumentInternal,
                         $context->getFile(),
-                        $node->lineno
+                        $node->lineno,
+                        ($i+1),
+                        $parameter_name,
+                        $argument_type_expanded,
+                        (string)$method->getFQSEN(),
+                        (string)$parameter_type
                     );
                 } else {
-                    Log::err(
-                        Log::ETYPE,
-                        "arg#".($i+1)."($parameter_name) is "
-                        . "$argument_type_expanded but {$method->getFQSEN()}() "
-                        . "takes $parameter_type "
-                        . "defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                    Issue::emit(
+                        Issue::TypeMismatchArgument,
                         $context->getFile(),
-                        $node->lineno
+                        $node->lineno,
+                        ($i+1),
+                        $parameter_name,
+                        $argument_type_expanded,
+                        (string)$method->getFQSEN(),
+                        (string)$parameter_type,
+                        $method->getContext()->getFile(),
+                        $method->getContext()->getLineNumberStart()
                     );
                 }
             }

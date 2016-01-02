@@ -30,6 +30,7 @@ class Issue {
     const UndeclaredProperty        = 'UndeclaredProperty';
     const UndeclaredProperty2       = 'UndeclaredProperty2';
     const UndeclaredStaticMethod    = 'UndeclaredStaticMethod';
+    const UndeclaredStaticProperty  = 'UndeclaredStaticProperty';
     const UndeclaredTrait           = 'UndeclaredTrait';
     const UndeclaredTypeParameter   = 'UndeclaredTypeParameter';
     const UndeclaredTypeProperty    = 'UndeclaredTypeProperty';
@@ -37,15 +38,24 @@ class Issue {
     const UnknownNodeType           = 'UnknownNodeType'; // TODO: Should be Issue::UnanalyzableNode
 
     // Issue::CLASS_TYPE
-    const TypeMismatchProperty      = 'TypeMismatchProperty';
-    const TypeMismatchDefault       = 'TypeMismatchDefault';
-    const TypeMismatchParameter     = 'TypeMismatchParameter';
-    const TypeMismatchReturn        = 'TypeMismatchReturn';
-    const TypeMismatchForeach       = 'TypeMismatchForeach';
     const TypeArrayOperator         = 'TypeArrayOperator';
     const TypeArraySuspicious       = 'TypeArraySuspicious';
-    const TypeComparisonToArray     = 'TypeComparisonToArray';
     const TypeComparisonFromArray   = 'TypeComparisonFromArray';
+    const TypeComparisonFromArray2  = 'TypeComparisonFromArray2'; // TODO: merge with above
+    const TypeComparisonToArray     = 'TypeComparisonToArray';
+    const TypeInstantiateAbstract   = 'TypeInstantiateAbstract';
+    const TypeInstantiateInterface  = 'TypeInstantiateInterface';
+    const TypeMismatchDefault       = 'TypeMismatchDefault';
+    const TypeMismatchForeach       = 'TypeMismatchForeach';
+    const TypeMismatchArgument      = 'TypeMismatchArgument';
+    const TypeMismatchArgumentInternal = 'TypeMismatchArgumentInternal';
+    const TypeMismatchProperty      = 'TypeMismatchProperty';
+    const TypeMismatchReturn        = 'TypeMismatchReturn';
+    const TypeMissingReturn        = 'TypeMissingReturn';
+    const TypeInvalidRightOperand   = 'TypeInvalidRightOperand';
+    const TypeInvalidLeftOperand    = 'TypeInvalidLeftOperand';
+    const TypeParentConstructorCalled = 'TypeParentConstructorCalled';
+    const TypeNonVarPassByRef       = 'TypeNonVarPassByRef';
 
     // Issue::CLASS_VARIABLE
     const VariableUndef             = 'VariableUndef';
@@ -244,16 +254,22 @@ class Issue {
 
             // Issue::CLASS_TYPE
             new Issue(self::TypeMismatchProperty, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "assigning int to property but %s is %s"
+                "assigning %s to property but %s is %s"
             ),
             new Issue(self::TypeMismatchDefault, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "Default value for %s %s can't be %s"
+                "Default value for %s \$%s can't be %s"
             ),
-            new Issue(self::TypeMismatchParameter, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "arg#%d(%s) is string but %s takes %s defined at %s:%d"
+            new Issue(self::TypeMismatchArgument, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "arg#%d(%s) is %s but %s() takes %s defined at %s:%d"
+            ),
+            new Issue(self::TypeMismatchArgumentInternal, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "arg#%d(%s) is %s but %s() takes %s"
             ),
             new Issue(self::TypeMismatchReturn, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "return %s but %s is declared to return %s"
+                "return %s but %s() is declared to return %s"
+            ),
+            new Issue(self::TypeMissingReturn, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "Method %s is declared to return %s but has no return value"
             ),
             new Issue(self::TypeMismatchForeach, self::CLASS_TYPE, self::SEVERITY_NORMAL,
                 "%s passed to foreach instead of array"
@@ -269,6 +285,33 @@ class Issue {
             ),
             new Issue(self::TypeComparisonFromArray, self::CLASS_TYPE, self::SEVERITY_NORMAL,
                 "array to %s comparison"
+            ),
+            new Issue(self::TypeComparisonFromArray2, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "array to %s conversion"
+            ),
+            new Issue(self::TypeInstantiateAbstract, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "Cannot instantiate abstract class %s"
+            ),
+            new Issue(self::TypeInstantiateInterface, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "Cannot instantiate interface %s"
+            ),
+            new Issue(self::UndeclaredStaticProperty, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "Access to undeclared static property %s on %s"
+            ), // TODO: Move to Issue::CLASS_UNDEFINED
+            new Issue(self::TypeInvalidRightOperand, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "invalid operator: left operand is array and right is not"
+            ),
+            new Issue(self::TypeInvalidLeftOperand, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "invalid operator: right operand is array and left is not"
+            ),
+            new Issue(self::TypeParentConstructorCalled, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "%s extends %s but doesn't call parent::__construct()"
+            ),
+            new Issue(self::TypeParentConstructorCalled, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "%s extends %s but doesn't call parent::__construct()"
+            ),
+            new Issue(self::TypeNonVarPassByRef, self::CLASS_TYPE, self::SEVERITY_NORMAL,
+                "Only variables can be passed by reference at arg#%d of %s()"
             ),
 
             // Issue::CLASS_VARIABLE
@@ -291,46 +334,46 @@ class Issue {
 
             // Issue::CLASS_PARAMETER
             new Issue(self::ParamTooMany, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "ParamError call with %d arg(s) to %s which only takes %d arg(s) defined at %s:%d"
+                "call with %d arg(s) to %s which only takes %d arg(s) defined at %s:%d"
             ),
             new Issue(self::ParamTooFew, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "ParamError call with %d arg(s) to %s which requires %d arg(s) defined at %s:%d"
+                "call with %d arg(s) to %s which requires %d arg(s) defined at %s:%d"
             ),
             new Issue(self::ParamSpecial1, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "ParamError arg#%d(%s) is %s but %s takes %s when arg#%d is %s"
+                "arg#%d(%s) is %s but %s takes %s when arg#%d is %s"
             ),
             new Issue(self::ParamSpecial2, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "ParamError arg#%d(%s) is string but %s takes %s when passed only one arg"
+                "arg#%d(%s) is string but %s takes %s when passed only one arg"
             ),
 
             // Issue::CLASS_NOOP
             new Issue(self::NoopProperty, self::CLASS_NOOP, self::SEVERITY_NORMAL,
-                "NOOPError no-op property"
+                "no-op property"
             ),
             new Issue(self::NoopArray, self::CLASS_NOOP, self::SEVERITY_NORMAL,
-                "NOOPError no-op array"
+                "no-op array"
             ),
             new Issue(self::NoopConstant, self::CLASS_NOOP, self::SEVERITY_NORMAL,
-                "NOOPError no-op constant"
+                "no-op constant"
             ),
             new Issue(self::NoopClosure, self::CLASS_NOOP, self::SEVERITY_NORMAL,
-                "NOOPError no-op closure"
+                "no-op closure"
             ),
 
             // Issue::CLASS_REDEFINE
             new Issue(self::RedefineClass, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
-                "RedefineError Class %s defined at %s:%d was previously defined as Class %s at %s:%d"
+                "Class %s defined at %s:%d was previously defined as Class %s at %s:%d"
             ),
             new Issue(self::RedefineFunction, self::CLASS_REDEFINE, self::SEVERITY_NORMAL,
-                "RedefineError Function %s defined at %s:%d was previously defined at %s:%d"
+                "Function %s defined at %s:%d was previously defined at %s:%d"
             ),
 
             // Issue::CLASS_ACCESS
             new Issue(self::AccessPropertyProtected, self::CLASS_ACCESS, self::SEVERITY_NORMAL,
-                "AccessError Cannot access protected property %s"
+                "Cannot access protected property %s"
             ),
             new Issue(self::AccessPropertyPrivate, self::CLASS_ACCESS, self::SEVERITY_NORMAL,
-                "AccessError Cannot access private property %s"
+                "Cannot access private property %s"
             ),
 
         ];

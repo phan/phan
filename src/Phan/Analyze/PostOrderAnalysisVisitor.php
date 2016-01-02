@@ -286,11 +286,11 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         // Check the expression type to make sure its
         // something we can iterate over
         if ($expression_type->isScalar()) {
-            Log::err(
-                Log::ETYPE,
-                "$expression_type passed to foreach instead of array",
-                $this->context->getFile(),
-                $node->lineno
+            Issue::emit(
+                Issue::TypeMismatchForeach,
+                $context->getFile(),
+                $node->lineno ?? 0,
+                (string)$expression_type
             );
         }
 
@@ -362,11 +362,11 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         if ($type->isType(ArrayType::instance())
             || $type->isGenericArray()
         ) {
-            Log::err(
-                Log::ETYPE,
-                "array to string conversion",
+            Issue::emit(
+                Issue::TypeComparisonFromArray2,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                'string'
             );
         }
 
@@ -542,11 +542,13 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $method_return_type,
             $this->code_base
         )) {
-            Log::err(
-                Log::ETYPE,
-                "return $expression_type but {$method->getName()}() is declared to return {$method_return_type}",
+            Issue::emit(
+                Issue::TypeMismatchReturn,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                (string)$expression_type,
+                $method->getName(),
+                (string)$method_return_type
             );
         }
 
@@ -850,11 +852,12 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             && !$return_type->hasType(VoidType::instance())
             && !$return_type->hasType(NullType::instance())
         ) {
-            Log::err(
-                Log::ETYPE,
-                "Method {$method->getFQSEN()} is declared to return {$return_type} but has no return value",
+            Issue::emit(
+                Issue::TypeMissingReturn,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                $method->getFQSEN(),
+                (string)$return_type
             );
         }
 
@@ -1041,7 +1044,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         foreach ($argument_list->children as $i => $argument) {
             $parameter = $method->getParameterList()[$i] ?? null;
 
-            if (!$parameter) {
+            if (!$parameter || !is_object($argument)) {
                 continue;
             }
 
@@ -1098,7 +1101,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         foreach ($argument_list->children as $i => $argument) {
             $parameter = $method->getParameterList()[$i] ?? null;
 
-            if (!$parameter) {
+            if (!$parameter || !is_object($argument)) {
                 continue;
             }
 
@@ -1204,6 +1207,10 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                     $parameter->getUnionType()->addUnionType(
                         $argument_type
                     );
+
+                    if (!is_object($argument)) {
+                        continue;
+                    }
 
                     // If we're passing by reference, get the variable
                     // we're dealing with wrapped up and shoved into

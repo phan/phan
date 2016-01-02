@@ -2,6 +2,7 @@
 namespace Phan\Language\Element;
 
 use \Phan\CodeBase;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
@@ -509,11 +510,13 @@ class Method extends ClassElement implements Addressable {
                         && !$default_type->canCastToUnionType(
                             $parameter->getUnionType()
                     )) {
-                        Log::err(
-                            Log::ETYPE,
-                            "Default value for {$parameter->getUnionType()} \${$parameter->getName()} can't be {$default_type}",
+                        Issue::emit(
+                            Issue::TypeMismatchDefault,
                             $context->getFile(),
-                            $node->lineno ?? 0
+                            $node->lineno ?? 0,
+                            (string)$parameter->getUnionType(),
+                            $parameter->getName(),
+                            (string)$default_type
                         );
                     }
 

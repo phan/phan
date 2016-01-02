@@ -9,6 +9,7 @@ use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
 use \Phan\Language\FQSEN;
@@ -399,10 +400,13 @@ class ParseVisitor extends ScopeVisitor {
                 if ((string)$union_type != 'null'
                     && !$union_type->canCastToUnionType($variable->getUnionType())
                 ) {
-                    Log::err(Log::ETYPE,
-                        "assigning $union_type to property but {$property->getFQSEN()} is {$variable->getUnionType()}",
+                    Issue::emit(
+                        Issue::TypeMismatchProperty,
                         $this->context->getFile(),
-                        $child_node->lineno
+                        $child_node->lineno ?? 0,
+                        (string)$union_type,
+                        (string)$property->getFQSEN(),
+                        (string)$variable->getUnionType()
                     );
                 }
 

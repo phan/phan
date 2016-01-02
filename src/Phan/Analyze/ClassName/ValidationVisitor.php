@@ -106,12 +106,13 @@ class ValidationVisitor
 
         if ($clazz->isAbstract()) {
             if (!$this->context->hasClassFQSEN()
-                || $clazz->getFQSEN() != $this->context->getClassFQSEN()) {
-                Log::err(
-                    Log::ETYPE,
-                    "Cannot instantiate abstract class {$this->class_name}",
+                || $clazz->getFQSEN() != $this->context->getClassFQSEN()
+            ) {
+                Issue::emit(
+                    Issue::TypeInstantiateAbstract,
                     $this->context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0,
+                    (string)$this->class_name
                 );
 
                 return false;
@@ -125,12 +126,13 @@ class ValidationVisitor
                 $this->class_name,
                 $this->context
             )->isNativeType()) {
-                Log::err(
-                    Log::ETYPE,
-                    "Cannot instantiate interface {$this->class_name}",
+                Issue::emit(
+                    Issue::TypeInstantiateInterface,
                     $this->context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0,
+                    (string)$this->class_name
                 );
+
                 return false;
             }
         }
@@ -176,12 +178,14 @@ class ValidationVisitor
                 $node->children['prop']
             )
         ) {
-            Log::err(
-                Log::ETYPE,
-                "Access to undeclared static property {$node->children['prop']} on {$this->class_name}",
+            Issue::emit(
+                Issue::UndeclaredStaticProperty,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                $node->children['prop'],
+                $this->class_name
             );
+
             return false;
         }
 
