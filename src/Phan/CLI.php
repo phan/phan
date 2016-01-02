@@ -23,7 +23,26 @@ class CLI {
         // file_put_contents('/tmp/file', implode("\n", $argv));
 
         // Parse command line args
-        $opts = getopt("f:m:o:c:aqbrpid:s:3:y:h::");
+        // still available: e,g,j,k,l,n,t,u,v,w,x,z
+        $opts = getopt(
+            "f:m:o:c:aqbrpid:s:3:y:h::", [
+                'fileset:',
+                'output-mode:',
+                'output:',
+                'parent-constructor-required:',
+                'dump-ast',
+                'quick',
+                'backward-compatibility-checks',
+                'reanalyze-file-list',
+                'progress-bar',
+                'ignore-undeclared',
+                'project-root-directory:',
+                'state-file:',
+                'exclude-directory-list:',
+                'minimum-severity:',
+                'help',
+            ]
+        );
 
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
@@ -38,9 +57,11 @@ class CLI {
         foreach($opts ?? [] as $key => $value) {
             switch($key) {
             case 'h':
+            case 'help':
                 $this->usage();
                 break;
             case 'f':
+            case 'fileset':
                 if(is_file($value) && is_readable($value)) {
                     $this->file_list = file(
                         $value,
@@ -51,47 +72,60 @@ class CLI {
                 }
                 break;
             case 'm':
+            case 'output-mode':
                 if(!in_array($value, ['text', 'codeclimate'])) {
                     $this->usage("Unknown output mode: $value");
                 }
                 Log::setOutputMode($value);
                 break;
             case 'c':
+            case 'parent-constructor-required':
                 Config::get()->parent_constructor_required =
                     explode(',', $value);
                 break;
             case 'q':
+            case 'quick':
                 Config::get()->quick_mode = true;
                 break;
             case 'b':
+            case 'backward-compatibility-checks':
                 Config::get()->backward_compatibility_checks = true;
                 break;
             case 'p':
+            case 'progress-bar':
                 Config::get()->progress_bar = true;
                 break;
             case 'a':
+            case 'dump-ast':
                 Config::get()->dump_ast = true;
                 break;
             case 'o':
+            case 'otuput':
                 Log::setFilename($value);
                 break;
             case 'i':
+            case 'ignore-undeclared':
                 Log::setOutputMask(Log::getOutputMask()^Issue::CATEGORY_UNDEFINED);
                 break;
             case '3':
+            case 'exclude-directory-list':
                 Config::get()->exclude_analysis_directory_list =
                     explode(',', $value);
                 break;
             case 's':
+            case 'state-file':
                 Config::get()->stored_state_file_path = $value;
                 break;
             case 'r':
+            case 'reanalyze-file-list':
                 Config::get()->reanalyze_file_list = true;
                 break;
             case 'y':
+            case 'minimum-severity':
                 Config::get()->minimum_severity = $value;
                 break;
             case 'd':
+            case 'project-root-directory':
                 // We handle this flag before parsing options so
                 // that we can get the project root directory to
                 // base other config flags values on
@@ -150,25 +184,57 @@ class CLI {
 
         echo <<<EOB
 Usage: {$argv[0]} [options] [files...]
-  -f <filename>   A file containing a list of PHP files to be analyzed
-  -3 <dir_list>   A comma-separated list of directories for which any files
-                  therein should be parsed but not analyzed.
-  -q              Quick mode - doesn't recurse into all function calls
-  -b              Check for potential PHP 5 -> PHP 7 BC issues
-  -i              Ignore undeclared functions and classes
-  -y              Minimum severity level (low=0, normal=5, critical=10) to report. Defaults to 0.
-  -c              Comma-separated list of classes that require parent::__construct() to be called
-  -m <mode>       Output mode: text, codeclimate
-  -o <filename>   Output filename
-  -p              Show progress bar
-  -s <filename>   Save state to the given file and read from it to speed up
-                  future executions
-  -r              Force a re-analysis of any files passed in even if they haven't
-                  changed since the last analysis
-  -d              Hunt for a directory named .phan in the current or parent
-                  directory and read configuration file config.php from that
-                  path.
-  -h              This help
+ -f, --fileset <filename>
+  A file containing a list of PHP files to be analyzed
+
+ -3, --exclude-directory-list <dir_list>
+  A comma-separated list of directories for which any files
+  therein should be parsed but not analyzed.
+
+ -q, --quick
+  Quick mode - doesn't recurse into all function calls
+
+ -b, --backward-compatibility-checks
+  Check for potential PHP 5 -> PHP 7 BC issues
+
+ -i, --ignore-undeclared
+ Ignore undeclared functions and classes
+
+ -y, --minimum-severity <level in {0,5,10}> 
+  Minimum severity level (low=0, normal=5, critical=10) to report.
+  Defaults to 0.
+
+ -c, --parent-constructor-required
+  Comma-separated list of classes that require
+  parent::__construct() to be called
+
+ -m <mode>, --output-mode
+  Output mode: text, codeclimate
+
+ -o, --output <filename>
+  Output filename
+
+ -p, --progress-bar
+  Show progress bar
+
+ -a, --dump-ast
+  Emit an AST for each file rather than analyze
+
+ -s, --state-file <filename>
+  Save state to the given file and read from it to speed up
+  future executions
+
+ -r, --reanalyze-file-list <file-list>
+  Force a re-analysis of any files passed in even if they haven't
+  changed since the last analysis
+
+ -d, --project-root-directory
+  Hunt for a directory named .phan in the current or parent
+  directory and read configuration file config.php from that
+  path.
+
+ -h,--help
+  This help information
 
 EOB;
         exit;
