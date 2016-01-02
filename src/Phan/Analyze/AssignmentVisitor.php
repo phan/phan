@@ -233,12 +233,9 @@ class AssignmentVisitor extends KindVisitorImplementation {
                 $node
             ))->getClass();
         } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EFATAL,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
+            // This really shouldn't happen since the code
+            // parsed cleanly. This should fatal.
+            throw $exception;
         } catch (\Exception $exception) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it

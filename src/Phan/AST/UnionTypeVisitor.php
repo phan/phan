@@ -587,8 +587,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         case \ast\flags\TYPE_OBJECT:
             return ObjectType::instance()->asUnionType();
         default:
-            Log::err(
-                Log::EFATAL,
+            throw new NodeException(
+                $node,
                 'Unknown type (' . $node->flags . ') in cast'
             );
         }

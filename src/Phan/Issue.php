@@ -101,6 +101,11 @@ class Issue {
     const AccessPropertyProtected   = 'AccessPropertyProtected';
     const AccessPropertyPrivate     = 'AccessPropertyPrivate';
 
+    // Issue::CLASS_FATAL
+
+    // Issue::CLASS_AVAILABLE
+
+    // Issue::CLASS_COMPATIBLE
 
 	const CLASS_REDEFINE          =  1<<0;
 	const CLASS_UNDEFINED         =  1<<1;
@@ -431,6 +436,16 @@ class Issue {
             new Issue(self::AccessPropertyPrivate, self::CLASS_ACCESS, self::SEVERITY_NORMAL,
                 "Cannot access private property %s"
             ),
+
+            /*
+            new Issue(self::, self::CLASS_ACCESS, self::SEVERITY_NORMAL,
+            ),
+            */
+
+            // Issue::CLASS_AVAILABLE
+
+            // Issue::CLASS_COMPATIBLE
+
 
         ];
 

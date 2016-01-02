@@ -80,11 +80,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
                 )->withAlternateId($alternate_id++);
 
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
-                Log::err(
-                    Log::EFATAL,
-                    "Can't find class {$class_fqsen} - aborting",
-                    $this->context->getFile(),
-                    $node->lineno
+                throw new CodeBaseException(
+                    $class_fqsen, 
+                    "Can't find class {$class_fqsen} - aborting"
                 );
             }
 
@@ -121,11 +119,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
             $this->code_base,
             $method_name
         )) {
-            Log::err(
-                Log::EFATAL,
-                "Can't find method {$clazz->getFQSEN()}::$method_name() - aborting",
-                $this->context->getFile(),
-                $node->lineno
+            throw new CodeBaseException(
+                null,
+                "Can't find method {$clazz->getFQSEN()}::$method_name() - aborting"
             );
         }
 
@@ -160,13 +156,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
                 $node
             ))->getFunction($function_name, true);
         } catch (CodeBaseException $exception) {
-            Log::err(
-                Log::EFATAL,
-                $exception->getMessage(),
-                $this->context->getFile(),
-                $node->lineno
-            );
-
+            // This really ought not happen given that
+            // we already successfully parsed the code
+            // base
+            throw $exception;
             return $this->context;
         }
 
@@ -185,11 +178,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
         }
 
         // No alternate was found
-        Log::err(
-            Log::EFATAL,
-            "Can't find function {$function_name} - aborting",
-            $this->context->getFile(),
-            $node->lineno
+        throw new CodeBaseException(
+            null, 
+            "Can't find function {$function_name} - aborting"
         );
 
         return $this->context;
@@ -384,11 +375,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
             if(($node->children['key'] instanceof \ast\Node)
                 && ($node->children['key']->kind == \ast\AST_LIST)
             ) {
-                Log::err(
-                    Log::EFATAL,
-                    "Can't use list() as a key element - aborting",
-                    $this->context->getFile(),
-                    $node->lineno
+                throw new NodeException(
+                    $node,
+                    "Can't use list() as a key element - aborting"
                 );
             }
 

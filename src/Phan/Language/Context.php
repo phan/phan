@@ -2,6 +2,7 @@
 namespace Phan\Language;
 
 use \Phan\CodeBase;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Variable;
@@ -413,17 +414,19 @@ class Context extends FileRef implements \Serializable {
      *
      * @return Clazz
      * Get the class in this scope, or fail real hard
+     *
+     * @throws CodeBaseException
+     * Thrown if we can't find the class in scope within the
+     * given codebase.
      */
     public function getClassInScope(CodeBase $code_base) : Clazz {
         assert($this->isInClassScope(),
             "Must be in class scope to get class");
 
         if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
-            Log::err(
-                Log::EFATAL,
-                "Cannot find class with FQSEN {$this->getClassFQSEN()} in context {$this}",
-                $this->getFile(),
-                0
+            throw new CodeBaseException(
+                $this->getClassFQSEN(),
+                "Cannot find class with FQSEN {$this->getClassFQSEN()} in context {$this}"
             );
         }
 
