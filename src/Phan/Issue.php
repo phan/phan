@@ -345,7 +345,7 @@ class Issue {
 
             // Issue::CLASS_DEPRECATED
             new Issue(self::DeprecatedFunction, self::CLASS_DEPRECATED, self::SEVERITY_NORMAL,
-                "Call to deprecated function %s defined at %s:%d"
+                "Call to deprecated function %s() defined at %s:%d"
             ),
 
             // Issue::CLASS_PARAMETER

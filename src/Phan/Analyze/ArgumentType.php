@@ -68,11 +68,13 @@ class ArgumentType {
 
         // Emit an error if this method is marked as deprecated
         if($method->isDeprecated()) {
-            Log::err(
-                Log::EDEP,
-                "Call to deprecated function {$method->getFQSEN()}() defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+            Issue::emit(
+                Issue::DeprecatedFunction,
                 $context->getFile(),
-                $context->getLineNumberStart()
+                $context->getLineNumberStart(),
+                (string)$method->getFQSEN(),
+                $method->getContext()->getFile(),
+                $method->getContext()->getLineNumberStart()
             );
         }
 
