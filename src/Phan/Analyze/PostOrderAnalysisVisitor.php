@@ -692,6 +692,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
             // Get the class and increase its reference
             // count
+            //
+            // TODO: Use `UnionTypeVisitor::unionTypeFromNode(...)` instead
             $class = $context_node->getClass();
             $class->addReference($this->context);
 
@@ -790,6 +792,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             // it on 'parent', we're in a bad spot.
             if(!$method->isStatic() && 'parent' !== $static_class) {
 
+                // TODO: Use `UnionTypeVisitor::unionTypeFromNode(...)` instead
                 $clazz = (new ContextNode(
                     $this->code_base,
                     $this->context,

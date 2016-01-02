@@ -72,10 +72,16 @@ class Issue {
     const DeprecatedFunction        = 'DeprecatedFunction';
 
     // Issue::CLASS_PARAMETER
-    const ParamTooMany              = 'ParamTooMany';
-    const ParamTooFew               = 'ParamTooFew';
+    const ParamReqAfterOpt          = 'ParamReqAfterOpt';
     const ParamSpecial1             = 'ParamSpecial1';
     const ParamSpecial2             = 'ParamSpecial2';
+    const ParamSpecial3             = 'ParamSpecial3';
+    const ParamSpecial4             = 'ParamSpecial4';
+    const ParamTypeMismatch         = 'ParamTypeMismatch';
+    const ParamTooFew               = 'ParamTooFew';
+    const ParamTooFewInternal       = 'ParamTooFewInternal';
+    const ParamTooMany              = 'ParamTooMany';
+    const ParamTooManyInternal      = 'ParamTooManyInternal';
 
     // Issue::CLASS_NOOP
     const NoopProperty              = 'NoopProperty';
@@ -349,18 +355,36 @@ class Issue {
             ),
 
             // Issue::CLASS_PARAMETER
+            new Issue(self::ParamReqAfterOpt, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "required arg follows optional"
+            ),
             new Issue(self::ParamTooMany, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "call with %d arg(s) to %s which only takes %d arg(s) defined at %s:%d"
+                "call with %d arg(s) to %s() which only takes %d arg(s) defined at %s:%d"
+            ),
+            new Issue(self::ParamTooManyInternal, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "call with %d arg(s) to %s() which only takes %d arg(s)"
             ),
             new Issue(self::ParamTooFew, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "call with %d arg(s) to %s which requires %d arg(s) defined at %s:%d"
+                "call with %d arg(s) to %s() which requires %d arg(s) defined at %s:%d"
+            ),
+            new Issue(self::ParamTooFewInternal, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "call with %d arg(s) to %s() which requires %d arg(s)"
             ),
             new Issue(self::ParamSpecial1, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "arg#%d(%s) is %s but %s takes %s when arg#%d is %s"
+                "arg#%d(%s) is %s but %s() takes %s when arg#%d is %s"
             ),
             new Issue(self::ParamSpecial2, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "arg#%d(%s) is string but %s takes %s when passed only one arg"
+                "arg#%d(%s) is %s but %s() takes %s when passed only one arg"
             ),
+            new Issue(self::ParamSpecial3, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "The last argument to %s must be a %s"
+            ),
+            new Issue(self::ParamSpecial4, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "The second last argument to %s must be a %s"
+            ), // TODO: grammar, and get rid of this
+            new Issue(self::ParamTypeMismatch, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
+                "arg#%d is %s but %s() takes %s"
+            ), // TODO: should be a type error. Merge with something else
 
             // Issue::CLASS_NOOP
             new Issue(self::NoopProperty, self::CLASS_NOOP, self::SEVERITY_NORMAL,

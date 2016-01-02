@@ -225,6 +225,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
         assert(is_string($property_name),
             "Property must be string in context {$this->context}");
 
+        // TODO: Use `UnionTypeVisitor::unionTypeFromNode(...)` instead
         try {
             $clazz = (new ContextNode(
                 $this->code_base,

@@ -5,6 +5,7 @@ use \Phan\AST\UnionTypeVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
@@ -136,9 +137,8 @@ class Parameter extends Variable {
                 Parameter::fromNode($context, $code_base, $child_node);
 
             if (!$parameter->isOptional() && $is_optional_seen) {
-                Log::err(
-                    Log::EPARAM,
-                    "required arg follows optional",
+                Issue::emit(
+                    Issue::ParamReqAfterOpt,
                     $context->getFile(),
                     $node->lineno ?? 0
                 );
