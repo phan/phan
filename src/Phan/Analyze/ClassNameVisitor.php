@@ -110,11 +110,11 @@ class ClassNameVisitor extends KindVisitorImplementation {
         }
 
         if (!$this->context->isInClassScope()) {
-            Log::err(
-                Log::ESTATIC,
-                "Cannot access {$class_name}:: when no class scope is active",
+            Issue::emit(
+                Issue::NotInClassScope2,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                $class_name
             );
 
             return '';

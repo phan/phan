@@ -1221,11 +1221,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // This is a self-referential node
         if (!$this->context->isInClassScope()) {
-            Log::err(
-                Log::ESTATIC,
-                "Cannot access {$class_name} when not in a class scope",
+            Issue::emit(
+                Issue::NotInClassScope,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0,
+                $class_name
             );
 
             return new UnionType();

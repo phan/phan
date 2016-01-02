@@ -796,12 +796,13 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                     $node
                 ))->getClass();
 
-                Log::err(
-                    Log::ESTATIC,
-                    "static call to non-static method {$clazz->getFQSEN()}::{$method_name}()"
-                    . " defined at {$method->getContext()->getFile()}:{$method->getContext()->getLineNumberStart()}",
+                Issue::emit(
+                    Issue::StaticCallToNonStatic,
                     $this->context->getFile(),
-                    $node->lineno
+                    $node->lineno ?? 0,
+                    "{$clazz->getFQSEN()}::{$method_name}()",
+                    $method->getContext()->getFile(),
+                    $method->getContext()->getLineNumberStart()
                 );
             }
 

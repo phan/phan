@@ -64,6 +64,9 @@ class Issue {
     // Issue::CLASS_STATIC
     const StaticCallToNonStatic     = 'StaticCallToNonStatic';
     const NonStaticSelf             = 'NonStaticSelf';
+    const NotInClassScope           = 'NotInClassScope';
+    const NotInClassScope2          = 'NotInClassScope2';
+    const VarNotInClassScope        = 'VarNotInClassScope';
 
     // Issue::CLASS_DEPRECATED
     const DeprecatedFunction        = 'DeprecatedFunction';
@@ -330,6 +333,15 @@ class Issue {
             new Issue(self::NonStaticSelf, self::CLASS_STATIC, self::SEVERITY_NORMAL,
                 "Using self:: when not in object context"
             ),
+            new Issue(self::NotInClassScope, self::CLASS_STATIC, self::SEVERITY_NORMAL,
+                "Cannot access %s when not in a class scope"
+            ), // TODO: Move somewhere else
+            new Issue(self::NotInClassScope2, self::CLASS_STATIC, self::SEVERITY_NORMAL,
+                "Cannot access %s:: when no class scope is active"
+            ), // TODO: Merge with above
+            new Issue(self::VarNotInClassScope, self::CLASS_STATIC, self::SEVERITY_NORMAL,
+                "Using \$%s when not in object context"
+            ), // TODO: Move somewhere else
 
             // Issue::CLASS_DEPRECATED
             new Issue(self::DeprecatedFunction, self::CLASS_DEPRECATED, self::SEVERITY_NORMAL,

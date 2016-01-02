@@ -233,11 +233,11 @@ class ArgumentType {
                         if (in_array($variable_name, [
                             'self', 'static', 'parent'
                         ])) {
-                            Log::err(
-                                Log::ESTATIC,
-                                "Using {$variable_name}:: when not in object context",
+                            Issue::emit(
+                                Issue::VarNotInClassScope,
                                 $context->getFile(),
-                                $argument->lineno
+                                $node->lineno ?? 0,
+                                "$variable_name::"
                             );
                         }
                     }
