@@ -129,9 +129,9 @@ class Issue {
         self::CATEGORY_VARIABLE          => 'VarError',
     ];
 
-    const SEVERITY_CRITICAL = 0;
-    const SEVERITY_NORMAL   = 1;
-    const SEVERITY_LOW      = 2;
+    const SEVERITY_LOW      = 0;
+    const SEVERITY_NORMAL   = 5;
+    const SEVERITY_CRITICAL = 10;
 
     /** @var string */
     private $type;

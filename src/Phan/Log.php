@@ -49,10 +49,13 @@ class Log {
 
     /**
      * @param int $category
-     * The category of error such as Issue::CATEGORY_UNDEFINED
+     * The category of error such as `Issue::CATEGORY_UNDEFINED`
      *
      * @param string $type
-     * The error type such as Issue::UndeclaredMethod
+     * The error type such as `Issue::UndeclaredMethod`
+     *
+     * @param int $severity
+     * The severity of the issue such as `Issue::SEVERITY_NORMAL`
      *
      * @param string $message
      * The error message
@@ -66,6 +69,7 @@ class Log {
     public static function err(
         int $category,
         string $type,
+        int $severity,
         string $message,
         string $file,
         int $lineno
@@ -77,12 +81,19 @@ class Log {
             return;
         }
 
-		if($category & $log->output_mask) {
+        // Don't report anything below our minimum severity
+        // threshold
+        if ($severity < Config::get()->minimum_severity) {
+            return;
+        }
+
+        if($category & $log->output_mask) {
             $ukey = md5(implode('|', [
                 $file,
                 $lineno,
                 $category,
                 $type,
+                $severity,
                 $message
             ]));
             $log->msgs[$ukey] = [
@@ -90,6 +101,7 @@ class Log {
                 'lineno' => $lineno,
                 'category' => $category,
                 'type' => $type,
+                'severity' => $severity,
                 'message' => $message
             ];
 		}

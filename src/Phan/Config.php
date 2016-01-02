@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use \Phan\Issue;
+
 /**
  * Program configuration
  */
@@ -32,6 +34,11 @@ class Config {
         // Run a quick version of checks that takes less
         // time
         'quick_mode' => false,
+
+        // The minimum severity level to report on. This can be
+        // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or
+        // Issue::SEVERITY_CRITICAL.
+        'minimum_severity' => 0,
 
         // If true, missing properties will be created when
         // they are first seen. If false, we'll report an

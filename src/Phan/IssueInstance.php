@@ -68,6 +68,7 @@ class IssueInstance {
         Log::err(
             $this->getIssue()->getCategory(),
             $this->getIssue()->getType(),
+            $this->getIssue()->getSeverity(),
             call_user_func_array('sprintf', array_merge(
                 [ $this->getIssue()->getTemplate() ],
                 $this->getTemplateParameters()

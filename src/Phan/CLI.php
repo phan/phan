@@ -23,7 +23,7 @@ class CLI {
         // file_put_contents('/tmp/file', implode("\n", $argv));
 
         // Parse command line args
-        $opts = getopt("f:m:o:c:haqbrpid:s:3:::");
+        $opts = getopt("f:m:o:c:aqbrpid:s:3:y:h::");
 
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
@@ -87,6 +87,9 @@ class CLI {
                 break;
             case 'r':
                 Config::get()->reanalyze_file_list = true;
+                break;
+            case 'y':
+                Config::get()->minimum_severity = $value;
                 break;
             case 'd':
                 // We handle this flag before parsing options so
@@ -153,6 +156,7 @@ Usage: {$argv[0]} [options] [files...]
   -q              Quick mode - doesn't recurse into all function calls
   -b              Check for potential PHP 5 -> PHP 7 BC issues
   -i              Ignore undeclared functions and classes
+  -y              Minimum severity level (low=0, normal=5, critical=10) to report. Defaults to 0.
   -c              Comma-separated list of classes that require parent::__construct() to be called
   -m <mode>       Output mode: text, codeclimate
   -o <filename>   Output filename

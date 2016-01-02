@@ -1,6 +1,7 @@
 <?php
 
 use \Phan\Config;
+use \Phan\Issue;
 
 /**
  * This configuration will be read and overlayed on top of the
@@ -38,7 +39,6 @@ return [
     // Backwards Compatibility Checking
     'backward_compatibility_checks' => true,
 
-
     // Set to true in order to attempt to detect dead
     // (unreferenced) code. Keep in mind that the
     // results will only be a guess given that classes,
@@ -63,6 +63,11 @@ return [
     // Run a quick version of checks that takes less
     // time
     "quick_mode" => false,
+
+    // The minimum severity level to report on. This can be
+    // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or
+    // Issue::SEVERITY_CRITICAL.
+    'minimum_severity' => Issue::SEVERITY_LOW,
 
     // A list of directories holding code that we want
     // to parse, but not analyze
