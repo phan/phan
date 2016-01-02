@@ -125,36 +125,36 @@ class UnionType {
 
     /**
      * @param Context $context
+     * The context of the parser at the node for which we'd
+     * like to determine a type
+     *
      * @param CodeBase $code_base
+     * The code base within which we're operating
+     *
      * @param Node|string|null $node
-     * @param bool $should_log_exception
+     * The node for which we'd like to determine its type
+     *
+     * @param bool $should_catch_issue_exception
+     * Set to true to cause loggable issues to be thrown
+     * instead of emitted as issues to the log.
      *
      * @return UnionType
+     *
+     * @throws IssueException
+     * If $should_catch_issue_exception is false an IssueException may
+     * be thrown for optional issues.
      */
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
         $node,
-        bool $should_log_exception = true
+        bool $should_catch_issue_exception = true
     ) : UnionType {
-
-        if ($should_log_exception) {
-            try {
-                return UnionTypeVisitor::unionTypeFromNode(
-                    $code_base,
-                    $context,
-                    $node
-                );
-            } catch (IssueException $exception) {
-                $exception->getIssueInstance()();
-                return new UnionType();
-            }
-        }
-
         return UnionTypeVisitor::unionTypeFromNode(
             $code_base,
             $context,
-            $node
+            $node,
+            $should_catch_issue_exception
         );
 	}
 

@@ -58,19 +58,32 @@ class UnionTypeVisitor extends KindVisitorImplementation {
     private $context;
 
     /**
+     * @var bool
+     * Set to true to cause loggable issues to be thrown
+     * instead of emitted as issues to the log.
+     */
+    private $should_catch_issue_exception = false;
+
+    /**
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
+     *
+     * @param bool $should_catch_issue_exception
+     * Set to true to cause loggable issues to be thrown
+     * instead of emitted as issues to the log.
      */
     public function __construct(
         CodeBase $code_base,
-        Context $context
+        Context $context,
+        bool $should_catch_issue_exception = true
     ) {
         $this->context = $context;
         $this->code_base = $code_base;
+        $this->should_catch_issue_exception = $should_catch_issue_exception;
     }
 
     /**
@@ -84,14 +97,23 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * @param Node|mixed $node
      * The node for which we'd like to determine its type
      *
+     * @param bool $should_catch_issue_exception
+     * Set to true to cause loggable issues to be thrown
+     * instead
+     *
      * @return UnionType
      * The UnionType associated with the given node
      * in the given Context within the given CodeBase
+     *
+     * @throws IssueException
+     * If $should_catch_issue_exception is false an IssueException may
+     * be thrown for optional issues.
      */
     public static function unionTypeFromNode(
         CodeBase $code_base,
         Context $context,
-        $node
+        $node,
+        bool $should_catch_issue_exception = true
     ) : UnionType {
         if(!($node instanceof Node)) {
             if($node === null) {
@@ -101,7 +123,20 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             return Type::fromObject($node)->asUnionType();
         }
 
-        return (new self($code_base, $context))($node);
+        if ($should_catch_issue_exception) {
+            try {
+                return (new self(
+                    $code_base, $context, $should_catch_issue_exception
+                ))($node);
+            } catch (IssueException $exception) {
+                $exception->getIssueInstance()();
+                return new UnionType();
+            }
+        }
+
+        return (new self(
+            $code_base, $context, $should_catch_issue_exception
+        ))($node);
     }
 
     /**
@@ -491,7 +526,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                     $element_types[] = UnionType::fromNode(
                         $this->context,
                         $this->code_base,
-                        $node->children[$i]->children['value']
+                        $node->children[$i]->children['value'],
+                        $this->should_catch_issue_exception
                     );
                 } else {
                     $element_types[] = Type::fromObject(
