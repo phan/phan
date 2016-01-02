@@ -382,7 +382,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitVar(Node $node) : Context {
-        $this->analyzeNoOp($node, "no-op variable");
+        $this->analyzeNoOp($node, Issue::NoopVariable);
         return $this->context;
     }
 
@@ -395,7 +395,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitArray(Node $node) : Context {
-        $this->analyzeNoOp($node, "no-op array");
+        $this->analyzeNoOp($node, Issue::NoopArray);
         return $this->context;
     }
 
@@ -427,7 +427,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
         // Check to make sure we're doing something with the
         // constant
-        $this->analyzeNoOp($node, "no-op constant");
+        $this->analyzeNoOp($node, Issue::NoopConstant);
 
         return $this->context;
     }
@@ -459,7 +459,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
         // Check to make sure we're doing something with the
         // class constant
-        $this->analyzeNoOp($node, "no-op constant");
+        $this->analyzeNoOp($node, Issue::NoopConstant);
 
         return $this->context;
     }
@@ -473,7 +473,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitClosure(Decl $node) : Context {
-        $this->analyzeNoOp($node, "no-op closure");
+        $this->analyzeNoOp($node, Issue::NoopClosure);
         return $this->context;
     }
 
@@ -1020,7 +1020,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
         // Check to make sure we're doing something with the
         // property
-        $this->analyzeNoOp($node, "no-op property");
+        $this->analyzeNoOp($node, Issue::NoopProperty);
 
         return $this->context;
     }
@@ -1278,15 +1278,14 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      *
      * @return null
      */
-    private function analyzeNoOp(Node $node, string $message) {
+    private function analyzeNoOp(Node $node, string $issue_type) {
         if($this->parent_node instanceof Node &&
             $this->parent_node->kind == \ast\AST_STMT_LIST
         ) {
-            Log::err(
-                Log::ENOOP,
-                $message,
+            Issue::emit(
+                $issue_type,
                 $this->context->getFile(),
-                $node->lineno
+                $node->lineno ?? 0
             );
         }
     }

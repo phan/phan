@@ -88,6 +88,8 @@ class Issue {
     const NoopArray                 = 'NoopArray';
     const NoopConstant              = 'NoopConstant';
     const NoopClosure               = 'NoopClosure';
+    const NoopVariable              = 'NoopVariable';
+    const NoopZeroReferences        = 'NoopZeroReferences';
 
     // Issue::CLASS_REDEFINE
     const RedefineClass             = 'RedefineClass';
@@ -398,6 +400,12 @@ class Issue {
             ),
             new Issue(self::NoopClosure, self::CLASS_NOOP, self::SEVERITY_NORMAL,
                 "no-op closure"
+            ),
+            new Issue(self::NoopVariable, self::CLASS_NOOP, self::SEVERITY_NORMAL,
+                "no-op variable"
+            ),
+            new Issue(self::NoopZeroReferences, self::CLASS_NOOP, self::SEVERITY_NORMAL,
+                "%s may have zero references"
             ),
 
             // Issue::CLASS_REDEFINE

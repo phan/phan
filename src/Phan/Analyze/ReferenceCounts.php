@@ -4,6 +4,7 @@ namespace Phan\Analyze;
 use \Phan\CLI;
 use \Phan\CodeBase;
 use \Phan\Config;
+use \Phan\Issue;
 use \Phan\Language\Element\Addressable;
 use \Phan\Language\Element\ClassElement;
 use \Phan\Language\Element\Method;
@@ -118,18 +119,18 @@ trait ReferenceCounts {
 
         if ($element->getReferenceCount($code_base) < 1) {
             if ($element instanceof Addressable) {
-                Log::err(
-                    Log::ENOOP,
-                    "{$element->getFQSEN()} may have zero references",
+                Issue::emit(
+                    Issue::NoopZeroReferences,
                     $element->getContext()->getFile(),
-                    $element->getContext()->getLineNumberStart()
+                    $element->getContext()->getLineNumberStart(),
+                    (string)$element->getFQSEN()
                 );
             } else {
-                Log::err(
-                    Log::ENOOP,
-                    "$element may have zero references",
+                Issue::emit(
+                    Issue::NoopZeroReferences,
                     $element->getContext()->getFile(),
-                    $element->getContext()->getLineNumberStart()
+                    $element->getContext()->getLineNumberStart(),
+                    (string)$element
                 );
             }
         }
