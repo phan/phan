@@ -1344,7 +1344,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
             if (!$class->hasParentClassFQSEN()) {
                 throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredClassParent)(
+                    Issue::fromType(Issue::ParentlessClass)(
                         $context->getFile(),
                         $node->lineno ?? 0,
                         [ (string)$context->getClassFQSEN() ]
@@ -1356,7 +1356,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
             if (!$code_base->hasClassWithFQSEN($parent_class_fqsen)) {
                 throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredParentClass)(
+                    Issue::fromType(Issue::UndeclaredClass)(
                         $context->getFile(),
                         $node->lineno ?? 0,
                         [ (string)$parent_class_fqsen ]

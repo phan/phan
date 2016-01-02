@@ -29,7 +29,7 @@ trait ParentClassExists {
                 $clazz->getParentClassFQSEN(),
                 $code_base,
                 $clazz,
-                Issue::UndeclaredClassInherit
+                Issue::UndeclaredExtendedClass
             );
         }
 

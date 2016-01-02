@@ -10,18 +10,17 @@ class Issue {
     const EmptyFile                 = 'PhanEmptyFile';
     const ParentlessClass           = 'PhanParentlessClass';
     const TraitParentReference      = 'PhanTraitParentReference';
+    const UndeclaredClass           = 'PhanUndeclaredClass';
     const UndeclaredClassCatch      = 'PhanUndeclaredClassCatch';
     const UndeclaredClassConstant   = 'PhanUndeclaredClassConstant';
-    const UndeclaredClassInherit    = 'PhanUndeclaredClassInherit';
     const UndeclaredClassInstanceof = 'PhanUndeclaredClassInstanceof';
     const UndeclaredClassMethod     = 'PhanUndeclaredClassMethod';
-    const UndeclaredClassParent     = 'PhanUndeclaredClassParent';
     const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
     const UndeclaredConstant        = 'PhanUndeclaredConstant';
+    const UndeclaredExtendedClass   = 'PhanUndeclaredExtendedClass';
     const UndeclaredFunction        = 'PhanUndeclaredFunction';
     const UndeclaredInterface       = 'PhanUndeclaredInterface';
     const UndeclaredMethod          = 'PhanUndeclaredMethod';
-    const UndeclaredParentClass     = 'PhanUndeclaredParentClass';
     const UndeclaredProperty        = 'PhanUndeclaredProperty';
     const UndeclaredStaticMethod    = 'PhanUndeclaredStaticMethod';
     const UndeclaredStaticProperty  = 'PhanUndeclaredStaticProperty';
@@ -183,15 +182,12 @@ class Issue {
             new Issue(self::ParentlessClass, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Reference to parent of class %s that does not extend anything"
             ),
-            new Issue(self::UndeclaredClassParent, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
-                "Reference to undeclared parent class from %s"
-            ), // TODO: merge with Issue::ParentlessClass ?
-            new Issue(self::UndeclaredParentClass, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
-                "Reference to undeclared parent class %s"
-            ), // TODO: merge with Issue::ParentlessClass ?
-            new Issue(self::UndeclaredClassInherit, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
+            new Issue(self::UndeclaredClass, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
+                "Reference to undeclared class %s"
+            ),
+            new Issue(self::UndeclaredExtendedClass, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Class extends undeclared class %s"
-            ), // TODO: rename UndeclaredClassExtend
+            ),
             new Issue(self::UndeclaredInterface, self::CATEGORY_UNDEFINED, self::SEVERITY_CRITICAL,
                 "Class implements undeclared interface %s"
             ),
@@ -358,10 +354,10 @@ class Issue {
             ),
             new Issue(self::ParamSpecial4, self::CATEGORY_PARAMETER, self::SEVERITY_NORMAL,
                 "The second to last argument to %s must be of type %s"
-            ), // TODO: get rid of this
+            ),
             new Issue(self::ParamTypeMismatch, self::CATEGORY_PARAMETER, self::SEVERITY_NORMAL,
                 "Argument %d is %s but %s() takes %s"
-            ), // TODO: should be a type error. Merge with something else
+            ),
 
             // Issue::CATEGORY_NOOP
             new Issue(self::NoopProperty, self::CATEGORY_NOOP, self::SEVERITY_LOW,
