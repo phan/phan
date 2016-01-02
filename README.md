@@ -91,7 +91,84 @@ packages which are often available with names such as `php-dev`.
 
 Windows users can grab `ast.dll` directly from [PECL snaps](http://windows.php.net/downloads/pecl/snaps/ast/)
 
-## Generating a file list
+# Usage
+
+Running `phan --help` will show usage information for the CLI tool.
+
+```
+Usage: ./phan [options] [files...]
+ -f, --fileset <filename>
+  A file containing a list of PHP files to be analyzed
+
+ -3, --exclude-directory-list <dir_list>
+  A comma-separated list of directories for which any files
+  therein should be parsed but not analyzed.
+
+ -q, --quick
+  Quick mode - doesn't recurse into all function calls
+
+ -b, --backward-compatibility-checks
+  Check for potential PHP 5 -> PHP 7 BC issues
+
+ -i, --ignore-undeclared
+ Ignore undeclared functions and classes
+
+ -y, --minimum-severity <level in {0,5,10}>
+  Minimum severity level (low=0, normal=5, critical=10) to report.
+  Defaults to 0.
+
+ -c, --parent-constructor-required
+  Comma-separated list of classes that require
+  parent::__construct() to be called
+
+ -m <mode>, --output-mode
+  Output mode: text, codeclimate
+
+ -o, --output <filename>
+  Output filename
+
+ -p, --progress-bar
+  Show progress bar
+
+ -a, --dump-ast
+  Emit an AST for each file rather than analyze
+
+ -s, --state-file <filename>
+  Save state to the given file and read from it to speed up
+  future executions
+
+ -r, --reanalyze-file-list <file-list>
+  Force a re-analysis of any files passed in even if they haven't
+  changed since the last analysis
+
+ -d, --project-root-directory
+  Hunt for a directory named .phan in the current or parent
+  directory and read configuration file config.php from that
+  path.
+
+ -h,--help
+  This help information
+```
+
+A thorough analysis might be run via something like
+
+```bash
+phan --minimum-severity=0 \
+     --backward-compatibility-checks \
+     `find src -type f -path '*.php'`
+```
+
+while a casual analysis just looking for the worst offenders might look like
+
+```bash
+phan --minimum-severity=10 \
+     --quick \
+     --ignore-undeclared \
+     `find src -type f -path '*.php'`
+```
+
+
+# Generating a file list
 
 This static analyzer does not track includes or try to figure out autoloader magic. It treats
 all the files you throw at it as one big application. For code encapsulated in classes this
