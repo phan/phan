@@ -1,1 +1,1 @@
-%s:7 TypeError arg#1(s) is int but \closure_%s() takes string defined at %s:4
+%s:7 TypeError Argument 1 (s) is int but \closure_%s() takes string defined at %s:4

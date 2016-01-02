@@ -1,1 +1,1 @@
-%s:6 TypeError return bool but test() is declared to return void
+%s:6 TypeError Return bool but test() is declared to return void

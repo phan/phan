@@ -1,2 +1,2 @@
-%s:18 UndefError call to undeclared method \a::g
-%s:21 UndefError call to undeclared method \b::f
+%s:18 UndefError Call to undeclared method \a::g
+%s:21 UndefError Call to undeclared method \b::f

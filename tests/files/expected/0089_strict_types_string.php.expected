@@ -1,1 +1,1 @@
-%s:5 TypeError arg#1(string) is \c but \strlen() takes string
+%s:5 TypeError Argument 1 (string) is \c but \strlen() takes string

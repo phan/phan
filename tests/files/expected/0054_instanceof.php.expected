@@ -1,2 +1,2 @@
-%s:11 UndefError instanceof check on undeclared class \undefclass
-%s:15 UndefError instanceof check on undeclared class \undefclass
+%s:11 UndefError Instanceof check on undeclared class \undefclass
+%s:15 UndefError Instanceof check on undeclared class \undefclass

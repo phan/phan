@@ -1,8 +1,8 @@
 %s:4 TypeError Default value for int $p can't be bool
 %s:7 TypeError Suspicious array access to bool
-%s:10 TypeError assigning string to property but \c::p is int
+%s:10 TypeError Assigning string to property but \c::p is int
 %s:13 TypeError Cannot instantiate abstract class \d
 %s:16 TypeError Cannot instantiate interface \e
 %s:19 TypeError Only variables can be passed by reference at arg#1 of \f::f()
-%s:22 TypeError return string but f() is declared to return int
+%s:22 TypeError Return string but f() is declared to return int
 %s:25 TypeError Method \h::f is declared to return int but has no return value

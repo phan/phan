@@ -1,1 +1,1 @@
-%s:16 TypeError arg#2(arg) is \stringular|string but \test() takes int defined at %s:10
+%s:16 TypeError Argument 2 (arg) is \stringular|string but \test() takes int defined at %s:10

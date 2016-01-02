@@ -1,4 +1,4 @@
-%s:7 TypeError arg#2(b) is string but \f() takes float defined at %s:5
-%s:14 TypeError arg#2(b) is string but \g() takes \traversable|float|int defined at %s:12
-%s:21 TypeError arg#1(a) is string but \h() takes int defined at %s:20
-%s:21 TypeError arg#2(b) is int but \h() takes string defined at %s:20
+%s:7 TypeError Argument 2 (b) is string but \f() takes float defined at %s:5
+%s:14 TypeError Argument 2 (b) is string but \g() takes \traversable|float|int defined at %s:12
+%s:21 TypeError Argument 1 (a) is string but \h() takes int defined at %s:20
+%s:21 TypeError Argument 2 (b) is int but \h() takes string defined at %s:20

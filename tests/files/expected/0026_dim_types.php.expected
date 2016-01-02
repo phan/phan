@@ -1,1 +1,1 @@
-%s:47 TypeError arg#1(a) is string but \b::f() takes int defined at %s:22
+%s:47 TypeError Argument 1 (a) is string but \b::f() takes int defined at %s:22

@@ -197,13 +197,13 @@ class Issue {
                 "Trying to inherit from unknown class %s"
             ),
             new Issue(self::UndeclaredClassCatch, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "catching undeclared class %s"
+                "Catching undeclared class %s"
             ),
             new Issue(self::UndeclaredClassConstant, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
                 "Can't access constant %s from undeclared class %s"
             ),
             new Issue(self::UndeclaredClassInstanceof, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "instanceof check on undeclared class %s"
+                "Instanceof check on undeclared class %s"
             ),
             new Issue(self::NonClassMethodCall, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
                 "Calling method on non-class type %s"
@@ -212,7 +212,7 @@ class Issue {
                 "Can't access method %s from undeclared class %s"
             ),
             new Issue(self::UndeclaredClassReference, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "reference to undeclared class %s"
+                "Reference to undeclared class %s"
             ),
             new Issue(self::UndeclaredClassReference2, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
                 "Cannot find class %s"
@@ -227,7 +227,7 @@ class Issue {
                 "Cannot find constant with name %s"
             ), // TODO: collapse this
             new Issue(self::UndeclaredFunction, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "call to undefined function %s"
+                "Call to undefined function %s"
             ),
             new Issue(self::UndeclaredInterface, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
                 "Trying to implement unknown interface %s"
@@ -236,10 +236,10 @@ class Issue {
                 "Trying to use unknown trait %s"
             ),
             new Issue(self::UndeclaredMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "call to undeclared method %s"
+                "Call to undeclared method %s"
             ),
             new Issue(self::UndeclaredStaticMethod, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "static call to undeclared method %s"
+                "Static call to undeclared method %s"
             ),
             new Issue(self::UndeclaredProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
                 "Can't access undeclared property %s"
@@ -248,19 +248,19 @@ class Issue {
                 "Can't find property %s in class %s"
             ), // TODO: collapse this
             new Issue(self::UndeclaredTypeParameter, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "parameter of undeclared type %s"
+                "Parameter of undeclared type %s"
             ),
             new Issue(self::UndeclaredTypeProperty, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "property of undeclared type %s"
+                "Property of undeclared type %s"
             ),
             new Issue(self::TraitParentReference, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
                 "Cannot reference parent from trait %s"
             ),
             new Issue(self::UndeclaredClassParent, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "reference to unknown parent class from %s"
+                "Reference to unknown parent class from %s"
             ),
             new Issue(self::UndeclaredParentClass, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
-                "reference to undeclared parent class %s"
+                "Reference to undeclared parent class %s"
             ),
             new Issue(self::UndeclaredVariable, self::CLASS_UNDEFINED, self::SEVERITY_NORMAL,
                 "Variable with name %s doesn't exist"
@@ -274,19 +274,19 @@ class Issue {
 
             // Issue::CLASS_TYPE
             new Issue(self::TypeMismatchProperty, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "assigning %s to property but %s is %s"
+                "Assigning %s to property but %s is %s"
             ),
             new Issue(self::TypeMismatchDefault, self::CLASS_TYPE, self::SEVERITY_NORMAL,
                 "Default value for %s \$%s can't be %s"
             ),
             new Issue(self::TypeMismatchArgument, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "arg#%d(%s) is %s but %s() takes %s defined at %s:%d"
+                "Argument %d (%s) is %s but %s() takes %s defined at %s:%d"
             ),
             new Issue(self::TypeMismatchArgumentInternal, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "arg#%d(%s) is %s but %s() takes %s"
+                "Argument %d (%s) is %s but %s() takes %s"
             ),
             new Issue(self::TypeMismatchReturn, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "return %s but %s() is declared to return %s"
+                "Return %s but %s() is declared to return %s"
             ),
             new Issue(self::TypeMissingReturn, self::CLASS_TYPE, self::SEVERITY_NORMAL,
                 "Method %s is declared to return %s but has no return value"
@@ -295,7 +295,7 @@ class Issue {
                 "%s passed to foreach instead of array"
             ),
             new Issue(self::TypeArrayOperator, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "invalid array operator"
+                "Invalid array operator"
             ),
             new Issue(self::TypeArraySuspicious, self::CLASS_TYPE, self::SEVERITY_NORMAL,
                 "Suspicious array access to %s"
@@ -319,10 +319,10 @@ class Issue {
                 "Access to undeclared static property %s on %s"
             ), // TODO: Move to Issue::CLASS_UNDEFINED
             new Issue(self::TypeInvalidRightOperand, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "invalid operator: left operand is array and right is not"
+                "Invalid operator: left operand is array and right is not"
             ),
             new Issue(self::TypeInvalidLeftOperand, self::CLASS_TYPE, self::SEVERITY_NORMAL,
-                "invalid operator: right operand is array and left is not"
+                "Invalid operator: right operand is array and left is not"
             ),
             new Issue(self::TypeParentConstructorCalled, self::CLASS_TYPE, self::SEVERITY_NORMAL,
                 "%s extends %s but doesn't call parent::__construct()"
@@ -344,7 +344,7 @@ class Issue {
 
             // Issue::CLASS_STATIC
             new Issue(self::StaticCallToNonStatic, self::CLASS_STATIC, self::SEVERITY_NORMAL,
-                "static call to non-static method %s defined at %s:%d"
+                "Static call to non-static method %s defined at %s:%d"
             ),
             new Issue(self::NonStaticSelf, self::CLASS_STATIC, self::SEVERITY_NORMAL,
                 "Using self:: when not in object context"
@@ -366,25 +366,25 @@ class Issue {
 
             // Issue::CLASS_PARAMETER
             new Issue(self::ParamReqAfterOpt, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "required arg follows optional"
+                "Required arg follows optional"
             ),
             new Issue(self::ParamTooMany, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "call with %d arg(s) to %s() which only takes %d arg(s) defined at %s:%d"
+                "Call with %d arg(s) to %s() which only takes %d arg(s) defined at %s:%d"
             ),
             new Issue(self::ParamTooManyInternal, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "call with %d arg(s) to %s() which only takes %d arg(s)"
+                "Call with %d arg(s) to %s() which only takes %d arg(s)"
             ),
             new Issue(self::ParamTooFew, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "call with %d arg(s) to %s() which requires %d arg(s) defined at %s:%d"
+                "Call with %d arg(s) to %s() which requires %d arg(s) defined at %s:%d"
             ),
             new Issue(self::ParamTooFewInternal, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "call with %d arg(s) to %s() which requires %d arg(s)"
+                "Call with %d arg(s) to %s() which requires %d arg(s)"
             ),
             new Issue(self::ParamSpecial1, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "arg#%d(%s) is %s but %s() takes %s when arg#%d is %s"
+                "Argument %d (%s) is %s but %s() takes %s when arg#%d is %s"
             ),
             new Issue(self::ParamSpecial2, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "arg#%d(%s) is %s but %s() takes %s when passed only one arg"
+                "Argument %d (%s) is %s but %s() takes %s when passed only one arg"
             ),
             new Issue(self::ParamSpecial3, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
                 "The last argument to %s must be a %s"
@@ -393,24 +393,24 @@ class Issue {
                 "The second last argument to %s must be a %s"
             ), // TODO: grammar, and get rid of this
             new Issue(self::ParamTypeMismatch, self::CLASS_PARAMETER, self::SEVERITY_NORMAL,
-                "arg#%d is %s but %s() takes %s"
+                "Argument %d is %s but %s() takes %s"
             ), // TODO: should be a type error. Merge with something else
 
             // Issue::CLASS_NOOP
             new Issue(self::NoopProperty, self::CLASS_NOOP, self::SEVERITY_NORMAL,
-                "no-op property"
+                "No-op property"
             ),
             new Issue(self::NoopArray, self::CLASS_NOOP, self::SEVERITY_NORMAL,
-                "no-op array"
+                "No-op array"
             ),
             new Issue(self::NoopConstant, self::CLASS_NOOP, self::SEVERITY_NORMAL,
-                "no-op constant"
+                "No-op constant"
             ),
             new Issue(self::NoopClosure, self::CLASS_NOOP, self::SEVERITY_NORMAL,
-                "no-op closure"
+                "No-op closure"
             ),
             new Issue(self::NoopVariable, self::CLASS_NOOP, self::SEVERITY_NORMAL,
-                "no-op variable"
+                "No-op variable"
             ),
             new Issue(self::NoopZeroReferences, self::CLASS_NOOP, self::SEVERITY_NORMAL,
                 "%s may have zero references"
@@ -445,7 +445,7 @@ class Issue {
 
             // Issue::CLASS_COMPATIBLE
             new Issue(self::CompatiblePHP7, self::CLASS_COMPATIBLE, self::SEVERITY_NORMAL,
-                "expression may not be PHP 7 compatible"
+                "Expression may not be PHP 7 compatible"
             ),
             new Issue(self::CompatibleExpressionPHP7, self::CLASS_COMPATIBLE, self::SEVERITY_NORMAL,
                 "%s expression may not be PHP 7 compatible"

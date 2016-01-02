@@ -1,1 +1,1 @@
-%s:13 TypeError return string[] but test2() is declared to return \datetime[]
+%s:13 TypeError Return string[] but test2() is declared to return \datetime[]
