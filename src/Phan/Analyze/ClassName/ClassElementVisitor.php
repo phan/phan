@@ -9,6 +9,7 @@ use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\AccessException;
 use \Phan\Exception\TypeException;
+use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;

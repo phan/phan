@@ -288,7 +288,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         if ($expression_type->isScalar()) {
             Issue::emit(
                 Issue::TypeMismatchForeach,
-                $context->getFile(),
+                $this->context->getFile(),
                 $node->lineno ?? 0,
                 (string)$expression_type
             );

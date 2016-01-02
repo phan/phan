@@ -4,6 +4,7 @@ namespace Phan\Analyze;
 
 use \Phan\CodeBase;
 use \Phan\Config;
+use \Phan\Issue;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 use \Phan\Log;

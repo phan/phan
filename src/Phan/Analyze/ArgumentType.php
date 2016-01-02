@@ -301,7 +301,7 @@ class ArgumentType {
                     Issue::emit(
                         Issue::TypeMismatchArgumentInternal,
                         $context->getFile(),
-                        $node->lineno,
+                        $node->lineno ?? 0,
                         ($i+1),
                         $parameter_name,
                         $argument_type_expanded,
@@ -312,7 +312,7 @@ class ArgumentType {
                     Issue::emit(
                         Issue::TypeMismatchArgument,
                         $context->getFile(),
-                        $node->lineno,
+                        $node->lineno ?? 0,
                         ($i+1),
                         $parameter_name,
                         $argument_type_expanded,
