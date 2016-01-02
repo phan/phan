@@ -91,13 +91,14 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
             /*
             $saved_output = $output;
             $saved_output = preg_replace('/[^ :\n]*\/'.$test_file_name.'/', '%s', $saved_output);
+            $saved_output = preg_replace('/closure_[^\(]*\(/', 'closure_%s(', $saved_output);
             if (!empty($saved_output) && strlen($saved_output) > 0) {
                 $saved_output .= "\n";
             }
             file_put_contents($expected_file_path, $saved_output);
             $expected_output =
                 trim(file_get_contents($expected_file_path));
-             */
+            */
 
             $wanted_re = preg_replace('/\r\n/', "\n", $expected_output);
 			// do preg_quote, but miss out any %r delimited sections
