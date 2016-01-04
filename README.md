@@ -219,44 +219,6 @@ determine the array sub-type it just becomes `array` which will pass through mos
 checks. In practical terms, this means that `[1,2,'a']` is seen as `array` but `[1,2,3]`
 is `int[]` and `['a','b','c']` as `string[]`.
 
-## Dealing with dynamic code that confuses the analyzer
-
-There are times when there is just no way for the analyzer to get things right.
-For example:
-
-```php
-<?php
-function test() {
-	$var = 0;
-	$var = call_some_func_you_cant_hint();
-	if(is_string($var)) {
-		$pos = strpos($var, '|');
-	}
-}
-```
-
-Your best option is, of course, to go and add a `/** @return string|array */` comment to
-the `call_some_func_you_cant_hint()` function, but there are times when that is not an
-option. As far as the analyzer is concerned, `$var` is an int because all it sees is the
-`$var = 0;` assignment. It will complain about you passing an int to `strpos()`. You can
-help it out by adding a `@var` doc-type comment before the function:
-
-```php
-<?php
-/**
- * @var string|array $var
- */
-function test() {
-	//...
-}
-```
-
-This tells the analyzer that along with the `int` that it figures out on its own, `$var` can
-also be a string or an array inside that function. This is a departure from the normal use of the
-`@var` tag which is to give properties types, so I don't suggest making a habit of using this hack.
-But it can be handy to shut up the analyzer without having to refactor the code to not overload the
-same variable with many different types.
-
 ## Quick Mode Explained
 
 In Quick-mode the scanner doesn't rescan a function or a method's code block every time
