@@ -225,82 +225,91 @@ class AssignmentVisitor extends KindVisitorImplementation {
         assert(is_string($property_name),
             "Property must be string in context {$this->context}");
 
-        // TODO: Use `UnionTypeVisitor::unionTypeFromNode(...)` instead
         try {
-            $clazz = (new ContextNode(
+            $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
-                $node
-            ))->getClass();
+                $node->children['expr']
+            ))->getClassList();
         } catch (CodeBaseException $exception) {
             // This really shouldn't happen since the code
             // parsed cleanly. This should fatal.
-            throw $exception;
+            // throw $exception;
+            return $this->context;
         } catch (\Exception $exception) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
             return $this->context;
         }
 
-        if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
+        foreach ($class_list as $clazz) {
 
-            // Check to see if the class has a __set method
-            if (!$clazz->hasMethodWithName($this->code_base, '__set')) {
-                if (Config::get()->allow_missing_properties) {
-                    try {
-                        // Create the property
-                        (new ContextNode(
-                            $this->code_base,
-                            $this->context,
-                            $node
-                        ))->getOrCreateProperty($property_name);
-                    } catch (\Exception $exception) {
-                        // swallow it
-                    }
-                } else {
-                    Issue::emit(
-                        Issue::UndeclaredProperty,
-                        $this->context->getFile(),
-                        $node->lineno ?? 0,
-                        $property_name
-                    );
+            // Check to see if this class has the property or
+            // a setter
+            if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
+                if (!$clazz->hasMethodWithName($this->code_base, '__set')) {
+                    continue;
                 }
+
             }
 
-            return $this->context;
-        }
+            try {
+                $property = $clazz->getPropertyByNameInContext(
+                    $this->code_base,
+                    $property_name,
+                    $this->context
+                );
+            } catch (IssueException $exception) {
+                $exception->getIssueInstance()();
+                return $this->context;
+            }
 
-        try {
-            $property = $clazz->getPropertyByNameInContext(
-                $this->code_base,
-                $property_name,
-                $this->context
+            if (!$this->right_type->canCastToExpandedUnionType(
+                $property->getUnionType(),
+                $this->code_base
+            )) {
+                Issue::emit(
+                    Issue::TypeMismatchProperty,
+                    $this->context->getFile(),
+                    $node->lineno ?? 0,
+                    (string)$this->right_type,
+                    "{$clazz->getFQSEN()}::{$property->getName()}",
+                    (string)$property->getUnionType()
+                );
+
+                return $this->context;
+            }
+
+            // After having checked it, add this type to it
+            $property->getUnionType()->addUnionType(
+                $this->right_type
             );
-        } catch (IssueException $exception) {
-            $exception->getIssueInstance()();
+
             return $this->context;
         }
 
-        if (!$this->right_type->canCastToExpandedUnionType(
-            $property->getUnionType(),
-            $this->code_base
-        )) {
+        if (Config::get()->allow_missing_properties) {
+            try {
+                // Create the property
+                (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node
+                ))->getOrCreateProperty($property_name);
+            } catch (\Exception $exception) {
+                // swallow it
+            }
+        } else if (!empty($class_list)) {
             Issue::emit(
-                Issue::TypeMismatchProperty,
+                Issue::UndeclaredProperty,
                 $this->context->getFile(),
                 $node->lineno ?? 0,
-                (string)$this->right_type,
-                "{$clazz->getFQSEN()}::{$property->getName()}",
-                (string)$property->getUnionType()
+                $property_name
             );
-
-            return $this->context;
+        } else {
+            // If we hit this part, we couldn't figure out
+            // the class, so we ignore the issue
         }
-
-        // After having checked it, add this type to it
-        $property->getUnionType()->addUnionType(
-            $this->right_type
-        );
 
         return $this->context;
     }

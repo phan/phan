@@ -12,6 +12,7 @@ use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 
@@ -344,6 +345,38 @@ class Clazz extends TypedStructuralElement implements Addressable {
         string $name,
         Context $context
     ) : Property {
+
+        // Check to see if we have the property
+        if (!$code_base->hasProperty($this->getFQSEN(), $name)) {
+
+            // If we don't have the property but do have a
+            // __get method, then we can create the property
+            if ($this->hasMethodWithName($code_base, '__get')) {
+                $property = new Property(
+                    $context,
+                    $name,
+                    new UnionType(),
+                    0
+                );
+
+                $property->setFQSEN(
+                    FullyQualifiedPropertyName::make(
+                        $this->getFQSEN(),
+                        $name
+                    )
+                );
+
+                $this->addProperty($code_base, $property);
+            } else {
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredProperty)(
+                        $context->getFile(),
+                        $context->getLineNumberStart(),
+                        [ "{$this->getFQSEN()}::\$$name}" ]
+                    )
+                );
+            }
+        }
 
         $property = $code_base->getProperty(
             $this->getFQSEN(),

@@ -280,9 +280,7 @@ class UnionType {
      */
     public function addType(Type $type) {
         // Only allow unique elements
-        if (!$this->hasType($type)) {
-            $this->type_list[(string)$type] = $type;
-        }
+        $this->type_list[(string)$type] = $type;
     }
 
     /**

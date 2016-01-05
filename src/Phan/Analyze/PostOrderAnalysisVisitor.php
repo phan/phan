@@ -690,18 +690,46 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 '__construct', false
             );
 
-            // Get the class and increase its reference
-            // count
-            //
-            // TODO: Use `UnionTypeVisitor::unionTypeFromNode(...)` instead
-            $class = $context_node->getClass();
-            $class->addReference($this->context);
+            // Add a reference to each class this method
+            // could be called on
+            foreach ($context_node->getClassList() as $class) {
+                $class->addReference($this->context);
+            }
 
             $this->analyzeCallToMethod(
                 $this->code_base,
                 $method,
                 $node
             );
+
+            $class_list = $context_node->getClassList();
+            foreach ($class_list as $class) {
+                // Make sure we're not instantiating an abstract
+                // class
+                if ($class->isAbstract()
+                    && (!$this->context->hasClassFQSEN()
+                    || $class->getFQSEN() != $this->context->getClassFQSEN())
+                ) {
+                    Issue::emit(
+                        Issue::TypeInstantiateAbstract,
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        (string)$class->getFQSEN()
+                    );
+                }
+
+                // Make sure we're not instantiating an interface
+                if ($class->isInterface()) {
+                    Issue::emit(
+                        Issue::TypeInstantiateInterface,
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        (string)$class->getFQSEN()
+                    );
+                }
+
+            }
+
 
         } catch (IssueException $exception) {
             $exception->getIssueInstance()();
@@ -792,21 +820,23 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             // it on 'parent', we're in a bad spot.
             if(!$method->isStatic() && 'parent' !== $static_class) {
 
-                // TODO: Use `UnionTypeVisitor::unionTypeFromNode(...)` instead
-                $clazz = (new ContextNode(
+                $class_list = (new ContextNode(
                     $this->code_base,
                     $this->context,
-                    $node
-                ))->getClass();
+                    $node->children['class']
+                ))->getClassList();
 
-                Issue::emit(
-                    Issue::StaticCallToNonStatic,
-                    $this->context->getFile(),
-                    $node->lineno ?? 0,
-                    "{$clazz->getFQSEN()}::{$method_name}()",
-                    $method->getContext()->getFile(),
-                    $method->getContext()->getLineNumberStart()
-                );
+                if (!empty($class_list)) {
+                    $class = array_values($class_list)[0];
+                    Issue::emit(
+                        Issue::StaticCallToNonStatic,
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        "{$class->getFQSEN()}::{$method_name}()",
+                        $method->getContext()->getFile(),
+                        $method->getContext()->getLineNumberStart()
+                    );
+                }
             }
 
             // Make sure the parameters look good
@@ -903,7 +933,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         } catch (NodeException $exception) {
             // Swallow it
             return $this->context;
-        } 
+        }
 
         // Check the call for paraemter and argument types
         $this->analyzeCallToMethod(

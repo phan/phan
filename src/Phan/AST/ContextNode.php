@@ -2,7 +2,6 @@
 namespace Phan\AST;
 
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\Analyze\ClassNameVisitor;
 use \Phan\Analyze\ClassName\ValidationVisitor as ClassNameValidationVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
@@ -55,47 +54,6 @@ class ContextNode {
         $this->code_base = $code_base;
         $this->context = $context;
         $this->node = $node;
-    }
-
-    /**
-     * @param bool $validate_class_name
-     * If true, we'll validate that the name of the class
-     * is valid.
-     *
-     * @return string
-     * The class name associated with nodes of various types
-     *
-     * @throws TypeException
-     * An exception may be thrown if the only viable candidate
-     * is a non-class type.
-     */
-    public function getClassName(
-        bool $validate_class_name = true
-    ) : string {
-        // Extract the class name
-        $class_name = (new ClassNameVisitor(
-            $this->code_base, $this->context
-        ))($this->node);
-
-        if (empty($class_name)) {
-            return '';
-        }
-
-        if (!$validate_class_name) {
-            return $class_name;
-        }
-
-        // Validate that the class name is correct
-        if (!(new ClassNameValidationVisitor(
-                $this->context,
-                $this->code_base,
-                $class_name
-            ))($this->node)
-        ) {
-            return '';
-        }
-
-        return $class_name;
     }
 
     /**
@@ -184,7 +142,6 @@ class ContextNode {
         );
 
         $class_list = [];
-
         foreach ($union_type->asClassList($this->code_base)
             as $i => $clazz
         ) {
@@ -192,68 +149,6 @@ class ContextNode {
         }
 
         return $class_list;
-    }
-
-    /**
-     * @param bool $validate_class_name
-     * If true, we'll validate that the name of the class
-     * is valid.
-     *
-     * @return Clazz
-     * The class being referenced in the given node in
-     * the given context
-     *
-     * @throws NodeException
-     * An exception is thrown if we can't understand the node
-     *
-     * @throws CodeBaseExtension
-     * An exception is thrown if we can't find the referenced
-     * class
-     *
-     * @throws TypeException
-     * An exception may be thrown if the only viable candidate
-     * is a non-class type.
-     *
-     * @throws IssueException
-     */
-    public function getClass(
-        bool $validate_class_name = true
-    ) : Clazz {
-        // Figure out the name of the class
-        $class_name = $this->getClassName(
-            $validate_class_name
-        );
-
-        // If we can't figure out the class name (which happens
-        // from time to time), then give up
-        if (empty($class_name)) {
-            throw new NodeException(
-                $this->node,
-                'Could not find class name'
-            );
-        }
-
-        $class_fqsen =
-            FullyQualifiedClassName::fromStringInContext(
-                $class_name,
-                $this->context
-            );
-
-        // Check to see if the class actually exists
-        if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
-            throw new IssueException(
-                Issue::fromType(Issue::UndeclaredClassReference)(
-                    $this->context->getFile(),
-                    $this->node->lineno ?? 0,
-                    [ $class_fqsen ]
-                )
-            );
-        }
-
-        $class =
-            $this->code_base->getClassByFQSEN($class_fqsen);
-
-        return $class;
     }
 
     /**
@@ -522,7 +417,7 @@ class ContextNode {
      * @throws IssueException
      * An exception is thrown if we can't find the given
      * class or if we don't have access to the property (its
-     * private or protected). 
+     * private or protected).
      *
      * @throws TypeException
      * An exception may be thrown if the only viable candidate
@@ -601,7 +496,7 @@ class ContextNode {
                 Issue::fromType(Issue::UndeclaredProperty)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
-                    [ "$class_fqsen->$property_name" ] 
+                    [ "$class_fqsen->$property_name" ]
                 )
             );
         }
@@ -641,10 +536,30 @@ class ContextNode {
             // property
         }
 
-        // Figure out the class we're looking the property
-        // up for
-        // TODO: Use $this->getClassList() instead
-        $class = $this->getClass();
+        try {
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $this->node
+            ))->getClassList();
+        } catch (CodeBaseException $exception) {
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredClassReference)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [ $exception->getFQSEN() ]
+                )
+            );
+        }
+
+        if (empty($class_list)) {
+            throw new UnanalyzableException(
+                $this->node,
+                "Could not get class name from node"
+            );
+        }
+
+        $class = array_values($class_list)[0];
 
         $flags = 0;
         if ($this->node->kind == \ast\AST_STATIC_PROP) {

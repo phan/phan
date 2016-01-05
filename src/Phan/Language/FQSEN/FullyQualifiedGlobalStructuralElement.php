@@ -72,6 +72,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         string $name,
         int $alternate_id = 0
     ) : FullyQualifiedGlobalStructuralElement {
+        /*
         $key = implode('|', [
             get_called_class(),
             __FUNCTION__,
@@ -79,16 +80,19 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
             $name,
             $alternate_id,
         ]);
+         */
 
+        /*
         return static::memoizeStatic($key, function() use (
             $namespace, $name, $alternate_id
         ) {
+         */
             return new static(
                 self::cleanNamespace($namespace),
                 $name,
                 $alternate_id
             );
-        });
+        // });
     }
 
     /**
@@ -98,33 +102,37 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) : FullyQualifiedGlobalStructuralElement {
-        // Split off the alternate_id
-        $parts = explode(',', $fully_qualified_string);
-        $fqsen_string = $parts[0];
-        $alternate_id = (int)($parts[1] ?? 0);
+        return self::memoizeStatic($fully_qualified_string, function()
+            use ($fully_qualified_string) {
 
-        assert(is_int($alternate_id),
-            "Alternate must be an integer in $fully_qualified_string");
+            // Split off the alternate_id
+            $parts = explode(',', $fully_qualified_string);
+            $fqsen_string = $parts[0];
+            $alternate_id = (int)($parts[1] ?? 0);
 
-        $parts = explode('\\', $fqsen_string);
-        $name = array_pop($parts);
+            assert(is_int($alternate_id),
+                "Alternate must be an integer in $fully_qualified_string");
 
-        assert(!empty($name),
-            "The name cannot be empty in the FQSEN '$fully_qualified_string'");
+            $parts = explode('\\', $fqsen_string);
+            $name = array_pop($parts);
 
-        $namespace = '\\' . implode('\\', array_filter($parts));
+            assert(!empty($name),
+                "The name cannot be empty in the FQSEN '$fully_qualified_string'");
 
-        assert(!empty($namespace),
-            "The namespace cannot be empty in the FQSEN '$fully_qualified_string'");
+            $namespace = '\\' . implode('\\', array_filter($parts));
 
-        assert($namespace[0] === '\\',
-            "The first character of the namespace '$namespace' must be \\");
+            assert(!empty($namespace),
+                "The namespace cannot be empty in the FQSEN '$fully_qualified_string'");
 
-        return static::make(
-            $namespace,
-            $name,
-            $alternate_id
-        );
+            assert($namespace[0] === '\\',
+                "The first character of the namespace '$namespace' must be \\");
+
+            return static::make(
+                $namespace,
+                $name,
+                $alternate_id
+            );
+        });
     }
 
     /**
