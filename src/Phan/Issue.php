@@ -300,7 +300,7 @@ class Issue {
                 "Property of undeclared type %s"
             ),
             new Issue(self::NonClassMethodCall, self::CATEGORY_TYPE, self::SEVERITY_CRITICAL,
-                "Call to method on non-class type %s"
+                "Call to method %s on non-class type %s"
             ),
 
             // Issue::CATEGORY_VARIABLE

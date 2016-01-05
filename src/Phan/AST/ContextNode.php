@@ -23,6 +23,7 @@ use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\Type\MixedType;
+use \Phan\Language\Type\StringType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
@@ -225,12 +226,13 @@ class ContextNode {
             if (!$union_type->isEmpty()
                 && $union_type->isNativeType()
                 && !$union_type->hasType(MixedType::instance())
+                && !$union_type->hasType(StringType::instance())
             ) {
                 throw new IssueException(
                     Issue::fromType(Issue::NonClassMethodCall)(
                         $this->context->getFile(),
                         $this->node->lineno ?? 0,
-                        [ (string)$union_type ]
+                        [ $method_name, (string)$union_type ]
                     )
                 );
             }

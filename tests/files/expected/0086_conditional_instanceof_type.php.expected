@@ -1,2 +1,2 @@
-%s:8 PhanNonClassMethodCall Call to method on non-class type null
-%s:14 PhanNonClassMethodCall Call to method on non-class type null
+%s:8 PhanNonClassMethodCall Call to method f on non-class type null
+%s:14 PhanNonClassMethodCall Call to method f on non-class type null
