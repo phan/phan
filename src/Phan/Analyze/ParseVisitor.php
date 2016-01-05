@@ -73,7 +73,6 @@ class ParseVisitor extends ScopeVisitor {
      * parsing the node
      */
     public function visitClass(Decl $node) : Context {
-
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name = (new ContextNode(
                 $this->code_base,

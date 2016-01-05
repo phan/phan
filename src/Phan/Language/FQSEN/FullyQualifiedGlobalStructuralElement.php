@@ -72,27 +72,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         string $name,
         int $alternate_id = 0
     ) : FullyQualifiedGlobalStructuralElement {
-        /*
-        $key = implode('|', [
-            get_called_class(),
-            __FUNCTION__,
-            $namespace,
+        return new static(
+            self::cleanNamespace($namespace),
             $name,
-            $alternate_id,
-        ]);
-         */
-
-        /*
-        return static::memoizeStatic($key, function() use (
-            $namespace, $name, $alternate_id
-        ) {
-         */
-            return new static(
-                self::cleanNamespace($namespace),
-                $name,
-                $alternate_id
-            );
-        // });
+            $alternate_id
+        );
     }
 
     /**
@@ -210,6 +194,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
     ) : FullyQualifiedGlobalStructuralElement {
         $fqsen = clone($this);
         $fqsen->namespace = self::cleanNamespace($namespace);
+        $fqsen->memoizeFlushAll();
         return $fqsen;
     }
 
@@ -250,21 +235,23 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
      * structural element name.
      */
     public function __toString() : string {
-        $fqsen_string = $this->getNamespace();
+        return $this->memoize(__METHOD__, function() {
+            $fqsen_string = $this->getNamespace();
 
-        if ($fqsen_string && $fqsen_string !== '\\') {
-            $fqsen_string .= '\\';
-        }
+            if ($fqsen_string && $fqsen_string !== '\\') {
+                $fqsen_string .= '\\';
+            }
 
-        $fqsen_string .= strtolower($this->getName());
+            $fqsen_string .= strtolower($this->getName());
 
-        // Append an alternate ID if we need to disambiguate
-        // multiple definitions
-        if ($this->getAlternateId()) {
-            $fqsen_string .= ',' . $this->getAlternateId();
-        }
+            // Append an alternate ID if we need to disambiguate
+            // multiple definitions
+            if ($this->getAlternateId()) {
+                $fqsen_string .= ',' . $this->getAlternateId();
+            }
 
-        return $fqsen_string;
+            return $fqsen_string;
+        });
     }
 
 }

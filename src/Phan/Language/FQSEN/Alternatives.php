@@ -18,6 +18,12 @@ trait Alternatives {
     abstract public function getName() : string;
 
     /**
+     * Implementers should use the \Phan\Memoize
+     * trait
+     */
+    abstract protected function memoizeFlushAll();
+
+    /**
      * @var int
      * An alternate ID for the elemnet for use when
      * there are multiple definitions of the element
@@ -68,6 +74,7 @@ trait Alternatives {
 
         $fqsen = clone($this);
         $fqsen->alternate_id = $alternate_id;
+        $fqsen->memoizeFlushAll();
         return $fqsen;
     }
 

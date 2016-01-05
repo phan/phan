@@ -191,6 +191,7 @@ abstract class FullyQualifiedClassElement extends FQSEN {
         $fqsen = clone($this);
         $fqsen->fully_qualified_class_name =
             $fully_qualified_class_name;
+        $fqsen->memoizeFlushAll();
         return $fqsen;
     }
 
@@ -200,14 +201,16 @@ abstract class FullyQualifiedClassElement extends FQSEN {
      * structural element name.
      */
     public function __toString() : string {
-        $fqsen_string = (string)$this->getFullyQualifiedClassName();
-        $fqsen_string .= '::' . $this->getName();
+        return $this->memoize(__METHOD__, function() {
+            $fqsen_string = (string)$this->getFullyQualifiedClassName();
+            $fqsen_string .= '::' . $this->getName();
 
-        if ($this->alternate_id) {
-            $fqsen_string .= ",{$this->alternate_id}";
-        }
+            if ($this->alternate_id) {
+                $fqsen_string .= ",{$this->alternate_id}";
+            }
 
-        return $fqsen_string;
+            return $fqsen_string;
+        });
     }
 
 }
