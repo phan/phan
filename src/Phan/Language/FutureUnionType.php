@@ -2,6 +2,7 @@
 namespace Phan\Language;
 
 use \Phan\CodeBase;
+use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;

@@ -23,6 +23,8 @@ use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\Type\MixedType;
+use \Phan\Language\Type\NullType;
+use \Phan\Language\Type\ObjectType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\UnionType;
 use \Phan\Log;
@@ -225,8 +227,15 @@ class ContextNode {
 
             if (!$union_type->isEmpty()
                 && $union_type->isNativeType()
-                && !$union_type->hasType(MixedType::instance())
-                && !$union_type->hasType(StringType::instance())
+                && !$union_type->hasAnyType([
+                    MixedType::instance(),
+                    ObjectType::instance(),
+                    StringType::instance()
+                ])
+                && !(
+                    Config::get()->null_casts_as_any_type
+                    && $union_type->hasType(NullType::instance())
+                )
             ) {
                 throw new IssueException(
                     Issue::fromType(Issue::NonClassMethodCall)(

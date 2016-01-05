@@ -63,7 +63,7 @@ class Property extends ClassElement implements Addressable {
      */
     public function getUnionType() : UnionType {
         if (null !== ($union_type = $this->getFutureUnionType())) {
-            $this->setUnionType($union_type);
+            $this->getUnionType()->addUnionType($union_type);
         }
 
         return parent::getUnionType();

@@ -116,7 +116,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         bool $should_catch_issue_exception = true
     ) : UnionType {
         if(!($node instanceof Node)) {
-            if($node === null) {
+            if($node === null || $node === 'null') {
                 return new UnionType();
             }
 

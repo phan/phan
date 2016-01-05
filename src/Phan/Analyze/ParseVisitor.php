@@ -350,7 +350,6 @@ class ParseVisitor extends ScopeVisitor {
                     $child_node->children['default'],
                     false
                 );
-
             } catch (IssueException $exception) {
                 $future_union_type = new FutureUnionType(
                     $this->code_base,
@@ -387,10 +386,6 @@ class ParseVisitor extends ScopeVisitor {
                     $node->flags ?? 0
                 );
 
-            if (!empty($future_union_type)) {
-                $property->setFutureUnionType($future_union_type);
-            }
-
             // Add the property to the class
             $clazz->addProperty($this->code_base, $property);
 
@@ -415,6 +410,15 @@ class ParseVisitor extends ScopeVisitor {
                     $variable->getUnionType()
                 );
             }
+
+            // Wait until after we've added the (at)var type
+            // before setting the future so that calling
+            // $property->getUnionType() doesn't force the
+            // future to be reified.
+            if (!empty($future_union_type)) {
+                $property->setFutureUnionType($future_union_type);
+            }
+
         }
 
         return $this->context;

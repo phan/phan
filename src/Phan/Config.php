@@ -47,7 +47,7 @@ class Config {
 
         // Allow null to be cast as any type and for any
         // type to be cast to null.
-        'null_casts_as_any_type' => true,
+        'null_casts_as_any_type' => false,
 
         // Set to true in order to attempt to detect dead
         // (unreferenced) code. Keep in mind that the
