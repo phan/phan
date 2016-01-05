@@ -753,20 +753,18 @@ class Type {
     private static function canonicalNameFromName(
         string $name
     ) : string {
-        static $repmaps = [
-            ['integer', 'double', 'boolean', 'false',
-            'true', 'callback', 'NULL'],
-            ['int', 'float', 'bool', 'bool', 'bool',
-            'callable', 'null']
+        static $map = [
+            'NULL'     => 'null',
+            'boolean'  => 'bool',
+            'callback' => 'callable',
+            'double'   => 'float',
+            'false'    => 'bool',
+            'true'     => 'bool',
+            'integer'  => 'int',
         ];
 
-        if (empty($name)) {
-            return $name;
-        }
-
-        return str_replace(
-            $repmaps[0], $repmaps[1], strtolower($name)
-        );
+        $name = strtolower($name);
+        return $map[$name] ?? $name;
     }
 
     /**
