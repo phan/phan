@@ -15,7 +15,6 @@ use \Phan\Log;
 use \ast\Node;
 
 class ContextMergeVisitor extends KindVisitorImplementation {
-    use \Phan\Profile;
 
     /**
      * @var CodeBase
@@ -53,7 +52,7 @@ class ContextMergeVisitor extends KindVisitorImplementation {
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        array $child_context_list
+        array $child_context_list 
     ) {
         $this->code_base = $code_base;
         $this->context = $context;
@@ -84,25 +83,19 @@ class ContextMergeVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitIf(Node $node) : Context {
-
         // Get the list of scopes for each branch of the
-        //
         // conditional
-        $scope_list = self::time('scope_list', function() {
-            return array_map(function (Context $context) {
-                return $context->getScope();
-            }, $this->child_context_list);
-        });
+        $scope_list = array_map(function (Context $context) {
+            return $context->getScope();
+        }, $this->child_context_list);
 
-        $has_else = self::time('has_else', function() use ($node) {
-            return array_reduce($node->children ?? [],
-                function (bool $carry, $child_node) {
-                    return $carry || (
-                        $child_node instanceof Node
-                        && empty($child_node->children['cond'])
-                    );
-                }, false);
-        });
+        $has_else = array_reduce($node->children ?? [],
+            function (bool $carry, $child_node) {
+                return $carry || (
+                    $child_node instanceof Node
+                    && empty($child_node->children['cond'])
+                );
+            }, false);
 
         // If we're not guaranteed to hit at least one
         // branch, mark the incoming scope as a possibility
@@ -117,74 +110,57 @@ class ContextMergeVisitor extends KindVisitorImplementation {
         }
 
         // Get a list of all variables in all scopes
-        $variable_map = self::time('variable_map', function() use ($scope_list) {
-            $variable_map = [];
-            foreach ($scope_list as $scope) {
-                foreach ($scope->getVariableMap() as $name => $variable) {
-                    $variable_map[$name] = $variable;
-                }
+        $variable_map = [];
+        foreach ($scope_list as $scope) {
+            foreach ($scope->getVariableMap() as $name => $variable) {
+                $variable_map[$name] = $variable;
             }
-            return $variable_map;
-        });
+        }
 
         // A function that determins if a variable is defined on
         // every branch
         $is_defined_on_all_branches =
             function (string $variable_name) use ($scope_list) {
-                return self::time('is_defined_on_all_branches', function()
-                    use ($variable_name, $scope_list)
-                {
-                    return array_reduce($scope_list,
-                        function (bool $has_variable, Scope $scope)
-                            use ($variable_name)
-                        {
-                            return (
-                                $has_variable &&
-                                $scope->hasVariableWithName($variable_name)
-                            );
-                        }, true);
-                });
+                return array_reduce($scope_list,
+                    function (bool $has_variable, Scope $scope)
+                        use ($variable_name)
+                    {
+                        return (
+                            $has_variable &&
+                            $scope->hasVariableWithName($variable_name)
+                        );
+                    }, true);
             };
 
         // Get the intersection of all types for all versions of
         // the variable from every side of the branch
         $common_union_type =
             function (string $variable_name) use ($scope_list) {
-                return self::time('common_union_type', function()
-                    use ($variable_name, $scope_list)
-                {
-                    // Get a list of all variables with the given name from
-                    // each scope
-                    $variable_list = self::time('variable_list', function() use ($scope_list, $variable_name) {
-                        return array_filter(array_map(
-                            function (Scope $scope) use ($variable_name) {
-                                if (!$scope->hasVariableWithName($variable_name)) {
-                                    return null;
-                                }
 
-                                return $scope->getVariableWithName($variable_name);
-                            }, $scope_list));
-                    });
+                // Get a list of all variables with the given name from
+                // each scope
+                $variable_list = array_filter(array_map(
+                    function (Scope $scope) use ($variable_name) {
+                        if (!$scope->hasVariableWithName($variable_name)) {
+                            return null;
+                        }
 
-                    // Get the list of types for each version of the variable
-                    $type_list_list =
-                        self::time('type_list_list', function() use ($variable_list) {
-                            return array_map(function (Variable $variable) {
-                                return $variable->getUnionType()->getTypeList();
-                            }, $variable_list);
-                        });
+                        return $scope->getVariableWithName($variable_name);
+                    }, $scope_list));
 
-                    if (count($type_list_list) < 2) {
-                        return new UnionType($type_list_list[0] ?? []);
-                    }
+                // Get the list of types for each version of the variable
+                $type_list_list = array_map(function (Variable $variable) {
+                    return $variable->getUnionType()->getTypeList();
+                }, $variable_list);
 
-                    return self::time('intersect', function() use ($type_list_list) {
-                        return new UnionType(call_user_func_array(
-                            'array_intersect',
-                            $type_list_list
-                        ));
-                    });
-                });
+                if (count($type_list_list) < 2) {
+                    return new UnionType($type_list_list[0] ?? []);
+                }
+
+                return new UnionType(call_user_func_array(
+                    'array_intersect',
+                    $type_list_list
+                ));
             };
 
         $scope = new Scope();
@@ -206,7 +182,7 @@ class ContextMergeVisitor extends KindVisitorImplementation {
         }
 
         // print '<'.implode("\t", $scope_list) . "\n";
-        // print '>'.$scope."\n";
+        // print '>'.$scope."\n"; 
 
         // Set the new scope with only the variables and types
         // that are common to all branches
