@@ -17,6 +17,8 @@ and examples of all issues that can be detected by Phan. Take a look at the
 [\Phan\Issue](https://github.com/etsy/phan/blob/master/src/Phan/Issue.php) to see the
 definition of each error type.
 
+Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://github.com/etsy/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base) to get a sense of what the process of doing ongoing analysis might look like for you.
+
 See the [tests][tests] directory for some examples of the various checks.
 
 # Getting it running
