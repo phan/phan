@@ -7,8 +7,8 @@ use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
-use \Phan\Exception\IssueException;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\IssueException;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -28,24 +28,23 @@ use \Phan\Language\Type\ScalarType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\Type\VoidType;
 use \Phan\Log;
+use \Phan\Set;
 use \ast\Node;
 
 class UnionType {
     use \Phan\Memoize;
 
     /**
-     * @var Type[]
+     * @var Set
      */
-    private $type_list = [];
+    private $type_set;
 
     /**
-     * @param Type[] $type_list
+     * @param Type[]|\Iterator $type_list
      * An optional list of types represented by this union
      */
-    public function __construct(array $type_list = []) {
-        foreach ($type_list as $type) {
-            $this->addType($type);
-        }
+    public function __construct($type_list = null) {
+        $this->type_set = new Set($type_list);
     }
 
     /**
@@ -55,13 +54,9 @@ class UnionType {
      * @return null
      */
     public function __clone() {
-        $type_list = [];
-
-        foreach ($this->type_list as $key => $type) {
-            $type_list[$key] = $type ? clone($type) : $type;
-        }
-
-        $this->type_list = $type_list;
+        $set  = new Set();
+        $set->addAll($this->type_set);
+        $this->type_set = $set;
     }
 
     /**
@@ -249,28 +244,12 @@ class UnionType {
     }
 
     /**
-     * @return Type[]
-     * The list of simple types associated with this
+     * @return Set
+     * The set of simple types associated with this
      * union type.
      */
-    public function getTypeList() {
-        return $this->type_list;
-    }
-
-    /**
-     * @return Type
-     * Get the first type in this set
-     */
-    public function head() : Type {
-
-        if (empty($this->getTypeList())) {
-            debug_print_backtrace(3);
-        }
-
-        assert(!empty($this->getTypeList()),
-            'Cannot call head() on empty UnionType');
-
-        return array_values($this->getTypeList())[0];
+    public function getTypeSet() {
+        return $this->type_set;
     }
 
     /**
@@ -279,8 +258,7 @@ class UnionType {
      * @return void
      */
     public function addType(Type $type) {
-        // Only allow unique elements
-        $this->type_list[(string)$type] = $type;
+        $this->type_set->attach($type);
     }
 
     /**
@@ -289,9 +267,8 @@ class UnionType {
      * @return void
      */
     public function removeType(Type $type) {
-        unset($this->type_list[(string)$type]);
+        $this->type_set->detach($type);
     }
-
 
     /**
      * @return bool
@@ -299,7 +276,7 @@ class UnionType {
      * type.
      */
     public function hasType(Type $type) : bool {
-        return array_key_exists((string)$type, $this->type_list);
+        return $this->type_set->contains($type);
     }
 
     /**
@@ -308,9 +285,9 @@ class UnionType {
      * @return null
      */
     public function addUnionType(UnionType $union_type) {
-        foreach ($union_type->getTypeList() as $i => $type) {
-            $this->addType($type);
-        }
+        $this->type_set->addAll(
+            $union_type->getTypeSet()
+        );
     }
 
     /**
@@ -320,10 +297,11 @@ class UnionType {
      * or 'self'.
      */
     public function hasSelfType() : bool {
-        return array_reduce($this->getTypeList(),
-            function (bool $carry, Type $type) : bool {
-                return ($carry || $type->isSelfType());
-            }, false);
+        return (false !==
+            $this->type_set->find(function (Type $type) : bool {
+                return $type->isSelfType();
+            })
+        );
     }
 
     /**
@@ -332,11 +310,11 @@ class UnionType {
      * the given type and no others.
      */
     public function isType(Type $type) : bool {
-        if (count($this->getTypeList()) != 1) {
+        if ($this->typeCount() != 1) {
             return false;
         }
 
-        return ((string)$this->head() == (string)$type);
+        return $this->type_set->contains($type);
     }
 
     /**
@@ -345,14 +323,15 @@ class UnionType {
      * types
      */
     public function isNativeType() : bool {
-        if (empty($this->getTypeList())) {
+        if ($this->isEmpty()) {
             return false;
         }
 
-        return array_reduce($this->getTypeList(),
-            function (bool $carry, Type $type) : bool {
-                return ($carry && $type->isNativeType());
-            }, true);
+        return (false ===
+            $this->type_set->find(function(Type $type) : bool {
+                return !$type->isNativeType();
+            })
+        );
     }
 
     /**
@@ -373,10 +352,7 @@ class UnionType {
      * named types
      */
     public function hasAnyType(array $type_list) : bool {
-        return array_reduce($type_list,
-            function(bool $carry, Type $type)  {
-                return ($carry || $this->hasType($type));
-            }, false);
+        return $this->type_set->containsAny($type_list);
     }
 
     /**
@@ -384,7 +360,7 @@ class UnionType {
      * The number of types in this union type
      */
     public function typeCount() : int {
-        return count($this->getTypeList());
+        return $this->type_set->count();
     }
 
     /**
@@ -478,11 +454,11 @@ class UnionType {
         // Check conversion on the cross product of all
         // type combinations and see if any can cast to
         // any.
-        foreach($this->getTypeList() as $source_type) {
+        foreach($this->getTypeSet() as $source_type) {
             if(empty($source_type)) {
                 continue;
             }
-            foreach($target->getTypeList() as $target_type) {
+            foreach($target->getTypeSet() as $target_type) {
                 if(empty($target_type)) {
                     continue;
                 }
@@ -506,11 +482,15 @@ class UnionType {
      * Formerly `function type_scalar`
      */
     public function isScalar() : bool {
-        if ($this->isEmpty() || count($this->getTypeList()) > 1) {
+        if ($this->isEmpty()) {
             return false;
         }
 
-        return $this->head()->isScalar();
+        return (false ===
+            $this->type_set->find(function(Type $type) : bool {
+                return !$type->isScalar();
+            })
+        );
     }
 
     /**
@@ -519,7 +499,7 @@ class UnionType {
      */
     public function nonNativeTypes() : UnionType {
         return new UnionType(
-            array_filter($this->getTypeList(), function(Type $type) {
+            $this->type_set->filter(function(Type $type) {
                 return !$type->isNativeType();
             })
         );
@@ -539,7 +519,7 @@ class UnionType {
     ) {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
-        foreach ($this->nonNativeTypes()->getTypeList()
+        foreach ($this->nonNativeTypes()->getTypeSet()
             as $class_type
         ) {
             // Get the class FQSEN
@@ -568,9 +548,11 @@ class UnionType {
      */
     public function nonGenericArrayTypes() : UnionType {
         return new UnionType(
-            array_filter($this->getTypeList(), function(Type $type) {
-                return !$type->isGenericArray();
-            })
+            $this->type_set->filter(
+                function (Type $type) : bool {
+                    return !$type->isGenericArray();
+                }
+            )
         );
     }
 
@@ -583,10 +565,11 @@ class UnionType {
             return false;
         }
 
-        return array_reduce($this->getTypeList(),
-            function (bool $carry, Type $type) : bool {
-                return ($carry && $type->isGenericArray());
-            }, true);
+        return (false ===
+            $this->type_set->find(function(Type $type) : bool {
+                return !$type->isGenericArray();
+            })
+        );
     }
 
     /**
@@ -608,16 +591,12 @@ class UnionType {
             return NullType::instance()->asUnionType();
         }
 
-        return new UnionType(array_filter(array_map(
-            /**
-             * @return Type|null
-             */
-            function(Type $type) {
-                if (!$type->isGenericArray()) {
-                    return null;
-                }
+        return new UnionType(
+            $this->type_set->filter(function (Type $type) : bool {
+                return $type->isGenericArray();
+            })->map(function (Type $type) : Type {
                 return $type->genericArrayElementType();
-            }, $this->getTypeList()))
+            })
         );
     }
 
@@ -629,27 +608,11 @@ class UnionType {
      */
     public function asGenericArrayTypes() : UnionType {
         return new UnionType(
-            array_map(function (Type $type) : Type {
+            $this->type_set->map(function (Type $type) : Type {
                 return $type->asGenericArrayType();
-            }, $this->getTypeList())
+            })
         );
     }
-
-    /**
-     * @return UnionType
-     * A new UnionType that is a copy of this UnionType without
-     * the given type.
-     */
-    public function withoutType(Type $type) : UnionType {
-        return new UnionType(
-            array_filter($this->getTypeList(),
-                function (Type $type) : bool {
-                    return ((string)$type  != (string)$type);
-                }
-            )
-        );
-    }
-
 
     /**
      * @param CodeBase
@@ -673,7 +636,7 @@ class UnionType {
 
         $union_type = clone($this);
 
-        foreach ($this->getTypeList() as $type) {
+        foreach ($this->type_set as $type) {
             $union_type->addUnionType(
                 $type->asExpandedTypes(
                     $code_base,
@@ -718,20 +681,19 @@ class UnionType {
      * type
      */
     public function __toString() : string {
-        // Copy the list so that we don't sort the
-        // actual list. We rely on order of the list to get
-        // the 'primary' class from the type of a variable,
-        // for instance.
-        $type_list = array_merge([], $this->type_list);
+        // Create a new array containing the string
+        // representations of each type
+        $type_name_list =
+            array_map(function (Type $type) : string {
+                return (string)$type;
+            }, $this->getTypeSet()->toArray());
 
         // Sort the types so that we get a stable
         // representation
-        ksort($type_list);
+        asort($type_name_list);
 
-        // Delimit by '|'
-        return implode('|', array_map(function(Type $type) : string {
-            return (string)$type;
-        }, $type_list));
+        // Join them with a pipe
+        return implode('|', $type_name_list);
     }
 
     /**

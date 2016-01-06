@@ -138,7 +138,7 @@ class Type {
                 if (self::isGenericArrayString($type_name)
                     && ($pos = strpos($type_name, '[]')) !== false
                 ) {
-                    return new GenericArrayType(Type::make(
+                    return GenericArrayType::fromElementType(Type::make(
                         $namespace,
                         substr($type_name, 0, $pos)
                     ));
@@ -167,7 +167,7 @@ class Type {
         // If this is a generic type (like int[]), return
         // a generic of internal types.
         if (false !== ($pos = strpos($type_name, '[]'))) {
-            return new GenericArrayType(
+            return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
                     substr($type_name, 0, $pos)
                 )
@@ -302,7 +302,7 @@ class Type {
                 );
 
             if ($is_generic_array_type) {
-                return new GenericArrayType(Type::make(
+                return GenericArrayType::fromElementType(Type::make(
                     $fqsen->getNamespace(),
                     $fqsen->getName()
                 ));
@@ -574,7 +574,7 @@ class Type {
             return ArrayType::instance();
         }
 
-        return new \Phan\Language\Type\GenericArrayType($this);
+        return GenericArrayType::fromElementType($this);
     }
 
 
@@ -626,7 +626,7 @@ class Type {
 
             // Resurse up the tree to include all types
             $recursive_union_type = new UnionType();
-            foreach ($union_type->getTypeList() as $clazz_type) {
+            foreach ($union_type->getTypeSet() as $clazz_type) {
                 if ((string)$clazz_type != (string)$this) {
                     $recursive_union_type->addUnionType(
                         $clazz_type->asExpandedTypes(

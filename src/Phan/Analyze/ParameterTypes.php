@@ -26,7 +26,7 @@ trait ParameterTypes {
             $union_type = $parameter->getUnionType();
 
             // Look at each type in the parameter's Union Type
-            foreach ($union_type->getTypeList() as $type) {
+            foreach ($union_type->getTypeSet() as $type) {
 
                 // If its a native type or a reference to
                 // self, its OK

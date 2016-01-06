@@ -52,7 +52,7 @@ class ContextMergeVisitor extends KindVisitorImplementation {
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        array $child_context_list 
+        array $child_context_list
     ) {
         $this->code_base = $code_base;
         $this->context = $context;
@@ -150,7 +150,7 @@ class ContextMergeVisitor extends KindVisitorImplementation {
 
                 // Get the list of types for each version of the variable
                 $type_list_list = array_map(function (Variable $variable) {
-                    return $variable->getUnionType()->getTypeList();
+                    return $variable->getUnionType()->getTypeSet()->toArray();
                 }, $variable_list);
 
                 if (count($type_list_list) < 2) {
@@ -182,7 +182,7 @@ class ContextMergeVisitor extends KindVisitorImplementation {
         }
 
         // print '<'.implode("\t", $scope_list) . "\n";
-        // print '>'.$scope."\n"; 
+        // print '>'.$scope."\n";
 
         // Set the new scope with only the variables and types
         // that are common to all branches

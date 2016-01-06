@@ -639,31 +639,31 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                     return $this->context;
                 }
 
-                $type = $union_type->head();
+                foreach ($union_type->getTypeSet() as $type) {
+                    if (!($type instanceof CallableType)) {
+                        continue;
+                    }
 
-                if (!($type instanceof CallableType)) {
-                    return $this->context;
-                }
+                    $closure_fqsen =
+                        FullyQualifiedFunctionName::fromFullyQualifiedString(
+                            (string)$type->asFQSEN()
+                        );
 
-                $closure_fqsen =
-                    FullyQualifiedFunctionName::fromFullyQualifiedString(
-                        (string)$type->asFQSEN()
-                    );
-
-                if ($this->code_base->hasMethod(
-                    $closure_fqsen
-                )) {
-                    // Get the closure
-                    $method = $this->code_base->getMethod(
+                    if ($this->code_base->hasMethod(
                         $closure_fqsen
-                    );
+                    )) {
+                        // Get the closure
+                        $method = $this->code_base->getMethod(
+                            $closure_fqsen
+                        );
 
-                    // Check the call for paraemter and argument types
-                    $this->analyzeCallToMethod(
-                        $this->code_base,
-                        $method,
-                        $node
-                    );
+                        // Check the call for paraemter and argument types
+                        $this->analyzeCallToMethod(
+                            $this->code_base,
+                            $method,
+                            $node
+                        );
+                    }
                 }
             }
         }

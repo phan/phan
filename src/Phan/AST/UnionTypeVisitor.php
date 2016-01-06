@@ -727,7 +727,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess
-        foreach ($union_type->getTypeList() as $type) {
+        foreach ($union_type->getTypeSet() as $type) {
 
             if ($type->isNativeType()) {
                 continue;
@@ -1404,7 +1404,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
-        foreach ($union_type->nonNativeTypes()->getTypeList()
+        foreach ($union_type->nonNativeTypes()->getTypeSet()
             as $class_type
         ) {
             // Get the class FQSEN

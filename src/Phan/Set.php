@@ -8,13 +8,21 @@ namespace Phan;
 class Set extends \SplObjectStorage {
 
     /**
-     * @param object[] $elements
+     * @param \Iterator|array $elements
      * An optional set of items to add to the set
      */
-    public function __construct($elements = null) {
-        foreach ($elements ?? [] as $element) {
+    public function __construct($element_iterator = null) {
+        foreach ($element_iterator ?? [] as $element) {
             $this->attach($element);
         }
+    }
+
+    /**
+     * @return array
+     * An array of all elements in the set is returned
+     */
+    public function toArray() : array {
+        return iterator_to_array($this);
     }
 
     /**
@@ -49,6 +57,74 @@ class Set extends \SplObjectStorage {
         $set->addAll($this);
         $set->addAll($other);
         return $set;
+    }
+
+    /**
+     * @return bool
+     * True if this set contains any elements in the given list
+     */
+    public function containsAny(array $element_list) : bool {
+        foreach ($element_list as $element) {
+            if ($this->contains($element)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param \Closure $closure
+     * A closure taking a set element that returns a boolean
+     * for which true will cause the element to be retained
+     * and false will cause the element to be removed
+     *
+     * @return Set
+     * A new set for which all elements when passed to the given
+     * closure return true
+     */
+    public function filter(\Closure $closure) {
+        $set = new Set();
+        foreach ($this as $element) {
+            if ($closure($element)) {
+                $set->attach($element);
+            }
+        }
+        return $set;
+    }
+
+    /**
+     * @param \Closure $closure
+     * A closure that maps each element of this set
+     * to a new element
+     *
+     * @return Set
+     * A new set containing the mapped values
+     */
+    public function map(\Closure $closure) {
+        $set = new Set();
+        foreach ($this as $element) {
+            $set->attach($closure($element));
+        }
+        return $set;
+    }
+
+    /**
+     * @param \Closure $closure
+     * A closure that takes an element and returns a boolean
+     *
+     * @return mixed|bool
+     * The first element for which the given closure returns
+     * true is returned or false if no elements pass the
+     * given closure
+     */
+    public function find(\Closure $closure) {
+        foreach ($this as $element) {
+            if ($closure($element)) {
+                return $element;
+            }
+        }
+        return false;
     }
 
     /**
