@@ -36,12 +36,32 @@ class Set extends \SplObjectStorage {
     public function intersect(Set $other) : Set {
         $set = new Set();
         foreach ($this as $element) {
-            print spl_object_hash($element)."\n";
             if ($other->contains($element)) {
                 $set->attach($element);
             }
         }
         return $set;
+    }
+
+    /**
+     * @param Set[] $set_list
+     * A list of sets to intersect
+     *
+     * @return Set
+     * A new Set containing only the elements that appear in
+     * all parameters
+     */
+    public static function intersectAll(array $set_list) : Set {
+        if (empty($set_list)) {
+            return new Set();
+        }
+
+        $intersected_set = array_shift($set_list);
+        foreach ($set_list as $set) {
+            $intersected_set = $intersected_set->intersect($set);
+        }
+
+        return $intersected_set;
     }
 
     /**

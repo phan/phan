@@ -10,6 +10,7 @@ use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Language\Context;
+use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type;

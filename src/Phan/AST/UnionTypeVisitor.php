@@ -727,33 +727,15 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess
-        foreach ($union_type->getTypeSet() as $type) {
 
-            if ($type->isNativeType()) {
-                continue;
+        try {
+            foreach ($union_type->asClassList($this->code_base) as $class) {
+                if ($class->getUnionType()->hasType($array_access_type)) {
+                    return $element_types;
+                }
             }
-
-            $class_fqsen = FullyQualifiedClassName::fromType($type);
-
-            // If we can't find the class, the type probably
-            // wasn't a class.
-            if (!$this->code_base->hasClassWithFQSEN(
-                $class_fqsen
-            )) {
-                continue;
-            }
-
-            $class = $this->code_base->getClassByFQSEN(
-                $class_fqsen
-            );
-
-            // If the class has type ArrayAccess, it can be indexed
-            // as if it were an array. That being said, we still don't
-            // know the types of the elements, but at least we don't
-            // error out.
-            if ($class->getUnionType()->hasType($array_access_type)) {
-                return $element_types;
-            }
+        } catch (CodeBaseException $exception) {
+            // Swallow it
         }
 
         if ($element_types->isEmpty()) {

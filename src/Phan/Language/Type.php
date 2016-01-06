@@ -577,7 +577,6 @@ class Type {
         return GenericArrayType::fromElementType($this);
     }
 
-
     /**
      * @param CodeBase
      * The code base to use in order to find super classes, etc.

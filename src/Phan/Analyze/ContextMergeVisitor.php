@@ -12,6 +12,7 @@ use \Phan\Language\Element\Variable;
 use \Phan\Language\Scope;
 use \Phan\Language\UnionType;
 use \Phan\Log;
+use \Phan\Set;
 use \ast\Node;
 
 class ContextMergeVisitor extends KindVisitorImplementation {
@@ -149,18 +150,17 @@ class ContextMergeVisitor extends KindVisitorImplementation {
                     }, $scope_list));
 
                 // Get the list of types for each version of the variable
-                $type_list_list = array_map(function (Variable $variable) {
-                    return $variable->getUnionType()->getTypeSet()->toArray();
+                $type_set_list = array_map(function (Variable $variable) : Set {
+                    return $variable->getUnionType()->getTypeSet();
                 }, $variable_list);
 
-                if (count($type_list_list) < 2) {
-                    return new UnionType($type_list_list[0] ?? []);
+                if (count($type_set_list) < 2) {
+                    return new UnionType($type_set_list[0] ?? []);
                 }
 
-                return new UnionType(call_user_func_array(
-                    'array_intersect',
-                    $type_list_list
-                ));
+                return new UnionType(
+                    Set::intersectAll($type_set_list)
+                );
             };
 
         $scope = new Scope();
