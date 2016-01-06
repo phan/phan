@@ -2,6 +2,7 @@
 namespace Phan;
 
 trait Memoize {
+    use Profile;
 
     /**
      * @var array
@@ -43,7 +44,9 @@ trait Memoize {
      */
     protected function memoize(string $key, \Closure $fn) {
         if (!array_key_exists($key, $this->memoized_data)) {
-            $this->memoized_data[$key] = $fn();
+            self::time($key, function() use ($key, $fn) {
+                $this->memoized_data[$key] = $fn();
+            });
         }
 
         return $this->memoized_data[$key];

@@ -59,13 +59,10 @@ abstract class FullyQualifiedClassElement extends FQSEN {
         string $name,
         int $alternate_id = 0
     ) {
-        $key = implode('|', [
-            get_called_class(),
-            __FUNCTION__,
-            (string)$fully_qualified_class_name,
-            $name,
-            $alternate_id
-        ]);
+        $name = static::canonicalName($name);
+
+        $key = self::toString($fully_qualified_class_name, $name, $alternate_id)
+            . '|' . get_called_class();
 
         return self::memoizeStatic($key, function() use (
             $fully_qualified_class_name,
@@ -74,7 +71,7 @@ abstract class FullyQualifiedClassElement extends FQSEN {
         ) {
             return new static(
                 $fully_qualified_class_name,
-                static::canonicalName($name),
+                $name,
                 $alternate_id
             );
         });
@@ -197,20 +194,40 @@ abstract class FullyQualifiedClassElement extends FQSEN {
 
     /**
      * @return string
+     * A string representation of the given values
+     */
+    public static function toString(
+        FullyQualifiedClassName $fqsen,
+        string $name,
+        int $alternate_id
+    ) : string {
+        $fqsen_string = (string)$fqsen;
+        $fqsen_string .= '::' . $name;
+
+        if ($alternate_id) {
+            $fqsen_string .= ",$alternate_id";
+        }
+
+        return $fqsen_string;
+    }
+
+    /**
+     * @return string
      * A string representation of this fully-qualified
      * structural element name.
      */
     public function __toString() : string {
-        return $this->memoize(__METHOD__, function() {
-            $fqsen_string = (string)$this->getFullyQualifiedClassName();
-            $fqsen_string .= '::' . $this->getName();
-
-            if ($this->alternate_id) {
-                $fqsen_string .= ",{$this->alternate_id}";
-            }
-
-            return $fqsen_string;
+        $fqsen_string = $this->memoize(__METHOD__, function() {
+            return self::toString(
+                $this->getFullyQualifiedClassName(),
+                $this->getName(),
+                $this->alternate_id
+            );
         });
+
+        // print $fqsen_string . '|' . spl_object_hash($this) . "\n";
+
+        return $fqsen_string;
     }
 
 }

@@ -11,30 +11,6 @@ use \Phan\Language\UnionType;
 class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement {
 
     /**
-     * @param string $namespace
-     * The namespace in an object's scope
-     *
-     * @param string $class_name
-     * A class name if one is in scope or the empty
-     * string otherwise.
-     *
-     * @param int $class_alternate_id
-     * An alternate ID for the class for use when
-     * there are multiple definitions of the class
-     */
-    protected function __construct(
-        string $namespace,
-        string $class_name,
-        int $class_alternate_id = 0
-    ) {
-        parent::__construct(
-            $namespace,
-            $class_name,
-            $class_alternate_id
-        );
-    }
-
-    /**
      * @return int
      * The namespace map type such as T_CLASS or T_FUNCTION
      */
