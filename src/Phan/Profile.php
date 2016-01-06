@@ -51,10 +51,21 @@ trait Profile {
         // Create a shutdown function to emit the log when we're
         // all done
         register_shutdown_function(function() {
+            $label_metric_map = [];
+
+            // Compute whatever metric we care about
             foreach (self::$label_delta_map as $label => $delta_list) {
-                $average_time =
-                    array_sum($delta_list)/count($delta_list);
-                print $label . "\t" . $average_time . "\n";
+                $total_time = array_sum($delta_list);
+                // $average_time = $total_time/count($delta_list);
+                $label_metric_map[$label] = $total_time;
+            }
+
+            // Sort such that the highest metric value is on top
+            arsort($label_metric_map);
+
+            // Print it all out
+            foreach ($label_metric_map as $label => $metric) {
+                printf("%s\t%0.8f\n", $label, $metric);
             }
         });
     }

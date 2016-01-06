@@ -46,6 +46,7 @@ class Phan {
         CodeBase $code_base,
         array $file_path_list
     ) {
+
         $file_count = count($file_path_list);
 
         // We'll construct a set of files that we'll
@@ -224,6 +225,13 @@ class Phan {
                 continue;
             }
 
+            if (!self::shouldVisit($child_node)) {
+                $child_context->withLineNumberStart(
+                    $child_node->lineno ?? 0
+                );
+                continue;
+            }
+
             // Step into each child node and get an
             // updated context for the node
             $child_context = $this->parseNodeInContext(
@@ -396,6 +404,13 @@ class Phan {
                 continue;
             }
 
+            if (!self::shouldVisit($child_node)) {
+                $child_context->withLineNumberStart(
+                    $child_node->lineno ?? 0
+                );
+                continue;
+            }
+
             // All nodes but conditionals pass context to
             // their siblings. Child nodes of conditionals
             // operate in a context independent of eachother
@@ -484,5 +499,54 @@ class Phan {
         }
 
         return false;
+    }
+
+    /**
+     * Possible Premature Optimization. We can trim a bunch of
+     * calls to nodes that we'll never analyze during parsing,
+     * pre-order analysis or post-order analysis.
+     *
+     * @param Node $node
+     * A node we'd like to determine if we should visit
+     *
+     * @return bool
+     * True if the given node should be visited or false if
+     * it should be skipped entirely
+     */
+    private static function shouldVisit(Node $node) {
+        switch ($node->kind) {
+        case \ast\AST_ARRAY_ELEM:
+        case \ast\AST_ARG_LIST:
+        case \ast\AST_ASSIGN_OP:
+        case \ast\AST_BREAK:
+        case \ast\AST_CAST:
+        case \ast\AST_CLONE:
+        case \ast\AST_CLOSURE_USES:
+        case \ast\AST_CLOSURE_VAR:
+        case \ast\AST_COALESCE:
+        case \ast\AST_CONST_DECL:
+        case \ast\AST_CONST_ELEM:
+        case \ast\AST_CONTINUE:
+        case \ast\AST_EMPTY:
+        case \ast\AST_ENCAPS_LIST:
+        case \ast\AST_EXIT:
+        case \ast\AST_INCLUDE_OR_EVAL:
+        case \ast\AST_ISSET:
+        case \ast\AST_MAGIC_CONST:
+        case \ast\AST_NAME:
+        case \ast\AST_NAME_LIST:
+        case \ast\AST_PARAM:
+        case \ast\AST_PARAM_LIST:
+        case \ast\AST_POST_INC:
+        case \ast\AST_PRE_INC:
+        case \ast\AST_STATIC_PROP:
+        case \ast\AST_TYPE:
+        case \ast\AST_UNARY_OP:
+        case \ast\AST_UNSET:
+        case \ast\AST_YIELD:
+            return false;
+        }
+
+        return true;
     }
 }
