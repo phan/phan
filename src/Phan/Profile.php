@@ -56,8 +56,9 @@ trait Profile {
             // Compute whatever metric we care about
             foreach (self::$label_delta_map as $label => $delta_list) {
                 $total_time = array_sum($delta_list);
-                // $average_time = $total_time/count($delta_list);
                 $label_metric_map[$label] = $total_time;
+                // $average_time = $total_time/count($delta_list);
+                // $label_metric_map[$label] = $average_time;
             }
 
             // Sort such that the highest metric value is on top

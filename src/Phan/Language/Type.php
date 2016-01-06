@@ -51,6 +51,22 @@ class Type {
         string $namespace,
         string $name
     ) {
+        $this->namespace = $namespace;
+        $this->name = $name;
+    }
+
+    /**
+     * @param string $name
+     * The name of the type such as 'int' or 'MyClass'
+     *
+     * @param string $namespace
+     * The (optional) namespace of the type such as '\'
+     * or '\Phan\Language'.
+     */
+    protected static function make(
+        string $namespace,
+        string $name
+    ) : Type {
         assert($namespace && 0 === strpos($namespace, '\\'),
             "Namespace must be fully qualified");
 
@@ -60,23 +76,32 @@ class Type {
         assert('\\' === $namespace[0],
             "Namespace must be fully qualified");
 
-        if (empty($name)) {
-            debug_print_backtrace(3);
-        }
-
         assert(!empty($name),
             "Type name cannot be empty");
 
         assert(false === strpos($name, '|'),
             "Type name '{$name}' may not contain a pipe.");
 
-        $this->namespace = $namespace ?: '\\';
+        // Create a canonical representation of the
+        // namespace and name
+        $namespace = $namespace ?: '\\';
 
-        if ('\\' === $this->namespace) {
-            $this->name = self::canonicalNameFromName($name);
+        if ('\\' === $namespace) {
+            $name = self::canonicalNameFromName($name);
         } else {
-            $this->name = strtolower($name);
+            $name = strtolower($name);
         }
+
+        // Make sure we only ever create exactly one
+        // object for any unique type
+        static $canonical_object_map = [];
+        $key = $namespace . '\\' . $name;
+        if (empty($canonical_object_map[$key])) {
+            $canonical_object_map[$key] =
+                new static($namespace, $name);
+        }
+
+        return $canonical_object_map[$key];
     }
 
     /**
@@ -113,14 +138,14 @@ class Type {
                 if (self::isGenericArrayString($type_name)
                     && ($pos = strpos($type_name, '[]')) !== false
                 ) {
-                    return new GenericArrayType(new Type(
+                    return new GenericArrayType(Type::make(
                         $namespace,
                         substr($type_name, 0, $pos)
                     ));
                 }
 
                 // If we have a namespace, we're all set
-                return new Type($namespace, $type_name);
+                return Type::make($namespace, $type_name);
             });
     }
 
@@ -139,7 +164,6 @@ class Type {
     public static function fromInternalTypeName(
         string $type_name
     ) : Type {
-
         // If this is a generic type (like int[]), return
         // a generic of internal types.
         if (false !== ($pos = strpos($type_name, '[]'))) {
@@ -278,13 +302,13 @@ class Type {
                 );
 
             if ($is_generic_array_type) {
-                return new GenericArrayType(new Type(
+                return new GenericArrayType(Type::make(
                     $fqsen->getNamespace(),
                     $fqsen->getName()
                 ));
             }
 
-            return new Type(
+            return Type::make(
                 $fqsen->getNamespace(),
                 $fqsen->getName()
             );
@@ -528,7 +552,7 @@ class Type {
             assert($this->name !== '[]' && $this->name !== 'array',
                 "Non-generic type '{$this->name}' requested to be non-generic");
 
-            return new Type(
+            return Type::make(
                 $this->getNamespace(),
                 substr($this->name, 0, $pos)
             );

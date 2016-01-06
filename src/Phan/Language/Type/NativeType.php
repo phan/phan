@@ -10,7 +10,7 @@ abstract class NativeType extends Type {
         static $instance = null;
 
         if (empty($instance)) {
-            $instance = new static('\\', static::NAME);
+            $instance = static::make('\\', static::NAME);
         }
 
         return $instance;
@@ -29,6 +29,5 @@ abstract class NativeType extends Type {
         // non-fully-qualified names
         return $this->name;
     }
-
 
 }
