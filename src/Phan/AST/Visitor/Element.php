@@ -5,6 +5,7 @@ use \Phan\Debug;
 use \ast\Node;
 
 class Element {
+    use \Phan\Profile;
 
     /**
      * @var Node

@@ -90,6 +90,11 @@ class Config {
         // The vesion of the AST (defined in php-ast)
         // we're using
         'ast_version' => 30,
+
+        // Set to true to emit profiling data on how long various
+        // parts of Phan took to run. You likely don't care to do
+        // this.
+        'profiler_enabled' => false,
     ];
 
     /**
