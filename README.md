@@ -107,6 +107,9 @@ Usage: ./phan [options] [files...]
  -f, --fileset <filename>
   A file containing a list of PHP files to be analyzed
 
+ -l, --directory <directory>
+  A directory to recursively read PHP files from to analyze
+
  -3, --exclude-directory-list <dir_list>
   A comma-separated list of directories for which any files
   therein should be parsed but not analyzed.
