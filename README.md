@@ -35,7 +35,7 @@ To get phan running;
 3. Test phan on itself by running the following
 
 ```sh
-./phan `find src/ -type f -path '*.php'`
+./phan --directory src/
 ```
 
 You can see the full list of command line options by running `phan -h`.
