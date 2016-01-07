@@ -35,14 +35,6 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         string $name,
         int $alternate_id = 0
     ) {
-        // Transfer any relative namespace stuff from the
-        // name to the namespace.
-        $name_parts= explode('\\', $name);
-        $name = array_pop($name_parts);
-        $namespace = implode('\\', array_merge([$namespace], $name_parts));
-
-        parent::__construct($name);
-
         assert(!empty($name),
             "The name cannot be empty");
 
@@ -52,6 +44,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         assert($namespace[0] === '\\',
             "The first character of a namespace must be \\, but got $namespace");
 
+        parent::__construct($name);
         $this->namespace = $namespace;
         $this->alternate_id = $alternate_id;
     }
@@ -72,11 +65,28 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
         string $name,
         int $alternate_id = 0
     ) : FullyQualifiedGlobalStructuralElement {
-        return new static(
-            self::cleanNamespace($namespace),
-            $name,
-            $alternate_id
-        );
+
+        // Transfer any relative namespace stuff from the
+        // name to the namespace.
+        $name_parts= explode('\\', $name);
+        $name = array_pop($name_parts);
+        $namespace = implode('\\', array_merge([$namespace], $name_parts));
+        $namespace = self::cleanNamespace($namespace);
+
+        $key = implode('|', [
+            get_called_class(),
+            static::toString($namespace, $name, $alternate_id)
+        ]);
+
+        return self::memoizeStatic($key, function()
+            use ($namespace, $name, $alternate_id)
+        {
+            return new static(
+                $namespace,
+                $name,
+                $alternate_id
+            );
+        });
     }
 
     /**
@@ -192,10 +202,18 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
     public function withNamespace(
         string $namespace
     ) : FullyQualifiedGlobalStructuralElement {
+        /*
         $fqsen = clone($this);
         $fqsen->namespace = self::cleanNamespace($namespace);
         $fqsen->memoizeFlushAll();
         return $fqsen;
+        */
+
+        return static::make(
+            self::cleanNamespace($namespace),
+            $this->getName(),
+            $this->getAlternateId()
+        );
     }
 
     /**
@@ -234,23 +252,40 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
      * A string representation of this fully-qualified
      * structural element name.
      */
+    public static function toString(
+        string $namespace,
+        string $name,
+        int $alternate_id
+    ) : string {
+        $fqsen_string = $namespace;
+
+        if ($fqsen_string && $fqsen_string !== '\\') {
+            $fqsen_string .= '\\';
+        }
+
+        $fqsen_string .= static::canonicalName($name);
+
+        // Append an alternate ID if we need to disambiguate
+        // multiple definitions
+        if ($alternate_id) {
+            $fqsen_string .= ',' . $alternate_id;
+        }
+
+        return $fqsen_string;
+    }
+
+    /**
+     * @return string
+     * A string representation of this fully-qualified
+     * structural element name.
+     */
     public function __toString() : string {
         return $this->memoize(__METHOD__, function() {
-            $fqsen_string = $this->getNamespace();
-
-            if ($fqsen_string && $fqsen_string !== '\\') {
-                $fqsen_string .= '\\';
-            }
-
-            $fqsen_string .= strtolower($this->getName());
-
-            // Append an alternate ID if we need to disambiguate
-            // multiple definitions
-            if ($this->getAlternateId()) {
-                $fqsen_string .= ',' . $this->getAlternateId();
-            }
-
-            return $fqsen_string;
+            return static::toString(
+                $this->getNamespace(),
+                $this->getName(),
+                $this->getAlternateId()
+            );
         });
     }
 

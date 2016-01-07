@@ -61,6 +61,15 @@ abstract class FQSEN {
 
     /**
      * @return string
+     * The canonical representation of the name of the object. Functions
+     * and Methods, for instance, lowercase their names.
+     */
+    public static function canonicalName(string $name) : string {
+        return $name;
+    }
+
+    /**
+     * @return string
      * A string representation of this fully-qualified
      * structural element name.
      */
