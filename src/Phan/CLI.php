@@ -63,29 +63,35 @@ class CLI {
                 break;
             case 'f':
             case 'fileset':
-                if(is_file($value) && is_readable($value)) {
-                    $this->file_list = array_merge(
-                        $this->file_list,
-                        file($value, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
-                    );
-                } else {
-                    error_log("Unable to read file $value");
+                $file_list = is_array($value) ? $value : [$value];
+                foreach ($file_list as $file_name) {
+                    if(is_file($file_name) && is_readable($file_name)) {
+                        $this->file_list = array_merge(
+                            $this->file_list,
+                            file($file_name, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
+                        );
+                    } else {
+                        error_log("Unable to read file $file_name");
+                    }
                 }
                 break;
             case 'l':
             case 'directory':
                 try {
-                    $iterator = new \RegexIterator(
-                        new \RecursiveIteratorIterator(
-                            new \RecursiveDirectoryIterator($value)
-                        ),
-                        '/^.+\.php$/i',
-                        \RecursiveRegexIterator::GET_MATCH
-                    );
-                    $this->file_list = array_merge(
-                        $this->file_list,
-                        array_keys(iterator_to_array($iterator))
-                    );
+                    $directory_list = is_array($value) ? $value : [$value];
+                    foreach ($directory_list as $directory_name) {
+                        $iterator = new \RegexIterator(
+                            new \RecursiveIteratorIterator(
+                                new \RecursiveDirectoryIterator($directory_name)
+                            ),
+                            '/^.+\.php$/i',
+                            \RecursiveRegexIterator::GET_MATCH
+                        );
+                        $this->file_list = array_merge(
+                            $this->file_list,
+                            array_keys(iterator_to_array($iterator))
+                        );
+                    }
                 } catch (\Exception $exception) {
                     error_log($exception->getMessage());
                 }
