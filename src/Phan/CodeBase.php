@@ -63,42 +63,12 @@ class CodeBase {
         $this->addClassesByNames($internal_interface_name_list);
         $this->addClassesByNames($internal_trait_name_list);
         $this->addFunctionsByNames($internal_function_name_list);
-        $this->addUndefinedFunctionSignatures();
 
         // Set a version on this class so that we can
         // error out when reading old versions of serialized
         // files
         $this->code_base_version =
             CodeBase::CODE_BASE_VERSION;
-    }
-
-    /**
-     * Add any functions from the FunctionSignatureMap that aren't
-     * defined in this version of PHP to the code base
-     *
-     * @return void
-     */
-    private function addUndefinedFunctionSignatures() {
-        $function_signature_map =
-            UnionType::internalFunctionSignatureMap();
-
-        foreach ($function_signature_map as $function_name => $signature) {
-            $fqsen = FullyQualifiedFunctionName::make(
-                '\\', $function_name
-            );
-
-            // If we already loaded the function, skip it
-            if ($this->hasMethod($fqsen)) {
-                continue;
-            }
-
-            // Add each method returned for the signature
-            foreach (Method::methodListFromSignature(
-                $this, $fqsen, $signature
-            ) as $method) {
-                $this->addMethod($method);
-            }
-        }
     }
 
     /**

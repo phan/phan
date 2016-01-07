@@ -122,10 +122,7 @@ class FileRef implements \Serializable {
      * @return string
      */
     public function __toString() : string {
-        return implode(':', [
-            $this->file,
-            $this->line_number_start ?? 0
-        ]);
+        return $this->file . ':' . $this->line_number_start;
     }
 
     public function serialize() {

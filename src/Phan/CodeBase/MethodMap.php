@@ -8,6 +8,7 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\UnionType;
 use \Phan\Model\Method as MethodModel;
 
 trait MethodMap {
@@ -112,6 +113,32 @@ trait MethodMap {
     ) {
         if (!empty($this->method_map[$scope][$name])) {
             return true;
+        }
+
+        // For elements in the root namespace, check to see if
+        // there's a static method signature for something that
+        // hasn't been loaded into memory yet and create a
+        // method out of it as its requested
+        if ('\\' == $scope) {
+            $function_signature_map =
+                UnionType::internalFunctionSignatureMap();
+
+            $fqsen = FullyQualifiedFunctionName::make(
+                $scope, $name
+            );
+
+            if (!empty($function_signature_map[$name])) {
+                $signature = $function_signature_map[$name];
+
+                // Add each method returned for the signature
+                foreach (Method::methodListFromSignature(
+                    $this, $fqsen, $signature
+                ) as $method) {
+                    $this->addMethod($method);
+                }
+
+                return true;
+            }
         }
 
         if (Database::isEnabled()) {
