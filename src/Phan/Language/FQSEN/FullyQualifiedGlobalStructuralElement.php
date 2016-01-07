@@ -202,17 +202,28 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
     public function withNamespace(
         string $namespace
     ) : FullyQualifiedGlobalStructuralElement {
-        /*
-        $fqsen = clone($this);
-        $fqsen->namespace = self::cleanNamespace($namespace);
-        $fqsen->memoizeFlushAll();
-        return $fqsen;
-        */
-
         return static::make(
             self::cleanNamespace($namespace),
             $this->getName(),
             $this->getAlternateId()
+        );
+    }
+
+    /**
+     * @return FQSEN
+     * A FQSEN with the given alternate_id set
+     */
+    public function withAlternateId(
+        int $alternate_id
+    ) : FQSEN {
+        if ($this->getAlternateId() === $alternate_id) {
+            return $this;
+        }
+
+        return static::make(
+            $this->getNamespace(),
+            $this->getName(),
+            $alternate_id
         );
     }
 

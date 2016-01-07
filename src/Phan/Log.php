@@ -187,6 +187,11 @@ class Log {
             fclose($fp);
         }
     }
+
+    public static function flush() {
+        $log = self::getInstance();
+        $log->msgs = [];
+    }
 }
 
 set_error_handler('\\phan\\Log::errorHandler', -1);

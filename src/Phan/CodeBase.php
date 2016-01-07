@@ -59,6 +59,8 @@ class CodeBase {
         array $internal_trait_name_list,
         array $internal_function_name_list
     ) {
+        $this->constructClassMap();
+
         $this->addClassesByNames($internal_class_name_list);
         $this->addClassesByNames($internal_interface_name_list);
         $this->addClassesByNames($internal_trait_name_list);
@@ -69,6 +71,10 @@ class CodeBase {
         // files
         $this->code_base_version =
             CodeBase::CODE_BASE_VERSION;
+    }
+
+    public function __clone() {
+        $this->class_map = clone($this->class_map);
     }
 
     /**

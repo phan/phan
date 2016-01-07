@@ -170,17 +170,31 @@ abstract class FullyQualifiedClassElement extends FQSEN {
 
     /**
      * @return static
-     * A clone of this object with the given fully qualified
+     * A new object with the given fully qualified
      * class name
      */
     public function withFullyQualifiedClassName(
         FullyQualifiedClassName $fully_qualified_class_name
     ) {
-        $fqsen = clone($this);
-        $fqsen->fully_qualified_class_name =
-            $fully_qualified_class_name;
-        $fqsen->memoizeFlushAll();
-        return $fqsen;
+        return static::make(
+            $fully_qualified_class_name,
+            $this->getName(),
+            $this->getAlternateId()
+        );
+    }
+
+    /**
+     * @return FQSEN
+     * A FQSEN with the given alternate_id set
+     */
+    public function withAlternateId(
+        int $alternate_id
+    ) : FQSEN {
+        return static::make(
+            $this->getFullyQualifiedClassName(),
+            $this->getName(),
+            $alternate_id
+        );
     }
 
     /**

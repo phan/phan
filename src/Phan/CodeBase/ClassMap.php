@@ -6,6 +6,7 @@ use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Map;
 use \Phan\Model\Clazz as ClazzModel;
 
 trait ClassMap {
@@ -17,30 +18,37 @@ trait ClassMap {
     abstract function getFileByPath(string $file_path) : File;
 
     /**
-     * @var Class[]
+     * @var Clazz[]|Map
      * A map from fqsen string to the class it
      * represents
      */
-    private $class_map = [];
+    private $class_map;
 
     /**
-     * Get a map from FQSEN strings to the class it
+     * Initialize the map
+     */
+    public function constructClassMap() {
+        $this->class_map = new Map;
+    }
+
+    /**
+     * Get a map from FQSEN to the class it
      * represents for all known classes.
      *
-     * @return Clazz[]
-     * A map from FQSEN string to Clazz
+     * @return Map
+     * A map from FQSEN to Clazz
      */
-    public function getClassMap() : array {
+    public function getClassMap() : Map {
         return $this->class_map;
     }
 
     /**
-     * @param Clazz[] $class_map
+     * @param Map $class_map
      * A map from FQSEN string to Clazz
      *
-     * @return null
+     * @return void
      */
-    private function setClassMap(array $class_map) {
+    private function setClassMap(Map $class_map) {
         $this->class_map = $class_map;
     }
 
@@ -57,17 +65,17 @@ trait ClassMap {
     ) : Clazz {
         // If we can't find the class, attempt to read it from
         // the database
-        if (empty($this->class_map[(string)$fqsen])
+        if (empty($this->class_map[$fqsen])
             && Database::isEnabled()
         ) {
-            $this->class_map[(string)$fqsen] =
+            $this->class_map[$fqsen] =
                 ClazzModel::read(
                     Database::get(),
                     (string)$fqsen
                 )->getClass();
         }
 
-        return $this->class_map[(string)$fqsen];
+        return $this->class_map[$fqsen];
     }
 
     /**
@@ -76,7 +84,7 @@ trait ClassMap {
      */
     public function hasClassWithFQSEN(FullyQualifiedClassName $fqsen) : bool {
         // Check memory for the class
-        if (!empty($this->class_map[(string)$fqsen])) {
+        if (!empty($this->class_map[$fqsen])) {
             return true;
         }
 
@@ -99,7 +107,7 @@ trait ClassMap {
      * @return null
      */
     public function addClass(Clazz $class) {
-        $this->class_map[(string)$class->getFQSEN()]
+        $this->class_map[$class->getFQSEN()]
             = $class;
 
         // For classes that aren't internal PHP classes
@@ -120,7 +128,7 @@ trait ClassMap {
     private function addClassesByNames(array $class_name_list) {
         foreach ($class_name_list as $i => $class_name) {
             $clazz = Clazz::fromClassName($this, $class_name);
-            $this->class_map[(string)$clazz->getFQSEN()] = $clazz;
+            $this->class_map[$clazz->getFQSEN()] = $clazz;
         }
     }
 
@@ -153,6 +161,6 @@ trait ClassMap {
         }
 
         // Remove it from memory
-        unset($this->class_map[(string)$fqsen]);
+        unset($this->class_map[$fqsen]);
     }
 }

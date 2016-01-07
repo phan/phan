@@ -65,18 +65,9 @@ trait Alternatives {
      * @return FQSEN
      * A FQSEN with the given alternate_id set
      */
-    public function withAlternateId(
+    abstract public function withAlternateId(
         int $alternate_id
-    ) : FQSEN {
-        if ($this->alternate_id === $alternate_id) {
-            return $this;
-        }
-
-        $fqsen = clone($this);
-        $fqsen->alternate_id = $alternate_id;
-        $fqsen->memoizeFlushAll();
-        return $fqsen;
-    }
+    ) : FQSEN;
 
     /**
      * @return FQSEN

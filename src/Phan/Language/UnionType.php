@@ -635,8 +635,7 @@ class UnionType {
         assert($recursion_depth < 10,
             "Recursion has gotten out of hand for type $this");
 
-        $union_type = clone($this);
-
+        $union_type = new UnionType();
         foreach ($this->type_set as $type) {
             $union_type->addUnionType(
                 $type->asExpandedTypes(
@@ -645,7 +644,6 @@ class UnionType {
                 )
             );
         }
-
         return $union_type;
     }
 

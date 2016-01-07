@@ -9,6 +9,7 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\UnionType;
+use \Phan\Map;
 use \Phan\Model\Method as MethodModel;
 
 trait MethodMap {
