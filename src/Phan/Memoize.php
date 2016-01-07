@@ -11,23 +11,6 @@ trait Memoize {
     private $memoized_data = [];
 
     /**
-     * After a clone is called on this object, clone our
-     * deep objects.
-     *
-     * @return null
-     */
-    /*
-    public function __clone() {
-        $data = $this->memoized_data;
-        $this->memoized_data = [];
-        foreach ($data as $key => $value) {
-            $this->memoized_data[$key] =
-                is_object($value) ? clone($value) : $value;
-        }
-    }
-    */
-
-    /**
      * Memoize the result of $fn(), saving the result
      * with key $key.
      *
@@ -44,9 +27,7 @@ trait Memoize {
      */
     protected function memoize(string $key, \Closure $fn) {
         if (!array_key_exists($key, $this->memoized_data)) {
-            self::time($key, function() use ($key, $fn) {
-                $this->memoized_data[$key] = $fn();
-            });
+            $this->memoized_data[$key] = $fn();
         }
 
         return $this->memoized_data[$key];
