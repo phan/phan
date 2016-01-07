@@ -426,7 +426,6 @@ class Method extends ClassElement implements Addressable {
             }, 0)
         );
 
-
         // Check to see if the comment specifies that the
         // method is deprecated
         $method->setIsDeprecated($comment->isDeprecated());

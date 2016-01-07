@@ -739,6 +739,25 @@ class ContextNode {
     }
 
     /**
+     * @return Method
+     */
+    public function getClosure() : Method {
+        $closure_fqsen =
+            FullyQualifiedFunctionName::fromClosureInContext(
+                $this->context
+            );
+
+        if (!$this->code_base->hasMethod($closure_fqsen)) {
+            throw new CodeBaseException(
+                $closure_fqsen,
+                "Could not find closure $closure_fqsen"
+            );
+        }
+
+        return $this->code_base->getMethod($closure_fqsen);
+    }
+
+    /**
      * Perform some backwards compatibility checks on a node
      *
      * @return void

@@ -520,7 +520,6 @@ class Phan {
     private static function shouldVisit(Node $node) {
         switch ($node->kind) {
         case \ast\AST_ARRAY_ELEM:
-        case \ast\AST_ARG_LIST:
         case \ast\AST_ASSIGN_OP:
         case \ast\AST_BREAK:
         case \ast\AST_CAST:

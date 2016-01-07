@@ -670,6 +670,13 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    /*
+    public function visitArgList(Node $node) : Context {
+        Debug::printNode($node);
+        return $this->context;
+    }
+     */
+
     /**
      * @param Node $node
      * A node to parse
@@ -1129,6 +1136,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $this->code_base
         );
 
+
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables
         foreach ($argument_list->children as $i => $argument) {
@@ -1136,6 +1144,13 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
             if (!$parameter || !is_object($argument)) {
                 continue;
+            }
+
+            if (Config::get()->dead_code_detection) {
+                (new ArgumentVisitor(
+                    $this->code_base,
+                    $this->context
+                ))($argument);
             }
 
             // If the parameter is pass-by-reference and we're

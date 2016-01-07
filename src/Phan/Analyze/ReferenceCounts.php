@@ -61,6 +61,10 @@ trait ReferenceCounts {
 
                     $element_fqsen = $element->getFQSEN();
 
+                    if (0 !== strpos((string)$element_fqsen, $fqsen_string)) {
+                        continue;
+                    }
+
                     if ($element_fqsen instanceof FullyQualifiedClassElement) {
                         $class_fqsen = $element->getDefiningClassFQSEN();
 
