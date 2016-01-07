@@ -46,7 +46,6 @@ class Phan {
         CodeBase $code_base,
         array $file_path_list
     ) {
-
         $file_count = count($file_path_list);
 
         // We'll construct a set of files that we'll

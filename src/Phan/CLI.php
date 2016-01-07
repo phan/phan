@@ -23,9 +23,9 @@ class CLI {
         // file_put_contents('/tmp/file', implode("\n", $argv));
 
         // Parse command line args
-        // still available: e,g,j,k,n,t,u,v,w,x,z
+        // still available: e,g,j,k,n,t,u,v,w,z
         $opts = getopt(
-            "f:m:o:c:aqbrpid:s:3:y:l:h::", [
+            "f:m:o:c:aqbrpid:s:3:y:l:xh::", [
                 'fileset:',
                 'output-mode:',
                 'output:',
@@ -41,6 +41,7 @@ class CLI {
                 'exclude-directory-list:',
                 'minimum-severity:',
                 'directory:',
+                'dead-code-detection',
                 'help',
             ]
         );
@@ -154,6 +155,10 @@ class CLI {
                 // We handle this flag before parsing options so
                 // that we can get the project root directory to
                 // base other config flags values on
+                break;
+            case 'x':
+            case 'dead-code-detection':
+                Config::get()->dead_code_detection = true;
                 break;
             default:
                 $this->usage("Unknown option '-$key'"); break;

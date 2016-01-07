@@ -6,6 +6,8 @@ use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Model\File as FileModel;
 
 /**
@@ -96,11 +98,19 @@ trait FileMap {
 
         // Flush all methods from the file
         foreach ($code_file->getMethodFQSENList() as $fqsen) {
-            // Remove it from memory
-            $this->flushMethodWithScopeAndName(
-                (string)$fqsen->getFullyQualifiedClassName(),
-                $fqsen->getName()
-            );
+            if ($fqsen instanceof FullyQualifiedMethodName) {
+                // Remove it from memory
+                $this->flushMethodWithScopeAndName(
+                    (string)$fqsen->getFullyQualifiedClassName(),
+                    $fqsen->getName()
+                );
+            } else {
+                // Remove it from memory
+                $this->flushMethodWithScopeAndName(
+                    $fqsen->getNamespace(),
+                    $fqsen->getName()
+                );
+            }
 
             // Remove it from the file's depdendency list
             $code_file->flushMethodWithFQSEN($fqsen);
