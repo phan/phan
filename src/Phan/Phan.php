@@ -63,21 +63,26 @@ class Phan {
             if (Config::get()->reanalyze_file_list
                 || !$code_base->isParseUpToDateForFile($file_path)) {
 
-                // Save this to the set of files to analyze
-                $analyze_file_path_list[] = $file_path;
-
                 // Kick out anything we read from the former version
                 // of this file
                 $code_base->flushDependenciesForFile(
                     $file_path
                 );
 
-                // Parse the file
-                $this->parseFile($code_base, $file_path);
+                try {
+                    // Parse the file
+                    $this->parseFile($code_base, $file_path);
 
-                // Update the timestamp on when it was last
-                // parsed
-                $code_base->setParseUpToDateForFile($file_path);
+                    // Update the timestamp on when it was last
+                    // parsed
+                    $code_base->setParseUpToDateForFile($file_path);
+
+                    // Save this to the set of files to analyze
+                    $analyze_file_path_list[] = $file_path;
+
+                } catch (\Throwable $throwable) {
+                    error_log($throwable->getMessage());
+                }
             }
         }
 
@@ -144,6 +149,8 @@ class Phan {
         string $file_path
     ) : Context {
 
+        $context = (new Context)->withFile($file_path);
+
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
         // of this method
@@ -151,8 +158,6 @@ class Phan {
             $file_path,
             Config::get()->ast_version
         );
-
-        $context = (new Context)->withFile($file_path);
 
         if (Config::get()->dump_ast) {
             echo $file_path . "\n"

@@ -23,9 +23,9 @@ class CLI {
         // file_put_contents('/tmp/file', implode("\n", $argv));
 
         // Parse command line args
-        // still available: e,g,j,k,l,n,t,u,v,w,x,z
+        // still available: e,g,j,k,n,t,u,v,w,x,z
         $opts = getopt(
-            "f:m:o:c:aqbrpid:s:3:y:h::", [
+            "f:m:o:c:aqbrpid:s:3:y:l:h::", [
                 'fileset:',
                 'output-mode:',
                 'output:',
@@ -40,6 +40,7 @@ class CLI {
                 'state-file:',
                 'exclude-directory-list:',
                 'minimum-severity:',
+                'directory:',
                 'help',
             ]
         );
@@ -63,12 +64,30 @@ class CLI {
             case 'f':
             case 'fileset':
                 if(is_file($value) && is_readable($value)) {
-                    $this->file_list = file(
-                        $value,
-                        FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES
+                    $this->file_list = array_merge(
+                        $this->file_list,
+                        file($value, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
                     );
                 } else {
-                    throw new \Exception("Unable to open $value");
+                    error_log("Unable to read file $value");
+                }
+                break;
+            case 'l':
+            case 'directory':
+                try {
+                    $iterator = new \RegexIterator(
+                        new \RecursiveIteratorIterator(
+                            new \RecursiveDirectoryIterator($value)
+                        ),
+                        '/^.+\.php$/i',
+                        \RecursiveRegexIterator::GET_MATCH
+                    );
+                    $this->file_list = array_merge(
+                        $this->file_list,
+                        array_keys(iterator_to_array($iterator))
+                    );
+                } catch (\Exception $exception) {
+                    error_log($exception->getMessage());
                 }
                 break;
             case 'm':
@@ -153,10 +172,6 @@ class CLI {
             unset($argv[$key]);
         }
 
-        if(empty($this->file_list) && count($argv) < 2) {
-            // Ignore
-        }
-
         foreach($argv as $arg) if($arg[0]=='-') {
             $this->usage("Unknown option '{$arg}'");
         }
@@ -187,6 +202,9 @@ Usage: {$argv[0]} [options] [files...]
  -f, --fileset <filename>
   A file containing a list of PHP files to be analyzed
 
+ -l, --directory <directory>
+  A directory to recursively read PHP files from to analyze
+
  -3, --exclude-directory-list <dir_list>
   A comma-separated list of directories for which any files
   therein should be parsed but not analyzed.
@@ -200,7 +218,7 @@ Usage: {$argv[0]} [options] [files...]
  -i, --ignore-undeclared
  Ignore undeclared functions and classes
 
- -y, --minimum-severity <level in {0,5,10}> 
+ -y, --minimum-severity <level in {0,5,10}>
   Minimum severity level (low=0, normal=5, critical=10) to report.
   Defaults to 0.
 
