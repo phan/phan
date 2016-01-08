@@ -171,6 +171,8 @@ class Debug {
     /**
      * Note that flag IDs are not unique. You're likely going to get
      * an incorrect name back from this. So sorry.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     private static $AST_FLAG_ID_NAME_MAP = [
         \ast\flags\ASSIGN_ADD => 'ASSIGN_ADD',

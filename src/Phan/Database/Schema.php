@@ -93,16 +93,6 @@ class Schema {
 
     /**
      * @return string
-     * The SQLite data type for the primary key
-     */
-    public function primaryKeyType() : string {
-        return $this->column_def_map[
-            $this->primary_key_name
-        ]->sqlType();
-    }
-
-    /**
-     * @return string
      * The name of the PK column
      */
     public function primaryKeyName() : string {

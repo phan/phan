@@ -17,8 +17,8 @@
 %s:142 PhanTypeMissingReturn Method \c9::f is declared to return int but has no return value
 %s:145 PhanUndeclaredClassMethod Call to method f from undeclared class \f
 %s:151 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
+%s:154 PhanUndeclaredTypeProperty Property of undeclared type \undef
 %s:160 PhanParentlessClass Reference to parent of class \c12 that does not extend anything
-%s:160 PhanUndeclaredTypeProperty Property of undeclared type \undef
 %s:163 PhanTraitParentReference Reference to parent from trait \t1
 %s:179 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \undef
 %s:182 PhanUndeclaredClassMethod Call to method f5 from undeclared class \undef

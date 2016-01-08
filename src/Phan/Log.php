@@ -20,7 +20,7 @@ class Log {
 		$this->msgs = [];
 	}
 
-	public static function getInstance():Log {
+	public static function getInstance() : Log {
 		if(empty(self::$instance)) {
 			self::$instance = new Log();
 		}

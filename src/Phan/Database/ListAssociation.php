@@ -7,16 +7,11 @@ class ListAssociation extends Association {
     use \Phan\Memoize;
 
     /**
-     * @var string
-     */
-    private $associated_class_name;
-
-    /**
      * @param string $table_name
      * The table we'll be interacting with
      *
-     * @param string $associated_class_name
-     * The name of hte class we're associating with
+     * @param string $item_sql_type
+     * The type of items being stored
      *
      * @param \Closure $read_closure
      * A closure that accepts a map from keys to models

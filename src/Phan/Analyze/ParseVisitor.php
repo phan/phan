@@ -376,9 +376,8 @@ class ParseVisitor extends ScopeVisitor {
 
             $property =
                 new Property(
-                    $this->context
-                        ->withLineNumberStart($child_node->lineno ?? 0)
-                        ->withLineNumberEnd($child_node->endLineno ?? -1),
+                    clone($this->context
+                        ->withLineNumberStart($child_node->lineno ?? 0)),
                     is_string($child_node->children['name'])
                         ? $child_node->children['name']
                         : '_error_',
@@ -388,6 +387,10 @@ class ParseVisitor extends ScopeVisitor {
 
             // Add the property to the class
             $clazz->addProperty($this->code_base, $property);
+
+            $property->setSuppressIssueList(
+                $comment->getSuppressIssueList()
+            );
 
             // Look for any @var declarations
             if ($variable = $comment->getVariableList()[$i] ?? null) {

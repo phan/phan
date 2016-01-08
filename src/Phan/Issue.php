@@ -480,6 +480,19 @@ class Issue {
     }
 
     /**
+     * @param string $type
+     * The type of the issue
+     *
+     * @param string $file
+     * The name of the file where the issue was found
+     *
+     * @param int $line
+     * The line number (start) where the issue was found
+     *
+     * @param mixed $template_parameters
+     * Any template parameters required for the issue
+     * message
+     *
      * @return void
      */
     public static function emit(

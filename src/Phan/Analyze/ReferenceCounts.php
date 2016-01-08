@@ -8,6 +8,7 @@ use \Phan\Issue;
 use \Phan\Language\Element\Addressable;
 use \Phan\Language\Element\ClassElement;
 use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Property;
 use \Phan\Language\Element\TypedStructuralElement;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassElement;
@@ -69,6 +70,19 @@ trait ReferenceCounts {
                     // Skip methods that are overrides of other methods
                     if ($element_fqsen instanceof FullyQualifiedMethodName) {
                         if ($element->getIsOverride()) {
+                            continue;
+                        }
+                    }
+
+                    // Skip properties on classes that have a magic
+                    // __get or __set method given that we can't track
+                    // their access
+                    if ($element instanceof Property) {
+                        $defining_class = $element->getDefiningClass($code_base);
+
+                        if ($defining_class->hasMethodWithName($code_base, '__set')
+                            || $defining_class->hasMethodWithName($code_base, '__get')
+                        ) {
                             continue;
                         }
                     }

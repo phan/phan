@@ -1112,6 +1112,10 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
+    public function visitStaticProp(Node $node) : Context {
+        return $this->visitProp($node);
+    }
+
     /**
      * Visit a node with kind `\ast\AST_PROP`
      *
@@ -1134,7 +1138,6 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             // Mark that this property has been referenced from
             // this context
             $property->addReference($this->context);
-
         } catch (\Exception $exception) {
             // Swallow any exceptions. We'll log the errors
             // elsewhere.

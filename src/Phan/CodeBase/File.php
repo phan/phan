@@ -282,6 +282,8 @@ class File {
      * A constant FQSEN associated with this file
      *
      * @return null
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function addConstantFQSEN(FullyQualifiedConstantName $fqsen) {
         $this->constant_fqsen_list[(string)$fqsen] = $fqsen;
