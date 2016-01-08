@@ -154,21 +154,6 @@ class UnionType implements \Serializable {
         );
 	}
 
-    public static function internalClassSignatureMapForName(
-        string $class_name,
-        string $property_name
-    ) : UnionType {
-        $map = self::internalClassSignatureMap();
-
-        $class_property_type_map =
-            $map[strtolower($class_name)]['properties'];
-
-        $property_type_name =
-            $class_property_type_map[$property_name];
-
-        return new UnionType([$property_type_name]);
-    }
-
     /**
      * A list of types for parameters associated with the
      * given builtin function with the given name
@@ -686,22 +671,6 @@ class UnionType implements \Serializable {
 
         if (!$map) {
             $map = require(__DIR__.'/Internal/FunctionSignatureMap.php');
-        }
-
-        return $map;
-    }
-
-    /**
-     * @return array
-     * A map from builtin class names to type information
-     *
-     * @see \Phan\Language\Type\BuiltinFunctionArgumentTypes
-     */
-    private static function internalClassSignatureMap() {
-        static $map = false;
-
-        if (!$map) {
-            $map = require(__DIR__.'/Internal/ClassSignatureMap.php');
         }
 
         return $map;
