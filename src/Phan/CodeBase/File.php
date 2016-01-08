@@ -76,14 +76,6 @@ class File {
 
     /**
      * @return string
-     * The full path of the file
-     */
-    public function getRealPath() : string {
-        return realpath($this->file_path) ?: $this->file_path;
-    }
-
-    /**
-     * @return string
      * The path of the file relative to the project
      * root directory
      */

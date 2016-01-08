@@ -107,6 +107,9 @@ class Log {
 		}
 	}
 
+    /**
+     * @suppress PhanNoopZeroReferences
+     */
 	public static function errorHandler($errno, $errstr, $errfile, $errline) {
 		echo "$errfile:$errline $errstr\n";
 		debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
@@ -165,7 +168,7 @@ class Log {
                     json_encode([
                         'type' => 'issue',
                         'check_name' => $e['type'],
-                        'description' => Issue::CATEGORY_NAME[$e['category']] . ' ' . $e['type'] . ' ' . $e['message'],
+                        'description' => Issue::getNameForCategory($e['category']) . ' ' . $e['type'] . ' ' . $e['message'],
                         'categories' => ['Bug Risk'],
                         'severity' => $severity,
                         'location' => [

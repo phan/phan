@@ -54,45 +54,4 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement {
     public function asUnionType() : UnionType {
         return $this->asType()->asUnionType();
     }
-
-    /**
-     * @return FullyQualifiedMethodName
-     * A fully-qualified method name
-     */
-    public function withMethodName(
-        string $method_name,
-        int $method_alternate_id = 0
-    ) : FullyQualifiedMethodName {
-        return FullyQualifiedMethodName::make(
-            $this,
-            $method_name,
-            $method_alternate_id
-        );
-    }
-
-    /**
-     * @return FullyQualifiedConstantName
-     * A fully-qualified constant name
-     */
-    public function withConstantName(
-        string $constant_name
-    ) : FullyQualifiedClassConstantName {
-        return FullyQualifiedClassConstantName::make(
-            $this,
-            $constant_name
-        );
-    }
-
-    /**
-     * @return FullyQualifiedPropertyName
-     * A fully-qualified property name
-     */
-    public function withPropertyName(
-        string $property_name
-    ) : FullyQualifiedPropertyName {
-        return FullyQualifiedPropertyName::make(
-            $this,
-            $property_name
-        );
-    }
 }

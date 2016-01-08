@@ -914,13 +914,10 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             // call, cry YOLO and mark every method with that
             // name with a reference.
             if (Config::get()->dead_code_detection) {
-                $method_map = $this->code_base->getMethodMap();
-                foreach ($method_map as $fqsen => $list) {
-                    foreach ($list as $name => $method) {
-                        if ($name === $method_name) {
-                            $method->addReference($this->context);
-                        }
-                    }
+                foreach ($this->code_base->getMethodListByName(
+                    $method_name
+                ) as $method) {
+                    $method->addReference($this->context);
                 }
             }
 
@@ -1009,6 +1006,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 $this->context,
                 $node
             ))->getMethod($method_name, false);
+
+
         } catch (IssueException $exception) {
             $exception->getIssueInstance()();
             return $this->context;
@@ -1018,16 +1017,12 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             // call, cry YOLO and mark every method with that
             // name with a reference.
             if (Config::get()->dead_code_detection) {
-                $method_map = $this->code_base->getMethodMap();
-                foreach ($method_map as $fqsen => $list) {
-                    foreach ($list as $name => $method) {
-                        if ($name === $method_name) {
-                            $method->addReference($this->context);
-                        }
-                    }
+                foreach ($this->code_base->getMethodListByName(
+                    $method_name
+                ) as $method) {
+                    $method->addReference($this->context);
                 }
             }
-
 
             // Swallow it
             return $this->context;

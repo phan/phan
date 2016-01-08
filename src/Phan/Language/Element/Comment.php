@@ -57,6 +57,12 @@ class Comment {
     private $return = null;
 
     /**
+     * @var string[]
+     * A list of issue types to be suppressed
+     */
+    private $suppress_issue_list = [];
+
+    /**
      * A private constructor meant to ingest a parsed comment
      * docblock.
      *
@@ -65,19 +71,26 @@ class Comment {
      * directive.
      *
      * @param Variable[] $variable_list
+     *
      * @param CommentParameter[] $parameter_list
+     *
      * @param UnionType $return
+     *
+     * @param string[] $suppress_issue_list
+     * A list of tags for error type to be suppressed
      */
     private function __construct(
         bool $is_deprecated,
         array $variable_list,
         array $parameter_list,
-        UnionType $return
+        UnionType $return,
+        array $suppress_issue_list
     ) {
         $this->is_deprecated = $is_deprecated;
         $this->variable_list = $variable_list;
         $this->parameter_list = $parameter_list;
         $this->return = $return;
+        $this->suppress_issue_list = $suppress_issue_list;
 
         foreach ($this->parameter_list as $i => $parameter) {
             $name = $parameter->getName();
@@ -89,16 +102,6 @@ class Comment {
                 unset($this->parameter_list[$i]);
             }
         }
-    }
-
-    /**
-     * @return
-     * An empty type
-     */
-    public static function none() : Comment {
-        return new Comment(
-            false, [], [], new UnionType()
-        );
     }
 
     /**
@@ -115,6 +118,7 @@ class Comment {
         $variable_list = [];
         $parameter_list = [];
         $return = null;
+        $suppress_issue_list = [];
 
         $lines = explode("\n",$comment);
 
@@ -139,6 +143,9 @@ class Comment {
                     }
 
                 }
+            } else if (stripos($line, '@suppress') !== false) {
+                $suppress_issue_list[] =
+                    self::suppressIssueFromCommentLine($line);
             }
 
             if(($pos=stripos($line, '@deprecated')) !== false) {
@@ -156,7 +163,8 @@ class Comment {
             $is_deprecated,
             $variable_list,
             $parameter_list,
-            $return_type
+            $return_type,
+            $suppress_issue_list
         );
     }
 
@@ -200,13 +208,28 @@ class Comment {
             }
 
             return new CommentParameter(
-                $variable_name, $union_type, $line
+                $variable_name, $union_type
             );
         }
 
-        return  new CommentParameter(
-            '', new UnionType(), $line
-        );
+        return  new CommentParameter('', new UnionType());
+    }
+
+    /**
+     * @param string $line
+     * An individual line of a comment
+     *
+     * @return string
+     * An issue name to suppress
+     */
+    private static function suppressIssueFromCommentLine(
+        string $line
+    ) : string {
+        if(preg_match('/@suppress\s+([^\s]+)/', $line, $match)) {
+            return $match[1];
+        }
+
+        return '';
     }
 
     /**
@@ -237,9 +260,19 @@ class Comment {
 
     /**
      * @return CommentParameter[]
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function getParameterList() : array {
         return $this->parameter_list;
+    }
+
+    /**
+     * @return string[]
+     * A set of issie names like 'PhanNoopZeroReferences' to suppress
+     */
+    public function getSuppressIssueList() : array {
+        return $this->suppress_issue_list;
     }
 
     /**

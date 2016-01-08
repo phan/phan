@@ -232,6 +232,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptAssignFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -332,6 +334,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptClassFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -356,6 +360,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptModifierFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -382,6 +388,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptNameFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -402,6 +410,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptParamFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -420,6 +430,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptTypeFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -450,6 +462,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptUnaryFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -474,6 +488,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptExecFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -498,6 +514,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptMagicFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -528,6 +546,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptUseFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {
@@ -548,6 +568,8 @@ class Element {
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function acceptAnyFlagVisitor(FlagVisitor $visitor) {
         switch ($this->node->flags) {

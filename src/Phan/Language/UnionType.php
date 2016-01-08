@@ -32,7 +32,7 @@ use \Phan\Log;
 use \Phan\Set;
 use \ast\Node;
 
-class UnionType {
+class UnionType implements \Serializable {
     use \Phan\Memoize;
 
     /**
@@ -234,17 +234,6 @@ class UnionType {
     }
 
     /**
-     * @return bool
-     * True if a builtin with the given FQSEN exists, else
-     * flase.
-     */
-    public static function builtinExists(FQSEN $fqsen) : bool {
-        return !empty(
-            self::internalFunctionSignatureMap()[(string)$fqsen]
-        );
-    }
-
-    /**
      * @return Set
      * The set of simple types associated with this
      * union type.
@@ -260,15 +249,6 @@ class UnionType {
      */
     public function addType(Type $type) {
         $this->type_set->attach($type);
-    }
-
-    /**
-     * Remove a type name to the list of types
-     *
-     * @return void
-     */
-    public function removeType(Type $type) {
-        $this->type_set->detach($type);
     }
 
     /**

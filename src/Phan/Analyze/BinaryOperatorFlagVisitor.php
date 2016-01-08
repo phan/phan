@@ -108,10 +108,6 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
         ]);
     }
 
-    public function visitBinaryOp(Node $node) : UnionType {
-        return $this->visitBinaryBool($node);
-    }
-
     /**
      * @param Node $node
      * A node to check types on

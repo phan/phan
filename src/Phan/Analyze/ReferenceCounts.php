@@ -130,6 +130,10 @@ trait ReferenceCounts {
         }
 
         if ($element->getReferenceCount($code_base) < 1) {
+            if ($element->hasSuppressIssue(Issue::NoopZeroReferences)) {
+                return;
+            }
+
             if ($element instanceof Addressable) {
                 Issue::emit(
                     Issue::NoopZeroReferences,

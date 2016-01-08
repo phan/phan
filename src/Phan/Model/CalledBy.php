@@ -41,6 +41,7 @@ class CalledBy extends ModelOne {
         $this->file_ref = $file_ref;
     }
 
+    /*
     public function getFQSENString() : string {
         return $this->fqsen_string;
     }
@@ -48,6 +49,7 @@ class CalledBy extends ModelOne {
     public function getFileRef() : FileRef {
         return $this->file_ref;
     }
+    */
 
     public static function read(
         Database $database, $primary_key_value
@@ -93,6 +95,7 @@ class CalledBy extends ModelOne {
      * @return CalledBy[]
      * The set of callers for the given FQSEN
      */
+    /*
     public static function findManyByFQSEN(
         Database $database,
         FQSEN $fqsen
@@ -116,11 +119,13 @@ class CalledBy extends ModelOne {
 
         return $called_by_list;
     }
+    */
 
     /**
      * @return CalledBy[]
      * The set of calls in the given file
      */
+    /*
     public static function findManyByFilePath(
         Database $database,
         string $file_path
@@ -144,6 +149,7 @@ class CalledBy extends ModelOne {
 
         return $called_by_list;
     }
+    */
 
     /**
      * @return string

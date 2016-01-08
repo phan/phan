@@ -72,7 +72,6 @@ class Method extends ModelOne {
             new Column('is_deprecated', Column::TYPE_BOOL),
             new Column('number_of_required_parameters', Column::TYPE_INT),
             new Column('number_of_optional_parameters', Column::TYPE_INT),
-            new Column('is_dynamic', Column::TYPE_BOOL),
         ]);
 
         return $schema;
@@ -103,8 +102,7 @@ class Method extends ModelOne {
             'number_of_required_parameters' =>
                 $this->method->getNumberOfRequiredParameters(),
             'number_of_optional_parameters' =>
-                $this->method->getNumberOfOptionalParameters(),
-            'is_dynamic' => $this->method->isDynamic(),
+                $this->method->getNumberOfOptionalParameters()
         ];
     }
 
@@ -124,8 +122,7 @@ class Method extends ModelOne {
             UnionType::fromFullyQualifiedString($row['type']),
             (int)$row['flags'],
             $row['number_of_required_parameters'],
-            $row['number_of_optional_parameters'],
-            (bool)$row['is_dynamic']
+            $row['number_of_optional_parameters']
         ), $scope, $name);
     }
 }

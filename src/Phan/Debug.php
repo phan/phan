@@ -8,6 +8,12 @@ use \ast\Node;
  */
 class Debug {
 
+    /**
+     * Print a lil' something to the console to
+     * see if a thing is called
+     *
+     * @suppress PhanNoopZeroReferences
+     */
     public static function mark() {
         print "mark\n";
     }
@@ -19,17 +25,29 @@ class Debug {
      * Print an AST node
      *
      * @return null
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public static function printNode($node) {
         print self::nodeToString($node);
     }
 
+    /**
+     * Print the name of a node to the terminal
+     *
+     * @suppress PhanNoopZeroReferences
+     */
     public static function printNodeName($node, $indent = 0) {
         print str_repeat("\t", $indent);
         print self::nodeName($node);
         print "\n";
     }
 
+    /**
+     * Print a thing with the given indent level
+     *
+     * @suppress PhanNoopZeroReferences
+     */
     public static function print(string $message, int $indent = 0) {
         print str_repeat("\t", $indent);
         print $message . "\n";
@@ -134,6 +152,8 @@ class Debug {
     /**
      * @return string
      * Pretty-printer for debug_backtrace
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public static function backtrace(int $levels=0) {
        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $levels+1);

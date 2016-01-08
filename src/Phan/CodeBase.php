@@ -45,14 +45,6 @@ class CodeBase {
     use \Phan\CodeBase\GlobalVariableMap;
     use \Phan\CodeBase\FileMap;
 
-    /**
-     * Set a version on this class so that we can
-     * error out when reading old versions of serialized
-     * files
-     */
-    const CODE_BASE_VERSION = 2;
-    private $code_base_version;
-
     public function __construct(
         array $internal_class_name_list,
         array $internal_interface_name_list,
@@ -65,12 +57,6 @@ class CodeBase {
         $this->addClassesByNames($internal_interface_name_list);
         $this->addClassesByNames($internal_trait_name_list);
         $this->addFunctionsByNames($internal_function_name_list);
-
-        // Set a version on this class so that we can
-        // error out when reading old versions of serialized
-        // files
-        $this->code_base_version =
-            CodeBase::CODE_BASE_VERSION;
     }
 
     public function __clone() {
@@ -89,26 +75,6 @@ class CodeBase {
                 $this->addMethod($method);
             }
         }
-    }
-
-    /**
-     * @return int
-     * The version number of this code base
-     */
-    public function getVersion() : int {
-        return $this->code_base_version ?? -1;
-    }
-
-    /**
-     * @return bool
-     * True if a serialized code base exists and can be read
-     * else false
-     */
-    public static function storedCodeBaseExists() : bool {
-        return (
-            Config::get()->stored_state_file_path
-            && file_exists(Config::get()->stored_state_file_path)
-        );
     }
 
     public function store() {

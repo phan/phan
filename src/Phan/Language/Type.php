@@ -413,20 +413,6 @@ class Type {
     }
 
     /**
-     * @return bool
-     * True if this namespace is defined
-     */
-    public function isFullyQualified() : bool {
-        if (!$this->hasNamespace()) {
-            return false;
-        }
-
-        // Check to see if our namespace is fully
-        // qualified
-        return (0 !== strpos('\\', $this->getNamespace()));
-    }
-
-    /**
      * @return string
      * The namespace associated with this type
      */

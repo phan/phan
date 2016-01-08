@@ -9,20 +9,6 @@ namespace Phan;
 class Map extends \SplObjectStorage {
 
     /**
-     * @return void
-     */
-    public function put($key, $value) {
-        $this->attach($key, $value);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function get($key) {
-        return $this->offsetGet($key);
-    }
-
-    /**
      * We redefine the key to be the actual key rather than
      * the index of the key
      */
@@ -35,7 +21,7 @@ class Map extends \SplObjectStorage {
      * than the current key
      */
     public function current() {
-        return $this->get(parent::current());
+        return $this->offsetGet(parent::current());
     }
 
 }

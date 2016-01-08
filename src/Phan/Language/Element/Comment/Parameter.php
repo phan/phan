@@ -19,29 +19,18 @@ class Parameter {
     private $type = null;
 
     /**
-     * @var string
-     * An optional comment string associated with the parameter
-     */
-    private $comment = null;
-
-    /**
      * @param string $name
      * The name of the parameter
      *
      * @param UnionType $type
      * The type of the parameter
-     *
-     * @param string $comment
-     * An optional comment string associated with the parameter
      */
     public function __construct(
         string $name,
-        UnionType $type,
-        string $comment
+        UnionType $type
     ) {
         $this->name = $name;
         $this->type = $type;
-        $this->comment = $comment;
     }
 
     /**
@@ -58,14 +47,6 @@ class Parameter {
      */
     public function getUnionType() : UnionType {
         return $this->type;
-    }
-
-    /**
-     * @return string
-     * An optional comment string associated with the parameter
-     */
-    public function getComment() : string {
-        return $this->comment;
     }
 
     public function __toString() : string {

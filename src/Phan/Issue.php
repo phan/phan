@@ -433,8 +433,8 @@ class Issue {
      * @return string
      * The name of the category
      */
-    public function getCategoryName() : string {
-        return self::CATEGORY_NAME[$this->getCategory()];
+    public static function getNameForCategory(int $category) : string {
+        return self::CATEGORY_NAME[$category] ?? '';
     }
 
     /**

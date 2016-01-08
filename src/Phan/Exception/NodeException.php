@@ -29,6 +29,8 @@ class NodeException extends \Exception {
     /**
      * @return Node
      * The node for which we have an exception
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function getNode() : Node {
         return $this->node;

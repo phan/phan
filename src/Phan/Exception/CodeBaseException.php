@@ -27,6 +27,8 @@ class CodeBaseException extends \Exception {
     /**
      * @return bool
      * True if we have an FQSEN defined
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public function hasFQSEN() : bool {
         return !empty($this->missing_fqsen);

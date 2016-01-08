@@ -170,6 +170,26 @@ trait MethodMap {
     }
 
     /**
+     * @param string $name
+     * The name of a method you'd like to get all instances of
+     *
+     * @return Method[]
+     * All known methods with the given name
+     */
+    public function getMethodListByName(string $name) : array {
+        $method_list = [];
+        $name = strtolower($name);
+        foreach ($this->getMethodMap() as $fqsen => $list) {
+            foreach ($list as $method_name => $method) {
+                if ($name === strtolower($method_name)) {
+                    $method_list[] = $method;
+                }
+            }
+        }
+        return $method_list;
+    }
+
+    /**
      * @param FullyQualifiedMethodName $fqsen
      *
      * @return Method

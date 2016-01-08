@@ -38,12 +38,6 @@ trait DuplicateFunction {
         $method_name = $method->getName();
 
         if ('internal' === $original_method->getContext()->getFile()) {
-            // If its in an conditional and the original is an
-            // internal method, presume its all OK.
-            if ($method->getContext()->getIsConditional()) {
-                return;
-            }
-
             Issue::emit(
                 Issue::RedefineFunctionInternal,
                 $method->getContext()->getFile(),

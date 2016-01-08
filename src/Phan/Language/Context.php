@@ -32,11 +32,6 @@ class Context extends FileRef implements \Serializable {
     private $namespace_map = [];
 
     /**
-     * @var bool
-     */
-    private $is_conditional = false;
-
-    /**
      * @var int
      * strict_types setting for the file
      */
@@ -81,7 +76,6 @@ class Context extends FileRef implements \Serializable {
         $this->class_fqsen = null;
         $this->method_fqsen = null;
         $this->closure_fqsen = null;
-        $this->is_conditional = false;
         $this->scope = new Scope();
     }
 
@@ -99,27 +93,11 @@ class Context extends FileRef implements \Serializable {
     }
 
     /**
-     * @return bool
-     * True if a namespace is defined in this context, else
-     * false.
-     */
-    public function hasNamespace() : bool {
-        return !empty($this->namespace);
-    }
-
-    /**
      * @return string
      * The namespace of the file
      */
     public function getNamespace() : string {
         return $this->namespace;
-    }
-
-    /**
-     * @return array
-     */
-    public function getNamespaceMap() : array {
-        return $this->namespace_map;
     }
 
     /**
@@ -217,14 +195,6 @@ class Context extends FileRef implements \Serializable {
         return $context;
     }
 
-    /**
-     * @return bool
-     * True if a method FQSEN is defined, else false.
-     */
-    public function hasMethodFQSEN() : bool {
-        return !empty($this->method_fqsen);
-    }
-
     /*
      * @return FullyQualifiedMethodName
      * A fully-qualified structural element name describing
@@ -248,14 +218,6 @@ class Context extends FileRef implements \Serializable {
         return $context;
     }
 
-    /**
-     * @return bool
-     * True if a closure FQSEN is defined, else false.
-     */
-    public function hasClosureFQSEN() : bool {
-        return !empty($this->closure_fqsen);
-    }
-
     /*
      * @return FullyQualifiedFunctionName
      * A fully-qualified structural element name describing
@@ -263,45 +225,6 @@ class Context extends FileRef implements \Serializable {
      */
     public function getClosureFQSEN() : FullyQualifiedFunctionName {
         return $this->closure_fqsen;
-    }
-
-    /**
-     * @param bool $is_conditional
-     * True if the current context is within a conditional
-     * else false.
-     *
-     * @return Context
-     * A clone of this context with the given value is returned
-     */
-    public function withIsConditional(bool $is_conditional) : Context {
-        $context = clone($this);
-        $context->setIsConditional($is_conditional);
-        return $context;
-    }
-
-    /**
-     * @param bool $is_conditional
-     * True if the current context is within a conditional
-     * else false.
-     *
-     * @return void
-     */
-    public function setIsConditional(bool $is_conditional) {
-        /*
-        if ($this->is_conditional) {
-            debug_print_backtrace(3);
-        }
-         */
-        $this->is_conditional = $is_conditional;
-    }
-
-    /**
-     * @return bool
-     * True if the current context is within a conditional
-     * else false.
-     */
-    public function getIsConditional() : bool {
-        return $this->is_conditional;
     }
 
     /**
@@ -314,14 +237,6 @@ class Context extends FileRef implements \Serializable {
     public function withStrictTypes(int $strict_types) : Context {
         $this->strict_types = $strict_types;
         return $this;
-    }
-
-    /**
-     * @return int
-     * The strict_types setting for the file
-     */
-    public function getStrictTypes() : int {
-        return $this->strict_types;
     }
 
     /**
@@ -394,18 +309,6 @@ class Context extends FileRef implements \Serializable {
     ) {
         $this->scope =
             $this->getScope()->withVariable($variable);
-    }
-
-    /**
-     * @return bool
-     * True if we are currently within the global scope
-     * i.e. Not within a class
-     */
-    public function isGlobalScope() : bool {
-        return (
-            empty($this->class_fqsen)
-            && empty($this->method_fqsen)
-        );
     }
 
     /**
@@ -489,7 +392,6 @@ class Context extends FileRef implements \Serializable {
 
         $serialized .= '^' . implode('|', [
             $this->getNamespace(),
-            $this->is_conditional,
             (string)$this->class_fqsen,
             (string)$this->method_fqsen,
             (string)$this->closure_fqsen
@@ -503,13 +405,11 @@ class Context extends FileRef implements \Serializable {
         parent::unserialize($file_ref);
 
         list($namespace,
-            $is_conditional,
             $class_fqsen,
             $method_fqsen,
             $closure_fqsen) = explode('|', $serialized);
 
         $this->namespace = $namespace;
-        $this->is_conditional = (bool)$is_conditional;
 
         $this->class_fqsen = $class_fqsen
             ? FullyQualifiedClassName::fromFullyQualifiedString($class_fqsen)

@@ -40,12 +40,6 @@ class Method extends ClassElement implements Addressable {
 
     /**
      * @var bool
-     * No idea what this is
-     */
-    private $is_dynamic = false;
-
-    /**
-     * @var bool
      * This should be set to true if the method signature and
      * comment do not define a return type for the method.
      */
@@ -83,8 +77,6 @@ class Method extends ClassElement implements Addressable {
      * @param int $number_of_required_parameters
      *
      * @param int $number_of_optional_parameters
-     *
-     * @param bool $is_dynamic
      */
     public function __construct(
         Context $context,
@@ -92,8 +84,7 @@ class Method extends ClassElement implements Addressable {
         UnionType $type,
         int $flags,
         int $number_of_required_parameters = 0,
-        int $number_of_optional_parameters = 0,
-        bool $is_dynamic = false
+        int $number_of_optional_parameters = 0
     ) {
         parent::__construct(
             $context,
@@ -107,8 +98,6 @@ class Method extends ClassElement implements Addressable {
 
         $this->number_of_optional_parameters =
             $number_of_optional_parameters;
-
-        $this->is_dynamic = $is_dynamic;
     }
 
     /**
@@ -326,8 +315,7 @@ class Method extends ClassElement implements Addressable {
                 );
 
                 if ($is_optional) {
-                    $parameter->setDefaultValue(
-                        null,
+                    $parameter->setDefaultValueType(
                         NullType::instance()->asUnionType()
                     );
                 }
@@ -380,11 +368,10 @@ class Method extends ClassElement implements Addressable {
 
         // Parse the comment above the method to get
         // extra meta information about the method.
-        $comment =
-            Comment::fromStringInContext(
-                $node->docComment ?? '',
-                $context
-            );
+        $comment = Comment::fromStringInContext(
+            $node->docComment ?? '',
+            $context
+        );
 
         // @var Parameter[]
         // The list of parameters specified on the
@@ -436,6 +423,7 @@ class Method extends ClassElement implements Addressable {
         // Check to see if the comment specifies that the
         // method is deprecated
         $method->setIsDeprecated($comment->isDeprecated());
+        $method->setSuppressIssueList($comment->getSuppressIssueList());
 
         // Take a look at method return types
         if($node->children['returnType'] !== null) {
@@ -612,14 +600,6 @@ class Method extends ClassElement implements Addressable {
 
     /**
      * @return bool
-     * True if this is a dynamically created method
-     */
-    public function isDynamic() : bool {
-        return $this->is_dynamic;
-    }
-
-    /**
-     * @return bool
      * True if this is an abstract class
      */
     public function isAbstract() : bool {
@@ -662,18 +642,6 @@ class Method extends ClassElement implements Addressable {
     }
 
     /**
-     * Mark this method as dynamic
-     *
-     * @param bool $is_dynamic
-     * True to set this method to be dynamic, else false
-     *
-     * @return null
-     */
-    public function setIsDynamic(bool $is_dynamic) {
-        $this->is_dynamic = $is_dynamic;
-    }
-
-    /**
      * @return bool
      * True if this method returns a value
      */
@@ -708,14 +676,6 @@ class Method extends ClassElement implements Addressable {
      */
     public function setIsOverride(bool $is_override) {
         $this->is_override = $is_override;
-    }
-
-    /**
-     * @return bool
-     * True if this is a closure
-     */
-    public function getIsClosure() : bool {
-        return (0 === strpos((string)$this->getFQSEN(), '\\closure_'));
     }
 
     /**

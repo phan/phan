@@ -51,14 +51,6 @@ class FileRef implements \Serializable {
 
     /**
      * @return string
-     * The full path of the file
-     */
-    public function getRealPath() : string {
-        return realpath($this->file) ?: $this->file;
-    }
-
-    /**
-     * @return string
      * The path of the file relative to the project
      * root directory
      */
@@ -106,14 +98,6 @@ class FileRef implements \Serializable {
     public function withLineNumberEnd(int $line_number) : Context {
         $this->line_number_end = $line_number;
         return $this;
-    }
-
-    /**
-     * @return int
-     * The ending line number of the element within the $file
-     */
-    public function getLineNumberEnd() : int {
-        return $this->line_number_end;
     }
 
     /**

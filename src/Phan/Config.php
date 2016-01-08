@@ -150,6 +150,8 @@ class Config {
     /**
      * @return string
      * The relative path appended to the project root directory.
+     *
+     * @suppress PhanNoopZeroReferences
      */
     public static function projectPath(string $relative_path) {
         return implode(DIRECTORY_SEPARATOR, [

@@ -21,12 +21,6 @@ use \ast\Node\Decl;
 class Parameter extends Variable {
 
     /**
-     * @var mixed
-     * The default value for a parameter
-     */
-    private $default_value = null;
-
-    /**
      * @var UnionType
      * The type of the default value if any
      */
@@ -81,25 +75,12 @@ class Parameter extends Variable {
     }
 
     /**
-     * @return \mixed
-     * The default value for the parameter if one
-     * exists
-     */
-    public function getDefaultValue() {
-        return $this->default_value;
-    }
-
-    /**
      * @param UnionType $type
      * The type of the default value for this parameter
      *
-     * @return null
+     * @return void
      */
-    public function setDefaultValue(
-        $default_value,
-        UnionType $type
-    ) {
-        $this->default_value = $default_value;
+    public function setDefaultValueType(UnionType $type) {
         $this->default_value_type = $type;
     }
 
@@ -221,8 +202,7 @@ class Parameter extends Variable {
                 );
 
                 // Set the default value
-                $parameter->setDefaultValue(
-                    $default_node,
+                $parameter->setDefaultValueType(
                     $union_type
                 );
             } else {
@@ -251,10 +231,7 @@ class Parameter extends Variable {
                 }
 
                 // Set the default value
-                $parameter->setDefaultValue(
-                    $default_node,
-                    $union_type
-                );
+                $parameter->setDefaultValueType($union_type);
             }
 
         }
