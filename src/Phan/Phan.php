@@ -522,6 +522,13 @@ class Phan {
      * it should be skipped entirely
      */
     private static function shouldVisit(Node $node) {
+
+        // When doing dead code detection, we need to go
+        // super deep
+        if (Config::get()->dead_code_detection) {
+            return true;
+        }
+
         switch ($node->kind) {
         case \ast\AST_ARRAY_ELEM:
         case \ast\AST_ASSIGN_OP:

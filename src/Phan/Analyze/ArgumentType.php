@@ -527,7 +527,7 @@ class ArgumentType {
                     $context,
                     $code_base,
                     CallableType::instance()->asUnionType(),
-                    function(UnionType $node_type) use ($context, $method) {
+                    function(UnionType $node_type) use ($context, $method, $i) {
                         // "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                         return Issue::fromType(Issue::ParamTypeMismatch)(
                             $context->getFile(),
@@ -600,7 +600,7 @@ class ArgumentType {
                     $context,
                     $code_base,
                     ArrayType::instance()->asUnionType(),
-                    function(UnionType $node_type) use ($context, $method) {
+                    function(UnionType $node_type) use ($context, $method, $i) {
                         // "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                         return Issue::fromType(Issue::ParamTypeMismatch)(
                             $context->getFile(),

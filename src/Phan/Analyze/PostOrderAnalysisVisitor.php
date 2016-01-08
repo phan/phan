@@ -612,29 +612,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             }
         }
 
-        if($expression->kind == \ast\AST_NAME) {
-            try {
-                $method = (new ContextNode(
-                    $this->code_base,
-                    $this->context,
-                    $expression
-                ))->getFunction(
-                    $expression->children['name']
-                );
-            } catch (IssueException $exception) {
-                $exception->getIssueInstance()();
-                return $this->context;
-            }
-
-            // Check the call for paraemter and argument types
-            $this->analyzeCallToMethod(
-                $this->code_base,
-                $method,
-                $node
-            );
-        }
-
-        else if ($expression->kind == \ast\AST_VAR) {
+        if ($expression->kind == \ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -684,7 +662,64 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                     }
                 }
             }
+        } else if (
+            $expression->kind == \ast\AST_NAME
+        ){
+            try {
+                $method = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $expression
+                ))->getFunction(
+                    $expression->children['name']
+                        ?? $expression->children['method']
+                );
+            } catch (IssueException $exception) {
+                $exception->getIssueInstance()();
+                return $this->context;
+            }
+
+            // Check the call for paraemter and argument types
+            $this->analyzeCallToMethod(
+                $this->code_base,
+                $method,
+                $node
+            );
+        } else if (
+            $expression->kind == \ast\AST_CALL
+            || $expression->kind == \ast\AST_STATIC_CALL
+            || $expression->kind == \ast\AST_NEW
+            || $expression->kind == \ast\AST_METHOD_CALL
+        ) {
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $expression
+            ))->getClassList();
+
+            foreach ($class_list as $class) {
+                if (!$class->hasMethodWithName(
+                    $this->code_base, '__invoke'
+                )) {
+                    continue;
+                }
+
+                $method = $class->getMethodByNameInContext(
+                    $this->code_base,
+                    '__invoke',
+                    $this->context
+                );
+
+                // Check the call for paraemter and argument types
+                $this->analyzeCallToMethod(
+                    $this->code_base,
+                    $method,
+                    $node
+                );
+            }
+
         }
+
         return $this->context;
     }
 
@@ -874,6 +909,22 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $exception->getIssueInstance()();
 
         }  catch (\Exception $exception) {
+
+            // If we can't figure out the class for this method
+            // call, cry YOLO and mark every method with that
+            // name with a reference.
+            if (Config::get()->dead_code_detection) {
+                $method_map = $this->code_base->getMethodMap();
+                foreach ($method_map as $fqsen => $list) {
+                    foreach ($list as $name => $method) {
+                        if ($name === $method_name) {
+                            $method->addReference($this->context);
+                        }
+                    }
+                }
+            }
+
+
             // If we can't figure out what kind of a call
             // this is, don't worry about it
             return $this->context;
@@ -946,16 +997,38 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * parsing the node
      */
     public function visitMethodCall(Node $node) : Context {
+        $method_name = $node->children['method'];
+
+        if (!is_string($method_name)) {
+            return $this->context;
+        }
+
         try {
             $method = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod($node->children['method'], false);
+            ))->getMethod($method_name, false);
         } catch (IssueException $exception) {
             $exception->getIssueInstance()();
             return $this->context;
         } catch (NodeException $exception) {
+
+            // If we can't figure out the class for this method
+            // call, cry YOLO and mark every method with that
+            // name with a reference.
+            if (Config::get()->dead_code_detection) {
+                $method_map = $this->code_base->getMethodMap();
+                foreach ($method_map as $fqsen => $list) {
+                    foreach ($list as $name => $method) {
+                        if ($name === $method_name) {
+                            $method->addReference($this->context);
+                        }
+                    }
+                }
+            }
+
+
             // Swallow it
             return $this->context;
         }

@@ -655,16 +655,6 @@ class Type {
         $s = (string)$this;
         $d = (string)$type;
 
-        /*
-        if(substr($s,0,9) == 'callable:') {
-            $s = 'callable';
-        }
-
-        if(substr($d,0,9)=='callable:') {
-            $d = 'callable';
-        }
-         */
-
         if($s[0]=='\\') {
             $s = substr($s,1);
         }
