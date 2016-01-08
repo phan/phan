@@ -50,10 +50,19 @@ class ArgumentVisitor extends KindVisitorImplementation {
      *
      * @param Node $node
      * A node to parse
+     *
+     * @return void
      */
     public function visit(Node $node) {
+        // Nothing to do
     }
 
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return void
+     */
     public function visitVar(Node $node) {
         try {
             $variable = (new ContextNode(
@@ -67,10 +76,22 @@ class ArgumentVisitor extends KindVisitorImplementation {
         }
     }
 
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return void
+     */
     public function visitStaticProp(Node $node) {
         $this->visitProp($node);
     }
 
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return void
+     */
     public function visitProp(Node $node) {
         try {
             $property = (new ContextNode(
@@ -85,6 +106,12 @@ class ArgumentVisitor extends KindVisitorImplementation {
         }
     }
 
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return void
+     */
     public function visitClosure(Decl $node) {
         try {
             $method = (new ContextNode(
@@ -97,6 +124,65 @@ class ArgumentVisitor extends KindVisitorImplementation {
         } catch (\Exception $exception) {
             // Swallow it
         }
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return void
+     */
+    public function visitCall(Node $node) {
+
+        $method_name = null;
+        if (isset($node->children['method'])) {
+            $method_name = $node->children['method'];
+        } else if (isset($node->children['expr'])) {
+            if ($node->children['expr']->kind == \ast\AST_NAME) {
+                $method_name = $node->children['expr']->children['name'];
+            }
+        } else {
+            return;
+        }
+
+        if (!is_string($method_name)) {
+            return;
+        }
+
+        try {
+            $method = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getMethod(
+                $method_name,
+                false
+            );
+
+            $method->addReference($this->context);
+        } catch (\Exception $exception) {
+            // Swallow it
+        }
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return void
+     */
+    public function visitMethodCall(Node $node) {
+        return $this->visitCall($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return void
+     */
+    public function visitStaticCall(Node $node) {
+        return $this->visitCall($node);
     }
 
 }
