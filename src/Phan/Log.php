@@ -187,19 +187,6 @@ class Log {
             fclose($fp);
         }
     }
-
-    public static function flush() {
-        $log = self::getInstance();
-        $log->msgs = [];
-    }
 }
 
-set_error_handler('\\phan\\Log::errorHandler', -1);
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim600: sw=4 ts=4 fdm=marker
- * vim<600: sw=4 ts=4
- */
+set_error_handler('\\Phan\\Log::errorHandler', -1);

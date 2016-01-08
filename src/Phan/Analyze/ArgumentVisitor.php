@@ -116,7 +116,7 @@ class ArgumentVisitor extends KindVisitorImplementation {
         try {
             $method = (new ContextNode(
                 $this->code_base,
-                $this->context,
+                $this->context->withLineNumberStart($node->lineno ?? 0),
                 $node
             ))->getClosure();
 

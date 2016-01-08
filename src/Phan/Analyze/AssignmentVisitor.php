@@ -21,6 +21,7 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
 use \Phan\Log;
 use \ast\Node;
+use \ast\Node\Decl;
 
 class AssignmentVisitor extends KindVisitorImplementation {
 
@@ -401,6 +402,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
         $variable->getUnionType()->addUnionType(
             $this->right_type
         );
+
 
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope

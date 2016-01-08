@@ -18,6 +18,7 @@ use \ast\Node\Decl;
 class Method extends ClassElement implements Addressable {
     use AddressableImplementation;
     use \Phan\Analyze\Analyzable;
+    use \Phan\Memoize;
 
     /**
      * @var int
@@ -55,6 +56,12 @@ class Method extends ClassElement implements Addressable {
      * True if this method has a return value
      */
     private $has_return = false;
+
+    /**
+     * @var bool
+     * True if this method overrides a parent method
+     */
+    private $is_override = false;
 
     /**
      * @param \phan\Context $context
@@ -685,6 +692,31 @@ class Method extends ClassElement implements Addressable {
         $this->has_return = $has_return;
     }
 
+    /**
+     * @return bool
+     * True if this method overrides another method
+     */
+    public function getIsOverride() : bool {
+        return $this->is_override;
+    }
+
+    /**
+     * @param bool $is_override
+     * True if this method overrides another method
+     *
+     * @return void
+     */
+    public function setIsOverride(bool $is_override) {
+        $this->is_override = $is_override;
+    }
+
+    /**
+     * @return bool
+     * True if this is a closure
+     */
+    public function getIsClosure() : bool {
+        return (0 === strpos((string)$this->getFQSEN(), '\\closure_'));
+    }
 
     /**
      * @return bool

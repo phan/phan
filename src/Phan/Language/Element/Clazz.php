@@ -666,6 +666,83 @@ class Clazz extends TypedStructuralElement implements Addressable {
     }
 
     /**
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return FullyQualifiedClassName[]
+     */
+    public function getNonParentAncestorFQSENList(CodeBase $code_base) {
+        return array_merge(
+            $this->getTraitFQSENList(),
+            $this->getInterfaceFQSENList()
+        );
+    }
+
+    /**
+     * @return FullyQualifiedClassName[]
+     */
+    public function getAncestorFQSENList(CodeBase $code_base) {
+        $ancestor_list = $this->getNonParentAncestorFQSENList($code_base);
+
+        if ($this->hasParentClassFQSEN()) {
+            $ancestor_list[] = $this->getParentClassFQSEN();
+        }
+
+        return $ancestor_list;
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return Clazz[]
+     */
+    public function getAncestorClazzList(CodeBase $code_base) {
+        $ancestor_class_list = [];
+        foreach ($this->getAncestorFQSENList($code_base) as $fqsen) {
+            if ($code_base->hasClassWithFQSEN($fqsen)) {
+                $ancestor_class_list[] =
+                    $code_base->getClassByFQSEN($fqsen);
+            }
+        }
+        return $ancestor_class_list;
+    }
+
+
+    /**
+     * Determine if this method overrides another method
+     *
+     * @return void
+     */
+    public function analyzeMethodOverrides(CodeBase $code_base) {
+        return $this->memoize(__METHOD__, function() use ($code_base) {
+
+            // Get the list of ancestors of this class
+            $ancestor_class_list = $this->getAncestorClazzList(
+                $code_base
+            );
+
+            // For each method, check to see if its overriding
+            // something. We're relying here on having copied
+            // methods to subclasses.
+            foreach ($this->getMethodMap($code_base) as $name => $method) {
+                $is_override = array_reduce($ancestor_class_list,
+                    function (bool $carry, Clazz $class) use ($code_base, $name) {
+                        return ($carry || $class->hasMethodWithName(
+                            $code_base,
+                            $name
+                        ));
+                    }, false);
+
+                // Tell the method if its overriding something or not
+                $method->setIsOverride($is_override);
+            }
+        });
+    }
+
+    /**
      * Add properties, constants and methods from all
      * ancestors (parents, traits, ...) to this class
      *
@@ -677,38 +754,16 @@ class Clazz extends TypedStructuralElement implements Addressable {
      */
     public function importAncestorClasses(CodeBase $code_base) {
         $this->memoize(__METHOD__, function() use ($code_base) {
-            // Copy information from the traits into this class
-            foreach ($this->getTraitFQSENList() as $trait_fqsen) {
-                // Let the parent class finder worry about this
-                if (!$code_base->hasClassWithFQSEN($trait_fqsen)) {
+            foreach ($this->getNonParentAncestorFQSENList($code_base) as $fqsen) {
+                if (!$code_base->hasClassWithFQSEN($fqsen)) {
                     continue;
                 }
 
-                assert($code_base->hasClassWithFQSEN($trait_fqsen),
-                    "Trait $trait_fqsen should already have been proven to exist");
-
                 $this->importAncestorClass(
                     $code_base,
-                    $code_base->getClassByFQSEN($trait_fqsen)
+                    $code_base->getClassByFQSEN($fqsen)
                 );
             }
-
-            // Copy information from the interfaces
-            foreach ($this->getInterfaceFQSENList() as $interface_fqsen) {
-                // Let the parent class finder worry about this
-                if (!$code_base->hasClassWithFQSEN($interface_fqsen)) {
-                    continue;
-                }
-
-                assert($code_base->hasClassWithFQSEN($interface_fqsen),
-                    "Trait $interface_fqsen should already have been proven to exist");
-
-                $this->importAncestorClass(
-                    $code_base,
-                    $code_base->getClassByFQSEN($interface_fqsen)
-                );
-            }
-
 
             // Copy information from the parent(s)
             $this->importParentClass($code_base);

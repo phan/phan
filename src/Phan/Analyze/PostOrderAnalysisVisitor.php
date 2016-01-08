@@ -130,6 +130,24 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $node
         ))->analyzeBackwardCompatibility();
 
+        if ($node->children['expr'] instanceof Node
+            && $node->children['expr']->kind == \ast\AST_CLOSURE
+        ) {
+            $closure_node = $node->children['expr'];
+            $method = (new ContextNode(
+                $this->code_base,
+                $this->context->withLineNumberStart(
+                    $closure_node->lineno ?? 0
+                ),
+                $closure_node
+            ))->getClosure();
+
+            $method->addReference($this->context);
+        }
+
+
+
+
         return $context;
     }
 
@@ -1135,7 +1153,6 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $this->context,
             $this->code_base
         );
-
 
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables

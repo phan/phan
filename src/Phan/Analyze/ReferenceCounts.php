@@ -12,6 +12,7 @@ use \Phan\Language\Element\TypedStructuralElement;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Log;
 
 trait ReferenceCounts {
@@ -63,6 +64,13 @@ trait ReferenceCounts {
 
                     if (0 !== strpos((string)$element_fqsen, $fqsen_string)) {
                         continue;
+                    }
+
+                    // Skip methods that are overrides of other methods
+                    if ($element_fqsen instanceof FullyQualifiedMethodName) {
+                        if ($element->getIsOverride()) {
+                            continue;
+                        }
                     }
 
                     if ($element_fqsen instanceof FullyQualifiedClassElement) {

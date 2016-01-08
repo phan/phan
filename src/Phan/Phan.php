@@ -270,8 +270,12 @@ class Phan {
             // Make sure the parent classes exist
             self::analyzeParentClassExists($code_base, $clazz);
 
-            // The import them
+            // Then import them
             $clazz->importAncestorClasses($code_base);
+
+            // Then figure out which methods are overrides of
+            // ancestor methods
+            $clazz->analyzeMethodOverrides($code_base);
         }
 
         // Run a few checks on all of the classes

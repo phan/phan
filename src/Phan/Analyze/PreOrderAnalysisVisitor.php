@@ -81,7 +81,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
 
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
                 throw new CodeBaseException(
-                    $class_fqsen, 
+                    $class_fqsen,
                     "Can't find class {$class_fqsen} - aborting"
                 );
             }
@@ -179,7 +179,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
 
         // No alternate was found
         throw new CodeBaseException(
-            null, 
+            null,
             "Can't find function {$function_name} - aborting"
         );
 
@@ -200,7 +200,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
 
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
-                $this->context
+                $this->context->withLineNumberStart($node->lineno ?? 0)
             );
 
         // If we have a 'this' variable in our current scope,
