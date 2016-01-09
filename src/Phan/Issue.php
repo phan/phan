@@ -371,7 +371,7 @@ class Issue {
             new Issue(self::NoopVariable, self::CATEGORY_NOOP, self::SEVERITY_LOW,
                 "Unused variable"
             ),
-            new Issue(self::NoopZeroReferences, self::CATEGORY_NOOP, self::SEVERITY_LOW,
+            new Issue(self::NoopZeroReferences, self::CATEGORY_NOOP, self::SEVERITY_CRITICAL,
                 "Possibly zero references to %s"
             ),
 

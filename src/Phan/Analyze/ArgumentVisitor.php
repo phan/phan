@@ -94,6 +94,13 @@ class ArgumentVisitor extends KindVisitorImplementation {
      */
     public function visitProp(Node $node) {
         try {
+
+            // Only look at properties with names that aren't
+            // variables or whatever
+            if (!is_string($node->children['prop'])) {
+                return;
+            }
+
             $property = (new ContextNode(
                 $this->code_base,
                 $this->context,
