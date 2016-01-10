@@ -114,6 +114,31 @@ Usage: ./phan [options] [files...]
   A comma-separated list of directories for which any files
   therein should be parsed but not analyzed.
 
+ -s, --state-file <filename>
+  Save state to the given file and read from it to speed up
+  future executions
+
+ -r, --reanalyze-file-list <file-list>
+  Force a re-analysis of any files passed in even if they haven't
+  changed since the last analysis
+
+ -d, --project-root-directory
+  Hunt for a directory named .phan in the current or parent
+  directory and read configuration file config.php from that
+  path.
+
+ -m <mode>, --output-mode
+  Output mode: text, codeclimate
+
+ -o, --output <filename>
+  Output filename
+
+ -p, --progress-bar
+  Show progress bar
+
+ -a, --dump-ast
+  Emit an AST for each file rather than analyze
+
  -q, --quick
   Quick mode - doesn't recurse into all function calls
 
@@ -131,30 +156,10 @@ Usage: ./phan [options] [files...]
   Comma-separated list of classes that require
   parent::__construct() to be called
 
- -m <mode>, --output-mode
-  Output mode: text, codeclimate
-
- -o, --output <filename>
-  Output filename
-
- -p, --progress-bar
-  Show progress bar
-
- -a, --dump-ast
-  Emit an AST for each file rather than analyze
-
- -s, --state-file <filename>
-  Save state to the given file and read from it to speed up
-  future executions
-
- -r, --reanalyze-file-list <file-list>
-  Force a re-analysis of any files passed in even if they haven't
-  changed since the last analysis
-
- -d, --project-root-directory
-  Hunt for a directory named .phan in the current or parent
-  directory and read configuration file config.php from that
-  path.
+ -x, --dead-code-detection
+  Emit issues for classes, methods, functions, constants and
+  properties that are probably never referenced and can
+  possibly be removed.
 
  -h,--help
   This help information
