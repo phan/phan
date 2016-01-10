@@ -317,8 +317,8 @@ EOB;
         fwrite(STDERR, "$padded_message ");
         $current = (int)($p * 60);
         $rest = max(60 - $current, 0);
-        fwrite(STDERR, str_repeat("\u{25b1}", $current));
-        fwrite(STDERR, str_repeat("\u{25b0}", $rest));
+        fwrite(STDERR, str_repeat("\u{2588}", $current));
+        fwrite(STDERR, str_repeat("\u{2591}", $rest));
         fwrite(STDERR, " " . sprintf("% 3d", (int)(100*$p)) . "%");
         fwrite(STDERR, sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r");
     }
