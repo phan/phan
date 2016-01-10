@@ -60,37 +60,42 @@ function f2($p1 = null, $p2) {}
 
 
 // Issue::PhanParamTooFew
-
+function f6($i) {}
+f6();
 
 // Issue::PhanParamTooFewInternal
-
+strlen();
 
 // Issue::PhanParamTooMany
-
+function f7($i) {}
+f7(1, 2);
 
 // Issue::PhanParamTooManyInternal
-
+strlen('str', 42);
 
 // Issue::PhanParamTypeMismatch
 
-
 // Issue::PhanRedefineClass
-
+class C15 {}
+class C15 {}
 
 // Issue::PhanRedefineClassInternal
-
+class DateTime {}
 
 // Issue::PhanRedefineFunction
-
+function f9() {}
+function f9() {}
 
 // Issue::PhanRedefineFunctionInternal
-
+function strlen() {}
 
 // Issue::PhanStaticCallToNonStatic
-
+class C19 { function f() {} }
+C19::f();
 
 // Issue::PhanNonClassMethodCall
-
+$v8 = null;
+$v8->f();
 
 // Issue::PhanTypeArrayOperator
 
@@ -98,12 +103,11 @@ function f2($p1 = null, $p2) {}
 // Issue::PhanTypeArraySuspicious
 $v4 = false; if($v4[1]) {}
 
-
 // Issue::PhanTypeComparisonFromArray
-
+if ([1, 2] == 'string') {}
 
 // Issue::PhanTypeComparisonToArray
-
+if (42 == [1, 2]) {}
 
 // Issue::PhanTypeConversionFromArray
 
@@ -121,16 +125,17 @@ interface C7 {} (new C7);
 
 
 // Issue::PhanTypeMismatchArgument
-
+function f8(int $i) {}
+f8('string');
 
 // Issue::PhanTypeMismatchArgumentInternal
-
+strlen(42);
 
 // Issue::PhanTypeMismatchDefault
 
 
 // Issue::PhanTypeMismatchForeach
-
+foreach (null as $i) {}
 
 // Issue::PhanTypeMismatchProperty
 function f3(int $p = false) {}
@@ -146,15 +151,11 @@ class C10 { static function f(&$v) {} } F::f('string');
 
 // Issue::PhanTypeParentConstructorCalled
 
-
 // Issue::PhanUndeclaredTypeParameter
 function f4(Undef $p) {}
 
 // Issue::PhanUndeclaredTypeProperty
 class C11 { /** @var Undef */ public $p; }
-
-// Issue::PhanEmptyFile
-
 
 // Issue::PhanParentlessClass
 class C12 { function f() { $v = parent::f(); } }
@@ -164,15 +165,15 @@ trait T1 { function f() { return parent::f(); } }
 
 // Issue::PhanUnanalyzable
 
-
 // Issue::PhanUndeclaredClass
 
 
 // Issue::PhanUndeclaredClassCatch
-
+try {} catch (Undef $exception) {}
 
 // Issue::PhanUndeclaredClassConstant
-
+class C16 {}
+$v7 = C16::C;
 
 // Issue::PhanUndeclaredClassInstanceof
 $v5 = null;
@@ -191,9 +192,10 @@ function f5(Undef $p) { $p->f5(); }
 class C13 extends Undef {}
 
 // Issue::PhanUndeclaredFunction
-
+f10();
 
 // Issue::PhanUndeclaredInterface
+class C17 implements C18 {}
 
 
 // Issue::PhanUndeclaredMethod
@@ -204,16 +206,18 @@ class C14 {}
 $v6 = (new C14)->undef;
 
 // Issue::PhanUndeclaredStaticMethod
-
+class C21 {}
+C21::f();
 
 // Issue::PhanUndeclaredStaticProperty
-
+class C22 {}
+$v11 = C22::$p;
 
 // Issue::PhanUndeclaredTrait
-
+class C20 { use T2; }
 
 // Issue::PhanUndeclaredVariable
-
+$v9 = $v10;
 
 // Issue::PhanVariableUseClause
 
