@@ -12,7 +12,7 @@ class Debug {
      * Print a lil' something to the console to
      * see if a thing is called
      *
-     * @suppress PhanNoopZeroReferences
+     * @suppress PhanUnreferencedMethod
      */
     public static function mark() {
         print "mark\n";
@@ -26,7 +26,7 @@ class Debug {
      *
      * @return null
      *
-     * @suppress PhanNoopZeroReferences
+     * @suppress PhanUnreferencedMethod
      */
     public static function printNode($node) {
         print self::nodeToString($node);
@@ -35,7 +35,7 @@ class Debug {
     /**
      * Print the name of a node to the terminal
      *
-     * @suppress PhanNoopZeroReferences
+     * @suppress PhanUnreferencedMethod
      */
     public static function printNodeName($node, $indent = 0) {
         print str_repeat("\t", $indent);
@@ -46,7 +46,7 @@ class Debug {
     /**
      * Print a thing with the given indent level
      *
-     * @suppress PhanNoopZeroReferences
+     * @suppress PhanUnreferencedMethod
      */
     public static function print(string $message, int $indent = 0) {
         print str_repeat("\t", $indent);
@@ -153,7 +153,7 @@ class Debug {
      * @return string
      * Pretty-printer for debug_backtrace
      *
-     * @suppress PhanNoopZeroReferences
+     * @suppress PhanUnreferencedMethod
      */
     public static function backtrace(int $levels=0) {
        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $levels+1);
@@ -172,7 +172,7 @@ class Debug {
      * Note that flag IDs are not unique. You're likely going to get
      * an incorrect name back from this. So sorry.
      *
-     * @suppress PhanNoopZeroReferences
+     * @suppress PhanUnreferencedProperty
      */
     private static $AST_FLAG_ID_NAME_MAP = [
         \ast\flags\ASSIGN_ADD => 'ASSIGN_ADD',

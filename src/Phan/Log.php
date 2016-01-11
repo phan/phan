@@ -108,7 +108,7 @@ class Log {
 	}
 
     /**
-     * @suppress PhanNoopZeroReferences
+     * @suppress PhanUnreferencedMethod
      */
 	public static function errorHandler($errno, $errstr, $errfile, $errline) {
 		echo "$errfile:$errline $errstr\n";

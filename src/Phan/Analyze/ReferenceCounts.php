@@ -15,6 +15,7 @@ use \Phan\Language\FQSEN\FullyQualifiedClassElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Log;
+use \Phan\Map;
 
 trait ReferenceCounts {
 
@@ -44,14 +45,14 @@ trait ReferenceCounts {
         );
 
         $i = 0;
-        $analyze_list = function($list) use ($code_base, &$i, $total_count) {
+        $analyze_list = function($list, string $issue_type) use ($code_base, &$i, $total_count) {
             foreach ($list as $name => $element) {
                 CLI::progress('dead code',  (++$i)/$total_count);
-                self::analyzeElementReferenceCounts($code_base, $element);
+                self::analyzeElementReferenceCounts($code_base, $element, $issue_type);
             }
         };
 
-        $analyze_map = function($map) use ($code_base, &$i, $total_count) {
+        $analyze_map = function($map, string $issue_type) use ($code_base, &$i, $total_count) {
             foreach ($map as $fqsen_string => $list) {
                 foreach ($list as $name => $element) {
                     CLI::progress('dead code',  (++$i)/$total_count);
@@ -117,15 +118,15 @@ trait ReferenceCounts {
 
                     }
 
-                    self::analyzeElementReferenceCounts($code_base, $element);
+                    self::analyzeElementReferenceCounts($code_base, $element, $issue_type);
                 }
             }
         };
 
-        $analyze_map($code_base->getMethodMap());
-        $analyze_map($code_base->getPropertyMap());
-        $analyze_map($code_base->getConstantMap());
-        $analyze_list($code_base->getClassMap());
+        $analyze_map($code_base->getMethodMap(), Issue::UnreferencedMethod);
+        $analyze_map($code_base->getPropertyMap(), Issue::UnreferencedProperty);
+        $analyze_map($code_base->getConstantMap(), Issue::UnreferencedConstant);
+        $analyze_list($code_base->getClassMap(), Issue::UnreferencedClass);
     }
 
     /**
@@ -135,7 +136,8 @@ trait ReferenceCounts {
      */
     public static function analyzeElementReferenceCounts(
         CodeBase $code_base,
-        TypedStructuralElement $element
+        TypedStructuralElement $element,
+        string $issue_type
     ) {
 
         // Don't worry about internal elements
@@ -144,20 +146,20 @@ trait ReferenceCounts {
         }
 
         if ($element->getReferenceCount($code_base) < 1) {
-            if ($element->hasSuppressIssue(Issue::NoopZeroReferences)) {
+            if ($element->hasSuppressIssue($issue_type)) {
                 return;
             }
 
             if ($element instanceof Addressable) {
                 Issue::emit(
-                    Issue::NoopZeroReferences,
+                    $issue_type,
                     $element->getContext()->getFile(),
                     $element->getContext()->getLineNumberStart(),
                     (string)$element->getFQSEN()
                 );
             } else {
                 Issue::emit(
-                    Issue::NoopZeroReferences,
+                    $issue_type,
                     $element->getContext()->getFile(),
                     $element->getContext()->getLineNumberStart(),
                     (string)$element

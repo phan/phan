@@ -261,7 +261,7 @@ class Comment {
     /**
      * @return CommentParameter[]
      *
-     * @suppress PhanNoopZeroReferences
+     * @suppress PhanUnreferencedMethod
      */
     public function getParameterList() : array {
         return $this->parameter_list;
@@ -269,7 +269,7 @@ class Comment {
 
     /**
      * @return string[]
-     * A set of issie names like 'PhanNoopZeroReferences' to suppress
+     * A set of issie names like 'PhanUnreferencedMethod' to suppress
      */
     public function getSuppressIssueList() : array {
         return $this->suppress_issue_list;

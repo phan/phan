@@ -83,7 +83,10 @@ class Issue {
     const NoopConstant              = 'PhanNoopConstant';
     const NoopProperty              = 'PhanNoopProperty';
     const NoopVariable              = 'PhanNoopVariable';
-    const NoopZeroReferences        = 'PhanNoopZeroReferences';
+    const UnreferencedClass         = 'PhanUnreferencedClass';
+    const UnreferencedMethod        = 'PhanUnreferencedMethod';
+    const UnreferencedProperty      = 'PhanUnreferencedProperty';
+    const UnreferencedConstant      = 'PhanUnreferencedConstant';
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -371,8 +374,17 @@ class Issue {
             new Issue(self::NoopVariable, self::CATEGORY_NOOP, self::SEVERITY_LOW,
                 "Unused variable"
             ),
-            new Issue(self::NoopZeroReferences, self::CATEGORY_NOOP, self::SEVERITY_CRITICAL,
-                "Possibly zero references to %s"
+            new Issue(self::UnreferencedClass, self::CATEGORY_NOOP, self::SEVERITY_CRITICAL,
+                "Possibly zero references to class %s"
+            ),
+            new Issue(self::UnreferencedMethod, self::CATEGORY_NOOP, self::SEVERITY_CRITICAL,
+                "Possibly zero references to method %s"
+            ),
+            new Issue(self::UnreferencedProperty, self::CATEGORY_NOOP, self::SEVERITY_CRITICAL,
+                "Possibly zero references to property %s"
+            ),
+            new Issue(self::UnreferencedConstant, self::CATEGORY_NOOP, self::SEVERITY_CRITICAL,
+                "Possibly zero references to constant %s"
             ),
 
             // Issue::CATEGORY_REDEFINE
