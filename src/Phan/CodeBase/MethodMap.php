@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
+use \Phan\Config;
 use \Phan\Database;
 use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Method;
@@ -25,6 +26,15 @@ trait MethodMap {
      * A map from FQSEN to name to a method
      */
     protected $method_map = [];
+
+    /**
+     * @var Method[]
+     * A map from Method name to all methods with that name.
+     * This is useful for adding hail-mary references to
+     * methods called on unknown types when doing dead
+     * code detection
+     */
+    protected $method_name_map = [];
 
     /**
      * @return Method[][]
@@ -177,6 +187,13 @@ trait MethodMap {
      * All known methods with the given name
      */
     public function getMethodListByName(string $name) : array {
+
+        // If we're doing dead code detection we'll have faster
+        // access
+        if (Config::get()->dead_code_detection) {
+            return $this->method_name_map[strtolower($name)] ?? [];
+        }
+
         $method_list = [];
         $name = strtolower($name);
         foreach ($this->getMethodMap() as $fqsen => $list) {
@@ -335,13 +352,17 @@ trait MethodMap {
     ) {
         $this->method_map[$scope][$name] = $method;
 
-        // For elements that aren't internal PHP classes
-        // if (!$method->getContext()->isInternal()) {
+        // If we're doing dead code detection, map the name
+        // directly to the method so we can quickly look up
+        // all methods with that name to add a possible
+        // reference
+        if (Config::get()->dead_code_detection) {
+            $this->method_name_map[strtolower($name)][] = $method;
+        }
 
-            // Associate the element with the file it was found in
-            $this->getFileByPath($method->getContext()->getFile())
-                ->addMethodFQSEN($method->getFQSEN());
-        // }
+        // Associate the element with the file it was found in
+        $this->getFileByPath($method->getContext()->getFile())
+            ->addMethodFQSEN($method->getFQSEN());
     }
 
     /**
