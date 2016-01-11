@@ -355,6 +355,25 @@ class Type {
             }
         }
 
+        // Things like `self[]` or `$this[]`
+        if ($is_generic_array_type
+            && self::isSelfTypeString($non_generic_array_type_name)
+            && $context->isInClassScope()
+        ) {
+            // Callers of this method should be checking on their own
+            // to see if this type is a reference to 'parent' and
+            // dealing with it there. We don't want to have this
+            // method be dependent on the code base
+            assert('parent' !== $non_generic_array_type_name,
+                __METHOD__ . " does not know how to handle the type name 'parent' in $context");
+
+            return GenericArrayType::fromElementType(
+                static::fromFullyQualifiedString(
+                    (string)$context->getClassFQSEN()
+                )
+            );
+        }
+
         // If this is a type referencing the current class
         // in scope such as 'self' or 'static', return that.
         if (self::isSelfTypeString($type_name)
