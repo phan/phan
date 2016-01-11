@@ -303,9 +303,9 @@ EOB;
 
         // Don't update every time when we're moving
         // super fast
-        if (rand(0, 100)
-            > (100 * Config::get()->progress_bar_sample_rate)
-        ) {
+        if ($p < 1.0
+            && rand(0, 1000) > (1000 * Config::get()->progress_bar_sample_rate
+        )) {
             return;
         }
 

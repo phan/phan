@@ -79,7 +79,7 @@ class Config {
 
         // The probability of actually emitting any
         // progress bar update
-        'progress_bar_sample_rate' => 0.1,
+        'progress_bar_sample_rate' => 0.005,
 
         // Set to true in order to prepend all emitted error
         // messages with an ID indicating the distinct class
