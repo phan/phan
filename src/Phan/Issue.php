@@ -232,6 +232,12 @@ class Issue {
             new Issue(self::UndeclaredVariable, self::CATEGORY_UNDEFINED, self::SEVERITY_LOW,
                 "Variable \$%s is undeclared"
             ),
+            new Issue(self::UndeclaredTypeParameter, self::CATEGORY_UNDEFINED, self::SEVERITY_NORMAL,
+                "Parameter of undeclared type %s"
+            ),
+            new Issue(self::UndeclaredTypeProperty, self::CATEGORY_UNDEFINED, self::SEVERITY_NORMAL,
+                "Property of undeclared type %s"
+            ),
 
             // Issue::CATEGORY_ANALYSIS
             new Issue(self::Unanalyzable, self::CATEGORY_UNDEFINED, self::SEVERITY_LOW,
@@ -292,12 +298,6 @@ class Issue {
             ),
             new Issue(self::TypeNonVarPassByRef, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
                 "Only variables can be passed by reference at argument %d of %s()"
-            ),
-            new Issue(self::UndeclaredTypeParameter, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
-                "Parameter of undeclared type %s"
-            ),
-            new Issue(self::UndeclaredTypeProperty, self::CATEGORY_TYPE, self::SEVERITY_NORMAL,
-                "Property of undeclared type %s"
             ),
             new Issue(self::NonClassMethodCall, self::CATEGORY_TYPE, self::SEVERITY_CRITICAL,
                 "Call to method %s on non-class type %s"
