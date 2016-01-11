@@ -571,6 +571,12 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             );
         }
 
+        if ($method->isReturnTypeUndefined()) {
+            // Add the new type to the set of values returned by the
+            // method
+            $method->getUnionType()->addUnionType($expression_type);
+        }
+
         return $this->context;
     }
 
