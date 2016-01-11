@@ -10,7 +10,7 @@ trait GlobalVariableMap {
      * @var Variable[]
      * A map from name to global variable
      */
-    private $global_variable_map = [];
+    protected $global_variable_map = [];
 
     /**
      * @return Variable[]

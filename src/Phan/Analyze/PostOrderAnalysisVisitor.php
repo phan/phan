@@ -557,9 +557,10 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
         if (!$method->isReturnTypeUndefined()
             && !$expression_type->canCastToExpandedUnionType(
-            $method_return_type,
-            $this->code_base
-        )) {
+                    $method_return_type,
+                    $this->code_base
+                )
+        ) {
             Issue::emit(
                 Issue::TypeMismatchReturn,
                 $this->context->getFile(),

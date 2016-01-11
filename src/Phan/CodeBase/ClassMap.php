@@ -22,7 +22,7 @@ trait ClassMap {
      * A map from fqsen string to the class it
      * represents
      */
-    private $class_map;
+    protected $class_map;
 
     /**
      * Initialize the map
