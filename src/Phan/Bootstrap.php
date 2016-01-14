@@ -40,7 +40,7 @@ set_exception_handler(function (Throwable $throwable) {
 /**
  * @suppress PhanUnreferencedMethod
  */
-function phan_error_handler($errno, $srrstr, $errfile, $errline) {
+function phan_error_handler($errno, $errstr, $errfile, $errline) {
     print "$errfile:$errline [$errno] $errstr\n";
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 }
