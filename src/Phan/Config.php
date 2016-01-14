@@ -4,7 +4,9 @@ namespace Phan;
 use \Phan\Issue;
 
 /**
- * Program configuration
+ * Program configuration.
+ * See `./phan -h` for command line usage, or take a
+ * look at \Phan\CLI.php for more details on CLI usage.
  */
 class Config {
 
@@ -21,32 +23,45 @@ class Config {
     private $configuration = [
 
         // A list of directories holding code that we want
-        // to parse, but not analyze
+        // to parse, but not analyze. Directories holding
+        // third party code should be set here.
         'exclude_analysis_directory_list' => [],
 
-        // Backwards Compatibility Checking
+        // Backwards Compatibility Checking. This is slow
+        // and expensive, but you should consider running
+        // it before upgrading your version of PHP to a
+        // new version that has backward compatibility
+        // breaks.
         'backward_compatibility_checks' => true,
 
         // A set of fully qualified class-names for which
-        // a call to parent::__construct() is required
+        // a call to parent::__construct() is required.
         'parent_constructor_required' => [],
 
         // Run a quick version of checks that takes less
-        // time
+        // time at the cost of not running as thorough
+        // an analysis. You should consider setting this
+        // to true only when you wish you had more issues
+        // to fix in your code base.
         'quick_mode' => false,
 
         // The minimum severity level to report on. This can be
         // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or
-        // Issue::SEVERITY_CRITICAL.
+        // Issue::SEVERITY_CRITICAL. Setting it to only
+        // critical issues is a good place to start on a big
+        // sloppy mature code base.
         'minimum_severity' => 0,
 
         // If true, missing properties will be created when
         // they are first seen. If false, we'll report an
-        // error message.
+        // error message if there is an attempt to write
+        // to a class property that wasn't explicitly
+        // defined.
         'allow_missing_properties' => false,
 
         // Allow null to be cast as any type and for any
-        // type to be cast to null.
+        // type to be cast to null. Setting this to false
+        // will cut down on false positives.
         'null_casts_as_any_type' => false,
 
         // Set to true in order to attempt to detect dead
@@ -77,15 +92,12 @@ class Config {
         // Include a progress bar in the output
         'progress_bar' => false,
 
-        // The probability of actually emitting any
-        // progress bar update
+        // The probability of actually emitting any progress
+        // bar update. Setting this to something very low
+        // is good for reducing network IO and filling up
+        // your terminal's buffer when running phan on a
+        // remote host.
         'progress_bar_sample_rate' => 0.005,
-
-        // Set to true in order to prepend all emitted error
-        // messages with an ID indicating the distinct class
-        // of issue seen. This allows us to get counts of
-        // distinct error types.
-        'emit_trace_id' => false,
 
         // The vesion of the AST (defined in php-ast)
         // we're using
