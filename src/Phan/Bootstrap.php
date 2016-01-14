@@ -29,10 +29,19 @@ assert_options(ASSERT_WARNING,  false);
 assert_options(ASSERT_CALLBACK,
     function (string $script, int $line, $expression, $message) {
         print "$script:$line ($expression) $message\n";
-        debug_print_backtrace(3);
+        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
     });
 
 // Print more of the backtrace than is done by default
 set_exception_handler(function (Throwable $throwable) {
     print "$throwable\n";
 });
+
+/**
+ * @suppress PhanUnreferencedMethod
+ */
+function phan_error_handler($errno, $srrstr, $errfile, $errline) {
+    print "$errfile:$errline [$errno] $errstr\n";
+    debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+}
+set_error_handler('phan_error_handler');

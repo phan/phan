@@ -107,14 +107,6 @@ class Log {
 		}
 	}
 
-    /**
-     * @suppress PhanUnreferencedMethod
-     */
-	public static function errorHandler($errno, $errstr, $errfile, $errline) {
-		echo "$errfile:$errline $errstr\n";
-		debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-	}
-
 	public static function display(array $summary=[]) {
 		$log = self::getInstance();
 		$out = '';
@@ -191,5 +183,3 @@ class Log {
         }
     }
 }
-
-set_error_handler('\\Phan\\Log::errorHandler', -1);
