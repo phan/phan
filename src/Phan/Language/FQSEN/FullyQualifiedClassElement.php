@@ -97,6 +97,11 @@ abstract class FullyQualifiedClassElement extends FQSEN {
                 $fully_qualified_class_name_string
             );
 
+        // Make sure that we're actually getting a class
+        // name reference back
+        assert($fully_qualified_class_name instanceof FullyQualifiedClassName,
+            "$fully_qualified_class_name must be an instanceof FullyQualifiedClassName from string $fully_qualified_string but got " . get_class($fully_qualified_class_name));
+
         // Split off the alternate ID
         $parts = explode(',', $name_string);
         $name = $parts[0];

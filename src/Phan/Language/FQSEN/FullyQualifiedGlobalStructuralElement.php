@@ -96,7 +96,10 @@ abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) : FullyQualifiedGlobalStructuralElement {
-        return self::memoizeStatic($fully_qualified_string, function()
+
+        $key = get_called_class() . '|' . $fully_qualified_string;
+
+        return self::memoizeStatic($key, function()
             use ($fully_qualified_string) {
 
             // Split off the alternate_id
