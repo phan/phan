@@ -24,7 +24,7 @@ pushd $ROOT > /dev/null
     export RUN=$DATA/$REV
     mkdir -p $RUN
 
-    if [ -d $LATEST ]; then
+    if [ ! -d $LATEST ]; then
         # Generate a file list for all files in Etsyweb
         $BIN/mkfileset > $RUN/files
 
