@@ -30,6 +30,26 @@ $code_base = new CodeBase(
     $internal_function_name_list
 );
 
+// If requested, expand the file list to a set of
+// all files that should be re-analyzed
+if (Config::get()->expanded_dependency_list) {
+
+    assert((bool)(Config::get()->stored_state_file_path),
+        'Requesting an expanded dependency list can only '
+        . ' be done if a state-file is defined');
+
+    // Analyze the file list provided via the CLI
+    $dependency_file_list = (new Phan)->dependencyFileList(
+        $code_base,
+        $cli->getFileList()
+    );
+
+    // Emit the expanded file list
+    print implode("\n", $dependency_file_list) . "\n";
+
+    exit(1);
+}
+
 // Analyze the file list provided via the CLI
 (new Phan)->analyzeFileList(
     $code_base,

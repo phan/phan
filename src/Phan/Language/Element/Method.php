@@ -713,10 +713,18 @@ class Method extends ClassElement implements Addressable {
             return $this->fqsen;
         }
 
-        return FullyQualifiedMethodName::fromStringInContext(
-            $this->getName(),
-            $this->getContext()
-        );
+        if ($this->getContext()->isInClassScope()) {
+            return FullyQualifiedMethodName::fromStringInContext(
+                $this->getName(),
+                $this->getContext()
+            );
+        }
+
+            return FullyQualifiedFunctionName::fromStringInContext(
+                $this->getName(),
+                $this->getContext()
+            );
+
     }
 
     /**

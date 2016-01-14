@@ -23,13 +23,14 @@ class CLI {
         // file_put_contents('/tmp/file', implode("\n", $argv));
 
         // Parse command line args
-        // still available: e,g,j,k,n,t,u,v,w,z
+        // still available: g,j,k,n,t,u,v,w,z
         $opts = getopt(
-            "f:m:o:c:aqbrpid:s:3:y:l:xh::", [
+            "f:m:o:c:aeqbrpid:s:3:y:l:xh::", [
                 'fileset:',
                 'output-mode:',
                 'output:',
                 'parent-constructor-required:',
+                'expanded-dependency-list',
                 'dump-ast',
                 'quick',
                 'backward-compatibility-checks',
@@ -124,6 +125,10 @@ class CLI {
             case 'a':
             case 'dump-ast':
                 Config::get()->dump_ast = true;
+                break;
+            case 'e':
+            case 'expanded-dependency-list':
+                Config::get()->expanded_dependency_list = true;
                 break;
             case 'o':
             case 'output':
@@ -244,6 +249,12 @@ Usage: {$argv[0]} [options] [files...]
 
  -a, --dump-ast
   Emit an AST for each file rather than analyze
+
+ -e, --expanded-dependency-list
+  Emit an expanded list of files for the files to be analyzed
+  that includes all files that should be re-analyzed if the
+  passed files have changed. Doing so inhibits analysis or
+  parsing.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls

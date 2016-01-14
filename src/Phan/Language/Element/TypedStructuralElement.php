@@ -164,6 +164,26 @@ abstract class TypedStructuralElement extends StructuralElement {
      * A list of references to this typed structural element.
      */
     public function getReferenceList() : array {
+        if (!empty($this->reference_list)) {
+            return $this->reference_list;
+        }
+
+        // If we have a database, see if we have some callers
+        // defined there and save those
+        if (Database::isEnabled()) {
+            if ($this instanceof Addressable) {
+                $this->reference_list = array_map(
+                    function(CalledBy $called_by) : FileRef {
+                        return $called_by->getFileRef();
+                    },
+                    CalledBy::findManyByFQSEN(
+                        Database::get(),
+                        $this->getFQSEN()
+                    )
+                );
+            }
+        }
+
         return $this->reference_list;
     }
 

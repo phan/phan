@@ -132,6 +132,10 @@ abstract class FullyQualifiedClassElement extends FQSEN {
     ) {
         // Test to see if we have a class defined
         if (false === strpos($fqsen_string, '::')) {
+
+            assert($context->isInClassScope(),
+                "Cannot reference class element without class name when not in class scope. Got $fqsen_string.");
+
             $fully_qualified_class_name = $context->getClassFQSEN();
         } else {
             assert(false !== strpos($fqsen_string, '::'),

@@ -45,12 +45,18 @@ class CalledBy extends ModelOne {
     public function getFQSENString() : string {
         return $this->fqsen_string;
     }
+    */
 
     public function getFileRef() : FileRef {
         return $this->file_ref;
     }
-    */
 
+    /**
+     * n.b.: You probably don't want to use this method as this
+     *       does lookups based on the int primary key (which is
+     *       auto-generated). Consider using `findManyByFQSEN()`
+     *       instead.
+     */
     public static function read(
         Database $database, $primary_key_value
     ) : CalledBy {
@@ -95,7 +101,6 @@ class CalledBy extends ModelOne {
      * @return CalledBy[]
      * The set of callers for the given FQSEN
      */
-    /*
     public static function findManyByFQSEN(
         Database $database,
         FQSEN $fqsen
@@ -119,7 +124,6 @@ class CalledBy extends ModelOne {
 
         return $called_by_list;
     }
-    */
 
     /**
      * @return CalledBy[]

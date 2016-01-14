@@ -134,6 +134,43 @@ class Phan {
     }
 
     /**
+     * @param CodeBase $code_base
+     * A code base needs to be passed in because we require
+     * it to be initialized before any classes or files are
+     * loaded.
+     *
+     * @param string[] $file_path_list
+     * A set of files to expand with the set of dependencies
+     * on those files.
+     *
+     * @return string[]
+     * Get the set of dependencies for a given file list
+     */
+    public function dependencyFileList(
+        CodeBase $code_base,
+        array $file_path_list
+    ) : array {
+        $file_count = count($file_path_list);
+
+        // We'll construct a set of files that we'll
+        // want to run an analysis on
+        $dependency_file_path_list = [];
+
+        foreach ($file_path_list as $i => $file_path) {
+            CLI::progress('dependencies',  ($i+1)/$file_count);
+
+            $dependency_file_path_list[] = $file_path;
+
+            $dependency_file_path_list = array_merge(
+                $dependency_file_path_list,
+                $code_base->dependencyListForFile($file_path)
+            );
+        }
+
+        return array_unique($dependency_file_path_list);
+    }
+
+    /**
      * This first pass parses code and looks for the subset
      * of issues that can be found without having to have
      * an understanding of the entire code base.

@@ -89,6 +89,13 @@ class Config {
         // analyzing files
         'dump_ast' => false,
 
+        // If true, we'll dump the set of dependencies
+        // on the given file list instead of doing any
+        // kind of analysis. This is useful for determining
+        // the full set of files that should be analyzed
+        // when running against a state file
+        'expanded_dependency_list' => false,
+
         // Include a progress bar in the output
         'progress_bar' => false,
 

@@ -35,7 +35,7 @@ class FileRef implements \Serializable {
      * @return Context
      * This context with the given value is returned
      */
-    public function withFile(string $file) : Context {
+    public function withFile(string $file) : FileRef {
         $context = clone($this);
         $context->file = $file;
         return $context;
@@ -75,7 +75,7 @@ class FileRef implements \Serializable {
      * @return Context
      * This context with the given value is returned
      */
-    public function withLineNumberStart(int $line_number) : Context {
+    public function withLineNumberStart(int $line_number) : FileRef {
         $this->line_number_start = $line_number;
         return $this;
     }
@@ -95,7 +95,7 @@ class FileRef implements \Serializable {
      * @return Context
      * This context with the given value is returned
      */
-    public function withLineNumberEnd(int $line_number) : Context {
+    public function withLineNumberEnd(int $line_number) : FileRef {
         $this->line_number_end = $line_number;
         return $this;
     }
