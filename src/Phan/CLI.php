@@ -229,7 +229,7 @@ Usage: {$argv[0]} [options] [files...]
   Save state to the given file and read from it to speed up
   future executions
 
- -r, --reanalyze-file-list <file-list>
+ -r, --reanalyze-file-list
   Force a re-analysis of any files passed in even if they haven't
   changed since the last analysis
 

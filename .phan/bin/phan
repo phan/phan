@@ -12,7 +12,6 @@ export DATA=$ROOT/.phan/data
 # The directory holding the latest successful run
 # of phan and the hash that it ran over
 export LATEST=`readlink -f $DATA/latest`
-export LATEST_REV=`basename $LATEST`
 
 # Go to the root of this git repo
 pushd $ROOT > /dev/null
@@ -25,13 +24,25 @@ pushd $ROOT > /dev/null
     export RUN=$DATA/$REV
     mkdir -p $RUN
 
-    # Generate a file list for all files in Etsyweb
-    $BIN/mkfileset > $RUN/files
+    if [ -d $LATEST ]; then
+        # Generate a file list for all files in Etsyweb
+        $BIN/mkfileset > $RUN/files
 
-    # Copy the latest database for the new run if possible
-    cp $LATEST/state $RUN/state > /dev/null 2>&1
+        # Copy the latest database for the new run if possible
+        cp $LATEST/state $RUN/state > /dev/null 2>&1
+    else
+        export LATEST_REV=`basename $LATEST`
 
-    # TODO: run only on `git diff $LATEST_REV --name-only`?
+        # Figure out the set of files that have changed since
+        # the last analysis, and the files that depend on those
+        # files, and make sure they're all re-analyzed
+        phan \
+            --project-root-directory $ROOT \
+            --state-file $RUN/state \
+            --expanded-dependency-list \
+            `git diff $LATEST_REV --name-only` \
+            > $RUN/files
+    fi
 
     # Run the analysis, emitting output to the console
     phan \
@@ -40,7 +51,8 @@ pushd $ROOT > /dev/null
         --directory $ROOT/.phan/stubs \
         --fileset $RUN/files \
         --state-file $RUN/state \
-        --output $RUN/issues || exit
+        --reanalyze-file-list \
+        --output $RUN/issues || exit 0
 
     # Re-link the latest directory
     rm -f $ROOT/.phan/data/latest

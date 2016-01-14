@@ -71,6 +71,11 @@ class Phan {
                     $file_path
                 );
 
+                // If the file is gone, no need to continue
+                if (!file_exists($file_path)) {
+                    continue;
+                }
+
                 try {
                     // Parse the file
                     $this->parseFile($code_base, $file_path);

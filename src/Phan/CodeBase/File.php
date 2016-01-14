@@ -131,8 +131,16 @@ class File {
      * code base, else false
      */
     public function isParseUpToDate() : bool {
+        $real_path = realpath($this->file_path);
+
+        // If the file no longer exists, its probably
+        // not up to date
+        if (false === $real_path) {
+            return false;
+        }
+
         return (
-            filemtime(realpath($this->file_path)) <= $this->modification_time
+            filemtime($real_path) <= $this->modification_time
         );
     }
 
