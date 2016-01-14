@@ -80,7 +80,7 @@ class Phan {
                     $analyze_file_path_list[] = $file_path;
 
                 } catch (\Throwable $throwable) {
-                    error_log($throwable->getMessage());
+                    error_log($file_path . ' ' . $throwable->getMessage() . "\n");
                 }
             }
         }
