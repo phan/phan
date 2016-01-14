@@ -126,7 +126,7 @@ class CLI {
                 Config::get()->dump_ast = true;
                 break;
             case 'o':
-            case 'otuput':
+            case 'output':
                 Log::setFilename($value);
                 break;
             case 'i':

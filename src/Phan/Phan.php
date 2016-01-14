@@ -58,9 +58,12 @@ class Phan {
         foreach ($file_path_list as $i => $file_path) {
             CLI::progress('parse',  ($i+1)/$file_count);
 
-            // Check to see if we need to re-parse this file
-            if (Config::get()->reanalyze_file_list
-                || !$code_base->isParseUpToDateForFile($file_path)) {
+            // Check to see if we need to re-parse this file either
+            // because we don't have an up to date parse for this
+            // file or because we were isntructed to reanalyze
+            // everything
+            if (!$code_base->isParseUpToDateForFile($file_path)
+                || Config::get()->reanalyze_file_list) {
 
                 // Kick out anything we read from the former version
                 // of this file

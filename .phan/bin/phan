@@ -1,0 +1,51 @@
+#!/bin/sh
+
+# Root directory of project
+export ROOT=`git rev-parse --show-toplevel`
+
+# Phan's directory for executables
+export BIN=$ROOT/.phan/bin
+
+# Phan's data directory
+export DATA=$ROOT/.phan/data
+
+# The directory holding the latest successful run
+# of phan and the hash that it ran over
+export LATEST=`readlink -f $DATA/latest`
+export LATEST_REV=`basename $LATEST`
+
+# Go to the root of this git repo
+pushd $ROOT > /dev/null
+
+    # Get the current hash of HEAD
+    export REV=`git rev-parse HEAD`
+
+    # Create the data directory for this run if it
+    # doesn't exist yet
+    export RUN=$DATA/$REV
+    mkdir -p $RUN
+
+    # Generate a file list for all files in Etsyweb
+    $BIN/mkfileset > $RUN/files
+
+    # Copy the latest database for the new run if possible
+    cp $LATEST/state $RUN/state > /dev/null 2>&1
+
+    # TODO: run only on `git diff $LATEST_REV --name-only`?
+
+    # Run the analysis, emitting output to the console
+    phan \
+        --progress-bar \
+        --project-root-directory $ROOT \
+        --directory $ROOT/.phan/stubs \
+        --fileset $RUN/files \
+        --state-file $RUN/state \
+        --output $RUN/issues || exit
+
+    # Re-link the latest directory
+    rm -f $ROOT/.phan/data/latest
+    ln -s $RUN $ROOT/.phan/data/latest
+
+    # Output any issues that were found
+    cat $RUN/issues
+popd > /dev/null

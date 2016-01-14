@@ -1,4 +1,4 @@
 vendor
-/.phan/database
+.phan/data
 composer.phar
 /build
