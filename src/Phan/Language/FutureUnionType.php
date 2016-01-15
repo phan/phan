@@ -4,6 +4,7 @@ namespace Phan\Language;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\IssueException;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \Phan\Log;
@@ -39,11 +40,24 @@ class FutureUnionType {
         $this->node = $node;
     }
 
+    /**
+     * Force the future to figure out the type of the
+     * given object or throw an IssueException if it
+     * is unable to do so
+     *
+     * @return UnionType
+     * The type of the future
+     *
+     * @throws IssueException
+     * An exception is thrown if we are unable to determine
+     * the type at the time this method is called
+     */
     public function get() : UnionType {
         return UnionType::fromNode(
             $this->context,
             $this->code_base,
-            $this->node
+            $this->node,
+            false
         );
     }
 }

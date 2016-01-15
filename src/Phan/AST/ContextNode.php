@@ -679,7 +679,7 @@ class ContextNode {
             ))->getClassList();
         } catch (CodeBaseException $exception) {
             throw new IssueException(
-                Issue::fromType(Issue::UndeclaredClassConstant )(
+                Issue::fromType(Issue::UndeclaredClassConstant)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
                     [ $constant_name, $exception->getFQSEN() ]

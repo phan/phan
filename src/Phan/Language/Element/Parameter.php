@@ -157,12 +157,6 @@ class Parameter extends Variable {
 
         assert($node instanceof Node, "node was not an \\ast\\Node");
 
-        // If something goes wrong will getting the type of
-        // a property, we'll store it as a future union
-        // type and try to figure it out later
-        $future_union_type = null;
-
-
         // Get the type of the parameter
         $union_type = UnionType::fromNode(
             $context,
@@ -193,7 +187,6 @@ class Parameter extends Variable {
                 || $default_node->kind == \ast\AST_UNARY_OP
                 || $default_node->kind == \ast\AST_ARRAY
             ) {
-
                 // Get the type of the default
                 $union_type = UnionType::fromNode(
                     $context,
@@ -206,7 +199,6 @@ class Parameter extends Variable {
                     $union_type
                 );
             } else {
-
                 try {
                     // Get the type of the default
                     $union_type = UnionType::fromNode(
@@ -215,7 +207,6 @@ class Parameter extends Variable {
                         $default_node,
                         false
                     );
-
                 } catch (IssueException $exception) {
                     // If we're in the parsing phase and we
                     // depend on a constant that isn't yet

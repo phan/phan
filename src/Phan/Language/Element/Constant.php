@@ -47,6 +47,8 @@ class Constant extends ClassElement implements Addressable {
     /**
      * Override the default getter to fill in a future
      * union type if available.
+     *
+     * @return UnionType
      */
     public function getUnionType() : UnionType {
         if (null !== ($union_type = $this->getFutureUnionType())) {
