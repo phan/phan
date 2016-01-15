@@ -294,10 +294,15 @@ class Clazz extends TypedStructuralElement implements Addressable {
         CodeBase $code_base,
         Property $property
     ) {
-        $code_base->addPropertyInScope(
-            $property,
-            $this->getFQSEN()
-        );
+        if (!$this->hasPropertyWithName(
+            $code_base,
+            $property->getName()
+        )) {
+            $code_base->addPropertyInScope(
+                $property,
+                $this->getFQSEN()
+            );
+        }
     }
 
     /**
