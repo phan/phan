@@ -243,17 +243,17 @@ class ArgumentType {
                         $code_base, $context, $argument
                     ))->getVariableName();
 
-                    if($argument->kind == \ast\AST_STATIC_PROP) {
-                        if (in_array($variable_name, [
-                            'self', 'static', 'parent'
-                        ])) {
-                            Issue::emit(
-                                Issue::ContextNotObject,
-                                $context->getFile(),
-                                $node->lineno ?? 0,
-                                "\$$variable_name"
-                            );
-                        }
+                    if(Type::isSelfTypeString($variable_name)
+                        && !$context->isInClassScope()
+                        && $argument->kind == \ast\AST_STATIC_PROP
+                        && $argument->kind == \ast\AST_PROP
+                    ) {
+                        Issue::emit(
+                            Issue::ContextNotObject,
+                            $context->getFile(),
+                            $node->lineno ?? 0,
+                            "$variable_name"
+                        );
                     }
                 }
             }
