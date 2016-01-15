@@ -224,7 +224,6 @@ class Parameter extends Variable {
                 // Set the default value
                 $parameter->setDefaultValueType($union_type);
             }
-
         }
 
         return $parameter;

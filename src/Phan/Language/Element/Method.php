@@ -492,25 +492,25 @@ class Method extends ClassElement implements Addressable {
                 if ($parameter->hasDefaultValue()) {
                     $default_type = $parameter->getDefaultValueType();
 
-                    if ($default_type->isEqualTo(
+                    if (!$default_type->isEqualTo(
                         NullType::instance()->asUnionType()
                     )) {
+                        if (!$default_type->isEqualTo(NullType::instance()->asUnionType())
+                            && !$default_type->canCastToUnionType(
+                                $parameter->getUnionType()
+                        )) {
+                            Issue::emit(
+                                Issue::TypeMismatchDefault,
+                                $context->getFile(),
+                                $node->lineno ?? 0,
+                                (string)$parameter->getUnionType(),
+                                $parameter->getName(),
+                                (string)$default_type
+                            );
+                        }
+
                         $parameter->getUnionType()->addUnionType(
                             $default_type
-                        );
-                    }
-
-                    if (!$default_type->isEqualTo(NullType::instance()->asUnionType())
-                        && !$default_type->canCastToUnionType(
-                            $parameter->getUnionType()
-                    )) {
-                        Issue::emit(
-                            Issue::TypeMismatchDefault,
-                            $context->getFile(),
-                            $node->lineno ?? 0,
-                            (string)$parameter->getUnionType(),
-                            $parameter->getName(),
-                            (string)$default_type
                         );
                     }
 
