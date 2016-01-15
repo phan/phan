@@ -502,6 +502,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         // we can't let the unseen type get erased. Unfortunately,
         // we need to add 'mixed' in so that we know it could be
         // anything at all.
+        //
+        // See Issue #104
         if ($true_type->isEmpty() xor $false_type->isEmpty()) {
             $union_type->addUnionType(
                 MixedType::instance()->asUnionType()
