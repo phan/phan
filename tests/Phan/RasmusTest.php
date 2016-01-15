@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
+namespace Phan\Tests;
+
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();
 $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-use \Phan\Phan;
-use \Phan\CodeBase;
-use \Phan\Language\Context;
-use \Phan\Language\Type;
-use \Phan\Log;
+use Phan\CodeBase;
+use Phan\Language\Type;
+use Phan\Phan;
 
 define('RASMUS_TEST_FILE_DIR', __DIR__ . '/../rasmus_files/src');
 define('RASMUS_EXPECTED_DIR', __DIR__ . '/../rasmus_files/expected');
@@ -38,22 +38,34 @@ class RasmusTest extends \PHPUnit_Framework_TestCase {
         $this->code_base = null;
     }
 
+    public function getTestsFile()
+    {
+        $files = array_filter(
+            array_filter(
+                scandir(RASMUS_TEST_FILE_DIR),
+                function ($filename) {
+                    return !in_array($filename, ['.', '..'], true);
+                }
+            )
+        );
+
+        return array_combine(
+                $files, array_map(
+                function ($filename) {
+                    return [$filename];
+                }, $files
+            )
+        );
+    }
+
     /**
      * This reads all files in `tests/files/src`, runs
      * the analyzer on each and compares the output
      * to the files's counterpart in
      * `tests/files/expected`
+     * @dataProvider getTestsFile
      */
-    public function testFiles() {
-        foreach (scandir(RASMUS_TEST_FILE_DIR) as $test_file_name) {
-            // Skip '.' and '..'
-            if (empty($test_file_name)
-                || '.' === $test_file_name
-                || '..' === $test_file_name
-            ) {
-                continue;
-            }
-
+    public function testFiles($test_file_name) {
             // Get the path to the test file
             $test_file_path =
                 RASMUS_TEST_FILE_DIR . '/' . $test_file_name;
@@ -77,7 +89,7 @@ class RasmusTest extends \PHPUnit_Framework_TestCase {
                     clone($this->code_base),
                     [$test_file_path]
                 );
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 // TODO: inexplicably bad things happen here
                 // print "\n" . $exception->getMessage() . "\n";
             }
@@ -146,6 +158,5 @@ class RasmusTest extends \PHPUnit_Framework_TestCase {
             // %f allows two points "-.0.0" but that is the best *simple* expression
 
             $this->assertRegExp("/^$wanted_re\$/", $output, "Unexpected output in $test_file_path");
-        }
     }
 }

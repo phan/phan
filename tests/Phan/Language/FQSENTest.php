@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Phan\Tests\Language;
+
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;

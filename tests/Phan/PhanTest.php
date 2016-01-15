@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
+namespace Phan\Tests;
+
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();
 $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-use \Phan\Phan;
-use \Phan\CodeBase;
-use \Phan\Language\Context;
-use \Phan\Language\Type;
-use \Phan\Log;
+use Phan\CodeBase;
+use Phan\Language\Type;
+use Phan\Phan;
 
 define('TEST_FILE_DIR', __DIR__ . '/../files/src');
 define('EXPECTED_DIR', __DIR__ . '/../files/expected');
@@ -38,23 +38,35 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
         $this->code_base = null;
     }
 
+    public function getTestFiles()
+    {
+        $files = array_filter(
+            array_filter(
+                scandir(TEST_FILE_DIR),
+                function ($filename) {
+                    return !in_array($filename, ['.', '..'], true);
+                }
+            )
+        );
+
+        return array_combine(
+            $files, array_map(
+                function ($filename) {
+                    return [$filename];
+                }, $files
+            )
+        );
+    }
+
     /**
      * This reads all files in `tests/files/src`, runs
      * the analyzer on each and compares the output
      * to the files's counterpart in
      * `tests/files/expected`
+     *
+     * @dataProvider getTestFiles
      */
-    public function testFiles() {
-
-        foreach (scandir(TEST_FILE_DIR) as $test_file_name) {
-            // Skip '.' and '..'
-            if (empty($test_file_name)
-                || '.' === $test_file_name
-                || '..' === $test_file_name
-            ) {
-                continue;
-            }
-
+    public function testFiles($test_file_name) {
             // Get the path to the test file
             $test_file_path =
                 TEST_FILE_DIR . '/' . $test_file_name;
@@ -78,7 +90,7 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
                     clone($this->code_base),
                     [$test_file_path]
                 );
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 // TODO: inexplicably bad things happen here
                 // print "\n" . $exception->getMessage() . "\n";
             }
@@ -146,9 +158,6 @@ class PhanTest extends \PHPUnit_Framework_TestCase {
             $wanted_re = str_replace('%c', '.', $wanted_re);
             // %f allows two points "-.0.0" but that is the best *simple* expression
 
-
-
             $this->assertRegExp("/^$wanted_re\$/", $output, "Unexpected output in $test_file_path");
-        }
     }
 }
