@@ -475,23 +475,38 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * given node
      */
     public function visitConditional(Node $node) : UnionType {
-        $union_type = new UnionType();
 
-        // Add the type for the 'true' side
-        $union_type->addUnionType(UnionType::fromNode(
+        $true_type = UnionType::fromNode(
             $this->context,
             $this->code_base,
             $node->children['trueExpr'] ??
                 $node->children['true'] ?? ''
-        ));
+        );
 
-        // Add the type for the 'false' side
-        $union_type->addUnionType(UnionType::fromNode(
+        $false_type = UnionType::fromNode(
             $this->context,
             $this->code_base,
             $node->children['falseExpr'] ??
                 $node->children['false'] ?? ''
-        ));
+        );
+
+        $union_type = new UnionType();
+
+        // Add the type for the 'true' side
+        $union_type->addUnionType($true_type);
+
+        // Add the type for the 'false' side
+        $union_type->addUnionType($false_type);
+
+        // If one side has an unknown type but the other doesn't
+        // we can't let the unseen type get erased. Unfortunately,
+        // we need to add 'mixed' in so that we know it could be
+        // anything at all.
+        if ($true_type->isEmpty() xor $false_type->isEmpty()) {
+            $union_type->addUnionType(
+                MixedType::instance()->asUnionType()
+            );
+        }
 
         return $union_type;
     }
