@@ -771,6 +771,11 @@ class ContextNode {
             return;
         }
 
+        if($this->node->kind === \ast\AST_STATIC_CALL ||
+           $this->node->kind === \ast\AST_METHOD_CALL) {
+            return;
+        }
+
         if($this->node->kind !== \ast\AST_DIM) {
             if(!($this->node->children['expr'] instanceof Node)) {
                 return;
@@ -791,6 +796,7 @@ class ContextNode {
             $temp = $this->node->children['expr'];
             $lnode = $temp;
         }
+
         if(!($temp->kind == \ast\AST_PROP
             || $temp->kind == \ast\AST_STATIC_PROP
         )) {
@@ -832,6 +838,15 @@ class ContextNode {
                     && (
                         $lnode->children['class']->kind == \ast\AST_VAR
                         || $lnode->children['class']->kind == \ast\AST_NAME
+                    )
+                )
+                ||
+                (
+                    !empty($lnode->children['expr'])
+                    && $lnode->children['expr'] instanceof Node
+                    && (
+                        $lnode->children['expr']->kind == \ast\AST_VAR
+                        || $lnode->children['expr']->kind == \ast\AST_NAME
                     )
                 )
             )
