@@ -2,40 +2,18 @@
 
 namespace Phan\Tests;
 
-// Grab these before we define our own classes
-$internal_class_name_list = get_declared_classes();
-$internal_interface_name_list = get_declared_interfaces();
-$internal_trait_name_list = get_declared_traits();
-$internal_function_name_list = get_defined_functions()['internal'];
-
 use Phan\CodeBase;
 use Phan\Language\Type;
 use Phan\Phan;
 
-define('RASMUS_TEST_FILE_DIR', __DIR__ . '/../rasmus_files/src');
-define('RASMUS_EXPECTED_DIR', __DIR__ . '/../rasmus_files/expected');
+class RasmusTest extends \PHPUnit_Framework_TestCase implements CodeBaseAwareTestInterface
+{
+    /** @var  CodeBase */
+    private $code_base;
 
-class RasmusTest extends \PHPUnit_Framework_TestCase {
-
-    /** @var CodeBase */
-    private $code_base = null;
-
-    protected function setUp() {
-        global $internal_class_name_list;
-        global $internal_interface_name_list;
-        global $internal_trait_name_list;
-        global $internal_function_name_list;
-
-        $this->code_base = new CodeBase(
-            $internal_class_name_list,
-            $internal_interface_name_list,
-            $internal_trait_name_list,
-            $internal_function_name_list
-        );
-    }
-
-    public function tearDown() {
-        $this->code_base = null;
+    public function setCodeBase(CodeBase $codeBase = null)
+    {
+        $this->code_base = $codeBase;
     }
 
     public function getTestsFile()
@@ -63,6 +41,8 @@ class RasmusTest extends \PHPUnit_Framework_TestCase {
      * the analyzer on each and compares the output
      * to the files's counterpart in
      * `tests/files/expected`
+     *
+     * @param string $test_file_name
      * @dataProvider getTestsFile
      */
     public function testFiles($test_file_name) {
@@ -74,9 +54,12 @@ class RasmusTest extends \PHPUnit_Framework_TestCase {
             $expected_file_path =
                 RASMUS_EXPECTED_DIR . '/' . $test_file_name . '.expected';
 
-            // Read the expected output
-            $expected_output =
-                trim(file_get_contents($expected_file_path));
+            $expected_output = '';
+            if (is_file($expected_file_path)) {
+                // Read the expected output
+                $expected_output =
+                    trim(file_get_contents($expected_file_path));
+            }
 
             // Start reading everything sent to STDOUT
             // and compare it to the expected value once

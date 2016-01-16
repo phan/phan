@@ -13,6 +13,18 @@
         stopOnRisky="false"
         backupStaticAttributes="true"
         verbose="false">
+
+    <listeners>
+        <listener class="Phan\Tests\PhanTestListener"/>
+    </listeners>
+
+    <php>
+        <const name="RASMUS_TEST_FILE_DIR" value="./tests/rasmus_files/src"/>
+        <const name="RASMUS_EXPECTED_DIR" value="./tests/rasmus_files/expected"/>
+        <const name="TEST_FILE_DIR" value="./tests/files/src"/>
+        <const name="EXPECTED_DIR" value="./tests/files/expected"/>
+    </php>
+
     <testsuites>
         <testsuite name="AnalyzerTest">
             <file>tests/Phan/AnalyzerTest.php</file>
