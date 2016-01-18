@@ -7,7 +7,7 @@
 namespace Phan\Tests;
 
 use Phan\CodeBase;
-use Phan\Phan;
+use Phan\PhanWrapper;
 
 abstract class AbstractPhanFileTest
     extends \PHPUnit_Framework_TestCase
@@ -79,10 +79,7 @@ abstract class AbstractPhanFileTest
 
         try {
             // Run the analyzer
-            (new Phan)->analyzeFileList(
-                $this->codeBase,
-                [$test_file_path]
-            );
+            PhanWrapper::analyzeFileList($this->codeBase, [$test_file_path]);
         } catch (\Exception $exception) {
             // TODO: inexplicably bad things happen here
             // print "\n" . $exception->getMessage() . "\n";

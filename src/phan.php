@@ -14,11 +14,11 @@ $internal_function_name_list = get_defined_functions()['internal'];
 
 require_once(__DIR__.'/Phan/Bootstrap.php');
 
-use \Phan\CLI;
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Log;
-use \Phan\Phan;
+use Phan\CLI;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Phan;
+use Phan\PhanWrapper;
 
 // Create our CLI interface and load arguments
 $cli = new CLI();
@@ -39,7 +39,7 @@ if (Config::get()->expanded_dependency_list) {
         . ' be done if a state-file is defined');
 
     // Analyze the file list provided via the CLI
-    $dependency_file_list = (new Phan)->dependencyFileList(
+    $dependency_file_list = PhanWrapper::dependencyFileList(
         $code_base,
         $cli->getFileList()
     );
@@ -51,7 +51,7 @@ if (Config::get()->expanded_dependency_list) {
 }
 
 // Analyze the file list provided via the CLI
-(new Phan)->analyzeFileList(
+PhanWrapper::analyzeFileList(
     $code_base,
     $cli->getFileList()
 );

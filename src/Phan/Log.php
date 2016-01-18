@@ -2,9 +2,6 @@
 declare(strict_types=1);
 namespace Phan;
 
-use \Phan\Config;
-use \Phan\Issue;
-
 class Log {
 	protected static $instance;
 	protected $output_mode  = 'text';
@@ -16,13 +13,13 @@ class Log {
      */
     protected $msgs = [];
 
-	public function __construct() {
+	protected function __construct() {
 		$this->msgs = [];
 	}
 
 	public static function getInstance() : Log {
-		if(empty(self::$instance)) {
-			self::$instance = new Log();
+		if(null === self::$instance) {
+			self::$instance = new static();
 		}
 		return self::$instance;
 	}
@@ -77,7 +74,7 @@ class Log {
 		$log = self::getInstance();
 
         // Don't report anything for excluded files
-        if(Phan::isExcludedAnalysisFile($file)) {
+        if(PhanWrapper::isExcludedAnalysisFile($file)) {
             return;
         }
 

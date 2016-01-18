@@ -1,179 +1,27 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\Analyze\ContextMergeVisitor;
-use \Phan\Analyze\ParseVisitor;
-use \Phan\Analyze\PostOrderAnalysisVisitor;
-use \Phan\Analyze\PreOrderAnalysisVisitor;
-use \Phan\CLI;
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Debug;
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
-use \ast\Node;
+use ast\Node;
+use Phan\Analyze\ContextMergeVisitor;
+use Phan\Analyze\DuplicateClassAnalyzer;
+use Phan\Analyze\DuplicateFunctionAnalyzer;
+use Phan\Analyze\ParameterTypesAnalyzer;
+use Phan\Analyze\ParentClassExistsAnalyzer;
+use Phan\Analyze\ParentConstructorCalledAnalyzer;
+use Phan\Analyze\ParseVisitor;
+use Phan\Analyze\PostOrderAnalysisVisitor;
+use Phan\Analyze\PreOrderAnalysisVisitor;
+use Phan\Analyze\PropertyTypesAnalyzer;
+use Phan\Analyze\ReferenceCountsAnalyzer;
+use Phan\CodeBase;
+use Phan\Language\Context;
+use Phan\Language\FQSEN;
 
 /**
  * This class is the entry point into the static analyzer.
  */
 class Phan {
-    use \Phan\Analyze\DuplicateClass;
-    use \Phan\Analyze\DuplicateFunction;
-    use \Phan\Analyze\ParameterTypes;
-    use \Phan\Analyze\ParentClassExists;
-    use \Phan\Analyze\ParentConstructorCalled;
-    use \Phan\Analyze\PropertyTypes;
-    use \Phan\Analyze\ReferenceCounts;
 
-    /**
-     * Analyze the given set of files and emit any issues
-     * found to STDOUT.
-     *
-     * @param CodeBase $code_base
-     * A code base needs to be passed in because we require
-     * it to be initialized before any classes or files are
-     * loaded.
-     *
-     * @param string[] $file_path_list
-     * A list of files to scan
-     *
-     * @return null
-     * We emit messages to STDOUT. Nothing is returned.
-     *
-     * @see \Phan\CodeBase
-     */
-    public function analyzeFileList(
-        CodeBase $code_base,
-        array $file_path_list
-    ) {
-        $file_count = count($file_path_list);
-
-        // We'll construct a set of files that we'll
-        // want to run an analysis on
-        $analyze_file_path_list = [];
-
-        // This first pass parses code and populates the
-        // global state we'll need for doing a second
-        // analysis after.
-        foreach ($file_path_list as $i => $file_path) {
-            CLI::progress('parse',  ($i+1)/$file_count);
-
-            // Check to see if we need to re-parse this file either
-            // because we don't have an up to date parse for this
-            // file or because we were isntructed to reanalyze
-            // everything
-            if (!$code_base->isParseUpToDateForFile($file_path)
-                || Config::get()->reanalyze_file_list) {
-
-                // Kick out anything we read from the former version
-                // of this file
-                $code_base->flushDependenciesForFile(
-                    $file_path
-                );
-
-                // If the file is gone, no need to continue
-                if (!file_exists($file_path)) {
-                    continue;
-                }
-
-                try {
-                    // Parse the file
-                    $this->parseFile($code_base, $file_path);
-
-                    // Update the timestamp on when it was last
-                    // parsed
-                    $code_base->setParseUpToDateForFile($file_path);
-
-                    // Save this to the set of files to analyze
-                    $analyze_file_path_list[] = $file_path;
-
-                } catch (\Throwable $throwable) {
-                    error_log($file_path . ' ' . $throwable->getMessage() . "\n");
-                }
-            }
-        }
-
-        // Don't continue on to analysis if the user has
-        // chosen to just dump the AST
-        if (Config::get()->dump_ast) {
-            exit;
-        }
-
-        // Take a pass over all classes verifying various
-        // states now that we have the whole state in
-        // memory
-        $this->analyzeClasses($code_base);
-
-        // Take a pass over all functions verifying
-        // various states now that we have the whole
-        // state in memory
-        $this->analyzeFunctions($code_base);
-
-        // We can only save classes, methods, properties and
-        // constants after we've merged parent classes in.
-        $code_base->store();
-
-        // Once we know what the universe looks like we
-        // can scan for more complicated issues.
-        $file_count = count($analyze_file_path_list);
-        foreach ($analyze_file_path_list as $i => $file_path) {
-            CLI::progress('analyze',  ($i+1)/$file_count);
-
-            // We skip anything defined as 3rd party code
-            // to save a lil' time
-            if (self::isExcludedAnalysisFile($file_path)) {
-                continue;
-            }
-
-            // Analyze the file
-            $this->analyzeFile($code_base, $file_path);
-        }
-
-        // Scan through all globally accessible elements
-        // in the code base and emit errors for dead
-        // code.
-        $this->analyzeDeadCode($code_base);
-
-        // Emit all log messages
-        Log::display();
-    }
-
-    /**
-     * @param CodeBase $code_base
-     * A code base needs to be passed in because we require
-     * it to be initialized before any classes or files are
-     * loaded.
-     *
-     * @param string[] $file_path_list
-     * A set of files to expand with the set of dependencies
-     * on those files.
-     *
-     * @return string[]
-     * Get the set of dependencies for a given file list
-     */
-    public function dependencyFileList(
-        CodeBase $code_base,
-        array $file_path_list
-    ) : array {
-        $file_count = count($file_path_list);
-
-        // We'll construct a set of files that we'll
-        // want to run an analysis on
-        $dependency_file_path_list = [];
-
-        foreach ($file_path_list as $i => $file_path) {
-            CLI::progress('dependencies',  ($i+1)/$file_count);
-
-            $dependency_file_path_list[] = $file_path;
-
-            $dependency_file_path_list = array_merge(
-                $dependency_file_path_list,
-                $code_base->dependencyListForFile($file_path)
-            );
-        }
-
-        return array_unique($dependency_file_path_list);
-    }
 
     /**
      * This first pass parses code and looks for the subset
@@ -187,11 +35,10 @@ class Phan {
      *
      * @param string $file_path
      * The full path to a file we'd like to parse
+     *
+     * @return Context
      */
-    public function parseFile(
-        CodeBase $code_base,
-        string $file_path
-    ) : Context {
+    public static function parseFile(CodeBase $code_base, string $file_path) : Context {
 
         $context = (new Context)->withFile($file_path);
 
@@ -222,7 +69,7 @@ class Phan {
             return $context;
         }
 
-        return $this->parseNodeInContext(
+        return self::parseNodeInContext(
             $code_base,
             $context,
             $node
@@ -248,11 +95,7 @@ class Phan {
      * @return Context
      * The context from within the node is returned
      */
-    public function parseNodeInContext(
-        CodeBase $code_base,
-        Context $context,
-        Node $node
-    ) : Context {
+    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context {
 
         // Visit the given node populating the code base
         // with anything we learn and get a new context
@@ -283,14 +126,9 @@ class Phan {
 
             // Step into each child node and get an
             // updated context for the node
-            $child_context = $this->parseNodeInContext(
-                $code_base,
-                $child_context,
-                $child_node
-            );
+            $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
 
-            assert(!empty($child_context),
-                'Context cannot be null');
+            assert(!empty($child_context), 'Context cannot be null');
         }
 
         // Pass the context back up to our parent
@@ -303,7 +141,7 @@ class Phan {
      *
      * @return null
      */
-    private function analyzeClasses(CodeBase $code_base) {
+    public static function analyzeClasses(CodeBase $code_base) {
 
         $class_count = 2 * count($code_base->getClassMap());
 
@@ -313,7 +151,7 @@ class Phan {
             CLI::progress('classes',  ++$i/$class_count);
 
             // Make sure the parent classes exist
-            self::analyzeParentClassExists($code_base, $clazz);
+            ParentClassExistsAnalyzer::analyzeParentClassExists($code_base, $clazz);
 
             // Then import them
             $clazz->importAncestorClasses($code_base);
@@ -331,9 +169,9 @@ class Phan {
                 continue;
             }
 
-            self::analyzeDuplicateClass($code_base, $clazz);
-            self::analyzeParentConstructorCalled($code_base, $clazz);
-            self::analyzePropertyTypes($code_base, $clazz);
+            DuplicateClassAnalyzer::analyzeDuplicateClass($code_base, $clazz);
+            ParentConstructorCalledAnalyzer::analyzeParentConstructorCalled($code_base, $clazz);
+            PropertyTypesAnalyzer::analyzePropertyTypes($code_base, $clazz);
         }
     }
 
@@ -343,7 +181,7 @@ class Phan {
      *
      * @return null
      */
-    private function analyzeFunctions(CodeBase $code_base) {
+    public static function analyzeFunctions(CodeBase $code_base) {
         $function_count = count($code_base->getMethodMap(), COUNT_RECURSIVE);
         $i = 0;
         foreach ($code_base->getMethodMap() as $fqsen_string => $method_map) {
@@ -354,56 +192,10 @@ class Phan {
                     continue;
                 }
 
-                self::analyzeDuplicateFunction($code_base, $method);
-                self::analyzeParameterTypes($code_base, $method);
+                DuplicateFunctionAnalyzer::analyzeDuplicateFunction($code_base, $method);
+                ParameterTypesAnalyzer::analyzeParameterTypes($code_base, $method);
             }
         }
-    }
-
-    /**
-     * Once we know what the universe looks like we
-     * can scan for more complicated issues.
-     *
-     * @param CodeBase $code_base
-     * The global code base holding all state
-     *
-     * @param string[] $file_path_list
-     * A list of files to scan
-     *
-     * @return Context
-     */
-    public function analyzeFile(
-        CodeBase $code_base,
-        string $file_path
-    ) : Context {
-        // Convert the file to an Abstract Syntax Tree
-        // before passing it on to the recursive version
-        // of this method
-        $node = \ast\parse_file(
-            $file_path,
-            Config::get()->ast_version
-        );
-
-        // Set the file on the context
-        $context = (new Context)->withFile($file_path);
-
-        // Ensure we have some content
-        if (empty($node)) {
-            Issue::emit(
-                Issue::EmptyFile,
-                $file_path,
-                0,
-                $file_path
-            );
-            return $context;
-        }
-
-        // Start recursively analyzing the tree
-        return $this->analyzeNodeInContext(
-            $code_base,
-            $context,
-            $node
-        );
     }
 
 
@@ -422,7 +214,7 @@ class Phan {
      * @return Context
      * The context from within the node is returned
      */
-    public function analyzeNodeInContext(
+    public static function analyzeNodeInContext(
         CodeBase $code_base,
         Context $context,
         Node $node,
@@ -475,10 +267,9 @@ class Phan {
 
             // Step into each child node and get an
             // updated context for the node
-            $child_context = $this->analyzeNodeInContext(
+            $child_context = self::analyzeNodeInContext(
                 $code_base,
-                $child_context
-                    ->withLineNumberStart($child_node->lineno ?? 0),
+                $child_context->withLineNumberStart($child_node->lineno ?? 0),
                 $child_node,
                 $node,
                 $depth + 1
@@ -525,7 +316,7 @@ class Phan {
      *
      * @return void
      */
-    public function analyzeDeadCode(CodeBase $code_base) {
+    public static function analyzeDeadCode(CodeBase $code_base) {
         // Check to see if dead code detection is enabled. Keep
         // in mind that the results here are just a guess and
         // we can't tell with certainty that anything is
@@ -534,24 +325,7 @@ class Phan {
             return;
         }
 
-        self::analyzeReferenceCounts($code_base);
-    }
-
-    /**
-     * @return bool
-     * True if this file is a member of a third party directory as
-     * configured via the CLI flag '-3 [paths]'.
-     */
-    public static function isExcludedAnalysisFile(string $file_path) : bool {
-        foreach (Config::get()->exclude_analysis_directory_list
-            as $directory
-        ) {
-            if (0 === strpos($file_path, $directory) || 0 === strpos($file_path, "./$directory")) {
-                return true;
-            }
-        }
-
-        return false;
+        ReferenceCountsAnalyzer::analyzeReferenceCounts($code_base);
     }
 
     /**
@@ -607,5 +381,42 @@ class Phan {
         }
 
         return true;
+    }
+
+    /**
+     * Once we know what the universe looks like we
+     * can scan for more complicated issues.
+     *
+     * @param CodeBase $code_base
+     * The global code base holding all state
+     *
+     * @param string $file_path
+     * A list of files to scan
+     *
+     * @return Context
+     */
+    public static function analyzeFile(CodeBase $code_base, string $file_path) : Context
+    {
+        // Convert the file to an Abstract Syntax Tree
+        // before passing it on to the recursive version
+        // of this method
+        $node = \ast\parse_file($file_path, Config::get()->ast_version);
+
+        // Set the file on the context
+        $context = (new Context)->withFile($file_path);
+
+        // Ensure we have some content
+        if (empty($node)) {
+            Issue::emit(
+                Issue::EmptyFile,
+                $file_path,
+                0,
+                $file_path
+            );
+            return $context;
+        }
+
+        // Start recursively analyzing the tree
+        return Phan::analyzeNodeInContext($code_base, $context, $node);
     }
 }

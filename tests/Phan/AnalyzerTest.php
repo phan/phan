@@ -60,7 +60,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
                 Class A {}
             ");
 
-        $this->assertTrue(
+        self::assertTrue(
             $this->code_base->hasClassWithFQSEN(
                 FullyQualifiedClassName::fromFullyQualifiedString('A')
             )
@@ -74,7 +74,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
                 Class B {}
             ");
 
-        $this->assertTrue(
+        self::assertTrue(
             $this->code_base->hasClassWithFQSEN(
                 FullyQualifiedClassName::fromFullyQualifiedString('\A\b')
             )
@@ -95,7 +95,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
         $class_fqsen =
             FullyQualifiedClassName::fromFullyQualifiedString('\A\b');
 
-        $this->assertTrue(
+        self::assertTrue(
             $this->code_base->hasClassWithFQSEN($class_fqsen),
             "Class with FQSEN $class_fqsen not found"
         );
@@ -103,7 +103,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
         $clazz =
             $this->code_base->getClassByFQSEN($class_fqsen);
 
-        $this->assertTrue(
+        self::assertTrue(
             $clazz->hasMethodWithName($this->code_base, 'c'),
             "Method with FQSEN not found"
         );
@@ -118,7 +118,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
     ) : Context {
 
         return
-            (new Phan)->parseNodeInContext(
+            Phan::parseNodeInContext(
                 $this->code_base,
                 new Context,
                 \ast\parse_code(

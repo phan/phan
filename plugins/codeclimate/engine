@@ -15,11 +15,12 @@ $internal_function_name_list = get_defined_functions()['internal'];
 
 require_once(__DIR__.'/../../src/Phan/Bootstrap.php');
 
-use \Phan\CLI;
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Log;
-use \Phan\Phan;
+use Phan\CLI;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Log;
+use Phan\Phan;
+use Phan\PhanWrapper;
 
 // Create our CLI interface and load arguments
 $cli = new CLI();
@@ -70,7 +71,8 @@ foreach ($codeclimate_config['include_paths'] as $path)
 }
 
 // Analyze the file list provided via the CLI
-(new Phan)->analyzeFileList(
-    $code_base,
-    $include_paths
+new Phan();
+PhanWrapper::analyzeFileList(
+	$code_base,
+	$include_paths
 );
