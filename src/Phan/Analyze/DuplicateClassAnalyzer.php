@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\CodeBase;
-use \Phan\Issue;
-use \Phan\Language\Element\Clazz;
-use \Phan\Language\FQSEN;
-use \Phan\Log;
+use Phan\CodeBase;
+use Phan\Issue;
+use Phan\Language\Element\Clazz;
+use Phan\Language\FQSEN;
 
-trait DuplicateClass {
+class DuplicateClassAnalyzer {
 
     /**
      * Check to see if the given Clazz is a duplicate
@@ -34,9 +33,7 @@ trait DuplicateClass {
         }
 
         // Get the original class
-        $original_class = $code_base->getClassByFQSEN(
-            $original_fqsen
-        );
+        $original_class = $code_base->getClassByFQSEN($original_fqsen);
 
         // Check to see if the original definition was from
         // an internal class

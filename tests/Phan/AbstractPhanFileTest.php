@@ -1,8 +1,4 @@
 <?php
-/**
- * User: scaytrase
- * Created: 2016-01-16 11:55
- */
 
 namespace Phan\Tests;
 
@@ -79,10 +75,7 @@ abstract class AbstractPhanFileTest
 
         try {
             // Run the analyzer
-            (new Phan)->analyzeFileList(
-                $this->codeBase,
-                [$test_file_path]
-            );
+            Phan::analyzeFileList($this->codeBase, [$test_file_path]);
         } catch (\Exception $exception) {
             // TODO: inexplicably bad things happen here
             // print "\n" . $exception->getMessage() . "\n";

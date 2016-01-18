@@ -1,23 +1,19 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
-use \Phan\CLI;
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Issue;
-use \Phan\Language\Element\Addressable;
-use \Phan\Language\Element\ClassElement;
-use \Phan\Language\Element\Method;
-use \Phan\Language\Element\Property;
-use \Phan\Language\Element\TypedStructuralElement;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedClassElement;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
-use \Phan\Log;
-use \Phan\Map;
+use Phan\CLI;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Issue;
+use Phan\Language\Element\Addressable;
+use Phan\Language\Element\Method;
+use Phan\Language\Element\Property;
+use Phan\Language\Element\TypedStructuralElement;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassElement;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 
-trait ReferenceCounts {
+class ReferenceCountsAnalyzer {
 
     /**
      * Take a look at all globally accessible elements and see if
@@ -25,9 +21,7 @@ trait ReferenceCounts {
      *
      * @return void
      */
-    public static function analyzeReferenceCounts(
-        CodeBase $code_base
-    ) {
+    public static function analyzeReferenceCounts(CodeBase $code_base) {
         // Check to see if dead code detection is enabled. Keep
         // in mind that the results here are just a guess and
         // we can't tell with certainty that anything is

@@ -9,7 +9,7 @@ use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 use \Phan\Log;
 
-trait ParentConstructorCalled {
+class ParentConstructorCalledAnalyzer {
 
     /**
      * Check to see if the given Clazz is a duplicate

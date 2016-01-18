@@ -1,8 +1,4 @@
 <?php
-/**
- * User: scaytrase
- * Created: 2016-01-16 11:30
- */
 
 namespace Phan\Tests;
 
