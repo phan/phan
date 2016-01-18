@@ -9,14 +9,15 @@ namespace Phan\Tests;
 use Phan\CodeBase;
 use Phan\Phan;
 
-abstract class AbstractPhanFileTest extends \PHPUnit_Framework_TestCase implements CodeBaseAwareTestInterface
+abstract class AbstractPhanFileTest
+    extends \PHPUnit_Framework_TestCase
+    implements CodeBaseAwareTestInterface
 {
     const EXPECTED_SUFFIX = '.expected';
 
     private $codeBase;
 
-    public function setCodeBase(CodeBase $codeBase = null)
-    {
+    public function setCodeBase(CodeBase $codeBase = null) {
         $this->codeBase = $codeBase;
     }
 
@@ -31,8 +32,7 @@ abstract class AbstractPhanFileTest extends \PHPUnit_Framework_TestCase implemen
      * @param string $sourceDir
      * @return string[][]
      */
-    protected function scanSourceFilesDir($sourceDir, $expectedDir)
-    {
+    protected function scanSourceFilesDir($sourceDir, $expectedDir) {
         $files = array_filter(
             array_filter(
                 scandir($sourceDir),
@@ -80,7 +80,7 @@ abstract class AbstractPhanFileTest extends \PHPUnit_Framework_TestCase implemen
         try {
             // Run the analyzer
             (new Phan)->analyzeFileList(
-                clone $this->codeBase,
+                $this->codeBase,
                 [$test_file_path]
             );
         } catch (\Exception $exception) {
