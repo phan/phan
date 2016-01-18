@@ -1,9 +1,4 @@
-<?php
-/**
- * User: scaytrase
- * Created: 2016-01-16 11:30
- */
-
+<?php declare(strict_types=1);
 namespace Phan\Tests;
 
 global $internal_class_name_list;
