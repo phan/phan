@@ -22,6 +22,16 @@ class Config {
      */
     private $configuration = [
 
+        // A list of individual files to include in analysis
+        // with a path relative to the root directory of the
+        // project
+        'file_list' => [],
+
+        // A list of directories to scan for code to include
+        // in analysis with a path relative to the root directory
+        // of the project
+        'directory_list' => [],
+
         // A list of directories holding code that we want
         // to parse, but not analyze. Directories holding
         // third party code should be set here.

@@ -69,8 +69,23 @@ return [
     // Issue::SEVERITY_CRITICAL.
     'minimum_severity' => Issue::SEVERITY_LOW,
 
+
+    // A list of files to include in analysis
+    'file_list' => [
+        // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
+    ],
+
+    // A list of directories to scan for code to include
+    // in analysis
+    'directory_list' => [
+        'src',
+        // 'vendor/symfony',
+    ],
+
     // A list of directories holding code that we want
     // to parse, but not analyze
-    "exclude_analysis_directory_list" => [],
+    "exclude_analysis_directory_list" => [
+        'vendor/'
+    ],
 
 ];

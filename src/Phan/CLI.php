@@ -18,6 +18,7 @@ class CLI {
      * \Phan\Config as a side effect.
      */
     public function __construct() {
+
         global $argv;
 
         // file_put_contents('/tmp/file', implode("\n", $argv));
@@ -79,23 +80,14 @@ class CLI {
                 break;
             case 'l':
             case 'directory':
-                try {
-                    $directory_list = is_array($value) ? $value : [$value];
-                    foreach ($directory_list as $directory_name) {
-                        $iterator = new \RegexIterator(
-                            new \RecursiveIteratorIterator(
-                                new \RecursiveDirectoryIterator($directory_name)
-                            ),
-                            '/^.+\.php$/i',
-                            \RecursiveRegexIterator::GET_MATCH
-                        );
-                        $this->file_list = array_merge(
-                            $this->file_list,
-                            array_keys(iterator_to_array($iterator))
-                        );
-                    }
-                } catch (\Exception $exception) {
-                    error_log($exception->getMessage());
+                $directory_list = is_array($value) ? $value : [$value];
+                foreach ($directory_list as $directory_name) {
+                    $this->file_list = array_merge(
+                        $this->file_list,
+                        $this->directoryNameToFileList(
+                            $directory_name
+                        )
+                    );
                 }
                 break;
             case 'm':
@@ -192,10 +184,24 @@ class CLI {
             $this->usage("Unknown option '{$arg}'");
         }
 
+        // Merge in any remaining args on the CLI
         $this->file_list = array_merge(
             $this->file_list,
             array_slice($argv,1)
         );
+
+        // Merge in any files given in the config
+        $this->file_list = array_merge(
+            $this->file_list, Config::get()->file_list
+        );
+
+        // Merge in any directories given in the config
+        foreach (Config::get()->directory_list as $directory_name) {
+            $this->file_list = array_merge(
+                $this->file_list,
+                $this->directoryNameToFileList($directory_name)
+            );
+        }
     }
 
     /**
@@ -283,6 +289,41 @@ Usage: {$argv[0]} [options] [files...]
 
 EOB;
         exit;
+    }
+
+    /**
+     * @param string $directory_name
+     * The name of a directory to scan for files ending in `.php`.
+     *
+     * @return string[]
+     * A list of PHP files in the given directory
+     */
+    private function directoryNameToFileList(
+        string $directory_name
+    ) : array {
+        $file_list = [];
+
+        try {
+            $iterator = new \RegexIterator(
+                new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($directory_name)
+                ),
+                '/^.+\.php$/i',
+                \RecursiveRegexIterator::GET_MATCH
+            );
+
+            foreach (array_keys(iterator_to_array($iterator)) as $file_name) {
+                if(is_file($file_name) && is_readable($file_name)) {
+                    $file_list[] = $file_name;
+                } else {
+                    error_log("Unable to read file $file_name");
+                }
+            }
+        } catch (\Exception $exception) {
+            error_log($exception->getMessage());
+        }
+
+        return $file_list;
     }
 
     /**
