@@ -74,7 +74,7 @@ class Log {
 		$log = self::getInstance();
 
         // Don't report anything for excluded files
-        if(PhanWrapper::isExcludedAnalysisFile($file)) {
+        if(Phan::isExcludedAnalysisFile($file)) {
             return;
         }
 

@@ -5,7 +5,7 @@ use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
 use \Phan\Language\Context;
-use \Phan\Phan;
+use \Phan\Analysis;
 use \ast\Node;
 
 /**
@@ -94,7 +94,7 @@ trait Analyzable {
 
         // Analyze the node in a cloned context so that we
         // don't overwrite anything
-        $context = (new Phan)->analyzeNodeInContext(
+        $context = Analysis::analyzeNodeInContext(
             $code_base,
             clone($context),
             $this->getNode()

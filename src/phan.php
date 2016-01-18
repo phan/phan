@@ -18,7 +18,6 @@ use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Phan;
-use Phan\PhanWrapper;
 
 // Create our CLI interface and load arguments
 $cli = new CLI();
@@ -39,7 +38,7 @@ if (Config::get()->expanded_dependency_list) {
         . ' be done if a state-file is defined');
 
     // Analyze the file list provided via the CLI
-    $dependency_file_list = PhanWrapper::dependencyFileList(
+    $dependency_file_list = Phan::dependencyFileList(
         $code_base,
         $cli->getFileList()
     );
@@ -51,7 +50,7 @@ if (Config::get()->expanded_dependency_list) {
 }
 
 // Analyze the file list provided via the CLI
-PhanWrapper::analyzeFileList(
+Phan::analyzeFileList(
     $code_base,
     $cli->getFileList()
 );

@@ -20,7 +20,6 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Log;
 use Phan\Phan;
-use Phan\PhanWrapper;
 
 // Create our CLI interface and load arguments
 $cli = new CLI();
@@ -71,8 +70,7 @@ foreach ($codeclimate_config['include_paths'] as $path)
 }
 
 // Analyze the file list provided via the CLI
-new Phan();
-PhanWrapper::analyzeFileList(
+Phan::analyzeFileList(
 	$code_base,
 	$include_paths
 );
