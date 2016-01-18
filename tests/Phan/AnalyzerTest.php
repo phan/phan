@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Phan\Tests;
+
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();
 $internal_interface_name_list = get_declared_interfaces();
