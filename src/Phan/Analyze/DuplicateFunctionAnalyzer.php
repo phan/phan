@@ -9,7 +9,7 @@ use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Log;
 
-trait DuplicateFunction {
+class DuplicateFunctionAnalyzer {
 
     /**
      * Check to see if the given Clazz is a duplicate
