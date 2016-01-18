@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace Phan\Tests\Language;
+
 use \Phan\Analyze\ParseVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;

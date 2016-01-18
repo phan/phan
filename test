@@ -1,2 +1,3 @@
 #!/bin/sh
-./vendor/bin/phpunit
+./vendor/bin/phpunit || \
+    echo "Please run 'composer install' or 'composer update' if running tests fails"
