@@ -37,7 +37,7 @@ return [
     "null_casts_as_any_type" => false,
 
     // Backwards Compatibility Checking
-    'backward_compatibility_checks' => true,
+    'backward_compatibility_checks' => false,
 
     // Set to true in order to attempt to detect dead
     // (unreferenced) code. Keep in mind that the

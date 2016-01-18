@@ -164,11 +164,6 @@ class Parameter extends Variable {
             $node->children['type']
         );
 
-        $comment = Comment::fromStringInContext(
-            $node->docComment ?? '',
-            $context
-        );
-
         // Create the skeleton parameter from what we know so far
         $parameter = new Parameter(
             $context,
