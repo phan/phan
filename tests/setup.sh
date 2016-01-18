@@ -19,6 +19,16 @@ function install {
 # Ensure the build directory exists
 [[ -d "build" ]] || mkdir build
 
+# Ensure that the PHP version hasn't changed under us. If it has, we'll have to
+# rebuild the extension.
+if [[ -e "build/phpversion.txt" ]]; then
+  if ! diff -q build/phpversion.txt <(php -r "echo PHP_VERSION_ID;"); then
+    # Something has changed, so nuke the build/ast directory if it exists.
+    echo "New version of PHP detected. Removing build/ast so we can do a fresh build."
+    rm -rf build/ast
+  fi
+fi
+
 # Ensure that we have a copy of the ast extension source code.
 if [[ ! -e "build/ast/config.m4" ]]; then
     # If build/ast exists, but build/ast/config.m4 doesn't, nuke it and start over.
@@ -48,6 +58,9 @@ pushd ./build/ast
   # No matter what, we still have to move the .so into place and enable it.
   install
 popd
+
+# Note the PHP version for later builds.
+php -r "echo PHP_VERSION_ID;" > build/phpversion.txt
 
 # Disable xdebug, since we aren't currently gathering code coverage data and
 # having xdebug slows down Composer a bit.
