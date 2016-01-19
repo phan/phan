@@ -269,7 +269,8 @@ trait FileMap {
     }
 
     /**
-     * @return bool
+     * @param string $file_path
+     * @return bool True if the given file is up to date within this
      * True if the given file is up to date within this
      * code base, else false
      */
@@ -281,7 +282,7 @@ trait FileMap {
     /**
      * Mark the file at the given path as up to date so
      * that we know if its changed on subsequent runs
-     *
+     * @param string $file_path
      * @return null
      */
     public function setParseUpToDateForFile(string $file_path) {

@@ -1,0 +1,16 @@
+phan:
+  exclude_analysis_directory_list: []
+  backward_compatibility_checks: true
+  parent_constructor_required: []
+  quick_mode: false
+  allow_missing_properties: true
+  null_casts_as_any_type: true
+  stored_state_file_path: null
+  reanalyze_file_list: true
+  dump_ast: false
+  progress_bar: false
+  progress_bar_sample_rate: 0.1
+  emit_trace_id: false
+  ast_version: 30
+  dead_code_detection: false
+  minimum_severity: 0

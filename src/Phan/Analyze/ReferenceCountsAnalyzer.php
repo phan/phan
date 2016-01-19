@@ -41,7 +41,8 @@ class ReferenceCountsAnalyzer {
         $i = 0;
         $analyze_list = function($list, string $issue_type) use ($code_base, &$i, $total_count) {
             foreach ($list as $name => $element) {
-                CLI::progress('dead code',  (++$i)/$total_count);
+                // Fixme: pass progressbar instead of CLI
+//                CLI::progress('dead code',  (++$i)/$total_count);
                 self::analyzeElementReferenceCounts($code_base, $element, $issue_type);
             }
         };
@@ -49,7 +50,8 @@ class ReferenceCountsAnalyzer {
         $analyze_map = function($map, string $issue_type) use ($code_base, &$i, $total_count) {
             foreach ($map as $fqsen_string => $list) {
                 foreach ($list as $name => $element) {
-                    CLI::progress('dead code',  (++$i)/$total_count);
+                    // Fixme: pass progressbar instead of CLI
+//                    CLI::progress('dead code',  (++$i)/$total_count);
 
                     // Don't worry about internal elements
                     if ($element->getContext()->isInternal()) {

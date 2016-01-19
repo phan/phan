@@ -7,7 +7,10 @@
 namespace Phan\Tests;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Phan;
+use Phan\PhanWrapper;
+use Symfony\Component\Console\Output\NullOutput;
 
 abstract class AbstractPhanFileTest
     extends \PHPUnit_Framework_TestCase
