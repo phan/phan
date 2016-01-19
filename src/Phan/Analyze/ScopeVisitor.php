@@ -159,12 +159,12 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
             // if AST_USE does not have any flags set, then its AST_USE_ELEM
             // children will (this will be for AST_GROUP_USE)
             if ($node->flags !== 0) {
-                $node2 = $node;
+                $target_node = $node;
             } else {
-                $node2 = $child_node;
+                $target_node = $child_node;
             }
 
-            if ($node2->flags == T_FUNCTION) {
+            if ($target_node->flags == T_FUNCTION) {
                 $parts = explode('\\', $target);
                 $function_name = array_pop($parts);
                 $target = FullyQualifiedFunctionName::make(
@@ -177,7 +177,7 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
                 );
             }
 
-            $map[$alias] = [$node2->flags, $target];
+            $map[$alias] = [$target_node->flags, $target];
         }
 
         return $map;
