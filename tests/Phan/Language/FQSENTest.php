@@ -13,25 +13,11 @@ use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
 class FQSENTest extends \PHPUnit_Framework_TestCase {
 
-    /** @var Context */
+    /** @var Context|null */
     protected $context = null;
 
     protected function setUp() {
-        $this->context = (new Context)
-            /*
-            ->withNamespace('\\Name\\Space')
-            ->withNamespaceMap(
-                T_CLASS,
-                'B',
-                FullyQualifiedClassName::fromfullyQualifiedString('\\Name\\Space\\B')
-            )
-            ->withNamespaceMap(
-                T_FUNCTION,
-                'g',
-                FullyQualifiedFunctionName::fromfullyQualifiedString('\\Name\\Space\\g')
-            )
-             */
-            ;
+        $this->context = new Context;
     }
 
     public function tearDown() {

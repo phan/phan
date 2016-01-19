@@ -13,7 +13,7 @@ use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 
 class ContextTest extends \PHPUnit_Framework_TestCase {
 
-    /** @var CodeBase */
+    /** @var CodeBase|null */
     protected $code_base = null;
 
     protected function setUp() {
@@ -25,7 +25,7 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testSimple() {
-        $context = new Context($this->code_base);
+        $context = new Context();
 
         $context_namespace =
             $context->withNamespace('\A');

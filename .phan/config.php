@@ -79,7 +79,8 @@ return [
     // in analysis
     'directory_list' => [
         'src',
-        // 'vendor/symfony',
+        'tests/Phan',
+        'vendor/phpunit/phpunit/src',
     ],
 
     // A list of directories holding code that we want

@@ -15,7 +15,7 @@ use \Phan\Language\UnionType;
 
 class UnionTypeTest extends \PHPUnit_Framework_TestCase {
 
-    /** @var Context */
+    /** @var Context|null */
     protected $context = null;
 
     /** @var CodeBase */
@@ -51,7 +51,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
                 '"a string"',
                 'string'
             );
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             print((string)$exception);
         }
     }
