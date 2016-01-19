@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Debug;
-use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Log;
 use \ast\Node;
@@ -170,6 +171,13 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
                 $target = FullyQualifiedFunctionName::make(
                     $prefix . '\\' . implode('\\', $parts),
                     $function_name
+                );
+            } else if ($target_node->flags == T_CONST) {
+                $parts = explode('\\', $target);
+                $name = array_pop($parts);
+                $target = FullyQualifiedConstantName::make(
+                    $prefix . '\\' . implode('\\', $parts),
+                    $name
                 );
             } else {
                 $target = FullyQualifiedClassName::fromFullyQualifiedString(
