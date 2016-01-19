@@ -83,6 +83,15 @@ class Config {
         // to make sense of.
         'dead_code_detection' => false,
 
+        // If true, the dead code detection rig will
+        // prefer false negatives (not report dead code) to
+        // false positives (report dead code that is not
+        // actually dead) which is to say that the graph of
+        // references will create too many edges rather than
+        // too few edges when guesses have to be made about
+        // what references what.
+        'dead_code_detection_prefer_false_negative' => true,
+
         // If a file path is given, the code base will be
         // read from and written to the given location in
         // order to attempt to save some work from being

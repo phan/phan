@@ -920,7 +920,9 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
-            if (Config::get()->dead_code_detection) {
+            if (Config::get()->dead_code_detection
+                && Config::get()->dead_code_detection_prefer_false_negative
+            ) {
                 foreach ($this->code_base->getMethodListByName(
                     $method_name
                 ) as $method) {
@@ -1023,7 +1025,9 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
-            if (Config::get()->dead_code_detection) {
+            if (Config::get()->dead_code_detection
+                && Config::get()->dead_code_detection_prefer_false_negative
+            ) {
                 foreach ($this->code_base->getMethodListByName(
                     $method_name
                 ) as $method) {

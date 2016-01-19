@@ -189,7 +189,8 @@ trait MethodMap {
     public function getMethodListByName(string $name) : array {
 
         // If we're doing dead code detection we'll have faster
-        // access
+        // access at the cost of being a bit more of a memory
+        // hog.
         if (Config::get()->dead_code_detection) {
             return $this->method_name_map[strtolower($name)] ?? [];
         }
