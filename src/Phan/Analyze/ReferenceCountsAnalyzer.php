@@ -104,10 +104,12 @@ class ReferenceCountsAnalyzer {
                         }
 
                         // Ignore magic methods
-                        if ($element instanceof Method
-                            && $element->getIsMagic()
-                        ) {
-                            continue;
+                        if ($element instanceof Method) {
+                            // Doubly nested so that `$element` shows
+                            // up as Method in Phan.
+                            if ($element->getIsMagic()) {
+                                continue;
+                            }
                         }
 
                     }
