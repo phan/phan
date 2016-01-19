@@ -919,9 +919,6 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 $this->context->getFile(),
                 $node->lineno ?? 0
             );
-        } catch (UnanalyzableException $exception) {
-            // Swallow it. There are some constructs that we
-            // just can't figure out.
         }
 
         return new UnionType();
