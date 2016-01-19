@@ -168,7 +168,7 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
                 $parts = explode('\\', $target);
                 $function_name = array_pop($parts);
                 $target = FullyQualifiedFunctionName::make(
-                    implode('\\', $parts),
+                    $prefix . '\\' . implode('\\', $parts),
                     $function_name
                 );
             } else {
