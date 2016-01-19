@@ -43,7 +43,7 @@ class IssueInstance {
     /**
      * @return array
      */
-    public function getTemplateParameters() : array {
+    private function getTemplateParameters() : array {
         return $this->template_parameters;
     }
 
@@ -61,21 +61,17 @@ class IssueInstance {
         return $this->line;
     }
 
-    /**
-     * @return void
-     */
-    public function __invoke() {
-        Log::err(
-            $this->getIssue()->getCategory(),
-            $this->getIssue()->getType(),
-            $this->getIssue()->getSeverity(),
-            call_user_func_array('sprintf', array_merge(
-                [ $this->getIssue()->getTemplate() ],
-                $this->getTemplateParameters()
-            )),
-            $this->getFile(),
-            $this->getLine()
-        );
+    /** @deprecated */
+    public function collect()
+    {
+        Phan::getIssueCollector()->collectIssue($this);
     }
 
+    /**
+     * @return string
+     */
+    public function getMessage()
+    {
+        return vsprintf($this->getIssue()->getTemplate(), $this->getTemplateParameters());
+    }
 }

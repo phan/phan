@@ -261,7 +261,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     $this->context
                 );
             } catch (IssueException $exception) {
-                $exception->getIssueInstance()();
+                $exception->getIssueInstance()->collect();
                 return $this->context;
             }
 

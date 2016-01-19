@@ -682,7 +682,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                         ?? $expression->children['method']
                 );
             } catch (IssueException $exception) {
-                $exception->getIssueInstance()();
+                $exception->getIssueInstance()->collect();
                 return $this->context;
             }
 
@@ -799,7 +799,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
 
         } catch (IssueException $exception) {
-            $exception->getIssueInstance()();
+            $exception->getIssueInstance()->collect();
         } catch (\Exception $exception) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
@@ -913,7 +913,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 $node
             );
         } catch (IssueException $exception) {
-            $exception->getIssueInstance()();
+            $exception->getIssueInstance()->collect();
 
         }  catch (\Exception $exception) {
 
@@ -1018,7 +1018,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
 
         } catch (IssueException $exception) {
-            $exception->getIssueInstance()();
+            $exception->getIssueInstance()->collect();
             return $this->context;
         } catch (NodeException $exception) {
 

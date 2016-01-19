@@ -129,7 +129,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                     $code_base, $context, $should_catch_issue_exception
                 ))($node);
             } catch (IssueException $exception) {
-                $exception->getIssueInstance()();
+                $exception->getIssueInstance()->collect();
                 return new UnionType();
             }
         }
@@ -945,7 +945,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
             return $property->getUnionType();
         }  catch (IssueException $exception) {
-            $exception->getIssueInstance()();
+            $exception->getIssueInstance()->collect();
         } catch (CodeBaseException $exception) {
             $property_name = $node->children['prop'];
             Issue::emit(

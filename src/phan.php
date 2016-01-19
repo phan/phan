@@ -17,7 +17,9 @@ require_once(__DIR__.'/Phan/Bootstrap.php');
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
+use Phan\Log;
 
 // Create our CLI interface and load arguments
 $cli = new CLI();
@@ -46,6 +48,8 @@ if (Config::get()->expand_file_list) {
 } else {
     $file_list = $cli->getFileList();
 }
+
+Phan::setIssueCollector(new BufferingCollector(new Phan(), Config::get()->minimum_severity, Log::getOutputMask()));
 
 // Analyze the file list provided via the CLI
 Phan::analyzeFileList(

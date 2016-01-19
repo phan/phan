@@ -1,7 +1,30 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-class Phan {
+use Phan\Output\IgnoredFilesFilterInterface;
+use Phan\Output\IssueCollectorInterface;
+
+class Phan implements IgnoredFilesFilterInterface {
+
+    /** @var  IssueCollectorInterface */
+    private static $issueCollector;
+
+    /**
+     * @return IssueCollectorInterface
+     */
+    public static function getIssueCollector()
+    {
+        return self::$issueCollector;
+    }
+
+    /**
+     * @param IssueCollectorInterface $issueCollector
+     */
+    public static function setIssueCollector(IssueCollectorInterface $issueCollector)
+    {
+        self::$issueCollector = $issueCollector;
+    }
+
 
     /**
      * Analyze the given set of files and emit any issues
@@ -101,7 +124,7 @@ class Phan {
         Analysis::analyzeDeadCode($code_base);
 
         // Emit all log messages
-        Log::display();
+        Log::display(self::getIssueCollector());
     }
 
 
@@ -151,7 +174,7 @@ class Phan {
      * True if this file is a member of a third party directory as
      * configured via the CLI flag '-3 [paths]'.
      */
-    public static function isExcludedAnalysisFile(string $file_path) : bool
+    private static function isExcludedAnalysisFile(string $file_path) : bool
     {
         foreach (Config::get()->exclude_analysis_directory_list
                  as $directory
@@ -162,5 +185,19 @@ class Phan {
         }
 
         return false;
+    }
+
+    /**
+     * @param string $filename
+     * @return bool True if filename is ignored during analysis
+     */
+    public function isFilenameIgnored(string $filename):bool
+    {
+        return self::isExcludedAnalysisFile($filename);
+    }
+
+    public function flush()
+    {
+
     }
 }

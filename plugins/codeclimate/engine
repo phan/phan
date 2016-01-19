@@ -18,7 +18,9 @@ require_once(__DIR__.'/../../src/Phan/Bootstrap.php');
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Issue;
 use Phan\Log;
+use Phan\Output\Collector\BufferingCollector;
 use Phan\Phan;
 
 // Create our CLI interface and load arguments
@@ -32,9 +34,6 @@ Config::get()->backward_compatibility_checks = true;
 
 // Re-analyze all files
 Config::get()->reanalyze_file_list = true;
-
-// Ignore undeclared functions and classes
-Log::setOutputMask(Log::getOutputMask()^Log::EUNDEF);
 
 $code_base = new CodeBase(
     $internal_class_name_list,
@@ -69,8 +68,6 @@ foreach ($codeclimate_config['include_paths'] as $path)
 	}
 }
 
+Phan::setIssueCollector(new BufferingCollector(new Phan(), Config::get()->minimum_severity, Log::getOutputMask()^Issue::CATEGORY_UNDEFINED));
 // Analyze the file list provided via the CLI
-Phan::analyzeFileList(
-	$code_base,
-	$include_paths
-);
+Phan::analyzeFileList($code_base, $include_paths);
