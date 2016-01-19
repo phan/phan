@@ -141,6 +141,14 @@ class ReferenceCountsAnalyzer {
             return;
         }
 
+        /*
+        print "digraph G {\n";
+        foreach ($element->getReferenceList() as $file_ref) {
+            print "\t\"{$file_ref->getFile()}\" -> \"{$element->getContext()->getFile()}\";\n";
+        }
+        print "}\n";
+        */
+
         if ($element->getReferenceCount($code_base) < 1) {
             if ($element->hasSuppressIssue($issue_type)) {
                 return;
