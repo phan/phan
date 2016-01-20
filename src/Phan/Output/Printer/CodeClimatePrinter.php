@@ -4,10 +4,10 @@ namespace Phan\Output\Printer;
 
 use Phan\Issue;
 use Phan\IssueInstance;
-use Phan\Output\IssuePrinterInterface;
+use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class CodeClimatePrinter implements IssuePrinterInterface
+final class CodeClimatePrinter implements BufferedPrinterInterface
 {
     const CODECLIMATE_SEVERITY_INFO = 'info';
     const CODECLIMATE_SEVERITY_CRITICAL = 'critical';
@@ -15,6 +15,8 @@ final class CodeClimatePrinter implements IssuePrinterInterface
 
     /** @var  OutputInterface */
     private $output;
+
+    private $messages = [];
 
     /**
      * CodeClimateFormatter constructor.
@@ -28,25 +30,23 @@ final class CodeClimatePrinter implements IssuePrinterInterface
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
-        $issue = json_encode([
-                'type' => 'issue',
-                'check_name' => $instance->getIssue()->getType(),
-                'description' =>
-                    Issue::getNameForCategory($instance->getIssue()->getCategory()) . ' ' .
-                    $instance->getIssue()->getType() . ' ' .
-                    $instance->getMessage(),
-                'categories' => ['Bug Risk'],
-                'severity' => self::mapSeverety($instance->getIssue()->getSeverity()),
-                'location' => [
-                    'path' => preg_replace('/^\/code\//', '', $instance->getFile()),
-                    'lines' => [
-                        'begin' => $instance->getLine(),
-                        'end' => $instance->getLine(),
-                    ],
+        $this->messages[] = [
+            'type' => 'issue',
+            'check_name' => $instance->getIssue()->getType(),
+            'description' =>
+                Issue::getNameForCategory($instance->getIssue()->getCategory()) . ' ' .
+                $instance->getIssue()->getType() . ' ' .
+                $instance->getMessage(),
+            'categories' => ['Bug Risk'],
+            'severity' => self::mapSeverety($instance->getIssue()->getSeverity()),
+            'location' => [
+                'path' => preg_replace('/^\/code\//', '', $instance->getFile()),
+                'lines' => [
+                    'begin' => $instance->getLine(),
+                    'end' => $instance->getLine(),
                 ],
-            ], JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE) . chr(0);
-
-        $this->output->write($issue);
+            ],
+        ];
     }
 
     /**
@@ -66,5 +66,12 @@ final class CodeClimatePrinter implements IssuePrinterInterface
         }
 
         return $severity;
+    }
+
+    /** flush printer buffer */
+    public function flush()
+    {
+        $this->output->write(json_encode($this->messages, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE) . chr(0));
+        $this->messages = [];
     }
 }

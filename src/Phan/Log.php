@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan;
 
+use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Output\PrinterFactory;
@@ -87,6 +88,10 @@ class Log {
 	public static function display(IssueCollectorInterface $collector) {
         foreach ($collector->getCollectedIssues() as $issue) {
             self::getPrinter()->print($issue);
+        }
+
+        if (self::getPrinter() instanceof BufferedPrinterInterface) {
+            self::getPrinter()->flush();
         }
     }
 
