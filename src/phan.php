@@ -49,8 +49,6 @@ if (Config::get()->expand_file_list) {
     $file_list = $cli->getFileList();
 }
 
-Phan::setIssueCollector(new BufferingCollector(new Phan(), Config::get()->minimum_severity, Log::getOutputMask()));
-
 // Analyze the file list provided via the CLI
 Phan::analyzeFileList(
     $code_base,

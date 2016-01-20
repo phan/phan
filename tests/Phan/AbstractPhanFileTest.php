@@ -3,7 +3,6 @@
 namespace Phan\Tests;
 
 use Phan\CodeBase;
-use Phan\Log;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\Printer\PlainTextPrinter;
@@ -74,13 +73,12 @@ abstract class AbstractPhanFileTest
         }
 
         $stream = new BufferedOutput();
+        $printer = new PlainTextPrinter();
+        $printer->configureOutput($stream);
 
-        Log::setPrinter(new PlainTextPrinter($stream));
+        Phan::setPrinter($printer);
+        Phan::setIssueCollector(new BufferingCollector());
 
-        $ignoredFilesFilter = self::getMock(IgnoredFilesFilterInterface::class);
-        $ignoredFilesFilter->method('isFilenameIgnored')->willReturn(false);
-
-        Phan::setIssueCollector(new BufferingCollector($ignoredFilesFilter));
         Phan::analyzeFileList($this->codeBase, [$test_file_path]);
 
         $output = $stream->fetch();

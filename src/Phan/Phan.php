@@ -1,10 +1,14 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
+use Phan\Output\IssuePrinterInterface;
 
 class Phan implements IgnoredFilesFilterInterface {
+    /** @var  IssuePrinterInterface */
+    public static $printer;
 
     /** @var  IssueCollectorInterface */
     private static $issueCollector;
@@ -124,7 +128,7 @@ class Phan implements IgnoredFilesFilterInterface {
         Analysis::analyzeDeadCode($code_base);
 
         // Emit all log messages
-        Log::display(self::getIssueCollector());
+        self::display();
     }
 
 
@@ -187,6 +191,30 @@ class Phan implements IgnoredFilesFilterInterface {
         return false;
     }
 
+    private static function display()
+    {
+        $collector = self::$issueCollector;
+
+        if (Config::get()->progress_bar) {
+            fwrite(STDERR, "\n");
+        }
+
+        $printer = self::$printer;
+
+        foreach ($collector->getCollectedIssues() as $issue) {
+            $printer->print($issue);
+        }
+
+        if ($printer instanceof BufferedPrinterInterface) {
+            $printer->flush();
+        }
+    }
+
+    public static function setPrinter(IssuePrinterInterface $printer)
+    {
+        self::$printer = $printer;
+    }
+
     /**
      * @param string $filename
      * @return bool True if filename is ignored during analysis
@@ -194,10 +222,5 @@ class Phan implements IgnoredFilesFilterInterface {
     public function isFilenameIgnored(string $filename):bool
     {
         return self::isExcludedAnalysisFile($filename);
-    }
-
-    public function flush()
-    {
-
     }
 }

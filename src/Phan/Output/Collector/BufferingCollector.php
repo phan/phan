@@ -2,37 +2,29 @@
 
 namespace Phan\Output\Collector;
 
-use Phan\Issue;
 use Phan\IssueInstance;
-use Phan\Output\IgnoredFilesFilterInterface;
+use Phan\Output\Filter\AnyFilter;
 use Phan\Output\IssueCollectorInterface;
+use Phan\Output\IssueFilterInterface;
 
 final class BufferingCollector implements IssueCollectorInterface
 {
     /** @var  IssueInstance[] */
     private $issues = [];
-    /** @var  int */
-    private $minimumSeverity;
-    /** @var  IgnoredFilesFilterInterface */
-    private $ignoredFilesFilter;
-    /** @var int */
-    private $outputMask;
+    /** @var IssueFilterInterface */
+    private $filter;
 
     /**
      * BufferingCollector constructor.
-     * @param IgnoredFilesFilterInterface $ignoredFilesFilter
-     * @param int $minimumSeverity
-     * @param int $outputMask
+     * @param IssueFilterInterface $filter
      */
-    public function __construct(
-        IgnoredFilesFilterInterface $ignoredFilesFilter,
-        int $minimumSeverity = Issue::SEVERITY_LOW,
-        int $outputMask = -1
-    )
+    public function __construct(IssueFilterInterface $filter = null)
     {
-        $this->ignoredFilesFilter = $ignoredFilesFilter;
-        $this->minimumSeverity = $minimumSeverity;
-        $this->outputMask = $outputMask;
+        $this->filter = $filter;
+
+        if (null === $this->filter) {
+            $this->filter = new AnyFilter();
+        }
     }
 
     /**
@@ -41,17 +33,7 @@ final class BufferingCollector implements IssueCollectorInterface
      */
     public function collectIssue(IssueInstance $issue)
     {
-        // Don't report anything for excluded files
-        if ($this->ignoredFilesFilter->isFilenameIgnored($issue->getFile())) {
-            return;
-        }
-
-        // Don't report anything below our minimum severity threshold
-        if ($issue->getIssue()->getSeverity() < $this->minimumSeverity) {
-            return;
-        }
-
-        if (!$this->filterCategory($issue)) {
+        if (!$this->filter->supports($issue)) {
             return;
         }
 
@@ -59,29 +41,10 @@ final class BufferingCollector implements IssueCollectorInterface
     }
 
     /**
-     * @return IssueInstance[]
-     */
-    public function getCollectedIssues():array
-    {
-        ksort($this->issues);
-
-        return $this->issues;
-    }
-
-    /**
-     * @param IssueInstance $issue
-     * @return int
-     */
-    public function filterCategory(IssueInstance $issue)
-    {
-        return $issue->getIssue()->getCategory() & $this->outputMask;
-    }
-
-    /**
      * @param IssueInstance $issue
      * @return string
      */
-    public function formatSortableKey(IssueInstance $issue)
+    private function formatSortableKey(IssueInstance $issue)
     {
         // This needs to be a sortable key so that output
         // is in the expected order
@@ -91,5 +54,15 @@ final class BufferingCollector implements IssueCollectorInterface
             $issue->getIssue()->getType(),
             $issue->getMessage()
         ]);
+    }
+
+    /**
+     * @return IssueInstance[]
+     */
+    public function getCollectedIssues():array
+    {
+        ksort($this->issues);
+
+        return array_values($this->issues);
     }
 }

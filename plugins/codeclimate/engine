@@ -27,7 +27,8 @@ use Phan\Phan;
 $cli = new CLI();
 
 // Set output mode to codeclimate
-Log::setOutputMode('codeclimate');
+// Log::setOutputMode('codeclimate');
+// Todo:: configure printer manually
 
 // Enable PHP5 -> PHP7 checks
 Config::get()->backward_compatibility_checks = true;
@@ -68,6 +69,5 @@ foreach ($codeclimate_config['include_paths'] as $path)
 	}
 }
 
-Phan::setIssueCollector(new BufferingCollector(new Phan(), Config::get()->minimum_severity, Log::getOutputMask()^Issue::CATEGORY_UNDEFINED));
 // Analyze the file list provided via the CLI
 Phan::analyzeFileList($code_base, $include_paths);

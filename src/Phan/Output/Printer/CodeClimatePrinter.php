@@ -18,15 +18,6 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
 
     private $messages = [];
 
-    /**
-     * CodeClimateFormatter constructor.
-     * @param OutputInterface $output
-     */
-    public function __construct(OutputInterface $output)
-    {
-        $this->output = $output;
-    }
-
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
     {
@@ -73,5 +64,13 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     {
         $this->output->write(json_encode($this->messages, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE) . chr(0));
         $this->messages = [];
+    }
+
+    /**
+     * @param OutputInterface $output
+     */
+    public function configureOutput(OutputInterface $output)
+    {
+        $this->output = $output;
     }
 }

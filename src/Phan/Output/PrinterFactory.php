@@ -12,17 +12,27 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class PrinterFactory
 {
-    public function getPrinter($type, OutputInterface $output)
+    /**
+     * @return string[]
+     */
+    public function getTypes():array
+    {
+        return ['text', 'codeclimate'];
+    }
+
+    public function getPrinter($type, OutputInterface $output):IssuePrinterInterface
     {
         switch ($type) {
             case 'codeclimate':
-                $printer = new CodeClimatePrinter($output);
+                $printer = new CodeClimatePrinter();
                 break;
             case 'text':
             default:
-                $printer = new PlainTextPrinter($output);
+                $printer = new PlainTextPrinter();
                 break;
         }
+
+        $printer->configureOutput($output);
 
         return $printer;
     }

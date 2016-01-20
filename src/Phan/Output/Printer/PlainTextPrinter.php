@@ -2,7 +2,6 @@
 
 namespace Phan\Output\Printer;
 
-
 use Phan\IssueInstance;
 use Phan\Output\IssuePrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -11,16 +10,6 @@ final class PlainTextPrinter implements IssuePrinterInterface
 {
     /** @var  OutputInterface */
     private $output;
-
-    /**
-     * PlainTextFormatter constructor.
-     * @param OutputInterface $output
-     */
-    public function __construct(OutputInterface $output)
-    {
-        $this->output = $output;
-    }
-
 
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance)
@@ -34,5 +23,13 @@ final class PlainTextPrinter implements IssuePrinterInterface
         );
 
         $this->output->writeln($issue);
+    }
+
+    /**
+     * @param OutputInterface $output
+     */
+    public function configureOutput(OutputInterface $output)
+    {
+        $this->output = $output;
     }
 }
