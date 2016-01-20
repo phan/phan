@@ -326,6 +326,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
     public function visitForeach(Node $node) : Context {
         if($node->children['value']->kind == \ast\AST_LIST) {
             foreach($node->children['value']->children ?? [] as $child_node) {
+                // for syntax like: foreach ([] as list(, $a));
+                if ($child_node === null) {
+                    continue;
+                }
+
                 $variable = Variable::fromNodeInContext(
                     $child_node,
                     $this->context,
