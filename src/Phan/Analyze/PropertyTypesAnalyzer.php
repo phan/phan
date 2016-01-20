@@ -2,6 +2,7 @@
 namespace Phan\Analyze;
 
 use Phan\CodeBase;
+use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
@@ -15,7 +16,12 @@ class PropertyTypesAnalyzer {
      */
     public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz) {
         foreach ($clazz->getPropertyList($code_base) as $property) {
-            $union_type = $property->getUnionType();
+            try {
+                $union_type = $property->getUnionType();
+            } catch (IssueException $exception) {
+                $exception->getIssueInstance()();
+                continue;
+            }
 
             // Look at each type in the parameter's Union Type
             foreach ($union_type->getTypeSet() as $type) {
