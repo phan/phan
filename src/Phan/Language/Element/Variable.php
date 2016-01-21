@@ -3,11 +3,9 @@ namespace Phan\Language\Element;
 
 use \Phan\AST\ContextNode;
 use \Phan\CodeBase;
-use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 
 class Variable extends TypedStructuralElement {

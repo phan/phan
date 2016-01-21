@@ -11,7 +11,6 @@ use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Type\CallableType;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 

@@ -5,13 +5,10 @@ use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Debug;
 use \Phan\Langauge\Type;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 
 class ConditionVisitor extends KindVisitorImplementation {

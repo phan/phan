@@ -5,13 +5,10 @@ use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Debug;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\Scope;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \Phan\Set;
 use \ast\Node;
 

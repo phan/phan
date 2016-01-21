@@ -19,7 +19,6 @@ use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 

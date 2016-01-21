@@ -2,12 +2,10 @@
 namespace Phan\Language;
 
 use \Phan\CodeBase;
-use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Language\Context;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 
 /**

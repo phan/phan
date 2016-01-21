@@ -6,7 +6,6 @@ use \Phan\AST\UnionTypeVisitor;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
-use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Language\Context;
@@ -28,7 +27,6 @@ use \Phan\Language\Type\ResourceType;
 use \Phan\Language\Type\ScalarType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\Type\VoidType;
-use \Phan\Log;
 use \Phan\Set;
 use \ast\Node;
 
