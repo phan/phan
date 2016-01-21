@@ -6,11 +6,7 @@ use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class CodeClimatePrinter implements BufferedPrinterInterface {
-
-    const CODECLIMATE_SEVERITY_INFO = 'info';
-    const CODECLIMATE_SEVERITY_CRITICAL = 'critical';
-    const CODECLIMATE_SEVERITY_NORMAL = 'normal';
+final class JSONPrinter implements BufferedPrinterInterface {
 
     /** @var  OutputInterface */
     private $output;
@@ -27,8 +23,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface {
                 Issue::getNameForCategory($instance->getIssue()->getCategory()) . ' ' .
                 $instance->getIssue()->getType() . ' ' .
                 $instance->getMessage(),
-            'categories' => ['Bug Risk'],
-            'severity' => self::mapSeverity($instance->getIssue()->getSeverity()),
+            'severity' => $instance->getIssue()->getSeverity(),
             'location' => [
                 'path' => preg_replace('/^\/code\//', '', $instance->getFile()),
                 'lines' => [
@@ -39,35 +34,9 @@ final class CodeClimatePrinter implements BufferedPrinterInterface {
         ];
     }
 
-    /**
-     * @param int $rawSeverity
-     * @return string
-     */
-    private static function mapSeverity(int $rawSeverity):string {
-        $severity = self::CODECLIMATE_SEVERITY_INFO;
-        switch ($rawSeverity) {
-            case Issue::SEVERITY_CRITICAL:
-                $severity = self::CODECLIMATE_SEVERITY_CRITICAL;
-                break;
-            case Issue::SEVERITY_NORMAL:
-                $severity = self::CODECLIMATE_SEVERITY_NORMAL;
-                break;
-        }
-
-        return $severity;
-    }
-
     /** flush printer buffer */
     public function flush() {
-
-        // See https://github.com/codeclimate/spec/blob/master/SPEC.md#output
-        // for details on the CodeClimate output format
-        foreach ($this->messages as $message) {
-            $this->output->write(
-                json_encode($message, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE)
-                . chr(0)
-            );
-        }
+        $this->output->write(json_encode($this->messages, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE));
         $this->messages = [];
     }
 

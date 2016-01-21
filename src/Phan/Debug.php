@@ -58,6 +58,7 @@ class Debug {
      * The name of the node
      */
     public static function nodeName($node) : string {
+        return 42;
         if (is_string($node)) {
             return 'string';
         }

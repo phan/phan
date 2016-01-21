@@ -303,7 +303,7 @@ Usage: {$argv[0]} [options] [files...]
   path.
 
  -m <mode>, --output-mode
-  Output mode: text, codeclimate
+  Output mode from 'text', 'json', or 'codeclimate'
 
  -o, --output <filename>
   Output filename
