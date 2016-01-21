@@ -59,7 +59,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface {
 
     /** flush printer buffer */
     public function flush() {
-        $this->output->write(json_encode($this->messages, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE) . chr(0));
+        $this->output->write(json_encode($this->messages, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE));
         $this->messages = [];
     }
 
