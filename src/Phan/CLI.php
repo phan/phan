@@ -8,9 +8,19 @@ use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 
 class CLI {
+    private $output;
+
+    /**
+     * @return OutputInterface
+     */
+    public function getOutput():OutputInterface
+    {
+        return $this->output;
+    }
 
     /**
      * @var string[]
@@ -70,7 +80,7 @@ class CLI {
         // configuration file `.phan/config.php` if it exists
         $this->maybeReadConfigFile();
 
-        $output = new ConsoleOutput();
+        $this->output = new ConsoleOutput();
         $factory = new PrinterFactory();
         $printerType = 'text';
         $mask = -1;
@@ -162,7 +172,7 @@ class CLI {
                 break;
             case 'o':
             case 'output':
-                $output = new StreamOutput(fopen($value, 'w'));
+                $this->output = new StreamOutput(fopen($value, 'w'));
                 break;
             case 'i':
             case 'ignore-undeclared':
@@ -196,7 +206,7 @@ class CLI {
             }
         }
 
-        $printer = $factory->getPrinter($printerType, $output);
+        $printer = $factory->getPrinter($printerType, $this->output);
         $filter  = new ChainedIssueFilter([
             new FileIssueFilter(new Phan()),
             new MinimumSeverityFilter($minimumSeverity),
