@@ -6,6 +6,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
+use Phan\Phan;
 
 class PropertyTypesAnalyzer {
 
@@ -19,7 +20,7 @@ class PropertyTypesAnalyzer {
             try {
                 $union_type = $property->getUnionType();
             } catch (IssueException $exception) {
-                $exception->getIssueInstance()();
+                Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
                 continue;
             }
 

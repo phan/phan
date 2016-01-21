@@ -34,9 +34,9 @@ use \Phan\Language\Type\ScalarType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
+use Phan\Phan;
 
 /**
  * Determine the UnionType associated with a
@@ -129,7 +129,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                     $code_base, $context, $should_catch_issue_exception
                 ))($node);
             } catch (IssueException $exception) {
-                $exception->getIssueInstance()();
+                Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
                 return new UnionType();
             }
         }
@@ -945,7 +945,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
             return $property->getUnionType();
         }  catch (IssueException $exception) {
-            $exception->getIssueInstance()();
+            Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
         } catch (CodeBaseException $exception) {
             $property_name = $node->children['prop'];
             Issue::emit(

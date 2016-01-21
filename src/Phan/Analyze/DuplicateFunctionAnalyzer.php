@@ -7,7 +7,6 @@ use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
-use \Phan\Log;
 
 class DuplicateFunctionAnalyzer {
 

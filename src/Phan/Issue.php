@@ -513,11 +513,9 @@ class Issue {
         int $line,
         ...$template_parameters
     ) {
-        self::fromType($type)(
-            $file,
-            $line,
-            $template_parameters
-        )();
+        $issue = self::fromType($type);
+        // Temporary hack for WI-27451 https://youtrack.jetbrains.com/issue/WI-27451
+        $instance = $issue($file, $line, $template_parameters);
+        Phan::getIssueCollector()->collectIssue($instance);
     }
-
 }

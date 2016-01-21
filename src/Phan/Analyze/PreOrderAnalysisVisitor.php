@@ -25,7 +25,6 @@ use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\Scope;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 

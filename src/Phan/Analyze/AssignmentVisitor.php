@@ -19,9 +19,9 @@ use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
+use Phan\Phan;
 
 class AssignmentVisitor extends KindVisitorImplementation {
 
@@ -261,7 +261,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     $this->context
                 );
             } catch (IssueException $exception) {
-                $exception->getIssueInstance()();
+                Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
                 return $this->context;
             }
 

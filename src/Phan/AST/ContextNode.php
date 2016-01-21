@@ -5,7 +5,6 @@ use \Phan\AST\UnionTypeVisitor;
 use \Phan\Analyze\ClassName\ValidationVisitor as ClassNameValidationVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
-use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Exception\NodeException;
@@ -27,7 +26,6 @@ use \Phan\Language\Type\NullType;
 use \Phan\Language\Type\ObjectType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 
 /**

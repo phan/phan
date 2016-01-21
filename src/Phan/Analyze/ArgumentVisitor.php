@@ -4,11 +4,8 @@ namespace Phan\Analyze;
 use \Phan\AST\ContextNode;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Debug;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Variable;
-use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 

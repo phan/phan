@@ -11,7 +11,6 @@ use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\Scope;
-use \Phan\Log;
 
 /**
  * An object representing the context in which any

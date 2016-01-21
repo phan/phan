@@ -1,13 +1,13 @@
-<?php
-/**
- * User: scaytrase
- * Created: 2016-01-16 11:55
- */
+<?php declare(strict_types = 1);
 
 namespace Phan\Tests;
 
 use Phan\CodeBase;
+use Phan\Output\Collector\BufferingCollector;
+use Phan\Output\IgnoredFilesFilterInterface;
+use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Phan;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 abstract class AbstractPhanFileTest
     extends \PHPUnit_Framework_TestCase
@@ -72,20 +72,16 @@ abstract class AbstractPhanFileTest
                 trim(file_get_contents($expected_file_path));
         }
 
-        // Start reading everything sent to STDOUT
-        // and compare it to the expected value once
-        // the analzyer finishes running
-        ob_start();
+        $stream = new BufferedOutput();
+        $printer = new PlainTextPrinter();
+        $printer->configureOutput($stream);
 
-        try {
-            // Run the analyzer
-            Phan::analyzeFileList($this->codeBase, [$test_file_path]);
-        } catch (\Exception $exception) {
-            // TODO: inexplicably bad things happen here
-            // print "\n" . $exception->getMessage() . "\n";
-        }
+        Phan::setPrinter($printer);
+        Phan::setIssueCollector(new BufferingCollector());
 
-        $output = trim(ob_get_clean());
+        Phan::analyzeFileList($this->codeBase, [$test_file_path]);
+
+        $output = $stream->fetch();
 
         // Uncomment to save the output back to the expected
         // output. This should be done for error message

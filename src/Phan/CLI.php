@@ -1,11 +1,25 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\Config;
-use \Phan\Issue;
-use \Phan\Log;
+use Phan\Output\Collector\BufferingCollector;
+use Phan\Output\Filter\CategoryIssueFilter;
+use Phan\Output\Filter\ChainedIssueFilter;
+use Phan\Output\Filter\FileIssueFilter;
+use Phan\Output\Filter\MinimumSeverityFilter;
+use Phan\Output\PrinterFactory;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 
 class CLI {
+    private $output;
+
+    /**
+     * @return OutputInterface
+     */
+    public function getOutput():OutputInterface {
+        return $this->output;
+    }
 
     /**
      * @var string[]
@@ -65,6 +79,12 @@ class CLI {
         // configuration file `.phan/config.php` if it exists
         $this->maybeReadConfigFile();
 
+        $this->output = new ConsoleOutput();
+        $factory = new PrinterFactory();
+        $printerType = 'text';
+        $mask = -1;
+        $minimumSeverity = Issue::SEVERITY_LOW;
+
         foreach($opts ?? [] as $key => $value) {
             switch($key) {
             case 'h':
@@ -112,10 +132,17 @@ class CLI {
                 break;
             case 'm':
             case 'output-mode':
-                if(!in_array($value, ['text', 'codeclimate'])) {
-                    $this->usage("Unknown output mode: $value");
+                if (!in_array($value, $factory->getTypes(), true)) {
+                    $this->usage(
+                        sprintf(
+                            'Unknown output mode "%s". Known values are [%s]',
+                            $value,
+                            implode(',', $factory->getTypes())
+                        )
+                    );
                 }
-                Log::setOutputMode($value);
+
+                $printerType = $value;
                 break;
             case 'c':
             case 'parent-constructor-required':
@@ -144,11 +171,11 @@ class CLI {
                 break;
             case 'o':
             case 'output':
-                Log::setFilename($value);
+                $this->output = new StreamOutput(fopen($value, 'w'));
                 break;
             case 'i':
             case 'ignore-undeclared':
-                Log::setOutputMask(Log::getOutputMask()^Issue::CATEGORY_UNDEFINED);
+                $mask ^= Issue::CATEGORY_UNDEFINED;
                 break;
             case '3':
             case 'exclude-directory-list':
@@ -161,7 +188,7 @@ class CLI {
                 break;
             case 'y':
             case 'minimum-severity':
-                Config::get()->minimum_severity = $value;
+                $minimumSeverity = $value;
                 break;
             case 'd':
             case 'project-root-directory':
@@ -177,6 +204,17 @@ class CLI {
                 $this->usage("Unknown option '-$key'"); break;
             }
         }
+
+        $printer = $factory->getPrinter($printerType, $this->output);
+        $filter  = new ChainedIssueFilter([
+            new FileIssueFilter(new Phan()),
+            new MinimumSeverityFilter($minimumSeverity),
+            new CategoryIssueFilter($mask)
+        ]);
+        $collector = new BufferingCollector($filter);
+
+        Phan::setPrinter($printer);
+        Phan::setIssueCollector($collector);
 
         $pruneargv = array();
         foreach($opts ?? [] as $opt => $value) {

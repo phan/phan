@@ -3,7 +3,6 @@ namespace Phan\Language\Element;
 
 use \Phan\AST\UnionTypeVisitor;
 use \Phan\CodeBase;
-use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Issue;
@@ -14,7 +13,6 @@ use \Phan\Language\Type\IntType;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 

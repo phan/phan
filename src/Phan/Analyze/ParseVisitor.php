@@ -36,7 +36,6 @@ use \Phan\Language\Type\ScalarType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
 

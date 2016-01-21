@@ -29,9 +29,9 @@ use \Phan\Language\Type\CallableType;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
-use \Phan\Log;
 use \ast\Node;
 use \ast\Node\Decl;
+use Phan\Phan;
 
 class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
@@ -682,7 +682,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                         ?? $expression->children['method']
                 );
             } catch (IssueException $exception) {
-                $exception->getIssueInstance()();
+                Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
                 return $this->context;
             }
 
@@ -799,7 +799,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
 
         } catch (IssueException $exception) {
-            $exception->getIssueInstance()();
+            Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
         } catch (\Exception $exception) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
@@ -913,7 +913,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 $node
             );
         } catch (IssueException $exception) {
-            $exception->getIssueInstance()();
+            Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
 
         }  catch (\Exception $exception) {
 
@@ -1018,7 +1018,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
 
         } catch (IssueException $exception) {
-            $exception->getIssueInstance()();
+            Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
             return $this->context;
         } catch (NodeException $exception) {
 

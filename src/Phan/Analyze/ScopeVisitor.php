@@ -3,13 +3,11 @@ namespace Phan\Analyze;
 
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
-use \Phan\Debug;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \Phan\Log;
 use \ast\Node;
 
 abstract class ScopeVisitor extends KindVisitorImplementation {

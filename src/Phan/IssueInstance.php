@@ -19,7 +19,7 @@ class IssueInstance {
      * @param Issue $issue
      * @param string $file
      * @param int $line
-     * @param array template_parameters
+     * @param array $template_parameters
      */
     public function __construct(
         Issue $issue,
@@ -41,13 +41,6 @@ class IssueInstance {
     }
 
     /**
-     * @return array
-     */
-    public function getTemplateParameters() : array {
-        return $this->template_parameters;
-    }
-
-    /**
      * @return string
      */
     public function getFile() : string {
@@ -62,20 +55,9 @@ class IssueInstance {
     }
 
     /**
-     * @return void
+     * @return string
      */
-    public function __invoke() {
-        Log::err(
-            $this->getIssue()->getCategory(),
-            $this->getIssue()->getType(),
-            $this->getIssue()->getSeverity(),
-            call_user_func_array('sprintf', array_merge(
-                [ $this->getIssue()->getTemplate() ],
-                $this->getTemplateParameters()
-            )),
-            $this->getFile(),
-            $this->getLine()
-        );
+    public function getMessage() {
+        return vsprintf($this->getIssue()->getTemplate(), $this->template_parameters);
     }
-
 }

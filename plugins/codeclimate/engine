@@ -1,31 +1,24 @@
 #!/usr/bin/env php
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
-assert(extension_loaded('ast'),
-    "The php-ast extension must be loaded in order for Phan to work. See https://github.com/etsy/phan#getting-it-running for more details.");
+require_once(__DIR__ . '/../../src/requirements.php');
 
-assert((int)phpversion()[0] >= 7,
-    "Phan requires PHP version 7 or greater. See https://github.com/etsy/phan#getting-it-running for more details.");
-
-// Grab these before we define our own classes
-$internal_class_name_list = get_declared_classes();
-$internal_interface_name_list = get_declared_interfaces();
-$internal_trait_name_list = get_declared_traits();
-$internal_function_name_list = get_defined_functions()['internal'];
-
-require_once(__DIR__.'/../../src/Phan/Bootstrap.php');
+$code_base = require_once(__DIR__ . '/../../src/codebase.php');
+require_once(__DIR__ . '/../../src/Phan/Bootstrap.php');
 
 use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Log;
+use Phan\Issue;
+use Phan\Output\Collector\BufferingCollector;
+use Phan\Output\Filter\CategoryIssueFilter;
+use Phan\Output\Filter\ChainedIssueFilter;
+use Phan\Output\Filter\FileIssueFilter;
+use Phan\Output\Printer\CodeClimatePrinter;
 use Phan\Phan;
 
 // Create our CLI interface and load arguments
 $cli = new CLI();
-
-// Set output mode to codeclimate
-Log::setOutputMode('codeclimate');
 
 // Enable PHP5 -> PHP7 checks
 Config::get()->backward_compatibility_checks = true;
@@ -33,44 +26,40 @@ Config::get()->backward_compatibility_checks = true;
 // Re-analyze all files
 Config::get()->reanalyze_file_list = true;
 
-// Ignore undeclared functions and classes
-Log::setOutputMask(Log::getOutputMask()^Log::EUNDEF);
-
-$code_base = new CodeBase(
-    $internal_class_name_list,
-    $internal_interface_name_list,
-    $internal_trait_name_list,
-    $internal_function_name_list
-);
-
 // Obtain the config
 $codeclimate_config = json_decode(file_get_contents('/config.json'), true);
 
 $include_paths = [];
 
-$queueWithIncludePaths = function($dir_path) use ($include_paths, &$queueWithIncludePaths) {
-	foreach (scandir($dir_path) as $f) {
-		if ($f !== '.' and $f !== '..') {
-			if (is_dir("$dir_path/$f")) {
-				$queueWithIncludePaths("$dir_path/$f");
-			} else {
-				$include_paths[] = "$dir_path/$f";
-			}
-		}
-	}
+// Todo: wrap with `-l` console logic instead of custom function
+$queue_with_include_paths = function ($dir_path) use ($include_paths, &$queue_with_include_paths) {
+    foreach (scandir($dir_path) as $f) {
+        if ($f !== '.' and $f !== '..') {
+            if (is_dir("$dir_path/$f")) {
+                $queue_with_include_paths("$dir_path/$f");
+            } else {
+                $include_paths[] = "$dir_path/$f";
+            }
+        }
+    }
 };
 
-foreach ($codeclimate_config['include_paths'] as $path)
-{
-	if (is_dir('/code/' . $path)) {
-		$queueWithIncludePaths('/code/' . $path);
-	} else {
-		$include_paths[] = "/code/$path";
-	}
+foreach ($codeclimate_config['include_paths'] as $path) {
+    if (is_dir('/code/' . $path)) {
+        $queue_with_include_paths('/code/' . $path);
+    } else {
+        $include_paths[] = "/code/$path";
+    }
 }
 
+$printer = new CodeClimatePrinter($cli->getOutput());
+$filter = new ChainedIssueFilter([
+    new FileIssueFilter(new Phan()),
+    new CategoryIssueFilter(-1 ^ Issue::CATEGORY_UNDEFINED)
+]);
+$collector = new BufferingCollector($filter);
+Phan::setIssueCollector($collector);
+
 // Analyze the file list provided via the CLI
-Phan::analyzeFileList(
-	$code_base,
-	$include_paths
-);
+Phan::analyzeFileList($code_base, $include_paths);
+

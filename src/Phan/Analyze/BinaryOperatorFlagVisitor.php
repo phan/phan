@@ -25,7 +25,6 @@ use \Phan\Language\Type\{
     VoidType
 };
 use \Phan\Issue;
-use \Phan\Log;
 use \ast\Node;
 
 class BinaryOperatorFlagVisitor extends FlagVisitorImplementation {
