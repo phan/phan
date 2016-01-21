@@ -516,7 +516,6 @@ class Issue {
         $issue = self::fromType($type);
         // Temporary hack for WI-27451 https://youtrack.jetbrains.com/issue/WI-27451
         $instance = $issue($file, $line, $template_parameters);
-        /** @var IssueInstance $instance */
-        $instance->collect();
+        Phan::getIssueCollector()->collectIssue($instance);
     }
 }

@@ -19,7 +19,7 @@ class IssueInstance {
      * @param Issue $issue
      * @param string $file
      * @param int $line
-     * @param array template_parameters
+     * @param array $template_parameters
      */
     public function __construct(
         Issue $issue,
@@ -41,13 +41,6 @@ class IssueInstance {
     }
 
     /**
-     * @return array
-     */
-    private function getTemplateParameters() : array {
-        return $this->template_parameters;
-    }
-
-    /**
      * @return string
      */
     public function getFile() : string {
@@ -61,17 +54,11 @@ class IssueInstance {
         return $this->line;
     }
 
-    /** @deprecated */
-    public function collect()
-    {
-        Phan::getIssueCollector()->collectIssue($this);
-    }
-
     /**
      * @return string
      */
     public function getMessage()
     {
-        return vsprintf($this->getIssue()->getTemplate(), $this->getTemplateParameters());
+        return vsprintf($this->getIssue()->getTemplate(), $this->template_parameters);
     }
 }

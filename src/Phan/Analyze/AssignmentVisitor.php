@@ -21,6 +21,7 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\UnionType;
 use \ast\Node;
 use \ast\Node\Decl;
+use Phan\Phan;
 
 class AssignmentVisitor extends KindVisitorImplementation {
 
@@ -260,7 +261,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
                     $this->context
                 );
             } catch (IssueException $exception) {
-                $exception->getIssueInstance()->collect();
+                Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
                 return $this->context;
             }
 
