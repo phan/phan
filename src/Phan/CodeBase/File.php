@@ -4,7 +4,10 @@ namespace Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Database;
 use \Phan\Language\Context;
-use \Phan\Language\Element\{Clazz, Element, Method};
+use \Phan\Language\Element\{Clazz,
+    Element,
+    Method
+};
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedConstantName;

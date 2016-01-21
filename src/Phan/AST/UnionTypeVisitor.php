@@ -460,7 +460,7 @@ class UnionTypeVisitor extends KindVisitorImplementation
     {
         switch ($node->flags) {
             case \ast\flags\TYPE_ARRAY:
-            return ArrayType::instance()->asUnionType();
+                return ArrayType::instance()->asUnionType();
             case \ast\flags\TYPE_BOOL:
                 return BoolType::instance()->asUnionType();
             case \ast\flags\TYPE_CALLABLE:
@@ -654,20 +654,20 @@ class UnionTypeVisitor extends KindVisitorImplementation
     {
         switch ($node->flags) {
             case \ast\flags\TYPE_NULL:
-            return NullType::instance()->asUnionType();
-                case \ast\flags\TYPE_BOOL:
+                return NullType::instance()->asUnionType();
+            case \ast\flags\TYPE_BOOL:
                 return BoolType::instance()->asUnionType();
-                    case \ast\flags\TYPE_LONG:
-                    return IntType::instance()->asUnionType();
+            case \ast\flags\TYPE_LONG:
+                return IntType::instance()->asUnionType();
             case \ast\flags\TYPE_DOUBLE:
-            return FloatType::instance()->asUnionType();
-                case \ast\flags\TYPE_STRING:
+                return FloatType::instance()->asUnionType();
+            case \ast\flags\TYPE_STRING:
                 return StringType::instance()->asUnionType();
-                    case \ast\flags\TYPE_ARRAY:
+            case \ast\flags\TYPE_ARRAY:
                 return ArrayType::instance()->asUnionType();
-                    case \ast\flags\TYPE_OBJECT:
+            case \ast\flags\TYPE_OBJECT:
                 return ObjectType::instance()->asUnionType();
-                    default:
+            default:
                 throw new NodeException(
                     $node,
                     'Unknown type (' . $node->flags . ') in cast'
@@ -1120,7 +1120,7 @@ class UnionTypeVisitor extends KindVisitorImplementation
             foreach ($this->classListFromNode(
                 $node->children['class'] ?? $node->children['expr']
             )
- as $i => $class) {
+            as $i => $class) {
                 $class_fqsen = $class->getFQSEN();
 
                 if (!$class->hasMethodWithName(
@@ -1194,7 +1194,7 @@ class UnionTypeVisitor extends KindVisitorImplementation
         // Shortcut some easy operators
         switch ($node->flags) {
             case \ast\flags\UNARY_BOOL_NOT:
-            return BoolType::instance()->asUnionType();
+                return BoolType::instance()->asUnionType();
         }
 
         return self::unionTypeFromNode(
@@ -1448,7 +1448,7 @@ class UnionTypeVisitor extends KindVisitorImplementation
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($union_type->nonNativeTypes()->getTypeSet()
-        as $class_type) {
+ as $class_type) {
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
 

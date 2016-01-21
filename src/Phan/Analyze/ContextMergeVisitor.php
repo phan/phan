@@ -128,7 +128,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 return array_reduce(
                     $scope_list,
                     function (bool $has_variable, Scope $scope)
- use ($variable_name) {
+                    use ($variable_name) {
                     
                         return (
                             $has_variable &&

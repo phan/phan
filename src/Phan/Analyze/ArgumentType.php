@@ -287,7 +287,7 @@ class ArgumentType
             $alternate_found = false;
 
             foreach ($method->alternateGenerator($code_base)
-            as $alternate_id => $alternate_method) {
+ as $alternate_id => $alternate_method) {
                 if (empty($alternate_method->getParameterList()[$i])) {
                     continue;
                 }
@@ -422,15 +422,15 @@ class ArgumentType
             // (string glue, array pieces),
             // (array pieces, string glue) or
             // (array pieces)
-            if ($argcount == 1) {
-                self::analyzeNodeUnionTypeCast(
-                    $arglist->children[0],
-                    $context,
-                    $code_base,
-                    ArrayType::instance()->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method) {
+                if ($argcount == 1) {
+                    self::analyzeNodeUnionTypeCast(
+                        $arglist->children[0],
+                        $context,
+                        $code_base,
+                        ArrayType::instance()->asUnionType(),
+                        function (UnionType $node_type) use ($context, $method) {
                         // "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
-                        return Issue::fromType(Issue::ParamSpecial2)(
+                            return Issue::fromType(Issue::ParamSpecial2)(
                             $context->getFile(),
                             $context->getLineNumberStart(), [
                                 1,
@@ -439,107 +439,107 @@ class ArgumentType
                                 'string',
                                 'array'
                             ]
-                        );
-                    }
-                );
-                return;
-            } elseif ($argcount == 2) {
-                $arg1_type = UnionType::fromNode(
-                    $context,
-                    $code_base,
-                    $arglist->children[0]
-                );
+                            );
+                        }
+                    );
+                    return;
+                } elseif ($argcount == 2) {
+                    $arg1_type = UnionType::fromNode(
+                        $context,
+                        $code_base,
+                        $arglist->children[0]
+                    );
 
-                $arg2_type = UnionType::fromNode(
-                    $context,
-                    $code_base,
-                    $arglist->children[1]
-                );
+                    $arg2_type = UnionType::fromNode(
+                        $context,
+                        $code_base,
+                        $arglist->children[1]
+                    );
 
-                if ((string)$arg1_type == 'array') {
-                    if (!$arg1_type->canCastToUnionType(
-                        StringType::instance()->asUnionType()
-                    )) {
-                        Issue::emit(
-                            Issue::ParamSpecial1,
-                            $context->getFile(),
-                            $context->getLineNumberStart(),
-                            2,
-                            'glue',
-                            (string)$arg2_type,
-                            (string)$method->getFQSEN(),
-                            'string',
-                            1,
-                            'array'
-                        );
+                    if ((string)$arg1_type == 'array') {
+                        if (!$arg1_type->canCastToUnionType(
+                            StringType::instance()->asUnionType()
+                        )) {
+                            Issue::emit(
+                                Issue::ParamSpecial1,
+                                $context->getFile(),
+                                $context->getLineNumberStart(),
+                                2,
+                                'glue',
+                                (string)$arg2_type,
+                                (string)$method->getFQSEN(),
+                                'string',
+                                1,
+                                'array'
+                            );
+                        }
+                    } elseif ((string)$arg1_type == 'string') {
+                        if (!$arg2_type->canCastToUnionType(
+                            ArrayType::instance()->asUnionType()
+                        )) {
+                            Issue::emit(
+                                Issue::ParamSpecial1,
+                                $context->getFile(),
+                                $context->getLineNumberStart(),
+                                2,
+                                'pieces',
+                                (string)$arg2_type,
+                                (string)$method->getFQSEN(),
+                                'array',
+                                1,
+                                'string'
+                            );
+                        }
                     }
-                } elseif ((string)$arg1_type == 'string') {
-                    if (!$arg2_type->canCastToUnionType(
-                        ArrayType::instance()->asUnionType()
-                    )) {
-                        Issue::emit(
-                            Issue::ParamSpecial1,
-                            $context->getFile(),
-                            $context->getLineNumberStart(),
-                            2,
-                            'pieces',
-                            (string)$arg2_type,
-                            (string)$method->getFQSEN(),
-                            'array',
-                            1,
-                            'string'
-                        );
-                    }
+                    return;
                 }
-                return;
-            }
 
             // Any other arg counts we will let the regular
             // checks handle
-            break;
+                break;
             case 'array_udiff':
             case 'array_diff_uassoc':
             case 'array_uintersect_assoc':
             case 'array_intersect_ukey':
-            if ($argcount < 3) {
-                Issue::emit(
-                    Issue::ParamTooFewInternal,
-                    $context->getFile(),
-                    $context->getLineNumberStart(),
-                    $argcount,
-                    (string)$method->getFQSEN(),
-                    $method->getNumberOfRequiredParameters()
-                );
-
-                return;
-            }
-
-            self::analyzeNodeUnionTypeCast(
-                $arglist->children[$argcount - 1],
-                $context,
-                $code_base,
-                CallableType::instance()->asUnionType(),
-                function (UnionType $node_type) use ($context, $method) {
-                    // "The last argument to {$method->getFQSEN()} must be a callable"
-                    return Issue::fromType(Issue::ParamSpecial3)(
+                if ($argcount < 3) {
+                    Issue::emit(
+                        Issue::ParamTooFewInternal,
                         $context->getFile(),
-                        $context->getLineNumberStart(), [
-                            (string)$method->getFQSEN(),
-                            'callable'
-                        ]
+                        $context->getLineNumberStart(),
+                        $argcount,
+                        (string)$method->getFQSEN(),
+                        $method->getNumberOfRequiredParameters()
                     );
-                }
-            );
 
-            for ($i=0; $i < ($argcount - 1); $i++) {
+                    return;
+                }
+
                 self::analyzeNodeUnionTypeCast(
-                    $arglist->children[$i],
+                    $arglist->children[$argcount - 1],
                     $context,
                     $code_base,
                     CallableType::instance()->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method, $i) {
+                    function (UnionType $node_type) use ($context, $method) {
+                    // "The last argument to {$method->getFQSEN()} must be a callable"
+                        return Issue::fromType(Issue::ParamSpecial3)(
+                        $context->getFile(),
+                        $context->getLineNumberStart(), [
+                            (string)$method->getFQSEN(),
+                            'callable'
+                        ]
+                        );
+                    }
+                );
+
+                for ($i=0; $i < ($argcount - 1); $i++) {
+                    self::analyzeNodeUnionTypeCast(
+                        $arglist->children[$i],
+                        $context,
+                        $code_base,
+                        CallableType::instance()->asUnionType(),
+                        function (UnionType $node_type) use ($context, $method, $i) {
                         // "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
-                        return Issue::fromType(Issue::ParamTypeMismatch)(
+                            return Issue::fromType(Issue::ParamTypeMismatch)(
                             $context->getFile(),
                             $context->getLineNumberStart(), [
                                 ($i+1),
@@ -547,72 +547,72 @@ class ArgumentType
                                 (string)$method->getFQSEN(),
                                 'array'
                             ]
-                        );
-                    }
-                );
-            }
-            return;
+                            );
+                        }
+                    );
+                }
+                return;
 
             case 'array_diff_uassoc':
             case 'array_uintersect_uassoc':
-            if ($argcount < 4) {
-                Issue::emit(
-                    Issue::ParamTooFewInternal,
-                    $context->getFile(),
-                    $context->getLineNumberStart(),
-                    $argcount,
-                    (string)$method->getFQSEN(),
-                    $method->getNumberOfRequiredParameters()
-                );
+                if ($argcount < 4) {
+                    Issue::emit(
+                        Issue::ParamTooFewInternal,
+                        $context->getFile(),
+                        $context->getLineNumberStart(),
+                        $argcount,
+                        (string)$method->getFQSEN(),
+                        $method->getNumberOfRequiredParameters()
+                    );
 
-                return;
-            }
+                    return;
+                }
 
             // The last 2 arguments must be a callable and there
             // can be a variable number of arrays before it
-            self::analyzeNodeUnionTypeCast(
-                $arglist->children[$argcount - 1],
-                $context,
-                $code_base,
-                CallableType::instance()->asUnionType(),
-                function (UnionType $node_type) use ($context, $method) {
-                    // "The last argument to {$method->getFQSEN()} must be a callable"
-                    return Issue::fromType(Issue::ParamSpecial3)(
-                        $context->getFile(),
-                        $context->getLineNumberStart(), [
-                            (string)$method->getFQSEN(),
-                            'callable'
-                        ]
-                    );
-                }
-            );
-
-            self::analyzeNodeUnionTypeCast(
-                $arglist->children[$argcount - 2],
-                $context,
-                $code_base,
-                CallableType::instance()->asUnionType(),
-                function (UnionType $node_type) use ($context, $method) {
-                    // "The second last argument to {$method->getFQSEN()} must be a callable"
-                    return Issue::fromType(Issue::ParamSpecial4)(
-                        $context->getFile(),
-                        $context->getLineNumberStart(), [
-                            (string)$method->getFQSEN(),
-                            'callable'
-                        ]
-                    );
-                }
-            );
-
-            for ($i=0; $i < ($argcount-2); $i++) {
                 self::analyzeNodeUnionTypeCast(
-                    $arglist->children[$i],
+                    $arglist->children[$argcount - 1],
                     $context,
                     $code_base,
-                    ArrayType::instance()->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method, $i) {
+                    CallableType::instance()->asUnionType(),
+                    function (UnionType $node_type) use ($context, $method) {
+                    // "The last argument to {$method->getFQSEN()} must be a callable"
+                        return Issue::fromType(Issue::ParamSpecial3)(
+                        $context->getFile(),
+                        $context->getLineNumberStart(), [
+                            (string)$method->getFQSEN(),
+                            'callable'
+                        ]
+                        );
+                    }
+                );
+
+                self::analyzeNodeUnionTypeCast(
+                    $arglist->children[$argcount - 2],
+                    $context,
+                    $code_base,
+                    CallableType::instance()->asUnionType(),
+                    function (UnionType $node_type) use ($context, $method) {
+                    // "The second last argument to {$method->getFQSEN()} must be a callable"
+                        return Issue::fromType(Issue::ParamSpecial4)(
+                        $context->getFile(),
+                        $context->getLineNumberStart(), [
+                            (string)$method->getFQSEN(),
+                            'callable'
+                        ]
+                        );
+                    }
+                );
+
+                for ($i=0; $i < ($argcount-2); $i++) {
+                    self::analyzeNodeUnionTypeCast(
+                        $arglist->children[$i],
+                        $context,
+                        $code_base,
+                        ArrayType::instance()->asUnionType(),
+                        function (UnionType $node_type) use ($context, $method, $i) {
                         // "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
-                        return Issue::fromType(Issue::ParamTypeMismatch)(
+                            return Issue::fromType(Issue::ParamTypeMismatch)(
                             $context->getFile(),
                             $context->getLineNumberStart(), [
                                 ($i+1),
@@ -620,24 +620,24 @@ class ArgumentType
                                 (string)$method->getFQSEN(),
                                 'array'
                             ]
-                        );
-                    }
-                );
-            }
-            return;
+                            );
+                        }
+                    );
+                }
+                return;
 
             case 'strtok':
             // (string str, string token) or (string token)
-            if ($argcount == 1) {
-                // If we have just one arg it must be a string token
-                self::analyzeNodeUnionTypeCast(
-                    $arglist->children[0],
-                    $context,
-                    $code_base,
-                    ArrayType::instance()->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method) {
+                if ($argcount == 1) {
+                    // If we have just one arg it must be a string token
+                    self::analyzeNodeUnionTypeCast(
+                        $arglist->children[0],
+                        $context,
+                        $code_base,
+                        ArrayType::instance()->asUnionType(),
+                        function (UnionType $node_type) use ($context, $method) {
                         // "arg#1(token) is %s but {$method->getFQSEN()}() takes string when passed only one arg"
-                        return Issue::fromType(Issue::ParamSpecial2)(
+                            return Issue::fromType(Issue::ParamSpecial2)(
                             $context->getFile(),
                             $context->getLineNumberStart(), [
                                 1,
@@ -646,24 +646,24 @@ class ArgumentType
                                 (string)$method->getFQSEN(),
                                 'string'
                             ]
-                        );
-                    }
-                );
-            }
+                            );
+                        }
+                    );
+                }
             // The arginfo check will handle the other case
-            break;
+                break;
             case 'min':
             case 'max':
-            if ($argcount == 1) {
-                // If we have just one arg it must be an array
-                if (!self::analyzeNodeUnionTypeCast(
-                    $arglist->children[0],
-                    $context,
-                    $code_base,
-                    ArrayType::instance()->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method) {
+                if ($argcount == 1) {
+                    // If we have just one arg it must be an array
+                    if (!self::analyzeNodeUnionTypeCast(
+                        $arglist->children[0],
+                        $context,
+                        $code_base,
+                        ArrayType::instance()->asUnionType(),
+                        function (UnionType $node_type) use ($context, $method) {
                         // "arg#1(values) is %s but {$method->getFQSEN()}() takes array when passed only one arg"
-                        return Issue::fromType(Issue::ParamSpecial2)(
+                            return Issue::fromType(Issue::ParamSpecial2)(
                             $context->getFile(),
                             $context->getLineNumberStart(), [
                                 1,
@@ -672,16 +672,16 @@ class ArgumentType
                                 (string)$method->getFQSEN(),
                                 'array'
                             ]
-                        );
+                            );
+                        }
+                    )) {
+                        return;
                     }
-                )) {
-                    return;
                 }
-            }
             // The arginfo check will handle the other case
-            break;
+                break;
             default:
-            break;
+                break;
         }
     }
 }

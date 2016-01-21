@@ -168,7 +168,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Hunt for the alternate associated with the file we're
         // looking at currently in this context.
         foreach ($method->alternateGenerator($this->code_base)
- as $i => $alternate_method) {
+        as $i => $alternate_method) {
             if ($alternate_method->getContext()->getProjectRelativePath()
                 === $this->context->getProjectRelativePath()
             ) {

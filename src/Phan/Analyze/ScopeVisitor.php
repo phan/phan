@@ -125,7 +125,7 @@ abstract class ScopeVisitor extends KindVisitorImplementation
         $context = $this->context;
 
         foreach ($this->aliasTargetMapFromUseNode($node)
-        as $alias => $map) {
+ as $alias => $map) {
             list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
                 $node->flags ?? 0,

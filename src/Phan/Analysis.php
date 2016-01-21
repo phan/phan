@@ -265,7 +265,7 @@ class Analysis
             // operate in a context independent of eachother
             switch ($child_node->kind) {
                 case \ast\AST_IF_ELEM:
-                $child_context = $node_context;
+                    $child_context = $node_context;
                     break;
             }
 
@@ -308,9 +308,9 @@ class Analysis
             case \ast\AST_METHOD:
             case \ast\AST_FUNC_DECL:
             case \ast\AST_CLOSURE:
-            return $context;
+                return $context;
             default:
-            return $node_context;
+                return $node_context;
         }
     }
 

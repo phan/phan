@@ -285,7 +285,7 @@ class Method extends ClassElement implements Addressable
 
             // Load properties if defined
             foreach ($map['property_name_type_map'] ?? []
-            as $parameter_name => $parameter_type) {
+ as $parameter_name => $parameter_type) {
                 $flags = 0;
                 $is_optional = false;
 

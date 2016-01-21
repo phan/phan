@@ -93,13 +93,13 @@ class CLI
             switch ($key) {
                 case 'h':
                 case 'help':
-                $this->usage();
+                    $this->usage();
                     break;
                 case 'r':
                 case 'file-list-only':
                 // Mark it so that we don't load files through
                 // other mechanisms.
-                $this->file_list_only = true;
+                    $this->file_list_only = true;
 
                     // Empty out the file list
                     $this->file_list = [];

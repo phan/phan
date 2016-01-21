@@ -191,7 +191,7 @@ class Phan implements IgnoredFilesFilterInterface
         string $file_path
     ) : bool {
         foreach (Config::get()->exclude_analysis_directory_list
-        as $directory) {
+ as $directory) {
             if (0 === strpos($file_path, $directory)
                 || 0 === strpos($file_path, "./$directory")
             ) {

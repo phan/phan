@@ -148,7 +148,7 @@ class ContextNode
 
         $class_list = [];
         foreach ($union_type->asClassList($this->code_base)
- as $i => $clazz) {
+        as $i => $clazz) {
             $class_list[] = $clazz;
         }
 
