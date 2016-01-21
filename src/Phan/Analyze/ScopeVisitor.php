@@ -7,7 +7,7 @@ use \Phan\Debug;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Log;
 use \ast\Node;
@@ -175,7 +175,7 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
             } else if ($target_node->flags == T_CONST) {
                 $parts = explode('\\', $target);
                 $name = array_pop($parts);
-                $target = FullyQualifiedConstantName::make(
+                $target = FullyQualifiedGlobalConstantName::make(
                     $prefix . '\\' . implode('\\', $parts),
                     $name
                 );

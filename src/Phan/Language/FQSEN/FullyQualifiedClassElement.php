@@ -7,7 +7,7 @@ use \Phan\Language\FQSEN;
 /**
  * A Fully-Qualified Class Name
  */
-abstract class FullyQualifiedClassElement extends FQSEN {
+abstract class FullyQualifiedClassElement extends AbstractFQSEN {
     use \Phan\Language\FQSEN\Alternatives;
     use \Phan\Memoize;
 

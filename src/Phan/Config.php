@@ -99,21 +99,14 @@ class Config {
         // the file is read
         'stored_state_file_path' => null,
 
-        // Set to true in order to force a re-analysis of
-        // any file passed in via the CLI even if our
-        // internal state is up-to-date
-        'reanalyze_file_list' => false,
-
         // If set to true, we'll dump the AST instead of
         // analyzing files
         'dump_ast' => false,
 
-        // If true, we'll dump the set of dependencies
-        // on the given file list instead of doing any
-        // kind of analysis. This is useful for determining
-        // the full set of files that should be analyzed
-        // when running against a state file
-        'expanded_dependency_list' => false,
+        // If true (and if stored_state_file_path is set) we'll
+        // look at the list of files passed in and expand the list
+        // to include files that depend on the given files
+        'expand_file_list' => false,
 
         // Include a progress bar in the output
         'progress_bar' => false,

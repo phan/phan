@@ -48,18 +48,6 @@ return [
     // to make sense of.
     'dead_code_detection' => false,
 
-    // If a file path is given, the code base will be
-    // read from and written to the given location in
-    // order to attempt to save some work from being
-    // done. Only changed files will get analyzed if
-    // the file is read
-    // "stored_state_file_path" => Config::projectPath(".phan/database"),
-
-    // Set to true in order to force a re-analysis of
-    // any file passed in via the CLI even if our
-    // internal state is up-to-date
-    // 'reanalyze_file_list' => true,
-
     // Run a quick version of checks that takes less
     // time
     "quick_mode" => false,
@@ -68,7 +56,6 @@ return [
     // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or
     // Issue::SEVERITY_CRITICAL.
     'minimum_severity' => Issue::SEVERITY_LOW,
-
 
     // A list of files to include in analysis
     'file_list' => [

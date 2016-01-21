@@ -2,13 +2,12 @@
 namespace Phan\Language\FQSEN;
 
 /**
- * A Fully-Qualified Class Constant Name
+ * A Fully-Qualified Constant Name
  */
-class FullyQualifiedClassConstantName
-    extends FullyQualifiedClassElement
+class FullyQualifiedGlobalConstantName
+    extends FullyQualifiedGlobalStructuralElement
     implements FullyQualifiedConstantName
 {
-
     /**
      * @return int
      * The namespace map type such as T_CLASS or T_FUNCTION

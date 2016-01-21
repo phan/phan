@@ -415,9 +415,16 @@ class Context extends FileRef implements \Serializable {
             ? FullyQualifiedClassName::fromFullyQualifiedString($class_fqsen)
             : null;
 
-        $this->method_fqsen = $method_fqsen
-            ? FullyQualifiedMethodName::fromFullyQualifiedString($method_fqsen)
-            : null;
+        // Determine if we have a method or a function
+        if (false === strpos($method_fqsen, '::')) {
+            $this->method_fqsen = $method_fqsen
+                ? FullyQualifiedFunctionName::fromFullyQualifiedString($method_fqsen)
+                : null;
+        } else {
+            $this->method_fqsen = $method_fqsen
+                ? FullyQualifiedMethodName::fromFullyQualifiedString($method_fqsen)
+                : null;
+        }
 
         $this->closure_fqsen = $closure_fqsen
             ? FullyQualifiedFunctionName::fromFullyQualifiedString($closure_fqsen)

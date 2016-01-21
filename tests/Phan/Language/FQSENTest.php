@@ -8,6 +8,7 @@ use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
@@ -180,32 +181,32 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         );
     }
 
-    public function testFullyQualifiedConstantName() {
+    public function testFullyQualifiedGlobalConstantName() {
         $this->assertFQSENEqual(
-            FullyQualifiedConstantName::make(
+            FullyQualifiedGlobalConstantName::make(
                 '\\Name\\Space', 'c'
             ), '\\Name\\Space\\c'
         );
 
         $this->assertFQSENEqual(
-            FullyQualifiedConstantName::make(
+            FullyQualifiedGlobalConstantName::make(
                 '', 'c'
             ), '\\c'
         );
 
         $this->assertFQSENEqual(
-            FullyQualifiedConstantName::make(
+            FullyQualifiedGlobalConstantName::make(
                 '', 'c'
             ), '\\c'
         );
 
         $this->assertFQSENEqual(
-            FullyQualifiedConstantName::fromFullyQualifiedString('\\c'),
+            FullyQualifiedGlobalConstantName::fromFullyQualifiedString('\\c'),
             '\\c'
         );
 
         $this->assertFQSENEqual(
-            FullyQualifiedConstantName::fromStringInContext('c', $this->context),
+            FullyQualifiedGlobalConstantName::fromStringInContext('c', $this->context),
             '\\c'
         );
     }
@@ -224,7 +225,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         );
 
         $this->assertFQSENEqual(
-            FullyQualifiedConstantName::make(
+            FullyQualifiedGlobalConstantName::make(
                 '', 'g'
             ), '\\g'
         );

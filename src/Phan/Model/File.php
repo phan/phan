@@ -8,11 +8,12 @@ use \Phan\Database\ListAssociation;
 use \Phan\Database\ModelOne;
 use \Phan\Database\Schema;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
-use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\UnionType;
 
 class File extends ModelOne {
@@ -122,11 +123,11 @@ class File extends ModelOne {
                     $file->getFile()->setConstantFQSENList(
                         array_map(function (string $fqsen_string) {
                             if (false !== strpos($fqsen_string, '::')) {
-                                return FullyQualifiedConstantName::fromFullyQualifiedString(
+                                return FullyQualifiedClassConstantName::fromFullyQualifiedString(
                                     $fqsen_string
                                 );
                             } else {
-                                return FullyQualifiedFunctionName::fromFullyQualifiedString(
+                                return FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
                                     $fqsen_string
                                 );
                             }

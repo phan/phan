@@ -1,14 +1,29 @@
 <?php declare(strict_types=1);
-namespace Phan\Language;
+namespace Phan\Language\FQSEN;
 
 use \Phan\Language\Context;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
+use \Phan\Language\FQSEN;
 
 /**
  * A Fully-Qualified Name
  */
-interface FQSEN {
+abstract class AbstractFQSEN implements FQSEN {
+
+    /**
+     * @var string
+     * The name of this structural element
+     */
+    private $name = '';
+
+    /**
+     * @param string $name
+     * The name of this structural element
+     */
+    protected function __construct(string $name) {
+        $this->name = $name;
+    }
 
     /**
      * @param $fqsen_string
@@ -17,7 +32,7 @@ interface FQSEN {
      *
      * @return FQSEN
      */
-    public static function fromFullyQualifiedString(
+    abstract public static function fromFullyQualifiedString(
         string $fully_qualified_string
     );
 
@@ -31,7 +46,7 @@ interface FQSEN {
      *
      * @return FQSEN
      */
-    public static function fromStringInContext(
+    abstract public static function fromStringInContext(
         string $string,
         Context $context
     );
@@ -41,19 +56,24 @@ interface FQSEN {
      * The class associated with this FQSEN or
      * null if not defined
      */
-    public function getName() : string;
+    public function getName() : string {
+        return $this->name;
+    }
 
     /**
      * @return string
      * The canonical representation of the name of the object. Functions
      * and Methods, for instance, lowercase their names.
      */
-    public static function canonicalName(string $name) : string;
+    public static function canonicalName(string $name) : string {
+        return $name;
+    }
 
     /**
      * @return string
      * A string representation of this fully-qualified
      * structural element name.
      */
-    public function __toString() : string;
+    abstract public function __toString() : string;
 }
+

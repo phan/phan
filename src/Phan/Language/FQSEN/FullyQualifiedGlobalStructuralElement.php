@@ -9,7 +9,7 @@ use \Phan\Language\UnionType;
 /**
  * A Fully-Qualified Global Structural Element
  */
-abstract class FullyQualifiedGlobalStructuralElement extends FQSEN {
+abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
     use \Phan\Language\FQSEN\Alternatives;
     use \Phan\Memoize;
 

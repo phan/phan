@@ -34,37 +34,28 @@ class Phan {
         foreach ($file_path_list as $i => $file_path) {
             CLI::progress('parse', ($i + 1) / $file_count);
 
-            // Check to see if we need to re-parse this file either
-            // because we don't have an up to date parse for this
-            // file or because we were isntructed to reanalyze
-            // everything
-            if (!$code_base->isParseUpToDateForFile($file_path)
-                || Config::get()->reanalyze_file_list
-            ) {
+            // Kick out anything we read from the former version
+            // of this file
+            $code_base->flushDependenciesForFile($file_path);
 
-                // Kick out anything we read from the former version
-                // of this file
-                $code_base->flushDependenciesForFile($file_path);
+            // If the file is gone, no need to continue
+            if (!file_exists($file_path)) {
+                continue;
+            }
 
-                // If the file is gone, no need to continue
-                if (!file_exists($file_path)) {
-                    continue;
-                }
+            try {
+                // Parse the file
+                Analysis::parseFile($code_base, $file_path);
 
-                try {
-                    // Parse the file
-                    Analysis::parseFile($code_base, $file_path);
+                // Update the timestamp on when it was last
+                // parsed
+                $code_base->setParseUpToDateForFile($file_path);
 
-                    // Update the timestamp on when it was last
-                    // parsed
-                    $code_base->setParseUpToDateForFile($file_path);
+                // Save this to the set of files to analyze
+                $analyze_file_path_list[] = $file_path;
 
-                    // Save this to the set of files to analyze
-                    $analyze_file_path_list[] = $file_path;
-
-                } catch (\Throwable $throwable) {
-                    error_log($file_path . ' ' . $throwable->getMessage() . "\n");
-                }
+            } catch (\Throwable $throwable) {
+                error_log($file_path . ' ' . $throwable->getMessage() . "\n");
             }
         }
 
@@ -125,10 +116,14 @@ class Phan {
      * on those files.
      *
      * @return string[]
-     * Get the set of dependencies for a given file list
+     * Get an expanded list of files and dependencies for
+     * the given file list
      */
-    public static function dependencyFileList(CodeBase $code_base, array $file_path_list) : array
-    {
+    public static function expandedFileList(
+        CodeBase $code_base,
+        array $file_path_list
+    ) : array {
+
         $file_count = count($file_path_list);
 
         // We'll construct a set of files that we'll
@@ -138,8 +133,10 @@ class Phan {
         foreach ($file_path_list as $i => $file_path) {
             CLI::progress('dependencies', ($i + 1) / $file_count);
 
+            // Add the file itself to the list
             $dependency_file_path_list[] = $file_path;
 
+            // Add any files that depend on this file
             $dependency_file_path_list = array_merge(
                 $dependency_file_path_list,
                 $code_base->dependencyListForFile($file_path)

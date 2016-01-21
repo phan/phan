@@ -67,7 +67,7 @@ class Constant extends ModelOne {
      * this instance
      */
     public function toRow() : array {
-        return [
+        $row = [
             'scope_name' => $this->primaryKeyValue(),
             'fqsen' => (string)$this->constant->getFQSEN(),
             'name' => (string)$this->constant->getName(),
@@ -76,6 +76,8 @@ class Constant extends ModelOne {
             'context' => base64_encode(serialize($this->constant->getContext())),
             'is_deprecated' => $this->constant->isDeprecated(),
         ];
+
+        return $row;
     }
 
     /**

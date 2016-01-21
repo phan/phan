@@ -4,7 +4,7 @@ namespace Phan\Language\Element;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
-use \Phan\Language\FQSEN\FullyQualifiedConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\FutureUnionType;
 use \Phan\Language\UnionType;
 use \ast\Node;
@@ -59,7 +59,7 @@ class Constant extends ClassElement implements Addressable {
     }
 
     /**
-     * @return FullyQualifiedClassConstantName|FullyQualifiedConstantName
+     * @return FullyQualifiedClassConstantName|FullyQualifiedGlobalConstantName
      * The fully-qualified structural element name of this
      * structural element
      */
@@ -69,10 +69,17 @@ class Constant extends ClassElement implements Addressable {
             return $this->fqsen;
         }
 
-        return FullyQualifiedConstantName::fromStringInContext(
-            $this->getName(),
-            $this->getContext()
-        );
+        if ($this->getContext()->isInClassScope()) {
+            return FullyQualifiedClassConstantName::fromStringInContext(
+                $this->getName(),
+                $this->getContext()
+            );
+        } else {
+            return FullyQualifiedGlobalConstantName::fromStringInContext(
+                $this->getName(),
+                $this->getContext()
+            );
+        }
     }
 
     public function __toString() : string {

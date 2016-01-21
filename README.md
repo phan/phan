@@ -105,8 +105,14 @@ Running `phan --help` will show usage information for the CLI tool.
 
 ```
 Usage: ./phan [options] [files...]
- -f, --fileset <filename>
+ -f, --file-list <filename>
   A file containing a list of PHP files to be analyzed
+
+ -r, --file-list-only
+  A file containing a list of PHP files to be analyzed to the
+  exclusion of any other directories or files passed in. This
+  is useful when running Phan from a stored state file and
+  passing in a small subset of files to be re-analyzed.
 
  -l, --directory <directory>
   A directory to recursively read PHP files from to analyze
@@ -118,10 +124,6 @@ Usage: ./phan [options] [files...]
  -s, --state-file <filename>
   Save state to the given file and read from it to speed up
   future executions
-
- -r, --reanalyze-file-list <file-list>
-  Force a re-analysis of any files passed in even if they haven't
-  changed since the last analysis
 
  -d, --project-root-directory
   Hunt for a directory named .phan in the current or parent
@@ -139,6 +141,12 @@ Usage: ./phan [options] [files...]
 
  -a, --dump-ast
   Emit an AST for each file rather than analyze
+
+ -e, --expand-file-list
+  Expand the list of files passed in to include any files
+  that depend on elements defined in those files. This is
+  useful when running Phan from a state file and passing in
+  just the set of changed files.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
