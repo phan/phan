@@ -3,9 +3,11 @@ namespace Phan\Model;
 
 use \Phan\Database;
 use \Phan\Database\Column;
+use \Phan\Database\ModelListAssociation;
 use \Phan\Database\ModelOne;
 use \Phan\Database\Schema;
 use \Phan\Language\Element\Method as MethodElement;
+use \Phan\Language\Element\Parameter as ParameterElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\UnionType;
@@ -73,6 +75,30 @@ class Method extends ModelOne {
             new Column('number_of_required_parameters', Column::TYPE_INT),
             new Column('number_of_optional_parameters', Column::TYPE_INT),
         ]);
+
+        $parameter_association = new ModelListAssociation(
+            'MethodParameter',
+            '\\Phan\\Model\\Parameter',
+            function (Method $method, array $parameter_list) {
+                $method->getMethod()->setParameterList(
+                    array_map(function (Parameter $parameter) {
+                        return $parameter->getParameter();
+                    }, $parameter_list)
+                );
+            },
+            function (Method $method) {
+                return array_map(function (ParameterElement $parameter_element) use ($method) : Parameter {
+                    return new Parameter(
+                        $parameter_element,
+                        $method->getMethod()->getFQSEN()
+                    );
+                }, $method->getMethod()->getParameterList());
+            }
+        );
+
+        // TODO: Add a custom select query
+
+        $schema->addAssociation($parameter_association);
 
         return $schema;
     }

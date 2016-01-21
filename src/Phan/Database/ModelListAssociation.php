@@ -6,15 +6,18 @@ use \Phan\Database;
 /**
  * An association from a model to a list of strings
  */
-class ListAssociation extends Association {
+class ModelListAssociation extends Association {
     use \Phan\Memoize;
+
+    /** @var string */
+    private $target_model_name;
 
     /**
      * @param string $table_name
-     * The table we'll be interacting with
+     * The table storing the primary key association
      *
-     * @param string $item_sql_type
-     * The type of items being stored
+     * @param string $target_model_name
+     * The name of the target model class
      *
      * @param \Closure $read_closure
      * A closure that accepts a map from keys to models
@@ -26,22 +29,25 @@ class ListAssociation extends Association {
      */
     public function __construct(
         string $table_name,
-        string $item_sql_type,
+        string $target_model_name,
         \Closure $read_closure,
         \Closure $write_closure
     ) {
         $schema = new Schema($table_name, [
             new Column('id', Column::TYPE_INT, true, true),
             new Column('source_pk', 'STRING'),
-            new Column('value', $item_sql_type)
+            new Column('target_pk', 'STRING')
         ]);
 
+        /*
         $schema->addCreateQuery(
             "CREATE UNIQUE INDEX IF NOT EXISTS {$table_name}_source_pk_value ON `$table_name` "
             . " (source_pk, value)"
         );
+        */
 
         parent::__construct($schema, $read_closure, $write_closure);
+        $this->target_model_name = $target_model_name;
     }
 
     /**
@@ -73,13 +79,17 @@ class ListAssociation extends Association {
             return;
         }
 
-        $column = [];
+        $columns = [];
+        $target_model_name = $this->target_model_name;
         while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-            $column[] = $row['value'];
+            $columns[] = $target_model_name::read(
+                $database,
+                (int)$row['target_pk']
+            );
         }
 
         // Write the map to the model
-        $read_closure($model, $column);
+        $read_closure($model, $columns);
     }
 
     /**
@@ -97,16 +107,18 @@ class ListAssociation extends Association {
 
         $write_closure = $this->write_closure;
 
-        $primary_key_value =
-            $model->primaryKeyValue();
+        $source_pk = $model->primaryKeyValue();
 
-        foreach ($write_closure($model) as $key => $value) {
+        foreach ($write_closure($model) as $key => $target) {
+
+            // Write the target out
+            $target->write($database);
 
             // Write the association
             $query =
                 $this->schema->queryForInsert([
-                    'source_pk' => $primary_key_value,
-                    'value' => $value,
+                    'source_pk' => $source_pk,
+                    'target_pk' => (string)$target->primaryKeyValue(),
                 ]);
 
             $database->exec($query);

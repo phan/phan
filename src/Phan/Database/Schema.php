@@ -189,6 +189,12 @@ class Schema {
     private function valueList(array $row_map) : array {
         $value_list = [];
         foreach ($row_map as $name => $value) {
+
+            if (empty($this->column_def_map[$name])) {
+                print_r($this);
+                print "$name\n";
+            }
+
             $column_type =
                 $this->column_def_map[$name]->sqlType();
 

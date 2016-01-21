@@ -45,7 +45,7 @@ pushd $ROOT > /dev/null
 
         # Figure out the set of files that have changed since
         # the last analysis
-        git diff $LATEST_REV --name-only > $RUN/files
+        git diff $LATEST_REV --name-only | grep ".php$" > $RUN/files
 
         # Run the analysis, emitting output to the console
         # and using a previous state file.
