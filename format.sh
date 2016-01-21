@@ -3,5 +3,5 @@
 find src \
     -type f \
     -path '*.php' \
-    -exec phpcbf \
+    -exec vendor/bin/phpcbf \
         --standard=PSR2 {} \;
