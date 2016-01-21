@@ -5,7 +5,8 @@ namespace Phan\Output\Filter;
 use Phan\IssueInstance;
 use Phan\Output\IssueFilterInterface;
 
-final class CategoryIssueFilter implements IssueFilterInterface {
+final class CategoryIssueFilter implements IssueFilterInterface
+{
     /** @var  int */
     private $mask;
 
@@ -13,7 +14,8 @@ final class CategoryIssueFilter implements IssueFilterInterface {
      * CategoryIssueFilter constructor.
      * @param int $mask
      */
-    public function __construct(int $mask = -1) {
+    public function __construct(int $mask = -1)
+    {
         $this->mask = $mask;
     }
 
@@ -21,7 +23,8 @@ final class CategoryIssueFilter implements IssueFilterInterface {
      * @param IssueInstance $issue
      * @return bool
      */
-    public function supports(IssueInstance $issue) : bool {
+    public function supports(IssueInstance $issue) : bool
+    {
         return (bool)($issue->getIssue()->getCategory() & $this->mask);
     }
 }

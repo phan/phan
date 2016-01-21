@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-class IssueInstance {
+class IssueInstance
+{
 
     /** @var Issue */
     private $issue;
@@ -36,28 +37,32 @@ class IssueInstance {
     /**
      * @return Issue
      */
-    public function getIssue() : Issue {
+    public function getIssue() : Issue
+    {
         return $this->issue;
     }
 
     /**
      * @return string
      */
-    public function getFile() : string {
+    public function getFile() : string
+    {
         return $this->file;
     }
 
     /**
      * @return int
      */
-    public function getLine() : int {
+    public function getLine() : int
+    {
         return $this->line;
     }
 
     /**
      * @return string
      */
-    public function getMessage() {
+    public function getMessage()
+    {
         return vsprintf($this->getIssue()->getTemplate(), $this->template_parameters);
     }
 }

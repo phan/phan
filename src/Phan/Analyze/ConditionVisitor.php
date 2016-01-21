@@ -11,7 +11,8 @@ use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \ast\Node;
 
-class ConditionVisitor extends KindVisitorImplementation {
+class ConditionVisitor extends KindVisitorImplementation
+{
 
     /**
      * @var CodeBase
@@ -54,7 +55,8 @@ class ConditionVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $node) : Context {
+    public function visit(Node $node) : Context
+    {
         return $this->context;
     }
 
@@ -66,7 +68,8 @@ class ConditionVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitBinaryOp(Node $node) : Context {
+    public function visitBinaryOp(Node $node) : Context
+    {
         return $this->context;
     }
 
@@ -78,7 +81,8 @@ class ConditionVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitUnaryOp(Node $node) : Context {
+    public function visitUnaryOp(Node $node) : Context
+    {
         return $this->context;
     }
 
@@ -90,7 +94,8 @@ class ConditionVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCoalesce(Node $node) : Context {
+    public function visitCoalesce(Node $node) : Context
+    {
         return $this->context;
     }
 
@@ -102,7 +107,8 @@ class ConditionVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitIsset(Node $node) : Context {
+    public function visitIsset(Node $node) : Context
+    {
         return $this->context;
 
         /*
@@ -152,7 +158,8 @@ class ConditionVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitInstanceof(Node $node) : Context {
+    public function visitInstanceof(Node $node) : Context
+    {
 
         // Only look at things of the form
         // `$variable instanceof ClassName`
@@ -201,8 +208,8 @@ class ConditionVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitEmpty(Node $node) : Context {
+    public function visitEmpty(Node $node) : Context
+    {
         return $this->context;
     }
-
 }

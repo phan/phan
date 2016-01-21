@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Database;
 
-class Column {
+class Column
+{
 
     const TYPE_STRING = 'STRING';
     const TYPE_INT = 'INTEGER';
@@ -27,27 +28,33 @@ class Column {
         $this->is_unique = $is_unique;
     }
 
-    public function name() : string {
+    public function name() : string
+    {
         return $this->name;
     }
 
-    public function sqlType() : string {
+    public function sqlType() : string
+    {
         return $this->sql_type;
     }
 
-    public function isAutoIncrement() : bool {
+    public function isAutoIncrement() : bool
+    {
         return $this->is_auto_increment;
     }
 
-    public function isPrimaryKey() : bool {
+    public function isPrimaryKey() : bool
+    {
         return $this->is_primary_key;
     }
 
-    public function isUnique() : bool {
+    public function isUnique() : bool
+    {
         return $this->is_unique;
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = $this->name();
 
         $string .= " {$this->sqlType()}";
@@ -62,5 +69,4 @@ class Column {
 
         return $string;
     }
-
 }

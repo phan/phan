@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-trait Profile {
+trait Profile
+{
 
     private static $label_delta_map = [];
 
@@ -17,7 +18,8 @@ trait Profile {
      * @param \Closure $closure
      * Any closure to measure how long it takes to run
      */
-    protected static function time(string $label, \Closure $closure) {
+    protected static function time(string $label, \Closure $closure)
+    {
 
         if (!Config::get()->profiler_enabled) {
             return $closure();
@@ -46,11 +48,12 @@ trait Profile {
     /**
      * Initialize the profiler
      */
-    private static function initialize() {
+    private static function initialize()
+    {
 
         // Create a shutdown function to emit the log when we're
         // all done
-        register_shutdown_function(function() {
+        register_shutdown_function(function () {
             $label_metric_map = [];
 
             // Compute whatever metric we care about
@@ -67,7 +70,7 @@ trait Profile {
 
 
             // Sort such that the highest metric value is on top
-            uasort($label_metric_map, function($a, $b) {
+            uasort($label_metric_map, function ($a, $b) {
                 return ($b[1] <=> $a[1]);
             });
 
@@ -82,5 +85,4 @@ trait Profile {
             }
         });
     }
-
 }

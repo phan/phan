@@ -3,7 +3,8 @@ namespace Phan\Database;
 
 use \Phan\Database;
 
-abstract class Association {
+abstract class Association
+{
 
     /**
      * @var Schema
@@ -76,5 +77,4 @@ abstract class Association {
         Database $database,
         $primary_key_value
     );
-
 }

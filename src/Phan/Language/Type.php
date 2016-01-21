@@ -23,7 +23,8 @@ use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
 use \ast\Node;
 
-class Type {
+class Type
+{
     use \Phan\Memoize;
 
     /**
@@ -67,20 +68,30 @@ class Type {
         string $namespace,
         string $name
     ) : Type {
-        assert($namespace && 0 === strpos($namespace, '\\'),
-            "Namespace must be fully qualified");
+        assert(
+            $namespace && 0 === strpos($namespace, '\\'),
+            "Namespace must be fully qualified"
+        );
 
-        assert(!empty($namespace),
-            "Namespace cannot be empty");
+        assert(
+            !empty($namespace),
+            "Namespace cannot be empty"
+        );
 
-        assert('\\' === $namespace[0],
-            "Namespace must be fully qualified");
+        assert(
+            '\\' === $namespace[0],
+            "Namespace must be fully qualified"
+        );
 
-        assert(!empty($name),
-            "Type name cannot be empty");
+        assert(
+            !empty($name),
+            "Type name cannot be empty"
+        );
 
-        assert(false === strpos($name, '|'),
-            "Type name '{$name}' may not contain a pipe.");
+        assert(
+            false === strpos($name, '|'),
+            "Type name '{$name}' may not contain a pipe."
+        );
 
         // Create a canonical representation of the
         // namespace and name
@@ -125,8 +136,9 @@ class Type {
     ) : Type {
         $namespace = trim($namespace);
 
-        return self::memoizeStatic($namespace . '\\' . $type_name,
-            function() use ($namespace, $type_name) : Type {
+        return self::memoizeStatic(
+            $namespace . '\\' . $type_name,
+            function () use ($namespace, $type_name) : Type {
                 // Only if we're in the root namespace can we
                 // canonicalize native types.
                 if ('\\' === $namespace) {
@@ -146,14 +158,16 @@ class Type {
 
                 // If we have a namespace, we're all set
                 return Type::make($namespace, $type_name);
-            });
+            }
+        );
     }
 
     /**
      * @return Type
      * Get a type for the given object
      */
-    public static function fromObject($object) : Type {
+    public static function fromObject($object) : Type
+    {
         return Type::fromInternalTypeName(gettype($object));
     }
 
@@ -178,32 +192,34 @@ class Type {
             self::canonicalNameFromName($type_name);
 
         switch ($type_name) {
-        case 'array':
-            return ArrayType::instance();
-        case 'bool':
-            return BoolType::instance();
-        case 'callable':
-            return CallableType::instance();
-        case 'float':
-            return FloatType::instance();
-        case 'int':
-            return IntType::instance();
-        case 'mixed':
-            return MixedType::instance();
-        case 'null':
-            return NullType::instance();
-        case 'object':
-            return ObjectType::instance();
-        case 'resource':
-            return ResourceType::instance();
-        case 'string':
-            return StringType::instance();
-        case 'void':
-            return VoidType::instance();
+            case 'array':
+                return ArrayType::instance();
+            case 'bool':
+                return BoolType::instance();
+            case 'callable':
+                return CallableType::instance();
+            case 'float':
+                return FloatType::instance();
+            case 'int':
+                return IntType::instance();
+            case 'mixed':
+                return MixedType::instance();
+            case 'null':
+                return NullType::instance();
+            case 'object':
+                return ObjectType::instance();
+            case 'resource':
+                return ResourceType::instance();
+            case 'string':
+                return StringType::instance();
+            case 'void':
+                return VoidType::instance();
         }
 
-        assert(false,
-            "No internal type with name $type_name");
+        assert(
+            false,
+            "No internal type with name $type_name"
+        );
     }
 
     /**
@@ -219,8 +235,10 @@ class Type {
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) : Type {
-        assert(!empty($fully_qualified_string),
-            "Type cannot be empty");
+        assert(
+            !empty($fully_qualified_string),
+            "Type cannot be empty"
+        );
 
         if (0 !== strpos($fully_qualified_string, '\\')) {
             return self::fromInternalTypeName($fully_qualified_string);
@@ -231,8 +249,10 @@ class Type {
                 $fully_qualified_string
             );
 
-        assert(!empty($namespace) && !empty($type_name),
-            "Type '$fully_qualified_string' was not fully qualified");
+        assert(
+            !empty($namespace) && !empty($type_name),
+            "Type '$fully_qualified_string' was not fully qualified"
+        );
 
         return self::fromNamespaceAndName(
             $namespace,
@@ -256,8 +276,10 @@ class Type {
         Context $context
     ) : Type {
 
-        assert($string !== '' ,
-            "Type cannot be empty in $context");
+        assert(
+            $string !== '',
+            "Type cannot be empty in $context"
+        );
 
         $namespace = null;
 
@@ -278,7 +300,7 @@ class Type {
         // If this is a generic array type, get the name of
         // the type of each element
         $non_generic_array_type_name = $type_name;
-        if($is_generic_array_type
+        if ($is_generic_array_type
            && false !== ($pos = strpos($type_name, '[]'))
         ) {
             $non_generic_array_type_name =
@@ -323,35 +345,35 @@ class Type {
             );
         }
 
-        if($is_generic_array_type
+        if ($is_generic_array_type
            && self::isNativeTypeString($type_name)
         ) {
             return self::fromInternalTypeName($type_name);
         } else {
             // Check to see if its a builtin type
             switch (self::canonicalNameFromName($type_name)) {
-            case 'array':
-                return \Phan\Language\Type\ArrayType::instance();
-            case 'bool':
-                return \Phan\Language\Type\BoolType::instance();
-            case 'callable':
-                return \Phan\Language\Type\CallableType::instance();
-            case 'float':
-                return \Phan\Language\Type\FloatType::instance();
-            case 'int':
-                return \Phan\Language\Type\IntType::instance();
-            case 'mixed':
-                return \Phan\Language\Type\MixedType::instance();
-            case 'null':
-                return \Phan\Language\Type\NullType::instance();
-            case 'object':
-                return \Phan\Language\Type\ObjectType::instance();
-            case 'resource':
-                return \Phan\Language\Type\ResourceType::instance();
-            case 'string':
-                return \Phan\Language\Type\StringType::instance();
-            case 'void':
-                return \Phan\Language\Type\VoidType::instance();
+                case 'array':
+                    return \Phan\Language\Type\ArrayType::instance();
+                case 'bool':
+                    return \Phan\Language\Type\BoolType::instance();
+                case 'callable':
+                    return \Phan\Language\Type\CallableType::instance();
+                case 'float':
+                    return \Phan\Language\Type\FloatType::instance();
+                case 'int':
+                    return \Phan\Language\Type\IntType::instance();
+                case 'mixed':
+                    return \Phan\Language\Type\MixedType::instance();
+                case 'null':
+                    return \Phan\Language\Type\NullType::instance();
+                case 'object':
+                    return \Phan\Language\Type\ObjectType::instance();
+                case 'resource':
+                    return \Phan\Language\Type\ResourceType::instance();
+                case 'string':
+                    return \Phan\Language\Type\StringType::instance();
+                case 'void':
+                    return \Phan\Language\Type\VoidType::instance();
             }
         }
 
@@ -364,8 +386,10 @@ class Type {
             // to see if this type is a reference to 'parent' and
             // dealing with it there. We don't want to have this
             // method be dependent on the code base
-            assert('parent' !== $non_generic_array_type_name,
-                __METHOD__ . " does not know how to handle the type name 'parent' in $context");
+            assert(
+                'parent' !== $non_generic_array_type_name,
+                __METHOD__ . " does not know how to handle the type name 'parent' in $context"
+            );
 
             return GenericArrayType::fromElementType(
                 static::fromFullyQualifiedString(
@@ -383,8 +407,10 @@ class Type {
             // to see if this type is a reference to 'parent' and
             // dealing with it there. We don't want to have this
             // method be dependent on the code base
-            assert('parent' !== $type_name,
-                __METHOD__ . " does not know how to handle the type name 'parent' in $context");
+            assert(
+                'parent' !== $type_name,
+                __METHOD__ . " does not know how to handle the type name 'parent' in $context"
+            );
 
             return static::fromFullyQualifiedString(
                 (string)$context->getClassFQSEN()
@@ -402,7 +428,8 @@ class Type {
      * @return UnionType
      * A UnionType representing this and only this type
      */
-    public function asUnionType() : UnionType {
+    public function asUnionType() : UnionType
+    {
         return new UnionType([$this]);
     }
 
@@ -411,7 +438,8 @@ class Type {
      * A fully-qualified structural element name derived
      * from this type
      */
-    public function asFQSEN() : FQSEN {
+    public function asFQSEN() : FQSEN
+    {
         return FullyQualifiedClassName::fromType($this);
     }
 
@@ -419,7 +447,8 @@ class Type {
      * @return string
      * The name associated with this type
      */
-    public function getName() : string {
+    public function getName() : string
+    {
         return $this->name;
     }
 
@@ -427,7 +456,8 @@ class Type {
      * @return bool
      * True if this namespace is defined
      */
-    public function hasNamespace() : bool {
+    public function hasNamespace() : bool
+    {
         return !empty($this->namespace);
     }
 
@@ -435,7 +465,8 @@ class Type {
      * @return string
      * The namespace associated with this type
      */
-    public function getNamespace() : string {
+    public function getNamespace() : string
+    {
         return $this->namespace;
     }
 
@@ -444,7 +475,8 @@ class Type {
      * True if this is a native type (like int, string, etc.)
      *
      */
-    public function isNativeType() : bool {
+    public function isNativeType() : bool
+    {
         return self::isNativeTypeString((string)$this);
     }
 
@@ -455,9 +487,11 @@ class Type {
      * @see \Phan\Deprecated\Util::is_native_type
      * Formerly `function is_native_type`
      */
-    private static function isNativeTypeString(string $type_name) : bool {
+    private static function isNativeTypeString(string $type_name) : bool
+    {
         return in_array(
-            str_replace('[]', '', $type_name), [
+            str_replace('[]', '', $type_name),
+            [
                 'int',
                 'float',
                 'bool',
@@ -481,7 +515,8 @@ class Type {
      * class context in which it exists such as 'static'
      * or 'self'.
      */
-    public function isSelfType() : bool {
+    public function isSelfType() : bool
+    {
         return self::isSelfTypeString((string)$this);
     }
 
@@ -509,7 +544,8 @@ class Type {
      * @see \Phan\Deprecated\Util::type_scalar
      * Formerly `function type_scalar`
      */
-    public function isScalar() : bool {
+    public function isScalar() : bool
+    {
         return in_array((string)$this, [
             'int',
             'float',
@@ -525,7 +561,8 @@ class Type {
      * True if this is a generic type such as 'int[]' or
      * 'string[]'.
      */
-    public function isGenericArray() : bool {
+    public function isGenericArray() : bool
+    {
         return self::isGenericArrayString($this->name);
     }
 
@@ -537,7 +574,8 @@ class Type {
      * True if this is a generic type such as 'int[]' or
      * 'string[]'.
      */
-    private static function isGenericArrayString(string $type_name) : bool {
+    private static function isGenericArrayString(string $type_name) : bool
+    {
         if (in_array($type_name, ['[]', 'array'])) {
             return false;
         }
@@ -549,13 +587,18 @@ class Type {
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
      */
-    public function genericArrayElementType() : Type {
-        assert($this->isGenericArray(),
-            "Cannot call genericArrayElementType on non-generic array");
+    public function genericArrayElementType() : Type
+    {
+        assert(
+            $this->isGenericArray(),
+            "Cannot call genericArrayElementType on non-generic array"
+        );
 
         if (($pos = strpos($this->name, '[]')) !== false) {
-            assert($this->name !== '[]' && $this->name !== 'array',
-                "Non-generic type '{$this->name}' requested to be non-generic");
+            assert(
+                $this->name !== '[]' && $this->name !== 'array',
+                "Non-generic type '{$this->name}' requested to be non-generic"
+            );
 
             return Type::make(
                 $this->getNamespace(),
@@ -571,7 +614,8 @@ class Type {
      * Get a new type which is the generic array version of
      * this type. For instance, 'int' will produce 'int[]'.
      */
-    public function asGenericArrayType() : Type {
+    public function asGenericArrayType() : Type
+    {
         if ($this->name == 'array'
             || $this->name == 'mixed'
             || strpos($this->name, '[]') !== false
@@ -599,12 +643,15 @@ class Type {
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        return $this->memoize(__METHOD__, function() use(
-            $code_base, $recursion_depth
+        return $this->memoize(__METHOD__, function () use (
+            $code_base,
+            $recursion_depth
         ) : UnionType {
 
-            assert($recursion_depth < 10,
-                "Recursion has gotten out of hand for type $this");
+            assert(
+                $recursion_depth < 10,
+                "Recursion has gotten out of hand for type $this"
+            );
 
             if ($this->isNativeType()) {
                 return $this->asUnionType();
@@ -624,8 +671,8 @@ class Type {
 
             $union_type->addUnionType(
                 $this->isGenericArray()
-                    ?  $clazz->getUnionType()->asGenericArrayTypes()
-                    : $clazz->getUnionType()
+                ?  $clazz->getUnionType()->asGenericArrayTypes()
+                : $clazz->getUnionType()
             );
 
             // Resurse up the tree to include all types
@@ -652,7 +699,8 @@ class Type {
      * True if this Type can be cast to the given Type
      * cleanly
      */
-    public function canCastToType(Type $type) : bool {
+    public function canCastToType(Type $type) : bool
+    {
         if ($this === $type) {
             return true;
         }
@@ -660,83 +708,87 @@ class Type {
         $s = (string)$this;
         $d = (string)$type;
 
-        if($s[0]=='\\') {
-            $s = substr($s,1);
+        if ($s[0]=='\\') {
+            $s = substr($s, 1);
         }
 
-        if($d[0]=='\\') {
-            $d = substr($d,1);
+        if ($d[0]=='\\') {
+            $d = substr($d, 1);
         }
 
-        if($s===$d) {
+        if ($s===$d) {
             return true;
         }
 
-        if($s==='int' && $d==='float') {
+        if ($s==='int' && $d==='float') {
             return true; // int->float is ok
         }
 
-        if(($s==='array'
+        if (($s==='array'
             || $s==='string'
-            || (strpos($s,'[]')!==false))
+            || (strpos($s, '[]')!==false))
             && $d==='callable'
         ) {
             return true;
         }
 
-        if($s === 'object'
+        if ($s === 'object'
             && !$type->isScalar()
             && $d!=='array'
         ) {
             return true;
         }
 
-        if($d === 'object' &&
+        if ($d === 'object' &&
             !$this->isScalar()
             && $s!=='array'
         ) {
             return true;
         }
 
-        if(strpos($s,'[]') !== false
+        if (strpos($s, '[]') !== false
             && $d==='array'
         ) {
             return true;
         }
 
-        if(strpos($d,'[]') !== false
+        if (strpos($d, '[]') !== false
             && $s==='array'
         ) {
             return true;
         }
 
-        if($s === 'callable' && $d === 'closure') {
+        if ($s === 'callable' && $d === 'closure') {
             return true;
         }
 
-        if(($pos = strrpos($d, '\\')) !== false) {
+        if (($pos = strrpos($d, '\\')) !== false) {
             if ('\\' !== $this->getNamespace()) {
-                if(trim($this->getNamespace().'\\'.$s,
-                    '\\') == $d
+                if (trim(
+                    $this->getNamespace().'\\'.$s,
+                    '\\'
+                ) == $d
                 ) {
                     return true;
                 }
             } else {
-                if(substr($d, $pos+1) === $s) {
+                if (substr($d, $pos+1) === $s) {
                     return true; // Lazy hack, but...
                 }
             }
         }
 
-        if(($pos = strrpos($s,'\\')) !== false) {
+        if (($pos = strrpos($s, '\\')) !== false) {
             if ('\\' !== $type->getNamespace()) {
-                if(trim($type->getNamespace().'\\'.$d,
-                    '\\') == $s
+                if (trim(
+                    $type->getNamespace().'\\'.$d,
+                    '\\'
+                ) == $s
                 ) {
                     return true;
                 }
             } else {
-                if(substr($s, $pos+1) === $d) {
+                if (substr($s, $pos+1) === $d) {
                     return true; // Lazy hack, but...
                 }
             }
@@ -749,7 +801,8 @@ class Type {
      * @return string
      * A human readable representation of this type
      */
-    public function __toString() {
+    public function __toString()
+    {
         if (!$this->hasNamespace()) {
             return $this->name;
         }

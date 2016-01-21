@@ -12,7 +12,8 @@ use \ast\Node;
  * A FutureUnionType is a UnionType that is lazily loaded.
  * Call `get()` in order force the type to be figured.
  */
-class FutureUnionType {
+class FutureUnionType
+{
 
     /** @var CodeBase */
     private $code_base;
@@ -50,7 +51,8 @@ class FutureUnionType {
      * An exception is thrown if we are unable to determine
      * the type at the time this method is called
      */
-    public function get() : UnionType {
+    public function get() : UnionType
+    {
         return UnionType::fromNode(
             $this->context,
             $this->code_base,

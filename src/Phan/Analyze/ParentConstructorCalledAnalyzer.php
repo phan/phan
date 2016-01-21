@@ -8,7 +8,8 @@ use \Phan\Issue;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\FQSEN;
 
-class ParentConstructorCalledAnalyzer {
+class ParentConstructorCalledAnalyzer
+{
 
     /**
      * Check to see if the given Clazz is a duplicate
@@ -21,8 +22,10 @@ class ParentConstructorCalledAnalyzer {
     ) {
         // Only look at classes configured to require a call
         // to its parent constructor
-        if (!in_array($clazz->getName(),
-            Config::get()->parent_constructor_required)
+        if (!in_array(
+            $clazz->getName(),
+            Config::get()->parent_constructor_required
+        )
         ) {
             return;
         }

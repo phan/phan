@@ -6,7 +6,8 @@ use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class JSONPrinter implements BufferedPrinterInterface {
+final class JSONPrinter implements BufferedPrinterInterface
+{
 
     /** @var  OutputInterface */
     private $output;
@@ -15,7 +16,8 @@ final class JSONPrinter implements BufferedPrinterInterface {
     private $messages = [];
 
     /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance) {
+    public function print(IssueInstance $instance)
+    {
         $this->messages[] = [
             'type' => 'issue',
             'check_name' => $instance->getIssue()->getType(),
@@ -35,7 +37,8 @@ final class JSONPrinter implements BufferedPrinterInterface {
     }
 
     /** flush printer buffer */
-    public function flush() {
+    public function flush()
+    {
         $this->output->write(json_encode($this->messages, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE));
         $this->messages = [];
     }
@@ -43,7 +46,8 @@ final class JSONPrinter implements BufferedPrinterInterface {
     /**
      * @param OutputInterface $output
      */
-    public function configureOutput(OutputInterface $output) {
+    public function configureOutput(OutputInterface $output)
+    {
         $this->output = $output;
     }
 }

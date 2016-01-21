@@ -28,7 +28,8 @@ use \Phan\Language\UnionType;
 use \ast\Node;
 use \ast\Node\Decl;
 
-class PreOrderAnalysisVisitor extends ScopeVisitor {
+class PreOrderAnalysisVisitor extends ScopeVisitor
+{
 
     /**
      * @param Context $context
@@ -52,7 +53,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClass(Decl $node) : Context {
+    public function visitClass(Decl $node) : Context
+    {
 
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name =
@@ -89,8 +91,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
                 $class_fqsen
             );
 
-        } while(
-            $this->context->getProjectRelativePath()
+        } while ($this->context->getProjectRelativePath()
                 != $clazz->getContext()->getProjectRelativePath()
             || $this->context->getLineNumberStart() != $clazz->getContext()->getLineNumberStart()
         );
@@ -110,7 +111,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Decl $node) : Context {
+    public function visitMethod(Decl $node) : Context
+    {
         $method_name = (string)$node->name;
         $clazz = $this->getContextClass();
 
@@ -145,7 +147,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Decl $node) : Context {
+    public function visitFuncDecl(Decl $node) : Context
+    {
         $function_name = (string)$node->name;
 
         try {
@@ -165,8 +168,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
         // Hunt for the alternate associated with the file we're
         // looking at currently in this context.
         foreach ($method->alternateGenerator($this->code_base)
-            as $i => $alternate_method
-        ) {
+ as $i => $alternate_method) {
             if ($alternate_method->getContext()->getProjectRelativePath()
                 === $this->context->getProjectRelativePath()
             ) {
@@ -195,7 +197,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClosure(Decl $node) : Context {
+    public function visitClosure(Decl $node) : Context
+    {
 
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
@@ -223,12 +226,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
         // Make the closure reachable by FQSEN from anywhere
         $this->code_base->addMethod($method);
 
-        if(!empty($node->children['uses'])
+        if (!empty($node->children['uses'])
             && $node->children['uses']->kind == \ast\AST_CLOSURE_USES
         ) {
             $uses = $node->children['uses'];
-            foreach($uses->children as $use) {
-                if($use->kind != \ast\AST_CLOSURE_VAR) {
+            foreach ($uses->children as $use) {
+                if ($use->kind != \ast\AST_CLOSURE_VAR) {
                     Issue::emit(
                         Issue::VariableUseClause,
                         $this->context->getFile(),
@@ -243,7 +246,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
                     $use->children['name']
                 ))->getVariableName();
 
-                if(empty($variable_name)) {
+                if (empty($variable_name)) {
                     continue;
                 }
 
@@ -322,9 +325,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitForeach(Node $node) : Context {
-        if($node->children['value']->kind == \ast\AST_LIST) {
-            foreach($node->children['value']->children ?? [] as $child_node) {
+    public function visitForeach(Node $node) : Context
+    {
+        if ($node->children['value']->kind == \ast\AST_LIST) {
+            foreach ($node->children['value']->children ?? [] as $child_node) {
                 // for syntax like: foreach ([] as list(, $a));
                 if ($child_node === null) {
                     continue;
@@ -374,8 +378,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
         }
 
         // If there's a key, make a variable out of that too
-        if(!empty($node->children['key'])) {
-            if(($node->children['key'] instanceof \ast\Node)
+        if (!empty($node->children['key'])) {
+            if (($node->children['key'] instanceof \ast\Node)
                 && ($node->children['key']->kind == \ast\AST_LIST)
             ) {
                 throw new NodeException(
@@ -407,7 +411,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCatch(Node $node) : Context {
+    public function visitCatch(Node $node) : Context
+    {
         try {
             $union_type = UnionTypeVisitor::unionTypeFromClassNode(
                 $this->code_base,
@@ -461,7 +466,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitIfElem(Node $node) : Context {
+    public function visitIfElem(Node $node) : Context
+    {
         // Clone the scope for each branch of a conditional.
         // They'll be merged upon existing all branches.
         $context = $this->context->withScope(
@@ -475,7 +481,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
             && ($node->children['cond'] instanceof Node)
         ) {
             return (new ConditionVisitor(
-                $this->code_base, $context
+                $this->code_base,
+                $context
             ))($node->children['cond']);
         }
 
@@ -486,7 +493,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor {
      * @return Clazz
      * Get the class on this scope or fail real hard
      */
-    private function getContextClass() : Clazz {
+    private function getContextClass() : Clazz
+    {
         return $this->context->getClassInScope($this->code_base);
     }
 }

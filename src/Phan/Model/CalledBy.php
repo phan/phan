@@ -8,7 +8,8 @@ use \Phan\Database\Schema;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FileRef;
 
-class CalledBy extends ModelOne {
+class CalledBy extends ModelOne
+{
 
     /**
      * @var string
@@ -47,7 +48,8 @@ class CalledBy extends ModelOne {
     }
     */
 
-    public function getFileRef() : FileRef {
+    public function getFileRef() : FileRef
+    {
         return $this->file_ref;
     }
 
@@ -58,12 +60,14 @@ class CalledBy extends ModelOne {
      *       instead.
      */
     public static function read(
-        Database $database, $primary_key_value
+        Database $database,
+        $primary_key_value
     ) : CalledBy {
         return parent::read($database, $primary_key_value);
     }
 
-    public static function createSchema() : Schema {
+    public static function createSchema() : Schema
+    {
         $schema = new Schema('CalledBy', [
             new Column('id', Column::TYPE_INT, true, true),
             new Column('fqsen_string', Column::TYPE_STRING),
@@ -109,7 +113,8 @@ class CalledBy extends ModelOne {
         static::schema()->initializeOnce($database);
 
         $query = static::schema()->queryForSelectColumnValue(
-            'fqsen_string', (string)$fqsen
+            'fqsen_string',
+            (string)$fqsen
         );
 
         $result = $database->query($query);
@@ -159,7 +164,8 @@ class CalledBy extends ModelOne {
      * @return string
      * The primary key of this model
      */
-    public function primaryKeyValue() : string {
+    public function primaryKeyValue() : string
+    {
         throw new \Exception("Unimplemented");
         return 'not implemented';
     }
@@ -169,7 +175,8 @@ class CalledBy extends ModelOne {
      * Get a map from column name to row values for
      * this instance
      */
-    public function toRow() : array {
+    public function toRow() : array
+    {
         return [
             'fqsen_string' => (string)$this->fqsen_string,
             'file_path' => $this->file_ref->getFile(),
@@ -184,7 +191,8 @@ class CalledBy extends ModelOne {
      * @return CalledBy
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : CalledBy {
+    public static function fromRow(array $row) : CalledBy
+    {
         return new CalledBy(
             $row['fqsen_string'],
             (new FileRef)
@@ -192,5 +200,4 @@ class CalledBy extends ModelOne {
                 ->withLineNumberStart((int)$row['line_number'])
         );
     }
-
 }

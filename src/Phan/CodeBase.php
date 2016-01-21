@@ -37,7 +37,8 @@ use \Phan\Language\UnionType;
  *  // Do stuff ...
  * ```
  */
-class CodeBase {
+class CodeBase
+{
     use \Phan\CodeBase\ClassMap;
     use \Phan\CodeBase\MethodMap;
     use \Phan\CodeBase\ConstantMap;
@@ -59,7 +60,8 @@ class CodeBase {
         $this->addFunctionsByNames($internal_function_name_list);
     }
 
-    public function __clone() {
+    public function __clone()
+    {
         $this->class_map = clone($this->class_map);
     }
 
@@ -67,17 +69,18 @@ class CodeBase {
      * @param string[] $function_name_list
      * A list of function names to load type information for
      */
-    private function addFunctionsByNames(array $function_name_list) {
+    private function addFunctionsByNames(array $function_name_list)
+    {
         foreach ($function_name_list as $i => $function_name) {
             foreach (Method::methodListFromFunctionName($this, $function_name)
-                as $method
-            ) {
+            as $method) {
                 $this->addMethod($method);
             }
         }
     }
 
-    public function store() {
+    public function store()
+    {
         if (!Database::isEnabled()) {
             return;
         }

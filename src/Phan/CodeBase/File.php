@@ -16,7 +16,8 @@ use \Phan\Model\File as FileModel;
 /**
  * Information pertaining to PHP code files that we've read
  */
-class File {
+class File
+{
 
     /**
      * @var string
@@ -70,7 +71,8 @@ class File {
      * @return string
      * The file path
      */
-    public function getFilePath() : string {
+    public function getFilePath() : string
+    {
         return $this->file_path;
     }
 
@@ -79,7 +81,8 @@ class File {
      * The path of the file relative to the project
      * root directory
      */
-    public function getProjectRelativePath() : string {
+    public function getProjectRelativePath() : string
+    {
         return self::projectRelativePathFromCWDRelativePath(
             $this->file_path
         );
@@ -121,7 +124,8 @@ class File {
      * The time of the last known modification of this
      * file
      */
-    public function getModificationTime() : int {
+    public function getModificationTime() : int
+    {
         return $this->modification_time;
     }
 
@@ -130,7 +134,8 @@ class File {
      * True if the given file is up to date within this
      * code base, else false
      */
-    public function isParseUpToDate() : bool {
+    public function isParseUpToDate() : bool
+    {
         $real_path = realpath($this->file_path);
 
         // If the file no longer exists, its probably
@@ -150,7 +155,8 @@ class File {
      *
      * @return null
      */
-    public function setParseUpToDate() {
+    public function setParseUpToDate()
+    {
         $this->modification_time = filemtime(realpath($this->file_path));
 
         if (Database::isEnabled()) {
@@ -163,7 +169,8 @@ class File {
      * @return FQSEN[]
      * A list of class FQSENs associated with this file
      */
-    public function getClassFQSENList() : array {
+    public function getClassFQSENList() : array
+    {
         return $this->class_fqsen_list;
     }
 
@@ -173,7 +180,8 @@ class File {
      *
      * @return null
      */
-    public function setClassFQSENList(array $class_fqsen_list) {
+    public function setClassFQSENList(array $class_fqsen_list)
+    {
         $this->class_fqsen_list = $class_fqsen_list;
     }
 
@@ -183,7 +191,8 @@ class File {
      *
      * @return null
      */
-    public function addClassFQSEN(FQSEN $fqsen) {
+    public function addClassFQSEN(FQSEN $fqsen)
+    {
         $this->class_fqsen_list[] = $fqsen;
     }
 
@@ -191,7 +200,8 @@ class File {
      * Remove the class with the given FQSEN from our
      * list of associated classes
      */
-    public function flushClassWithFQSEN(FullyQualifiedClassName $fqsen) {
+    public function flushClassWithFQSEN(FullyQualifiedClassName $fqsen)
+    {
         unset($this->class_fqsen_list[(string)$fqsen]);
     }
 
@@ -199,7 +209,8 @@ class File {
      * @return FullyQualifiedMethodName[]|FullyQualifiedFunctionName[]
      * A list of method FQSENs associated with this file
      */
-    public function getMethodFQSENList() : array {
+    public function getMethodFQSENList() : array
+    {
         return $this->method_fqsen_list;
     }
 
@@ -209,7 +220,8 @@ class File {
      *
      * @return null
      */
-    public function setMethodFQSENList(array $method_fqsen_list) {
+    public function setMethodFQSENList(array $method_fqsen_list)
+    {
         $this->method_fqsen_list = $method_fqsen_list;
     }
 
@@ -219,7 +231,8 @@ class File {
      *
      * @return null
      */
-    public function addMethodFQSEN(FQSEN $fqsen) {
+    public function addMethodFQSEN(FQSEN $fqsen)
+    {
         $this->method_fqsen_list[(string)$fqsen] = $fqsen;
     }
 
@@ -227,7 +240,8 @@ class File {
      * Remove the method with the given FQSEN from our
      * list of associated methods
      */
-    public function flushMethodWithFQSEN(FQSEN $fqsen) {
+    public function flushMethodWithFQSEN(FQSEN $fqsen)
+    {
         unset($this->method_fqsen_list[(string)$fqsen]);
     }
 
@@ -235,7 +249,8 @@ class File {
      * @return FullyQualifiedPropertyName[]
      * A list of property FQSENs associated with this file
      */
-    public function getPropertyFQSENList() : array {
+    public function getPropertyFQSENList() : array
+    {
         return $this->property_fqsen_list;
     }
 
@@ -245,7 +260,8 @@ class File {
      *
      * @return null
      */
-    public function setPropertyFQSENList(array $property_fqsen_list) {
+    public function setPropertyFQSENList(array $property_fqsen_list)
+    {
         $this->property_fqsen_list = $property_fqsen_list;
     }
 
@@ -255,7 +271,8 @@ class File {
      *
      * @return null
      */
-    public function addPropertyFQSEN(FullyQualifiedPropertyName $fqsen) {
+    public function addPropertyFQSEN(FullyQualifiedPropertyName $fqsen)
+    {
         $this->property_fqsen_list[(string)$fqsen] = $fqsen;
     }
 
@@ -263,7 +280,8 @@ class File {
      * Remove the property with the given FQSEN from our
      * list of associated properties
      */
-    public function flushPropertyWithFQSEN(FullyQualifiedPropertyName $fqsen) {
+    public function flushPropertyWithFQSEN(FullyQualifiedPropertyName $fqsen)
+    {
         unset($this->property_fqsen_list[(string)$fqsen]);
     }
 
@@ -271,7 +289,8 @@ class File {
      * @return FullyQualifiedConstantName[]
      * A list of constant FQSENs associated with this file
      */
-    public function getConstantFQSENList() : array {
+    public function getConstantFQSENList() : array
+    {
         return $this->constant_fqsen_list;
     }
 
@@ -281,7 +300,8 @@ class File {
      *
      * @return null
      */
-    public function setConstantFQSENList(array $constant_fqsen_list) {
+    public function setConstantFQSENList(array $constant_fqsen_list)
+    {
         $this->constant_fqsen_list = $constant_fqsen_list;
     }
 
@@ -293,7 +313,8 @@ class File {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public function addConstantFQSEN(FullyQualifiedConstantName $fqsen) {
+    public function addConstantFQSEN(FullyQualifiedConstantName $fqsen)
+    {
         $this->constant_fqsen_list[(string)$fqsen] = $fqsen;
     }
 
@@ -301,12 +322,13 @@ class File {
      * Remove the constant with the given FQSEN from our
      * list of associated constants
      */
-    public function flushConstantWithFQSEN(FQSEN $fqsen) {
+    public function flushConstantWithFQSEN(FQSEN $fqsen)
+    {
         unset($this->constant_fqsen_list[(string)$fqsen]);
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         return $this->file_path;
     }
-
 }

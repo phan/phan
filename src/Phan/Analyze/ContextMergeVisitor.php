@@ -12,7 +12,8 @@ use \Phan\Language\UnionType;
 use \Phan\Set;
 use \ast\Node;
 
-class ContextMergeVisitor extends KindVisitorImplementation {
+class ContextMergeVisitor extends KindVisitorImplementation
+{
 
     /**
      * @var CodeBase
@@ -68,7 +69,8 @@ class ContextMergeVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $node) : Context {
+    public function visit(Node $node) : Context
+    {
         return end($this->child_context_list) ?: $this->context;
     }
 
@@ -80,20 +82,24 @@ class ContextMergeVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitIf(Node $node) : Context {
+    public function visitIf(Node $node) : Context
+    {
         // Get the list of scopes for each branch of the
         // conditional
         $scope_list = array_map(function (Context $context) {
             return $context->getScope();
         }, $this->child_context_list);
 
-        $has_else = array_reduce($node->children ?? [],
+        $has_else = array_reduce(
+            $node->children ?? [],
             function (bool $carry, $child_node) {
                 return $carry || (
                     $child_node instanceof Node
                     && empty($child_node->children['cond'])
                 );
-            }, false);
+            },
+            false
+        );
 
         // If we're not guaranteed to hit at least one
         // branch, mark the incoming scope as a possibility
@@ -119,15 +125,18 @@ class ContextMergeVisitor extends KindVisitorImplementation {
         // every branch
         $is_defined_on_all_branches =
             function (string $variable_name) use ($scope_list) {
-                return array_reduce($scope_list,
+                return array_reduce(
+                    $scope_list,
                     function (bool $has_variable, Scope $scope)
-                        use ($variable_name)
-                    {
+ use ($variable_name) {
+                    
                         return (
                             $has_variable &&
                             $scope->hasVariableWithName($variable_name)
                         );
-                    }, true);
+                    },
+                    true
+                );
             };
 
         // Get the intersection of all types for all versions of
@@ -144,7 +153,9 @@ class ContextMergeVisitor extends KindVisitorImplementation {
                         }
 
                         return $scope->getVariableWithName($variable_name);
-                    }, $scope_list));
+                    },
+                    $scope_list
+                ));
 
                 // Get the list of types for each version of the variable
                 $type_set_list = array_map(function (Variable $variable) : Set {

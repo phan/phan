@@ -9,7 +9,8 @@ use \Phan\Language\FQSEN\FullyQualifiedClassElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;
 
-abstract class ClassElement extends TypedStructuralElement {
+abstract class ClassElement extends TypedStructuralElement
+{
     /**
      * @return FQSEN
      * The fully-qualified structural element name of this
@@ -22,8 +23,8 @@ abstract class ClassElement extends TypedStructuralElement {
      * The FQSEN of the class that originally defined
      * this element
      */
-    public function getDefiningClassFQSEN(
-    ) : FullyQualifiedClassName {
+    public function getDefiningClassFQSEN() : FullyQualifiedClassName
+    {
         if ($this instanceof Addressable) {
             $fqsen = $this->getFQSEN();
             if ($fqsen instanceof FullyQualifiedClassElement) {
@@ -58,5 +59,4 @@ abstract class ClassElement extends TypedStructuralElement {
 
         return $code_base->getClassByFQSEN($class_fqsen);
     }
-
 }

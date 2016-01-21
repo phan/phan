@@ -6,13 +6,15 @@ namespace Phan;
  * based on spl_object_hash, which I believe its the zval's
  * memory address.
  */
-class Map extends \SplObjectStorage {
+class Map extends \SplObjectStorage
+{
 
     /**
      * We redefine the key to be the actual key rather than
      * the index of the key
      */
-    public function key() {
+    public function key()
+    {
         return parent::current();
     }
 
@@ -20,8 +22,8 @@ class Map extends \SplObjectStorage {
      * We redefine the current value to the current value rather
      * than the current key
      */
-    public function current() {
+    public function current()
+    {
         return $this->offsetGet(parent::current());
     }
-
 }

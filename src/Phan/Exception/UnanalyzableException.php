@@ -4,4 +4,6 @@ namespace Phan\Exception;
 use \Phan\Debug;
 use \ast\Node;
 
-class UnanalyzableException extends NodeException {}
+class UnanalyzableException extends NodeException
+{
+}

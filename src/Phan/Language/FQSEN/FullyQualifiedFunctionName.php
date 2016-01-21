@@ -6,13 +6,15 @@ use \Phan\Language\Context;
 /**
  * A Fully-Qualified Function Name
  */
-class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement {
+class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
+{
 
     /**
      * @return int
      * The namespace map type such as T_CLASS or T_FUNCTION
      */
-    protected static function getNamespaceMapType() : int {
+    protected static function getNamespaceMapType() : int
+    {
         return T_FUNCTION;
     }
 
@@ -38,14 +40,18 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement {
         $fqsen_string = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(is_int($alternate_id),
-            "Alternate must be an integer in $fqsen_string");
+        assert(
+            is_int($alternate_id),
+            "Alternate must be an integer in $fqsen_string"
+        );
 
         $parts = explode('\\', $fqsen_string);
         $name = array_pop($parts);
 
-        assert(!empty($name),
-            "The name cannot be empty in $fqsen_string");
+        assert(
+            !empty($name),
+            "The name cannot be empty in $fqsen_string"
+        );
 
         // Check for a name map
         if ($context->hasNamespaceMapFor(static::getNamespaceMapType(), $name)) {
@@ -79,5 +85,4 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement {
             $context
         );
     }
-
 }

@@ -8,7 +8,8 @@ use \Phan\Language\UnionType;
 
 /**
  */
-class Comment {
+class Comment
+{
 
     // A legal type identifier
     const simple_type_regex =
@@ -120,43 +121,39 @@ class Comment {
         $return = null;
         $suppress_issue_list = [];
 
-        $lines = explode("\n",$comment);
+        $lines = explode("\n", $comment);
 
-        foreach($lines as $line) {
-
+        foreach ($lines as $line) {
             if (strpos($line, '@param') !== false) {
                 $parameter_list[] =
                     self::parameterFromCommentLine($context, $line);
-            }
-
-            else if (stripos($line, '@var') !== false) {
+            } elseif (stripos($line, '@var') !== false) {
                 $variable_list[] =
                     self::parameterFromCommentLine($context, $line);
-            }
-
-            else if (stripos($line, '@return') !== false) {
-                if(preg_match('/@return\s+(' . self::union_type_regex . '+)/', $line, $match)) {
-                    if(strpos($match[1],'\\')===0 && strpos($match[1],'\\',1)===false) {
-                        $return = trim($match[1],'\\');
+            } elseif (stripos($line, '@return') !== false) {
+                if (preg_match('/@return\s+(' . self::union_type_regex . '+)/', $line, $match)) {
+                    if (strpos($match[1], '\\')===0 && strpos($match[1], '\\', 1)===false) {
+                        $return = trim($match[1], '\\');
                     } else {
                         $return = $match[1];
                     }
 
                 }
-            } else if (stripos($line, '@suppress') !== false) {
+            } elseif (stripos($line, '@suppress') !== false) {
                 $suppress_issue_list[] =
                     self::suppressIssueFromCommentLine($line);
             }
 
-            if(($pos=stripos($line, '@deprecated')) !== false) {
-                if(preg_match('/@deprecated\b/', $line, $match)) {
+            if (($pos=stripos($line, '@deprecated')) !== false) {
+                if (preg_match('/@deprecated\b/', $line, $match)) {
                     $is_deprecated = true;
                 }
             }
         }
 
         $return_type = UnionType::fromStringInContext(
-            $return ?: '', $context
+            $return ?: '',
+            $context
         );
 
         return new Comment(
@@ -184,7 +181,7 @@ class Comment {
         string $line
     ) {
         $match = [];
-        if(preg_match('/@(param|var)\s+(' . self::union_type_regex . ')(\s+(\\$\S+))?/', $line, $match)) {
+        if (preg_match('/@(param|var)\s+(' . self::union_type_regex . ')(\s+(\\$\S+))?/', $line, $match)) {
             $type = null;
 
             $type = $match[2];
@@ -208,7 +205,8 @@ class Comment {
             }
 
             return new CommentParameter(
-                $variable_name, $union_type
+                $variable_name,
+                $union_type
             );
         }
 
@@ -225,7 +223,7 @@ class Comment {
     private static function suppressIssueFromCommentLine(
         string $line
     ) : string {
-        if(preg_match('/@suppress\s+([^\s]+)/', $line, $match)) {
+        if (preg_match('/@suppress\s+([^\s]+)/', $line, $match)) {
             return $match[1];
         }
 
@@ -237,7 +235,8 @@ class Comment {
      * Set to true if the comment contains a 'deprecated'
      * directive.
      */
-    public function isDeprecated() : bool {
+    public function isDeprecated() : bool
+    {
         return $this->is_deprecated;
     }
 
@@ -245,7 +244,8 @@ class Comment {
      * @return UnionType
      * A UnionType defined by a (at)return directive
      */
-    public function getReturnType() : UnionType {
+    public function getReturnType() : UnionType
+    {
         return $this->return;
     }
 
@@ -254,7 +254,8 @@ class Comment {
      * True if this doc block contains a (at)return
      * directive specifying a type.
      */
-    public function hasReturnUnionType() : bool {
+    public function hasReturnUnionType() : bool
+    {
         return !empty($this->return) && !$this->return->isEmpty();
     }
 
@@ -263,7 +264,8 @@ class Comment {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public function getParameterList() : array {
+    public function getParameterList() : array
+    {
         return $this->parameter_list;
     }
 
@@ -271,7 +273,8 @@ class Comment {
      * @return string[]
      * A set of issie names like 'PhanUnreferencedMethod' to suppress
      */
-    public function getSuppressIssueList() : array {
+    public function getSuppressIssueList() : array
+    {
         return $this->suppress_issue_list;
     }
 
@@ -308,11 +311,13 @@ class Comment {
     /**
      * @return CommentParameter[]
      */
-    public function getVariableList() : array {
+    public function getVariableList() : array
+    {
         return $this->variable_list;
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = "/**\n";
 
         if ($this->is_deprecated) {
@@ -335,5 +340,4 @@ class Comment {
 
         return $string;
     }
-
 }

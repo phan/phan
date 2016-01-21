@@ -17,7 +17,8 @@ use \Phan\IssueInstance;
  * );
  * ```
  */
-class IssueException extends Exception {
+class IssueException extends Exception
+{
 
     /** @var IssueInstance */
     private $issue_instance;
@@ -35,11 +36,11 @@ class IssueException extends Exception {
     }
 
     /**
-     * @return IssueInstance 
+     * @return IssueInstance
      * The issue that was found
      */
-    public function getIssueInstance() : IssueInstance {
+    public function getIssueInstance() : IssueInstance
+    {
         return $this->issue_instance;
     }
-
 }

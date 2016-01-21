@@ -8,15 +8,19 @@ use \SQLite3;
 /**
  * This class is the entry point into the static analyzer.
  */
-class Database extends SQLite3 {
+class Database extends SQLite3
+{
     use \Phan\Memoize;
 
-    public function __construct() {
-        assert(!is_dir(Config::get()->stored_state_file_path),
+    public function __construct()
+    {
+        assert(
+            !is_dir(Config::get()->stored_state_file_path),
             "State file '{Config::get()->stored_state_file_path}' cannot be a directory"
         );
 
-        assert(!file_exists(Config::get()->stored_state_file_path)
+        assert(
+            !file_exists(Config::get()->stored_state_file_path)
             || (
                 is_writable(Config::get()->stored_state_file_path)
                 && is_readable(Config::get()->stored_state_file_path)
@@ -34,14 +38,16 @@ class Database extends SQLite3 {
         $this->exec("PRAGMA page_size = 4096");
     }
 
-    public function __destruct() {
+    public function __destruct()
+    {
         $this->close();
     }
 
     /**
      * Get an open database to write to and read from
      */
-    public static function get() : Database {
+    public static function get() : Database
+    {
         static $instance = null;
 
         if (!$instance) {
@@ -61,8 +67,8 @@ class Database extends SQLite3 {
      * @return bool
      * True if the database is enabled
      */
-    public static function isEnabled() : bool {
+    public static function isEnabled() : bool
+    {
         return (bool)Config::get()->stored_state_file_path;
     }
-
 }

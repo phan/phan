@@ -16,7 +16,8 @@ use \Phan\Language\Scope;
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
  */
-class Context extends FileRef implements \Serializable {
+class Context extends FileRef implements \Serializable
+{
 
     /**
      * @var string
@@ -69,7 +70,8 @@ class Context extends FileRef implements \Serializable {
     /**
      * Create a new context
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->namespace = '';
         $this->namespace_map = [];
         $this->class_fqsen = null;
@@ -85,7 +87,8 @@ class Context extends FileRef implements \Serializable {
      * @return Context
      * A clone of this context with the given value is returned
      */
-    public function withNamespace(string $namespace) : Context {
+    public function withNamespace(string $namespace) : Context
+    {
         $context = clone($this);
         $context->namespace = $namespace;
         return $context;
@@ -95,7 +98,8 @@ class Context extends FileRef implements \Serializable {
      * @return string
      * The namespace of the file
      */
-    public function getNamespace() : string {
+    public function getNamespace() : string
+    {
         return $this->namespace;
     }
 
@@ -103,7 +107,8 @@ class Context extends FileRef implements \Serializable {
      * @return bool
      * True if we have a mapped NS for the given named element
      */
-    public function hasNamespaceMapFor(int $flags, string $name) : bool {
+    public function hasNamespaceMapFor(int $flags, string $name) : bool
+    {
         return !empty($this->namespace_map[$flags][strtolower($name)]);
     }
 
@@ -112,7 +117,8 @@ class Context extends FileRef implements \Serializable {
      * The namespace mapped name for the given flags and name
      */
     public function getNamespaceMapFor(
-        int $flags, string $name
+        int $flags,
+        string $name
     ) : FullyQualifiedGlobalStructuralElement {
         $name = strtolower($name);
 
@@ -121,8 +127,10 @@ class Context extends FileRef implements \Serializable {
             "No namespace defined for $name"
         );
 
-        assert($this->namespace_map[$flags][$name] instanceof FQSEN,
-            "Namespace map for $flags $name was not an FQSEN");
+        assert(
+            $this->namespace_map[$flags][$name] instanceof FQSEN,
+            "Namespace map for $flags $name was not an FQSEN"
+        );
 
         return $this->namespace_map[$flags][$name];
     }
@@ -148,7 +156,8 @@ class Context extends FileRef implements \Serializable {
      * @return Context
      * A clone of this context with the given value is returned
      */
-    public function withClassFQSEN(FullyQualifiedClassName $fqsen) : Context {
+    public function withClassFQSEN(FullyQualifiedClassName $fqsen) : Context
+    {
         $context = clone($this);
         $context->class_fqsen = $fqsen;
         return $context;
@@ -158,7 +167,8 @@ class Context extends FileRef implements \Serializable {
      * @return bool
      * True if a class fqsen is defined within this context.
      */
-    public function hasClassFQSEN() : bool {
+    public function hasClassFQSEN() : bool
+    {
         return !empty($this->class_fqsen);
     }
 
@@ -167,7 +177,8 @@ class Context extends FileRef implements \Serializable {
      * A fully-qualified structural element name describing
      * the current class in scope.
      */
-    public function getClassFQSEN() : FullyQualifiedClassName {
+    public function getClassFQSEN() : FullyQualifiedClassName
+    {
         return $this->class_fqsen;
     }
 
@@ -176,7 +187,8 @@ class Context extends FileRef implements \Serializable {
      * True if this context is currently within a class
      * scope, else false.
      */
-    public function isInClassScope() : bool {
+    public function isInClassScope() : bool
+    {
         return !empty($this->class_fqsen);
     }
 
@@ -188,7 +200,8 @@ class Context extends FileRef implements \Serializable {
      * @return Context
      * A clone of this context with the given value is returned
      */
-    public function withMethodFQSEN(FQSEN $fqsen = null) : Context {
+    public function withMethodFQSEN(FQSEN $fqsen = null) : Context
+    {
         $context = clone($this);
         $context->method_fqsen = $fqsen;
         return $context;
@@ -199,7 +212,8 @@ class Context extends FileRef implements \Serializable {
      * A fully-qualified structural element name describing
      * the current function or method in scope.
      */
-    public function getMethodFQSEN() : FQSEN {
+    public function getMethodFQSEN() : FQSEN
+    {
         return $this->method_fqsen;
     }
 
@@ -211,7 +225,8 @@ class Context extends FileRef implements \Serializable {
      * @return Context
      * A clone of this context with the given value is returned
      */
-    public function withClosureFQSEN(FullyQualifiedFunctionName $fqsen = null) : Context {
+    public function withClosureFQSEN(FullyQualifiedFunctionName $fqsen = null) : Context
+    {
         $context = clone($this);
         $context->closure_fqsen = $fqsen;
         return $context;
@@ -222,7 +237,8 @@ class Context extends FileRef implements \Serializable {
      * A fully-qualified structural element name describing
      * the current closure in scope
      */
-    public function getClosureFQSEN() : FullyQualifiedFunctionName {
+    public function getClosureFQSEN() : FullyQualifiedFunctionName
+    {
         return $this->closure_fqsen;
     }
 
@@ -233,7 +249,8 @@ class Context extends FileRef implements \Serializable {
      * @return Context
      * This context with the given value is returned
      */
-    public function withStrictTypes(int $strict_types) : Context {
+    public function withStrictTypes(int $strict_types) : Context
+    {
         $this->strict_types = $strict_types;
         return $this;
     }
@@ -243,7 +260,8 @@ class Context extends FileRef implements \Serializable {
      * True if strict_types is set to 1 in this
      * context.
      */
-    public function getIsStrictTypes() : bool {
+    public function getIsStrictTypes() : bool
+    {
         return (1 === $this->strict_types);
     }
 
@@ -252,7 +270,8 @@ class Context extends FileRef implements \Serializable {
      * An object describing the contents of the current
      * scope.
      */
-    public function getScope() : Scope {
+    public function getScope() : Scope
+    {
         return $this->scope ?? new Scope();
     }
 
@@ -260,7 +279,8 @@ class Context extends FileRef implements \Serializable {
      * @return Context
      * A new context with the given scope
      */
-    public function withScope(Scope $scope) : Context {
+    public function withScope(Scope $scope) : Context
+    {
         $context = clone($this);
         $context->scope = $scope;
         return $context;
@@ -271,7 +291,8 @@ class Context extends FileRef implements \Serializable {
      *
      * @return void
      */
-    public function setScope(Scope $scope) {
+    public function setScope(Scope $scope)
+    {
         $this->scope = $scope;
     }
 
@@ -321,9 +342,12 @@ class Context extends FileRef implements \Serializable {
      * Thrown if we can't find the class in scope within the
      * given codebase.
      */
-    public function getClassInScope(CodeBase $code_base) : Clazz {
-        assert($this->isInClassScope(),
-            "Must be in class scope to get class");
+    public function getClassInScope(CodeBase $code_base) : Clazz
+    {
+        assert(
+            $this->isInClassScope(),
+            "Must be in class scope to get class"
+        );
 
         if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
             throw new CodeBaseException(
@@ -341,7 +365,8 @@ class Context extends FileRef implements \Serializable {
      * @return bool
      * True if we're within a method scope
      */
-    public function isMethodScope() : bool {
+    public function isMethodScope() : bool
+    {
         return !empty($this->method_fqsen);
     }
 
@@ -352,9 +377,12 @@ class Context extends FileRef implements \Serializable {
      * @return Method
      * Get the method in this scope or fail real hard
      */
-    public function getMethodInScope(CodeBase $code_base) : Method {
-        assert($this->isMethodScope(),
-            "Must be in method scope to get method. Actually in {$this}");
+    public function getMethodInScope(CodeBase $code_base) : Method
+    {
+        assert(
+            $this->isMethodScope(),
+            "Must be in method scope to get method. Actually in {$this}"
+        );
 
         return $code_base->getMethod(
             $this->getMethodFQSEN()
@@ -368,7 +396,8 @@ class Context extends FileRef implements \Serializable {
      * @return bool
      * True if we're within a closure scope
      */
-    public function isClosureScope() : bool {
+    public function isClosureScope() : bool
+    {
         return !empty($this->closure_fqsen);
     }
 
@@ -376,16 +405,20 @@ class Context extends FileRef implements \Serializable {
      * @return Method
      * Get the closure in this scope or fail real hard
      */
-    public function getClosureInScope(CodeBase $code_base) : Method {
-        assert($this->isClosureScope(),
-            "Must be in closure scope to get closure. Actually in {$this}");
+    public function getClosureInScope(CodeBase $code_base) : Method
+    {
+        assert(
+            $this->isClosureScope(),
+            "Must be in closure scope to get closure. Actually in {$this}"
+        );
 
         return $code_base->getMethod(
             $this->getClosureFQSEN()
         );
     }
 
-    public function serialize() {
+    public function serialize()
+    {
 
         $serialized = parent::serialize();
 
@@ -399,7 +432,8 @@ class Context extends FileRef implements \Serializable {
         return $serialized;
     }
 
-    public function unserialize($serialized) {
+    public function unserialize($serialized)
+    {
         list($file_ref, $serialized) = explode('^', $serialized);
         parent::unserialize($file_ref);
 

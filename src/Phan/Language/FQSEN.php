@@ -8,7 +8,8 @@ use \Phan\Language\UnionType;
 /**
  * A Fully-Qualified Name
  */
-interface FQSEN {
+interface FQSEN
+{
 
     /**
      * @param $fqsen_string

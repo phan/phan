@@ -8,13 +8,15 @@ use \Phan\Language\UnionType;
 /**
  * A Fully-Qualified Class Name
  */
-class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement {
+class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
+{
 
     /**
      * @return int
      * The namespace map type such as T_CLASS or T_FUNCTION
      */
-    protected static function getNamespaceMapType() : int {
+    protected static function getNamespaceMapType() : int
+    {
         return T_CLASS;
     }
 
@@ -23,7 +25,8 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement {
      * The canonical representation of the name of the object. Functions
      * and Methods, for instance, lowercase their names.
      */
-    public static function canonicalName(string $name) : string {
+    public static function canonicalName(string $name) : string
+    {
         return strtolower($name);
     }
 
@@ -31,7 +34,8 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement {
      * @return FullyQualifiedClassName
      * A fully qualified class name from the given type
      */
-    public static function fromType(Type $type) : FullyQualifiedClassName {
+    public static function fromType(Type $type) : FullyQualifiedClassName
+    {
         return self::fromFullyQualifiedString(
             (string)$type
         );
@@ -41,7 +45,8 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement {
      * @return Type
      * The type of this class
      */
-    public function asType() : Type {
+    public function asType() : Type
+    {
         return Type::fromFullyQualifiedString(
             (string)$this
         );
@@ -51,7 +56,8 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement {
      * @return UnionType
      * The union type of just this class type
      */
-    public function asUnionType() : UnionType {
+    public function asUnionType() : UnionType
+    {
         return $this->asType()->asUnionType();
     }
 }

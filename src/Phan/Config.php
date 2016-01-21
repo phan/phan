@@ -8,7 +8,8 @@ use \Phan\Issue;
  * See `./phan -h` for command line usage, or take a
  * look at \Phan\CLI.php for more details on CLI usage.
  */
-class Config {
+class Config
+{
 
     /**
      * @var string
@@ -131,14 +132,17 @@ class Config {
     /**
      * Disallow the constructor to force a singleton
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * @return string
      * Get the root directory of the project that we're
      * scanning
      */
-    public function getProjectRootDirectory() : string {
+    public function getProjectRootDirectory() : string
+    {
         return $this->project_root_directory ?? getcwd();
     }
 
@@ -159,7 +163,8 @@ class Config {
      * @return Config
      * Get a Configuration singleton
      */
-    public static function get() : Config {
+    public static function get() : Config
+    {
         static $instance;
 
         if ($instance) {
@@ -170,11 +175,13 @@ class Config {
         return $instance;
     }
 
-    public function __get(string $name) {
+    public function __get(string $name)
+    {
         return $this->configuration[$name];
     }
 
-    public function __set(string $name, $value) {
+    public function __set(string $name, $value)
+    {
         $this->configuration[$name] = $value;
     }
 
@@ -184,7 +191,8 @@ class Config {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public static function projectPath(string $relative_path) {
+    public static function projectPath(string $relative_path)
+    {
         return implode(DIRECTORY_SEPARATOR, [
             Config::get()->getProjectRootDirectory(),
             $relative_path

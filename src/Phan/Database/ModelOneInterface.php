@@ -5,7 +5,8 @@ namespace Phan\Database;
  * Objects implementing this interface can be
  * read from and written to a SQLite3 database
  */
-interface ModelOneInterface {
+interface ModelOneInterface
+{
 
     /**
      * @return array

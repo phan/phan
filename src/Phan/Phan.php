@@ -6,18 +6,24 @@ use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 
-class Phan implements IgnoredFilesFilterInterface {
+class Phan implements IgnoredFilesFilterInterface
+{
 
-    /** @var IssuePrinterInterface */
+    /**
+ * @var IssuePrinterInterface
+*/
     public static $printer;
 
-    /** @var IssueCollectorInterface */
+    /**
+ * @var IssueCollectorInterface
+*/
     private static $issueCollector;
 
     /**
      * @return IssueCollectorInterface
      */
-    public static function getIssueCollector() : IssueCollectorInterface {
+    public static function getIssueCollector() : IssueCollectorInterface
+    {
         return self::$issueCollector;
     }
 
@@ -92,7 +98,7 @@ class Phan implements IgnoredFilesFilterInterface {
 
         // Don't continue on to analysis if the user has
         // chosen to just dump the AST
-            if (Config::get()->dump_ast) {
+        if (Config::get()->dump_ast) {
             exit;
         }
 
@@ -185,10 +191,10 @@ class Phan implements IgnoredFilesFilterInterface {
         string $file_path
     ) : bool {
         foreach (Config::get()->exclude_analysis_directory_list
-                 as $directory
-        ) {
+        as $directory) {
             if (0 === strpos($file_path, $directory)
-                || 0 === strpos($file_path, "./$directory")) {
+                || 0 === strpos($file_path, "./$directory")
+            ) {
                 return true;
             }
         }
@@ -201,7 +207,8 @@ class Phan implements IgnoredFilesFilterInterface {
      *
      * @return void
      */
-    private static function display() {
+    private static function display()
+    {
         $collector = self::$issueCollector;
 
         if (Config::get()->progress_bar) {
@@ -233,7 +240,8 @@ class Phan implements IgnoredFilesFilterInterface {
      *
      * @return bool True if filename is ignored during analysis
      */
-    public function isFilenameIgnored(string $filename):bool {
+    public function isFilenameIgnored(string $filename):bool
+    {
         return self::isExcludedAnalysisFile($filename);
     }
 }

@@ -5,13 +5,15 @@ use Phan\IssueInstance;
 use Phan\Output\IssuePrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class PlainTextPrinter implements IssuePrinterInterface {
+final class PlainTextPrinter implements IssuePrinterInterface
+{
 
     /** @var OutputInterface */
     private $output;
 
     /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance) {
+    public function print(IssueInstance $instance)
+    {
         $issue = sprintf(
             '%s:%d %s %s',
             $instance->getFile(),
@@ -26,7 +28,8 @@ final class PlainTextPrinter implements IssuePrinterInterface {
     /**
      * @param OutputInterface $output
      */
-    public function configureOutput(OutputInterface $output) {
+    public function configureOutput(OutputInterface $output)
+    {
         $this->output = $output;
     }
 }

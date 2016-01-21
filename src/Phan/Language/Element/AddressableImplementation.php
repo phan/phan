@@ -3,7 +3,8 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\FQSEN;
 
-trait AddressableImplementation {
+trait AddressableImplementation
+{
 
     /**
      * @var FQSEN
@@ -24,7 +25,8 @@ trait AddressableImplementation {
      *
      * @return null
      */
-    public function setFQSEN(FQSEN $fqsen) {
+    public function setFQSEN(FQSEN $fqsen)
+    {
         $this->fqsen = $fqsen;
     }
 
@@ -38,7 +40,8 @@ trait AddressableImplementation {
      * @return bool
      * True if this is a public property
      */
-    public function isPublic() {
+    public function isPublic()
+    {
         return !(
             $this->isProtected() || $this->isPrivate()
         );
@@ -48,7 +51,8 @@ trait AddressableImplementation {
      * @return bool
      * True if this is a protected property
      */
-    public function isProtected() {
+    public function isProtected()
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\MODIFIER_PROTECTED
         );
@@ -58,10 +62,10 @@ trait AddressableImplementation {
      * @return bool
      * True if this is a private property
      */
-    public function isPrivate() {
+    public function isPrivate()
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\MODIFIER_PRIVATE
         );
     }
-
 }

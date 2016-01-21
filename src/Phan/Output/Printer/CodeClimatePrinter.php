@@ -6,7 +6,8 @@ use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class CodeClimatePrinter implements BufferedPrinterInterface {
+final class CodeClimatePrinter implements BufferedPrinterInterface
+{
 
     const CODECLIMATE_SEVERITY_INFO = 'info';
     const CODECLIMATE_SEVERITY_CRITICAL = 'critical';
@@ -19,7 +20,8 @@ final class CodeClimatePrinter implements BufferedPrinterInterface {
     private $messages = [];
 
     /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance) {
+    public function print(IssueInstance $instance)
+    {
         $this->messages[] = [
             'type' => 'issue',
             'check_name' => $instance->getIssue()->getType(),
@@ -43,7 +45,8 @@ final class CodeClimatePrinter implements BufferedPrinterInterface {
      * @param int $rawSeverity
      * @return string
      */
-    private static function mapSeverity(int $rawSeverity):string {
+    private static function mapSeverity(int $rawSeverity):string
+    {
         $severity = self::CODECLIMATE_SEVERITY_INFO;
         switch ($rawSeverity) {
             case Issue::SEVERITY_CRITICAL:
@@ -58,7 +61,8 @@ final class CodeClimatePrinter implements BufferedPrinterInterface {
     }
 
     /** flush printer buffer */
-    public function flush() {
+    public function flush()
+    {
 
         // See https://github.com/codeclimate/spec/blob/master/SPEC.md#output
         // for details on the CodeClimate output format
@@ -74,7 +78,8 @@ final class CodeClimatePrinter implements BufferedPrinterInterface {
     /**
      * @param OutputInterface $output
      */
-    public function configureOutput(OutputInterface $output) {
+    public function configureOutput(OutputInterface $output)
+    {
         $this->output = $output;
     }
 }
