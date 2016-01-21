@@ -32,11 +32,11 @@ $codeclimate_config = json_decode(file_get_contents('/config.json'), true);
 $include_paths = [];
 
 // Todo: wrap with `-l` console logic instead of custom function
-$queueWithIncludePaths = function ($dir_path) use ($include_paths, &$queueWithIncludePaths) {
+$queue_with_include_paths = function ($dir_path) use ($include_paths, &$queue_with_include_paths) {
     foreach (scandir($dir_path) as $f) {
         if ($f !== '.' and $f !== '..') {
             if (is_dir("$dir_path/$f")) {
-                $queueWithIncludePaths("$dir_path/$f");
+                $queue_with_include_paths("$dir_path/$f");
             } else {
                 $include_paths[] = "$dir_path/$f";
             }
@@ -46,7 +46,7 @@ $queueWithIncludePaths = function ($dir_path) use ($include_paths, &$queueWithIn
 
 foreach ($codeclimate_config['include_paths'] as $path) {
     if (is_dir('/code/' . $path)) {
-        $queueWithIncludePaths('/code/' . $path);
+        $queue_with_include_paths('/code/' . $path);
     } else {
         $include_paths[] = "/code/$path";
     }

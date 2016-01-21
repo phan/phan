@@ -68,6 +68,7 @@ return [
         'src',
         'tests/Phan',
         'vendor/phpunit/phpunit/src',
+        'vendor/symfony/console',
     ],
 
     // A list of directories holding code that we want

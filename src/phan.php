@@ -1,8 +1,13 @@
 <?php declare(strict_types=1);
 
+// Check the environment to make sure Phan can run successfully
 require_once(__DIR__ . '/requirements.php');
 
+// Build a code base based on PHP internally defined
+// functions, methods and classes before loading our
+// own
 $code_base = require_once(__DIR__ . '/codebase.php');
+
 require_once(__DIR__ . '/Phan/Bootstrap.php');
 
 use Phan\CLI;

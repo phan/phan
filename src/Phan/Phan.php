@@ -7,28 +7,30 @@ use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 
 class Phan implements IgnoredFilesFilterInterface {
-    /** @var  IssuePrinterInterface */
+
+    /** @var IssuePrinterInterface */
     public static $printer;
 
-    /** @var  IssueCollectorInterface */
+    /** @var IssueCollectorInterface */
     private static $issueCollector;
 
     /**
      * @return IssueCollectorInterface
      */
-    public static function getIssueCollector()
-    {
+    public static function getIssueCollector() : IssueCollectorInterface {
         return self::$issueCollector;
     }
 
     /**
      * @param IssueCollectorInterface $issueCollector
+     *
+     * @return void
      */
-    public static function setIssueCollector(IssueCollectorInterface $issueCollector)
-    {
+    public static function setIssueCollector(
+        IssueCollectorInterface $issueCollector
+    ) {
         self::$issueCollector = $issueCollector;
     }
-
 
     /**
      * Analyze the given set of files and emit any issues
@@ -47,8 +49,10 @@ class Phan implements IgnoredFilesFilterInterface {
      *
      * @see \Phan\CodeBase
      */
-    public static function analyzeFileList(CodeBase $code_base, array $file_path_list)
-    {
+    public static function analyzeFileList(
+        CodeBase $code_base,
+        array $file_path_list
+    ) {
         $file_count = count($file_path_list);
 
         // We'll construct a set of files that we'll
@@ -131,7 +135,6 @@ class Phan implements IgnoredFilesFilterInterface {
         self::display();
     }
 
-
     /**
      * @param CodeBase $code_base
      * A code base needs to be passed in because we require
@@ -178,12 +181,14 @@ class Phan implements IgnoredFilesFilterInterface {
      * True if this file is a member of a third party directory as
      * configured via the CLI flag '-3 [paths]'.
      */
-    private static function isExcludedAnalysisFile(string $file_path) : bool
-    {
+    private static function isExcludedAnalysisFile(
+        string $file_path
+    ) : bool {
         foreach (Config::get()->exclude_analysis_directory_list
                  as $directory
         ) {
-            if (0 === strpos($file_path, $directory) || 0 === strpos($file_path, "./$directory")) {
+            if (0 === strpos($file_path, $directory)
+                || 0 === strpos($file_path, "./$directory")) {
                 return true;
             }
         }
@@ -191,8 +196,12 @@ class Phan implements IgnoredFilesFilterInterface {
         return false;
     }
 
-    private static function display()
-    {
+    /**
+     * Emit all collected issues
+     *
+     * @return void
+     */
+    private static function display() {
         $collector = self::$issueCollector;
 
         if (Config::get()->progress_bar) {
@@ -210,17 +219,21 @@ class Phan implements IgnoredFilesFilterInterface {
         }
     }
 
-    public static function setPrinter(IssuePrinterInterface $printer)
-    {
+    /**
+     * @return void
+     */
+    public static function setPrinter(
+        IssuePrinterInterface $printer
+    ) {
         self::$printer = $printer;
     }
 
     /**
      * @param string $filename
+     *
      * @return bool True if filename is ignored during analysis
      */
-    public function isFilenameIgnored(string $filename):bool
-    {
+    public function isFilenameIgnored(string $filename):bool {
         return self::isExcludedAnalysisFile($filename);
     }
 }

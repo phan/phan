@@ -17,8 +17,7 @@ class CLI {
     /**
      * @return OutputInterface
      */
-    public function getOutput():OutputInterface
-    {
+    public function getOutput():OutputInterface {
         return $this->output;
     }
 

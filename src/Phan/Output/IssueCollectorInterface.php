@@ -1,11 +1,10 @@
 <?php declare(strict_types = 1);
-
 namespace Phan\Output;
 
 use Phan\IssueInstance;
 
-interface IssueCollectorInterface
-{
+interface IssueCollectorInterface {
+
     /**
      * Collect issue
      * @param IssueInstance $issue
@@ -16,4 +15,5 @@ interface IssueCollectorInterface
      * @return IssueInstance[]
      */
     public function getCollectedIssues():array;
+
 }

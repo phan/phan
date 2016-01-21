@@ -57,8 +57,7 @@ class IssueInstance {
     /**
      * @return string
      */
-    public function getMessage()
-    {
+    public function getMessage() {
         return vsprintf($this->getIssue()->getTemplate(), $this->template_parameters);
     }
 }

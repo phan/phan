@@ -1,5 +1,4 @@
 <?php declare(strict_types = 1);
-
 namespace Phan\Output\Printer;
 
 use Phan\Issue;
@@ -7,8 +6,8 @@ use Phan\IssueInstance;
 use Phan\Output\BufferedPrinterInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class CodeClimatePrinter implements BufferedPrinterInterface
-{
+final class CodeClimatePrinter implements BufferedPrinterInterface {
+
     const CODECLIMATE_SEVERITY_INFO = 'info';
     const CODECLIMATE_SEVERITY_CRITICAL = 'critical';
     const CODECLIMATE_SEVERITY_NORMAL = 'normal';
@@ -16,11 +15,11 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     /** @var  OutputInterface */
     private $output;
 
+    /** @var array */
     private $messages = [];
 
     /** @param IssueInstance $instance */
-    public function print(IssueInstance $instance)
-    {
+    public function print(IssueInstance $instance) {
         $this->messages[] = [
             'type' => 'issue',
             'check_name' => $instance->getIssue()->getType(),
@@ -44,8 +43,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
      * @param int $rawSeverity
      * @return string
      */
-    private static function mapSeverety(int $rawSeverity):string
-    {
+    private static function mapSeverety(int $rawSeverity):string {
         $severity = self::CODECLIMATE_SEVERITY_INFO;
         switch ($rawSeverity) {
             case Issue::SEVERITY_CRITICAL:
@@ -60,8 +58,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     }
 
     /** flush printer buffer */
-    public function flush()
-    {
+    public function flush() {
         $this->output->write(json_encode($this->messages, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE) . chr(0));
         $this->messages = [];
     }
@@ -69,8 +66,7 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
     /**
      * @param OutputInterface $output
      */
-    public function configureOutput(OutputInterface $output)
-    {
+    public function configureOutput(OutputInterface $output) {
         $this->output = $output;
     }
 }

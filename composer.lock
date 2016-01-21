@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "450526aae71cfa817e708da2aaab22de",
+    "hash": "9acdf601661fb65ac8ee607f2617e109",
     "content-hash": "90b9ac5d45886a7816faa017d3a7f3bb",
     "packages": [
         {
@@ -376,7 +376,7 @@
                     "Doctrine\\Instantiator\\": "src/Doctrine/Instantiator/"
                 }
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -977,7 +977,7 @@
                     "DeepCopy\\": "src/DeepCopy/"
                 }
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1351,7 +1351,7 @@
                     ]
                 }
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1446,7 +1446,7 @@
                     "Prophecy\\": "src/"
                 }
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1563,7 +1563,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1605,7 +1605,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1646,7 +1646,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1696,7 +1696,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1960,7 +1960,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -2074,7 +2074,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -2125,7 +2125,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -2193,7 +2193,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -2241,7 +2241,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -2291,7 +2291,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -2325,7 +2325,7 @@
                     "src/"
                 ]
             },
-            "notification-url": "http://packagist.org/downloads/",
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -3442,16 +3442,16 @@
         },
         {
             "name": "zendframework/zend-servicemanager",
-            "version": "2.7.3",
+            "version": "2.7.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zend-servicemanager.git",
-                "reference": "cc65a0a1081bf8e76c7420290fb7a55880236786"
+                "reference": "846f8a4f9c2e438e45d2de5cec11509cb7e08d79"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-servicemanager/zipball/cc65a0a1081bf8e76c7420290fb7a55880236786",
-                "reference": "cc65a0a1081bf8e76c7420290fb7a55880236786",
+                "url": "https://api.github.com/repos/zendframework/zend-servicemanager/zipball/846f8a4f9c2e438e45d2de5cec11509cb7e08d79",
+                "reference": "846f8a4f9c2e438e45d2de5cec11509cb7e08d79",
                 "shasum": ""
             },
             "require": {
@@ -3490,7 +3490,7 @@
                 "servicemanager",
                 "zf2"
             ],
-            "time": "2016-01-13 19:29:06"
+            "time": "2016-01-19 21:01:21"
         },
         {
             "name": "zendframework/zend-stdlib",
