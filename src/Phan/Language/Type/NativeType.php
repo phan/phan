@@ -3,10 +3,12 @@ namespace Phan\Language\Type;
 
 use \Phan\Language\Type;
 
-abstract class NativeType extends Type {
+abstract class NativeType extends Type
+{
     const NAME = '';
 
-    public static function instance() {
+    public static function instance()
+    {
         static $instance = null;
 
         if (empty($instance)) {
@@ -16,18 +18,20 @@ abstract class NativeType extends Type {
         return $instance;
     }
 
-    public function isNativeType() : bool {
+    public function isNativeType() : bool
+    {
         return true;
     }
 
-    public function isSelfType() : bool {
+    public function isSelfType() : bool
+    {
         return false;
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         // Native types can just use their
         // non-fully-qualified names
         return $this->name;
     }
-
 }

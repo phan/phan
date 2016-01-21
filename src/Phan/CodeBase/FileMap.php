@@ -18,7 +18,8 @@ use \Phan\Model\File as FileModel;
 /**
  * Information pertaining to PHP code files that we've read
  */
-trait FileMap {
+trait FileMap
+{
 
     /**
      * Implementing class must have a method for removing
@@ -136,11 +137,12 @@ trait FileMap {
         // Maps a structural element to a list of files that
         // depend on it
         $file_list_from_element =
-            function(TypedStructuralElement $element) : array {
+            function (TypedStructuralElement $element) : array {
                 return array_map(
-                    function(FileRef $file_ref) : string {
+                    function (FileRef $file_ref) : string {
                         return $file_ref->getFile();
-                    },  $element->getReferenceList()
+                    },
+                    $element->getReferenceList()
                 );
             };
 
@@ -149,10 +151,10 @@ trait FileMap {
             $dependency_file_list = array_merge(
                 $dependency_file_list,
                 $this->hasClassWithFQSEN($fqsen)
-                    ? $file_list_from_element(
+                ? $file_list_from_element(
                         $this->getClassByFQSEN($fqsen)
                     ) : []
-                );
+            );
         }
 
         // Get files that depend on constants defined in this file
@@ -192,10 +194,10 @@ trait FileMap {
             $dependency_file_list = array_merge(
                 $dependency_file_list,
                 $this->hasMethod($fqsen)
-                    ? $file_list_from_element(
+                ? $file_list_from_element(
                         $this->getMethod($fqsen)
                     ) : []
-                );
+            );
         }
 
         return $dependency_file_list;
@@ -273,7 +275,8 @@ trait FileMap {
      * True if the given file is up to date within this
      * code base, else false
      */
-    public function isParseUpToDateForFile(string $file_path) : bool {
+    public function isParseUpToDateForFile(string $file_path) : bool
+    {
         return $this->getFileByPath($file_path)
             ->isParseUpToDate();
     }
@@ -284,7 +287,8 @@ trait FileMap {
      *
      * @return null
      */
-    public function setParseUpToDateForFile(string $file_path) {
+    public function setParseUpToDateForFile(string $file_path)
+    {
         return $this->getFileByPath($file_path)
             ->setParseUpToDate();
     }
@@ -293,7 +297,8 @@ trait FileMap {
      * @return File[]
      * A map from file path to File
      */
-    protected function getFileMap() : array {
+    protected function getFileMap() : array
+    {
         return $this->file_map;
     }
 
@@ -303,7 +308,8 @@ trait FileMap {
      *
      * @return null
      */
-    protected function setFileMap(array $file_map) {
+    protected function setFileMap(array $file_map)
+    {
         $this->file_map = $file_map;
     }
 
@@ -314,9 +320,9 @@ trait FileMap {
      * @return File
      * An object tracking state for the given $file_path
      */
-    protected function getFileByPath(string $file_path) : File {
+    protected function getFileByPath(string $file_path) : File
+    {
         if (empty($this->file_map[$file_path])) {
-
             if (Database::isEnabled()) {
                 try {
                     $file_model =
@@ -344,7 +350,8 @@ trait FileMap {
      *
      * @return null
      */
-    public function storeFileMap() {
+    public function storeFileMap()
+    {
         if (!Database::isEnabled()) {
             return;
         }
@@ -353,5 +360,4 @@ trait FileMap {
             (new FileModel($file))->write(Database::get());
         }
     }
-
 }

@@ -8,7 +8,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 
-class ParameterTypesAnalyzer {
+class ParameterTypesAnalyzer
+{
 
     /**
      * Check to see if the given Clazz is a duplicate
@@ -26,7 +27,6 @@ class ParameterTypesAnalyzer {
 
             // Look at each type in the parameter's Union Type
             foreach ($union_type->getTypeSet() as $type) {
-
                 // If its a native type or a reference to
                 // self, its OK
                 if ($type->isNativeType() || $type->isSelfType()) {
@@ -47,5 +47,4 @@ class ParameterTypesAnalyzer {
             }
         }
     }
-
 }

@@ -13,7 +13,8 @@ use \Phan\Language\UnionType;
 use \Phan\Map;
 use \Phan\Model\Method as MethodModel;
 
-trait MethodMap {
+trait MethodMap
+{
 
     /**
      * Implementing classes must support a mechanism for
@@ -40,7 +41,8 @@ trait MethodMap {
      * @return Method[][]
      * A map from FQSEN to name to method
      */
-    public function getMethodMap() : array {
+    public function getMethodMap() : array
+    {
         return $this->method_map;
     }
 
@@ -64,7 +66,8 @@ trait MethodMap {
      *
      * @return null
      */
-    public function setMethodMap(array $method_map) {
+    public function setMethodMap(array $method_map)
+    {
         $this->method_map = $method_map;
     }
 
@@ -73,7 +76,8 @@ trait MethodMap {
      *
      * @return bool
      */
-    public function hasMethod($fqsen) : bool {
+    public function hasMethod($fqsen) : bool
+    {
         if ($fqsen instanceof FullyQualifiedMethodName) {
             return $this->hasMethodWithMethodFQSEN($fqsen);
         } else {
@@ -135,7 +139,8 @@ trait MethodMap {
                 UnionType::internalFunctionSignatureMap();
 
             $fqsen = FullyQualifiedFunctionName::make(
-                $scope, $name
+                $scope,
+                $name
             );
 
             if (!empty($function_signature_map[$name])) {
@@ -143,7 +148,9 @@ trait MethodMap {
 
                 // Add each method returned for the signature
                 foreach (Method::methodListFromSignature(
-                    $this, $fqsen, $signature
+                    $this,
+                    $fqsen,
+                    $signature
                 ) as $method) {
                     $this->addMethod($method);
                 }
@@ -171,7 +178,8 @@ trait MethodMap {
      * @return Method
      * Get the method with the given FQSEN
      */
-    public function getMethod($fqsen) : Method {
+    public function getMethod($fqsen) : Method
+    {
         if ($fqsen instanceof FullyQualifiedMethodName) {
             return $this->getMethodByMethodFQSEN($fqsen);
         } else {
@@ -186,7 +194,8 @@ trait MethodMap {
      * @return Method[]
      * All known methods with the given name
      */
-    public function getMethodListByName(string $name) : array {
+    public function getMethodListByName(string $name) : array
+    {
 
         // If we're doing dead code detection we'll have faster
         // access at the cost of being a bit more of a memory
@@ -271,15 +280,18 @@ trait MethodMap {
      *
      * @return null
      */
-    public function addMethod(Method $method) {
+    public function addMethod(Method $method)
+    {
         if ($method->getFQSEN() instanceof FullyQualifiedMethodName) {
             $this->addMethodWithMethodFQSEN(
                 $method,
                 $method->getFQSEN()
             );
         } else {
-            assert($method->getFQSEN() instanceof FullyQualifiedFunctionName,
-                "Method given must have FQSEN of type FullyQualifiedMethodName");
+            assert(
+                $method->getFQSEN() instanceof FullyQualifiedFunctionName,
+                "Method given must have FQSEN of type FullyQualifiedMethodName"
+            );
             $this->addMethodWithFunctionFQSEN(
                 $method,
                 $method->getFQSEN()
@@ -371,7 +383,8 @@ trait MethodMap {
      *
      * @return null
      */
-    protected function storeMethodMap() {
+    protected function storeMethodMap()
+    {
         if (!Database::isEnabled()) {
             return;
         }
@@ -395,12 +408,12 @@ trait MethodMap {
         string $name
     ) {
         if (Database::isEnabled()) {
-            MethodModel::delete(Database::get(),
+            MethodModel::delete(
+                Database::get(),
                 $scope . '|' .  $name
             );
         }
 
         unset($this->method_map[$scope][$name]);
     }
-
 }

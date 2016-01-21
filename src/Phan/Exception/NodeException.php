@@ -4,7 +4,8 @@ namespace Phan\Exception;
 use \Phan\Debug;
 use \ast\Node;
 
-class NodeException extends \Exception {
+class NodeException extends \Exception
+{
 
     /**
      * @var Node
@@ -32,8 +33,8 @@ class NodeException extends \Exception {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public function getNode() : Node {
+    public function getNode() : Node
+    {
         return $this->node;
     }
-
 }

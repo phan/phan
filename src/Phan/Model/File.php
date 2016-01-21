@@ -16,7 +16,8 @@ use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\UnionType;
 
-class File extends ModelOne {
+class File extends ModelOne
+{
 
     /**
      * @var CodeBaseFile
@@ -26,19 +27,23 @@ class File extends ModelOne {
     /**
      * @param CodeBaseFile $file
      */
-    public function __construct(CodeBaseFile $file) {
+    public function __construct(CodeBaseFile $file)
+    {
         $this->file = $file;
     }
 
-    public function getFile() : CodeBaseFile {
+    public function getFile() : CodeBaseFile
+    {
         return $this->file;
     }
 
-    public static function read(Database $database, $primary_key_value) : File {
+    public static function read(Database $database, $primary_key_value) : File
+    {
         return parent::read($database, $primary_key_value);
     }
 
-    public static function createSchema() : Schema {
+    public static function createSchema() : Schema
+    {
         $schema = new Schema('File', [
             new Column('file_path', Column::TYPE_STRING, true),
             new Column('modification_time', Column::TYPE_INT)
@@ -46,7 +51,8 @@ class File extends ModelOne {
 
         $schema->addAssociation(
             new ListAssociation(
-                'FileClassFQSEN', Column::TYPE_STRING,
+                'FileClassFQSEN',
+                Column::TYPE_STRING,
                 function (File $file, array $class_fqsen_string_list) {
                     $file->getFile()->setClassFQSENList(
                         array_map(function (string $fqsen_string) {
@@ -66,7 +72,8 @@ class File extends ModelOne {
 
         $schema->addAssociation(
             new ListAssociation(
-                'FileMethodFQSEN', Column::TYPE_STRING,
+                'FileMethodFQSEN',
+                Column::TYPE_STRING,
                 function (File $file, array $method_fqsen_string_list) {
                     $file->getFile()->setMethodFQSENList(
                         array_map(function (string $fqsen_string) {
@@ -92,7 +99,8 @@ class File extends ModelOne {
 
         $schema->addAssociation(
             new ListAssociation(
-                'FilePropertyFQSEN', Column::TYPE_STRING,
+                'FilePropertyFQSEN',
+                Column::TYPE_STRING,
                 function (File $file, array $fqsen_string_list) {
                     $file->getFile()->setPropertyFQSENList(
                         array_map(function (string $fqsen_string) {
@@ -118,7 +126,8 @@ class File extends ModelOne {
 
         $schema->addAssociation(
             new ListAssociation(
-                'FileConstantFQSEN', Column::TYPE_STRING,
+                'FileConstantFQSEN',
+                Column::TYPE_STRING,
                 function (File $file, array $fqsen_string_list) {
                     $file->getFile()->setConstantFQSENList(
                         array_map(function (string $fqsen_string) {
@@ -149,7 +158,8 @@ class File extends ModelOne {
      * @return string
      * The primary key of this model
      */
-    public function primaryKeyValue() : string {
+    public function primaryKeyValue() : string
+    {
         return $this->file->getFilePath();
     }
 
@@ -158,7 +168,8 @@ class File extends ModelOne {
      * Get a map from column name to row values for
      * this instance
      */
-    public function toRow() : array {
+    public function toRow() : array
+    {
         return [
             'file_path' => $this->file->getProjectRelativePath(),
             'modification_time' => $this->file->getModificationTime(),
@@ -172,11 +183,11 @@ class File extends ModelOne {
      * @return File
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : File {
+    public static function fromRow(array $row) : File
+    {
         return new File(new CodeBaseFile(
             $row['file_path'],
             (int)$row['modification_time']
         ));
     }
-
 }

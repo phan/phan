@@ -10,7 +10,8 @@ use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \ast\Node;
 
-abstract class ScopeVisitor extends KindVisitorImplementation {
+abstract class ScopeVisitor extends KindVisitorImplementation
+{
 
     /**
      * @var CodeBase
@@ -51,7 +52,8 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $node) : Context {
+    public function visit(Node $node) : Context
+    {
         // Many nodes don't change the context and we
         // don't need to read them.
         return $this->context;
@@ -67,7 +69,8 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitNamespace(Node $node) : Context {
+    public function visitNamespace(Node $node) : Context
+    {
         $namespace = '\\' . (string)$node->children['name'];
         return $this->context->withNamespace($namespace);
     }
@@ -83,7 +86,8 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitGroupUse(Node $node) : Context {
+    public function visitGroupUse(Node $node) : Context
+    {
         $children = $node->children ?? [];
 
         $prefix = array_shift($children);
@@ -91,13 +95,14 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
         $context = $this->context;
 
         foreach ($this->aliasTargetMapFromUseNode(
-                $children['uses'],
-                $prefix
-            ) as $alias => $map
-        ) {
+            $children['uses'],
+            $prefix
+        ) as $alias => $map) {
             list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
-                $flags, $alias, $target
+                $flags,
+                $alias,
+                $target
             );
         }
 
@@ -115,15 +120,17 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitUse(Node $node) : Context {
+    public function visitUse(Node $node) : Context
+    {
         $context = $this->context;
 
         foreach ($this->aliasTargetMapFromUseNode($node)
-            as $alias => $map
-        ) {
+ as $alias => $map) {
             list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
-                $node->flags ?? 0, $alias, $target
+                $node->flags ?? 0,
+                $alias,
+                $target
             );
         }
 
@@ -138,15 +145,17 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
         Node $node,
         string $prefix = ''
     ) : array {
-        assert($node->kind == \ast\AST_USE,
-            'Method takes AST_USE nodes');
+        assert(
+            $node->kind == \ast\AST_USE,
+            'Method takes AST_USE nodes'
+        );
 
         $map = [];
-        foreach($node->children ?? [] as $child_node) {
+        foreach ($node->children ?? [] as $child_node) {
             $target = $child_node->children['name'];
 
-            if(empty($child_node->children['alias'])) {
-                if(($pos = strrpos($target, '\\'))!==false) {
+            if (empty($child_node->children['alias'])) {
+                if (($pos = strrpos($target, '\\'))!==false) {
                     $alias = substr($target, $pos + 1);
                 } else {
                     $alias = $target;
@@ -170,7 +179,7 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
                     $prefix . '\\' . implode('\\', $parts),
                     $function_name
                 );
-            } else if ($target_node->flags == T_CONST) {
+            } elseif ($target_node->flags == T_CONST) {
                 $parts = explode('\\', $target);
                 $name = array_pop($parts);
                 $target = FullyQualifiedGlobalConstantName::make(

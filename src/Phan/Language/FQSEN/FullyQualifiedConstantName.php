@@ -6,4 +6,6 @@ use \Phan\Language\FQSEN;
 /**
  * A Fully-Qualified Constant Name
  */
-interface FullyQualifiedConstantName extends FQSEN {}
+interface FullyQualifiedConstantName extends FQSEN
+{
+}

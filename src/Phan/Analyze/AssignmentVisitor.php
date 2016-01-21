@@ -23,7 +23,8 @@ use \ast\Node;
 use \ast\Node\Decl;
 use Phan\Phan;
 
-class AssignmentVisitor extends KindVisitorImplementation {
+class AssignmentVisitor extends KindVisitorImplementation
+{
 
     /**
      * @var CodeBase
@@ -101,9 +102,12 @@ class AssignmentVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $node) : Context {
-        assert(false,
-            "Unknown left side of assignment {$this->context}");
+    public function visit(Node $node) : Context
+    {
+        assert(
+            false,
+            "Unknown left side of assignment {$this->context}"
+        );
 
         return $this->visitVar($node);
     }
@@ -116,12 +120,13 @@ class AssignmentVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitList(Node $node) : Context {
+    public function visitList(Node $node) : Context
+    {
         // Figure out the type of elements in the list
         $element_type =
             $this->right_type->genericArrayElementTypes();
 
-        foreach($node->children ?? [] as $child_node) {
+        foreach ($node->children ?? [] as $child_node) {
             // Some times folks like to pass a null to
             // a list to throw the element away. I'm not
             // here to judge.
@@ -156,7 +161,8 @@ class AssignmentVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitDim(Node $node) : Context {
+    public function visitDim(Node $node) : Context
+    {
 
         // Make the right type a generic (i.e. int -> int[])
         $right_type =
@@ -172,12 +178,14 @@ class AssignmentVisitor extends KindVisitorImplementation {
             if ('GLOBALS' === $variable_name) {
                 $dim = $node->children['dim'];
 
-                if(is_string($dim)) {
+                if (is_string($dim)) {
                     // You're not going to believe this, but I just
                     // found a piece of code like $GLOBALS[mt_rand()].
                     // Super weird, right?
-                    assert(is_string($dim),
-                        "dim is not a string at {$this->context}");
+                    assert(
+                        is_string($dim),
+                        "dim is not a string at {$this->context}"
+                    );
 
                     $variable = new Variable(
                         $this->context,
@@ -214,7 +222,8 @@ class AssignmentVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitProp(Node $node) : Context {
+    public function visitProp(Node $node) : Context
+    {
 
         $property_name = $node->children['prop'];
 
@@ -223,8 +232,10 @@ class AssignmentVisitor extends KindVisitorImplementation {
             return $this->context;
         }
 
-        assert(is_string($property_name),
-            "Property must be string in context {$this->context}");
+        assert(
+            is_string($property_name),
+            "Property must be string in context {$this->context}"
+        );
 
         try {
             $class_list = (new ContextNode(
@@ -244,7 +255,6 @@ class AssignmentVisitor extends KindVisitorImplementation {
         }
 
         foreach ($class_list as $clazz) {
-
             // Check to see if this class has the property or
             // a setter
             if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
@@ -300,7 +310,7 @@ class AssignmentVisitor extends KindVisitorImplementation {
             } catch (\Exception $exception) {
                 // swallow it
             }
-        } else if (!empty($class_list)) {
+        } elseif (!empty($class_list)) {
             Issue::emit(
                 Issue::UndeclaredProperty,
                 $this->context->getFile(),
@@ -323,7 +333,8 @@ class AssignmentVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitStaticProp(Node $node) : Context {
+    public function visitStaticProp(Node $node) : Context
+    {
         return $this->visitVar($node);
     }
 
@@ -335,7 +346,8 @@ class AssignmentVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitVar(Node $node) : Context {
+    public function visitVar(Node $node) : Context
+    {
         $variable_name = (new ContextNode(
             $this->code_base,
             $this->context,
@@ -401,5 +413,4 @@ class AssignmentVisitor extends KindVisitorImplementation {
 
         return $this->context;
     }
-
 }

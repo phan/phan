@@ -4,7 +4,8 @@ namespace Phan\CodeBase;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN;
 
-trait GlobalVariableMap {
+trait GlobalVariableMap
+{
 
     /**
      * @var Variable[]
@@ -16,7 +17,8 @@ trait GlobalVariableMap {
      * @return Variable[]
      * A map from name to global_variable
      */
-    public function getGlobalVariableMap() : array {
+    public function getGlobalVariableMap() : array
+    {
         return $this->global_variable_map;
     }
 
@@ -26,14 +28,16 @@ trait GlobalVariableMap {
      *
      * @return null
      */
-    public function setGlobalVariableMap(array $global_variable_map) {
+    public function setGlobalVariableMap(array $global_variable_map)
+    {
         $this->global_variable_map = $global_variable_map;
     }
 
     /**
      * @return bool
      */
-    public function hasGlobalVariableWithName(string $name) : bool {
+    public function hasGlobalVariableWithName(string $name) : bool
+    {
         return !empty($this->global_variable_map[$name]);
     }
 
@@ -41,7 +45,8 @@ trait GlobalVariableMap {
      * @return Variable
      * Get the global_variable with the given name
      */
-    public function getGlobalVariableByName(string $name) : Variable {
+    public function getGlobalVariableByName(string $name) : Variable
+    {
         return $this->global_variable_map[$name];
     }
 
@@ -51,9 +56,9 @@ trait GlobalVariableMap {
      *
      * @return null
      */
-    public function addGlobalVariable(Variable $global_variable) {
+    public function addGlobalVariable(Variable $global_variable)
+    {
         $this->global_variable_map[$global_variable->getName()] =
             $global_variable;
     }
-
 }

@@ -4,7 +4,8 @@ namespace Phan\Language;
 
 use \Phan\Language\Element\Variable;
 
-class Scope {
+class Scope
+{
 
     /**
      * @var Variable[]
@@ -23,7 +24,8 @@ class Scope {
      * True if a variable with the given name is defined
      * within this scope
      */
-    public function hasVariableWithName(string $name) : bool {
+    public function hasVariableWithName(string $name) : bool
+    {
         return (
             !empty($this->variable_map[$name])
             || !empty(self::$global_variable_map[$name])
@@ -33,7 +35,8 @@ class Scope {
     /**
      * @return Variable
      */
-    public function getVariableWithName(string $name) : Variable {
+    public function getVariableWithName(string $name) : Variable
+    {
         return $this->variable_map[$name]
             ?? self::$global_variable_map[$name];
     }
@@ -42,7 +45,8 @@ class Scope {
      * @return Variable[]
      * A map from name to Variable in this scope
      */
-    public function getVariableMap() : array {
+    public function getVariableMap() : array
+    {
         return array_merge(
             $this->variable_map,
             self::$global_variable_map
@@ -55,7 +59,8 @@ class Scope {
      *
      * @return Scope;
      */
-    public function withGlobalVariable(Variable $variable) : Scope {
+    public function withGlobalVariable(Variable $variable) : Scope
+    {
         self::$global_variable_map[$variable->getName()] =
             $variable;
 
@@ -68,7 +73,8 @@ class Scope {
      *
      * @return Scope;
      */
-    public function withVariable(Variable $variable) : Scope {
+    public function withVariable(Variable $variable) : Scope
+    {
         $scope = clone($this);
         $scope->addVariable($variable);
         return $scope;
@@ -77,7 +83,8 @@ class Scope {
     /**
      * @return void
      */
-    public function addVariable(Variable $variable) {
+    public function addVariable(Variable $variable)
+    {
         $this->variable_map[$variable->getName()] = $variable;
     }
 
@@ -85,8 +92,8 @@ class Scope {
      * @return string
      * A string representation of this scope
      */
-    public function __toString() : string {
+    public function __toString() : string
+    {
         return implode(',', $this->getVariableMap());
     }
-
 }

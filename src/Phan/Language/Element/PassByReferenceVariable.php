@@ -15,7 +15,8 @@ use \ast\Node;
  * pass-by-reference parameter so that its value can be
  * updated when re-analyzing the method.
  */
-class PassByReferenceVariable extends Variable {
+class PassByReferenceVariable extends Variable
+{
 
     /** @var Parameter */
     private $parameter;
@@ -31,40 +32,48 @@ class PassByReferenceVariable extends Variable {
         $this->variable = $variable;
     }
 
-    public function getName() : string {
+    public function getName() : string
+    {
         return $this->parameter->getName();
     }
 
-    public function getUnionType() : UnionType {
+    public function getUnionType() : UnionType
+    {
         return $this->variable->getUnionType();
     }
 
-    public function setUnionType(UnionType $type) {
+    public function setUnionType(UnionType $type)
+    {
         $this->variable->setUnionType($type);
     }
 
-    public function getFlags() : int {
+    public function getFlags() : int
+    {
         return $this->variable->getFlags();
     }
 
-    public function setFlags(int $flags) {
+    public function setFlags(int $flags)
+    {
         $this->variable->setFlags($flags);
     }
 
-    public function getContext() : Context {
+    public function getContext() : Context
+    {
         return $this->variable->getContext();
     }
 
-    public function isDeprecated() : bool {
+    public function isDeprecated() : bool
+    {
         return $this->variable->isDeprecated();
     }
 
-    public function setIsDeprecated(bool $is_deprecated) {
+    public function setIsDeprecated(bool $is_deprecated)
+    {
         $this->variable->setIsDeprecated($is_deprecated);
     }
 
-    public function isInternal() : bool {
+    public function isInternal() : bool
+    {
         return $this->variable->isInternal();
     }
-
 }

@@ -5,7 +5,8 @@ use \Phan\Language\FutureUnionType;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 
-trait ElementFutureUnionType {
+trait ElementFutureUnionType
+{
 
     /**
      * @var FutureUnionType|null
@@ -40,7 +41,8 @@ trait ElementFutureUnionType {
      * on this object or null if there is no future
      * union type.
      */
-    public function getFutureUnionType() {
+    public function getFutureUnionType()
+    {
         if (empty($this->future_union_type)) {
             return null;
         }
@@ -61,5 +63,4 @@ trait ElementFutureUnionType {
 
         return $union_type;
     }
-
 }

@@ -13,7 +13,8 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 
-class ReferenceCountsAnalyzer {
+class ReferenceCountsAnalyzer
+{
 
     /**
      * Take a look at all globally accessible elements and see if
@@ -21,7 +22,8 @@ class ReferenceCountsAnalyzer {
      *
      * @return void
      */
-    public static function analyzeReferenceCounts(CodeBase $code_base) {
+    public static function analyzeReferenceCounts(CodeBase $code_base)
+    {
         // Check to see if dead code detection is enabled. Keep
         // in mind that the results here are just a guess and
         // we can't tell with certainty that anything is
@@ -39,17 +41,17 @@ class ReferenceCountsAnalyzer {
         );
 
         $i = 0;
-        $analyze_list = function($list, string $issue_type) use ($code_base, &$i, $total_count) {
+        $analyze_list = function ($list, string $issue_type) use ($code_base, &$i, $total_count) {
             foreach ($list as $name => $element) {
-                CLI::progress('dead code',  (++$i)/$total_count);
+                CLI::progress('dead code', (++$i)/$total_count);
                 self::analyzeElementReferenceCounts($code_base, $element, $issue_type);
             }
         };
 
-        $analyze_map = function($map, string $issue_type) use ($code_base, &$i, $total_count) {
+        $analyze_map = function ($map, string $issue_type) use ($code_base, &$i, $total_count) {
             foreach ($map as $fqsen_string => $list) {
                 foreach ($list as $name => $element) {
-                    CLI::progress('dead code',  (++$i)/$total_count);
+                    CLI::progress('dead code', (++$i)/$total_count);
 
                     // Don't worry about internal elements
                     if ($element->getContext()->isInternal()) {

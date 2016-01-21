@@ -6,7 +6,8 @@ use \ast\Node;
 /**
  * A visitor of AST nodes based on the node's flag value
  */
-interface FlagVisitor {
+interface FlagVisitor
+{
 
     /**
      * Visit a node with flag `\ast\flags\ASSIGN_ADD`
@@ -417,6 +418,4 @@ interface FlagVisitor {
      * Visit a node with flag `\ast\flags\USE_NORMAL`
      */
     public function visitUseNormal(Node $node);
-
-
 }

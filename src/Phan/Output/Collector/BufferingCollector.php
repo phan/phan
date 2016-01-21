@@ -6,7 +6,8 @@ use Phan\Output\Filter\AnyFilter;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssueFilterInterface;
 
-final class BufferingCollector implements IssueCollectorInterface {
+final class BufferingCollector implements IssueCollectorInterface
+{
 
     /** @var  IssueInstance[] */
     private $issues = [];
@@ -18,7 +19,8 @@ final class BufferingCollector implements IssueCollectorInterface {
      * BufferingCollector constructor.
      * @param IssueFilterInterface $filter
      */
-    public function __construct(IssueFilterInterface $filter = null) {
+    public function __construct(IssueFilterInterface $filter = null)
+    {
         $this->filter = $filter;
 
         if (null === $this->filter) {
@@ -30,7 +32,8 @@ final class BufferingCollector implements IssueCollectorInterface {
      * Collect issue
      * @param IssueInstance $issue
      */
-    public function collectIssue(IssueInstance $issue) {
+    public function collectIssue(IssueInstance $issue)
+    {
         if (!$this->filter->supports($issue)) {
             return;
         }
@@ -42,7 +45,8 @@ final class BufferingCollector implements IssueCollectorInterface {
      * @param IssueInstance $issue
      * @return string
      */
-    private function formatSortableKey(IssueInstance $issue) {
+    private function formatSortableKey(IssueInstance $issue)
+    {
 
         // This needs to be a sortable key so that output
         // is in the expected order
@@ -57,7 +61,8 @@ final class BufferingCollector implements IssueCollectorInterface {
     /**
      * @return IssueInstance[]
      */
-    public function getCollectedIssues():array {
+    public function getCollectedIssues():array
+    {
         ksort($this->issues);
         return array_values($this->issues);
     }

@@ -9,7 +9,8 @@ use \Phan\Language\FutureUnionType;
 use \Phan\Language\UnionType;
 use \ast\Node;
 
-class Constant extends ClassElement implements Addressable {
+class Constant extends ClassElement implements Addressable
+{
     use AddressableImplementation;
     use ElementFutureUnionType;
 
@@ -50,7 +51,8 @@ class Constant extends ClassElement implements Addressable {
      *
      * @return UnionType
      */
-    public function getUnionType() : UnionType {
+    public function getUnionType() : UnionType
+    {
         if (null !== ($union_type = $this->getFutureUnionType())) {
             $this->getUnionType()->addUnionType($union_type);
         }
@@ -63,7 +65,8 @@ class Constant extends ClassElement implements Addressable {
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FQSEN {
+    public function getFQSEN() : FQSEN
+    {
         // Get the stored FQSEN if it exists
         if ($this->fqsen) {
             return $this->fqsen;
@@ -82,7 +85,8 @@ class Constant extends ClassElement implements Addressable {
         }
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         return 'const ' . $this->getName();
     }
 }

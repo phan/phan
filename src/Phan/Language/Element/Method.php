@@ -14,7 +14,8 @@ use \Phan\Language\UnionType;
 use \ast\Node;
 use \ast\Node\Decl;
 
-class Method extends ClassElement implements Addressable {
+class Method extends ClassElement implements Addressable
+{
     use AddressableImplementation;
     use \Phan\Analyze\Analyzable;
     use \Phan\Memoize;
@@ -159,7 +160,8 @@ class Method extends ClassElement implements Addressable {
         $namespace = '\\' . implode('\\', $parts);
 
         $fqsen = FullyQualifiedFunctionName::make(
-            $namespace, $method_name
+            $namespace,
+            $method_name
         );
 
         $method = new Method(
@@ -264,7 +266,7 @@ class Method extends ClassElement implements Addressable {
         }
 
         $alternate_id = 0;
-        return array_map(function($map) use (
+        return array_map(function ($map) use (
             $method,
             &$alternate_id
         ) : Method {
@@ -283,8 +285,7 @@ class Method extends ClassElement implements Addressable {
 
             // Load properties if defined
             foreach ($map['property_name_type_map'] ?? []
-                as $parameter_name => $parameter_type
-            ) {
+ as $parameter_name => $parameter_type) {
                 $flags = 0;
                 $is_optional = false;
 
@@ -324,12 +325,14 @@ class Method extends ClassElement implements Addressable {
             }
 
             $alternate_method->setNumberOfRequiredParameters(
-                array_reduce($alternate_method->parameter_list,
-                    function(int $carry, Parameter $parameter) : int {
+                array_reduce(
+                    $alternate_method->parameter_list,
+                    function (int $carry, Parameter $parameter) : int {
                         return ($carry + (
                             $parameter->isOptional() ? 0 : 1
                         ));
-                    }, 0
+                    },
+                    0
                 )
             );
 
@@ -410,14 +413,17 @@ class Method extends ClassElement implements Addressable {
             $parameter_list,
             function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
-            }, 0)
-        );
+            },
+            0
+        ));
 
         $method->setNumberOfOptionalParameters(array_reduce(
-            $parameter_list, function (int $carry, Parameter $parameter) : int {
+            $parameter_list,
+            function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
-            }, 0)
-        );
+            },
+            0
+        ));
 
         // Check to see if the comment specifies that the
         // method is deprecated
@@ -425,7 +431,7 @@ class Method extends ClassElement implements Addressable {
         $method->setSuppressIssueList($comment->getSuppressIssueList());
 
         // Take a look at method return types
-        if($node->children['returnType'] !== null) {
+        if ($node->children['returnType'] !== null) {
             // Get the type of the parameter
             $union_type = UnionType::fromNode(
                 $context,
@@ -437,7 +443,6 @@ class Method extends ClassElement implements Addressable {
         }
 
         if ($comment->hasReturnUnionType()) {
-
             // See if we have a return type specified in the comment
             $union_type = $comment->getReturnType();
 
@@ -460,8 +465,7 @@ class Method extends ClassElement implements Addressable {
         }
 
         // Add params to local scope for user functions
-        if($context->getFile() != 'internal') {
-
+        if ($context->getFile() != 'internal') {
             $parameter_offset = 0;
             foreach ($method->getParameterList() as $i => $parameter) {
                 if ($parameter->getUnionType()->isEmpty()) {
@@ -497,7 +501,7 @@ class Method extends ClassElement implements Addressable {
                         if (!$default_type->isEqualTo(NullType::instance()->asUnionType())
                             && !$default_type->canCastToUnionType(
                                 $parameter->getUnionType()
-                        )) {
+                            )) {
                             Issue::emit(
                                 Issue::TypeMismatchDefault,
                                 $context->getFile(),
@@ -538,7 +542,8 @@ class Method extends ClassElement implements Addressable {
      * @return int
      * The number of optional parameters on this method
      */
-    public function getNumberOfOptionalParameters() : int {
+    public function getNumberOfOptionalParameters() : int
+    {
         return $this->number_of_optional_parameters;
     }
 
@@ -547,7 +552,8 @@ class Method extends ClassElement implements Addressable {
      *
      * @return null
      */
-    public function setNumberOfOptionalParameters(int $number) {
+    public function setNumberOfOptionalParameters(int $number)
+    {
         $this->number_of_optional_parameters = $number;
     }
 
@@ -555,7 +561,8 @@ class Method extends ClassElement implements Addressable {
      * @return int
      * The maximum number of parameters to this method
      */
-    public function getNumberOfParameters() : int {
+    public function getNumberOfParameters() : int
+    {
         return (
             $this->getNumberOfRequiredParameters()
             + $this->getNumberOfOptionalParameters()
@@ -566,7 +573,8 @@ class Method extends ClassElement implements Addressable {
      * @return int
      * The number of required parameters on this method
      */
-    public function getNumberOfRequiredParameters() : int {
+    public function getNumberOfRequiredParameters() : int
+    {
         return $this->number_of_required_parameters;
     }
     /**
@@ -575,7 +583,8 @@ class Method extends ClassElement implements Addressable {
      *
      * @return null
      */
-    public function setNumberOfRequiredParameters(int $number) {
+    public function setNumberOfRequiredParameters(int $number)
+    {
         $this->number_of_required_parameters = $number;
     }
 
@@ -583,7 +592,8 @@ class Method extends ClassElement implements Addressable {
      * @return Parameter[]
      * A list of parameters on the method
      */
-    public function getParameterList() {
+    public function getParameterList()
+    {
         return $this->parameter_list;
     }
 
@@ -593,7 +603,8 @@ class Method extends ClassElement implements Addressable {
      *
      * @return null
      */
-    public function setParameterList(array $parameter_list) {
+    public function setParameterList(array $parameter_list)
+    {
         $this->parameter_list = $parameter_list;
     }
 
@@ -601,7 +612,8 @@ class Method extends ClassElement implements Addressable {
      * @return bool
      * True if this is an abstract class
      */
-    public function isAbstract() : bool {
+    public function isAbstract() : bool
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\MODIFIER_ABSTRACT
         );
@@ -611,7 +623,8 @@ class Method extends ClassElement implements Addressable {
      * @return bool
      * True if this is a static method
      */
-    public function isStatic() : bool {
+    public function isStatic() : bool
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\MODIFIER_STATIC
         );
@@ -623,7 +636,8 @@ class Method extends ClassElement implements Addressable {
      * was defined (either in the signature itself or in the
      * docblock).
      */
-    public function isReturnTypeUndefined() : bool {
+    public function isReturnTypeUndefined() : bool
+    {
         return $this->is_return_type_undefined;
     }
 
@@ -644,7 +658,8 @@ class Method extends ClassElement implements Addressable {
      * @return bool
      * True if this method returns a value
      */
-    public function getHasReturn() : bool {
+    public function getHasReturn() : bool
+    {
         return $this->has_return;
     }
 
@@ -655,7 +670,8 @@ class Method extends ClassElement implements Addressable {
      *
      * @return void
      */
-    public function setHasReturn(bool $has_return) {
+    public function setHasReturn(bool $has_return)
+    {
         $this->has_return = $has_return;
     }
 
@@ -663,7 +679,8 @@ class Method extends ClassElement implements Addressable {
      * @return bool
      * True if this method overrides another method
      */
-    public function getIsOverride() : bool {
+    public function getIsOverride() : bool
+    {
         return $this->is_override;
     }
 
@@ -673,7 +690,8 @@ class Method extends ClassElement implements Addressable {
      *
      * @return void
      */
-    public function setIsOverride(bool $is_override) {
+    public function setIsOverride(bool $is_override)
+    {
         $this->is_override = $is_override;
     }
 
@@ -681,7 +699,8 @@ class Method extends ClassElement implements Addressable {
      * @return bool
      * True if this is a magic method
      */
-    public function getIsMagic() : bool {
+    public function getIsMagic() : bool
+    {
         return in_array($this->getName(), [
             '__get',
             '__set',
@@ -706,7 +725,8 @@ class Method extends ClassElement implements Addressable {
     /**
      * @return FullyQualifiedFunctionName|FullyQualifiedMethodName
      */
-    public function getFQSEN() : FQSEN {
+    public function getFQSEN() : FQSEN
+    {
         // Allow overrides
         if ($this->fqsen) {
             return $this->fqsen;
@@ -730,7 +750,8 @@ class Method extends ClassElement implements Addressable {
      * @return Method[]|\Generator
      * The set of all alternates to this method
      */
-    public function alternateGenerator(CodeBase $code_base) : \Generator {
+    public function alternateGenerator(CodeBase $code_base) : \Generator
+    {
         $alternate_id = 0;
         $fqsen = $this->getFQSEN();
 
@@ -744,7 +765,8 @@ class Method extends ClassElement implements Addressable {
      * @return string
      * A string representation of this method signature
      */
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = '';
 
         $string .= 'function ' . $this->getName();

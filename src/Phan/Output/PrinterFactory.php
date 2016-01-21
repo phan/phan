@@ -10,16 +10,19 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Class PrinterFactory
  * Subject of future refactoring to be a bit more extensible
  */
-class PrinterFactory {
+class PrinterFactory
+{
 
     /**
      * @return string[]
      */
-    public function getTypes():array {
+    public function getTypes():array
+    {
         return ['text', 'json', 'codeclimate'];
     }
 
-    public function getPrinter($type, OutputInterface $output):IssuePrinterInterface {
+    public function getPrinter($type, OutputInterface $output):IssuePrinterInterface
+    {
         switch ($type) {
             case 'codeclimate':
                 $printer = new CodeClimatePrinter();

@@ -12,7 +12,8 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\UnionType;
 
-class Method extends ModelOne {
+class Method extends ModelOne
+{
 
     /**
      * @var MethodElement
@@ -44,7 +45,8 @@ class Method extends ModelOne {
         $this->scope_name = $scope_name;
     }
 
-    public function getMethod() : MethodElement {
+    public function getMethod() : MethodElement
+    {
         return $this->method;
     }
 
@@ -63,7 +65,8 @@ class Method extends ModelOne {
      * @return Schema
      * The schema for this model
      */
-    public static function createSchema() : Schema {
+    public static function createSchema() : Schema
+    {
         $schema = new Schema('Method', [
             new Column('scope_name', Column::TYPE_STRING, true),
             new Column('fqsen', Column::TYPE_STRING),
@@ -107,7 +110,8 @@ class Method extends ModelOne {
      * @return string
      * The value of the primary key for this model
      */
-    public function primaryKeyValue() {
+    public function primaryKeyValue()
+    {
         return $this->scope . '|' . $this->scope_name;
     }
 
@@ -116,7 +120,8 @@ class Method extends ModelOne {
      * Get a map from column name to row values for
      * this instance
      */
-    public function toRow() : array {
+    public function toRow() : array
+    {
         return [
             'scope_name' => $this->primaryKeyValue(),
             'fqsen' => (string)$this->method->getFQSEN(),
@@ -139,7 +144,8 @@ class Method extends ModelOne {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : Method {
+    public static function fromRow(array $row) : Method
+    {
         list($scope, $name) = explode('|', $row['scope_name']);
 
         return new Method(new MethodElement(

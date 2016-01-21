@@ -4,7 +4,8 @@ namespace Phan\Language\Element\Comment;
 
 use \Phan\Language\UnionType;
 
-class Parameter {
+class Parameter
+{
 
     /**
      * @var string
@@ -37,7 +38,8 @@ class Parameter {
      * @return string
      * The name of the parameter
      */
-    public function getName() : string {
+    public function getName() : string
+    {
         return $this->name;
     }
 
@@ -45,11 +47,13 @@ class Parameter {
      * @return UnionType
      * The type of the parameter
      */
-    public function getUnionType() : UnionType {
+    public function getUnionType() : UnionType
+    {
         return $this->type;
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = '';
 
         if (!$this->type->isEmpty()) {
@@ -60,5 +64,4 @@ class Parameter {
 
         return $string;
     }
-
 }

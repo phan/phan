@@ -8,7 +8,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Model\Property as PropertyModel;
 
-trait PropertyMap {
+trait PropertyMap
+{
 
     /**
      * Implementing classes must support a mechanism for
@@ -26,7 +27,8 @@ trait PropertyMap {
      * @return Property[][]
      * A map from FQSEN to name to property
      */
-    public function getPropertyMap() : array {
+    public function getPropertyMap() : array
+    {
         return $this->property_map;
     }
 
@@ -34,7 +36,8 @@ trait PropertyMap {
      * @return Property[]
      * A map from name to property
      */
-    public function getPropertyMapForScope(FQSEN $fqsen) {
+    public function getPropertyMapForScope(FQSEN $fqsen)
+    {
         if (empty($this->property_map[(string)$fqsen])) {
             return [];
         }
@@ -48,14 +51,16 @@ trait PropertyMap {
      *
      * @return null
      */
-    public function setPropertyMap(array $property_map) {
+    public function setPropertyMap(array $property_map)
+    {
         $this->property_map = $property_map;
     }
 
     /**
      * @return bool
      */
-    public function hasProperty(FQSEN $fqsen, string $name) : bool {
+    public function hasProperty(FQSEN $fqsen, string $name) : bool
+    {
 
         if (!empty($this->property_map[(string)$fqsen][$name])) {
             return true;
@@ -64,7 +69,8 @@ trait PropertyMap {
         if (Database::isEnabled()) {
             // Otherwise, check the database
             try {
-                PropertyModel::read(Database::get(),
+                PropertyModel::read(
+                    Database::get(),
                     ((string)$fqsen) . '|' . $name
                 );
                 return true;
@@ -81,11 +87,13 @@ trait PropertyMap {
      * @return Property
      * Get the property with the given FQSEN
      */
-    public function getProperty(FQSEN $fqsen, string $name) : Property {
+    public function getProperty(FQSEN $fqsen, string $name) : Property
+    {
         if (Database::isEnabled()) {
             if (empty($this->property_map[(string)$fqsen][$name])) {
                 $this->property_map[(string)$fqsen][$name] =
-                    PropertyModel::read(Database::get(),
+                    PropertyModel::read(
+                        Database::get(),
                         ((string)$fqsen). '|' . $name
                     )
                     ->getProperty();
@@ -101,7 +109,8 @@ trait PropertyMap {
      *
      * @return null
      */
-    public function addProperty(Property $property) {
+    public function addProperty(Property $property)
+    {
         $this->addPropertyInScope(
             $property,
             $property->getFQSEN()->getFullyQualifiedClassName()
@@ -137,7 +146,8 @@ trait PropertyMap {
      *
      * @return null
      */
-    protected function storePropertyMap() {
+    protected function storePropertyMap()
+    {
         if (!Database::isEnabled()) {
             return;
         }
@@ -146,7 +156,9 @@ trait PropertyMap {
             foreach ($map as $name => $property) {
                 if (!$property->getContext()->isInternal()) {
                     (new PropertyModel(
-                        $property, $scope, $name
+                        $property,
+                        $scope,
+                        $name
                     ))->write(Database::get());
                 }
             }
@@ -162,7 +174,8 @@ trait PropertyMap {
     ) {
         // Remove it from the database
         if (Database::isEnabled()) {
-            PropertyModel::delete(Database::get(),
+            PropertyModel::delete(
+                Database::get(),
                 $scope . '|' . $name
             );
         }
@@ -170,5 +183,4 @@ trait PropertyMap {
         // Remove it from memory
         unset($this->property_map[$scope][$name]);
     }
-
 }
