@@ -2,6 +2,7 @@
 namespace Phan\Database;
 
 use \Phan\Database;
+use \SQLite3;
 
 /**
  * Objects implementing this interface can be

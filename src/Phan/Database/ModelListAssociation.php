@@ -99,7 +99,7 @@ class ModelListAssociation extends Association {
      * @param ModelOne $model
      * The source model of the association
      *
-     * @return null
+     * @return void
      */
     public function write(Database $database, ModelOne $model) {
         // Ensure that we've initialized this model

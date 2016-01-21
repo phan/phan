@@ -79,6 +79,19 @@ class Parameter extends ModelOne {
         return parent::read($database, $primary_key_value);
     }
 
+
+    /**
+     * @param Database $database
+     * A database to write this model to
+     *
+     * @return void
+     */
+    public function write(Database $database) {
+        parent::write($database);
+        $this->primary_key_value =
+            $database->lastInsertRowID();
+    }
+
     /**
      * @return Parameter[]
      * The set of parameters for a given method
