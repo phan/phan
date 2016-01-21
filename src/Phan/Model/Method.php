@@ -10,6 +10,7 @@ use \Phan\Language\Element\Method as MethodElement;
 use \Phan\Language\Element\Parameter as ParameterElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\UnionType;
 
 class Method extends ModelOne {
@@ -142,7 +143,7 @@ class Method extends ModelOne {
     public static function fromRow(array $row) : Method {
         list($scope, $name) = explode('|', $row['scope_name']);
 
-        return new Method(new MethodElement(
+        $method = new Method(new MethodElement(
             unserialize(base64_decode($row['context'])),
             $row['name'],
             UnionType::fromFullyQualifiedString($row['type']),
@@ -150,5 +151,19 @@ class Method extends ModelOne {
             $row['number_of_required_parameters'],
             $row['number_of_optional_parameters']
         ), $scope, $name);
+
+        if (false !== strpos($row['fqsen'], '::')) {
+            $fqsen =  FullyQualifiedMethodName::fromFullyQualifiedString(
+                $row['fqsen']
+            );
+        } else {
+            $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString(
+                $row['fqsen']
+            );
+        }
+
+        $method->getMethod()->setFQSEN($fqsen);
+
+        return $method;
     }
 }

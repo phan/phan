@@ -66,7 +66,24 @@ trait ConstantMap {
      * @return bool
      */
     public function hasConstant(FQSEN $fqsen = null, string $name) : bool {
-        return !empty($this->constant_map[(string)$fqsen][$name]);
+        if (!empty($this->constant_map[(string)$fqsen][$name])) {
+            return true;
+        }
+
+        if (Database::isEnabled()) {
+            // Otherwise, check the database
+            try {
+                ConstantModel::read(Database::get(),
+                    (string)$fqsen . '|' . $name
+                );
+                return true;
+            } catch (NotFoundException $exception) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
     }
 
     /**
@@ -81,6 +98,16 @@ trait ConstantMap {
      * Get the constant with the given FQSEN
      */
     public function getConstant(FQSEN $fqsen = null, string $name) : Constant {
+
+        if (empty($this->constant_map[(string)$fqsen][$name])
+            && Database::isEnabled()
+        ) {
+            $this->constant_map[(string)$fqsen][$name] =
+                ConstantModel::read(Database::get(),
+                    (string)$fqsen . '|' . $name
+                )->getConstant();
+        }
+
         return $this->constant_map[(string)$fqsen][$name];
     }
 

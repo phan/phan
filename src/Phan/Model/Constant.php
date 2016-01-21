@@ -1,12 +1,14 @@
 <?php declare(strict_types=1);
 namespace Phan\Model;
 
+use \Phan\Database;
 use \Phan\Database\Column;
 use \Phan\Database\ModelOne;
 use \Phan\Database\Schema;
 use \Phan\Language\Element\Constant as ConstantElement;
+use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\UnionType;
 
 class Constant extends ModelOne {
@@ -44,13 +46,32 @@ class Constant extends ModelOne {
     public static function createSchema() : Schema {
         return new Schema('Constant', [
             new Column('scope_name', Column::TYPE_STRING, true),
-            new Column('fqsen', Column::TYPE_STRING, true),
+            new Column('fqsen', Column::TYPE_STRING),
             new Column('name', Column::TYPE_STRING),
             new Column('type', Column::TYPE_STRING),
             new Column('flags', Column::TYPE_INT),
             new Column('context', Column::TYPE_STRING),
             new Column('is_deprecated', Column::TYPE_BOOL),
         ]);
+    }
+
+    /**
+     * We include this method in order to narrow the return
+     * type
+     */
+    public static function read(
+        Database $database,
+        $primary_key_value
+    ) : Constant {
+        return parent::read($database, $primary_key_value);
+    }
+
+    /**
+     * @return ConstantElement
+     * The constant that this model wraps
+     */
+    public function getConstant() : ConstantElement {
+        return $this->constant;
     }
 
     /**
@@ -96,6 +117,18 @@ class Constant extends ModelOne {
             UnionType::fromFullyQualifiedString($row['type']),
             (int)$row['flags']
         ), $scope, $name);
+
+        if (false !== strpos($row['fqsen'], '::')) {
+            $fqsen = FullyQualifiedClassConstantName::fromFullyQualifiedString(
+                $row['fqsen']
+            );
+        } else {
+            $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                $row['fqsen']
+            );
+        }
+
+        $constant->getConstant()->setFQSEN($fqsen);
 
         return $constant;
     }

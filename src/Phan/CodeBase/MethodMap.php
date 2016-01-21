@@ -256,7 +256,9 @@ trait MethodMap {
         string $name
     ) : Method {
 
-        if (empty($this->method_map[$scope][$name])) {
+        if (empty($this->method_map[$scope][$name])
+            && Database::isEnabled()
+        ) {
             $this->method_map[$scope][$name] =
                 MethodModel::read(Database::get(), $scope . '|' . $name)
                 ->getMethod();
