@@ -221,7 +221,9 @@ class CLI {
             foreach($argv as $key => $chunk) {
                 $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
-                if ($chunk == $value
+                if (($chunk == $value
+                    || (is_array($value) && in_array($chunk, $value))
+                    )
                     && $argv[$key-1][0] == '-'
                     || preg_match($regex, $chunk)
                 ) {
@@ -238,7 +240,9 @@ class CLI {
             $this->usage("Unknown option '{$arg}'");
         }
 
+
         if (!$this->file_list_only) {
+
             // Merge in any remaining args on the CLI
             $this->file_list = array_merge(
                 $this->file_list,
@@ -258,6 +262,8 @@ class CLI {
                 );
             }
         }
+
+
     }
 
     /**
