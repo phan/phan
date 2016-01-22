@@ -192,7 +192,7 @@ class CLI
                     break;
                 case 'y':
                 case 'minimum-severity':
-                    $minimumSeverity = $value;
+                    $minimumSeverity = (int)$value;
                     break;
                 case 'd':
                 case 'project-root-directory':
