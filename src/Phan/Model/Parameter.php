@@ -153,7 +153,7 @@ class Parameter extends ModelOne {
      * An instance of the model derived from row data
      */
     public static function fromRow(array $row) : Parameter {
-        if (false === strpos($row['method_fqsen'], '::')) {
+        if (false !== strpos($row['method_fqsen'], '::')) {
             $method_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString(
                 $row['method_fqsen']
             );

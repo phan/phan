@@ -30,11 +30,13 @@ assert_options(ASSERT_CALLBACK,
     function (string $script, int $line, $expression, $message) {
         print "$script:$line ($expression) $message\n";
         debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        exit(1);
     });
 
 // Print more of the backtrace than is done by default
 set_exception_handler(function (Throwable $throwable) {
     print "$throwable\n";
+    exit(1);
 });
 
 /**
@@ -43,5 +45,6 @@ set_exception_handler(function (Throwable $throwable) {
 function phan_error_handler($errno, $errstr, $errfile, $errline) {
     print "$errfile:$errline [$errno] $errstr\n";
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+    exit(1);
 }
 set_error_handler('phan_error_handler');

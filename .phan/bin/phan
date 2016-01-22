@@ -36,7 +36,7 @@ pushd $ROOT > /dev/null
             --project-root-directory $ROOT \
             --file-list $RUN/files \
             --state-file $RUN/state \
-            --output $RUN/issues || exit 1
+            --output $RUN/issues || exit $?
     else
         export LATEST_REV=`basename $LATEST`
 
@@ -55,7 +55,7 @@ pushd $ROOT > /dev/null
             --state-file $RUN/state \
             --file-list-only $RUN/files \
             --expand-file-list \
-            --output $RUN/issues || exit 1
+            --output $RUN/issues || exit $?
     fi
 
 
