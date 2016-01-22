@@ -26,6 +26,7 @@ use \Phan\Language\Type\ScalarType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
+use \Phan\Phan;
 use \ast\Node;
 
 class ArgumentType {
@@ -371,7 +372,10 @@ class ArgumentType {
 
         // If it can't, emit the log message
         if (!$can_cast) {
-            $issue_instance($node_type)();
+            Phan::getIssueCollector()->collectIssue(
+                $issue_instance($node_type)
+            );
+
         }
 
         return $can_cast;
