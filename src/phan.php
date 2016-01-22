@@ -18,6 +18,8 @@ use Phan\Phan;
 // Create our CLI interface and load arguments
 $cli = new CLI();
 
+$file_list = $cli->getFileList();
+
 // If requested, expand the file list to a set of
 // all files that should be re-analyzed
 if (Config::get()->expand_file_list) {
@@ -26,14 +28,7 @@ if (Config::get()->expand_file_list) {
         . ' be done if a state-file is defined');
 
     // Analyze the file list provided via the CLI
-    $dependency_file_list = Phan::expandedFileList(
-        $code_base,
-        $cli->getFileList()
-    );
-
-    $file_list = $dependency_file_list;
-} else {
-    $file_list = $cli->getFileList();
+    $file_list = Phan::expandedFileList($code_base, $file_list);
 }
 
 // Analyze the file list provided via the CLI
