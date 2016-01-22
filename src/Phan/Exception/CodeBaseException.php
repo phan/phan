@@ -4,7 +4,8 @@ namespace Phan\Exception;
 use \Phan\Debug;
 use \Phan\Language\FQSEN;
 
-class CodeBaseException extends \Exception {
+class CodeBaseException extends \Exception
+{
 
     /** @var FQSEN|null */
     private $missing_fqsen;
@@ -30,7 +31,8 @@ class CodeBaseException extends \Exception {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public function hasFQSEN() : bool {
+    public function hasFQSEN() : bool
+    {
         return !empty($this->missing_fqsen);
     }
 
@@ -38,8 +40,8 @@ class CodeBaseException extends \Exception {
      * @return FQSEN
      * The missing FQSEN
      */
-    public function getFQSEN() : FQSEN {
+    public function getFQSEN() : FQSEN
+    {
         return $this->missing_fqsen;
     }
-
 }

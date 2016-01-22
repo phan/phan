@@ -30,7 +30,8 @@ use \Phan\Language\Type\VoidType;
 use \Phan\Set;
 use \ast\Node;
 
-class UnionType implements \Serializable {
+class UnionType implements \Serializable
+{
     use \Phan\Memoize;
 
     /**
@@ -42,7 +43,8 @@ class UnionType implements \Serializable {
      * @param Type[]|\Iterator $type_list
      * An optional list of types represented by this union
      */
-    public function __construct($type_list = null) {
+    public function __construct($type_list = null)
+    {
         $this->type_set = new Set($type_list);
     }
 
@@ -52,7 +54,8 @@ class UnionType implements \Serializable {
      *
      * @return null
      */
-    public function __clone() {
+    public function __clone()
+    {
         $set  = new Set();
         $set->addAll($this->type_set);
         $this->type_set = $set;
@@ -77,7 +80,7 @@ class UnionType implements \Serializable {
         }
 
         return new UnionType(
-            array_map(function(string $type_name) {
+            array_map(function (string $type_name) {
                 return Type::fromFullyQualifiedString($type_name);
             }, explode('|', $fully_qualified_string))
         );
@@ -104,9 +107,11 @@ class UnionType implements \Serializable {
         }
 
         return new UnionType(
-            array_map(function(string $type_name) use ($context, $type_string) {
-                assert($type_name !== '',
-                    "Type cannot be empty. Type '$type_name' given as part of the union type '$type_string' in $context.");
+            array_map(function (string $type_name) use ($context, $type_string) {
+                assert(
+                    $type_name !== '',
+                    "Type cannot be empty. Type '$type_name' given as part of the union type '$type_string' in $context."
+                );
                 return Type::fromStringInContext(
                     $type_name,
                     $context
@@ -150,7 +155,7 @@ class UnionType implements \Serializable {
             $node,
             $should_catch_issue_exception
         );
-	}
+    }
 
     /**
      * A list of types for parameters associated with the
@@ -221,7 +226,8 @@ class UnionType implements \Serializable {
      * The set of simple types associated with this
      * union type.
      */
-    public function getTypeSet() {
+    public function getTypeSet()
+    {
         return $this->type_set;
     }
 
@@ -230,7 +236,8 @@ class UnionType implements \Serializable {
      *
      * @return void
      */
-    public function addType(Type $type) {
+    public function addType(Type $type)
+    {
         $this->type_set->attach($type);
     }
 
@@ -239,7 +246,8 @@ class UnionType implements \Serializable {
      * True if this union type contains the given named
      * type.
      */
-    public function hasType(Type $type) : bool {
+    public function hasType(Type $type) : bool
+    {
         return $this->type_set->contains($type);
     }
 
@@ -248,7 +256,8 @@ class UnionType implements \Serializable {
      *
      * @return null
      */
-    public function addUnionType(UnionType $union_type) {
+    public function addUnionType(UnionType $union_type)
+    {
         $this->type_set->addAll(
             $union_type->getTypeSet()
         );
@@ -260,7 +269,8 @@ class UnionType implements \Serializable {
      * class context in which it exists such as 'static'
      * or 'self'.
      */
-    public function hasSelfType() : bool {
+    public function hasSelfType() : bool
+    {
         return (false !==
             $this->type_set->find(function (Type $type) : bool {
                 return $type->isSelfType();
@@ -273,7 +283,8 @@ class UnionType implements \Serializable {
      * True if and only if this UnionType contains
      * the given type and no others.
      */
-    public function isType(Type $type) : bool {
+    public function isType(Type $type) : bool
+    {
         if ($this->typeCount() != 1) {
             return false;
         }
@@ -286,13 +297,14 @@ class UnionType implements \Serializable {
      * True if this UnionType is exclusively native
      * types
      */
-    public function isNativeType() : bool {
+    public function isNativeType() : bool
+    {
         if ($this->isEmpty()) {
             return false;
         }
 
         return (false ===
-            $this->type_set->find(function(Type $type) : bool {
+            $this->type_set->find(function (Type $type) : bool {
                 return !$type->isNativeType();
             })
         );
@@ -303,7 +315,8 @@ class UnionType implements \Serializable {
      * True iff this union contains the exact set of types
      * represented in the given union type.
      */
-    public function isEqualTo(UnionType $union_type) : bool {
+    public function isEqualTo(UnionType $union_type) : bool
+    {
         return ((string)$this === (string)$union_type);
     }
 
@@ -315,7 +328,8 @@ class UnionType implements \Serializable {
      * True if this union type contains any of the given
      * named types
      */
-    public function hasAnyType(array $type_list) : bool {
+    public function hasAnyType(array $type_list) : bool
+    {
         return $this->type_set->containsAny($type_list);
     }
 
@@ -323,7 +337,8 @@ class UnionType implements \Serializable {
      * @return int
      * The number of types in this union type
      */
-    public function typeCount() : int {
+    public function typeCount() : int
+    {
         return $this->type_set->count();
     }
 
@@ -331,7 +346,8 @@ class UnionType implements \Serializable {
      * @return bool
      * True if this Union has no types
      */
-    public function isEmpty() : bool {
+    public function isEmpty() : bool
+    {
         return ($this->typeCount() < 1);
     }
 
@@ -383,7 +399,7 @@ class UnionType implements \Serializable {
 
         // If either type is unknown, we can't call it
         // a success
-        if($this->isEmpty() || $target->isEmpty()) {
+        if ($this->isEmpty() || $target->isEmpty()) {
             return true;
         }
 
@@ -418,12 +434,12 @@ class UnionType implements \Serializable {
         // Check conversion on the cross product of all
         // type combinations and see if any can cast to
         // any.
-        foreach($this->getTypeSet() as $source_type) {
-            if(empty($source_type)) {
+        foreach ($this->getTypeSet() as $source_type) {
+            if (empty($source_type)) {
                 continue;
             }
-            foreach($target->getTypeSet() as $target_type) {
-                if(empty($target_type)) {
+            foreach ($target->getTypeSet() as $target_type) {
+                if (empty($target_type)) {
                     continue;
                 }
 
@@ -445,13 +461,14 @@ class UnionType implements \Serializable {
      * @see \Phan\Deprecated\Util::type_scalar
      * Formerly `function type_scalar`
      */
-    public function isScalar() : bool {
+    public function isScalar() : bool
+    {
         if ($this->isEmpty()) {
             return false;
         }
 
         return (false ===
-            $this->type_set->find(function(Type $type) : bool {
+            $this->type_set->find(function (Type $type) : bool {
                 return !$type->isScalar();
             })
         );
@@ -461,9 +478,10 @@ class UnionType implements \Serializable {
      * @return UnionType
      * Get the subset of types which are not native
      */
-    public function nonNativeTypes() : UnionType {
+    public function nonNativeTypes() : UnionType
+    {
         return new UnionType(
-            $this->type_set->filter(function(Type $type) {
+            $this->type_set->filter(function (Type $type) {
                 return !$type->isNativeType();
             })
         );
@@ -484,8 +502,7 @@ class UnionType implements \Serializable {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->nonNativeTypes()->getTypeSet()
-            as $class_type
-        ) {
+        as $class_type) {
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
 
@@ -510,7 +527,8 @@ class UnionType implements \Serializable {
      * @see \Phan\Deprecated\Pass2::nongenerics
      * Formerly `function nongenerics`
      */
-    public function nonGenericArrayTypes() : UnionType {
+    public function nonGenericArrayTypes() : UnionType
+    {
         return new UnionType(
             $this->type_set->filter(
                 function (Type $type) : bool {
@@ -524,13 +542,14 @@ class UnionType implements \Serializable {
      * @return bool
      * True if this is exclusively generic types
      */
-    public function isGenericArray() : bool {
+    public function isGenericArray() : bool
+    {
         if ($this->isEmpty()) {
             return false;
         }
 
         return (false ===
-            $this->type_set->find(function(Type $type) : bool {
+            $this->type_set->find(function (Type $type) : bool {
                 return !$type->isGenericArray();
             })
         );
@@ -542,7 +561,8 @@ class UnionType implements \Serializable {
      * @return UnionType
      * The subset of types in this
      */
-    public function genericArrayElementTypes() : UnionType {
+    public function genericArrayElementTypes() : UnionType
+    {
         // If array is in there, then it can be any type
         // Same for mixed
         if ($this->hasType(ArrayType::instance())
@@ -570,7 +590,8 @@ class UnionType implements \Serializable {
      * the generic array version of this type. For instance,
      * 'int|float' will produce 'int[]|float[]'.
      */
-    public function asGenericArrayTypes() : UnionType {
+    public function asGenericArrayTypes() : UnionType
+    {
         return new UnionType(
             $this->type_set->map(function (Type $type) : Type {
                 return $type->asGenericArrayType();
@@ -595,8 +616,10 @@ class UnionType implements \Serializable {
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        assert($recursion_depth < 10,
-            "Recursion has gotten out of hand for type $this");
+        assert(
+            $recursion_depth < 10,
+            "Recursion has gotten out of hand for type $this"
+        );
 
         $union_type = new UnionType();
         foreach ($this->type_set as $type) {
@@ -618,7 +641,8 @@ class UnionType implements \Serializable {
      *
      * @see \Serializable
      */
-    public function serialize() : string {
+    public function serialize() : string
+    {
         return (string)$this;
     }
 
@@ -633,7 +657,8 @@ class UnionType implements \Serializable {
      *
      * @see \Serializable
      */
-    public function unserialize($serialized) {
+    public function unserialize($serialized)
+    {
         return self::fromFullyQualifiedString($serialized);
     }
 
@@ -642,7 +667,8 @@ class UnionType implements \Serializable {
      * A human-readable string representation of this union
      * type
      */
-    public function __toString() : string {
+    public function __toString() : string
+    {
         // Create a new array containing the string
         // representations of each type
         $type_name_list =
@@ -664,7 +690,8 @@ class UnionType implements \Serializable {
      *
      * @see \Phan\Language\Internal\FunctionSignatureMap
      */
-    public static function internalFunctionSignatureMap() {
+    public static function internalFunctionSignatureMap()
+    {
         static $map = false;
 
         if (!$map) {
@@ -673,5 +700,4 @@ class UnionType implements \Serializable {
 
         return $map;
     }
-
 }

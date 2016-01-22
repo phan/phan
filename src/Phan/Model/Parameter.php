@@ -11,7 +11,8 @@ use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\UnionType;
 
-class Parameter extends ModelOne {
+class Parameter extends ModelOne
+{
 
     /**
      * @var ParameterElement
@@ -39,7 +40,8 @@ class Parameter extends ModelOne {
         $this->primary_key_value = $primary_key_value;
     }
 
-    public static function createSchema() : Schema {
+    public static function createSchema() : Schema
+    {
         $schema = new Schema('Parameter', [
             new Column('id', Column::TYPE_INT, true, true),
             new Column('method_fqsen', Column::TYPE_STRING),
@@ -64,7 +66,8 @@ class Parameter extends ModelOne {
     /**
      * @return ParameterElement
      */
-    public function getParameter() : ParameterElement {
+    public function getParameter() : ParameterElement
+    {
         return $this->parameter;
     }
 
@@ -86,7 +89,8 @@ class Parameter extends ModelOne {
      *
      * @return void
      */
-    public function write(Database $database) {
+    public function write(Database $database)
+    {
         parent::write($database);
         $this->primary_key_value =
             $database->lastInsertRowID();
@@ -104,7 +108,8 @@ class Parameter extends ModelOne {
         static::schema()->initializeOnce($database);
 
         $query = static::schema()->queryForSelectColumnValue(
-            'method_fqsen', (string)$fqsen
+            'method_fqsen',
+            (string)$fqsen
         );
 
         $result = $database->query($query);
@@ -125,7 +130,8 @@ class Parameter extends ModelOne {
      * @return string
      * The value of the primary key for this model
      */
-    public function primaryKeyValue() {
+    public function primaryKeyValue()
+    {
         return (string)$this->primary_key_value;
     }
 
@@ -134,7 +140,8 @@ class Parameter extends ModelOne {
      * Get a map from column name to row values for
      * this instance
      */
-    public function toRow() : array {
+    public function toRow() : array
+    {
         return [
             'method_fqsen' => (string)$this->method_fqsen,
             'name' => (string)$this->parameter->getName(),
@@ -152,7 +159,8 @@ class Parameter extends ModelOne {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : Parameter {
+    public static function fromRow(array $row) : Parameter
+    {
         if (false !== strpos($row['method_fqsen'], '::')) {
             $method_fqsen = FullyQualifiedMethodName::fromFullyQualifiedString(
                 $row['method_fqsen']
@@ -174,5 +182,4 @@ class Parameter extends ModelOne {
 
         return $parameter;
     }
-
 }

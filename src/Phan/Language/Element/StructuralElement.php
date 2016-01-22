@@ -7,7 +7,8 @@ use \Phan\Language\Context;
  * Any PHP structural element such as a property, constant
  * class, method, closure, ...
  */
-abstract class StructuralElement {
+abstract class StructuralElement
+{
 
     /**
      * @var Context
@@ -43,7 +44,8 @@ abstract class StructuralElement {
      *
      * @return null
      */
-    public function __clone() {
+    public function __clone()
+    {
         $this->context = $this->context
             ? clone($this->context)
             : $this->context;
@@ -53,7 +55,8 @@ abstract class StructuralElement {
      * @return Context
      * The context in which this structural element exists
      */
-    public function getContext() : Context {
+    public function getContext() : Context
+    {
         return $this->context;
     }
 
@@ -61,7 +64,8 @@ abstract class StructuralElement {
      * @return bool
      * True if this element is marked as deprecated
      */
-    public function isDeprecated() : bool {
+    public function isDeprecated() : bool
+    {
         return $this->is_deprecated;
     }
 
@@ -71,7 +75,8 @@ abstract class StructuralElement {
      *
      * @return null
      */
-    public function setIsDeprecated(bool $is_deprecated) {
+    public function setIsDeprecated(bool $is_deprecated)
+    {
         $this->is_deprecated = $is_deprecated;
     }
 
@@ -81,7 +86,8 @@ abstract class StructuralElement {
      *
      * @return void
      */
-    public function setSuppressIssueList(array $suppress_issue_list) {
+    public function setSuppressIssueList(array $suppress_issue_list)
+    {
         $this->suppress_issue_list = [];
         foreach ($suppress_issue_list as $i => $issue_name) {
             $this->suppress_issue_list[$issue_name] = $issue_name;
@@ -93,7 +99,8 @@ abstract class StructuralElement {
      * True if this element would like to suppress the given
      * issue name
      */
-    public function hasSuppressIssue(string $issue_name) : bool {
+    public function hasSuppressIssue(string $issue_name) : bool
+    {
         return isset($this->suppress_issue_list[$issue_name]);
     }
 
@@ -101,7 +108,8 @@ abstract class StructuralElement {
      * @return bool
      * True if this was an internal PHP object
      */
-    public function isInternal() : bool {
+    public function isInternal() : bool
+    {
         return 'internal' === $this->getContext()->getFile();
     }
 }

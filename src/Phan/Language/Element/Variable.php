@@ -8,7 +8,8 @@ use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \ast\Node;
 
-class Variable extends TypedStructuralElement {
+class Variable extends TypedStructuralElement
+{
 
     /**
      * @param \phan\Context $context
@@ -105,7 +106,8 @@ class Variable extends TypedStructuralElement {
         ]);
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = '';
 
         if (!$this->getUnionType()->isEmpty()) {
@@ -114,5 +116,4 @@ class Variable extends TypedStructuralElement {
 
         return "$string\${$this->getName()}";
     }
-
 }

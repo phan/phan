@@ -23,15 +23,17 @@ foreach ([
 }
 
 // Customize assertions
-assert_options(ASSERT_ACTIVE,   true);
-assert_options(ASSERT_BAIL,     true);
-assert_options(ASSERT_WARNING,  false);
-assert_options(ASSERT_CALLBACK,
+assert_options(ASSERT_ACTIVE, true);
+assert_options(ASSERT_BAIL, true);
+assert_options(ASSERT_WARNING, false);
+assert_options(
+    ASSERT_CALLBACK,
     function (string $script, int $line, $expression, $message) {
         print "$script:$line ($expression) $message\n";
         debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         exit(1);
-    });
+    }
+);
 
 // Print more of the backtrace than is done by default
 set_exception_handler(function (Throwable $throwable) {
@@ -42,7 +44,8 @@ set_exception_handler(function (Throwable $throwable) {
 /**
  * @suppress PhanUnreferencedMethod
  */
-function phan_error_handler($errno, $errstr, $errfile, $errline) {
+function phan_error_handler($errno, $errstr, $errfile, $errline)
+{
     print "$errfile:$errline [$errno] $errstr\n";
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
     exit(1);

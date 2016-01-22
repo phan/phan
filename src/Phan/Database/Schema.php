@@ -7,7 +7,8 @@ use \SQLite3;
 /**
  * A schema for a persistent model
  */
-class Schema {
+class Schema
+{
     use \Phan\Memoize;
 
     /**
@@ -61,8 +62,10 @@ class Schema {
             }
         }
 
-        assert(!empty($this->primary_key_name),
-            "There must be a primary key column. None given for $table_name.");
+        assert(
+            !empty($this->primary_key_name),
+            "There must be a primary key column. None given for $table_name."
+        );
     }
 
     /**
@@ -70,7 +73,8 @@ class Schema {
      * A query to execute at table creation time, such as a query
      * to create a key.
      */
-    public function addCreateQuery(string $query) {
+    public function addCreateQuery(string $query)
+    {
         $this->create_query_list[] = $query;
     }
 
@@ -80,14 +84,16 @@ class Schema {
      *
      * @return null
      */
-    public function addAssociation(Association $model) {
+    public function addAssociation(Association $model)
+    {
         $this->association_list[] = $model;
     }
 
     /**
      * @return Association[]
      */
-    public function getAssociationList() : array {
+    public function getAssociationList() : array
+    {
         return $this->association_list;
     }
 
@@ -95,7 +101,8 @@ class Schema {
      * @return string
      * The name of the PK column
      */
-    public function primaryKeyName() : string {
+    public function primaryKeyName() : string
+    {
         return $this->primary_key_name;
     }
 
@@ -105,8 +112,9 @@ class Schema {
      *
      * @return null
      */
-    public function initializeOnce(Database $database) {
-        $this->memoize(__METHOD__, function() use ($database) {
+    public function initializeOnce(Database $database)
+    {
+        $this->memoize(__METHOD__, function () use ($database) {
             $query = $this->queryForCreateTable();
 
             // Make sure the table has been created
@@ -127,17 +135,21 @@ class Schema {
      * A query string that creates this table if it doesn't
      * yet exist
      */
-    public function queryForCreateTable() : string {
+    public function queryForCreateTable() : string
+    {
         $column_def_list = array_map(function (Column $column) {
             return (string)$column;
         }, $this->column_def_map);
 
 
         $has_autoincrement =
-            array_reduce($this->column_def_map,
+            array_reduce(
+                $this->column_def_map,
                 function (bool $carry, Column $column) {
                     return ($carry || $column->isAutoIncrement());
-                }, false);
+                },
+                false
+            );
 
         $primary_key_list = '';
         if (!$has_autoincrement) {
@@ -170,7 +182,8 @@ class Schema {
      * @return string
      * A query for inserting a row for this schema
      */
-    public function queryForInsert(array $row_map) : string {
+    public function queryForInsert(array $row_map) : string
+    {
         return "REPLACE INTO {$this->table_name} "
             . '(' . implode(', ', $this->columnList($row_map)) . ')'
             . ' values '
@@ -178,7 +191,8 @@ class Schema {
             ;
     }
 
-    private function columnList(array $row_map) : array {
+    private function columnList(array $row_map) : array
+    {
         $list = [];
         foreach ($row_map as $name => $value) {
             $list[] = $name;
@@ -186,7 +200,8 @@ class Schema {
         return $list;
     }
 
-    private function valueList(array $row_map) : array {
+    private function valueList(array $row_map) : array
+    {
         $value_list = [];
         foreach ($row_map as $name => $value) {
 
@@ -201,7 +216,7 @@ class Schema {
             if ($column_type == 'STRING') {
                 $value_list[] =
                     '"' . SQLite3::escapeString((string)$value) . '"';
-            } else if ($column_type == 'BOOL') {
+            } elseif ($column_type == 'BOOL') {
                 $value_list[] = ($value ? 1 : 0);
             } else {
                 $value_list[] = $value;
@@ -220,7 +235,8 @@ class Schema {
      * A query for getting all values for the row with the
      * given primary key
      */
-    public function queryForSelect($primary_key_value) : string {
+    public function queryForSelect($primary_key_value) : string
+    {
         return $this->queryForSelectColumnValue(
             $this->primaryKeyName(),
             $primary_key_value
@@ -235,7 +251,8 @@ class Schema {
      * A query for getting all values for the row with the
      * given primary key
      */
-    public function queryForSelectColumnValue(string $column, $value) : string {
+    public function queryForSelectColumnValue(string $column, $value) : string
+    {
 
         if ($this->column_def_map[$column]->sqlType() == 'STRING') {
             $value = '"' . SQLite3::escapeString((string)$value) . '"';
@@ -253,7 +270,8 @@ class Schema {
      * A query for deleting all values for the row with the
      * given primary key
      */
-    public function queryForDelete($primary_key_value) : string {
+    public function queryForDelete($primary_key_value) : string
+    {
         return $this->queryForDeleteColumnValue(
             $this->primaryKeyName(),
             $primary_key_value
@@ -268,7 +286,8 @@ class Schema {
      * A query for deleting all values for the row with the
      * given primary key
      */
-    public function queryForDeleteColumnValue(string $column, $value) : string {
+    public function queryForDeleteColumnValue(string $column, $value) : string
+    {
 
         if ($this->column_def_map[$column]->sqlType() == 'STRING') {
             $value = '"' . SQLite3::escapeString((string)$value) . '"';
@@ -277,5 +296,4 @@ class Schema {
         return "DELETE FROM {$this->table_name} "
             . "WHERE $column = $value";
     }
-
 }

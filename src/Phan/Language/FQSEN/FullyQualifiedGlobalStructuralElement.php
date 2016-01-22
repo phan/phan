@@ -9,7 +9,8 @@ use \Phan\Language\UnionType;
 /**
  * A Fully-Qualified Global Structural Element
  */
-abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
+abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
+{
     use \Phan\Language\FQSEN\Alternatives;
     use \Phan\Memoize;
 
@@ -35,14 +36,20 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
         string $name,
         int $alternate_id = 0
     ) {
-        assert(!empty($name),
-            "The name cannot be empty");
+        assert(
+            !empty($name),
+            "The name cannot be empty"
+        );
 
-        assert(!empty($namespace),
-            "The namespace cannot be empty");
+        assert(
+            !empty($namespace),
+            "The namespace cannot be empty"
+        );
 
-        assert($namespace[0] === '\\',
-            "The first character of a namespace must be \\, but got $namespace");
+        assert(
+            $namespace[0] === '\\',
+            "The first character of a namespace must be \\, but got $namespace"
+        );
 
         parent::__construct($name);
         $this->namespace = $namespace;
@@ -78,9 +85,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
             static::toString($namespace, $name, $alternate_id)
         ]);
 
-        return self::memoizeStatic($key, function()
-            use ($namespace, $name, $alternate_id)
-        {
+        return self::memoizeStatic($key, function ()
+ use ($namespace, $name, $alternate_id) {
+        
             return new static(
                 $namespace,
                 $name,
@@ -99,30 +106,38 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
 
         $key = get_called_class() . '|' . $fully_qualified_string;
 
-        return self::memoizeStatic($key, function()
-            use ($fully_qualified_string) {
+        return self::memoizeStatic($key, function ()
+ use ($fully_qualified_string) {
 
             // Split off the alternate_id
             $parts = explode(',', $fully_qualified_string);
             $fqsen_string = $parts[0];
             $alternate_id = (int)($parts[1] ?? 0);
 
-            assert(is_int($alternate_id),
-                "Alternate must be an integer in $fully_qualified_string");
+            assert(
+                is_int($alternate_id),
+                "Alternate must be an integer in $fully_qualified_string"
+            );
 
             $parts = explode('\\', $fqsen_string);
             $name = array_pop($parts);
 
-            assert(!empty($name),
-                "The name cannot be empty in the FQSEN '$fully_qualified_string'");
+            assert(
+                !empty($name),
+                "The name cannot be empty in the FQSEN '$fully_qualified_string'"
+            );
 
             $namespace = '\\' . implode('\\', array_filter($parts));
 
-            assert(!empty($namespace),
-                "The namespace cannot be empty in the FQSEN '$fully_qualified_string'");
+            assert(
+                !empty($namespace),
+                "The namespace cannot be empty in the FQSEN '$fully_qualified_string'"
+            );
 
-            assert($namespace[0] === '\\',
-                "The first character of the namespace '$namespace' must be \\");
+            assert(
+                $namespace[0] === '\\',
+                "The first character of the namespace '$namespace' must be \\"
+            );
 
             return static::make(
                 $namespace,
@@ -154,14 +169,18 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
         $fqsen_string = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(is_int($alternate_id),
-            "Alternate must be an integer in $fqsen_string");
+        assert(
+            is_int($alternate_id),
+            "Alternate must be an integer in $fqsen_string"
+        );
 
         $parts = explode('\\', $fqsen_string);
         $name = array_pop($parts);
 
-        assert(!empty($name),
-            "The name cannot be empty in $fqsen_string");
+        assert(
+            !empty($name),
+            "The name cannot be empty in $fqsen_string"
+        );
 
         // Check for a name map
         if ($context->hasNamespaceMapFor(static::getNamespaceMapType(), $name)) {
@@ -198,7 +217,8 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
      * The namespace associated with this FQSEN
      * or null if not defined
      */
-    public function getNamespace() : string {
+    public function getNamespace() : string
+    {
         return $this->namespace;
     }
 
@@ -238,7 +258,8 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
      * its always prefixed with a '\' and never ends in a
      * '\', and is the string "\" if there is no namespace.
      */
-    protected static function cleanNamespace(string $namespace) : string {
+    protected static function cleanNamespace(string $namespace) : string
+    {
         if (!$namespace
             || empty($namespace)
             || $namespace === '\\'
@@ -293,8 +314,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
      * A string representation of this fully-qualified
      * structural element name.
      */
-    public function __toString() : string {
-        return $this->memoize(__METHOD__, function() {
+    public function __toString() : string
+    {
+        return $this->memoize(__METHOD__, function () {
             return static::toString(
                 $this->getNamespace(),
                 $this->getName(),
@@ -302,5 +324,4 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN {
             );
         });
     }
-
 }

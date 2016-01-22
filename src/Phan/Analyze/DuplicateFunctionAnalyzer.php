@@ -8,7 +8,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 
-class DuplicateFunctionAnalyzer {
+class DuplicateFunctionAnalyzer
+{
 
     /**
      * Check to see if the given Clazz is a duplicate
@@ -58,5 +59,4 @@ class DuplicateFunctionAnalyzer {
             );
         }
     }
-
 }

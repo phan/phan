@@ -7,7 +7,8 @@ use \ast\Node\Decl;
 /**
  * A visitor of AST nodes based on the node's kind value
  */
-interface KindVisitor {
+interface KindVisitor
+{
 
     /**
      * Visit a node with kind `\ast\AST_ARRAY`

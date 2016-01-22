@@ -3,7 +3,8 @@ namespace Phan\Output;
 
 use Phan\IssueInstance;
 
-interface IssueCollectorInterface {
+interface IssueCollectorInterface
+{
 
     /**
      * Collect issue
@@ -15,5 +16,4 @@ interface IssueCollectorInterface {
      * @return IssueInstance[]
      */
     public function getCollectedIssues():array;
-
 }

@@ -11,13 +11,15 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 
-class CLI {
+class CLI
+{
     private $output;
 
     /**
      * @return OutputInterface
      */
-    public function getOutput():OutputInterface {
+    public function getOutput():OutputInterface
+    {
         return $this->output;
     }
 
@@ -38,7 +40,8 @@ class CLI {
      * Create and read command line arguments, configuring
      * \Phan\Config as a side effect.
      */
-    public function __construct() {
+    public function __construct()
+    {
 
         global $argv;
 
@@ -47,7 +50,8 @@ class CLI {
         // Parse command line args
         // still available: g,j,k,n,t,u,v,w,z
         $opts = getopt(
-            "f:m:o:c:aeqbr:pid:s:3:y:l:xh::", [
+            "f:m:o:c:aeqbr:pid:s:3:y:l:xh::",
+            [
                 'backward-compatibility-checks',
                 'dead-code-detection',
                 'directory:',
@@ -85,123 +89,124 @@ class CLI {
         $mask = -1;
         $minimumSeverity = Issue::SEVERITY_LOW;
 
-        foreach($opts ?? [] as $key => $value) {
-            switch($key) {
-            case 'h':
-            case 'help':
-                $this->usage();
-                break;
-            case 'r':
-            case 'file-list-only':
-                // Mark it so that we don't load files through
-                // other mechanisms.
-                $this->file_list_only = true;
+        foreach ($opts ?? [] as $key => $value) {
+            switch ($key) {
+                case 'h':
+                case 'help':
+                    $this->usage();
+                    break;
+                case 'r':
+                case 'file-list-only':
+                    // Mark it so that we don't load files through
+                    // other mechanisms.
+                    $this->file_list_only = true;
 
-                // Empty out the file list
-                $this->file_list = [];
+                    // Empty out the file list
+                    $this->file_list = [];
 
-                // Intentionally fall through to load the
-                // file list
-            case 'f':
-            case 'file-list':
-                $file_list = is_array($value) ? $value : [$value];
-                foreach ($file_list as $file_name) {
-                    if(is_file($file_name) && is_readable($file_name)) {
-                        $this->file_list = array_merge(
-                            $this->file_list,
-                            file($file_name, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
-                        );
-                    } else {
-                        error_log("Unable to read file $file_name");
+                    // Intentionally fall through to load the
+                    // file list
+                case 'f':
+                case 'file-list':
+                    $file_list = is_array($value) ? $value : [$value];
+                    foreach ($file_list as $file_name) {
+                        if (is_file($file_name) && is_readable($file_name)) {
+                            $this->file_list = array_merge(
+                                $this->file_list,
+                                file($file_name, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
+                            );
+                        } else {
+                            error_log("Unable to read file $file_name");
+                        }
                     }
-                }
-                break;
-            case 'l':
-            case 'directory':
-                if (!$this->file_list_only) {
-                    $directory_list = is_array($value) ? $value : [$value];
-                    foreach ($directory_list as $directory_name) {
-                        $this->file_list = array_merge(
-                            $this->file_list,
-                            $this->directoryNameToFileList(
-                                $directory_name
+                    break;
+                case 'l':
+                case 'directory':
+                    if (!$this->file_list_only) {
+                        $directory_list = is_array($value) ? $value : [$value];
+                        foreach ($directory_list as $directory_name) {
+                            $this->file_list = array_merge(
+                                $this->file_list,
+                                $this->directoryNameToFileList(
+                                    $directory_name
+                                )
+                            );
+                        }
+                    }
+                    break;
+                case 'm':
+                case 'output-mode':
+                    if (!in_array($value, $factory->getTypes(), true)) {
+                        $this->usage(
+                            sprintf(
+                                'Unknown output mode "%s". Known values are [%s]',
+                                $value,
+                                implode(',', $factory->getTypes())
                             )
                         );
                     }
-                }
-                break;
-            case 'm':
-            case 'output-mode':
-                if (!in_array($value, $factory->getTypes(), true)) {
-                    $this->usage(
-                        sprintf(
-                            'Unknown output mode "%s". Known values are [%s]',
-                            $value,
-                            implode(',', $factory->getTypes())
-                        )
-                    );
-                }
 
-                $printerType = $value;
-                break;
-            case 'c':
-            case 'parent-constructor-required':
-                Config::get()->parent_constructor_required =
+                    $printerType = $value;
+                    break;
+                case 'c':
+                case 'parent-constructor-required':
+                    Config::get()->parent_constructor_required =
                     explode(',', $value);
-                break;
-            case 'q':
-            case 'quick':
-                Config::get()->quick_mode = true;
-                break;
-            case 'b':
-            case 'backward-compatibility-checks':
-                Config::get()->backward_compatibility_checks = true;
-                break;
-            case 'p':
-            case 'progress-bar':
-                Config::get()->progress_bar = true;
-                break;
-            case 'a':
-            case 'dump-ast':
-                Config::get()->dump_ast = true;
-                break;
-            case 'e':
-            case 'expand-file-list':
-                Config::get()->expand_file_list = true;
-                break;
-            case 'o':
-            case 'output':
-                $this->output = new StreamOutput(fopen($value, 'w'));
-                break;
-            case 'i':
-            case 'ignore-undeclared':
-                $mask ^= Issue::CATEGORY_UNDEFINED;
-                break;
-            case '3':
-            case 'exclude-directory-list':
-                Config::get()->exclude_analysis_directory_list =
+                    break;
+                case 'q':
+                case 'quick':
+                    Config::get()->quick_mode = true;
+                    break;
+                case 'b':
+                case 'backward-compatibility-checks':
+                    Config::get()->backward_compatibility_checks = true;
+                    break;
+                case 'p':
+                case 'progress-bar':
+                    Config::get()->progress_bar = true;
+                    break;
+                case 'a':
+                case 'dump-ast':
+                    Config::get()->dump_ast = true;
+                    break;
+                case 'e':
+                case 'expand-file-list':
+                    Config::get()->expand_file_list = true;
+                    break;
+                case 'o':
+                case 'output':
+                    $this->output = new StreamOutput(fopen($value, 'w'));
+                    break;
+                case 'i':
+                case 'ignore-undeclared':
+                    $mask ^= Issue::CATEGORY_UNDEFINED;
+                    break;
+                case '3':
+                case 'exclude-directory-list':
+                    Config::get()->exclude_analysis_directory_list =
                     explode(',', $value);
-                break;
-            case 's':
-            case 'state-file':
-                Config::get()->stored_state_file_path = $value;
-                break;
-            case 'y':
-            case 'minimum-severity':
-                $minimumSeverity = $value;
-                break;
-            case 'd':
-            case 'project-root-directory':
-                // We handle this flag before parsing options so
-                // that we can get the project root directory to
-                // base other config flags values on
-                break;
-            case 'x':
-            case 'dead-code-detection':
-                Config::get()->dead_code_detection = true;
-                break;
-            default:
-                $this->usage("Unknown option '-$key'"); break;
+                    break;
+                case 's':
+                case 'state-file':
+                    Config::get()->stored_state_file_path = $value;
+                    break;
+                case 'y':
+                case 'minimum-severity':
+                    $minimumSeverity = $value;
+                    break;
+                case 'd':
+                case 'project-root-directory':
+                    // We handle this flag before parsing options so
+                    // that we can get the project root directory to
+                    // base other config flags values on
+                    break;
+                case 'x':
+                case 'dead-code-detection':
+                    Config::get()->dead_code_detection = true;
+                    break;
+                default:
+                    $this->usage("Unknown option '-$key'");
+                    break;
             }
         }
 
@@ -217,8 +222,8 @@ class CLI {
         Phan::setIssueCollector($collector);
 
         $pruneargv = array();
-        foreach($opts ?? [] as $opt => $value) {
-            foreach($argv as $key => $chunk) {
+        foreach ($opts ?? [] as $opt => $value) {
+            foreach ($argv as $key => $chunk) {
                 $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
                 if (($chunk == $value
@@ -232,12 +237,14 @@ class CLI {
             }
         }
 
-        while($key = array_pop($pruneargv)) {
+        while ($key = array_pop($pruneargv)) {
             unset($argv[$key]);
         }
 
-        foreach($argv as $arg) if($arg[0]=='-') {
-            $this->usage("Unknown option '{$arg}'");
+        foreach ($argv as $arg) {
+            if ($arg[0]=='-') {
+                $this->usage("Unknown option '{$arg}'");
+            }
         }
 
 
@@ -246,12 +253,13 @@ class CLI {
             // Merge in any remaining args on the CLI
             $this->file_list = array_merge(
                 $this->file_list,
-                array_slice($argv,1)
+                array_slice($argv, 1)
             );
 
             // Merge in any files given in the config
             $this->file_list = array_merge(
-                $this->file_list, Config::get()->file_list
+                $this->file_list,
+                Config::get()->file_list
             );
 
             // Merge in any directories given in the config
@@ -270,14 +278,16 @@ class CLI {
      * @return string[]
      * Get the set of files to analyze
      */
-    public function getFileList() : array {
+    public function getFileList() : array
+    {
         return $this->file_list;
     }
 
-    private function usage(string $msg='') {
+    private function usage(string $msg = '')
+    {
         global $argv;
 
-        if(!empty($msg)) {
+        if (!empty($msg)) {
             echo "$msg\n";
         }
 
@@ -377,7 +387,7 @@ EOB;
             );
 
             foreach (array_keys(iterator_to_array($iterator)) as $file_name) {
-                if(is_file($file_name) && is_readable($file_name)) {
+                if (is_file($file_name) && is_readable($file_name)) {
                     $file_list[] = $file_name;
                 } else {
                     error_log("Unable to read file $file_name");
@@ -421,14 +431,14 @@ EOB;
         // super fast
         if ($p < 1.0
             && rand(0, 1000) > (1000 * Config::get()->progress_bar_sample_rate
-        )) {
+            )) {
             return;
         }
 
         $memory = memory_get_usage()/1024/1024;
         $peak = memory_get_peak_usage()/1024/1024;
 
-        $padded_message = str_pad ($msg, 10, ' ', STR_PAD_LEFT);
+        $padded_message = str_pad($msg, 10, ' ', STR_PAD_LEFT);
 
         fwrite(STDERR, "$padded_message ");
         $current = (int)($p * 60);
@@ -444,7 +454,8 @@ EOB;
      * up the hierarchy and apply anything in there to
      * the configuration.
      */
-    private function maybeReadConfigFile() {
+    private function maybeReadConfigFile()
+    {
 
         // If the file doesn't exist here, try a directory up
         $config_file_name =
@@ -467,5 +478,4 @@ EOB;
             Config::get()->__set($key, $value);
         }
     }
-
 }

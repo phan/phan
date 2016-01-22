@@ -6,7 +6,8 @@ use \Phan\Database;
 /**
  * An association from a model to a list of strings
  */
-class ListAssociation extends Association {
+class ListAssociation extends Association
+{
     use \Phan\Memoize;
 
     /**
@@ -54,7 +55,8 @@ class ListAssociation extends Association {
      * @return Model
      * Read a model from the database with the given pk
      */
-    public function read(Database $database, ModelOne $model) {
+    public function read(Database $database, ModelOne $model)
+    {
         $read_closure = $this->read_closure;
 
         // Select all rows for this PK from the
@@ -91,7 +93,8 @@ class ListAssociation extends Association {
      *
      * @return null
      */
-    public function write(Database $database, ModelOne $model) {
+    public function write(Database $database, ModelOne $model)
+    {
         // Ensure that we've initialized this model
         $this->schema->initializeOnce($database);
 
@@ -128,10 +131,10 @@ class ListAssociation extends Association {
         $this->schema->initializeOnce($database);
 
         $query = $this->schema->queryForDeleteColumnValue(
-            'source_pk', $primary_key_value
+            'source_pk',
+            $primary_key_value
         );
 
         $database->exec($query);
     }
-
 }

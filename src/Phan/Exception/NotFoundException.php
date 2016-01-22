@@ -3,4 +3,6 @@ namespace Phan\Exception;
 
 use \Phan\Debug;
 
-class NotFoundException extends \Exception {}
+class NotFoundException extends \Exception
+{
+}

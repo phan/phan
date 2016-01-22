@@ -11,7 +11,8 @@ use \Phan\Language\FQSEN\FullyQualifiedConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Model\Constant as ConstantModel;
 
-trait ConstantMap {
+trait ConstantMap
+{
 
     /**
      * Implementing classes must support a mechanism for
@@ -29,7 +30,8 @@ trait ConstantMap {
      * @return Constant[][]
      * A map from FQSEN to constant
      */
-    public function getConstantMap() : array {
+    public function getConstantMap() : array
+    {
         return $this->constant_map;
     }
 
@@ -37,7 +39,8 @@ trait ConstantMap {
      * @return Constant[]
      * A map from name to constant
      */
-    public function getConstantMapForScope(FQSEN $fqsen) : array {
+    public function getConstantMapForScope(FQSEN $fqsen) : array
+    {
         if (empty($this->constant_map[(string)$fqsen])) {
             return [];
         }
@@ -51,7 +54,8 @@ trait ConstantMap {
      *
      * @return null
      */
-    public function setConstantMap(array $constant_map) {
+    public function setConstantMap(array $constant_map)
+    {
         $this->constant_map = $constant_map;
     }
 
@@ -65,7 +69,8 @@ trait ConstantMap {
      *
      * @return bool
      */
-    public function hasConstant(FQSEN $fqsen = null, string $name) : bool {
+    public function hasConstant(FQSEN $fqsen = null, string $name) : bool
+    {
         if (!empty($this->constant_map[(string)$fqsen][$name])) {
             return true;
         }
@@ -73,7 +78,8 @@ trait ConstantMap {
         if (Database::isEnabled()) {
             // Otherwise, check the database
             try {
-                ConstantModel::read(Database::get(),
+                ConstantModel::read(
+                    Database::get(),
                     (string)$fqsen . '|' . $name
                 );
                 return true;
@@ -97,13 +103,15 @@ trait ConstantMap {
      * @return Constant
      * Get the constant with the given FQSEN
      */
-    public function getConstant(FQSEN $fqsen = null, string $name) : Constant {
+    public function getConstant(FQSEN $fqsen = null, string $name) : Constant
+    {
 
         if (empty($this->constant_map[(string)$fqsen][$name])
             && Database::isEnabled()
         ) {
             $this->constant_map[(string)$fqsen][$name] =
-                ConstantModel::read(Database::get(),
+                ConstantModel::read(
+                    Database::get(),
                     (string)$fqsen . '|' . $name
                 )->getConstant();
         }
@@ -117,7 +125,8 @@ trait ConstantMap {
      *
      * @return null
      */
-    public function addConstant(Constant $constant) {
+    public function addConstant(Constant $constant)
+    {
         $this->addConstantInScope(
             $constant,
             $constant->getFQSEN()
@@ -146,7 +155,8 @@ trait ConstantMap {
      *
      * @return null
      */
-    protected function storeConstantMap() {
+    protected function storeConstantMap()
+    {
         if (!Database::isEnabled()) {
             return;
         }
@@ -169,7 +179,8 @@ trait ConstantMap {
     ) {
         // Remove it from the database
         if (Database::isEnabled()) {
-            ConstantModel::delete(Database::get(),
+            ConstantModel::delete(
+                Database::get(),
                 $scope . '|' .  $name
             );
         }
@@ -177,5 +188,4 @@ trait ConstantMap {
         // Remove it from memory
         unset($this->constant_map[$scope][$name]);
     }
-
 }

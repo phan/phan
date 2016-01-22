@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-trait Memoize {
+trait Memoize
+{
     use Profile;
 
     /**
@@ -25,7 +26,8 @@ trait Memoize {
      * @return mixed
      * The result of the given computation is returned
      */
-    protected function memoize(string $key, \Closure $fn) {
+    protected function memoize(string $key, \Closure $fn)
+    {
         if (!array_key_exists($key, $this->memoized_data)) {
             $this->memoized_data[$key] = $fn();
         }
@@ -48,7 +50,8 @@ trait Memoize {
      * @return mixed
      * The result of the given computation is returned
      */
-    protected static function memoizeStatic(string $key, \Closure $fn) {
+    protected static function memoizeStatic(string $key, \Closure $fn)
+    {
         static $memoized_data = [];
 
         if (!array_key_exists($key, $memoized_data)) {
@@ -63,7 +66,8 @@ trait Memoize {
      *
      * @return null
      */
-    protected function memoizeFlushAll() {
+    protected function memoizeFlushAll()
+    {
         $this->memoized_data = [];
     }
 }

@@ -16,7 +16,8 @@ use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 
-class Clazz extends TypedStructuralElement implements Addressable {
+class Clazz extends TypedStructuralElement implements Addressable
+{
     use AddressableImplementation;
     use \Phan\Memoize;
 
@@ -137,14 +138,14 @@ class Clazz extends TypedStructuralElement implements Addressable {
         // Build a set of flags based on the constitution
         // of the built-in class
         $flags = 0;
-        if($class->isFinal()) {
+        if ($class->isFinal()) {
             $flags = \ast\flags\CLASS_FINAL;
-        } else if($class->isInterface()) {
+        } elseif ($class->isInterface()) {
             $flags = \ast\flags\CLASS_INTERFACE;
-        } else if($class->isTrait()) {
+        } elseif ($class->isTrait()) {
             $flags = \ast\flags\CLASS_TRAIT;
         }
-        if($class->isAbstract()) {
+        if ($class->isAbstract()) {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
 
@@ -160,7 +161,7 @@ class Clazz extends TypedStructuralElement implements Addressable {
 
         // If this class has a parent class, add it to the
         // class info
-        if(($parent_class = $class->getParentClass())) {
+        if (($parent_class = $class->getParentClass())) {
 
             $parent_class_fqsen =
                 FullyQualifiedClassName::fromFullyQualifiedString(
@@ -170,7 +171,7 @@ class Clazz extends TypedStructuralElement implements Addressable {
             $clazz->setParentClassFQSEN($parent_class_fqsen);
         }
 
-        foreach($class->getDefaultProperties() as $name => $value) {
+        foreach ($class->getDefaultProperties() as $name => $value) {
             // TODO: whats going on here?
             $reflection_property =
                 new \ReflectionProperty($class->getName(), $name);
@@ -201,7 +202,7 @@ class Clazz extends TypedStructuralElement implements Addressable {
             );
         }
 
-        foreach($class->getConstants() as $name => $value) {
+        foreach ($class->getConstants() as $name => $value) {
             $clazz->addConstant(
                 $code_base,
                 new Constant(
@@ -213,7 +214,7 @@ class Clazz extends TypedStructuralElement implements Addressable {
             );
         }
 
-        foreach($class->getMethods() as $reflection_method) {
+        foreach ($class->getMethods() as $reflection_method) {
             $method_list =
                 Method::methodListFromReflectionClassAndMethod(
                     $context->withClassFQSEN($clazz->getFQSEN()),
@@ -236,7 +237,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      *
      * @return null
      */
-    public function setParentClassFQSEN(FullyQualifiedClassName $fqsen) {
+    public function setParentClassFQSEN(FullyQualifiedClassName $fqsen)
+    {
         $this->parent_class_fqsen = $fqsen;
 
         // Add the parent to the union type of this
@@ -250,7 +252,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return bool
      * True if this class has a parent class
      */
-    public function hasParentClassFQSEN() : bool {
+    public function hasParentClassFQSEN() : bool
+    {
         return !empty($this->parent_class_fqsen);
     }
 
@@ -258,7 +261,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return FQSEN
      * The parent class of this class if one exists
      */
-    public function getParentClassFQSEN() : FullyQualifiedClassName {
+    public function getParentClassFQSEN() : FullyQualifiedClassName
+    {
         return $this->parent_class_fqsen;
     }
 
@@ -269,7 +273,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      *
      * @return null
      */
-    public function addInterfaceClassFQSEN(FQSEN $fqsen) {
+    public function addInterfaceClassFQSEN(FQSEN $fqsen)
+    {
         $this->interface_fqsen_list[] = $fqsen;
 
         // Add the interface to the union type of this
@@ -283,7 +288,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return FQSEN[]
      * Get the list of interfaces implemented by this class
      */
-    public function getInterfaceFQSENList() : array {
+    public function getInterfaceFQSENList() : array
+    {
         return $this->interface_fqsen_list;
     }
 
@@ -423,7 +429,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return Property[]
      * The list of properties on this class
      */
-    public function getPropertyMap(CodeBase $code_base) : array {
+    public function getPropertyMap(CodeBase $code_base) : array
+    {
         return $code_base->getPropertyMapForScope(
             $this->getFQSEN()
         );
@@ -477,7 +484,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return Constant[]
      * The constants associated with this class
      */
-    public function getConstantMap(CodeBase $code_base) : array {
+    public function getConstantMap(CodeBase $code_base) : array
+    {
         return $code_base->getConstantMapForScope(
             $this->getFQSEN()
         );
@@ -502,7 +510,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
         }
 
         $code_base->addMethodInScope(
-            $method, $this->getFQSEN()
+            $method,
+            $this->getFQSEN()
         );
     }
 
@@ -573,7 +582,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return Method[]
      * A list of methods on this class
      */
-    public function getMethodMap(CodeBase $code_base) : array {
+    public function getMethodMap(CodeBase $code_base) : array
+    {
         return $code_base->getMethodMapForScope(
             $this->getFQSEN()
         );
@@ -582,7 +592,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
     /**
      * @return null
      */
-    public function addTraitFQSEN(FQSEN $fqsen) {
+    public function addTraitFQSEN(FQSEN $fqsen)
+    {
         $this->trait_fqsen_list[] = $fqsen;
 
         // Add the trait to the union type of this class
@@ -595,7 +606,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return FQSEN[]
      * A list of FQSEN's for included traits
      */
-    public function getTraitFQSENList() : array {
+    public function getTraitFQSENList() : array
+    {
         return $this->trait_fqsen_list;
     }
 
@@ -603,14 +615,16 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return bool
      * True if this class calls its parent constructor
      */
-    public function getIsParentConstructorCalled() : bool {
+    public function getIsParentConstructorCalled() : bool
+    {
         return $this->is_parent_constructor_called;
     }
 
     /**
      * @return null
      */
-    public function setIsParentConstructorCalled(bool $is_parent_constructor_called) {
+    public function setIsParentConstructorCalled(bool $is_parent_constructor_called)
+    {
         $this->is_parent_constructor_called =
             $is_parent_constructor_called;
     }
@@ -619,7 +633,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return bool
      * True if this is a final class
      */
-    public function isFinal() : bool {
+    public function isFinal() : bool
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\CLASS_FINAL
         );
@@ -629,7 +644,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return bool
      * True if this is an abstract class
      */
-    public function isAbstract() : bool {
+    public function isAbstract() : bool
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\CLASS_ABSTRACT
         );
@@ -639,7 +655,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return bool
      * True if this is an interface
      */
-    public function isInterface() : bool {
+    public function isInterface() : bool
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\CLASS_INTERFACE
         );
@@ -649,7 +666,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return bool
      * True if this class is a trait
      */
-    public function isTrait() : bool {
+    public function isTrait() : bool
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\CLASS_TRAIT
         );
@@ -658,7 +676,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
     /**
      * @return FullyQualifiedClassName
      */
-    public function getFQSEN() : FQSEN {
+    public function getFQSEN() : FQSEN
+    {
         // Allow overrides
         if ($this->fqsen) {
             return $this->fqsen;
@@ -677,7 +696,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      *
      * @return FullyQualifiedClassName[]
      */
-    public function getNonParentAncestorFQSENList(CodeBase $code_base) {
+    public function getNonParentAncestorFQSENList(CodeBase $code_base)
+    {
         return array_merge(
             $this->getTraitFQSENList(),
             $this->getInterfaceFQSENList()
@@ -687,7 +707,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
     /**
      * @return FullyQualifiedClassName[]
      */
-    public function getAncestorFQSENList(CodeBase $code_base) {
+    public function getAncestorFQSENList(CodeBase $code_base)
+    {
         $ancestor_list = $this->getNonParentAncestorFQSENList($code_base);
 
         if ($this->hasParentClassFQSEN()) {
@@ -704,7 +725,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      *
      * @return Clazz[]
      */
-    public function getAncestorClazzList(CodeBase $code_base) {
+    public function getAncestorClazzList(CodeBase $code_base)
+    {
         $ancestor_class_list = [];
         foreach ($this->getAncestorFQSENList($code_base) as $fqsen) {
             if ($code_base->hasClassWithFQSEN($fqsen)) {
@@ -721,8 +743,9 @@ class Clazz extends TypedStructuralElement implements Addressable {
      *
      * @return void
      */
-    public function analyzeMethodOverrides(CodeBase $code_base) {
-        return $this->memoize(__METHOD__, function() use ($code_base) {
+    public function analyzeMethodOverrides(CodeBase $code_base)
+    {
+        return $this->memoize(__METHOD__, function () use ($code_base) {
 
             // Get the list of ancestors of this class
             $ancestor_class_list = $this->getAncestorClazzList(
@@ -733,13 +756,16 @@ class Clazz extends TypedStructuralElement implements Addressable {
             // something. We're relying here on having copied
             // methods to subclasses.
             foreach ($this->getMethodMap($code_base) as $name => $method) {
-                $is_override = array_reduce($ancestor_class_list,
+                $is_override = array_reduce(
+                    $ancestor_class_list,
                     function (bool $carry, Clazz $class) use ($code_base, $name) {
                         return ($carry || $class->hasMethodWithName(
                             $code_base,
                             $name
                         ));
-                    }, false);
+                    },
+                    false
+                );
 
                 // Tell the method if its overriding something or not
                 $method->setIsOverride($is_override);
@@ -757,8 +783,9 @@ class Clazz extends TypedStructuralElement implements Addressable {
      *
      * @return null
      */
-    public function importAncestorClasses(CodeBase $code_base) {
-        $this->memoize(__METHOD__, function() use ($code_base) {
+    public function importAncestorClasses(CodeBase $code_base)
+    {
+        $this->memoize(__METHOD__, function () use ($code_base) {
             foreach ($this->getNonParentAncestorFQSENList($code_base) as $fqsen) {
                 if (!$code_base->hasClassWithFQSEN($fqsen)) {
                     continue;
@@ -785,8 +812,9 @@ class Clazz extends TypedStructuralElement implements Addressable {
      *
      * @return null
      */
-    public function importParentClass(CodeBase $code_base) {
-        $this->memoize(__METHOD__, function() use ($code_base) {
+    public function importParentClass(CodeBase $code_base)
+    {
+        $this->memoize(__METHOD__, function () use ($code_base) {
             if (!$this->hasParentClassFQSEN()) {
                 return;
             }
@@ -798,8 +826,10 @@ class Clazz extends TypedStructuralElement implements Addressable {
                 return;
             }
 
-            assert($code_base->hasClassWithFQSEN($this->getParentClassFQSEN()),
-                "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist from {$this->getContext()}");
+            assert(
+                $code_base->hasClassWithFQSEN($this->getParentClassFQSEN()),
+                "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist from {$this->getContext()}"
+            );
 
             // Get the parent class
             $parent = $code_base->getClassByFQSEN(
@@ -830,8 +860,9 @@ class Clazz extends TypedStructuralElement implements Addressable {
         CodeBase $code_base,
         Clazz $superclazz
     ) {
-        $this->memoize((string)$superclazz->getFQSEN(),
-            function() use ($code_base, $superclazz) {
+        $this->memoize(
+            (string)$superclazz->getFQSEN(),
+            function () use ($code_base, $superclazz) {
 
                 // Copy properties
                 foreach ($superclazz->getPropertyMap($code_base) as $property) {
@@ -847,7 +878,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
                 foreach ($superclazz->getMethodMap($code_base) as $method) {
                     $this->addMethod($code_base, $method);
                 }
-            });
+            }
+        );
     }
 
     /**
@@ -861,8 +893,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
 
         // A function that maps a list of elements to the
         // total reference count for all elements
-        $list_count = function(array $list) use ($code_base) {
-            return array_reduce($list, function(
+        $list_count = function (array $list) use ($code_base) {
+            return array_reduce($list, function (
                 int $count,
                 TypedStructuralElement $element
             ) use ($code_base) {
@@ -885,7 +917,8 @@ class Clazz extends TypedStructuralElement implements Addressable {
      * @return string
      * A string describing this class
      */
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = '';
 
         if ($this->isFinal()) {
@@ -898,7 +931,7 @@ class Clazz extends TypedStructuralElement implements Addressable {
 
         if ($this->isInterface()) {
             $string .= 'Interface ';
-        } else if ($this->isTrait()) {
+        } elseif ($this->isTrait()) {
             $string .= 'Trait ';
         } else {
             $string .= 'Class ';

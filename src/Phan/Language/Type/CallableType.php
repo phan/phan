@@ -3,7 +3,8 @@ namespace Phan\Language\Type;
 
 use \Phan\Language\FQSEN;
 
-class CallableType extends NativeType {
+class CallableType extends NativeType
+{
     const NAME = 'callable';
 
     /**
@@ -11,7 +12,8 @@ class CallableType extends NativeType {
      */
     private $fqsen;
 
-    public static function instanceWithClosureFQSEN(FQSEN $fqsen) {
+    public static function instanceWithClosureFQSEN(FQSEN $fqsen)
+    {
         $instance = self::instance();
         $instance->fqsen = $fqsen;
         return $instance;
@@ -20,7 +22,8 @@ class CallableType extends NativeType {
     /**
      * Override asFQSEN to return the closure's FQSEN
      */
-    public function asFQSEN() : FQSEN {
+    public function asFQSEN() : FQSEN
+    {
         if (!empty($this->fqsen)) {
             return $this->fqsen;
         }

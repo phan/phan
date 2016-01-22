@@ -9,7 +9,8 @@ use \Phan\Language\Element\Variable;
 use \ast\Node;
 use \ast\Node\Decl;
 
-class ArgumentVisitor extends KindVisitorImplementation {
+class ArgumentVisitor extends KindVisitorImplementation
+{
 
     /**
      * @var CodeBase
@@ -50,7 +51,8 @@ class ArgumentVisitor extends KindVisitorImplementation {
      *
      * @return void
      */
-    public function visit(Node $node) {
+    public function visit(Node $node)
+    {
         // Nothing to do
     }
 
@@ -60,7 +62,8 @@ class ArgumentVisitor extends KindVisitorImplementation {
      *
      * @return void
      */
-    public function visitVar(Node $node) {
+    public function visitVar(Node $node)
+    {
         try {
             $variable = (new ContextNode(
                 $this->code_base,
@@ -79,7 +82,8 @@ class ArgumentVisitor extends KindVisitorImplementation {
      *
      * @return void
      */
-    public function visitStaticProp(Node $node) {
+    public function visitStaticProp(Node $node)
+    {
         $this->visitProp($node);
     }
 
@@ -89,7 +93,8 @@ class ArgumentVisitor extends KindVisitorImplementation {
      *
      * @return void
      */
-    public function visitProp(Node $node) {
+    public function visitProp(Node $node)
+    {
         try {
 
             // Only look at properties with names that aren't
@@ -116,7 +121,8 @@ class ArgumentVisitor extends KindVisitorImplementation {
      *
      * @return void
      */
-    public function visitClosure(Decl $node) {
+    public function visitClosure(Decl $node)
+    {
         try {
             $method = (new ContextNode(
                 $this->code_base,
@@ -136,12 +142,13 @@ class ArgumentVisitor extends KindVisitorImplementation {
      *
      * @return void
      */
-    public function visitCall(Node $node) {
+    public function visitCall(Node $node)
+    {
 
         $method_name = null;
         if (isset($node->children['method'])) {
             $method_name = $node->children['method'];
-        } else if (isset($node->children['expr'])) {
+        } elseif (isset($node->children['expr'])) {
             if ($node->children['expr']->kind == \ast\AST_NAME) {
                 $method_name = $node->children['expr']->children['name'];
             }
@@ -175,7 +182,8 @@ class ArgumentVisitor extends KindVisitorImplementation {
      *
      * @return void
      */
-    public function visitMethodCall(Node $node) {
+    public function visitMethodCall(Node $node)
+    {
         return $this->visitCall($node);
     }
 
@@ -185,8 +193,8 @@ class ArgumentVisitor extends KindVisitorImplementation {
      *
      * @return void
      */
-    public function visitStaticCall(Node $node) {
+    public function visitStaticCall(Node $node)
+    {
         return $this->visitCall($node);
     }
-
 }

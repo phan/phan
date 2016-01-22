@@ -9,7 +9,8 @@ use \Phan\Language\Element\Clazz as ClazzElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;
 
-class Clazz extends ModelOne {
+class Clazz extends ModelOne
+{
 
     /**
      * @var ClazzElement
@@ -19,11 +20,13 @@ class Clazz extends ModelOne {
     /**
      * @param ClazzElement $clazz
      */
-    public function __construct(ClazzElement $clazz) {
+    public function __construct(ClazzElement $clazz)
+    {
         $this->clazz = $clazz;
     }
 
-    public function getClass() : ClazzElement {
+    public function getClass() : ClazzElement
+    {
         return $this->clazz;
     }
 
@@ -38,7 +41,8 @@ class Clazz extends ModelOne {
         return parent::read($database, $primary_key_value);
     }
 
-    public static function createSchema() : Schema {
+    public static function createSchema() : Schema
+    {
         return new Schema('Clazz', [
             new Column('fqsen', Column::TYPE_STRING, true),
             new Column('name', Column::TYPE_STRING),
@@ -57,7 +61,8 @@ class Clazz extends ModelOne {
      * @return string
      * The value of the primary key for this model
      */
-    public function primaryKeyValue() {
+    public function primaryKeyValue()
+    {
         return (string)$this->clazz->getFQSEN();
     }
 
@@ -66,7 +71,8 @@ class Clazz extends ModelOne {
      * Get a map from column name to row values for
      * this instance
      */
-    public function toRow() : array {
+    public function toRow() : array
+    {
 
         $parent_class_fqsen = $this->clazz->hasParentClassFQSEN()
             ? (string)$this->clazz->getParentClassFQSEN()
@@ -104,7 +110,8 @@ class Clazz extends ModelOne {
      * @return Model
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : Clazz {
+    public static function fromRow(array $row) : Clazz
+    {
         $parent_fqsen = $row['parent_class_fqsen']
             ? FullyQualifiedClassName::fromFullyQualifiedString($row['parent_class_fqsen'])
             : null;
@@ -135,5 +142,4 @@ class Clazz extends ModelOne {
 
         return new Clazz($clazz);
     }
-
 }

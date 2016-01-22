@@ -11,7 +11,13 @@ use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Issue;
 use \Phan\Language\Context;
-use \Phan\Language\Element\{Clazz, Comment, Constant, Method, Property};
+use \Phan\Language\Element\{
+    Clazz,
+    Comment,
+    Constant,
+    Method,
+    Property
+};
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
@@ -45,7 +51,8 @@ use \ast\Node\Decl;
  * globally accessible structural elements and will return a
  * possibly new context as modified by the given node.
  */
-class ParseVisitor extends ScopeVisitor {
+class ParseVisitor extends ScopeVisitor
+{
 
     /**
      * @param Context $context
@@ -73,7 +80,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClass(Decl $node) : Context {
+    public function visitClass(Decl $node) : Context
+    {
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name = (new ContextNode(
                 $this->code_base,
@@ -90,8 +98,10 @@ class ParseVisitor extends ScopeVisitor {
             return $this->context;
         }
 
-        assert(!empty($class_name),
-            "Class must have name in {$this->context}");
+        assert(
+            !empty($class_name),
+            "Class must have name in {$this->context}"
+        );
 
         $class_fqsen =
             FullyQualifiedClassName::fromStringInContext(
@@ -101,7 +111,7 @@ class ParseVisitor extends ScopeVisitor {
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while($this->code_base->hasClassWithFQSEN($class_fqsen)) {
+        while ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
             $class_fqsen = $class_fqsen->withAlternateId(++$alternate_id);
         }
 
@@ -126,12 +136,12 @@ class ParseVisitor extends ScopeVisitor {
         $this->code_base->addClass($clazz);
 
         // Look to see if we have a parent class
-        if(!empty($node->children['extends'])) {
+        if (!empty($node->children['extends'])) {
             $parent_class_name =
                 $node->children['extends']->children['name'];
 
             // Check to see if the name isn't fully qualified
-            if($node->children['extends']->flags & \ast\flags\NAME_NOT_FQ) {
+            if ($node->children['extends']->flags & \ast\flags\NAME_NOT_FQ) {
                 if ($this->context->hasNamespaceMapFor(
                     T_CLASS,
                     $parent_class_name
@@ -150,7 +160,7 @@ class ParseVisitor extends ScopeVisitor {
 
             // The name is fully qualified. Make sure it looks
             // like it is
-            if(0 !== strpos($parent_class_name, '\\')) {
+            if (0 !== strpos($parent_class_name, '\\')) {
                 $parent_class_name = '\\' . $parent_class_name;
             }
 
@@ -200,7 +210,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitUseTrait(Node $node) : Context {
+    public function visitUseTrait(Node $node) : Context
+    {
         // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
@@ -234,7 +245,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Decl $node) : Context {
+    public function visitMethod(Decl $node) : Context
+    {
         // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
@@ -248,7 +260,7 @@ class ParseVisitor extends ScopeVisitor {
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while($this->code_base->hasMethod($method_fqsen)) {
+        while ($this->code_base->hasMethod($method_fqsen)) {
             $method_fqsen =
                 $method_fqsen->withAlternateId(++$alternate_id);
         }
@@ -258,9 +270,11 @@ class ParseVisitor extends ScopeVisitor {
 
         // Add $this to the scope of non-static methods
         if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
-            assert($clazz->getContext()->getScope()
+            assert(
+                $clazz->getContext()->getScope()
                 ->hasVariableWithName('this'),
-                "Classes must have a \$this variable.");
+                "Classes must have a \$this variable."
+            );
 
             $context = $context->withScopeVariable(
                 $clazz->getContext()->getScope()
@@ -281,13 +295,11 @@ class ParseVisitor extends ScopeVisitor {
 
         if ('__construct' === $method_name) {
             $clazz->setIsParentConstructorCalled(false);
-        }
-        else if ('__invoke' === $method_name) {
+        } elseif ('__invoke' === $method_name) {
             $clazz->getUnionType()->addType(
                 CallableType::instance()
             );
-        }
-        else if ('__toString' === $method_name
+        } elseif ('__toString' === $method_name
             && !$this->context->getIsStrictTypes()
         ) {
             $clazz->getUnionType()->addType(
@@ -320,7 +332,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitPropDecl(Node $node) : Context {
+    public function visitPropDecl(Node $node) : Context
+    {
         // Bomb out if we're not in a class context
         $clazz = $this->getContextClass();
 
@@ -330,7 +343,7 @@ class ParseVisitor extends ScopeVisitor {
             $this->context
         );
 
-        foreach($node->children ?? [] as $i => $child_node) {
+        foreach ($node->children ?? [] as $i => $child_node) {
             // Ignore children which are not property elements
             if (!$child_node
                 || $child_node->kind != \ast\AST_PROP_ELEM
@@ -368,12 +381,14 @@ class ParseVisitor extends ScopeVisitor {
 
             $property_name = $child_node->children['name'];
 
-            assert(is_string($property_name),
+            assert(
+                is_string($property_name),
                 'Property name must be a string. '
                 . 'Got '
                 . print_r($property_name, true)
                 . ' at '
-                . $this->context);
+                . $this->context
+            );
 
             $property =
                 new Property(
@@ -438,10 +453,11 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClassConstDecl(Node $node) : Context {
+    public function visitClassConstDecl(Node $node) : Context
+    {
         $clazz = $this->getContextClass();
 
-        foreach($node->children ?? [] as $child_node) {
+        foreach ($node->children ?? [] as $child_node) {
             $name = $child_node->children['name'];
 
             $fqsen = FullyQualifiedClassConstantName::fromStringInContext(
@@ -487,7 +503,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Decl $node) : Context {
+    public function visitFuncDecl(Decl $node) : Context
+    {
         $function_name = (string)$node->name;
 
         // Hunt for an un-taken alternate ID
@@ -502,7 +519,7 @@ class ParseVisitor extends ScopeVisitor {
                 ->withNamespace($this->context->getNamespace())
                 ->withAlternateId($alternate_id++);
 
-        } while($this->code_base
+        } while ($this->code_base
             ->hasMethod($function_fqsen));
 
         $method = Method::fromNode(
@@ -541,13 +558,14 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $node) : Context {
+    public function visitCall(Node $node) : Context
+    {
         // If this is a call to a method that indicates that we
         // are treating the method in scope as a varargs method,
         // then set its optional args to something very high so
         // it can be called with anything.
         $expression = $node->children['expr'];
-        if($expression->kind === \ast\AST_NAME
+        if ($expression->kind === \ast\AST_NAME
             && $this->context->isMethodScope()
             && in_array($expression->children['name'], [
                 'func_get_args', 'func_get_arg', 'func_num_args'
@@ -570,20 +588,21 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitStaticCall(Node $node) : Context {
+    public function visitStaticCall(Node $node) : Context
+    {
         $call = $node->children['class'];
 
-        if($call->kind == \ast\AST_NAME) {
+        if ($call->kind == \ast\AST_NAME) {
             $func_name = strtolower($call->children['name']);
-            if($func_name == 'parent') {
+            if ($func_name == 'parent') {
                 // Make sure it is not a crazy dynamic parent method call
-                if(!($node->children['method'] instanceof Node)) {
+                if (!($node->children['method'] instanceof Node)) {
                     $meth = strtolower($node->children['method']);
 
-                    if($meth == '__construct') {
+                    if ($meth == '__construct') {
                         $clazz = $this->getContextClass();
                         $clazz->setIsParentConstructorCalled(true);
-					}
+                    }
                 }
             }
         }
@@ -601,7 +620,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitReturn(Node $node) : Context {
+    public function visitReturn(Node $node) : Context
+    {
         if (Config::get()->backward_compatibility_checks) {
             (new ContextNode(
                 $this->code_base,
@@ -620,12 +640,14 @@ class ParseVisitor extends ScopeVisitor {
         $method = null;
         if ($this->context->isClosureScope()) {
             $method = $this->context->getClosureInScope($this->code_base);
-        } else if ($this->context->isMethodScope()) {
+        } elseif ($this->context->isMethodScope()) {
             $method = $this->context->getMethodInScope($this->code_base);
         }
 
-        assert(!empty($method),
-            "We're supposed to be in either method or closure scope.");
+        assert(
+            !empty($method),
+            "We're supposed to be in either method or closure scope."
+        );
 
         // Mark the method as returning something
         $method->setHasReturn(true);
@@ -643,7 +665,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitPrint(Node $node) : Context {
+    public function visitPrint(Node $node) : Context
+    {
         return $this->visitReturn($node);
     }
 
@@ -657,7 +680,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitEcho(Node $node) : Context {
+    public function visitEcho(Node $node) : Context
+    {
         return $this->visitReturn($node);
     }
 
@@ -671,7 +695,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethodCall(Node $node) : Context {
+    public function visitMethodCall(Node $node) : Context
+    {
         return $this->visitReturn($node);
     }
 
@@ -685,7 +710,8 @@ class ParseVisitor extends ScopeVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitDeclare(Node $node) : Context {
+    public function visitDeclare(Node $node) : Context
+    {
         $declares = $node->children['declares'];
         $name = $declares->children[0]->children['name'];
         $value = $declares->children[0]->children['value'];
@@ -701,7 +727,8 @@ class ParseVisitor extends ScopeVisitor {
      * @return Clazz
      * Get the class on this scope or fail real hard
      */
-    private function getContextClass() : Clazz {
+    private function getContextClass() : Clazz
+    {
         return $this->context->getClassInScope($this->code_base);
     }
 }

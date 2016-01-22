@@ -5,13 +5,15 @@ namespace Phan;
  * A set of objects supporting union and
  * intersection
  */
-class Set extends \SplObjectStorage {
+class Set extends \SplObjectStorage
+{
 
     /**
      * @param \Iterator|array $elements
      * An optional set of items to add to the set
      */
-    public function __construct($element_iterator = null) {
+    public function __construct($element_iterator = null)
+    {
         foreach ($element_iterator ?? [] as $element) {
             $this->attach($element);
         }
@@ -21,7 +23,8 @@ class Set extends \SplObjectStorage {
      * @return array
      * An array of all elements in the set is returned
      */
-    public function toArray() : array {
+    public function toArray() : array
+    {
         return iterator_to_array($this);
     }
 
@@ -33,7 +36,8 @@ class Set extends \SplObjectStorage {
      * A new set which contains only items in this
      * Set and the given Set
      */
-    public function intersect(Set $other) : Set {
+    public function intersect(Set $other) : Set
+    {
         $set = new Set();
         foreach ($this as $element) {
             if ($other->contains($element)) {
@@ -51,7 +55,8 @@ class Set extends \SplObjectStorage {
      * A new Set containing only the elements that appear in
      * all parameters
      */
-    public static function intersectAll(array $set_list) : Set {
+    public static function intersectAll(array $set_list) : Set
+    {
         if (empty($set_list)) {
             return new Set();
         }
@@ -74,7 +79,8 @@ class Set extends \SplObjectStorage {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public function union(Set $other) : Set {
+    public function union(Set $other) : Set
+    {
         $set = new Set();
         $set->addAll($this);
         $set->addAll($other);
@@ -85,7 +91,8 @@ class Set extends \SplObjectStorage {
      * @return bool
      * True if this set contains any elements in the given list
      */
-    public function containsAny(array $element_list) : bool {
+    public function containsAny(array $element_list) : bool
+    {
         foreach ($element_list as $element) {
             if ($this->contains($element)) {
                 return true;
@@ -105,7 +112,8 @@ class Set extends \SplObjectStorage {
      * A new set for which all elements when passed to the given
      * closure return true
      */
-    public function filter(\Closure $closure) {
+    public function filter(\Closure $closure)
+    {
         $set = new Set();
         foreach ($this as $element) {
             if ($closure($element)) {
@@ -123,7 +131,8 @@ class Set extends \SplObjectStorage {
      * @return Set
      * A new set containing the mapped values
      */
-    public function map(\Closure $closure) {
+    public function map(\Closure $closure)
+    {
         $set = new Set();
         foreach ($this as $element) {
             $set->attach($closure($element));
@@ -140,7 +149,8 @@ class Set extends \SplObjectStorage {
      * true is returned or false if no elements pass the
      * given closure
      */
-    public function find(\Closure $closure) {
+    public function find(\Closure $closure)
+    {
         foreach ($this as $element) {
             if ($closure($element)) {
                 return $element;
@@ -154,14 +164,14 @@ class Set extends \SplObjectStorage {
      * A string representation of this set for use in
      * debugging
      */
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = '['
-            . implode(',', array_map(function($element) {
+            . implode(',', array_map(function ($element) {
                 return (string)$element;
             }, iterator_to_array($this)))
             . ']';
 
         return $string;
     }
-
 }

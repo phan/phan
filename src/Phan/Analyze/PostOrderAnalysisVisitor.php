@@ -33,7 +33,8 @@ use \ast\Node;
 use \ast\Node\Decl;
 use Phan\Phan;
 
-class PostOrderAnalysisVisitor extends KindVisitorImplementation {
+class PostOrderAnalysisVisitor extends KindVisitorImplementation
+{
 
     /**
      * @var CodeBase
@@ -86,7 +87,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visit(Node $node) : Context {
+    public function visit(Node $node) : Context
+    {
         // Many nodes don't change the context and we
         // don't need to read them.
         return $this->context;
@@ -100,7 +102,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitAssign(Node $node) : Context {
+    public function visitAssign(Node $node) : Context
+    {
         // Get the type of the right side of the
         // assignment
         $right_type = UnionType::fromNode(
@@ -109,8 +112,10 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $node->children['expr']
         );
 
-        assert($node->children['var'] instanceof Node,
-            "Expected left side of assignment to be a var in {$this->context}");
+        assert(
+            $node->children['var'] instanceof Node,
+            "Expected left side of assignment to be a var in {$this->context}"
+        );
 
         // Handle the assignment based on the type of the
         // right side of the equation and the kind of item
@@ -159,7 +164,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitAssignRef(Node $node) : Context {
+    public function visitAssignRef(Node $node) : Context
+    {
         return $this->visitAssign($node);
     }
 
@@ -171,7 +177,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitList(Node $node) : Context {
+    public function visitList(Node $node) : Context
+    {
         return $this->context;
     }
 
@@ -183,7 +190,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitIfElem(Node $node) : Context {
+    public function visitIfElem(Node $node) : Context
+    {
         if (!isset($node->children['cond'])
             || !($node->children['cond'] instanceof Node)
         ) {
@@ -209,7 +217,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitWhile(Node $node) : Context {
+    public function visitWhile(Node $node) : Context
+    {
         return $this->visitIfElem($node);
     }
 
@@ -221,7 +230,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitSwitch(Node $node) : Context {
+    public function visitSwitch(Node $node) : Context
+    {
         return $this->visitIfElem($node);
     }
 
@@ -233,7 +243,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitSwitchCase(Node $node) : Context {
+    public function visitSwitchCase(Node $node) : Context
+    {
         return $this->visitIfElem($node);
     }
 
@@ -245,7 +256,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitExprList(Node $node) : Context {
+    public function visitExprList(Node $node) : Context
+    {
         return $this->visitIfElem($node);
     }
 
@@ -257,7 +269,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitDoWhile(Node $node) : Context {
+    public function visitDoWhile(Node $node) : Context
+    {
         return $this->context;
     }
 
@@ -271,7 +284,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitGlobal(Node $node) : Context {
+    public function visitGlobal(Node $node) : Context
+    {
         $variable = Variable::fromNodeInContext(
             $node->children['var'],
             $this->context,
@@ -294,7 +308,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitForeach(Node $node) : Context {
+    public function visitForeach(Node $node) : Context
+    {
         $expression_type = UnionType::fromNode(
             $this->context,
             $this->code_base,
@@ -323,7 +338,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitStatic(Node $node) : Context {
+    public function visitStatic(Node $node) : Context
+    {
         $variable = Variable::fromNodeInContext(
             $node->children['var'],
             $this->context,
@@ -358,7 +374,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitEcho(Node $node) : Context {
+    public function visitEcho(Node $node) : Context
+    {
         return $this->visitPrint($node);
     }
 
@@ -370,7 +387,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitPrint(Node $node) : Context {
+    public function visitPrint(Node $node) : Context
+    {
         $type = UnionType::fromNode(
             $this->context,
             $this->code_base,
@@ -399,7 +417,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitVar(Node $node) : Context {
+    public function visitVar(Node $node) : Context
+    {
         $this->analyzeNoOp($node, Issue::NoopVariable);
         return $this->context;
     }
@@ -412,7 +431,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitArray(Node $node) : Context {
+    public function visitArray(Node $node) : Context
+    {
         $this->analyzeNoOp($node, Issue::NoopArray);
         return $this->context;
     }
@@ -425,7 +445,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitConst(Node $node) : Context {
+    public function visitConst(Node $node) : Context
+    {
 
         try {
             $constant = (new ContextNode(
@@ -458,7 +479,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClassConst(Node $node) : Context {
+    public function visitClassConst(Node $node) : Context
+    {
         try {
             $constant = (new ContextNode(
                 $this->code_base,
@@ -490,7 +512,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClosure(Decl $node) : Context {
+    public function visitClosure(Decl $node) : Context
+    {
         $this->analyzeNoOp($node, Issue::NoopClosure);
         return $this->context;
     }
@@ -503,7 +526,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitReturn(Node $node) : Context {
+    public function visitReturn(Node $node) : Context
+    {
         // Don't check return types in traits
         if ($this->context->isInClassScope()) {
             $clazz = $this->context->getClassInScope($this->code_base);
@@ -522,12 +546,14 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         $method = null;
         if ($this->context->isClosureScope()) {
             $method = $this->context->getClosureInScope($this->code_base);
-        } else if ($this->context->isMethodScope()) {
+        } elseif ($this->context->isMethodScope()) {
             $method = $this->context->getMethodInScope($this->code_base);
         }
 
-        assert(!empty($method),
-            "We're supposed to be in either method or closure scope.");
+        assert(
+            !empty($method),
+            "We're supposed to be in either method or closure scope."
+        );
 
         // Figure out what we intend to return
         $method_return_type = $method->getUnionType();
@@ -557,9 +583,9 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
         if (!$method->isReturnTypeUndefined()
             && !$expression_type->canCastToExpandedUnionType(
-                    $method_return_type,
-                    $this->code_base
-                )
+                $method_return_type,
+                $this->code_base
+            )
         ) {
             Issue::emit(
                 Issue::TypeMismatchReturn,
@@ -588,7 +614,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitPropDecl(Node $node) : Context {
+    public function visitPropDecl(Node $node) : Context
+    {
         return $this->context;
     }
 
@@ -600,7 +627,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $node) : Context {
+    public function visitCall(Node $node) : Context
+    {
         $expression = $node->children['expr'];
 
         (new ContextNode(
@@ -609,8 +637,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $node
         ))->analyzeBackwardCompatibility();
 
-        foreach($node->children['args']->children ?? [] as $arg_node) {
-            if($arg_node instanceof Node) {
+        foreach ($node->children['args']->children ?? [] as $arg_node) {
+            if ($arg_node instanceof Node) {
                 (new ContextNode(
                     $this->code_base,
                     $this->context,
@@ -626,7 +654,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 $expression
             ))->getVariableName();
 
-            if(empty($variable_name)) {
+            if (empty($variable_name)) {
                 return $this->context;
             }
 
@@ -669,9 +697,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                     }
                 }
             }
-        } else if (
-            $expression->kind == \ast\AST_NAME
-        ){
+        } elseif ($expression->kind == \ast\AST_NAME
+        ) {
             try {
                 $method = (new ContextNode(
                     $this->code_base,
@@ -692,8 +719,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                 $method,
                 $node
             );
-        } else if (
-            $expression->kind == \ast\AST_CALL
+        } elseif ($expression->kind == \ast\AST_CALL
             || $expression->kind == \ast\AST_STATIC_CALL
             || $expression->kind == \ast\AST_NEW
             || $expression->kind == \ast\AST_METHOD_CALL
@@ -706,7 +732,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
             foreach ($class_list as $class) {
                 if (!$class->hasMethodWithName(
-                    $this->code_base, '__invoke'
+                    $this->code_base,
+                    '__invoke'
                 )) {
                     continue;
                 }
@@ -745,7 +772,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitNew(Node $node) : Context {
+    public function visitNew(Node $node) : Context
+    {
         try {
             $context_node = (new ContextNode(
                 $this->code_base,
@@ -754,7 +782,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             ));
 
             $method = $context_node->getMethod(
-                '__construct', false
+                '__construct',
+                false
             );
 
             // Add a reference to each class this method
@@ -817,7 +846,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitInstanceof(Node $node) : Context {
+    public function visitInstanceof(Node $node) : Context
+    {
         try {
             $class_list = (new ContextNode(
                 $this->code_base,
@@ -844,7 +874,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitStaticCall(Node $node) : Context {
+    public function visitStaticCall(Node $node) : Context
+    {
 
         // Get the name of the method being called
         $method_name = $node->children['method'];
@@ -856,7 +887,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
         // Get the name of the static class being referenced
         $static_class = '';
-        if($node->children['class']->kind == \ast\AST_NAME) {
+        if ($node->children['class']->kind == \ast\AST_NAME) {
             $static_class = $node->children['class']->children['name'];
         }
 
@@ -885,7 +916,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
 
             // If the method isn't static and we're not calling
             // it on 'parent', we're in a bad spot.
-            if(!$method->isStatic() && 'parent' !== $static_class) {
+            if (!$method->isStatic() && 'parent' !== $static_class) {
 
                 $class_list = (new ContextNode(
                     $this->code_base,
@@ -915,7 +946,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         } catch (IssueException $exception) {
             Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
 
-        }  catch (\Exception $exception) {
+        } catch (\Exception $exception) {
 
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
@@ -947,7 +978,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Decl $node) : Context {
+    public function visitMethod(Decl $node) : Context
+    {
         $method =
             $this->context->getMethodInScope($this->code_base);
 
@@ -958,7 +990,9 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             try {
                 $class = $method->getDefiningClass($this->code_base);
                 $has_interface_class = $class->isInterface();
-            } catch (\Exception $exception) {}
+            } catch (\Exception $exception) {
+
+            }
         }
 
         if (!$method->isAbstract()
@@ -990,7 +1024,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Decl $node) : Context {
+    public function visitFuncDecl(Decl $node) : Context
+    {
         return $this->visitMethod($node);
     }
 
@@ -1002,7 +1037,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethodCall(Node $node) : Context {
+    public function visitMethodCall(Node $node) : Context
+    {
         $method_name = $node->children['method'];
 
         if (!is_string($method_name)) {
@@ -1059,36 +1095,39 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitDim(Node $node) : Context {
+    public function visitDim(Node $node) : Context
+    {
         if (!Config::get()->backward_compatibility_checks) {
             return $this->context;
         }
 
-        if(!($node->children['expr'] instanceof Node
+        if (!($node->children['expr'] instanceof Node
             && ($node->children['expr']->children['name'] ?? null) instanceof Node)
         ) {
             return $this->context;
         }
 
         // check for $$var[]
-        if($node->children['expr']->kind == \ast\AST_VAR
+        if ($node->children['expr']->kind == \ast\AST_VAR
             && $node->children['expr']->children['name']->kind == \ast\AST_VAR
         ) {
             $temp = $node->children['expr']->children['name'];
             $depth = 1;
-            while($temp instanceof Node) {
-                assert(isset($temp->children['name']),
-                    "Expected to find a name at {$this->context}, something else found.");
+            while ($temp instanceof Node) {
+                assert(
+                    isset($temp->children['name']),
+                    "Expected to find a name at {$this->context}, something else found."
+                );
                 $temp = $temp->children['name'];
                 $depth++;
             }
-            $dollars = str_repeat('$',$depth);
+            $dollars = str_repeat('$', $depth);
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
             unset($ftemp);
-            if(strpos($line,'{') === false
-                || strpos($line,'}') === false
+            if (strpos($line, '{') === false
+                || strpos($line, '}') === false
             ) {
                 Issue::emit(
                     Issue::CompatibleExpressionPHP7,
@@ -1099,7 +1138,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             }
 
         // $foo->$bar['baz'];
-        } else if(!empty($node->children['expr']->children[1])
+        } elseif (!empty($node->children['expr']->children[1])
             && ($node->children['expr']->children[1] instanceof Node)
             && ($node->children['expr']->kind == \ast\AST_PROP)
             && ($node->children['expr']->children[0]->kind == \ast\AST_VAR)
@@ -1109,8 +1148,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
             unset($ftemp);
-            if(strpos($line,'{') === false
-                || strpos($line,'}') === false
+            if (strpos($line, '{') === false
+                || strpos($line, '}') === false
             ) {
                 Issue::emit(
                     Issue::CompatiblePHP7,
@@ -1123,7 +1162,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
         return $this->context;
     }
 
-    public function visitStaticProp(Node $node) : Context {
+    public function visitStaticProp(Node $node) : Context
+    {
         return $this->visitProp($node);
     }
 
@@ -1138,7 +1178,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitProp(Node $node) : Context {
+    public function visitProp(Node $node) : Context
+    {
         try {
             $property = (new ContextNode(
                 $this->code_base,
@@ -1199,8 +1240,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                         $this->context,
                         $argument
                     ))->getOrCreateVariable();
-                } else if (
-                    $argument->kind == \ast\AST_STATIC_PROP
+                } elseif ($argument->kind == \ast\AST_STATIC_PROP
                     || $argument->kind == \ast\AST_PROP
                 ) {
                     $property_name = $argument->children['prop'];
@@ -1263,8 +1303,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                         $this->context,
                         $argument
                     ))->getOrCreateVariable();
-                } else if (
-                    $argument->kind == \ast\AST_STATIC_PROP
+                } elseif ($argument->kind == \ast\AST_STATIC_PROP
                     || $argument->kind == \ast\AST_PROP
                 ) {
                     $property_name = $argument->children['prop'];
@@ -1335,7 +1374,9 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             if ($parameter->getUnionType()->isEmpty()) {
                 $has_argument_parameter_mismatch = true;
                 $argument_type = UnionType::fromNode(
-                    $this->context, $this->code_base, $argument
+                    $this->context,
+                    $this->code_base,
+                    $argument
                 );
 
                 // If this isn't an internal function or method
@@ -1376,7 +1417,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
                             // parameter its mimicking
                             $method->getContext()->addScopeVariable(
                                 new PassByReferenceVariable(
-                                    $parameter, $variable
+                                    $parameter,
+                                    $variable
                                 )
                             );
                         }
@@ -1421,8 +1463,9 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
      *
      * @return null
      */
-    private function analyzeNoOp(Node $node, string $issue_type) {
-        if($this->parent_node instanceof Node &&
+    private function analyzeNoOp(Node $node, string $issue_type)
+    {
+        if ($this->parent_node instanceof Node &&
             $this->parent_node->kind == \ast\AST_STMT_LIST
         ) {
             Issue::emit(
@@ -1432,5 +1475,4 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation {
             );
         }
     }
-
 }

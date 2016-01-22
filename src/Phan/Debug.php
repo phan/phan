@@ -6,7 +6,8 @@ use \ast\Node;
 /**
  * Debug utilities
  */
-class Debug {
+class Debug
+{
 
     /**
      * Print a lil' something to the console to
@@ -14,7 +15,8 @@ class Debug {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public static function mark() {
+    public static function mark()
+    {
         print "mark\n";
     }
 
@@ -28,7 +30,8 @@ class Debug {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public static function printNode($node) {
+    public static function printNode($node)
+    {
         print self::nodeToString($node);
     }
 
@@ -37,7 +40,8 @@ class Debug {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public static function printNodeName($node, $indent = 0) {
+    public static function printNodeName($node, $indent = 0)
+    {
         print str_repeat("\t", $indent);
         print self::nodeName($node);
         print "\n";
@@ -48,7 +52,8 @@ class Debug {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public static function print(string $message, int $indent = 0) {
+    public static function print(string $message, int $indent = 0)
+    {
         print str_repeat("\t", $indent);
         print $message . "\n";
     }
@@ -57,7 +62,8 @@ class Debug {
      * @return string
      * The name of the node
      */
-    public static function nodeName($node) : string {
+    public static function nodeName($node) : string
+    {
         if (is_string($node)) {
             return 'string';
         }
@@ -138,7 +144,8 @@ class Debug {
      * Get a string representation of AST node flags such as
      * 'ASSIGN_DIV|TYPE_ARRAY'
      */
-    public static function astFlagDescription(int $flag) : string {
+    public static function astFlagDescription(int $flag) : string
+    {
         $flag_names = [];
         foreach (self::$AST_FLAG_ID_NAME_MAP as $id => $name) {
             if ($flag == $id) {
@@ -155,17 +162,20 @@ class Debug {
      *
      * @suppress PhanUnreferencedMethod
      */
-    public static function backtrace(int $levels=0) {
-       $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $levels+1);
-       foreach($bt as $level=>$context) {
-           if(!$level) continue;
-           echo "#".($level-1)." {$context['file']}:{$context['line']} {$context['class']} ";
-           if(!empty($context['type'])) {
-               echo $context['class'].$context['type'];
-           }
-           echo $context['function'];
-           echo "\n";
-       }
+    public static function backtrace(int $levels = 0)
+    {
+        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $levels+1);
+        foreach ($bt as $level => $context) {
+            if (!$level) {
+                continue;
+            }
+            echo "#".($level-1)." {$context['file']}:{$context['line']} {$context['class']} ";
+            if (!empty($context['type'])) {
+                echo $context['class'].$context['type'];
+            }
+            echo $context['function'];
+            echo "\n";
+        }
     }
 
     /**
@@ -259,4 +269,3 @@ class Debug {
         \ast\flags\USE_NORMAL => 'USE_NORMAL',
     ];
 }
-

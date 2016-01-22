@@ -42,7 +42,8 @@ use Phan\Phan;
  * Determine the UnionType associated with a
  * given node
  */
-class UnionTypeVisitor extends KindVisitorImplementation {
+class UnionTypeVisitor extends KindVisitorImplementation
+{
 
     /**
      * @var CodeBase
@@ -115,8 +116,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         $node,
         bool $should_catch_issue_exception = true
     ) : UnionType {
-        if(!($node instanceof Node)) {
-            if($node === null || $node === 'null') {
+        if (!($node instanceof Node)) {
+            if ($node === null || $node === 'null') {
                 return new UnionType();
             }
 
@@ -126,7 +127,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         if ($should_catch_issue_exception) {
             try {
                 return (new self(
-                    $code_base, $context, $should_catch_issue_exception
+                    $code_base,
+                    $context,
+                    $should_catch_issue_exception
                 ))($node);
             } catch (IssueException $exception) {
                 Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
@@ -135,7 +138,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         return (new self(
-            $code_base, $context, $should_catch_issue_exception
+            $code_base,
+            $context,
+            $should_catch_issue_exception
         ))($node);
     }
 
@@ -150,7 +155,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * @return UnionType
      * The set of types associated with the given node
      */
-    public function visit(Node $node) : UnionType {
+    public function visit(Node $node) : UnionType
+    {
         /*
         throw new NodeException($node,
             'Visitor not implemented for node of type '
@@ -171,7 +177,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitPostInc(Node $node) : UnionType {
+    public function visitPostInc(Node $node) : UnionType
+    {
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -190,7 +197,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitPostDec(Node $node) : UnionType {
+    public function visitPostDec(Node $node) : UnionType
+    {
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -209,7 +217,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitPreDec(Node $node) : UnionType {
+    public function visitPreDec(Node $node) : UnionType
+    {
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -228,7 +237,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitPreInc(Node $node) : UnionType {
+    public function visitPreInc(Node $node) : UnionType
+    {
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -247,7 +257,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitClone(Node $node) : UnionType {
+    public function visitClone(Node $node) : UnionType
+    {
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -266,7 +277,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitCoalesce(Node $node) : UnionType {
+    public function visitCoalesce(Node $node) : UnionType
+    {
         $union_type = new UnionType();
 
         $left_type = self::unionTypeFromNode(
@@ -300,7 +312,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitEmpty(Node $node) : UnionType {
+    public function visitEmpty(Node $node) : UnionType
+    {
         return BoolType::instance()->asUnionType();
     }
 
@@ -315,7 +328,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitIsset(Node $node) : UnionType {
+    public function visitIsset(Node $node) : UnionType
+    {
         return BoolType::instance()->asUnionType();
     }
 
@@ -330,7 +344,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitIncludeOrEval(Node $node) : UnionType {
+    public function visitIncludeOrEval(Node $node) : UnionType
+    {
         // require() can return arbitrary objects. Lets just
         // say that we don't know what it is and move on
         return new UnionType();
@@ -347,7 +362,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitMagicConst(Node $node) : UnionType {
+    public function visitMagicConst(Node $node) : UnionType
+    {
         // This is for things like __METHOD__
         return StringType::instance()->asUnionType();
     }
@@ -363,7 +379,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitAssignRef(Node $node) : UnionType {
+    public function visitAssignRef(Node $node) : UnionType
+    {
         // TODO
         return new UnionType();
     }
@@ -379,7 +396,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitShellExec(Node $node) : UnionType {
+    public function visitShellExec(Node $node) : UnionType
+    {
         return StringType::instance()->asUnionType();
     }
 
@@ -394,7 +412,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitName(Node $node) : UnionType {
+    public function visitName(Node $node) : UnionType
+    {
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
             if ('parent' === $node->children['name']) {
                 $class = $this->context->getClassInScope($this->code_base);
@@ -437,29 +456,32 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitType(Node $node) : UnionType {
+    public function visitType(Node $node) : UnionType
+    {
         switch ($node->flags) {
-        case \ast\flags\TYPE_ARRAY:
-            return ArrayType::instance()->asUnionType();
-        case \ast\flags\TYPE_BOOL:
-            return BoolType::instance()->asUnionType();
-        case \ast\flags\TYPE_CALLABLE:
-            return CallableType::instance()->asUnionType();
-        case \ast\flags\TYPE_DOUBLE:
-            return FloatType::instance()->asUnionType();
-        case \ast\flags\TYPE_LONG:
-            return IntType::instance()->asUnionType();
-        case \ast\flags\TYPE_NULL:
-            return NullType::instance()->asUnionType();
-        case \ast\flags\TYPE_OBJECT:
-            return ObjectType::instance()->asUnionType();
-        case \ast\flags\TYPE_STRING:
-            return StringType::instance()->asUnionType();
-        default:
-            assert(false,
-                "All flags must match. Found "
-                . Debug::astFlagDescription($node->flags ?? 0));
-            break;
+            case \ast\flags\TYPE_ARRAY:
+                return ArrayType::instance()->asUnionType();
+            case \ast\flags\TYPE_BOOL:
+                return BoolType::instance()->asUnionType();
+            case \ast\flags\TYPE_CALLABLE:
+                return CallableType::instance()->asUnionType();
+            case \ast\flags\TYPE_DOUBLE:
+                return FloatType::instance()->asUnionType();
+            case \ast\flags\TYPE_LONG:
+                return IntType::instance()->asUnionType();
+            case \ast\flags\TYPE_NULL:
+                return NullType::instance()->asUnionType();
+            case \ast\flags\TYPE_OBJECT:
+                return ObjectType::instance()->asUnionType();
+            case \ast\flags\TYPE_STRING:
+                return StringType::instance()->asUnionType();
+            default:
+                assert(
+                    false,
+                    "All flags must match. Found "
+                    . Debug::astFlagDescription($node->flags ?? 0)
+                );
+                break;
         }
     }
 
@@ -474,7 +496,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitConditional(Node $node) : UnionType {
+    public function visitConditional(Node $node) : UnionType
+    {
 
         $true_type = UnionType::fromNode(
             $this->context,
@@ -524,8 +547,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitArray(Node $node) : UnionType {
-        if(!empty($node->children)
+    public function visitArray(Node $node) : UnionType
+    {
+        if (!empty($node->children)
             && $node->children[0] instanceof Node
             && $node->children[0]->kind == \ast\AST_ARRAY_ELEM
         ) {
@@ -533,13 +557,13 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
             // Check the first 5 (completely arbitrary) elements
             // and assume the rest are the same type
-            for($i=0; $i<5; $i++) {
+            for ($i=0; $i<5; $i++) {
                 // Check to see if we're out of elements
-                if(empty($node->children[$i])) {
+                if (empty($node->children[$i])) {
                     break;
                 }
 
-                if($node->children[$i]->children['value'] instanceof Node) {
+                if ($node->children[$i]->children['value'] instanceof Node) {
                     $element_types[] = UnionType::fromNode(
                         $this->context,
                         $this->code_base,
@@ -556,7 +580,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $element_types =
                 array_values(array_unique($element_types));
 
-            if(count($element_types) == 1) {
+            if (count($element_types) == 1) {
                 return $element_types[0]->asGenericArrayTypes();
             }
         }
@@ -575,7 +599,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitBinaryOp(Node $node) : UnionType {
+    public function visitBinaryOp(Node $node) : UnionType
+    {
         return (new BinaryOperatorFlagVisitor(
             $this->code_base,
             $this->context
@@ -593,7 +618,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitGreater(Node $node) : UnionType {
+    public function visitGreater(Node $node) : UnionType
+    {
         return $this->visitBinaryOp($node);
     }
 
@@ -608,7 +634,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitGreaterEqual(Node $node) : UnionType {
+    public function visitGreaterEqual(Node $node) : UnionType
+    {
         return $this->visitBinaryOp($node);
     }
 
@@ -623,27 +650,28 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitCast(Node $node) : UnionType {
-        switch($node->flags) {
-        case \ast\flags\TYPE_NULL:
-            return NullType::instance()->asUnionType();
-        case \ast\flags\TYPE_BOOL:
-            return BoolType::instance()->asUnionType();
-        case \ast\flags\TYPE_LONG:
-            return IntType::instance()->asUnionType();
-        case \ast\flags\TYPE_DOUBLE:
-            return FloatType::instance()->asUnionType();
-        case \ast\flags\TYPE_STRING:
-            return StringType::instance()->asUnionType();
-        case \ast\flags\TYPE_ARRAY:
-            return ArrayType::instance()->asUnionType();
-        case \ast\flags\TYPE_OBJECT:
-            return ObjectType::instance()->asUnionType();
-        default:
-            throw new NodeException(
-                $node,
-                'Unknown type (' . $node->flags . ') in cast'
-            );
+    public function visitCast(Node $node) : UnionType
+    {
+        switch ($node->flags) {
+            case \ast\flags\TYPE_NULL:
+                return NullType::instance()->asUnionType();
+            case \ast\flags\TYPE_BOOL:
+                return BoolType::instance()->asUnionType();
+            case \ast\flags\TYPE_LONG:
+                return IntType::instance()->asUnionType();
+            case \ast\flags\TYPE_DOUBLE:
+                return FloatType::instance()->asUnionType();
+            case \ast\flags\TYPE_STRING:
+                return StringType::instance()->asUnionType();
+            case \ast\flags\TYPE_ARRAY:
+                return ArrayType::instance()->asUnionType();
+            case \ast\flags\TYPE_OBJECT:
+                return ObjectType::instance()->asUnionType();
+            default:
+                throw new NodeException(
+                    $node,
+                    'Unknown type (' . $node->flags . ') in cast'
+                );
         }
     }
 
@@ -658,7 +686,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitNew(Node $node) : UnionType {
+    public function visitNew(Node $node) : UnionType
+    {
         return $this->visitClassNode($node->children['class']);
     }
 
@@ -674,7 +703,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitInstanceOf(Node $node) : UnionType {
+    public function visitInstanceOf(Node $node) : UnionType
+    {
         try {
             // Confirm that the right-side exists
             $union_type = $this->visitClassNode(
@@ -698,7 +728,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitDim(Node $node) : UnionType {
+    public function visitDim(Node $node) : UnionType
+    {
         $union_type = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -715,7 +746,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $union_type->genericArrayElementTypes();
 
         // If we have generics, we're all set
-        if(!$generic_types->isEmpty()) {
+        if (!$generic_types->isEmpty()) {
             return $generic_types;
         }
 
@@ -778,7 +809,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitClosure(Decl $node) : UnionType {
+    public function visitClosure(Decl $node) : UnionType
+    {
         // The type of a closure is the fqsen pointing
         // at its definition
         $closure_fqsen =
@@ -804,10 +836,11 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitVar(Node $node) : UnionType {
+    public function visitVar(Node $node) : UnionType
+    {
 
         // $$var or ${...} (whose idea was that anyway?)
-        if(($node->children['name'] instanceof Node)
+        if (($node->children['name'] instanceof Node)
             && ($node->children['name']->kind == \ast\AST_VAR
             || $node->children['name']->kind == \ast\AST_BINARY_OP)
         ) {
@@ -815,7 +848,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         // This is nonsense. Give up.
-        if($node->children['name'] instanceof Node) {
+        if ($node->children['name'] instanceof Node) {
             return new UnionType();
         }
 
@@ -823,7 +856,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             $node->children['name'];
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
-            if(!Variable::isSuperglobalVariableWithName($variable_name)) {
+            if (!Variable::isSuperglobalVariableWithName($variable_name)) {
                 Issue::emit(
                     Issue::UndeclaredVariable,
                     $this->context->getFile(),
@@ -853,7 +886,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitEncapsList(Node $node) : UnionType {
+    public function visitEncapsList(Node $node) : UnionType
+    {
         return StringType::instance()->asUnionType();
     }
 
@@ -868,9 +902,10 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitConst(Node $node) : UnionType {
-        if($node->children['name']->kind == \ast\AST_NAME) {
-            if(defined($node->children['name']->children['name'])) {
+    public function visitConst(Node $node) : UnionType
+    {
+        if ($node->children['name']->kind == \ast\AST_NAME) {
+            if (defined($node->children['name']->children['name'])) {
                 return Type::fromObject(
                     constant($node->children['name']->children['name'])
                 )->asUnionType();
@@ -896,12 +931,13 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * @throws IssueException
      * An exception is thrown if we can't find the constant
      */
-    public function visitClassConst(Node $node) : UnionType {
+    public function visitClassConst(Node $node) : UnionType
+    {
 
         $constant_name = $node->children['const'];
 
         // class name fetch
-        if($constant_name == 'class') {
+        if ($constant_name == 'class') {
             return StringType::instance()->asUnionType();
         }
 
@@ -935,7 +971,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitProp(Node $node) : UnionType {
+    public function visitProp(Node $node) : UnionType
+    {
         try {
             $property = (new ContextNode(
                 $this->code_base,
@@ -944,7 +981,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             ))->getProperty($node->children['prop']);
 
             return $property->getUnionType();
-        }  catch (IssueException $exception) {
+        } catch (IssueException $exception) {
             Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
         } catch (CodeBaseException $exception) {
             $property_name = $node->children['prop'];
@@ -976,7 +1013,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitStaticProp(Node $node) : UnionType {
+    public function visitStaticProp(Node $node) : UnionType
+    {
         return $this->visitProp($node);
     }
 
@@ -992,8 +1030,9 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitCall(Node $node) : UnionType {
-        if($node->children['expr']->kind !== \ast\AST_NAME) {
+    public function visitCall(Node $node) : UnionType
+    {
+        if ($node->children['expr']->kind !== \ast\AST_NAME) {
             // Things like `$func()`
             return new UnionType();
         }
@@ -1042,7 +1081,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitStaticCall(Node $node) : UnionType {
+    public function visitStaticCall(Node $node) : UnionType
+    {
         return $this->visitMethodCall($node);
     }
 
@@ -1057,7 +1097,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitMethodCall(Node $node) : UnionType {
+    public function visitMethodCall(Node $node) : UnionType
+    {
         $method_name = $node->children['method'];
 
         // Give up on any complicated nonsense where the
@@ -1069,15 +1110,16 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // Method names can some times turn up being
         // other method calls.
-        assert(is_string($method_name),
-            "Method name must be a string. Something else given.");
+        assert(
+            is_string($method_name),
+            "Method name must be a string. Something else given."
+        );
 
         try {
             $class_fqsen = null;
             foreach ($this->classListFromNode(
-                $node->children['class'] ?? $node->children['expr']
-            )
-                as $i => $class
+                    $node->children['class'] ?? $node->children['expr']
+                ) as $i => $class
             ) {
 
                 $class_fqsen = $class->getFQSEN();
@@ -1097,7 +1139,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                     );
 
                     return $method->getUnionType();
-                }  catch (IssueException $exception) {
+                } catch (IssueException $exception) {
                     $exception->getIssueInstance()();
                     return new UnionType();
                 }
@@ -1128,7 +1170,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitAssign(Node $node) : UnionType {
+    public function visitAssign(Node $node) : UnionType
+    {
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -1147,11 +1190,12 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitUnaryOp(Node $node) : UnionType {
+    public function visitUnaryOp(Node $node) : UnionType
+    {
         // Shortcut some easy operators
         switch ($node->flags) {
-        case \ast\flags\UNARY_BOOL_NOT:
-            return BoolType::instance()->asUnionType();
+            case \ast\flags\UNARY_BOOL_NOT:
+                return BoolType::instance()->asUnionType();
         }
 
         return self::unionTypeFromNode(
@@ -1172,7 +1216,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitUnaryMinus(Node $node) : UnionType {
+    public function visitUnaryMinus(Node $node) : UnionType
+    {
         return Type::fromObject($node->children['expr'])->asUnionType();
     }
 
@@ -1188,7 +1233,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * An exception is thrown if we can't find a class for
      * the given type
      */
-    private function visitClassNode(Node $node) : UnionType {
+    private function visitClassNode(Node $node) : UnionType
+    {
 
         // Things of the form `new $class_name();`
         if ($node->kind == \ast\AST_VAR) {
@@ -1208,17 +1254,17 @@ class UnionTypeVisitor extends KindVisitorImplementation {
                 ))->getUnqualifiedNameForAnonymousClass();
 
             // Turn that into a fully qualified name
-            $fqsen = FullyQualifiedClassName::fromStringInContext(
-                $anonymous_class_name,
-                $this->context
-            );
+                $fqsen = FullyQualifiedClassName::fromStringInContext(
+                    $anonymous_class_name,
+                    $this->context
+                );
 
             // Turn that into a union type
-            return Type::fromFullyQualifiedString((string)$fqsen)->asUnionType();
+                return Type::fromFullyQualifiedString((string)$fqsen)->asUnionType();
         }
 
         // Things of the form `new $method->name()`
-        if($node->kind !== \ast\AST_NAME) {
+        if ($node->kind !== \ast\AST_NAME) {
             return new UnionType();
         }
 
@@ -1250,7 +1296,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         // Reference to a parent class
-        if($class_name === 'parent') {
+        if ($class_name === 'parent') {
             $class = $this->context->getClassInScope(
                 $this->code_base
             );
@@ -1303,7 +1349,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
 
         // For simple nodes or very complicated nodes,
         // recurse
-        if(!($node instanceof \ast\Node)
+        if (!($node instanceof \ast\Node)
             || $node->kind != \ast\AST_NAME
         ) {
             return self::unionTypeFromNode(
@@ -1316,7 +1362,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         $class_name = $node->children['name'];
 
         // Check to see if the name is fully qualified
-        if(!($node->flags & \ast\flags\NAME_NOT_FQ)) {
+        if (!($node->flags & \ast\flags\NAME_NOT_FQ)) {
             if (0 !== strpos($class_name, '\\')) {
                 $class_name = '\\' . $class_name;
             }
@@ -1378,7 +1424,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         }
 
         return UnionType::fromStringInContext(
-            $class_name, $context
+            $class_name,
+            $context
         );
     }
 
@@ -1390,7 +1437,8 @@ class UnionTypeVisitor extends KindVisitorImplementation {
      * An exception is thrown if we can't find a class for
      * the given type
      */
-    private function classListFromNode(Node $node) {
+    private function classListFromNode(Node $node)
+    {
         // Get the types associated with the node
         $union_type = self::unionTypeFromNode(
             $this->code_base,
@@ -1401,8 +1449,7 @@ class UnionTypeVisitor extends KindVisitorImplementation {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($union_type->nonNativeTypes()->getTypeSet()
-            as $class_type
-        ) {
+        as $class_type) {
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
 
@@ -1420,5 +1467,4 @@ class UnionTypeVisitor extends KindVisitorImplementation {
             yield $this->code_base->getClassByFQSEN($class_fqsen);
         }
     }
-
 }

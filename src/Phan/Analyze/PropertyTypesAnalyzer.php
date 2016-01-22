@@ -8,14 +8,16 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
 use Phan\Phan;
 
-class PropertyTypesAnalyzer {
+class PropertyTypesAnalyzer
+{
 
     /**
      * Check to see if the given Clazz is a duplicate
      *
      * @return null
      */
-    public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz) {
+    public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz)
+    {
         foreach ($clazz->getPropertyList($code_base) as $property) {
             try {
                 $union_type = $property->getUnionType();

@@ -6,7 +6,8 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
 
-class DuplicateClassAnalyzer {
+class DuplicateClassAnalyzer
+{
 
     /**
      * Check to see if the given Clazz is a duplicate
@@ -66,5 +67,4 @@ class DuplicateClassAnalyzer {
 
         return;
     }
-
 }

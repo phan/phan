@@ -9,7 +9,8 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Map;
 use \Phan\Model\Clazz as ClazzModel;
 
-trait ClassMap {
+trait ClassMap
+{
 
     /**
      * Implementing classes must support a mechanism for
@@ -27,7 +28,8 @@ trait ClassMap {
     /**
      * Initialize the map
      */
-    public function constructClassMap() {
+    public function constructClassMap()
+    {
         $this->class_map = new Map;
     }
 
@@ -38,7 +40,8 @@ trait ClassMap {
      * @return Map
      * A map from FQSEN to Clazz
      */
-    public function getClassMap() : Map {
+    public function getClassMap() : Map
+    {
         return $this->class_map;
     }
 
@@ -48,7 +51,8 @@ trait ClassMap {
      *
      * @return void
      */
-    private function setClassMap(Map $class_map) {
+    private function setClassMap(Map $class_map)
+    {
         $this->class_map = $class_map;
     }
 
@@ -82,7 +86,8 @@ trait ClassMap {
      * @return bool
      * True if the exlass exists else false
      */
-    public function hasClassWithFQSEN(FullyQualifiedClassName $fqsen) : bool {
+    public function hasClassWithFQSEN(FullyQualifiedClassName $fqsen) : bool
+    {
         // Check memory for the class
         if (!empty($this->class_map[$fqsen])) {
             return true;
@@ -106,7 +111,8 @@ trait ClassMap {
      *
      * @return null
      */
-    public function addClass(Clazz $class) {
+    public function addClass(Clazz $class)
+    {
         $this->class_map[$class->getFQSEN()]
             = $class;
 
@@ -125,7 +131,8 @@ trait ClassMap {
      *
      * @return null
      */
-    private function addClassesByNames(array $class_name_list) {
+    private function addClassesByNames(array $class_name_list)
+    {
         foreach ($class_name_list as $i => $class_name) {
             $clazz = Clazz::fromClassName($this, $class_name);
             $this->class_map[$clazz->getFQSEN()] = $clazz;
@@ -137,7 +144,8 @@ trait ClassMap {
      *
      * @return null
      */
-    protected function storeClassMap() {
+    protected function storeClassMap()
+    {
         if (!Database::isEnabled()) {
             return;
         }

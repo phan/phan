@@ -9,7 +9,8 @@ use \Phan\Exception\NotFoundException;
  * Objects implementing this interface can be
  * read from and written to a SQLite3 database
  */
-abstract class ModelOne extends Model implements ModelOneInterface {
+abstract class ModelOne extends Model implements ModelOneInterface
+{
 
     /**
      * @param Database $database
@@ -21,7 +22,8 @@ abstract class ModelOne extends Model implements ModelOneInterface {
      * @return Model
      * Read a model from the database with the given pk
      */
-    public static function read(Database $database, $primary_key_value) : Model {
+    public static function read(Database $database, $primary_key_value) : Model
+    {
         // Ensure that we've initialized this model
         static::schema()->initializeOnce($database);
 
@@ -52,7 +54,8 @@ abstract class ModelOne extends Model implements ModelOneInterface {
      *
      * @return null
      */
-    public function write(Database $database) {
+    public function write(Database $database)
+    {
         // Ensure that we've initialized this model
         static::schema()->initializeOnce($database);
 
@@ -92,5 +95,4 @@ abstract class ModelOne extends Model implements ModelOneInterface {
             $association->delete($database, $primary_key_value);
         }
     }
-
 }

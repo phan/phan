@@ -8,7 +8,8 @@ use \SQLite3;
  * Objects implementing this interface can be
  * read from and written to a SQLite3 database
  */
-abstract class Model {
+abstract class Model
+{
     use \Phan\Memoize;
 
     /**
@@ -21,8 +22,9 @@ abstract class Model {
      * @return Schema
      * Get the schema for this model
      */
-    public static function schema() : Schema {
-        return self::memoizeStatic(get_called_class(). '::' . __METHOD__, function() {
+    public static function schema() : Schema
+    {
+        return self::memoizeStatic(get_called_class(). '::' . __METHOD__, function () {
             return static::createSchema();
         });
     }
@@ -69,7 +71,8 @@ abstract class Model {
      *
      * @return null
      */
-    public function writeAssociationList(Database $database) {
+    public function writeAssociationList(Database $database)
+    {
         foreach (static::schema()->getAssociationList() as $key => $association) {
             $association->write(
                 $database,

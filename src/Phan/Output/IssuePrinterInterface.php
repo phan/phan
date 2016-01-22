@@ -4,7 +4,8 @@ namespace Phan\Output;
 use Phan\IssueInstance;
 use Symfony\Component\Console\Output\OutputInterface;
 
-interface IssuePrinterInterface {
+interface IssuePrinterInterface
+{
 
     /** @param IssueInstance $instance */
     public function print(IssueInstance $instance);
@@ -13,5 +14,4 @@ interface IssuePrinterInterface {
      * @param OutputInterface $output
      */
     public function configureOutput(OutputInterface $output);
-
 }

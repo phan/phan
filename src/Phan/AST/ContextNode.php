@@ -31,7 +31,8 @@ use \ast\Node;
 /**
  * Methods for an AST node in context
  */
-class ContextNode {
+class ContextNode
+{
 
     /** @var CodeBase */
     private $code_base;
@@ -62,12 +63,13 @@ class ContextNode {
      *
      * @return string[]
      */
-    public function getQualifiedNameList() : array {
-        if(!($this->node instanceof Node)) {
+    public function getQualifiedNameList() : array
+    {
+        if (!($this->node instanceof Node)) {
             return [];
         }
 
-        return array_map(function($name_node)  {
+        return array_map(function ($name_node) {
             return (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -81,8 +83,8 @@ class ContextNode {
      *
      * @return string
      */
-    public function getQualifiedName(
-    ) : string {
+    public function getQualifiedName() : string
+    {
         return (string)UnionTypeVisitor::unionTypeFromClassNode(
             $this->code_base,
             $this->context,
@@ -94,15 +96,16 @@ class ContextNode {
      * @return string
      * A variable name associated with the given node
      */
-    public function getVariableName() : string {
-        if(!$this->node instanceof \ast\Node) {
+    public function getVariableName() : string
+    {
+        if (!$this->node instanceof \ast\Node) {
             return (string)$this->node;
         }
 
         $node = $this->node;
         $parent = $node;
 
-        while(($node instanceof \ast\Node)
+        while (($node instanceof \ast\Node)
             && ($node->kind != \ast\AST_VAR)
             && ($node->kind != \ast\AST_STATIC)
             && ($node->kind != \ast\AST_MAGIC_CONST)
@@ -111,15 +114,15 @@ class ContextNode {
             $node = array_values($node->children ?? [])[0];
         }
 
-        if(!$node instanceof \ast\Node) {
+        if (!$node instanceof \ast\Node) {
             return (string)$node;
         }
 
-        if(empty($node->children['name'])) {
+        if (empty($node->children['name'])) {
             return '';
         }
 
-        if($node->children['name'] instanceof \ast\Node) {
+        if ($node->children['name'] instanceof \ast\Node) {
             return '';
         }
 
@@ -135,7 +138,8 @@ class ContextNode {
      * An exception is thrown if a non-native type does not have
      * an associated class
      */
-    public function getClassList() {
+    public function getClassList()
+    {
         $union_type = UnionTypeVisitor::unionTypeFromClassNode(
             $this->code_base,
             $this->context,
@@ -143,9 +147,7 @@ class ContextNode {
         );
 
         $class_list = [];
-        foreach ($union_type->asClassList($this->code_base)
-            as $i => $clazz
-        ) {
+        foreach ($union_type->asClassList($this->code_base) as $i => $clazz) {
             $class_list[] = $clazz;
         }
 
@@ -192,8 +194,10 @@ class ContextNode {
             );
         }
 
-        assert(is_string($method_name),
-            "Method name must be a string. Found non-string at {$this->context}");
+        assert(
+            is_string($method_name),
+            "Method name must be a string. Found non-string at {$this->context}"
+        );
 
         try {
             $class_list = (new ContextNode(
@@ -360,13 +364,15 @@ class ContextNode {
      * A IssueException is thrown if the variable doesn't
      * exist
      */
-    public function getVariable() : Variable {
+    public function getVariable() : Variable
+    {
         // Get the name of the variable
         $variable_name = $this->getVariableName();
 
-        if(empty($variable_name)) {
+        if (empty($variable_name)) {
             throw new NodeException(
-                $this->node, "Variable name not found"
+                $this->node,
+                "Variable name not found"
             );
         }
 
@@ -393,7 +399,8 @@ class ContextNode {
      * @throws NodeException
      * An exception is thrown if we can't understand the node
      */
-    public function getOrCreateVariable() : Variable {
+    public function getOrCreateVariable() : Variable
+    {
         try {
             return $this->getVariable();
         } catch (IssueException $exception) {
@@ -475,13 +482,14 @@ class ContextNode {
             // Keep hunting if this class doesn't have the given
             // property
             if (!$class->hasPropertyWithName(
-                    $this->code_base,
-                    $property_name
+                $this->code_base,
+                $property_name
             )) {
                 // If there's a getter on properties than all
                 // bets are off.
                 if ($class->hasMethodWithName(
-                    $this->code_base, '__get'
+                    $this->code_base,
+                    '__get'
                 )) {
                     throw new UnanalyzableException(
                         $this->node,
@@ -607,11 +615,14 @@ class ContextNode {
      * An exception is thrown if we can't find the given
      * class
      */
-    public function getConst() : Constant {
-        assert($this->node->kind === \ast\AST_CONST,
-            "Node must be of type \ast\AST_CONST");
+    public function getConst() : Constant
+    {
+        assert(
+            $this->node->kind === \ast\AST_CONST,
+            "Node must be of type \ast\AST_CONST"
+        );
 
-        if($this->node->children['name']->kind !== \ast\AST_NAME) {
+        if ($this->node->children['name']->kind !== \ast\AST_NAME) {
             throw new NodeException(
                 $this->node,
                 "Can't determine constant name"
@@ -653,14 +664,17 @@ class ContextNode {
      * An exception is thrown if we hit a construct in which
      * we can't determine if the property exists or not
      */
-    public function getClassConst() : Constant {
-        assert($this->node->kind === \ast\AST_CLASS_CONST,
-            "Node must be of type \ast\AST_CLASS_CONST");
+    public function getClassConst() : Constant
+    {
+        assert(
+            $this->node->kind === \ast\AST_CLASS_CONST,
+            "Node must be of type \ast\AST_CLASS_CONST"
+        );
 
         $constant_name = $this->node->children['const'];
 
         // class name fetch
-        if($constant_name == 'class') {
+        if ($constant_name == 'class') {
             throw new UnanalyzableException(
                 $this->node,
                 "Can't get class constant for implicit 'class'"
@@ -723,9 +737,12 @@ class ContextNode {
      * @return string
      * A unique and stable name for an anonymous class
      */
-    public function getUnqualifiedNameForAnonymousClass() : string {
-        assert((bool)($this->node->flags & \ast\flags\CLASS_ANONYMOUS),
-            "Node must be an anonymous class node");
+    public function getUnqualifiedNameForAnonymousClass() : string
+    {
+        assert(
+            (bool)($this->node->flags & \ast\flags\CLASS_ANONYMOUS),
+            "Node must be an anonymous class node"
+        );
 
         $class_name = 'anonymous_class_'
             . substr(md5(implode('|', [
@@ -739,7 +756,8 @@ class ContextNode {
     /**
      * @return Method
      */
-    public function getClosure() : Method {
+    public function getClosure() : Method
+    {
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
                 $this->context
@@ -760,26 +778,27 @@ class ContextNode {
      *
      * @return void
      */
-    public function analyzeBackwardCompatibility() {
-        if(!Config::get()->backward_compatibility_checks) {
+    public function analyzeBackwardCompatibility()
+    {
+        if (!Config::get()->backward_compatibility_checks) {
             return;
         }
 
-        if(empty($this->node->children['expr'])) {
+        if (empty($this->node->children['expr'])) {
             return;
         }
 
-        if($this->node->kind === \ast\AST_STATIC_CALL ||
+        if ($this->node->kind === \ast\AST_STATIC_CALL ||
            $this->node->kind === \ast\AST_METHOD_CALL) {
             return;
         }
 
-        if($this->node->kind !== \ast\AST_DIM) {
-            if(!($this->node->children['expr'] instanceof Node)) {
+        if ($this->node->kind !== \ast\AST_DIM) {
+            if (!($this->node->children['expr'] instanceof Node)) {
                 return;
             }
 
-            if($this->node->children['expr']->kind !== \ast\AST_DIM) {
+            if ($this->node->children['expr']->kind !== \ast\AST_DIM) {
                 (new ContextNode(
                     $this->code_base,
                     $this->context,
@@ -795,13 +814,13 @@ class ContextNode {
             $lnode = $temp;
         }
 
-        if(!($temp->kind == \ast\AST_PROP
+        if (!($temp->kind == \ast\AST_PROP
             || $temp->kind == \ast\AST_STATIC_PROP
         )) {
             return;
         }
 
-        while($temp instanceof Node
+        while ($temp instanceof Node
             && ($temp->kind == \ast\AST_PROP
             || $temp->kind == \ast\AST_STATIC_PROP)
         ) {
@@ -812,19 +831,19 @@ class ContextNode {
             $temp = array_values($temp->children)[0];
         }
 
-        if(!($temp instanceof Node)) {
+        if (!($temp instanceof Node)) {
             return;
         }
 
         // Foo::$bar['baz'](); is a problem
         // Foo::$bar['baz'] is not
-        if($lnode->kind === \ast\AST_STATIC_PROP
+        if ($lnode->kind === \ast\AST_STATIC_PROP
             && $this->node->kind !== \ast\AST_CALL
         ) {
             return;
         }
 
-        if((
+        if ((
                 (
                     $lnode->children['prop'] instanceof Node
                     && $lnode->children['prop']->kind == \ast\AST_VAR
@@ -858,9 +877,9 @@ class ContextNode {
             $ftemp->seek($this->node->lineno-1);
             $line = $ftemp->current();
             unset($ftemp);
-            if(strpos($line,'}[') === false
-                || strpos($line,']}') === false
-                || strpos($line,'>{') === false
+            if (strpos($line, '}[') === false
+                || strpos($line, ']}') === false
+                || strpos($line, '>{') === false
             ) {
                 Issue::emit(
                     Issue::CompatiblePHP7,

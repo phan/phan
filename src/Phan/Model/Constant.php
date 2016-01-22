@@ -11,7 +11,8 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\UnionType;
 
-class Constant extends ModelOne {
+class Constant extends ModelOne
+{
 
     /**
      * @var ConstantElement
@@ -43,7 +44,8 @@ class Constant extends ModelOne {
         $this->scope_name = $scope_name;
     }
 
-    public static function createSchema() : Schema {
+    public static function createSchema() : Schema
+    {
         return new Schema('Constant', [
             new Column('scope_name', Column::TYPE_STRING, true),
             new Column('fqsen', Column::TYPE_STRING),
@@ -70,7 +72,8 @@ class Constant extends ModelOne {
      * @return ConstantElement
      * The constant that this model wraps
      */
-    public function getConstant() : ConstantElement {
+    public function getConstant() : ConstantElement
+    {
         return $this->constant;
     }
 
@@ -78,7 +81,8 @@ class Constant extends ModelOne {
      * @return string
      * The value of the primary key for this model
      */
-    public function primaryKeyValue() {
+    public function primaryKeyValue()
+    {
         return $this->scope . '|' . $this->scope_name;
     }
 
@@ -87,7 +91,8 @@ class Constant extends ModelOne {
      * Get a map from column name to row values for
      * this instance
      */
-    public function toRow() : array {
+    public function toRow() : array
+    {
         $row = [
             'scope_name' => $this->primaryKeyValue(),
             'fqsen' => (string)$this->constant->getFQSEN(),
@@ -108,7 +113,8 @@ class Constant extends ModelOne {
      * @return Constant
      * An instance of the model derived from row data
      */
-    public static function fromRow(array $row) : Constant {
+    public static function fromRow(array $row) : Constant
+    {
         list($scope, $name) = explode('|', $row['scope_name']);
 
         $constant = new Constant(new ConstantElement(
@@ -132,5 +138,4 @@ class Constant extends ModelOne {
 
         return $constant;
     }
-
 }

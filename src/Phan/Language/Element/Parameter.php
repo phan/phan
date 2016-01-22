@@ -16,7 +16,8 @@ use \Phan\Language\UnionType;
 use \ast\Node;
 use \ast\Node\Decl;
 
-class Parameter extends Variable {
+class Parameter extends Variable
+{
 
     /**
      * @var UnionType
@@ -61,14 +62,16 @@ class Parameter extends Variable {
      *
      * @return null
      */
-    public function __clone() {
+    public function __clone()
+    {
         parent::__clone();
         $this->default_value_type = $this->default_value_type
             ? clone($this->default_value_type)
             : $this->default_value_type;
     }
 
-    public function setUnionType(UnionType $type) {
+    public function setUnionType(UnionType $type)
+    {
         parent::setUnionType($type);
     }
 
@@ -78,7 +81,8 @@ class Parameter extends Variable {
      *
      * @return void
      */
-    public function setDefaultValueType(UnionType $type) {
+    public function setDefaultValueType(UnionType $type)
+    {
         $this->default_value_type = $type;
     }
 
@@ -87,7 +91,8 @@ class Parameter extends Variable {
      * True if this parameter has a type for its
      * default value
      */
-    public function hasDefaultValue() : bool {
+    public function hasDefaultValue() : bool
+    {
         return !empty($this->default_value_type);
     }
 
@@ -96,7 +101,8 @@ class Parameter extends Variable {
      * The type of the default value for this parameter
      * if it exists
      */
-    public function getDefaultValueType() : UnionType {
+    public function getDefaultValueType() : UnionType
+    {
         return $this->default_value_type;
     }
 
@@ -126,8 +132,7 @@ class Parameter extends Variable {
                     $context->getFile(),
                     $node->lineno ?? 0
                 );
-            } else if (
-                $parameter->isOptional()
+            } elseif ($parameter->isOptional()
                 && !$is_optional_seen
                 && $parameter->getUnionType()->isEmpty()
             ) {
@@ -226,7 +231,8 @@ class Parameter extends Variable {
      * @return bool
      * True if this is an optional parameter
      */
-    public function isOptional() : bool {
+    public function isOptional() : bool
+    {
         return (
             $this->hasDefaultValue()
             || $this->isVariadic()
@@ -237,7 +243,8 @@ class Parameter extends Variable {
      * @return bool
      * True if this is a required parameter
      */
-    public function isRequired() : bool {
+    public function isRequired() : bool
+    {
         return !$this->isOptional();
     }
 
@@ -247,7 +254,8 @@ class Parameter extends Variable {
      * take an unlimited list of parameters and express
      * them as an array.
      */
-    public function isVariadic() : bool {
+    public function isVariadic() : bool
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\PARAM_VARIADIC
         );
@@ -258,13 +266,15 @@ class Parameter extends Variable {
      * True if this parameter is pass-by-reference
      * i.e. prefixed with '&'.
      */
-    public function isPassByReference() : bool {
+    public function isPassByReference() : bool
+    {
         return (bool)(
             $this->getFlags() & \ast\flags\PARAM_REF
         );
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = '';
 
         if (!$this->getUnionType()->isEmpty()) {
@@ -287,5 +297,4 @@ class Parameter extends Variable {
 
         return $string;
     }
-
 }

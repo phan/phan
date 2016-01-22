@@ -6,7 +6,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\UnionType;
 
-class Property extends ClassElement implements Addressable {
+class Property extends ClassElement implements Addressable
+{
     use AddressableImplementation;
     use ElementFutureUnionType;
 
@@ -41,14 +42,15 @@ class Property extends ClassElement implements Addressable {
         );
     }
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = '';
 
         if ($this->isPublic()) {
             $string .= 'public ';
-        } else if ($this->isProtected()) {
+        } elseif ($this->isProtected()) {
             $string .= 'protected ';
-        } else if ($this->isPrivate()) {
+        } elseif ($this->isPrivate()) {
             $string .= 'private ';
         }
 
@@ -61,7 +63,8 @@ class Property extends ClassElement implements Addressable {
      * Override the default getter to fill in a future
      * union type if available.
      */
-    public function getUnionType() : UnionType {
+    public function getUnionType() : UnionType
+    {
         if (null !== ($union_type = $this->getFutureUnionType())) {
             $this->getUnionType()->addUnionType($union_type);
         }
@@ -74,7 +77,8 @@ class Property extends ClassElement implements Addressable {
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FQSEN {
+    public function getFQSEN() : FQSEN
+    {
         // Get the stored FQSEN if it exists
         if ($this->fqsen) {
             return $this->fqsen;
@@ -85,5 +89,4 @@ class Property extends ClassElement implements Addressable {
             $this->getContext()
         );
     }
-
 }

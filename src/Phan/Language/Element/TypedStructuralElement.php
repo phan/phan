@@ -14,7 +14,8 @@ use \Phan\Model\CalledBy;
  * addressable such as a class, method, closure, property,
  * constant, variable, ...
  */
-abstract class TypedStructuralElement extends StructuralElement {
+abstract class TypedStructuralElement extends StructuralElement
+{
 
     /**
      * @var string
@@ -80,7 +81,8 @@ abstract class TypedStructuralElement extends StructuralElement {
      *
      * @return null
      */
-    public function __clone() {
+    public function __clone()
+    {
         parent::__clone();
         $this->type = $this->type
             ? clone($this->type)
@@ -100,7 +102,8 @@ abstract class TypedStructuralElement extends StructuralElement {
      * @return string
      * The (not fully-qualified) name of this element.
      */
-    public function getName() : string {
+    public function getName() : string
+    {
         return $this->name;
     }
 
@@ -108,7 +111,8 @@ abstract class TypedStructuralElement extends StructuralElement {
      * @return UnionType
      * Get the type of this structural element
      */
-    public function getUnionType() : UnionType {
+    public function getUnionType() : UnionType
+    {
         return $this->type;
     }
 
@@ -118,14 +122,16 @@ abstract class TypedStructuralElement extends StructuralElement {
      *
      * @return null
      */
-    public function setUnionType(UnionType $type) {
+    public function setUnionType(UnionType $type)
+    {
         $this->type = $type;
     }
 
     /**
      * @return int
      */
-    public function getFlags() : int {
+    public function getFlags() : int
+    {
         return $this->flags;
     }
 
@@ -133,7 +139,8 @@ abstract class TypedStructuralElement extends StructuralElement {
      * @param int $flags
      * @return null
      */
-    public function setFlags(int $flags) {
+    public function setFlags(int $flags)
+    {
         $this->flags = $flags;
     }
 
@@ -144,7 +151,8 @@ abstract class TypedStructuralElement extends StructuralElement {
      *
      * @return void
      */
-    public function addReference(FileRef $file_ref) {
+    public function addReference(FileRef $file_ref)
+    {
         $this->reference_list[] = $file_ref;
 
         // If requested, save the reference to the
@@ -163,7 +171,8 @@ abstract class TypedStructuralElement extends StructuralElement {
      * @return FileRef[]
      * A list of references to this typed structural element.
      */
-    public function getReferenceList() : array {
+    public function getReferenceList() : array
+    {
         if (!empty($this->reference_list)) {
             return $this->reference_list;
         }
@@ -173,7 +182,7 @@ abstract class TypedStructuralElement extends StructuralElement {
         if (Database::isEnabled()) {
             if ($this instanceof Addressable) {
                 $this->reference_list = array_map(
-                    function(CalledBy $called_by) : FileRef {
+                    function (CalledBy $called_by) : FileRef {
                         return $called_by->getFileRef();
                     },
                     CalledBy::findManyByFQSEN(
@@ -200,5 +209,4 @@ abstract class TypedStructuralElement extends StructuralElement {
     ) : int {
         return count($this->reference_list);
     }
-
 }

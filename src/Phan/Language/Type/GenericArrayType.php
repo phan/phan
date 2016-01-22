@@ -3,7 +3,8 @@ namespace Phan\Language\Type;
 
 use \Phan\Language\Type;
 
-class GenericArrayType extends ArrayType {
+class GenericArrayType extends ArrayType
+{
     const NAME = 'array';
 
     /**
@@ -16,7 +17,8 @@ class GenericArrayType extends ArrayType {
      * @param Type $type
      * The type of every element in this array
      */
-    protected function __construct(Type $type) {
+    protected function __construct(Type $type)
+    {
         parent::__construct('\\', self::NAME);
         $this->element_type = $type;
     }
@@ -28,7 +30,8 @@ class GenericArrayType extends ArrayType {
      * @return GenericArrayType
      * Get a type representing an array of the given type
      */
-    public static function fromElementType(Type $type) : GenericArrayType {
+    public static function fromElementType(Type $type) : GenericArrayType
+    {
 
         // Make sure we only ever create exactly one
         // object for any unique type
@@ -39,7 +42,8 @@ class GenericArrayType extends ArrayType {
         }
 
         if (!$canonical_object_map->contains($type)) {
-            $canonical_object_map->attach($type,
+            $canonical_object_map->attach(
+                $type,
                 new GenericArrayType($type)
             );
         }
@@ -47,7 +51,8 @@ class GenericArrayType extends ArrayType {
         return $canonical_object_map->offsetGet($type);
     }
 
-    public function isGenericArray() : bool {
+    public function isGenericArray() : bool
+    {
         return true;
     }
 
@@ -56,12 +61,14 @@ class GenericArrayType extends ArrayType {
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
      */
-    public function genericArrayElementType() : Type {
+    public function genericArrayElementType() : Type
+    {
         return $this->element_type;
     }
 
 
-    public function __toString() : string {
+    public function __toString() : string
+    {
         return "{$this->element_type}[]";
     }
 }

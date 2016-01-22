@@ -20,7 +20,8 @@ use Phan\Language\FQSEN;
 /**
  * This class is the entry point into the static analyzer.
  */
-class Analysis {
+class Analysis
+{
 
 
     /**
@@ -38,7 +39,8 @@ class Analysis {
      *
      * @return Context
      */
-    public static function parseFile(CodeBase $code_base, string $file_path) : Context {
+    public static function parseFile(CodeBase $code_base, string $file_path) : Context
+    {
 
         $context = (new Context)->withFile($file_path);
 
@@ -95,7 +97,8 @@ class Analysis {
      * @return Context
      * The context from within the node is returned
      */
-    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context {
+    public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context
+    {
 
         // Visit the given node populating the code base
         // with anything we learn and get a new context
@@ -110,7 +113,7 @@ class Analysis {
 
         // Recurse into each child node
         $child_context = $context;
-        foreach($node->children ?? [] as $child_node) {
+        foreach ($node->children ?? [] as $child_node) {
 
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
@@ -141,14 +144,15 @@ class Analysis {
      *
      * @return null
      */
-    public static function analyzeClasses(CodeBase $code_base) {
+    public static function analyzeClasses(CodeBase $code_base)
+    {
 
         $class_count = 2 * count($code_base->getClassMap());
 
         // Take a pass to import all details from ancestors
         $i = 0;
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
-            CLI::progress('classes',  ++$i/$class_count);
+            CLI::progress('classes', ++$i/$class_count);
 
             // Make sure the parent classes exist
             ParentClassExistsAnalyzer::analyzeParentClassExists($code_base, $clazz);
@@ -163,7 +167,7 @@ class Analysis {
 
         // Run a few checks on all of the classes
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
-            CLI::progress('classes',  ++$i/$class_count);
+            CLI::progress('classes', ++$i/$class_count);
 
             if ($clazz->getContext()->isInternal()) {
                 continue;
@@ -181,12 +185,13 @@ class Analysis {
      *
      * @return null
      */
-    public static function analyzeFunctions(CodeBase $code_base) {
+    public static function analyzeFunctions(CodeBase $code_base)
+    {
         $function_count = count($code_base->getMethodMap(), COUNT_RECURSIVE);
         $i = 0;
         foreach ($code_base->getMethodMap() as $fqsen_string => $method_map) {
             foreach ($method_map as $name => $method) {
-                CLI::progress('method',  (++$i)/$function_count);
+                CLI::progress('method', (++$i)/$function_count);
 
                 if ($method->getContext()->isInternal()) {
                     continue;
@@ -243,7 +248,7 @@ class Analysis {
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-		foreach($node->children ?? [] as $child_node) {
+        foreach ($node->children ?? [] as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -260,9 +265,9 @@ class Analysis {
             // their siblings. Child nodes of conditionals
             // operate in a context independent of eachother
             switch ($child_node->kind) {
-            case \ast\AST_IF_ELEM:
-                $child_context = $node_context;
-                break;
+                case \ast\AST_IF_ELEM:
+                    $child_context = $node_context;
+                    break;
             }
 
             // Step into each child node and get an
@@ -276,7 +281,7 @@ class Analysis {
             );
 
             $child_context_list[] = $child_context;
-		}
+        }
 
         // For if statements, we need to merge the contexts
         // of all child context into a single scope based
@@ -300,13 +305,13 @@ class Analysis {
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
         switch ($node->kind) {
-        case \ast\AST_CLASS:
-        case \ast\AST_METHOD:
-        case \ast\AST_FUNC_DECL:
-        case \ast\AST_CLOSURE:
-            return $context;
-        default:
-            return $node_context;
+            case \ast\AST_CLASS:
+            case \ast\AST_METHOD:
+            case \ast\AST_FUNC_DECL:
+            case \ast\AST_CLOSURE:
+                return $context;
+            default:
+                return $node_context;
         }
     }
 
@@ -316,7 +321,8 @@ class Analysis {
      *
      * @return void
      */
-    public static function analyzeDeadCode(CodeBase $code_base) {
+    public static function analyzeDeadCode(CodeBase $code_base)
+    {
         // Check to see if dead code detection is enabled. Keep
         // in mind that the results here are just a guess and
         // we can't tell with certainty that anything is
@@ -340,7 +346,8 @@ class Analysis {
      * True if the given node should be visited or false if
      * it should be skipped entirely
      */
-    private static function shouldVisit(Node $node) {
+    private static function shouldVisit(Node $node)
+    {
 
         // When doing dead code detection, we need to go
         // super deep
@@ -349,35 +356,35 @@ class Analysis {
         }
 
         switch ($node->kind) {
-        case \ast\AST_ARRAY_ELEM:
-        case \ast\AST_ASSIGN_OP:
-        case \ast\AST_BREAK:
-        case \ast\AST_CAST:
-        case \ast\AST_CLONE:
-        case \ast\AST_CLOSURE_USES:
-        case \ast\AST_CLOSURE_VAR:
-        case \ast\AST_COALESCE:
-        case \ast\AST_CONST_DECL:
-        case \ast\AST_CONST_ELEM:
-        case \ast\AST_CONTINUE:
-        case \ast\AST_EMPTY:
-        case \ast\AST_ENCAPS_LIST:
-        case \ast\AST_EXIT:
-        case \ast\AST_INCLUDE_OR_EVAL:
-        case \ast\AST_ISSET:
-        case \ast\AST_MAGIC_CONST:
-        case \ast\AST_NAME:
-        case \ast\AST_NAME_LIST:
-        case \ast\AST_PARAM:
-        case \ast\AST_PARAM_LIST:
-        case \ast\AST_POST_INC:
-        case \ast\AST_PRE_INC:
-        case \ast\AST_STATIC_PROP:
-        case \ast\AST_TYPE:
-        case \ast\AST_UNARY_OP:
-        case \ast\AST_UNSET:
-        case \ast\AST_YIELD:
-            return false;
+            case \ast\AST_ARRAY_ELEM:
+            case \ast\AST_ASSIGN_OP:
+            case \ast\AST_BREAK:
+            case \ast\AST_CAST:
+            case \ast\AST_CLONE:
+            case \ast\AST_CLOSURE_USES:
+            case \ast\AST_CLOSURE_VAR:
+            case \ast\AST_COALESCE:
+            case \ast\AST_CONST_DECL:
+            case \ast\AST_CONST_ELEM:
+            case \ast\AST_CONTINUE:
+            case \ast\AST_EMPTY:
+            case \ast\AST_ENCAPS_LIST:
+            case \ast\AST_EXIT:
+            case \ast\AST_INCLUDE_OR_EVAL:
+            case \ast\AST_ISSET:
+            case \ast\AST_MAGIC_CONST:
+            case \ast\AST_NAME:
+            case \ast\AST_NAME_LIST:
+            case \ast\AST_PARAM:
+            case \ast\AST_PARAM_LIST:
+            case \ast\AST_POST_INC:
+            case \ast\AST_PRE_INC:
+            case \ast\AST_STATIC_PROP:
+            case \ast\AST_TYPE:
+            case \ast\AST_UNARY_OP:
+            case \ast\AST_UNSET:
+            case \ast\AST_YIELD:
+                return false;
         }
 
         return true;

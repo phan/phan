@@ -13,7 +13,8 @@ use \ast\Node;
  * the AST node that defines them and allows us to
  * reanalyze them later on
  */
-trait Analyzable {
+trait Analyzable
+{
 
     /**
      * @var Node
@@ -36,7 +37,8 @@ trait Analyzable {
      * reference to this so that we can come to it
      * and
      */
-    public function setNode(Node $node) {
+    public function setNode(Node $node)
+    {
         // Don't waste the memory if we're in quick mode
         if (Config::get()->quick_mode) {
             return;
@@ -49,7 +51,8 @@ trait Analyzable {
      * @return bool
      * True if we have a node defined on this object
      */
-    public function hasNode() : bool {
+    public function hasNode() : bool
+    {
         return !empty($this->node);
     }
 
@@ -57,7 +60,8 @@ trait Analyzable {
      * @return Node
      * The AST node associated with this object
      */
-    public function getNode() : Node {
+    public function getNode() : Node
+    {
         return $this->node;
     }
 
@@ -66,7 +70,8 @@ trait Analyzable {
      * Analyze the node associated with this object
      * in the given context
      */
-    public function analyze(Context $context, CodeBase $code_base) : Context {
+    public function analyze(Context $context, CodeBase $code_base) : Context
+    {
         // Don't do anything if we care about being
         // fast
         if (Config::get()->quick_mode) {

@@ -9,7 +9,8 @@ use \Phan\Language\FQSEN;
 /**
  * A Fully-Qualified Name
  */
-abstract class AbstractFQSEN implements FQSEN {
+abstract class AbstractFQSEN implements FQSEN
+{
 
     /**
      * @var string
@@ -21,7 +22,8 @@ abstract class AbstractFQSEN implements FQSEN {
      * @param string $name
      * The name of this structural element
      */
-    protected function __construct(string $name) {
+    protected function __construct(string $name)
+    {
         $this->name = $name;
     }
 
@@ -56,7 +58,8 @@ abstract class AbstractFQSEN implements FQSEN {
      * The class associated with this FQSEN or
      * null if not defined
      */
-    public function getName() : string {
+    public function getName() : string
+    {
         return $this->name;
     }
 
@@ -65,7 +68,8 @@ abstract class AbstractFQSEN implements FQSEN {
      * The canonical representation of the name of the object. Functions
      * and Methods, for instance, lowercase their names.
      */
-    public static function canonicalName(string $name) : string {
+    public static function canonicalName(string $name) : string
+    {
         return $name;
     }
 
@@ -76,4 +80,3 @@ abstract class AbstractFQSEN implements FQSEN {
      */
     abstract public function __toString() : string;
 }
-

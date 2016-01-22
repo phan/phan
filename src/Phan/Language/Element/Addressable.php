@@ -3,7 +3,8 @@ namespace Phan\Language\Element;
 
 use \Phan\Language\FQSEN;
 
-interface Addressable {
+interface Addressable
+{
 
     /**
      * @return FQSEN

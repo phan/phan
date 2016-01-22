@@ -23,9 +23,11 @@ $file_list = $cli->getFileList();
 // If requested, expand the file list to a set of
 // all files that should be re-analyzed
 if (Config::get()->expand_file_list) {
-    assert((bool)(Config::get()->stored_state_file_path),
+    assert(
+        (bool)(Config::get()->stored_state_file_path),
         'Requesting an expanded dependency list can only '
-        . ' be done if a state-file is defined');
+        . ' be done if a state-file is defined'
+    );
 
     // Analyze the file list provided via the CLI
     $file_list = Phan::expandedFileList($code_base, $file_list);

@@ -7,7 +7,8 @@ use \Phan\Language\FQSEN;
 /**
  * A Fully-Qualified Class Name
  */
-abstract class FullyQualifiedClassElement extends AbstractFQSEN {
+abstract class FullyQualifiedClassElement extends AbstractFQSEN
+{
     use \Phan\Language\FQSEN\Alternatives;
     use \Phan\Memoize;
 
@@ -64,7 +65,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN {
         $key = self::toString($fully_qualified_class_name, $name, $alternate_id)
             . '|' . get_called_class();
 
-        return self::memoizeStatic($key, function() use (
+        return self::memoizeStatic($key, function () use (
             $fully_qualified_class_name,
             $name,
             $alternate_id
@@ -84,8 +85,13 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN {
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) {
-        assert(false !== strpos($fully_qualified_string, '::'),
-            "Fully qualified class element lacks '::' delimiter in $fully_qualified_string.");
+        assert(
+            false !== strpos(
+                $fully_qualified_string,
+                '::'
+            ),
+            "Fully qualified class element lacks '::' delimiter in $fully_qualified_string."
+        );
 
         list(
             $fully_qualified_class_name_string,
@@ -99,16 +105,20 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN {
 
         // Make sure that we're actually getting a class
         // name reference back
-        assert($fully_qualified_class_name instanceof FullyQualifiedClassName,
-            "$fully_qualified_class_name must be an instanceof FullyQualifiedClassName from string $fully_qualified_string but got " . get_class($fully_qualified_class_name));
+        assert(
+            $fully_qualified_class_name instanceof FullyQualifiedClassName,
+            "$fully_qualified_class_name must be an instanceof FullyQualifiedClassName from string $fully_qualified_string but got " . get_class($fully_qualified_class_name)
+        );
 
         // Split off the alternate ID
         $parts = explode(',', $name_string);
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(is_int($alternate_id),
-            "Alternate must be an integer in $fully_qualified_string");
+        assert(
+            is_int($alternate_id),
+            "Alternate must be an integer in $fully_qualified_string"
+        );
 
         return static::make(
             $fully_qualified_class_name,
@@ -133,13 +143,20 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN {
         // Test to see if we have a class defined
         if (false === strpos($fqsen_string, '::')) {
 
-            assert($context->isInClassScope(),
-                "Cannot reference class element without class name when not in class scope. Got $fqsen_string.");
+            assert(
+                $context->isInClassScope(),
+                "Cannot reference class element without class name when not in class scope. Got $fqsen_string."
+            );
 
             $fully_qualified_class_name = $context->getClassFQSEN();
         } else {
-            assert(false !== strpos($fqsen_string, '::'),
-                "Fully qualified class element lacks '::' delimiter in $fqsen_string.");
+            assert(
+                false !== strpos(
+                    $fqsen_string,
+                    '::'
+                ),
+                "Fully qualified class element lacks '::' delimiter in $fqsen_string."
+            );
 
             list(
                 $class_name_string,
@@ -148,7 +165,8 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN {
 
             $fully_qualified_class_name =
                 FullyQualifiedClassName::fromStringInContext(
-                    $class_name_string, $context
+                    $class_name_string,
+                    $context
                 );
         }
 
@@ -157,8 +175,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN {
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(is_int($alternate_id),
-            "Alternate must be an integer in $fqsen_string");
+        assert(
+            is_int($alternate_id),
+            "Alternate must be an integer in $fqsen_string"
+        );
 
         return static::make(
             $fully_qualified_class_name,
@@ -172,8 +192,8 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN {
      * The fully qualified class name associated with this
      * class element.
      */
-    public function getFullyQualifiedClassName(
-    ) : FullyQualifiedClassName {
+    public function getFullyQualifiedClassName() : FullyQualifiedClassName
+    {
         return $this->fully_qualified_class_name;
     }
 
@@ -230,8 +250,9 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN {
      * A string representation of this fully-qualified
      * structural element name.
      */
-    public function __toString() : string {
-        $fqsen_string = $this->memoize(__METHOD__, function() {
+    public function __toString() : string
+    {
+        $fqsen_string = $this->memoize(__METHOD__, function () {
             return self::toString(
                 $this->getFullyQualifiedClassName(),
                 $this->getName(),
@@ -243,5 +264,4 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN {
 
         return $fqsen_string;
     }
-
 }

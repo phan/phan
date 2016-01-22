@@ -8,7 +8,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 
-class ParameterTypesAnalyzer {
+class ParameterTypesAnalyzer
+{
 
     /**
      * Check to see if the given Clazz is a duplicate
@@ -47,5 +48,4 @@ class ParameterTypesAnalyzer {
             }
         }
     }
-
 }
