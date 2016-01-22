@@ -20,7 +20,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "~5.1",
-        "phpdocumentor/phpdocumentor": "dev-master"
+        "phpdocumentor/phpdocumentor": "dev-master",
+        "squizlabs/php_codesniffer": "^2.5"
     },
     "autoload": {
         "psr-4": {"Phan\\": "src/Phan"}
