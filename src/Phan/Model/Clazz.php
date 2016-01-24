@@ -140,6 +140,12 @@ class Clazz extends ModelOne
             $trait_fqsen_list
         );
 
+        $clazz->setFQSEN(
+            FullyQualifiedClassName::fromFullyQualifiedString(
+                $row['fqsen']
+            )
+        );
+
         return new Clazz($clazz);
     }
 }
