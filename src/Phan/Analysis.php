@@ -169,7 +169,7 @@ class Analysis
         foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
             CLI::progress('classes', ++$i/$class_count);
 
-            if ($clazz->getContext()->isInternal()) {
+            if ($clazz->isInternal()) {
                 continue;
             }
 
@@ -193,7 +193,7 @@ class Analysis
             foreach ($method_map as $name => $method) {
                 CLI::progress('method', (++$i)/$function_count);
 
-                if ($method->getContext()->isInternal()) {
+                if ($method->isInternal()) {
                     continue;
                 }
 

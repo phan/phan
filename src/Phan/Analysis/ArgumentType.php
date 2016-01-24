@@ -58,7 +58,7 @@ class ArgumentType
     ) {
         // Special common cases where we want slightly
         // better multi-signature error messages
-        if ($method->getContext()->isInternal()) {
+        if ($method->isInternal()) {
             self::analyzeInternalArgumentType(
                 $method,
                 $node,
@@ -125,7 +125,7 @@ class ArgumentType
             }
 
             if (!$alternate_found) {
-                if ($method->getContext()->isInternal()) {
+                if ($method->isInternal()) {
                     Issue::emit(
                         Issue::ParamTooFewInternal,
                         $context->getFile(),
@@ -163,7 +163,7 @@ class ArgumentType
 
             if (!$alternate_found) {
                 $max = $method->getNumberOfParameters();
-                if ($method->getContext()->isInternal()) {
+                if ($method->isInternal()) {
                     Issue::emit(
                         Issue::ParamTooManyInternal,
                         $context->getFile(),
@@ -323,7 +323,7 @@ class ArgumentType
                     ? $alternate_parameter->getUnionType()
                     : 'unknown';
 
-                if ($method->getContext()->isInternal()) {
+                if ($method->isInternal()) {
                     Issue::emit(
                         Issue::TypeMismatchArgumentInternal,
                         $context->getFile(),

@@ -1057,7 +1057,7 @@ class UnionTypeVisitor extends KindVisitorImplementation
         // TODO: I don't believe we need this any more
         // If this is an internal function, see if we can get
         // its types from the static dataset.
-        if ($function->getContext()->isInternal()
+        if ($function->isInternal()
             && $function->getUnionType()->isEmpty()
         ) {
             $map = UnionType::internalFunctionSignatureMapForFQSEN(

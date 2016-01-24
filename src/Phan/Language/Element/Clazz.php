@@ -575,9 +575,7 @@ class Clazz extends AddressableElement
                 $default_constructor =
                     Method::defaultConstructorForClassInContext(
                         $this,
-                        $this->getContext()->withClassFQSEN(
-                            $this->getFQSEN()
-                        )
+                        $context->withClassFQSEN($this->getFQSEN())
                     );
 
                 $this->addMethod($code_base, $default_constructor);
@@ -855,7 +853,7 @@ class Clazz extends AddressableElement
 
             assert(
                 $code_base->hasClassWithFQSEN($this->getParentClassFQSEN()),
-                "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist from {$this->getContext()}"
+                "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist."
             );
 
             // Get the parent class

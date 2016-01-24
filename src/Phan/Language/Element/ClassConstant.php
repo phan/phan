@@ -33,7 +33,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
     public function getFQSEN() : FullyQualifiedClassConstantName
     {
         assert(!empty($this->fqsen),
-            "FQSEN must be defined for $this in {$this->getContext()}\n");
+            "FQSEN must be defined for $this");
 
         return $this->fqsen;
     }
