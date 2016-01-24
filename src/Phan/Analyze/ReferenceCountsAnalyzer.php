@@ -5,10 +5,10 @@ use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
-use Phan\Language\Element\Addressable;
+use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
-use Phan\Language\Element\TypedStructuralElement;
+use Phan\Language\Element\AddressableElement;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -134,7 +134,7 @@ class ReferenceCountsAnalyzer
      */
     public static function analyzeElementReferenceCounts(
         CodeBase $code_base,
-        TypedStructuralElement $element,
+        AddressableElement $element,
         string $issue_type
     ) {
 
@@ -156,7 +156,7 @@ class ReferenceCountsAnalyzer
                 return;
             }
 
-            if ($element instanceof Addressable) {
+            if ($element instanceof AddressableElement) {
                 Issue::emit(
                     $issue_type,
                     $element->getContext()->getFile(),

@@ -8,9 +8,8 @@ use \Phan\Language\Context;
 use \Phan\Language\UnionType;
 use \ast\Node;
 
-class Variable extends TypedStructuralElement
+class Variable extends TypedElement
 {
-
     /**
      * @param \phan\Context $context
      * The context in which the structural element lives

@@ -6,9 +6,8 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\UnionType;
 
-class Property extends ClassElement implements Addressable
+class Property extends ClassElement
 {
-    use AddressableImplementation;
     use ElementFutureUnionType;
 
     /**

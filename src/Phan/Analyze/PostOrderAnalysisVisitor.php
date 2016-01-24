@@ -16,7 +16,7 @@ use \Phan\Langauge\Type;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Comment;
-use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\ClassConstant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\PassByReferenceVariable;
 use \Phan\Language\Element\Property;

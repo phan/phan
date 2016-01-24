@@ -12,9 +12,10 @@ use \Phan\Exception\IssueException;
 use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\{
+    ClassConstant,
     Clazz,
     Comment,
-    Constant,
+    GlobalConstant,
     Method,
     Property
 };
@@ -465,7 +466,7 @@ class ParseVisitor extends ScopeVisitor
                 $this->context
             );
 
-            $constant = new Constant(
+            $constant = new ClassConstant(
                 $this->context
                     ->withLineNumberStart($child_node->lineno ?? 0)
                     ->withLineNumberEnd($child_node->endLineno ?? 0),

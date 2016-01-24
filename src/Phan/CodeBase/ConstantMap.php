@@ -3,7 +3,7 @@ namespace Phan\CodeBase;
 
 use \Phan\Database;
 use \Phan\Exception\NotFoundException;
-use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\ClassConstant;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -21,13 +21,13 @@ trait ConstantMap
     abstract function getFileByPath(string $file_path) : File;
 
     /**
-     * @var Constant[][]
+     * @var ClassConstant[][]
      * A map from FQSEN to name to a constant
      */
     protected $constant_map = [];
 
     /**
-     * @return Constant[][]
+     * @return ClassConstant[][]
      * A map from FQSEN to constant
      */
     public function getConstantMap() : array
@@ -36,7 +36,7 @@ trait ConstantMap
     }
 
     /**
-     * @return Constant[]
+     * @return ClassConstant[]
      * A map from name to constant
      */
     public function getConstantMapForScope(FQSEN $fqsen) : array
@@ -49,8 +49,8 @@ trait ConstantMap
     }
 
     /**
-     * @param Constant[][] $constant_map
-     * A map from FQSEN to Constant
+     * @param ClassConstant[][] $constant_map
+     * A map from FQSEN to ClassConstant
      *
      * @return null
      */
@@ -100,10 +100,10 @@ trait ConstantMap
      * @param string $name
      * The name of the constant
      *
-     * @return Constant
+     * @return ClassConstant
      * Get the constant with the given FQSEN
      */
-    public function getConstant(FQSEN $fqsen = null, string $name) : Constant
+    public function getConstant(FQSEN $fqsen = null, string $name) : ClassConstant
     {
 
         if (empty($this->constant_map[(string)$fqsen][$name])
@@ -120,12 +120,12 @@ trait ConstantMap
     }
 
     /**
-     * @param Constant $constant
+     * @param ClassConstant $constant
      * Any global or class-scoped constant
      *
      * @return null
      */
-    public function addConstant(Constant $constant)
+    public function addConstant(ClassConstant $constant)
     {
         $this->addConstantInScope(
             $constant,
@@ -134,7 +134,7 @@ trait ConstantMap
     }
 
     /**
-     * @param Constant $constant
+     * @param ClassConstant $constant
      * Any constant
      *
      * @param FullyQualifiedClassName $fqsen
@@ -143,7 +143,7 @@ trait ConstantMap
      * @return null
      */
     public function addConstantInScope(
-        Constant $constant,
+        ClassConstant $constant,
         FullyQualifiedClassName $fqsen
     ) {
         $name = $constant->getFQSEN()->getNameWithAlternateId();

@@ -70,7 +70,6 @@ class ArgumentVisitor extends KindVisitorImplementation
                 $this->context,
                 $node
             ))->getOrCreateVariable();
-            $variable->addReference($this->context);
         } catch (\Exception $exception) {
             // Swallow it
         }

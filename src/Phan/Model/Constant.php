@@ -5,7 +5,7 @@ use \Phan\Database;
 use \Phan\Database\Column;
 use \Phan\Database\ModelOne;
 use \Phan\Database\Schema;
-use \Phan\Language\Element\Constant as ConstantElement;
+use \Phan\Language\Element\ClassConstant as ConstantElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;

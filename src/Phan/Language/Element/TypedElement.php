@@ -6,14 +6,13 @@ use \Phan\Database;
 use \Phan\Language\Context;
 use \Phan\Language\FileRef;
 use \Phan\Language\UnionType;
-use \Phan\Model\CalledBy;
 
 /**
  * Any PHP structural element that also has a type and is
  * addressable such as a class, method, closure, property,
  * constant, variable, ...
  */
-abstract class TypedStructuralElement
+abstract class TypedElement
 {
     /**
      * @var string
@@ -49,13 +48,6 @@ abstract class TypedStructuralElement
      * A set of issues types to be suppressed
      */
     private $suppress_issue_list = [];
-
-    /**
-     * @var FileRef[]
-     * A list of locations in which this typed structural
-     * element is referenced from.
-     */
-    private $reference_list = [];
 
     /**
      * @param Context $context
@@ -101,15 +93,6 @@ abstract class TypedStructuralElement
         $this->type = $this->type
             ? clone($this->type)
             : $this->type;
-
-        // Clone the FQSEN if it exists
-        if ($this instanceof Addressable) {
-            if ($this->getFQSEN()) {
-                $this->setFQSEN(
-                    clone($this->getFQSEN())
-                );
-            }
-        }
     }
 
     /**
@@ -151,77 +134,12 @@ abstract class TypedStructuralElement
 
     /**
      * @param int $flags
-     * @return null
+     *
+     * @return void
      */
     public function setFlags(int $flags)
     {
         $this->flags = $flags;
-    }
-
-    /**
-     * @param FileRef $file_ref
-     * A reference to a location in which this typed structural
-     * element is referenced.
-     *
-     * @return void
-     */
-    public function addReference(FileRef $file_ref)
-    {
-        $this->reference_list[] = $file_ref;
-
-        // If requested, save the reference to the
-        // database
-        if (Database::isEnabled()) {
-            if ($this instanceof Addressable) {
-                (new CalledBy(
-                    (string)$this->getFQSEN(),
-                    $file_ref
-                ))->write(Database::get());
-            }
-        }
-    }
-
-    /**
-     * @return FileRef[]
-     * A list of references to this typed structural element.
-     */
-    public function getReferenceList() : array
-    {
-        if (!empty($this->reference_list)) {
-            return $this->reference_list;
-        }
-
-        // If we have a database, see if we have some callers
-        // defined there and save those
-        if (Database::isEnabled()) {
-            if ($this instanceof Addressable) {
-                $this->reference_list = array_map(
-                    function (CalledBy $called_by) : FileRef {
-                        return $called_by->getFileRef();
-                    },
-                    CalledBy::findManyByFQSEN(
-                        Database::get(),
-                        $this->getFQSEN()
-                    )
-                );
-            }
-        }
-
-        return $this->reference_list;
-    }
-
-    /**
-     * @param CodeBase $code_base
-     * Some elements may need access to the code base to
-     * figure out their total reference count.
-     *
-     * @return int
-     * The number of references to this typed structural element
-     */
-    public function getReferenceCount(
-        CodeBase $code_base
-    ) : int {
-        return count($this->reference_list);
     }
 
     /**

@@ -6,7 +6,7 @@ use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Issue;
 use \Phan\Language\Context;
-use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\ClassConstant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
@@ -16,9 +16,8 @@ use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\Type;
 use \Phan\Language\UnionType;
 
-class Clazz extends TypedStructuralElement implements Addressable
+class Clazz extends AddressableElement
 {
-    use AddressableImplementation;
     use \Phan\Memoize;
 
     /**
@@ -198,7 +197,7 @@ class Clazz extends TypedStructuralElement implements Addressable
         foreach ($class->getConstants() as $name => $value) {
             $clazz->addConstant(
                 $code_base,
-                new Constant(
+                new ClassConstant(
                     $context,
                     $name,
                     Type::fromObject($value)->asUnionType(),
@@ -436,7 +435,7 @@ class Clazz extends TypedStructuralElement implements Addressable
      */
     public function addConstant(
         CodeBase $code_base,
-        Constant $constant
+        ClassConstant $constant
     ) {
         $code_base->addConstantInScope(
             $constant,
@@ -460,13 +459,13 @@ class Clazz extends TypedStructuralElement implements Addressable
     }
 
     /**
-     * @return Constant
+     * @return ClassConstant
      * The class constant with the given name.
      */
     public function getConstantWithName(
         CodeBase $code_base,
         string $name
-    ) : Constant {
+    ) : ClassConstant {
         return $code_base->getConstant(
             $this->getFQSEN(),
             $name
@@ -474,7 +473,7 @@ class Clazz extends TypedStructuralElement implements Addressable
     }
 
     /**
-     * @return Constant[]
+     * @return ClassConstant[]
      * The constants associated with this class
      */
     public function getConstantMap(CodeBase $code_base) : array
@@ -900,7 +899,7 @@ class Clazz extends TypedStructuralElement implements Addressable
         $list_count = function (array $list) use ($code_base) {
             return array_reduce($list, function (
                 int $count,
-                TypedStructuralElement $element
+                AddressableElement $element
             ) use ($code_base) {
                 return (
                     $count

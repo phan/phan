@@ -13,7 +13,7 @@ use \Phan\Exception\UnanalyzableException;
 use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
-use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\ClassConstant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
@@ -604,7 +604,7 @@ class ContextNode
     }
 
     /**
-     * @return Constant
+     * @return ClassConstant
      * Get the (non-class) constant associated with this node
      * in this context
      *
@@ -615,7 +615,7 @@ class ContextNode
      * An exception is thrown if we can't find the given
      * class
      */
-    public function getConst() : Constant
+    public function getConst() : ClassConstant
     {
         assert(
             $this->node->kind === \ast\AST_CONST,
@@ -649,7 +649,7 @@ class ContextNode
     }
 
     /**
-     * @return Constant
+     * @return ClassConstant
      * Get the (non-class) constant associated with this node
      * in this context
      *
@@ -664,7 +664,7 @@ class ContextNode
      * An exception is thrown if we hit a construct in which
      * we can't determine if the property exists or not
      */
-    public function getClassConst() : Constant
+    public function getClassConst() : ClassConstant
     {
         assert(
             $this->node->kind === \ast\AST_CLASS_CONST,

@@ -4,10 +4,10 @@ namespace Phan\CodeBase;
 use \Phan\Database;
 use \Phan\Exception\NotFoundException;
 use \Phan\Language\Element\Clazz;
-use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\ClassConstant;
 use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Method;
-use \Phan\Language\Element\TypedStructuralElement;
+use \Phan\Language\Element\AddressableElement;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -84,7 +84,7 @@ trait FileMap
     abstract public function getConstant(
         FQSEN $fqsen = null,
         string $name
-    ) : Constant;
+    ) : ClassConstant;
 
     abstract public function hasProperty(
         FQSEN $fqsen,
@@ -137,7 +137,7 @@ trait FileMap
         // Maps a structural element to a list of files that
         // depend on it
         $file_list_from_element =
-            function (TypedStructuralElement $element) : array {
+            function (AddressableElement $element) : array {
                 return array_map(
                     function (FileRef $file_ref) : string {
                         return $file_ref->getFile();

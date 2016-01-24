@@ -9,15 +9,8 @@ use \Phan\Language\FQSEN\FullyQualifiedClassElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\UnionType;
 
-abstract class ClassElement extends TypedStructuralElement
+abstract class ClassElement extends AddressableElement
 {
-    /**
-     * @return FQSEN
-     * The fully-qualified structural element name of this
-     * structural element
-     */
-    abstract public function getFQSEN() : FQSEN;
-
     /**
      * @return FullyQualifiedClassName
      * The FQSEN of the class that originally defined
@@ -25,15 +18,13 @@ abstract class ClassElement extends TypedStructuralElement
      */
     public function getDefiningClassFQSEN() : FullyQualifiedClassName
     {
-        if ($this instanceof Addressable) {
-            $fqsen = $this->getFQSEN();
-            if ($fqsen instanceof FullyQualifiedClassElement) {
-                return $fqsen->getFullyQualifiedClassName();
-            }
+        $fqsen = $this->getFQSEN();
+        if ($fqsen instanceof FullyQualifiedClassElement) {
+            return $fqsen->getFullyQualifiedClassName();
         }
 
         throw new \Exception(
-            "Cannot get defining class for non-class element $element"
+            "Cannot get defining class for non-class element $this"
         );
     }
 
