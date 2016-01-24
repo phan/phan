@@ -26,7 +26,12 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * The fully-qualified structural element name of this
      * structural element
      */
-    abstract public function getFQSEN();
+    public function getFQSEN() {
+        assert(!empty($this->fqsen),
+            "Empty FQSEN for $this\n");
+
+        return $this->fqsen;
+    }
 
     /**
      * @param FQSEN $fqsen

@@ -102,12 +102,21 @@ class Method extends ClassElement implements FunctionInterface
         Clazz $clazz,
         Context $context
     ) : Method {
-        return new Method(
+        $method = new Method(
             $context,
             '__construct',
             $clazz->getUnionType(),
             0
         );
+
+        $method->setFQSEN(
+            FullyQualifiedMethodName::make(
+                $clazz->getFQSEN(),
+                '__construct'
+            )
+        );
+
+        return $method;
     }
 
     /**
@@ -224,7 +233,7 @@ class Method extends ClassElement implements FunctionInterface
         }
 
         // Add params to local scope for user functions
-        if($context->getFile() != 'internal') {
+        if(!$method->isInternal()) {
 
             $parameter_offset = 0;
             foreach ($method->getParameterList() as $i => $parameter) {
@@ -306,6 +315,9 @@ class Method extends ClassElement implements FunctionInterface
             assert($this->fqsen instanceof FullyQualifiedMethodName,
                 "Wrong FQSEN type at {$this->getContext()} with FQSEN {$this->fqsen}");
         }
+
+        assert($this->isInternal() || !empty($this->fqsen),
+            "FQSEN must be defined for $this\n");
 
         return !empty($this->fqsen)
             ? $this->fqsen

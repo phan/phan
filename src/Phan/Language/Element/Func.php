@@ -59,7 +59,7 @@ class Func extends AddressableElement implements FunctionInterface
      * @param Node $node
      * An AST node representing a function
      *
-     * @return Func 
+     * @return Func
      * A Func representing the AST node in the
      * given context
      */
@@ -106,7 +106,7 @@ class Func extends AddressableElement implements FunctionInterface
         // rescan it
         $func->setNode($node);
 
-        // Set the parameter list on the function 
+        // Set the parameter list on the function
         $func->setParameterList($parameter_list);
 
         $func->setNumberOfRequiredParameters(array_reduce(
@@ -151,7 +151,7 @@ class Func extends AddressableElement implements FunctionInterface
         }
 
         // Add params to local scope for user functions
-        if($context->getFile() != 'internal') {
+        if(!$func->isInternal()) {
 
             $parameter_offset = 0;
             foreach ($func->getParameterList() as $i => $parameter) {
@@ -229,6 +229,9 @@ class Func extends AddressableElement implements FunctionInterface
      * @return FullyQualifiedFunctionName
      */
     public function getFQSEN() : FQSEN {
+        assert($this->isInternal() || !empty($this->fqsen),
+            "FQSEN must be defined for $this\n");
+
         return !empty($this->fqsen)
             ? $this->fqsen
             : FullyQualifiedFunctionName::fromStringInContext(

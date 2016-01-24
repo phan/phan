@@ -76,6 +76,8 @@ abstract class TypedElement implements TypedElementInterface
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
+
+        $this->setIsInternal($context->isInternal());
     }
 
     /**
@@ -208,7 +210,24 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function isInternal() : bool
     {
-        return 'internal' === $this->getContext()->getFile();
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            Flags::IS_INTERNAL
+        );
+    }
+
+    /**
+     * @return void
+     */
+    private function setIsInternal(bool $is_internal)
+    {
+        $this->setFlags(
+            Flags::bitVectorWithState(
+                $this->getFlags(),
+                Flags::IS_INTERNAL,
+                $is_internal
+            )
+        );
     }
 
 }

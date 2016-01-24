@@ -93,7 +93,7 @@ trait ConstantMap
     }
 
     /**
-     * @param FQSEN $fqsen
+     * @param FQSEN|null $fqsen
      * The fully qualified name of the scope in which the
      * constant is defined or null if its a global constant
      *

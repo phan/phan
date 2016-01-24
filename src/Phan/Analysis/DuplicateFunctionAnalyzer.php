@@ -38,7 +38,7 @@ class DuplicateFunctionAnalyzer
 
         $method_name = $method->getName();
 
-        if ('internal' === $original_method->getContext()->getFile()) {
+        if ($original_method->isInternal()) {
             Issue::emit(
                 Issue::RedefineFunctionInternal,
                 $method->getContext()->getFile(),

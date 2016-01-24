@@ -686,6 +686,10 @@ class Clazz extends AddressableElement
             return $this->fqsen;
         }
 
+        if(!$this->isInternal() && empty($this->fqsen)) {
+            assert(false, "FQSEN must be defined for $this\n");
+        }
+
         return FullyQualifiedClassName::fromStringInContext(
             $this->getName(),
             $this->getContext()
