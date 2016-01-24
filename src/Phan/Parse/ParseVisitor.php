@@ -118,10 +118,12 @@ class ParseVisitor extends ScopeVisitor
         }
 
         // Build the class from what we know so far
+        $class_context = $this->context
+            ->withLineNumberStart($node->lineno ?? 0)
+            ->withLineNumberEnd($node->endLineno ?? -1);
+
         $clazz = new Clazz(
-            $this->context
-                ->withLineNumberStart($node->lineno ?? 0)
-                ->withLineNumberEnd($node->endLineno ?? -1),
+            $class_context,
             $class_name,
             UnionType::fromStringInContext(
                 $class_name,
@@ -195,7 +197,7 @@ class ParseVisitor extends ScopeVisitor
 
         // Update the context to signal that we're now
         // within a class context.
-        $context = $clazz->getContext()->withClassFQSEN(
+        $context = $class_context->withClassFQSEN(
             $class_fqsen
         );
 
@@ -225,11 +227,10 @@ class ParseVisitor extends ScopeVisitor
 
         // Add each trait to the class
         foreach ($trait_fqsen_string_list as $trait_fqsen_string) {
-            $trait_fqsen =
-                FullyQualifiedClassName::fromStringInContext(
-                    $trait_fqsen_string,
-                    $clazz->getContext()
-                );
+            $trait_fqsen = FullyQualifiedClassName::fromStringInContext(
+                $trait_fqsen_string,
+                $this->context
+            );
 
             $clazz->addTraitFQSEN($trait_fqsen);
         }
@@ -270,20 +271,6 @@ class ParseVisitor extends ScopeVisitor
         // Create a new context with a new scope
         $context = $this->context->withScope(new Scope);
 
-        // Add $this to the scope of non-static methods
-        if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
-            assert(
-                $clazz->getContext()->getScope()
-                ->hasVariableWithName('this'),
-                "Classes must have a \$this variable."
-            );
-
-            $context = $context->withScopeVariable(
-                $clazz->getContext()->getScope()
-                ->getVariableWithName('this')
-            );
-        }
-
         $method = Method::fromNode(
             $context,
             $this->code_base,
@@ -309,17 +296,19 @@ class ParseVisitor extends ScopeVisitor
             );
         }
 
+        // Send the context into the method and reset the scope
+        $context = $this->context->withMethodFQSEN(
+            $method->getFQSEN()
+        );
+
         // Add each method parameter to the scope. We clone it
         // so that changes to the variable don't alter the
         // parameter definition
         foreach ($method->getParameterList() as $parameter) {
-            $method->getContext()->addScopeVariable(clone($parameter));
+            $method->getContext()->addScopeVariable(
+                clone($parameter)
+            );
         }
-
-        // Send the context into the method and reset the scope
-        $context = $method->getContext()->withMethodFQSEN(
-            $method->getFQSEN()
-        );
 
         return $context;
     }

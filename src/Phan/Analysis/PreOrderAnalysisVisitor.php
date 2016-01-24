@@ -56,7 +56,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitClass(Decl $node) : Context
     {
-
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name =
                 (new ContextNode(
@@ -93,7 +92,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
 
         } while ($this->context->getProjectRelativePath()
-                != $clazz->getContext()->getProjectRelativePath()
+                != $clazz->getFileRef()->getProjectRelativePath()
             || $this->context->getLineNumberStart() != $clazz->getFileRef()->getLineNumberStart()
         );
 
@@ -133,6 +132,20 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $this->context
         );
 
+        // Add $this to the scope of non-static methods
+        if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
+            assert(
+                $clazz->getContext()->getScope()
+                ->hasVariableWithName('this'),
+                "Classes must have a \$this variable."
+            );
+
+            $method->getContext()->addScopeVariable(
+                $clazz->getContext()->getScope()
+                    ->getVariableWithName('this')
+            );
+        }
+
         return $method->getContext()->withMethodFQSEN(
             $method->getFQSEN()
         );
@@ -170,7 +183,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // looking at currently in this context.
         foreach ($method->alternateGenerator($this->code_base)
         as $i => $alternate_method) {
-            if ($alternate_method->getContext()->getProjectRelativePath()
+            if ($alternate_method->getFileRef()->getProjectRelativePath()
                 === $this->context->getProjectRelativePath()
             ) {
                 return $method->getContext()->withMethodFQSEN(
