@@ -40,13 +40,6 @@ class Clazz extends TypedStructuralElement implements Addressable
     private $trait_fqsen_list = [];
 
     /**
-     * @var bool
-     * True if this class's constructor calls it's
-     * parent constructor.
-     */
-    private $is_parent_constructor_called = true;
-
-    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -617,16 +610,23 @@ class Clazz extends TypedStructuralElement implements Addressable
      */
     public function getIsParentConstructorCalled() : bool
     {
-        return $this->is_parent_constructor_called;
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            Flags::IS_PARENT_CONSTRUCTOR_CALLED
+        );
     }
 
     /**
-     * @return null
+     * @return void
      */
-    public function setIsParentConstructorCalled(bool $is_parent_constructor_called)
-    {
-        $this->is_parent_constructor_called =
-            $is_parent_constructor_called;
+    public function setIsParentConstructorCalled(
+        bool $is_parent_constructor_called
+    ) {
+        $this->setFlags(Flags::bitVectorWithState(
+            $this->getFlags(),
+            Flags::IS_PARENT_CONSTRUCTOR_CALLED,
+            $is_parent_constructor_called
+        ));
     }
 
     /**
@@ -635,8 +635,9 @@ class Clazz extends TypedStructuralElement implements Addressable
      */
     public function isFinal() : bool
     {
-        return (bool)(
-            $this->getFlags() & \ast\flags\CLASS_FINAL
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\CLASS_FINAL
         );
     }
 
@@ -646,8 +647,9 @@ class Clazz extends TypedStructuralElement implements Addressable
      */
     public function isAbstract() : bool
     {
-        return (bool)(
-            $this->getFlags() & \ast\flags\CLASS_ABSTRACT
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\CLASS_ABSTRACT
         );
     }
 
@@ -657,8 +659,9 @@ class Clazz extends TypedStructuralElement implements Addressable
      */
     public function isInterface() : bool
     {
-        return (bool)(
-            $this->getFlags() & \ast\flags\CLASS_INTERFACE
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\CLASS_INTERFACE
         );
     }
 
@@ -668,8 +671,9 @@ class Clazz extends TypedStructuralElement implements Addressable
      */
     public function isTrait() : bool
     {
-        return (bool)(
-            $this->getFlags() & \ast\flags\CLASS_TRAIT
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\CLASS_TRAIT
         );
     }
 

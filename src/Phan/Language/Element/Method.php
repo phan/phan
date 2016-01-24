@@ -38,25 +38,6 @@ class Method extends ClassElement implements Addressable {
     private $parameter_list = [];
 
     /**
-     * @var bool
-     * This should be set to true if the method signature and
-     * comment do not define a return type for the method.
-     */
-    private $is_return_type_undefined = false;
-
-    /**
-     * @var bool
-     * True if this method has a return value
-     */
-    private $has_return = false;
-
-    /**
-     * @var bool
-     * True if this method overrides a parent method
-     */
-    private $is_override = false;
-
-    /**
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
@@ -623,8 +604,12 @@ class Method extends ClassElement implements Addressable {
      * was defined (either in the signature itself or in the
      * docblock).
      */
-    public function isReturnTypeUndefined() : bool {
-        return $this->is_return_type_undefined;
+    public function isReturnTypeUndefined() : bool
+    {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            Flags::IS_RETURN_TYPE_UNDEFINED
+        );
     }
 
     /**
@@ -636,16 +621,23 @@ class Method extends ClassElement implements Addressable {
     public function setIsReturnTypeUndefined(
         bool $is_return_type_undefined
     ) {
-        $this->is_return_type_undefined =
-            $is_return_type_undefined;
+        $this->setFlags(Flags::bitVectorWithState(
+            $this->getFlags(),
+            Flags::IS_RETURN_TYPE_UNDEFINED,
+            $is_return_type_undefined
+        ));
     }
 
     /**
      * @return bool
      * True if this method returns a value
      */
-    public function getHasReturn() : bool {
-        return $this->has_return;
+    public function getHasReturn() : bool
+    {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            Flags::HAS_RETURN
+        );
     }
 
     /**
@@ -655,16 +647,25 @@ class Method extends ClassElement implements Addressable {
      *
      * @return void
      */
-    public function setHasReturn(bool $has_return) {
-        $this->has_return = $has_return;
+    public function setHasReturn(bool $has_return)
+    {
+        $this->setFlags(Flags::bitVectorWithState(
+            $this->getFlags(),
+            Flags::HAS_RETURN,
+            $has_return
+        ));
     }
 
     /**
      * @return bool
      * True if this method overrides another method
      */
-    public function getIsOverride() : bool {
-        return $this->is_override;
+    public function getIsOverride() : bool
+    {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            Flags::IS_OVERRIDE
+        );
     }
 
     /**
@@ -673,8 +674,13 @@ class Method extends ClassElement implements Addressable {
      *
      * @return void
      */
-    public function setIsOverride(bool $is_override) {
-        $this->is_override = $is_override;
+    public function setIsOverride(bool $is_override)
+    {
+        $this->setFlags(Flags::bitVectorWithState(
+            $this->getFlags(),
+            Flags::IS_OVERRIDE,
+            $is_override
+        ));
     }
 
     /**

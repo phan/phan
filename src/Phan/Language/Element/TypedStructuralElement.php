@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
 use \Phan\CodeBase;
@@ -16,24 +15,6 @@ use \Phan\Model\CalledBy;
  */
 abstract class TypedStructuralElement
 {
-    /**
-     * @var Context
-     * The context in which the structural element lives
-     */
-    private $context = null;
-
-    /**
-     * @var bool
-     * True if this element is marked as deprecated
-     */
-    private $is_deprecated = false;
-
-    /**
-     * @var string[]
-     * A set of issues types to be suppressed
-     */
-    private $suppress_issue_list = [];
-
     /**
      * @var string
      * The name of the typed structural element
@@ -55,6 +36,19 @@ abstract class TypedStructuralElement
      * a certain kind has a meaningful flags value.
      */
     private $flags = 0;
+
+
+    /**
+     * @var Context
+     * The context in which the structural element lives
+     */
+    private $context = null;
+
+    /**
+     * @var string[]
+     * A set of issues types to be suppressed
+     */
+    private $suppress_issue_list = [];
 
     /**
      * @var FileRef[]
@@ -90,7 +84,6 @@ abstract class TypedStructuralElement
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
-        // print str_pad(decbin($flags), 64, '0', STR_PAD_LEFT) . "\n";
     }
 
     /**
@@ -246,18 +239,25 @@ abstract class TypedStructuralElement
      */
     public function isDeprecated() : bool
     {
-        return $this->is_deprecated;
+        return Flags::bitVectorHasState(
+            $this->flags,
+            Flags::IS_DEPRECATED
+        );
     }
 
     /**
      * @param bool $is_deprecated
      * Set this element as deprecated
      *
-     * @return null
+     * @return void
      */
     public function setIsDeprecated(bool $is_deprecated)
     {
-        $this->is_deprecated = $is_deprecated;
+        $this->flags = Flags::bitVectorWithState(
+            $this->flags,
+            Flags::IS_DEPRECATED,
+            $is_deprecated
+        );
     }
 
     /**
