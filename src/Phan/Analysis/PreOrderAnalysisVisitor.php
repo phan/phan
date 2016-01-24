@@ -182,7 +182,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // No alternate was found
         throw new CodeBaseException(
             null,
-            "Can't find function {$function_name} - aborting"
+            "Can't find function {$function_name} in context {$this->context} - aborting"
         );
 
         return $this->context;
