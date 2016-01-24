@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
-namespace Phan\Analyze;
+namespace Phan\Parse;
 
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
 use \Phan\AST\Visitor\KindVisitorImplementation;
+use \Phan\Analysis\ScopeVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;

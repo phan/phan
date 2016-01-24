@@ -3,7 +3,7 @@ namespace Phan\AST;
 
 use \Phan\AST\ContextNode;
 use \Phan\AST\Visitor\KindVisitorImplementation;
-use \Phan\Analyze\BinaryOperatorFlagVisitor;
+use \Phan\Analysis\BinaryOperatorFlagVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
@@ -34,9 +34,9 @@ use \Phan\Language\Type\ScalarType;
 use \Phan\Language\Type\StringType;
 use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
+use \Phan\Phan;
 use \ast\Node;
 use \ast\Node\Decl;
-use Phan\Phan;
 
 /**
  * Determine the UnionType associated with a

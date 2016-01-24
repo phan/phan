@@ -2,7 +2,6 @@
 namespace Phan\AST;
 
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\Analyze\ClassName\ValidationVisitor as ClassNameValidationVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Exception\CodeBaseException;

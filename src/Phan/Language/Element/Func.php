@@ -15,7 +15,7 @@ use \ast\Node\Decl;
 
 class Func extends AddressableElement implements FunctionInterface
 {
-    use \Phan\Analyze\Analyzable;
+    use \Phan\Analysis\Analyzable;
     use \Phan\Memoize;
     use FunctionTrait;
 

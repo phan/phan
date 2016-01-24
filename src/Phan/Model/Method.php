@@ -6,18 +6,20 @@ use \Phan\Database\Column;
 use \Phan\Database\ModelListAssociation;
 use \Phan\Database\ModelOne;
 use \Phan\Database\Schema;
+use \Phan\Language\Element\Func;
+use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method as MethodElement;
 use \Phan\Language\Element\Parameter as ParameterElement;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\UnionType;
 
 class Method extends ModelOne
 {
 
     /**
-     * @var MethodElement
+     * @var FunctionInterface
      */
     private $method;
 
@@ -32,12 +34,12 @@ class Method extends ModelOne
     private $scope_name;
 
     /**
-     * @param MethodElement $method
+     * @param FunctionInterface $method
      * @param string $scope
      * @param string $scope_name
      */
     public function __construct(
-        MethodElement $method,
+        FunctionInterface $method,
         string $scope,
         string $scope_name
     ) {
@@ -46,7 +48,7 @@ class Method extends ModelOne
         $this->scope_name = $scope_name;
     }
 
-    public function getMethod() : MethodElement
+    public function getMethod() : FunctionInterface
     {
         return $this->method;
     }

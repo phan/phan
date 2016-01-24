@@ -2,7 +2,7 @@
 
 namespace Phan\Tests\Language;
 
-use \Phan\Analyze\ParseVisitor;
+use \Phan\Parse\ParseVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;

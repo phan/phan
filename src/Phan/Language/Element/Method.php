@@ -15,7 +15,7 @@ use \ast\Node\Decl;
 
 class Method extends ClassElement implements FunctionInterface
 {
-    use \Phan\Analyze\Analyzable;
+    use \Phan\Analysis\Analyzable;
     use \Phan\Memoize;
     use FunctionTrait;
 

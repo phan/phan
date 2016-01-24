@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Analyze;
+namespace Phan\Analysis;
 
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
