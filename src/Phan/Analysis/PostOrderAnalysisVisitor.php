@@ -932,8 +932,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                         $this->context->getFile(),
                         $node->lineno ?? 0,
                         "{$class->getFQSEN()}::{$method_name}()",
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
+                        $method->getFileRef()->getFile(),
+                        $method->getFileRef()->getLineNumberStart()
                     );
                 }
             }
@@ -1407,7 +1407,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                 // and it has no type, add the argument's type
                 // to it so we can compare it to subsequent
                 // calls
-                if (!$parameter->getContext()->isInternal()) {
+                if (!$parameter->isInternal()) {
                     // Clone the parameter in the original
                     // parameter list so we can reset it
                     // later
@@ -1462,7 +1462,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
         // into an infinite loop of checking calls to the current
         // method in scope
         if ($has_argument_parameter_mismatch
-            && !$method->getContext()->isInternal()
+            && !$method->isInternal()
             && (!$this->context->isMethodScope()
                 || $method->getFQSEN() !== $this->context->getMethodFQSEN())
         ) {

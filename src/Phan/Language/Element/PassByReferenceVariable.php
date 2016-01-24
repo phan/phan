@@ -5,6 +5,7 @@ use \Phan\AST\ContextNode;
 use \Phan\CodeBase;
 use \Phan\Debug;
 use \Phan\Language\Context;
+use \Phan\Language\FileRef;
 use \Phan\Language\UnionType;
 use \ast\Node;
 
@@ -60,6 +61,11 @@ class PassByReferenceVariable extends Variable
     public function getContext() : Context
     {
         return $this->variable->getContext();
+    }
+
+    public function getFileRef() : FileRef
+    {
+        return $this->variable->getFileRef();
     }
 
     public function isDeprecated() : bool

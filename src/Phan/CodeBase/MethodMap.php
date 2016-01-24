@@ -378,7 +378,7 @@ trait MethodMap
         }
 
         // Associate the element with the file it was found in
-        $this->getFileByPath($method->getContext()->getFile())
+        $this->getFileByPath($method->getFileRef()->getFile())
             ->addMethodFQSEN($method->getFQSEN());
     }
 
@@ -395,7 +395,7 @@ trait MethodMap
 
         foreach ($this->method_map as $scope => $map) {
             foreach ($map as $name => $method) {
-                if (!$method->getContext()->isInternal()) {
+                if (!$method->isInternal()) {
                     (new MethodModel($method, $scope, $name))->write(
                         Database::get()
                     );

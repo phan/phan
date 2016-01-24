@@ -117,10 +117,10 @@ trait ClassMap
             = $class;
 
         // For classes that aren't internal PHP classes
-        if (!$class->getContext()->isInternal()) {
+        if (!$class->isInternal()) {
 
             // Associate the class with the file it was found in
-            $this->getFileByPath($class->getContext()->getFile())
+            $this->getFileByPath($class->getFileRef()->getFile())
                 ->addClassFQSEN($class->getFQSEN());
         }
     }
@@ -151,7 +151,7 @@ trait ClassMap
         }
 
         foreach ($this->class_map as $fqsen_string => $class) {
-            if (!$class->getContext()->isInternal()) {
+            if (!$class->isInternal()) {
                 (new ClazzModel($class))->write(Database::get());
             }
         }

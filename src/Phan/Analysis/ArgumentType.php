@@ -74,8 +74,8 @@ class ArgumentType
                 $context->getFile(),
                 $context->getLineNumberStart(),
                 (string)$method->getFQSEN(),
-                $method->getContext()->getFile(),
-                $method->getContext()->getLineNumberStart()
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
             );
         }
 
@@ -142,8 +142,8 @@ class ArgumentType
                         $argcount,
                         (string)$method->getFQSEN(),
                         $method->getNumberOfRequiredParameters(),
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
+                        $method->getFileRef()->getFile(),
+                        $method->getFileRef()->getLineNumberStart()
                     );
                 }
             }
@@ -180,8 +180,8 @@ class ArgumentType
                         $argcount,
                         (string)$method->getFQSEN(),
                         $max,
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
+                        $method->getFileRef()->getFile(),
+                        $method->getFileRef()->getLineNumberStart()
                     );
                 }
             }
@@ -344,8 +344,8 @@ class ArgumentType
                         $argument_type_expanded,
                         (string)$method->getFQSEN(),
                         (string)$parameter_type,
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart()
+                        $method->getFileRef()->getFile(),
+                        $method->getFileRef()->getLineNumberStart()
                     );
                 }
             }

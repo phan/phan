@@ -66,8 +66,8 @@ class ParentClassExistsAnalyzer
         if (!$code_base->hasClassWithFQSEN($fqsen)) {
             Issue::emit(
                 $issue_type,
-                $clazz->getContext()->getFile(),
-                $clazz->getContext()->getLineNumberStart(),
+                $clazz->getFileRef()->getFile(),
+                $clazz->getFileRef()->getLineNumberStart(),
                 (string)$fqsen
             );
 

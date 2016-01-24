@@ -41,11 +41,11 @@ class DuplicateClassAnalyzer
         if ($original_class->isInternal()) {
             Issue::emit(
                 Issue::RedefineClassInternal,
-                $clazz->getContext()->getFile(),
-                $clazz->getContext()->getLineNumberStart(),
+                $clazz->getFileRef()->getFile(),
+                $clazz->getFileRef()->getLineNumberStart(),
                 (string)$clazz,
-                $clazz->getContext()->getFile(),
-                $clazz->getContext()->getLineNumberStart(),
+                $clazz->getFileRef()->getFile(),
+                $clazz->getFileRef()->getLineNumberStart(),
                 (string)$original_class
             );
 
@@ -54,14 +54,14 @@ class DuplicateClassAnalyzer
         } else {
             Issue::emit(
                 Issue::RedefineClass,
-                $clazz->getContext()->getFile(),
-                $clazz->getContext()->getLineNumberStart(),
+                $clazz->getFileRef()->getFile(),
+                $clazz->getFileRef()->getLineNumberStart(),
                 (string)$clazz,
-                $clazz->getContext()->getFile(),
-                $clazz->getContext()->getLineNumberStart(),
+                $clazz->getFileRef()->getFile(),
+                $clazz->getFileRef()->getLineNumberStart(),
                 (string)$original_class,
-                $original_class->getContext()->getFile(),
-                $original_class->getContext()->getLineNumberStart()
+                $original_class->getFileRef()->getFile(),
+                $original_class->getFileRef()->getLineNumberStart()
             );
         }
 

@@ -56,8 +56,8 @@ class ParentConstructorCalledAnalyzer
         ) {
             Issue::emit(
                 Issue::TypeParentConstructorCalled,
-                $clazz->getContext()->getFile(),
-                $clazz->getContext()->getLineNumberStart(),
+                $clazz->getFileRef()->getFile(),
+                $clazz->getFileRef()->getLineNumberStart(),
                 (string)$clazz->getFQSEN(),
                 (string)$parent_clazz->getFQSEN()
             );

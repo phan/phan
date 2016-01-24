@@ -134,9 +134,9 @@ trait PropertyMap
         $this->property_map[(string)$fqsen][$name] = $property;
 
         // For elements that aren't internal PHP classes
-        if (!$property->getContext()->isInternal()) {
+        if (!$property->isInternal()) {
             // Associate the element with the file it was found in
-            $this->getFileByPath($property->getContext()->getFile())
+            $this->getFileByPath($property->getFileRef()->getFile())
                 ->addPropertyFQSEN($property->getFQSEN());
         }
     }
@@ -154,7 +154,7 @@ trait PropertyMap
 
         foreach ($this->property_map as $scope => $map) {
             foreach ($map as $name => $property) {
-                if (!$property->getContext()->isInternal()) {
+                if (!$property->isInternal()) {
                     (new PropertyModel(
                         $property,
                         $scope,

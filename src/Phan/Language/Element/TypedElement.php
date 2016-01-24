@@ -154,6 +154,17 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
+     * @return FileRef
+     * A reference to where this element was found
+     */
+    public function getFileRef() : FileRef
+    {
+        // TODO: Kill the context and make this a pure
+        //       FileRef.
+        return $this->context;
+    }
+
+    /**
      * @return bool
      * True if this element is marked as deprecated
      */

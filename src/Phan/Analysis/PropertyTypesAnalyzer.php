@@ -40,8 +40,8 @@ class PropertyTypesAnalyzer
                 if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
                     Issue::emit(
                         Issue::UndeclaredTypeProperty,
-                        $property->getContext()->getFile(),
-                        $property->getContext()->getLineNumberStart(),
+                        $property->getFileRef()->getFile(),
+                        $property->getFileRef()->getLineNumberStart(),
                         (string)$type_fqsen
                     );
                 }

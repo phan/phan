@@ -41,8 +41,8 @@ class ParameterTypesAnalyzer
                 if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
                     Issue::emit(
                         Issue::UndeclaredTypeParameter,
-                        $method->getContext()->getFile(),
-                        $method->getContext()->getLineNumberStart(),
+                        $method->getFileRef()->getFile(),
+                        $method->getFileRef()->getLineNumberStart(),
                         (string)$type_fqsen
                     );
                 }

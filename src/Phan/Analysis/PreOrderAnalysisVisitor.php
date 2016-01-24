@@ -94,7 +94,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         } while ($this->context->getProjectRelativePath()
                 != $clazz->getContext()->getProjectRelativePath()
-            || $this->context->getLineNumberStart() != $clazz->getContext()->getLineNumberStart()
+            || $this->context->getLineNumberStart() != $clazz->getFileRef()->getLineNumberStart()
         );
 
         return $clazz->getContext()->withClassFQSEN(

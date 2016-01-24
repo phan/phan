@@ -163,7 +163,7 @@ trait ConstantMap
 
         foreach ($this->constant_map as $scope => $map) {
             foreach ($map as $name => $constant) {
-                if (!$constant->getContext()->isInternal()) {
+                if (!$constant->isInternal()) {
                     (new ConstantModel($constant, $scope, $name))->write(Database::get());
                 }
             }

@@ -53,6 +53,12 @@ interface TypedElementInterface
     public function getContext() : Context;
 
     /**
+     * @return FileRef
+     * A reference to where this element was found
+     */
+    public function getFileRef() : FileRef;
+
+    /**
      * @return bool
      * True if this element is marked as deprecated
      */

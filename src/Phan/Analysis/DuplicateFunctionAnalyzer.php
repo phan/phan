@@ -41,22 +41,22 @@ class DuplicateFunctionAnalyzer
         if ($original_method->isInternal()) {
             Issue::emit(
                 Issue::RedefineFunctionInternal,
-                $method->getContext()->getFile(),
-                $method->getContext()->getLineNumberStart(),
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart(),
                 $method_name,
-                $method->getContext()->getFile(),
-                $method->getContext()->getLineNumberStart()
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
             );
         } else {
             Issue::emit(
                 Issue::RedefineFunction,
-                $method->getContext()->getFile(),
-                $method->getContext()->getLineNumberStart(),
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart(),
                 $method_name,
-                $method->getContext()->getFile(),
-                $method->getContext()->getLineNumberStart(),
-                $original_method->getContext()->getFile(),
-                $original_method->getContext()->getLineNumberStart()
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart(),
+                $original_method->getFileRef()->getFile(),
+                $original_method->getFileRef()->getLineNumberStart()
             );
         }
     }

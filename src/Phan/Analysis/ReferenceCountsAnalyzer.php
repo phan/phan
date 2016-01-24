@@ -53,7 +53,7 @@ class ReferenceCountsAnalyzer
                     CLI::progress('dead code', (++$i)/$total_count);
 
                     // Don't worry about internal elements
-                    if ($element->getContext()->isInternal()) {
+                    if ($element->isInternal()) {
                         continue;
                     }
 
@@ -138,14 +138,14 @@ class ReferenceCountsAnalyzer
     ) {
 
         // Don't worry about internal elements
-        if ($element->getContext()->isInternal()) {
+        if ($element->isInternal()) {
             return;
         }
 
         /*
         print "digraph G {\n";
         foreach ($element->getReferenceList() as $file_ref) {
-            print "\t\"{$file_ref->getFile()}\" -> \"{$element->getContext()->getFile()}\";\n";
+            print "\t\"{$file_ref->getFile()}\" -> \"{$element->getFileRef()->getFile()}\";\n";
         }
         print "}\n";
         */
@@ -158,15 +158,15 @@ class ReferenceCountsAnalyzer
             if ($element instanceof AddressableElement) {
                 Issue::emit(
                     $issue_type,
-                    $element->getContext()->getFile(),
-                    $element->getContext()->getLineNumberStart(),
+                    $element->getFileRef()->getFile(),
+                    $element->getFileRef()->getLineNumberStart(),
                     (string)$element->getFQSEN()
                 );
             } else {
                 Issue::emit(
                     $issue_type,
-                    $element->getContext()->getFile(),
-                    $element->getContext()->getLineNumberStart(),
+                    $element->getFileRef()->getFile(),
+                    $element->getFileRef()->getLineNumberStart(),
                     (string)$element
                 );
             }
