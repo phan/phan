@@ -15,6 +15,7 @@ use \Phan\Language\Context;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\Constant;
+use \Phan\Language\Element\Func;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\Element\Property;
@@ -199,7 +200,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitClosure(Decl $node) : Context
     {
-
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
                 $this->context->withLineNumberStart($node->lineno ?? 0)
@@ -214,17 +214,17 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        $method = Method::fromNode(
+        $func = Func::fromNode(
             $context,
             $this->code_base,
             $node
         );
 
         // Override the FQSEN with the found alternate ID
-        $method->setFQSEN($closure_fqsen);
+        $func->setFQSEN($closure_fqsen);
 
         // Make the closure reachable by FQSEN from anywhere
-        $this->code_base->addMethod($method);
+        $this->code_base->addMethod($func);
 
         if (!empty($node->children['uses'])
             && $node->children['uses']->kind == \ast\AST_CLOSURE_USES

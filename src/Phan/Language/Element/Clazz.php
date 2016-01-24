@@ -208,7 +208,7 @@ class Clazz extends AddressableElement
 
         foreach ($class->getMethods() as $reflection_method) {
             $method_list =
-                Method::methodListFromReflectionClassAndMethod(
+                FunctionFactory::methodListFromReflectionClassAndMethod(
                     $context->withClassFQSEN($clazz->getFQSEN()),
                     $code_base,
                     $class,
@@ -794,11 +794,19 @@ class Clazz extends AddressableElement
                     continue;
                 }
 
+                $ancestor = $code_base->getClassByFQSEN($fqsen);
+
+                // Force the parent to import its own before
+                // we import from it
+                $ancestor->importAncestorClasses($code_base);
+
                 $this->importAncestorClass(
-                    $code_base,
-                    $code_base->getClassByFQSEN($fqsen)
+                    $code_base, $ancestor
                 );
             }
+
+            // TODO: importParentClass doesn't need to be
+            //       separate from the loop above.
 
             // Copy information from the parent(s)
             $this->importParentClass($code_base);
@@ -876,6 +884,7 @@ class Clazz extends AddressableElement
                 foreach ($superclazz->getConstantMap($code_base) as $constant) {
                     $this->addConstant($code_base, $constant);
                 }
+
 
                 // Copy methods
                 foreach ($superclazz->getMethodMap($code_base) as $method) {

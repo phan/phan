@@ -4,6 +4,8 @@ namespace Phan\Language;
 use \Phan\CodeBase;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Func;
+use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -374,10 +376,10 @@ class Context extends FileRef implements \Serializable
      * @param CodeBase $code_base
      * The global code base holding all state
      *
-     * @return Method
+     * @return FunctionInterface
      * Get the method in this scope or fail real hard
      */
-    public function getMethodInScope(CodeBase $code_base) : Method
+    public function getMethodInScope(CodeBase $code_base) :FunctionInterface  
     {
         assert(
             $this->isMethodScope(),
@@ -405,7 +407,7 @@ class Context extends FileRef implements \Serializable
      * @return Method
      * Get the closure in this scope or fail real hard
      */
-    public function getClosureInScope(CodeBase $code_base) : Method
+    public function getClosureInScope(CodeBase $code_base) : Func 
     {
         assert(
             $this->isClosureScope(),

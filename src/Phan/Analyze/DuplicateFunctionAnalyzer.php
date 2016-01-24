@@ -3,6 +3,7 @@ namespace Phan\Analyze;
 
 use \Phan\CodeBase;
 use \Phan\Issue;
+use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -18,7 +19,7 @@ class DuplicateFunctionAnalyzer
      */
     public static function analyzeDuplicateFunction(
         CodeBase $code_base,
-        Method $method
+        FunctionInterface $method
     ) {
         $fqsen = $method->getFQSEN();
 

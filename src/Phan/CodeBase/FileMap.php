@@ -3,11 +3,12 @@ namespace Phan\CodeBase;
 
 use \Phan\Database;
 use \Phan\Exception\NotFoundException;
-use \Phan\Language\Element\Clazz;
-use \Phan\Language\Element\ClassConstant;
-use \Phan\Language\Element\Property;
-use \Phan\Language\Element\Method;
 use \Phan\Language\Element\AddressableElement;
+use \Phan\Language\Element\ClassConstant;
+use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\FunctionInterface;
+use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -98,7 +99,7 @@ trait FileMap
 
     abstract public function hasMethod($fqsen) : bool;
 
-    abstract public function getMethod($fqsen) : Method;
+    abstract public function getMethod($fqsen) : FunctionInterface ;
 
     /**
      * @var File[]

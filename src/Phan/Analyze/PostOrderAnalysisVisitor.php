@@ -1,22 +1,24 @@
 <?php declare(strict_types=1);
 namespace Phan\Analyze;
 
+use Phan\Phan;
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
-use \Phan\Exception\IssueException;
 use \Phan\Exception\CodeBaseException;
+use \Phan\Exception\IssueException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
 use \Phan\Issue;
 use \Phan\Langauge\Type;
 use \Phan\Language\Context;
+use \Phan\Language\Element\ClassConstant;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Comment;
-use \Phan\Language\Element\ClassConstant;
+use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\PassByReferenceVariable;
 use \Phan\Language\Element\Property;
@@ -31,7 +33,6 @@ use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
 use \ast\Node;
 use \ast\Node\Decl;
-use Phan\Phan;
 
 class PostOrderAnalysisVisitor extends KindVisitorImplementation
 {
@@ -985,8 +986,11 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
 
         $return_type = $method->getUnionType();
 
+        assert($method instanceof Method,
+            "Function found where method expected at {$this->context}");
+
         $has_interface_class = false;
-        if ($method->getFQSEN() instanceof FullyQualifiedMethodName) {
+        if ($method instanceof Method) {
             try {
                 $class = $method->getDefiningClass($this->code_base);
                 $has_interface_class = $class->isInterface();
@@ -994,6 +998,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
 
             }
         }
+
 
         if (!$method->isAbstract()
             && !$has_interface_class
@@ -1026,7 +1031,26 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
      */
     public function visitFuncDecl(Decl $node) : Context
     {
-        return $this->visitMethod($node);
+        $method =
+            $this->context->getMethodInScope($this->code_base);
+
+        $return_type = $method->getUnionType();
+
+        if (!$return_type->isEmpty()
+            && !$method->getHasReturn()
+            && !$return_type->hasType(VoidType::instance())
+            && !$return_type->hasType(NullType::instance())
+        ) {
+            Issue::emit(
+                Issue::TypeMissingReturn,
+                $this->context->getFile(),
+                $node->lineno ?? 0,
+                $method->getFQSEN(),
+                (string)$return_type
+            );
+        }
+
+        return $this->context;
     }
 
     /**
@@ -1214,7 +1238,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
      */
     private function analyzeCallToMethod(
         CodeBase $code_base,
-        Method $method,
+        FunctionInterface $method,
         Node $node
     ) {
         $method->addReference($this->context);

@@ -12,8 +12,10 @@ use \Phan\Exception\TypeException;
 use \Phan\Exception\UnanalyzableException;
 use \Phan\Issue;
 use \Phan\Language\Context;
-use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\ClassConstant;
+use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\Func;
+use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
@@ -162,7 +164,7 @@ class ContextNode
      * @param bool $is_static
      * Set to true if this is a static method call
      *
-     * @return Method
+     * @return FunctionInterface
      * A method with the given name on the class referenced
      * from the given node
      *
@@ -182,7 +184,7 @@ class ContextNode
     public function getMethod(
         $method_name,
         bool $is_static
-    ) : Method {
+    ) : FunctionInterface {
 
         if ($method_name instanceof Node) {
             // The method_name turned out to be a variable.
@@ -300,7 +302,7 @@ class ContextNode
      * that is being declared and false if we're getting a
      * function being called.
      *
-     * @return Method
+     * @return FunctionInterface
      * A method with the given name in the given context
      *
      * @throws IssueException
@@ -310,7 +312,7 @@ class ContextNode
     public function getFunction(
         string $function_name,
         bool $is_function_declaration = false
-    ) : Method {
+    ) : FunctionInterface {
 
         if ($is_function_declaration) {
             $function_fqsen =
@@ -756,7 +758,7 @@ class ContextNode
     /**
      * @return Method
      */
-    public function getClosure() : Method
+    public function getClosure() : Func
     {
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(

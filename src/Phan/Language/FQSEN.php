@@ -52,6 +52,13 @@ interface FQSEN
     public static function canonicalName(string $name) : string;
 
     /**
+     * @return FQSEN
+     * Get the canonical (non-alternate) FQSEN associated
+     * with this FQSEN
+     */
+    public function getCanonicalFQSEN() : FQSEN;
+
+    /**
      * @return string
      * A string representation of this fully-qualified
      * structural element name.

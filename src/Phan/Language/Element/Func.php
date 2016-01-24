@@ -6,107 +6,47 @@ use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\Type\CallableType;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \ast\Node;
 use \ast\Node\Decl;
 
-class Method extends ClassElement implements FunctionInterface
+class Func extends AddressableElement implements FunctionInterface
 {
     use \Phan\Analyze\Analyzable;
     use \Phan\Memoize;
     use FunctionTrait;
 
     /**
-     * @return bool
-     * True if this is an abstract class
-     */
-    public function isAbstract() : bool {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            \ast\flags\MODIFIER_ABSTRACT
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this is a static method
-     */
-    public function isStatic() : bool {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            \ast\flags\MODIFIER_STATIC
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this method overrides another method
-     */
-    public function getIsOverride() : bool
-    {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            Flags::IS_OVERRIDE
-        );
-    }
-
-    /**
-     * @param bool $is_override
-     * True if this method overrides another method
+     * @param \phan\Context $context
+     * The context in which the structural element lives
      *
-     * @return void
+     * @param string $name,
+     * The name of the typed structural element
+     *
+     * @param UnionType $type,
+     * A '|' delimited set of types satisfyped by this
+     * typed structural element.
+     *
+     * @param int $flags,
+     * The flags property contains node specific flags. It is
+     * always defined, but for most nodes it is always zero.
+     * ast\kind_uses_flags() can be used to determine whether
+     * a certain kind has a meaningful flags value.
      */
-    public function setIsOverride(bool $is_override)
-    {
-        $this->setFlags(Flags::bitVectorWithState(
-            $this->getFlags(),
-            Flags::IS_OVERRIDE,
-            $is_override
-        ));
-    }
-
-    /**
-     * @return bool
-     * True if this is a magic method
-     */
-    public function getIsMagic() : bool {
-        return in_array($this->getName(), [
-            '__get',
-            '__set',
-            '__construct',
-            '__destruct',
-            '__call',
-            '__callStatic',
-            '__get',
-            '__set',
-            '__isset',
-            '__unset',
-            '__sleep',
-            '__wakeup',
-            '__toString',
-            '__invoke',
-            '__set_state',
-            '__clone',
-            '__debugInfo'
-        ]);
-    }
-
-    /**
-     * @return Method
-     * A default constructor for the given class
-     */
-    public static function defaultConstructorForClassInContext(
-        Clazz $clazz,
-        Context $context
-    ) : Method {
-        return new Method(
+    public function __construct(
+        Context $context,
+        string $name,
+        UnionType $type,
+        int $flags
+    ) {
+        parent::__construct(
             $context,
-            '__construct',
-            $clazz->getUnionType(),
-            0
+            $name,
+            $type,
+            $flags
         );
     }
 
@@ -117,20 +57,20 @@ class Method extends ClassElement implements FunctionInterface
      * @param CodeBase $code_base
      *
      * @param Node $node
-     * An AST node representing a method
+     * An AST node representing a function
      *
-     * @return Method
-     * A Method representing the AST node in the
+     * @return Func 
+     * A Func representing the AST node in the
      * given context
      */
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
         Decl $node
-    ) : Method {
+    ) : Func {
 
-        // Parse the comment above the method to get
-        // extra meta information about the method.
+        // Parse the comment above the function to get
+        // extra meta information about the function.
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
             $context
@@ -138,13 +78,12 @@ class Method extends ClassElement implements FunctionInterface
 
         // @var Parameter[]
         // The list of parameters specified on the
-        // method
-        $parameter_list =
-            Parameter::listFromNode(
-                $context,
-                $code_base,
-                $node->children['params']
-            );
+        // function
+        $parameter_list = Parameter::listFromNode(
+            $context,
+            $code_base,
+            $node->children['params']
+        );
 
         // Add each parameter to the scope of the function
         foreach ($parameter_list as $parameter) {
@@ -153,42 +92,42 @@ class Method extends ClassElement implements FunctionInterface
             );
         }
 
-        // Create the skeleton method object from what
+        // Create the skeleton function object from what
         // we know so far
-        $method = new Method(
+        $func = new Func(
             $context,
             (string)$node->name,
             new UnionType(),
             $node->flags ?? 0
         );
 
-        // If the method is Analyzable, set the node so that
+        // If the function is Analyzable, set the node so that
         // we can come back to it whenever we like and
         // rescan it
-        $method->setNode($node);
+        $func->setNode($node);
 
-        // Set the parameter list on the method
-        $method->setParameterList($parameter_list);
+        // Set the parameter list on the function 
+        $func->setParameterList($parameter_list);
 
-        $method->setNumberOfRequiredParameters(array_reduce(
+        $func->setNumberOfRequiredParameters(array_reduce(
             $parameter_list,
             function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             }, 0)
         );
 
-        $method->setNumberOfOptionalParameters(array_reduce(
+        $func->setNumberOfOptionalParameters(array_reduce(
             $parameter_list, function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             }, 0)
         );
 
         // Check to see if the comment specifies that the
-        // method is deprecated
-        $method->setIsDeprecated($comment->isDeprecated());
-        $method->setSuppressIssueList($comment->getSuppressIssueList());
+        // function is deprecated
+        $func->setIsDeprecated($comment->isDeprecated());
+        $func->setSuppressIssueList($comment->getSuppressIssueList());
 
-        // Take a look at method return types
+        // Take a look at function return types
         if($node->children['returnType'] !== null) {
             // Get the type of the parameter
             $union_type = UnionType::fromNode(
@@ -197,7 +136,7 @@ class Method extends ClassElement implements FunctionInterface
                 $node->children['returnType']
             );
 
-            $method->getUnionType()->addUnionType($union_type);
+            $func->getUnionType()->addUnionType($union_type);
         }
 
         if ($comment->hasReturnUnionType()) {
@@ -205,29 +144,17 @@ class Method extends ClassElement implements FunctionInterface
             // See if we have a return type specified in the comment
             $union_type = $comment->getReturnType();
 
-            if ($union_type->hasSelfType()) {
-                // We can't actually figure out 'static' at this
-                // point, but fill it in regardless. It will be partially
-                // correct
-                if ($context->hasClassFQSEN()) {
-                    // n.b.: We're leaving the reference to self, static
-                    //       or $this in the type because I'm guessing
-                    //       it doesn't really matter. Apologies if it
-                    //       ends up being an issue.
-                    $union_type->addUnionType(
-                        $context->getClassFQSEN()->asUnionType()
-                    );
-                }
-            }
+            assert(!$union_type->hasSelfType(),
+                "Function referencing self in $context");
 
-            $method->getUnionType()->addUnionType($union_type);
+            $func->getUnionType()->addUnionType($union_type);
         }
 
         // Add params to local scope for user functions
         if($context->getFile() != 'internal') {
 
             $parameter_offset = 0;
-            foreach ($method->getParameterList() as $i => $parameter) {
+            foreach ($func->getParameterList() as $i => $parameter) {
                 if ($parameter->getUnionType()->isEmpty()) {
                     // If there is no type specified in PHP, check
                     // for a docComment with @param declarations. We
@@ -295,29 +222,24 @@ class Method extends ClassElement implements FunctionInterface
 
         }
 
-        return $method;
+        return $func;
     }
 
     /**
-     * @return FullyQualifiedMethodName
+     * @return FullyQualifiedFunctionName
      */
-    public function getFQSEN() : FullyQualifiedMethodName {
-        if ($this->fqsen) {
-            assert($this->fqsen instanceof FullyQualifiedMethodName,
-                "Wrong FQSEN type at {$this->getContext()} with FQSEN {$this->fqsen}");
-        }
-
+    public function getFQSEN() : FQSEN {
         return !empty($this->fqsen)
             ? $this->fqsen
-            : FullyQualifiedMethodName::fromStringInContext(
+            : FullyQualifiedFunctionName::fromStringInContext(
                 $this->getName(),
                 $this->getContext()
             );
     }
 
     /**
-     * @return Method[]|\Generator
-     * The set of all alternates to this method
+     * @return Func[]|\Generator
+     * The set of all alternates to this function
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator {
         $alternate_id = 0;
@@ -331,7 +253,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return string
-     * A string representation of this method signature
+     * A string representation of this function signature
      */
     public function __toString() : string {
         $string = '';
@@ -348,4 +270,5 @@ class Method extends ClassElement implements FunctionInterface
 
         return $string;
     }
+
 }

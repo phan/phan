@@ -149,14 +149,22 @@ class Method extends ModelOne
     {
         list($scope, $name) = explode('|', $row['scope_name']);
 
-        $method = new Method(new MethodElement(
+        $method_element = new MethodElement(
             unserialize(base64_decode($row['context'])),
             $row['name'],
             UnionType::fromFullyQualifiedString($row['type']),
-            (int)$row['flags'],
-            $row['number_of_required_parameters'],
+            (int)$row['flags']
+        );
+
+        $method_element->setNumberOfRequiredParameters(
+            $row['number_of_required_parameters']
+        );
+
+        $method_element->setNumberOfOptionalParameters(
             $row['number_of_optional_parameters']
-        ), $scope, $name);
+        );
+
+        $method = new Method($method_element, $scope, $name);
 
         if (false !== strpos($row['fqsen'], '::')) {
             $fqsen =  FullyQualifiedMethodName::fromFullyQualifiedString(

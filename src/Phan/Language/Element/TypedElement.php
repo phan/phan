@@ -12,7 +12,7 @@ use \Phan\Language\UnionType;
  * addressable such as a class, method, closure, property,
  * constant, variable, ...
  */
-abstract class TypedElement
+abstract class TypedElement implements TypedElementInterface
 {
     /**
      * @var string
@@ -117,7 +117,7 @@ abstract class TypedElement
      * @param UnionType $type
      * Set the type of this element
      *
-     * @return null
+     * @return void
      */
     public function setUnionType(UnionType $type)
     {

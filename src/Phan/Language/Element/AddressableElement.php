@@ -7,7 +7,7 @@ use \Phan\Language\FQSEN;
 use \Phan\Language\FileRef;
 use \Phan\Model\CalledBy;
 
-abstract class AddressableElement extends TypedElement
+abstract class AddressableElement extends TypedElement implements AddressableElementInterface
 {
     /**
      * @var FQSEN
@@ -26,14 +26,14 @@ abstract class AddressableElement extends TypedElement
      * The fully-qualified structural element name of this
      * structural element
      */
-    abstract public function getFQSEN() : FQSEN;
+    abstract public function getFQSEN();
 
     /**
      * @param FQSEN $fqsen
      * A fully qualified structural element name to set on
      * this element
      *
-     * @return null
+     * @return void
      */
     public function setFQSEN(FQSEN $fqsen)
     {
@@ -44,7 +44,7 @@ abstract class AddressableElement extends TypedElement
      * @return bool
      * True if this is a public property
      */
-    public function isPublic()
+    public function isPublic() : bool
     {
         return !(
             $this->isProtected() || $this->isPrivate()
@@ -55,7 +55,7 @@ abstract class AddressableElement extends TypedElement
      * @return bool
      * True if this is a protected property
      */
-    public function isProtected()
+    public function isProtected() : bool
     {
         return Flags::bitVectorHasState(
             $this->getFlags(),
@@ -67,7 +67,7 @@ abstract class AddressableElement extends TypedElement
      * @return bool
      * True if this is a private property
      */
-    public function isPrivate()
+    public function isPrivate() : bool
     {
         return Flags::bitVectorHasState(
             $this->getFlags(),
@@ -79,7 +79,7 @@ abstract class AddressableElement extends TypedElement
      * After a clone is called on this object, clone our
      * type and fqsen so that they survive copies intact
      *
-     * @return null
+     * @return void
      */
     public function __clone()
     {

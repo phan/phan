@@ -7,7 +7,7 @@ use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Issue;
 use \Phan\Language\Context;
-use \Phan\Language\Element\Method;
+use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Parameter;
 use \Phan\Language\FQSEN;
 use \Phan\Language\Type;
@@ -33,7 +33,7 @@ class ArgumentType
 {
 
     /**
-     * @param Method $method
+     * @param FunctionInterface $method
      * The method we're analyzing arguments for
      *
      * @param Node $node
@@ -51,7 +51,7 @@ class ArgumentType
      * Formerly `function arg_check`
      */
     public static function analyze(
-        Method $method,
+        FunctionInterface $method,
         Node $node,
         Context $context,
         CodeBase $code_base
@@ -86,7 +86,7 @@ class ArgumentType
         // parameters that are variadic
         $is_varargs = array_reduce(
             iterator_to_array($method->alternateGenerator($code_base)),
-            function (bool $carry, Method $alternate_method) : bool {
+            function (bool $carry, FunctionInterface $alternate_method) : bool {
                 return $carry || (
                     array_reduce(
                         $alternate_method->getParameterList(),
@@ -200,7 +200,7 @@ class ArgumentType
      * @param CodeBase $code_base
      * The global code base
      *
-     * @param Method $method
+     * @param FunctionInterface $method
      * The method we're analyzing arguments for
      *
      * @param Node $node
@@ -216,7 +216,7 @@ class ArgumentType
      */
     private static function analyzeParameterList(
         CodeBase $code_base,
-        Method $method,
+        FunctionInterface $method,
         Node $node,
         Context $context
     ) {
@@ -396,7 +396,7 @@ class ArgumentType
     /**
      * Check to see if the given Clazz is a duplicate
      *
-     * @param Method $method
+     * @param FunctionInterface $method
      * The method we're analyzing arguments for
      *
      * @param Node $node
@@ -413,7 +413,7 @@ class ArgumentType
      * Formerly `function arg_check`
      */
     private static function analyzeInternalArgumentType(
-        Method $method,
+        FunctionInterface $method,
         Node $node,
         Context $context,
         CodeBase $code_base

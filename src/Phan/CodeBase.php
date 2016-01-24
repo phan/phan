@@ -3,6 +3,7 @@ namespace Phan;
 
 use \Phan\CodeBase\File;
 use \Phan\Language\Context;
+use \Phan\Language\Element\FunctionFactory;
 use \Phan\Language\Element\{Clazz, Element, Method};
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -69,9 +70,7 @@ class CodeBase {
      */
     private function addFunctionsByNames(array $function_name_list) {
         foreach ($function_name_list as $i => $function_name) {
-            foreach (Method::methodListFromFunctionName($this, $function_name)
-                as $method
-            ) {
+            foreach (FunctionFactory::functionListFromName($this, $function_name) as $method) {
                 $this->addMethod($method);
             }
         }

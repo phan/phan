@@ -8,7 +8,6 @@ use Phan\Issue;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
-use Phan\Language\Element\AddressableElement;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;

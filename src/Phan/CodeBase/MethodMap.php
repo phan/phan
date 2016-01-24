@@ -4,6 +4,8 @@ namespace Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Database;
 use \Phan\Exception\NotFoundException;
+use \Phan\Language\Element\FunctionFactory;
+use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -23,13 +25,13 @@ trait MethodMap
     abstract function getFileByPath(string $file_path) : File;
 
     /**
-     * @var Method[][]
+     * @var FunctionInterface[][]
      * A map from FQSEN to name to a method
      */
     protected $method_map = [];
 
     /**
-     * @var Method[]
+     * @var FunctionInterface[]
      * A map from Method name to all methods with that name.
      * This is useful for adding hail-mary references to
      * methods called on unknown types when doing dead
@@ -38,7 +40,7 @@ trait MethodMap
     protected $method_name_map = [];
 
     /**
-     * @return Method[][]
+     * @return FunctionInterface[][]
      * A map from FQSEN to name to method
      */
     public function getMethodMap() : array
@@ -47,7 +49,7 @@ trait MethodMap
     }
 
     /**
-     * @return Method[]
+     * @return FunctionInterface[]
      * A map from name to method
      */
     public function getMethodMapForScope(
@@ -61,7 +63,7 @@ trait MethodMap
     }
 
     /**
-     * @param Method[][] $method_map
+     * @param FunctionInterface[][] $method_map
      * A map from FQSEN to Method
      *
      * @return null
@@ -147,7 +149,7 @@ trait MethodMap
                 $signature = $function_signature_map[$name];
 
                 // Add each method returned for the signature
-                foreach (Method::methodListFromSignature(
+                foreach (FunctionFactory::functionListFromSignature(
                     $this,
                     $fqsen,
                     $signature
@@ -175,10 +177,10 @@ trait MethodMap
     /**
      * @param FullyQualifiedMethodName|FullyQualifiedFunctionName $fqsen
      *
-     * @return Method
+     * @return FunctionInterface 
      * Get the method with the given FQSEN
      */
-    public function getMethod($fqsen) : Method
+    public function getMethod($fqsen) : FunctionInterface 
     {
         if ($fqsen instanceof FullyQualifiedMethodName) {
             return $this->getMethodByMethodFQSEN($fqsen);
@@ -191,7 +193,7 @@ trait MethodMap
      * @param string $name
      * The name of a method you'd like to get all instances of
      *
-     * @return Method[]
+     * @return FunctionInterface[]
      * All known methods with the given name
      */
     public function getMethodListByName(string $name) : array
@@ -219,12 +221,12 @@ trait MethodMap
     /**
      * @param FullyQualifiedMethodName $fqsen
      *
-     * @return Method
+     * @return FunctionInterface 
      * Get the method with the given FQSEN
      */
     private function getMethodByMethodFQSEN(
         FullyQualifiedMethodName $fqsen
-    ) : Method {
+    ) : FunctionInterface {
         return $this->getMethodByScopeAndName(
             (string)$fqsen->getFullyQualifiedClassName(),
             $fqsen->getNameWithAlternateId()
@@ -234,12 +236,12 @@ trait MethodMap
     /**
      * @param FullyQualifiedFunctionName $fqsen
      *
-     * @return Method
+     * @return FunctionInterface
      * Get the method with the given FQSEN
      */
     private function getMethodByFunctionFQSEN(
         FullyQualifiedFunctionName $fqsen
-    ) : Method {
+    ) : FunctionInterface {
         return $this->getMethodByScopeAndName(
             $fqsen->getNamespace(),
             $fqsen->getNameWithAlternateId()
@@ -253,7 +255,7 @@ trait MethodMap
      * @param string $name
      * The name of the method (with an optional alternate id)
      *
-     * @return Method
+     * @return FunctionInterface
      * Get the method with the given FQSEN
      *
      * @throws NotFoundException
@@ -263,7 +265,7 @@ trait MethodMap
     private function getMethodByScopeAndName(
         string $scope,
         string $name
-    ) : Method {
+    ) : FunctionInterface {
 
         if (empty($this->method_map[$scope][$name])
             && Database::isEnabled()
@@ -277,12 +279,12 @@ trait MethodMap
     }
 
     /**
-     * @param Method $method
+     * @param FunctionInterface $method
      * Any method
      *
      * @return null
      */
-    public function addMethod(Method $method)
+    public function addMethod(FunctionInterface $method)
     {
         if ($method->getFQSEN() instanceof FullyQualifiedMethodName) {
             $this->addMethodWithMethodFQSEN(
@@ -302,7 +304,7 @@ trait MethodMap
     }
 
     /**
-     * @param Method $method
+     * @param FunctionInterface $method
      * Any method
      *
      * @param FullyQualifiedMethodName $fqsen
@@ -311,7 +313,7 @@ trait MethodMap
      * @return null
      */
     private function addMethodWithMethodFQSEN(
-        Method $method,
+        FunctionInterface $method,
         FullyQualifiedMethodName $fqsen
     ) {
         $this->addMethodInScope(
@@ -321,7 +323,7 @@ trait MethodMap
     }
 
     /**
-     * @param Method $method
+     * @param FunctionInterface $method
      * Any method
      *
      * @param FullyQualifiedFunctionName $fqsen
@@ -330,7 +332,7 @@ trait MethodMap
      * @return null
      */
     private function addMethodWithFunctionFQSEN(
-        Method $method,
+        FunctionInterface $method,
         FullyQualifiedFunctionName $fqsen
     ) {
         $this->addMethodWithScopeAndName(
@@ -341,7 +343,7 @@ trait MethodMap
     }
 
     /**
-     * @param Method $method
+     * @param FunctionInterface $method
      * Any method
      *
      * @param FQSEN $fqsen
@@ -350,7 +352,7 @@ trait MethodMap
      * @return null
      */
     public function addMethodInScope(
-        Method $method,
+        FunctionInterface $method,
         FullyQualifiedClassName $fqsen
     ) {
         $this->addMethodWithScopeAndName(
@@ -361,7 +363,7 @@ trait MethodMap
     }
 
     private function addMethodWithScopeAndName(
-        Method $method,
+        FunctionInterface $method,
         string $scope,
         string $name
     ) {

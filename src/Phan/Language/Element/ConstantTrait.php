@@ -20,5 +20,4 @@ trait ConstantTrait {
         return 'const ' . $this->getName();
     }
 
-
 }

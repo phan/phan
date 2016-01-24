@@ -16,6 +16,7 @@ use \Phan\Language\Element\{
     Clazz,
     Comment,
     GlobalConstant,
+    Func,
     Method,
     Property
 };
@@ -523,7 +524,7 @@ class ParseVisitor extends ScopeVisitor
         } while ($this->code_base
             ->hasMethod($function_fqsen));
 
-        $method = Method::fromNode(
+        $func = Func::fromNode(
             $this->context
                 ->withLineNumberStart($node->lineno ?? 0)
                 ->withLineNumberEnd($node->endLineno ?? 0),
@@ -531,8 +532,8 @@ class ParseVisitor extends ScopeVisitor
             $node
         );
 
-        $method->setFQSEN($function_fqsen);
-        $this->code_base->addMethod($method);
+        $func->setFQSEN($function_fqsen);
+        $this->code_base->addMethod($func);
 
         // Send the context into the function and reset the scope
         $context = $this->context->withMethodFQSEN(
@@ -542,7 +543,7 @@ class ParseVisitor extends ScopeVisitor
         // Add each method parameter to the scope. We clone it
         // so that changes to the variable don't alter the
         // parameter definition
-        foreach ($method->getParameterList() as $parameter) {
+        foreach ($func->getParameterList() as $parameter) {
             $context->addScopeVariable(clone($parameter));
         }
 

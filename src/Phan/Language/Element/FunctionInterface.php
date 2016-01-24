@@ -1,11 +1,23 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\CodeBase;
+use \Phan\Language\Context;
+use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+
 /**
  * Interface defining the behavior of both Methods
  *  and Functions
  */
-interface FunctionInterface {
+interface FunctionInterface extends AddressableElementInterface {
+
+    /**
+     * @return FullyQualifiedMethodName|FullyQualifiedFunctionName
+     * The fully-qualified structural element name of this
+     * structural element
+     */
+    public function getFQSEN();
 
     /**
      * @return int
@@ -88,5 +100,26 @@ interface FunctionInterface {
      * @return void
      */
     public function setParameterList(array $parameter_list);
+
+    /**
+     * @param Parameter $parameter
+     * A parameter to append to the parameter list
+     *
+     * @return void
+     */
+    public function appendParameter(Parameter $parameter);
+
+    /**
+     * @return FunctionInterface[]|\Generator
+     * The set of all alternates to this function
+     */
+    public function alternateGenerator(CodeBase $code_base) : \Generator;
+
+    /**
+     * @return null
+     * Analyze the node associated with this object
+     * in the given context
+     */
+    public function analyze(Context $context, CodeBase $code_base) : Context;
 
 }
