@@ -228,16 +228,8 @@ class Func extends AddressableElement implements FunctionInterface
     /**
      * @return FullyQualifiedFunctionName
      */
-    public function getFQSEN() : FQSEN {
-        assert($this->isInternal() || !empty($this->fqsen),
-            "FQSEN must be defined for $this\n");
-
-        return !empty($this->fqsen)
-            ? $this->fqsen
-            : FullyQualifiedFunctionName::fromStringInContext(
-                $this->getName(),
-                $this->getContext()
-            );
+    public function getFQSEN() : FullyQualifiedFunctionName {
+        return $this->fqsen;
     }
 
     /**

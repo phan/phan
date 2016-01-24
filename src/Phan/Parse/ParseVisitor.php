@@ -25,6 +25,7 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\FutureUnionType;
 use \Phan\Language\Scope;
 use \Phan\Language\Type;
@@ -401,6 +402,13 @@ class ParseVisitor extends ScopeVisitor
                     $union_type,
                     $node->flags ?? 0
                 );
+
+            $property->setFQSEN(
+                FullyQualifiedPropertyName::make(
+                    $clazz->getFQSEN(),
+                    $property->getName()
+                )
+            );
 
             // Add the property to the class
             $clazz->addProperty($this->code_base, $property);

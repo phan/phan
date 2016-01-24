@@ -103,14 +103,16 @@ class FunctionFactory {
         Context $context,
         CodeBase $code_base,
         \ReflectionClass $class,
-        \ReflectionMethod $method
+        \ReflectionMethod $reflection_method
     ) : array {
-        $reflection_method =
-            new \ReflectionMethod($class->getName(), $method->name);
+        $reflection_method = new \ReflectionMethod(
+            $class->getName(),
+            $reflection_method->name
+        );
 
         $method = new Method(
             $context,
-            $method->name,
+            $reflection_method->name,
             new UnionType(),
             $reflection_method->getModifiers()
         );
@@ -122,6 +124,13 @@ class FunctionFactory {
         $method->setNumberOfOptionalParameters(
             $reflection_method->getNumberOfParameters()
             - $reflection_method->getNumberOfRequiredParameters()
+        );
+
+        $method->setFQSEN(
+            FullyQualifiedMethodName::fromStringInContext(
+                $method->getName(),
+                $context
+            )
         );
 
         return self::functionListFromFunction($method, $code_base);

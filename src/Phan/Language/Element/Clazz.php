@@ -10,6 +10,7 @@ use \Phan\Language\Element\ClassConstant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
+use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
@@ -151,6 +152,13 @@ class Clazz extends AddressableElement
             $flags
         );
 
+        $clazz->setFQSEN(
+            FullyQualifiedClassName::fromStringInContext(
+                $class->getName(),
+                $context
+            )
+        );
+
         // If this class has a parent class, add it to the
         // class info
         if (($parent_class = $class->getParentClass())) {
@@ -168,11 +176,21 @@ class Clazz extends AddressableElement
             $reflection_property =
                 new \ReflectionProperty($class->getName(), $name);
 
+            $property_context =
+                $context->withClassFQSEN($clazz->getFQSEN());
+
             $property = new Property(
-                $context->withClassFQSEN($clazz->getFQSEN()),
+                $property_context,
                 $name,
                 Type::fromObject($value)->asUnionType(),
                 0
+            );
+
+            $property->setFQSEN(
+                FullyQualifiedPropertyName::make(
+                    $clazz->getFQSEN(),
+                    $name
+                )
             );
 
             $clazz->addProperty($code_base, $property);
@@ -195,15 +213,21 @@ class Clazz extends AddressableElement
         }
 
         foreach ($class->getConstants() as $name => $value) {
-            $clazz->addConstant(
-                $code_base,
-                new ClassConstant(
-                    $context,
-                    $name,
-                    Type::fromObject($value)->asUnionType(),
-                    0
+            $constant = new ClassConstant(
+                $context,
+                $name,
+                Type::fromObject($value)->asUnionType(),
+                0
+            );
+
+            $constant->setFQSEN(
+                FullyQualifiedClassConstantName::make(
+                    $clazz->getFQSEN(),
+                    $name
                 )
             );
+
+            $clazz->addConstant($code_base, $constant);
         }
 
         foreach ($class->getMethods() as $reflection_method) {
@@ -679,21 +703,9 @@ class Clazz extends AddressableElement
     /**
      * @return FullyQualifiedClassName
      */
-    public function getFQSEN() : FQSEN
+    public function getFQSEN() : FullyQualifiedClassName
     {
-        // Allow overrides
-        if ($this->fqsen) {
-            return $this->fqsen;
-        }
-
-        if(!$this->isInternal() && empty($this->fqsen)) {
-            assert(false, "FQSEN must be defined for $this\n");
-        }
-
-        return FullyQualifiedClassName::fromStringInContext(
-            $this->getName(),
-            $this->getContext()
-        );
+        return $this->fqsen;
     }
 
     /**

@@ -26,27 +26,15 @@ class ClassConstant extends ClassElement implements ConstantInterface
     }
 
     /**
-     * @return FullyQualifiedClassConstantName|FullyQualifiedGlobalConstantName
+     * @return FullyQualifiedClassConstantName
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FQSEN
+    public function getFQSEN() : FullyQualifiedClassConstantName
     {
-        // Get the stored FQSEN if it exists
-        if ($this->fqsen) {
-            return $this->fqsen;
-        }
+        assert(!empty($this->fqsen),
+            "FQSEN must be defined for $this in {$this->getContext()}\n");
 
-        if ($this->getContext()->isInClassScope()) {
-            return FullyQualifiedClassConstantName::fromStringInContext(
-                $this->getName(),
-                $this->getContext()
-            );
-        } else {
-            return FullyQualifiedGlobalConstantName::fromStringInContext(
-                $this->getName(),
-                $this->getContext()
-            );
-        }
+        return $this->fqsen;
     }
 }

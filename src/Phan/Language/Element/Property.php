@@ -78,14 +78,9 @@ class Property extends ClassElement
      */
     public function getFQSEN() : FQSEN
     {
-        // Get the stored FQSEN if it exists
-        if ($this->fqsen) {
-            return $this->fqsen;
-        }
+        assert(!empty($this->fqsen),
+            "FQSEN must be defined for $this\n");
 
-        return FullyQualifiedPropertyName::fromStringInContext(
-            $this->getName(),
-            $this->getContext()
-        );
+        return $this->fqsen;
     }
 }

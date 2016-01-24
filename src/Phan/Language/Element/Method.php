@@ -311,20 +311,7 @@ class Method extends ClassElement implements FunctionInterface
      * @return FullyQualifiedMethodName
      */
     public function getFQSEN() : FullyQualifiedMethodName {
-        if ($this->fqsen) {
-            assert($this->fqsen instanceof FullyQualifiedMethodName,
-                "Wrong FQSEN type at {$this->getContext()} with FQSEN {$this->fqsen}");
-        }
-
-        assert($this->isInternal() || !empty($this->fqsen),
-            "FQSEN must be defined for $this\n");
-
-        return !empty($this->fqsen)
-            ? $this->fqsen
-            : FullyQualifiedMethodName::fromStringInContext(
-                $this->getName(),
-                $this->getContext()
-            );
+        return $this->fqsen;
     }
 
     /**

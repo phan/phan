@@ -25,17 +25,15 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     /**
-     * @return FullyQualifiedClassConstantName|FullyQualifiedGlobalConstantName
+     * @return FullyQualifiedGlobalConstantName
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FQSEN
+    public function getFQSEN() : FullyQualifiedGlobalConstantName
     {
-        return !empty($this->fqsen) 
-            ? $this->fqsen
-            : FullyQualifiedGlobalConstantName::fromStringInContext(
-                $this->getName(),
-                $this->getContext()
-            );
+        assert(!empty($this->fqsen),
+            "FQSEN must be defined for $this\n");
+
+        return $this->fqsen;
     }
 }
