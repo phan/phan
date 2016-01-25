@@ -1264,6 +1264,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                         $this->context,
                         $argument
                     ))->getOrCreateVariable();
+
                 } elseif ($argument->kind == \ast\AST_STATIC_PROP
                     || $argument->kind == \ast\AST_PROP
                 ) {
@@ -1341,6 +1342,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                                 $this->context,
                                 $argument
                             ))->getOrCreateProperty($argument->children['prop']);
+
                         } catch (IssueException $exception) {
                             $exception->getIssueInstance()();
                         } catch (\Exception $exception) {
@@ -1352,6 +1354,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                         // it.
                     }
                 }
+
                 if ($variable) {
                     $variable->getUnionType()->addUnionType(
                         $parameter->getUnionType()
@@ -1435,6 +1438,10 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                                 $this->context,
                                 $argument
                             ))->getOrCreateVariable();
+
+                            $parameter_list = $method->getParameterList();
+                            $parameter_list[$i] = $variable;
+                            $method->setParameterList($parameter_list);
 
                             // Add it to the scope of the function wrapped
                             // in a way that makes it addressable as the

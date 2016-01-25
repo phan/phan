@@ -256,8 +256,9 @@ class Parameter extends Variable
      */
     public function isVariadic() : bool
     {
-        return (bool)(
-            $this->getFlags() & \ast\flags\PARAM_VARIADIC
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\PARAM_VARIADIC
         );
     }
 
@@ -268,8 +269,9 @@ class Parameter extends Variable
      */
     public function isPassByReference() : bool
     {
-        return (bool)(
-            $this->getFlags() & \ast\flags\PARAM_REF
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\PARAM_REF
         );
     }
 

@@ -301,15 +301,6 @@ class ParseVisitor extends ScopeVisitor
             $method->getFQSEN()
         );
 
-        // Add each method parameter to the scope. We clone it
-        // so that changes to the variable don't alter the
-        // parameter definition
-        foreach ($method->getParameterList() as $parameter) {
-            $method->getContext()->addScopeVariable(
-                clone($parameter)
-            );
-        }
-
         return $context;
     }
 

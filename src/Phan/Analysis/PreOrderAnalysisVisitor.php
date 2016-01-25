@@ -146,6 +146,15 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
+        // Add each method parameter to the scope. We clone it
+        // so that changes to the variable don't alter the
+        // parameter definition
+        foreach ($method->getParameterList() as $parameter) {
+            $method->getContext()->addScopeVariable(
+                clone($parameter)
+            );
+        }
+
         return $method->getContext()->withMethodFQSEN(
             $method->getFQSEN()
         );
@@ -182,7 +191,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Hunt for the alternate associated with the file we're
         // looking at currently in this context.
         foreach ($method->alternateGenerator($this->code_base)
-        as $i => $alternate_method) {
+            as $i => $alternate_method
+        ) {
             if ($alternate_method->getFileRef()->getProjectRelativePath()
                 === $this->context->getProjectRelativePath()
             ) {

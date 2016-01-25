@@ -289,7 +289,8 @@ class ArgumentType
             $alternate_found = false;
 
             foreach ($method->alternateGenerator($code_base)
- as $alternate_id => $alternate_method) {
+                as $alternate_id => $alternate_method
+            ) {
                 if (empty($alternate_method->getParameterList()[$i])) {
                     continue;
                 }
@@ -349,6 +350,7 @@ class ArgumentType
                     );
                 }
             }
+
         }
     }
 
