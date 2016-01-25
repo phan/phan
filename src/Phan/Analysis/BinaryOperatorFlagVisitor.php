@@ -334,6 +334,16 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             return IntType::instance()->asUnionType();
         }
 
+        // If both left and right are arrays, then this is array
+        // concatenation.
+        if ($left->isGenericArray() && $right->isGenericArray()) {
+            if ($left->isEqualTo($right)) {
+                return $left;
+            }
+
+            return ArrayType::instance()->asUnionType();
+        }
+
         if (($left->isType(IntType::instance())
             || $left->isType(FloatType::instance()))
             && ($right->isType(IntType::instance())
