@@ -85,9 +85,8 @@ class CLI
 
         $this->output = new ConsoleOutput();
         $factory = new PrinterFactory();
-        $printerType = 'text';
+        $printer_type = 'text';
         $mask = -1;
-        $minimumSeverity = Issue::SEVERITY_LOW;
 
         foreach ($opts ?? [] as $key => $value) {
             switch ($key) {
@@ -146,7 +145,7 @@ class CLI
                         );
                     }
 
-                    $printerType = $value;
+                    $printer_type = $value;
                     break;
                 case 'c':
                 case 'parent-constructor-required':
@@ -192,7 +191,7 @@ class CLI
                     break;
                 case 'y':
                 case 'minimum-severity':
-                    $minimumSeverity = (int)$value;
+                    Config::get()->minimum_severity = (int)$value;
                     break;
                 case 'd':
                 case 'project-root-directory':
@@ -210,10 +209,10 @@ class CLI
             }
         }
 
-        $printer = $factory->getPrinter($printerType, $this->output);
+        $printer = $factory->getPrinter($printer_type, $this->output);
         $filter  = new ChainedIssueFilter([
             new FileIssueFilter(new Phan()),
-            new MinimumSeverityFilter($minimumSeverity),
+            new MinimumSeverityFilter(Config::get()->minimum_severity),
             new CategoryIssueFilter($mask)
         ]);
         $collector = new BufferingCollector($filter);

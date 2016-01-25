@@ -22,8 +22,6 @@ use Phan\Language\FQSEN;
  */
 class Analysis
 {
-
-
     /**
      * This first pass parses code and looks for the subset
      * of issues that can be found without having to have
