@@ -42,10 +42,7 @@ class CLI
      */
     public function __construct()
     {
-
         global $argv;
-
-        // file_put_contents('/tmp/file', implode("\n", $argv));
 
         // Parse command line args
         // still available: g,j,k,n,t,u,v,w,z
@@ -188,7 +185,8 @@ class CLI
                     break;
                 case 's':
                 case 'state-file':
-                    Config::get()->stored_state_file_path = $value;
+                    // TODO: re-enable eventually
+                    // Config::get()->stored_state_file_path = $value;
                     break;
                 case 'y':
                 case 'minimum-severity':
@@ -308,10 +306,6 @@ Usage: {$argv[0]} [options] [files...]
  -3, --exclude-directory-list <dir_list>
   A comma-separated list of directories for which any files
   therein should be parsed but not analyzed.
-
- -s, --state-file <filename>
-  Save state to the given file and read from it to speed up
-  future executions
 
  -d, --project-root-directory
   Hunt for a directory named .phan in the current or parent

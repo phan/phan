@@ -43,33 +43,6 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return bool
-     * True if this method overrides another method
-     */
-    public function getIsOverride() : bool
-    {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            Flags::IS_OVERRIDE
-        );
-    }
-
-    /**
-     * @param bool $is_override
-     * True if this method overrides another method
-     *
-     * @return void
-     */
-    public function setIsOverride(bool $is_override)
-    {
-        $this->setFlags(Flags::bitVectorWithState(
-            $this->getFlags(),
-            Flags::IS_OVERRIDE,
-            $is_override
-        ));
-    }
-
-    /**
-     * @return bool
      * True if this is a magic method
      */
     public function getIsMagic() : bool {
@@ -322,8 +295,8 @@ class Method extends ClassElement implements FunctionInterface
         $alternate_id = 0;
         $fqsen = $this->getFQSEN();
 
-        while ($code_base->hasMethod($fqsen)) {
-            yield $code_base->getMethod($fqsen);
+        while ($code_base->hasMethodWithFQSEN($fqsen)) {
+            yield $code_base->getMethodByFQSEN($fqsen);
             $fqsen = $fqsen->withAlternateId(++$alternate_id);
         }
     }

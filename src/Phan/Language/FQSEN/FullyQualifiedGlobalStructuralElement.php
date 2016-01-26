@@ -85,15 +85,15 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             static::toString($namespace, $name, $alternate_id)
         ]);
 
-        return self::memoizeStatic($key, function ()
- use ($namespace, $name, $alternate_id) {
-        
+        $fqsen = self::memoizeStatic($key, function () use ($namespace, $name, $alternate_id) {
             return new static(
                 $namespace,
                 $name,
                 $alternate_id
             );
         });
+
+        return $fqsen;
     }
 
     /**
@@ -106,8 +106,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         $key = get_called_class() . '|' . $fully_qualified_string;
 
-        return self::memoizeStatic($key, function ()
- use ($fully_qualified_string) {
+        return self::memoizeStatic($key, function () use ($fully_qualified_string) {
 
             // Split off the alternate_id
             $parts = explode(',', $fully_qualified_string);
@@ -242,6 +241,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         if ($this->getAlternateId() === $alternate_id) {
             return $this;
         }
+
+        assert($alternate_id < 1000,
+            "Your alternate IDs have run away in $this.");
 
         return static::make(
             $this->getNamespace(),

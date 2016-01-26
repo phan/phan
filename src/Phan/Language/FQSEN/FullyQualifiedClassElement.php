@@ -219,6 +219,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     public function withAlternateId(
         int $alternate_id
     ) : FQSEN {
+
+        assert($alternate_id < 1000,
+            "Your alternate IDs have run away in $this.");
+
         return static::make(
             $this->getFullyQualifiedClassName(),
             $this->getName(),

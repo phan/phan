@@ -247,7 +247,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $func->setFQSEN($closure_fqsen);
 
         // Make the closure reachable by FQSEN from anywhere
-        $this->code_base->addMethod($func);
+        $this->code_base->addFunction($func);
 
         if (!empty($node->children['uses'])
             && $node->children['uses']->kind == \ast\AST_CLOSURE_USES
@@ -448,6 +448,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $this->context,
                 $node->children['class']
             ))->getClassList();
+
+            foreach ($class_list as $class) {
+                $class->addReference($this->context);
+            }
+
         } catch (CodeBaseException $exception) {
             Issue::emit(
                 Issue::UndeclaredClassCatch,

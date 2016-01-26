@@ -81,21 +81,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * After a clone is called on this object, clone our
-     * type and fqsen so that they survive copies intact
-     *
-     * @return void
-     */
-    public function __clone()
-    {
-        parent::__clone();
-
-        $this->setFQSEN(
-            clone($this->getFQSEN())
-        );
-    }
-
-    /**
      * @param FileRef $file_ref
      * A reference to a location in which this typed structural
      * element is referenced.

@@ -2,13 +2,10 @@
 namespace Phan\Parse;
 
 use \Phan\AST\ContextNode;
-use \Phan\AST\UnionTypeVisitor;
-use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analysis\ScopeVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
-use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Issue;
 use \Phan\Language\Context;
@@ -19,7 +16,6 @@ use \Phan\Language\Element\Func;
 use \Phan\Language\Element\GlobalConstant;
 use \Phan\Language\Element\Method;
 use \Phan\Language\Element\Property;
-use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -29,20 +25,9 @@ use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use \Phan\Language\FutureUnionType;
 use \Phan\Language\Scope;
 use \Phan\Language\Type;
-use \Phan\Language\Type\ArrayType;
-use \Phan\Language\Type\BoolType;
 use \Phan\Language\Type\CallableType;
-use \Phan\Language\Type\FloatType;
-use \Phan\Language\Type\GenericArrayType;
-use \Phan\Language\Type\IntType;
-use \Phan\Language\Type\MixedType;
-use \Phan\Language\Type\NativeType;
 use \Phan\Language\Type\NullType;
-use \Phan\Language\Type\ObjectType;
-use \Phan\Language\Type\ResourceType;
-use \Phan\Language\Type\ScalarType;
 use \Phan\Language\Type\StringType;
-use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
 use \ast\Node;
 use \ast\Node\Decl;
@@ -105,11 +90,10 @@ class ParseVisitor extends ScopeVisitor
             "Class must have name in {$this->context}"
         );
 
-        $class_fqsen =
-            FullyQualifiedClassName::fromStringInContext(
-                $class_name,
-                $this->context
-            );
+        $class_fqsen = FullyQualifiedClassName::fromStringInContext(
+            $class_name,
+            $this->context
+        );
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
@@ -134,6 +118,17 @@ class ParseVisitor extends ScopeVisitor
 
         // Override the FQSEN with the found alternate ID
         $clazz->setFQSEN($class_fqsen);
+
+        // Get a comment on the class declaration
+        $comment = Comment::fromStringInContext(
+            $node->docComment ?? '',
+            $this->context
+        );
+
+        $clazz->setIsDeprecated($comment->isDeprecated());
+        $clazz->setSuppressIssueList(
+            $comment->getSuppressIssueList()
+        );
 
         // Add the class to the code base as a globally
         // accessible object
@@ -168,11 +163,10 @@ class ParseVisitor extends ScopeVisitor
                 $parent_class_name = '\\' . $parent_class_name;
             }
 
-            $parent_fqsen =
-                FullyQualifiedClassName::fromStringInContext(
-                    $parent_class_name,
-                    $this->context
-                );
+            $parent_fqsen = FullyQualifiedClassName::fromStringInContext(
+                $parent_class_name,
+                $this->context
+            );
 
             // Set the parent for the class
             $clazz->setParentClassFQSEN($parent_fqsen);
@@ -263,7 +257,7 @@ class ParseVisitor extends ScopeVisitor
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while ($this->code_base->hasMethod($method_fqsen)) {
+        while ($this->code_base->hasMethodWithFQSEN($method_fqsen)) {
             $method_fqsen =
                 $method_fqsen->withAlternateId(++$alternate_id);
         }
@@ -508,8 +502,9 @@ class ParseVisitor extends ScopeVisitor
                 ->withNamespace($this->context->getNamespace())
                 ->withAlternateId($alternate_id++);
 
-        } while ($this->code_base
-            ->hasMethod($function_fqsen));
+        } while ($this->code_base->hasFunctionWithFQSEN(
+            $function_fqsen
+        ));
 
         $func = Func::fromNode(
             $this->context
@@ -520,7 +515,7 @@ class ParseVisitor extends ScopeVisitor
         );
 
         $func->setFQSEN($function_fqsen);
-        $this->code_base->addMethod($func);
+        $this->code_base->addFunction($func);
 
         // Send the context into the function and reset the scope
         $context = $this->context->withMethodFQSEN(

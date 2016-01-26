@@ -1,174 +1,137 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
-use \Phan\Database;
-use \Phan\Exception\NotFoundException;
-use \Phan\Language\Element\Clazz;
+use \Phan\Language\Element\AddressableElement;
+use \Phan\Language\Element\ClassConstant;
+use \Phan\Language\Element\ClassElement;
+use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Property;
 use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Map;
-use \Phan\Model\Clazz as ClazzModel;
+use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
+use \Phan\Language\FQSEN\FullyQualifiedClassElement;
+use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
-trait ClassMap
+/**
+ * Maps for elements associated with an individual class
+ */
+class ClassMap
 {
-
     /**
-     * Implementing classes must support a mechanism for
-     * getting a File by its path
+     * @var ClassConstant[]
+     * A map from name to ClassCosntant
      */
-    abstract function getFileByPath(string $file_path) : File;
+    private $class_constant_map = [];
 
     /**
-     * @var Clazz[]|Map
-     * A map from fqsen string to the class it
-     * represents
+     * @var Property[]
+     * A map from name to Property
      */
-    protected $class_map;
+    private $property_map = [];
 
     /**
-     * Initialize the map
+     * @var Method[]
+     * A map from name to Method
      */
-    public function constructClassMap()
-    {
-        $this->class_map = new Map;
-    }
+    private $method_map = [];
 
     /**
-     * Get a map from FQSEN to the class it
-     * represents for all known classes.
-     *
-     * @return Map
-     * A map from FQSEN to Clazz
-     */
-    public function getClassMap() : Map
-    {
-        return $this->class_map;
-    }
-
-    /**
-     * @param Map $class_map
-     * A map from FQSEN string to Clazz
-     *
      * @return void
      */
-    private function setClassMap(Map $class_map)
+    public function addClassConstant(ClassConstant $constant)
     {
-        $this->class_map = $class_map;
-    }
-
-    /**
-     * @return Clazz
-     * A class with the given FQSEN
-     *
-     * @throws NotFoundException
-     * An exception is thrown if the class cannot be
-     * found
-     */
-    public function getClassByFQSEN(
-        FullyQualifiedClassName $fqsen
-    ) : Clazz {
-        // If we can't find the class, attempt to read it from
-        // the database
-        if (empty($this->class_map[$fqsen])
-            && Database::isEnabled()
-        ) {
-            $this->class_map[$fqsen] =
-                ClazzModel::read(
-                    Database::get(),
-                    (string)$fqsen
-                )->getClass();
-        }
-
-        return $this->class_map[$fqsen];
+        $this->class_constant_map[
+            $constant->getFQSEN()->getNameWithAlternateId()
+        ] = $constant;
     }
 
     /**
      * @return bool
-     * True if the exlass exists else false
      */
-    public function hasClassWithFQSEN(FullyQualifiedClassName $fqsen) : bool
+    public function hasClassConstantWithName(string $name) : bool
     {
-        // Check memory for the class
-        if (!empty($this->class_map[$fqsen])) {
-            return true;
-        }
+        return !empty($this->class_constant_map[$name]);
+    }
 
-        if (Database::isEnabled()) {
-            // Otherwise, check the database
-            try {
-                ClazzModel::read(Database::get(), (string)$fqsen);
-                return true;
-            } catch (NotFoundException $exception) {
-                return false;
-            }
-        }
-
-        return false;
+    public function getClassConstantByName(string $name) : ClassConstant
+    {
+        return $this->class_constant_map[$name];
     }
 
     /**
-     * Add a class to the code base
-     *
-     * @return null
+     * @return ClassConstant[]
      */
-    public function addClass(Clazz $class)
+    public function getClassConstantMap() : array
     {
-        $this->class_map[$class->getFQSEN()]
-            = $class;
-
-        // For classes that aren't internal PHP classes
-        if (!$class->isInternal()) {
-
-            // Associate the class with the file it was found in
-            $this->getFileByPath($class->getFileRef()->getFile())
-                ->addClassFQSEN($class->getFQSEN());
-        }
+        return $this->class_constant_map;
     }
 
     /**
-     * @param string[] $class_name_list
-     * A list of class names to load type information for
-     *
-     * @return null
+     * @return void
      */
-    private function addClassesByNames(array $class_name_list)
+    public function addProperty(Property $property)
     {
-        foreach ($class_name_list as $i => $class_name) {
-            $clazz = Clazz::fromClassName($this, $class_name);
-            $this->class_map[$clazz->getFQSEN()] = $clazz;
-        }
+        $this->property_map[
+            $property->getFQSEN()->getNameWithAlternateId()
+        ] = $property;
     }
 
     /**
-     * Write each object to the database
-     *
-     * @return null
+     * @return bool
      */
-    protected function storeClassMap()
+    public function hasPropertyWithName(string $name) : bool
     {
-        if (!Database::isEnabled()) {
-            return;
-        }
-
-        foreach ($this->class_map as $fqsen_string => $class) {
-            if (!$class->isInternal()) {
-                (new ClazzModel($class))->write(Database::get());
-            }
-        }
+        return !empty($this->property_map[$name]);
     }
 
     /**
-     * @return null
+     * @return Property
      */
-    protected function flushClassWithFQSEN(
-        FullyQualifiedClassName $fqsen
-    ) {
-        // Remove it from the database
-        if (Database::isEnabled()) {
-            ClazzModel::delete(Database::get(), (string)$fqsen);
-        }
-
-        // Remove it from memory
-        unset($this->class_map[$fqsen]);
+    public function getPropertyByName(string $name) : Property
+    {
+        return $this->property_map[$name];
     }
+
+    /**
+     * @return Property[]
+     */
+    public function getPropertyMap() : array
+    {
+        return $this->property_map;
+    }
+
+    /**
+     * @return void
+     */
+    public function addMethod(Method $method)
+    {
+        $this->method_map[strtolower(
+            $method->getFQSEN()->getNameWithAlternateId()
+        )] = $method;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasMethodWithName(string $name) : bool
+    {
+        return !empty($this->method_map[strtolower($name)]);
+    }
+
+    /**
+     * @return Method
+     */
+    public function getMethodByName(string $name) : Method
+    {
+        return $this->method_map[strtolower($name)];
+    }
+
+    /**
+     * @return Method[]
+     */
+    public function getMethodMap() : array
+    {
+        return $this->method_map;
+    }
+
 }

@@ -50,4 +50,32 @@ abstract class ClassElement extends AddressableElement
 
         return $code_base->getClassByFQSEN($class_fqsen);
     }
+
+    /**
+     * @return bool
+     * True if this method overrides another method
+     */
+    public function getIsOverride() : bool
+    {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            Flags::IS_OVERRIDE
+        );
+    }
+
+    /**
+     * @param bool $is_override
+     * True if this method overrides another method
+     *
+     * @return void
+     */
+    public function setIsOverride(bool $is_override)
+    {
+        $this->setFlags(Flags::bitVectorWithState(
+            $this->getFlags(),
+            Flags::IS_OVERRIDE,
+            $is_override
+        ));
+    }
+
 }

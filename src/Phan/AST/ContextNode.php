@@ -22,6 +22,7 @@ use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\Type\MixedType;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\Type\ObjectType;
@@ -163,7 +164,7 @@ class ContextNode
      * @param bool $is_static
      * Set to true if this is a static method call
      *
-     * @return FunctionInterface
+     * @return Method
      * A method with the given name on the class referenced
      * from the given node
      *
@@ -183,7 +184,7 @@ class ContextNode
     public function getMethod(
         $method_name,
         bool $is_static
-    ) : FunctionInterface {
+    ) : Method {
 
         if ($method_name instanceof Node) {
             // The method_name turned out to be a variable.
@@ -328,18 +329,17 @@ class ContextNode
 
             // If it doesn't exist in the local namespace, try it
             // in the global namespace
-            if (!$this->code_base->hasMethod($function_fqsen)) {
+            if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
                 $function_fqsen =
                     FullyQualifiedFunctionName::fromStringInContext(
                         $function_name,
                         $this->context
                     );
             }
-
         }
 
         // Make sure the method we're calling actually exists
-        if (!$this->code_base->hasMethod($function_fqsen)) {
+        if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredFunction)(
                     $this->context->getFile(),
@@ -349,9 +349,7 @@ class ContextNode
             );
         }
 
-        $method = $this->code_base->getMethod($function_fqsen);
-
-        return $method;
+        return $this->code_base->getFunctionByFQSEN($function_fqsen);
     }
 
     /**
@@ -630,13 +628,15 @@ class ContextNode
             );
         }
 
-        // Get an FQSEN for the root namespace
-        $fqsen = null;
-
         $constant_name =
             $this->node->children['name']->children['name'];
 
-        if (!$this->code_base->hasConstant($fqsen, $constant_name)) {
+        $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
+            $constant_name,
+            $this->context
+        );
+
+        if (!$this->code_base->hasGlobalConstantWithFQSEN($fqsen)) {
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredConstant)(
                     $this->context->getFile(),
@@ -646,7 +646,7 @@ class ContextNode
             );
         }
 
-        return $this->code_base->getConstant($fqsen, $constant_name);
+        return $this->code_base->getGlobalConstantByFQSEN($fqsen);
     }
 
     /**
@@ -764,14 +764,14 @@ class ContextNode
                 $this->context
             );
 
-        if (!$this->code_base->hasMethod($closure_fqsen)) {
+        if (!$this->code_base->hasFunctionWithFQSEN($closure_fqsen)) {
             throw new CodeBaseException(
                 $closure_fqsen,
                 "Could not find closure $closure_fqsen"
             );
         }
 
-        return $this->code_base->getMethod($closure_fqsen);
+        return $this->code_base->getFunctionByFQSEN($closure_fqsen);
     }
 
     /**

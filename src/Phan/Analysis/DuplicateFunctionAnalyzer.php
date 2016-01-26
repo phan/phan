@@ -3,6 +3,7 @@ namespace Phan\Analysis;
 
 use \Phan\CodeBase;
 use \Phan\Issue;
+use \Phan\Language\Element\Func;
 use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method;
 use \Phan\Language\FQSEN;
@@ -29,12 +30,23 @@ class DuplicateFunctionAnalyzer
 
         $original_fqsen = $fqsen->getCanonicalFQSEN();
 
-        if (!$code_base->hasMethod($original_fqsen)) {
-            return;
-        }
+        if ($original_fqsen instanceof FullyQualifiedFunctionName) {
+            if (!$code_base->hasFunctionWithFQSEN($original_fqsen)) {
+                return;
+            }
 
-        $original_method =
-            $code_base->getMethod($original_fqsen);
+            $original_method = $code_base->getFunctionByFQSEN(
+                $original_fqsen
+            );
+        } else {
+            if (!$code_base->hasMethodWithFQSEN($original_fqsen)) {
+                return;
+            }
+
+            $original_method = $code_base->getMethodByFQSEN(
+                $original_fqsen
+            );
+        }
 
         $method_name = $method->getName();
 

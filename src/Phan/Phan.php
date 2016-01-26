@@ -78,10 +78,6 @@ class Phan implements IgnoredFilesFilterInterface {
                 // Parse the file
                 Analysis::parseFile($code_base, $file_path);
 
-                // Update the timestamp on when it was last
-                // parsed
-                $code_base->setParseUpToDateForFile($file_path);
-
                 // Save this to the set of files to analyze
                 $analyze_file_path_list[] = $file_path;
 
@@ -108,7 +104,8 @@ class Phan implements IgnoredFilesFilterInterface {
 
         // We can only save classes, methods, properties and
         // constants after we've merged parent classes in.
-        $code_base->store();
+        // TODO: Reinstate this
+        // $code_base->store();
 
         // Once we know what the universe looks like we
         // can scan for more complicated issues.
