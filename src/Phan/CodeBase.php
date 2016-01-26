@@ -612,7 +612,6 @@ class CodeBase
         return $sum;
     }
 
-
     /**
      * @return void;
      */
