@@ -133,12 +133,7 @@ class Comment
                     self::parameterFromCommentLine($context, $line);
             } elseif (stripos($line, '@return') !== false) {
                 if (preg_match('/@return\s+(' . self::union_type_regex . '+)/', $line, $match)) {
-                    if (strpos($match[1], '\\')===0 && strpos($match[1], '\\', 1)===false) {
-                        $return = $match[1];
-                    } else {
-                        $return = $match[1];
-                    }
-
+                    $return = $match[1];
                 }
             } elseif (stripos($line, '@suppress') !== false) {
                 $suppress_issue_list[] =
