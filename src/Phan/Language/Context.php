@@ -379,16 +379,16 @@ class Context extends FileRef implements \Serializable
      * @return FunctionInterface
      * Get the method in this scope or fail real hard
      */
-    public function getMethodInScope(CodeBase $code_base) :FunctionInterface  
+    public function getMethodInScope(CodeBase $code_base) : FunctionInterface
     {
         assert(
             $this->isMethodScope(),
             "Must be in method scope to get method. Actually in {$this}"
         );
 
-        return $code_base->getMethod(
-            $this->getMethodFQSEN()
-        );
+        return ($this->getMethodFQSEN() instanceof FullyQualifiedFunctionName)
+            ? $code_base->getFunctionByFQSEN($this->getMethodFQSEN())
+            : $code_base->getMethodByFQSEN($this->getMethodFQSEN());
     }
 
     /**
@@ -407,14 +407,14 @@ class Context extends FileRef implements \Serializable
      * @return Method
      * Get the closure in this scope or fail real hard
      */
-    public function getClosureInScope(CodeBase $code_base) : Func 
+    public function getClosureInScope(CodeBase $code_base) : Func
     {
         assert(
             $this->isClosureScope(),
             "Must be in closure scope to get closure. Actually in {$this}"
         );
 
-        return $code_base->getMethod(
+        return $code_base->getFunctionByFQSEN(
             $this->getClosureFQSEN()
         );
     }

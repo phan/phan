@@ -42,10 +42,7 @@ class CLI
      */
     public function __construct()
     {
-
         global $argv;
-
-        // file_put_contents('/tmp/file', implode("\n", $argv));
 
         // Parse command line args
         // still available: g,j,k,n,t,u,v,w,z

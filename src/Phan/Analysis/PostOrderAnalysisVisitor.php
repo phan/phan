@@ -20,6 +20,7 @@ use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Comment;
 use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method;
+use \Phan\Language\Element\Func;
 use \Phan\Language\Element\PassByReferenceVariable;
 use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
@@ -36,7 +37,6 @@ use \ast\Node\Decl;
 
 class PostOrderAnalysisVisitor extends KindVisitorImplementation
 {
-
     /**
      * @var CodeBase
      */
@@ -150,9 +150,6 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
 
             $method->addReference($this->context);
         }
-
-
-
 
         return $context;
     }
@@ -681,24 +678,25 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                             (string)$type->asFQSEN()
                         );
 
-                    if ($this->code_base->hasMethod(
+                    if ($this->code_base->hasFunctionWithFQSEN(
                         $closure_fqsen
                     )) {
                         // Get the closure
-                        $method = $this->code_base->getMethod(
+                        $function = $this->code_base->getFunctionByFQSEN(
                             $closure_fqsen
                         );
 
                         // Check the call for paraemter and argument types
                         $this->analyzeCallToMethod(
                             $this->code_base,
-                            $method,
+                            $function,
                             $node
                         );
                     }
                 }
             }
         } elseif ($expression->kind == \ast\AST_NAME
+            // nothing to do
         ) {
             try {
                 $method = (new ContextNode(
@@ -757,13 +755,6 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
 
         return $this->context;
     }
-
-    /*
-    public function visitArgList(Node $node) : Context {
-        Debug::printNode($node);
-        return $this->context;
-    }
-     */
 
     /**
      * @param Node $node
@@ -955,13 +946,12 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
             if (Config::get()->dead_code_detection
                 && Config::get()->dead_code_detection_prefer_false_negative
             ) {
-                foreach ($this->code_base->getMethodListByName(
+                foreach ($this->code_base->getMethodSetByName(
                     $method_name
                 ) as $method) {
                     $method->addReference($this->context);
                 }
             }
-
 
             // If we can't figure out what kind of a call
             // this is, don't worry about it
@@ -999,22 +989,40 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
             }
         }
 
-
-        if (!$method->isAbstract()
-            && !$has_interface_class
-            && !$return_type->isEmpty()
-            && !$method->getHasReturn()
-            && !$return_type->hasType(VoidType::instance())
-            && !$return_type->hasType(NullType::instance())
-        ) {
-            Issue::emit(
-                Issue::TypeMissingReturn,
-                $this->context->getFile(),
-                $node->lineno ?? 0,
-                $method->getFQSEN(),
-                (string)$return_type
-            );
+        if ($method instanceof Method) {
+            if (!$method->isAbstract()
+                && !$has_interface_class
+                && !$return_type->isEmpty()
+                && !$method->getHasReturn()
+                && !$return_type->hasType(VoidType::instance())
+                && !$return_type->hasType(NullType::instance())
+            ) {
+                Issue::emit(
+                    Issue::TypeMissingReturn,
+                    $this->context->getFile(),
+                    $node->lineno ?? 0,
+                    $method->getFQSEN(),
+                    (string)$return_type
+                );
+            }
         }
+
+        if ($method instanceof Func) {
+            if (!$return_type->isEmpty()
+                && !$method->getHasReturn()
+                && !$return_type->hasType(VoidType::instance())
+                && !$return_type->hasType(NullType::instance())
+            ) {
+                Issue::emit(
+                    Issue::TypeMissingReturn,
+                    $this->context->getFile(),
+                    $node->lineno ?? 0,
+                    $method->getFQSEN(),
+                    (string)$return_type
+                );
+            }
+        }
+
 
         return $this->context;
     }
@@ -1088,7 +1096,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
             if (Config::get()->dead_code_detection
                 && Config::get()->dead_code_detection_prefer_false_negative
             ) {
-                foreach ($this->code_base->getMethodListByName(
+                foreach ($this->code_base->getMethodSetByName(
                     $method_name
                 ) as $method) {
                     $method->addReference($this->context);

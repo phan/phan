@@ -240,8 +240,8 @@ class Func extends AddressableElement implements FunctionInterface
         $alternate_id = 0;
         $fqsen = $this->getFQSEN();
 
-        while ($code_base->hasMethod($fqsen)) {
-            yield $code_base->getMethod($fqsen);
+        while ($code_base->hasFunctionWithFQSEN($fqsen)) {
+            yield $code_base->getFunctionByFQSEN($fqsen);
             $fqsen = $fqsen->withAlternateId(++$alternate_id);
         }
     }

@@ -97,7 +97,6 @@ class Analysis
      */
     public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context
     {
-
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the
@@ -144,36 +143,45 @@ class Analysis
      */
     public static function analyzeClasses(CodeBase $code_base)
     {
-
         $class_count = 2 * count($code_base->getClassMap());
 
         // Take a pass to import all details from ancestors
         $i = 0;
-        foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
+        foreach ($code_base->getClassMap() as $fqsen => $class) {
             CLI::progress('classes', ++$i/$class_count);
 
             // Make sure the parent classes exist
-            ParentClassExistsAnalyzer::analyzeParentClassExists($code_base, $clazz);
+            ParentClassExistsAnalyzer::analyzeParentClassExists(
+                $code_base, $class
+            );
 
             // Then import them
-            $clazz->importAncestorClasses($code_base);
+            $class->importAncestorClasses($code_base);
 
             // Then figure out which methods are overrides of
             // ancestor methods
-            $clazz->analyzeMethodOverrides($code_base);
+            $class->analyzeMethodOverrides($code_base);
         }
 
         // Run a few checks on all of the classes
-        foreach ($code_base->getClassMap() as $fqsen_string => $clazz) {
+        foreach ($code_base->getClassMap () as $fqsen => $class) {
             CLI::progress('classes', ++$i/$class_count);
 
-            if ($clazz->isInternal()) {
+            if ($class->isInternal()) {
                 continue;
             }
 
-            DuplicateClassAnalyzer::analyzeDuplicateClass($code_base, $clazz);
-            ParentConstructorCalledAnalyzer::analyzeParentConstructorCalled($code_base, $clazz);
-            PropertyTypesAnalyzer::analyzePropertyTypes($code_base, $clazz);
+            DuplicateClassAnalyzer::analyzeDuplicateClass(
+                $code_base, $class
+            );
+
+            ParentConstructorCalledAnalyzer::analyzeParentConstructorCalled(
+                $code_base, $class
+            );
+
+            PropertyTypesAnalyzer::analyzePropertyTypes(
+                $code_base, $class
+            );
         }
     }
 
@@ -185,22 +193,26 @@ class Analysis
      */
     public static function analyzeFunctions(CodeBase $code_base)
     {
-        $function_count = count($code_base->getMethodMap(), COUNT_RECURSIVE);
+        $function_count = count($code_base->getFunctionAndMethodSet());
         $i = 0;
-        foreach ($code_base->getMethodMap() as $fqsen_string => $method_map) {
-            foreach ($method_map as $name => $method) {
-                CLI::progress('method', (++$i)/$function_count);
 
-                if ($method->isInternal()) {
-                    continue;
-                }
+        foreach ($code_base->getFunctionAndMethodSet() as $function_or_method)
+        {
+            CLI::progress('method', (++$i)/$function_count);
 
-                DuplicateFunctionAnalyzer::analyzeDuplicateFunction($code_base, $method);
-                ParameterTypesAnalyzer::analyzeParameterTypes($code_base, $method);
+            if ($function_or_method->isInternal()) {
+                continue;
             }
+
+            DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
+                $code_base, $function_or_method
+            );
+
+            ParameterTypesAnalyzer::analyzeParameterTypes(
+                $code_base, $function_or_method
+            );
         }
     }
-
 
     /**
      * @param CodeBase $code_base
@@ -224,7 +236,6 @@ class Analysis
         Node $parent_node = null,
         int $depth = 0
     ) : Context {
-
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the

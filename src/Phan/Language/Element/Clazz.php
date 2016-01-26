@@ -316,15 +316,22 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         Property $property
     ) {
-        if (!$this->hasPropertyWithName(
-            $code_base,
-            $property->getName()
-        )) {
-            $code_base->addPropertyInScope(
-                $property,
-                $this->getFQSEN()
-            );
+        // Ignore properties we already have
+        if ($this->hasPropertyWithName($code_base, $property->getName())) {
+            return;
         }
+
+        $property_fqsen = FullyQualifiedPropertyName::make(
+            $this->getFQSEN(),
+            $property->getName()
+        );
+
+        if ($property->getFQSEN() !== $property_fqsen) {
+            $property = clone($property);
+            $property->setFQSEN($property_fqsen);
+        }
+
+        $code_base->addProperty($property);
     }
 
     /**
@@ -334,9 +341,11 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         string $name
     ) : bool {
-        return $code_base->hasProperty(
-            $this->getFQSEN(),
-            $name
+        return $code_base->hasPropertyWithFQSEN(
+            FullyQualifiedPropertyName::make(
+                $this->getFQSEN(),
+                $name
+            )
         );
     }
 
@@ -347,7 +356,7 @@ class Clazz extends AddressableElement
     public function getPropertyList(
         CodeBase $code_base
     ) {
-        return $code_base->getPropertyMapForScope(
+        return $code_base->getPropertyMapByFullyQualifiedClassName(
             $this->getFQSEN()
         );
     }
@@ -373,8 +382,12 @@ class Clazz extends AddressableElement
         Context $context
     ) : Property {
 
+        $property_fqsen = FullyQualifiedPropertyName::make(
+            $this->getFQSEN(), $name
+        );
+
         // Check to see if we have the property
-        if (!$code_base->hasProperty($this->getFQSEN(), $name)) {
+        if (!$code_base->hasPropertyWithFQSEN($property_fqsen)) {
 
             // If we don't have the property but do have a
             // __get method, then we can create the property
@@ -386,13 +399,7 @@ class Clazz extends AddressableElement
                     0
                 );
 
-                $property->setFQSEN(
-                    FullyQualifiedPropertyName::make(
-                        $this->getFQSEN(),
-                        $name
-                    )
-                );
-
+                $property->setFQSEN($property_fqsen);
                 $this->addProperty($code_base, $property);
             } else {
                 throw new IssueException(
@@ -405,9 +412,8 @@ class Clazz extends AddressableElement
             }
         }
 
-        $property = $code_base->getProperty(
-            $this->getFQSEN(),
-            $name
+        $property = $code_base->getPropertyByFQSEN(
+            $property_fqsen
         );
 
         // If we're getting the property from outside of this
@@ -447,7 +453,7 @@ class Clazz extends AddressableElement
      */
     public function getPropertyMap(CodeBase $code_base) : array
     {
-        return $code_base->getPropertyMapForScope(
+        return $code_base->getPropertyMapByFullyQualifiedClassName(
             $this->getFQSEN()
         );
     }
@@ -461,10 +467,19 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         ClassConstant $constant
     ) {
-        $code_base->addConstantInScope(
-            $constant,
-            $this->getFQSEN()
+        $constant_fqsen = FullyQualifiedClassConstantName::make(
+            $this->getFQSEN(),
+            $constant->getName()
         );
+
+        // Update the FQSEN if its not associated with this
+        // class yet
+        if ($constant->getFQSEN() !== $constant_fqsen) {
+            $constant = clone($constant);
+            $constant->setFQSEN($constant_fqsen);
+        }
+
+        $code_base->addClassConstant($constant);
     }
 
     /**
@@ -476,9 +491,11 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         string $name
     ) : bool {
-        return $code_base->hasConstant(
-            $this->getFQSEN(),
-            $name
+        return $code_base->hasClassConstantWithFQSEN(
+            FullyQualifiedClassConstantName::make(
+                $this->getFQSEN(),
+                $name
+            )
         );
     }
 
@@ -490,9 +507,11 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         string $name
     ) : ClassConstant {
-        return $code_base->getConstant(
-            $this->getFQSEN(),
-            $name
+        return $code_base->getClassConstantByFQSEN(
+            FullyQualifiedClassConstantName::make(
+                $this->getFQSEN(),
+                $name
+            )
         );
     }
 
@@ -502,7 +521,7 @@ class Clazz extends AddressableElement
      */
     public function getConstantMap(CodeBase $code_base) : array
     {
-        return $code_base->getConstantMapForScope(
+        return $code_base->getClassConstantMapByFullyQualifiedClassName(
             $this->getFQSEN()
         );
     }
@@ -521,14 +540,16 @@ class Clazz extends AddressableElement
 
         // Don't overwrite overridden methods with
         // parent methods
-        if ($code_base->hasMethod($method_fqsen)) {
+        if ($code_base->hasMethodWithFQSEN($method_fqsen)) {
             return;
         }
 
-        $code_base->addMethodInScope(
-            $method,
-            $this->getFQSEN()
-        );
+        if ($method->getFQSEN() !== $method_fqsen) {
+            $method = clone($method);
+            $method->setFQSEN($method_fqsen);
+        }
+
+        $code_base->addMethod($method);
     }
 
     /**
@@ -550,7 +571,7 @@ class Clazz extends AddressableElement
             $name
         );
 
-        return $code_base->hasMethod($method_fqsen);
+        return $code_base->hasMethodWithFQSEN($method_fqsen);
     }
 
     /**
@@ -568,7 +589,7 @@ class Clazz extends AddressableElement
             $name
         );
 
-        if (!$code_base->hasMethod($method_fqsen)) {
+        if (!$code_base->hasMethodWithFQSEN($method_fqsen)) {
             if ('__construct' === $name) {
                 // Create a default constructor if its requested
                 // but doesn't exist yet
@@ -589,7 +610,7 @@ class Clazz extends AddressableElement
             );
         }
 
-        return $code_base->getMethod($method_fqsen);
+        return $code_base->getMethodByFQSEN($method_fqsen);
     }
 
     /**
@@ -598,7 +619,7 @@ class Clazz extends AddressableElement
      */
     public function getMethodMap(CodeBase $code_base) : array
     {
-        return $code_base->getMethodMapForScope(
+        return $code_base->getMethodMapByFullyQualifiedClassName(
             $this->getFQSEN()
         );
     }
@@ -849,6 +870,7 @@ class Clazz extends AddressableElement
                 return;
             }
 
+
             // Let the parent class finder worry about this
             if (!$code_base->hasClassWithFQSEN(
                 $this->getParentClassFQSEN()
@@ -865,6 +887,8 @@ class Clazz extends AddressableElement
             $parent = $code_base->getClassByFQSEN(
                 $this->getParentClassFQSEN()
             );
+
+            $parent->addReference($this->getContext());
 
             // Tell the parent to import its own parents first
             $parent->importAncestorClasses($code_base);
@@ -893,6 +917,8 @@ class Clazz extends AddressableElement
         $this->memoize(
             (string)$superclazz->getFQSEN(),
             function () use ($code_base, $superclazz) {
+
+                $superclazz->addReference($this->getContext());
 
                 // Copy properties
                 foreach ($superclazz->getPropertyMap($code_base) as $property) {

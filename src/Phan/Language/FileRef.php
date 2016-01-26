@@ -59,9 +59,21 @@ class FileRef implements \Serializable
      */
     public function getProjectRelativePath() : string
     {
-        return File::projectRelativePathFromCWDRelativePath(
-            $this->file
+        $cwd_relative_path = $this->file;
+
+        // Get a path relative to the project root
+        $path = str_replace(
+            Config::get()->getProjectRootDirectory(),
+            '',
+            realpath($cwd_relative_path) ?: $cwd_relative_path
         );
+
+        // Strip any beginning directory separators
+        if (0 === ($pos = strpos($path, DIRECTORY_SEPARATOR))) {
+            $path = substr($path, $pos + 1);
+        }
+
+        return $path;
     }
 
     /**

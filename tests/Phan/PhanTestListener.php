@@ -14,6 +14,9 @@ $internal_function_name_list = get_defined_functions()['internal'];
 use Phan\CodeBase;
 use PHPUnit_Framework_Test;
 
+/**
+ * @suppress PhanUnreferencedClass
+ */
 class PhanTestListener
     extends \PHPUnit_Framework_BaseTestListener
 {
