@@ -53,7 +53,16 @@ class Property extends ClassElement
             $string .= 'private ';
         }
 
-        $string .= "{$this->getUnionType()} {$this->getName()}";
+        // Since the UnionType can be a future, and that
+        // can throw an exception, we catch it and ignore it
+        try {
+            $union_type = $this->getUnionType();
+        } catch (\Exception $exception) {
+            $union_type = new UnionType();
+        }
+
+        $string .= "$union_type {$this->getName()}";
+
 
         return $string;
     }
