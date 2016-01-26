@@ -3486,7 +3486,7 @@ return [
 'imageloadfont' => ['int', 'filename'=>'string'],
 'imagepalettecopy' => ['', 'dst'=>'', 'src'=>''],
 'imagepalettetotruecolor' => ['bool', 'src'=>'resource'],
-'imagepng' => ['bool', 'im'=>'', 'filename='=>'string|null', 'quality'=>'int', 'filters'=>'int'],
+'imagepng' => ['bool', 'im'=>'', 'filename='=>'string|null', 'quality='=>'int', 'filters='=>'int'],
 'imagepolygon' => ['bool', 'im'=>'', 'point'=>'array', 'num_points'=>'int', 'col'=>'int'],
 'imagepsbbox' => ['array', 'text'=>'string', 'font'=>'', 'size'=>'int', 'space'=>'int', 'tightness'=>'int', 'angle'=>'float'],
 'imagepsencodefont' => ['bool', 'font_index'=>'', 'encodingfile'=>'string'],
