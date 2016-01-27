@@ -36,7 +36,7 @@ To get phan running;
 3. Test phan on itself by running the following
 
 ```sh
-./phan --directory src/
+./phan
 ```
 
 You can see the full list of command line options by running `phan -h`.
