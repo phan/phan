@@ -267,6 +267,9 @@ class CLI
                     $this->directoryNameToFileList($directory_name)
                 );
             }
+
+            // Don't scan anything twice
+            $this->file_list = array_unique($this->file_list);
         }
 
 
