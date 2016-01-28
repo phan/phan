@@ -14,6 +14,7 @@ use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Phan;
+use Phan\RefFinder;
 
 // Create our CLI interface and load arguments
 $cli = new CLI();
@@ -33,8 +34,16 @@ if (Config::get()->expand_file_list) {
     $file_list = Phan::expandedFileList($code_base, $file_list);
 }
 
-// Analyze the file list provided via the CLI
-Phan::analyzeFileList(
-    $code_base,
-    $file_list
-);
+if (Config::get()->find_refs) {
+    $query = Config::get()->query;
+    $results = RefFinder::find($query);
+    foreach ($results as $result) {
+        echo "$result\n";
+    }
+} else {
+    // Analyze the file list provided via the CLI
+    Phan::analyzeFileList(
+        $code_base,
+        $file_list
+    );
+}

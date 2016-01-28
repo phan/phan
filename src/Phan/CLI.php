@@ -67,6 +67,7 @@ class CLI
                 'project-root-directory:',
                 'quick',
                 'state-file:',
+                'find-refs:',
             ]
         );
 
@@ -201,6 +202,14 @@ class CLI
                 case 'x':
                 case 'dead-code-detection':
                     Config::get()->dead_code_detection = true;
+                    break;
+                case 'find-refs':
+                    if (Config::get()->stored_state_file_path !== null) {
+                        Config::get()->find_refs = true;
+                        Config::get()->query = $value;
+                    } else {
+                        $this->usage('In order to find references, a state file must provided with the -s flag');
+                    }
                     break;
                 default:
                     $this->usage("Unknown option '-$key'");
@@ -354,6 +363,14 @@ Usage: {$argv[0]} [options] [files...]
   Emit issues for classes, methods, functions, constants and
   properties that are probably never referenced and can
   possibly be removed.
+
+ --find-refs <FQSEN>
+  Find all known references to the provided FQSEN
+  See https://github.com/etsy/phan/wiki/Developer%27s-Guide-To-Phan#fqsen
+  for how to construct a FQSEN.
+
+  Requires that the --state-file flag be set and the target database
+  is populated.
 
  -h,--help
   This help information

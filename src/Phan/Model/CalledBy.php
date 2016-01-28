@@ -102,12 +102,14 @@ class CalledBy extends ModelOne
     }
 
     /**
+     * @param Database $database
+     * @param FQSEN|String $fqsen
      * @return CalledBy[]
      * The set of callers for the given FQSEN
      */
     public static function findManyByFQSEN(
         Database $database,
-        FQSEN $fqsen
+        $fqsen
     ) : array {
         // Ensure that we've initialized this model
         static::schema()->initializeOnce($database);
@@ -199,5 +201,13 @@ class CalledBy extends ModelOne
                 ->withFile($row['file_path'])
                 ->withLineNumberStart((int)$row['line_number'])
         );
+    }
+
+    /**
+     * @return string
+     * The string representation of the location for this reference
+     */
+    public function referenceLocation(): string {
+        return "{$this->file_ref->getFile()}:{$this->file_ref->getLineNumberStart()}";
     }
 }
