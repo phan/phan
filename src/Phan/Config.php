@@ -127,6 +127,14 @@ class Config
         // parts of Phan took to run. You likely don't care to do
         // this.
         'profiler_enabled' => false,
+
+        // Find references to a given FQSEN
+        // Does not run analysis
+        // Requires state database to be present
+        'find_refs' => false,
+
+        // Which FQSEN to find refs for
+        'ref_query' => '',
     ];
 
     /**
