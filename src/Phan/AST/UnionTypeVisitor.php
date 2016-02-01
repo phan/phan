@@ -423,12 +423,14 @@ class UnionTypeVisitor extends KindVisitorImplementation
                         (string)$class->getParentClassFQSEN()
                     )->asUnionType();
                 } else {
-                    Issue::emit(
-                        Issue::ParentlessClass,
-                        $this->context->getFile(),
-                        $node->lineno ?? 0,
-                        (string)$class->getFQSEN()
-                    );
+                    if (!$class->isTrait()) {
+                        Issue::emit(
+                            Issue::ParentlessClass,
+                            $this->context->getFile(),
+                            $node->lineno ?? 0,
+                            (string)$class->getFQSEN()
+                        );
+                    }
 
                     return new UnionType();
                 }
