@@ -119,6 +119,10 @@ class Config
         // remote host.
         'progress_bar_sample_rate' => 0.005,
 
+        // The number of processes to fork off during the analysis
+        // phase. EXPERIMENTAL.
+        'processes' => 1,
+
         // The vesion of the AST (defined in php-ast)
         // we're using
         'ast_version' => 30,

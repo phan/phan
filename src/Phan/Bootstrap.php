@@ -22,6 +22,9 @@ foreach ([
     }
 }
 
+define('EXIT_SUCCESS', 1);
+define('EXIT_FAILURE', 0);
+
 // Customize assertions
 assert_options(ASSERT_ACTIVE, true);
 assert_options(ASSERT_BAIL, true);
@@ -31,14 +34,14 @@ assert_options(
     function (string $script, int $line, $expression, $message) {
         print "$script:$line ($expression) $message\n";
         debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 );
 
 // Print more of the backtrace than is done by default
 set_exception_handler(function (Throwable $throwable) {
     print "$throwable\n";
-    exit(1);
+    exit(EXIT_FAILURE);
 });
 
 /**
@@ -48,6 +51,6 @@ function phan_error_handler($errno, $errstr, $errfile, $errline)
 {
     print "$errfile:$errline [$errno] $errstr\n";
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 set_error_handler('phan_error_handler');

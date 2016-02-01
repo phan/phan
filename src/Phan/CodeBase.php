@@ -93,6 +93,13 @@ class CodeBase
     private $name_method_map = [];
 
     /**
+     * @var bool
+     * If true, elements will be ensured to be hydrated
+     * on demand as they are requested.
+     */
+    private $should_hydrate_requested_elements = false;
+
+    /**
      * Initialize a new CodeBase
      */
     public function __construct(
@@ -113,6 +120,16 @@ class CodeBase
         $this->addClassesByNames($internal_interface_name_list);
         $this->addClassesByNames($internal_trait_name_list);
         $this->addFunctionsByNames($internal_function_name_list);
+    }
+
+    /**
+     * @return void
+     */
+    public function setShouldHydrateRequestedElements(
+        bool $should_hydrate_requested_elements
+    ) {
+        $this->should_hydrate_requested_elements =
+            $should_hydrate_requested_elements;
     }
 
     /**
@@ -197,7 +214,22 @@ class CodeBase
     public function getClassByFQSEN(
         FullyQualifiedClassName $fqsen
     ) : Clazz {
-        return $this->fqsen_class_map[$fqsen];
+        $clazz = $this->fqsen_class_map[$fqsen];
+
+        // This is an optimization that saves us a few minutes
+        // on very large code bases.
+        //
+        // Instead of 'hydrating' all classes (expanding their
+        // types and importing parent methods, properties, etc.)
+        // all in one go, we just do it on the fly as they're
+        // requested. When running as multiple processes this
+        // lets us avoid a significant amount of hydration per
+        // process.
+        if ($this->should_hydrate_requested_elements) {
+            $clazz->hydrate($this);
+        }
+
+        return $clazz;
     }
 
     /**

@@ -6,6 +6,7 @@ use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
 use Phan\Output\Filter\MinimumSeverityFilter;
+use Phan\Output\ParallelConsoleOutput;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -45,9 +46,9 @@ class CLI
         global $argv;
 
         // Parse command line args
-        // still available: g,j,k,n,t,u,v,w,z
+        // still available: g,k,n,t,u,v,w,z
         $opts = getopt(
-            "f:m:o:c:aeqbr:pid:s:3:y:l:xh::",
+            "f:m:o:c:aeqbr:pid:s:3:y:l:xj:h::",
             [
                 'backward-compatibility-checks',
                 'dead-code-detection',
@@ -67,6 +68,7 @@ class CLI
                 'project-root-directory:',
                 'quick',
                 'state-file:',
+                'processes:',
             ]
         );
 
@@ -188,6 +190,10 @@ class CLI
                     // TODO: re-enable eventually
                     // Config::get()->stored_state_file_path = $value;
                     break;
+                case 'j':
+                case 'processes':
+                    Config::get()->processes = (int)$value;
+                    break;
                 case 'y':
                 case 'minimum-severity':
                     $minimum_severity = (int)$value;
@@ -272,7 +278,14 @@ class CLI
             $this->file_list = array_unique($this->file_list);
         }
 
-
+        // We can't run dead code detection on multiple cores because
+        // we need to update reference lists in a globally accessible
+        // way during analysis. With our parallelization mechanism, there
+        // is no shared state between processes, making it impossible to
+        // have a complete set of reference lists.
+        assert(Config::get()->processes === 1
+            || !Config::get()->dead_code_detection,
+            "We cannot run dead code detection on more than one core.");
     }
 
     /**
@@ -355,11 +368,15 @@ Usage: {$argv[0]} [options] [files...]
   properties that are probably never referenced and can
   possibly be removed.
 
+ -j, --processes <int>
+  The number of parallel processes to run during the analysis
+  phase. Defaults to 1. This is EXPERIMENTAL.
+
  -h,--help
   This help information
 
 EOB;
-        exit;
+        exit(EXIT_SUCCESS);
     }
 
     /**

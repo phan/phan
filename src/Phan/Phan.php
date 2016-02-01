@@ -1,10 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use Phan\Output\BufferedPrinterInterface;
-use Phan\Output\IgnoredFilesFilterInterface;
-use Phan\Output\IssueCollectorInterface;
-use Phan\Output\IssuePrinterInterface;
+use \Phan\Output\BufferedPrinterInterface;
+use \Phan\Output\Collector\BufferingCollector;
+use \Phan\Output\Collector\ParallelChildCollector;
+use \Phan\Output\Collector\ParallelParentCollector;
+use \Phan\Output\IgnoredFilesFilterInterface;
+use \Phan\Output\IssueCollectorInterface;
+use \Phan\Output\IssuePrinterInterface;
 
 class Phan implements IgnoredFilesFilterInterface {
 
@@ -88,48 +91,96 @@ class Phan implements IgnoredFilesFilterInterface {
 
         // Don't continue on to analysis if the user has
         // chosen to just dump the AST
-            if (Config::get()->dump_ast) {
-            exit;
+        if (Config::get()->dump_ast) {
+            exit(EXIT_SUCCESS);
         }
 
-        // Take a pass over all classes verifying various
-        // states now that we have the whole state in
-        // memory
-        Analysis::analyzeClasses($code_base);
+        // With parsing complete, we need to tell the code base to
+        // start hydrating any requested elements on their way out.
+        // Hydration expands class types, imports parent methods,
+        // properties, etc., and does stuff like that.
+        //
+        // This is an optimization that saves us a significant
+        // amount of time on very large code bases. Instead of
+        // hydrating all classes, we only hydrate the things we
+        // actually need. When running as multiple processes this
+        // lets us only need to do hydrate a subset of classes.
+        $code_base->setShouldHydrateRequestedElements(true);
 
-        // Take a pass over all functions verifying
-        // various states now that we have the whole
-        // state in memory
-        Analysis::analyzeFunctions($code_base);
+        // If we're not doing a quick run, check a bunch of things
+        // on all classes, functions and methods.
+        if (!Config::get()->quick_mode) {
+            // Take a pass over all classes verifying various
+            // states now that we have the whole state in
+            // memory
+            Analysis::analyzeClasses($code_base);
+
+            // Take a pass over all functions verifying
+            // various states now that we have the whole
+            // state in memory
+            Analysis::analyzeFunctions($code_base);
+        }
 
         // We can only save classes, methods, properties and
         // constants after we've merged parent classes in.
         // TODO: Reinstate this
         // $code_base->store();
 
-        // Once we know what the universe looks like we
-        // can scan for more complicated issues.
-        $file_count = count($analyze_file_path_list);
-        foreach ($analyze_file_path_list as $i => $file_path) {
-            CLI::progress('analyze', ($i + 1) / $file_count);
+        // Filter out any files that are to be excluded from
+        // analysis
+        $analyze_file_path_list = array_filter(
+            $analyze_file_path_list,
+            function($file_path) {
+                return !self::isExcludedAnalysisFile($file_path);
+            });
 
-            // We skip anything defined as 3rd party code
-            // to save a lil' time
-            if (self::isExcludedAnalysisFile($file_path)) {
-                continue;
+        // Get the count of all files we're going to analyze
+        $file_count = count($analyze_file_path_list);
+
+        // This worker takes a file and analyzes it
+        $analysis_worker = function($i, $file_path)
+            use ($file_count, $code_base) {
+                CLI::progress('analyze', ($i + 1) / $file_count);
+                Analysis::analyzeFile($code_base, $file_path);
+            };
+
+        // Check to see if we're running as multiple processes
+        // or not
+        if (Config::get()->processes > 1) {
+
+            // Collect all issues, blocking
+            self::display();
+
+            // Run analysis one file at a time, splitting the set of
+            // files up among a given number of child processes.
+            $pool = new ForkPool(
+                Config::get()->processes,
+                $analyze_file_path_list,
+                function () {},
+                $analysis_worker,
+                function () {
+                    self::display();
+                }
+            );
+
+            // Wait for all tasks to complete
+            $pool->wait();
+
+        } else {
+            // If we're not running as multiple processes, just iterate
+            // over the file list and analyze them
+            foreach ($analyze_file_path_list as $i => $file_path) {
+                $analysis_worker($i, $file_path);
             }
 
-            // Analyze the file
-            Analysis::analyzeFile($code_base, $file_path);
+            // Scan through all globally accessible elements
+            // in the code base and emit errors for dead
+            // code.
+            Analysis::analyzeDeadCode($code_base);
+
+            // Collect all issues, blocking
+            self::display();
         }
-
-        // Scan through all globally accessible elements
-        // in the code base and emit errors for dead
-        // code.
-        Analysis::analyzeDeadCode($code_base);
-
-        // Emit all log messages
-        self::display();
     }
 
     /**
@@ -209,6 +260,10 @@ class Phan implements IgnoredFilesFilterInterface {
 
         foreach ($collector->getCollectedIssues() as $issue) {
             $printer->print($issue);
+        }
+
+        if ($collector instanceof BufferingCollector) {
+            $collector->flush();
         }
 
         if ($printer instanceof BufferedPrinterInterface) {

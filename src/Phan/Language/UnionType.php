@@ -56,7 +56,7 @@ class UnionType implements \Serializable
      */
     public function __clone()
     {
-        $set  = new Set();
+        $set = new Set();
         $set->addAll($this->type_set);
         $this->type_set = $set;
     }
@@ -226,7 +226,7 @@ class UnionType implements \Serializable
      * The set of simple types associated with this
      * union type.
      */
-    public function getTypeSet()
+    public function getTypeSet() : Set
     {
         return $this->type_set;
     }

@@ -3,18 +3,17 @@ namespace Phan;
 
 class IssueInstance
 {
-
     /** @var Issue */
     private $issue;
-
-    /** @var array */
-    private $template_parameters;
 
     /** @var string */
     private $file;
 
     /** @var int */
     private $line;
+
+    /** @var string */
+    private $message;
 
     /**
      * @param Issue $issue
@@ -29,9 +28,12 @@ class IssueInstance
         array $template_parameters
     ) {
         $this->issue = $issue;
-        $this->template_parameters = $template_parameters;
         $this->file = $file;
         $this->line = $line;
+        $this->message = vsprintf(
+            $issue->getTemplate(),
+            $template_parameters
+        );
     }
 
     /**
@@ -63,6 +65,11 @@ class IssueInstance
      */
     public function getMessage()
     {
-        return vsprintf($this->getIssue()->getTemplate(), $this->template_parameters);
+        return $this->message;
+    }
+
+    public function __toString() : string
+    {
+        return "{$this->getFile()}:{$this->getLine()} {$this->getMessage()}";
     }
 }

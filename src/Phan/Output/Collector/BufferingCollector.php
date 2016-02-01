@@ -66,4 +66,12 @@ final class BufferingCollector implements IssueCollectorInterface
         ksort($this->issues);
         return array_values($this->issues);
     }
+
+    /**
+     * @return void
+     */
+    public function flush()
+    {
+        $this->issues = [];
+    }
 }

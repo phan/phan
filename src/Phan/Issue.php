@@ -6,7 +6,6 @@ namespace Phan;
  */
 class Issue
 {
-
     // Issue::CATEGORY_UNDEFINED
     const EmptyFile                 = 'PhanEmptyFile';
     const ParentlessClass           = 'PhanParentlessClass';
@@ -146,7 +145,6 @@ class Issue
 
     /** @var string */
     private $template;
-
 
     /**
      * @param string $type

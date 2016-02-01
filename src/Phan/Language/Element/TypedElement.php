@@ -14,6 +14,8 @@ use \Phan\Language\UnionType;
  */
 abstract class TypedElement implements TypedElementInterface
 {
+    use \Phan\Memoize;
+
     /**
      * @var string
      * The name of the typed structural element
@@ -239,6 +241,28 @@ abstract class TypedElement implements TypedElementInterface
                 $is_internal
             )
         );
+    }
+
+    /**
+     * This method must be called before analysis
+     * begins.
+     *
+     * @return void
+     */
+    public function hydrate(CodeBase $code_base) {
+        return $this->memoize(__METHOD__, function() use ($code_base) {
+            $this->hydrateOnce($code_base );
+        });
+    }
+
+    /**
+     * This method must be called before analysis
+     * begins.
+     *
+     * @return void
+     */
+    protected function hydrateOnce(CodeBase $code_base) {
+        // Do nothing unless overridden
     }
 
 }

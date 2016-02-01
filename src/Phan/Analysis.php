@@ -136,6 +136,24 @@ class Analysis
     }
 
     /**
+     * Expand all classes to include parent methods, properties
+     * and constants. Expand their types to include all extended,
+     * inherited or used classes, interfaces and traits.
+     *
+     * @return void
+     */
+    public static function hydrateElements(CodeBase $code_base) {
+        $class_count = count($code_base->getClassMap());
+
+        // Take a pass to import all details from ancestors
+        $i = 0;
+        foreach ($code_base->getClassMap() as $fqsen => $class) {
+            CLI::progress('hydrate', ++$i/$class_count);
+            $class->hydrate($code_base);
+        }
+    }
+
+    /**
      * Take a pass over all classes verifying various
      * states.
      *
@@ -143,33 +161,21 @@ class Analysis
      */
     public static function analyzeClasses(CodeBase $code_base)
     {
-        $class_count = 2 * count($code_base->getClassMap());
+        $class_count = count($code_base->getClassMap());
 
         // Take a pass to import all details from ancestors
         $i = 0;
         foreach ($code_base->getClassMap() as $fqsen => $class) {
             CLI::progress('classes', ++$i/$class_count);
 
+            if ($class->isInternal()) {
+                continue;
+            }
+
             // Make sure the parent classes exist
             ParentClassExistsAnalyzer::analyzeParentClassExists(
                 $code_base, $class
             );
-
-            // Then import them
-            $class->importAncestorClasses($code_base);
-
-            // Then figure out which methods are overrides of
-            // ancestor methods
-            $class->analyzeMethodOverrides($code_base);
-        }
-
-        // Run a few checks on all of the classes
-        foreach ($code_base->getClassMap () as $fqsen => $class) {
-            CLI::progress('classes', ++$i/$class_count);
-
-            if ($class->isInternal()) {
-                continue;
-            }
 
             DuplicateClassAnalyzer::analyzeDuplicateClass(
                 $code_base, $class

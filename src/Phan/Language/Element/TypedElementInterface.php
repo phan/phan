@@ -93,4 +93,11 @@ interface TypedElementInterface
      */
     public function isInternal() : bool;
 
+    /**
+     * This method must be called before analysis
+     * begins.
+     *
+     * @return void
+     */
+    public function hydrate(CodeBase $code_base);
 }

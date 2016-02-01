@@ -2,6 +2,7 @@
 namespace Phan\Language\Element;
 
 use \Phan\CodeBase;
+use \Phan\Config;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Issue;
@@ -998,4 +999,22 @@ class Clazz extends AddressableElement
 
         return $string;
     }
+
+    /**
+     * This method must be called before analysis
+     * begins.
+     *
+     * @return void
+     */
+    public function hydrateOnce(CodeBase $code_base) {
+        // Then import them
+        $this->importAncestorClasses($code_base);
+
+        // Then figure out which methods are overrides of
+        // ancestor methods
+        if (Config::get()->dead_code_detection) {
+            $this->analyzeMethodOverrides($code_base);
+        }
+    }
+
 }
