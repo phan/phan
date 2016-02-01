@@ -5,9 +5,11 @@ use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
 use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
+use \Phan\Debug;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\Scope;
+use \Phan\Language\Type\NullType;
 use \Phan\Language\UnionType;
 use \Phan\Set;
 use \ast\Node;
@@ -74,6 +76,93 @@ class ContextMergeVisitor extends KindVisitorImplementation
         return end($this->child_context_list) ?: $this->context;
     }
 
+    public function visitTry(Node $node) : Context
+    {
+        // Debug::printNode($node);
+
+        // Get the list of scopes for each branch of the
+        // conditional
+        $scope_list = array_map(function (Context $context) {
+            return $context->getScope();
+        }, $this->child_context_list);
+
+        // The 0th scope is the scope from Try
+        $try_scope = $scope_list[0];
+
+        $catch_scope_list = [];
+        foreach ($node->children['catches'] ?? [] as $i => $catch_node) {
+            $catch_scope_list[] = $scope_list[$i+1];
+        }
+
+        // Merge in the types for any variables found in a catch.
+        foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
+            foreach ($catch_scope_list as $catch_scope) {
+
+                // Merge types if try and catch have a variable in common
+                if ($catch_scope->hasVariableWithName($variable_name)) {
+                    $catch_variable = $catch_scope->getVariableWithName(
+                        $variable_name
+                    );
+
+                    $variable->getUnionType()->addUnionType(
+                        $catch_variable->getUnionType()
+                    );
+                }
+            }
+        }
+
+        // Look for variables that exist in catch, but not try
+        foreach ($catch_scope_list as $catch_scope) {
+            foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
+                if (!$try_scope->hasVariableWithName($variable_name)) {
+
+                    // Note that it can be null
+                    $variable->getUnionType()->addType(
+                        NullType::instance()
+                    );
+
+                    // Add it to the try scope
+                    $try_scope->addVariable($variable);
+
+                }
+            }
+        }
+
+        // If we have a finally, overwite types for each
+        // element
+        if (!empty($node->children['finallyStmts'])) {
+            $finally_scope = $scope_list[count($scope_list)-1];
+
+            foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
+                if ($finally_scope->hasVariableWithName($variable_name)) {
+                    $finally_variable =
+                        $finally_scope->getVariableWithName($variable_name);
+
+                    // Overwrite the variable with the type from the
+                    // finally
+                    if (!$finally_variable->getUnionType()->isEmpty()) {
+                        $variable->setUnionType(
+                            $finally_variable->getUnionType()
+                        );
+                    }
+                }
+            }
+
+            // Look for variables that exist in finally, but not try
+            foreach ($finally_scope->getVariableMap() as $variable_name => $variable) {
+                if (!$try_scope->hasVariableWithName($variable_name)) {
+                    $try_scope->addVariable($variable);
+                }
+            }
+        }
+
+        // Return the context of the try with the types of
+        // variables within its scope limited appropriately
+        return $this->child_context_list[0];
+
+        // return self::visit($node);
+    }
+
     /**
      * @param Node $node
      * A node to parse
@@ -129,7 +218,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     $scope_list,
                     function (bool $has_variable, Scope $scope)
                     use ($variable_name) {
-                    
+
                         return (
                             $has_variable &&
                             $scope->hasVariableWithName($variable_name)

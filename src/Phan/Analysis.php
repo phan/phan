@@ -280,8 +280,15 @@ class Analysis
             // their siblings. Child nodes of conditionals
             // operate in a context independent of eachother
             switch ($child_node->kind) {
+                case \ast\AST_CATCH_LIST:
                 case \ast\AST_IF_ELEM:
                     $child_context = $node_context;
+                    break;
+            }
+
+            switch($node->kind) {
+                case \ast\AST_TRY:
+                    $child_context = clone($node_context);
                     break;
             }
 
