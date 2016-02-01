@@ -78,8 +78,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
     public function visitTry(Node $node) : Context
     {
-        // Debug::printNode($node);
-
         // Get the list of scopes for each branch of the
         // conditional
         $scope_list = array_map(function (Context $context) {
@@ -130,7 +128,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // If we have a finally, overwite types for each
         // element
-        if (!empty($node->children['finallyStmts'])) {
+        if (!empty($node->children['finallyStmts'])
+            || !empty($node->children['finally'])) {
             $finally_scope = $scope_list[count($scope_list)-1];
 
             foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
