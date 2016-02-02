@@ -691,7 +691,7 @@ class UnionType implements \Serializable
      */
     public static function internalFunctionSignatureMap()
     {
-        static $map = false;
+        static $map = [];
 
         if (!$map) {
             $map = require(__DIR__.'/Internal/FunctionSignatureMap.php');

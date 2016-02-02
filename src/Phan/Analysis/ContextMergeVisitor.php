@@ -269,6 +269,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // Limit the type of the variable to the subset
             // of types that are common to all branches
             $variable = clone($variable);
+
             $variable->setUnionType(
                 $union_type($name)
             );

@@ -144,7 +144,7 @@ class ArgumentVisitor extends KindVisitorImplementation
     public function visitCall(Node $node)
     {
 
-        $method_name = null;
+        $method_name = '';
         if (isset($node->children['method'])) {
             $method_name = $node->children['method'];
         } elseif (isset($node->children['expr'])) {

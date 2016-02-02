@@ -1101,7 +1101,7 @@ class UnionTypeVisitor extends KindVisitorImplementation
      */
     public function visitMethodCall(Node $node) : UnionType
     {
-        $method_name = $node->children['method'];
+        $method_name = $node->children['method'] ?? '';
 
         // Give up on any complicated nonsense where the
         // method name is a variable such as in
