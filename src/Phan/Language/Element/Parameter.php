@@ -7,6 +7,7 @@ use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Issue;
 use \Phan\Language\Context;
+use \Phan\Language\Type\ArrayType;
 use \Phan\Language\Type\BoolType;
 use \Phan\Language\Type\FloatType;
 use \Phan\Language\Type\IntType;
@@ -180,11 +181,7 @@ class Parameter extends Variable
 
             // We can't figure out default values during the
             // parsing phase, unfortunately
-            if (!($default_node instanceof Node)
-                || $default_node->kind == \ast\AST_CONST
-                || $default_node->kind == \ast\AST_UNARY_OP
-                || $default_node->kind == \ast\AST_ARRAY
-            ) {
+            if (!($default_node instanceof Node)) {
                 // Get the type of the default
                 $union_type = UnionType::fromNode(
                     $context,
@@ -206,17 +203,25 @@ class Parameter extends Variable
                         false
                     );
                 } catch (IssueException $exception) {
-                    // If we're in the parsing phase and we
-                    // depend on a constant that isn't yet
-                    // defined, give up and set it to
-                    // bool|float|int|string to avoid having
-                    // to handle a future type.
-                    $union_type = new UnionType([
-                        BoolType::instance(),
-                        FloatType::instance(),
-                        IntType::instance(),
-                        StringType::instance(),
-                    ]);
+                    if ($default_node instanceof Node
+                        && $default_node->kind === \ast\AST_ARRAY
+                    ) {
+                        $union_type = new UnionType([
+                            ArrayType::instance(),
+                        ]);
+                    } else {
+                        // If we're in the parsing phase and we
+                        // depend on a constant that isn't yet
+                        // defined, give up and set it to
+                        // bool|float|int|string to avoid having
+                        // to handle a future type.
+                        $union_type = new UnionType([
+                            BoolType::instance(),
+                            FloatType::instance(),
+                            IntType::instance(),
+                            StringType::instance(),
+                        ]);
+                    }
                 }
 
                 // Set the default value
