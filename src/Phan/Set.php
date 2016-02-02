@@ -88,6 +88,29 @@ class Set extends \SplObjectStorage
     }
 
     /**
+     * @param Set[] $set_list
+     * A list of sets to intersect
+     *
+     * @return Set
+     * A new Set containing any element that appear in
+     * any parameters
+     */
+    public static function unionAll(array $set_list) : Set
+    {
+        if (empty($set_list)) {
+            return new Set();
+        }
+
+        $union_set = array_shift($set_list);
+        foreach ($set_list as $set) {
+            $union_set = $union_set->union($set);
+        }
+
+        return $union_set;
+    }
+
+
+    /**
      * @return bool
      * True if this set contains any elements in the given list
      */

@@ -229,7 +229,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // Get the intersection of all types for all versions of
         // the variable from every side of the branch
-        $common_union_type =
+        $union_type =
             function (string $variable_name) use ($scope_list) {
 
                 // Get a list of all variables with the given name from
@@ -255,7 +255,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 }
 
                 return new UnionType(
-                    Set::intersectAll($type_set_list)
+                    Set::unionAll($type_set_list)
                 );
             };
 
@@ -270,15 +270,12 @@ class ContextMergeVisitor extends KindVisitorImplementation
             // of types that are common to all branches
             $variable = clone($variable);
             $variable->setUnionType(
-                $common_union_type($name)
+                $union_type($name)
             );
 
             // Add the variable to the outgoing scope
             $scope->addVariable($variable);
         }
-
-        // print '<'.implode("\t", $scope_list) . "\n";
-        // print '>'.$scope."\n";
 
         // Set the new scope with only the variables and types
         // that are common to all branches

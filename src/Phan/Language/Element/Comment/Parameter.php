@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace Phan\Language\Element\Comment;
 
+use \Phan\Language\Context;
+use \Phan\Language\Element\Variable;
 use \Phan\Language\UnionType;
 
 class Parameter
@@ -32,6 +34,22 @@ class Parameter
     ) {
         $this->name = $name;
         $this->type = $type;
+    }
+
+    /**
+     *
+     */
+    public function asVariable(
+        Context $context,
+        int $flags = 0
+    ) : Variable
+    {
+        return new Variable(
+            $context,
+            $this->getName(),
+            $this->getUnionType(),
+            $flags
+        );
     }
 
     /**

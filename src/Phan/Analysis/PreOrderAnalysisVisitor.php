@@ -132,6 +132,21 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $this->context
         );
 
+        // Parse the comment above the method to get
+        // extra meta information about the method.
+        $comment = Comment::fromStringInContext(
+            $node->docComment ?? '',
+            $this->context
+        );
+
+        // For any @var references in the method declaration,
+        // add them as variables to the method's scope
+        foreach ($comment->getVariableList() as $parameter) {
+            $method->getContext()->addScopeVariable(
+                $parameter->asVariable($this->context)
+            );
+        }
+
         // Add $this to the scope of non-static methods
         if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
             assert(
