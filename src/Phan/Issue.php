@@ -583,13 +583,13 @@ class Issue
             new Issue(
                 self::RedefineClass,
                 self::CATEGORY_REDEFINE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "%s defined at %s:%d was previously defined as %s at %s:%d"
             ),
             new Issue(
                 self::RedefineClassInternal,
                 self::CATEGORY_REDEFINE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "%s defined at %s:%d was previously defined as %s internally"
             ),
             new Issue(

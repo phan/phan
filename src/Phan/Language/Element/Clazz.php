@@ -426,6 +426,7 @@ class Clazz extends AddressableElement
             && !$this->hasMethodWithName($code_base, '__set')
         ) {
             if ($property->isPrivate()) {
+
                 throw new IssueException(
                     Issue::fromType(Issue::AccessPropertyPrivate)(
                         $context->getFile(),

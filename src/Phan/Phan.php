@@ -107,19 +107,15 @@ class Phan implements IgnoredFilesFilterInterface {
         // lets us only need to do hydrate a subset of classes.
         $code_base->setShouldHydrateRequestedElements(true);
 
-        // If we're not doing a quick run, check a bunch of things
-        // on all classes, functions and methods.
-        if (!Config::get()->quick_mode) {
-            // Take a pass over all classes verifying various
-            // states now that we have the whole state in
-            // memory
-            Analysis::analyzeClasses($code_base);
+        // Take a pass over all classes verifying various
+        // states now that we have the whole state in
+        // memory
+        Analysis::analyzeClasses($code_base);
 
-            // Take a pass over all functions verifying
-            // various states now that we have the whole
-            // state in memory
-            Analysis::analyzeFunctions($code_base);
-        }
+        // Take a pass over all functions verifying
+        // various states now that we have the whole
+        // state in memory
+        Analysis::analyzeFunctions($code_base);
 
         // We can only save classes, methods, properties and
         // constants after we've merged parent classes in.

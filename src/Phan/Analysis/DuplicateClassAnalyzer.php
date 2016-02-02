@@ -8,7 +8,6 @@ use Phan\Language\FQSEN;
 
 class DuplicateClassAnalyzer
 {
-
     /**
      * Check to see if the given Clazz is a duplicate
      *
