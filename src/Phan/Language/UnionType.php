@@ -501,8 +501,7 @@ class UnionType implements \Serializable
     ) {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
-        foreach ($this->nonNativeTypes()->getTypeSet()
-        as $class_type) {
+        foreach ($this->nonNativeTypes()->getTypeSet() as $class_type) {
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
 

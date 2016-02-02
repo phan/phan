@@ -4,6 +4,7 @@ namespace Phan\AST;
 use \Phan\AST\UnionTypeVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
+use \Phan\Debug;
 use \Phan\Exception\CodeBaseException;
 use \Phan\Exception\IssueException;
 use \Phan\Exception\NodeException;
@@ -20,9 +21,9 @@ use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
 use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
-use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\Type\MixedType;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\Type\ObjectType;
@@ -132,6 +133,10 @@ class ContextNode
     }
 
     /**
+     * @param bool $ignore_missing_classes
+     * If set to true, missing classes will be ignored and
+     * exceptions will be inhibited
+     *
      * @return Clazz[]
      * A list of classes representing the non-native types
      * associated with the given node
@@ -140,7 +145,7 @@ class ContextNode
      * An exception is thrown if a non-native type does not have
      * an associated class
      */
-    public function getClassList()
+    public function getClassList($ignore_missing_classes = false)
     {
         $union_type = UnionTypeVisitor::unionTypeFromClassNode(
             $this->code_base,
@@ -149,8 +154,19 @@ class ContextNode
         );
 
         $class_list = [];
-        foreach ($union_type->asClassList($this->code_base) as $i => $clazz) {
-            $class_list[] = $clazz;
+
+        if ($ignore_missing_classes) {
+            try {
+                foreach ($union_type->asClassList($this->code_base) as $i => $clazz) {
+                    $class_list[] = $clazz;
+                }
+            } catch (CodeBaseException $exception) {
+                // swallow it
+            }
+        } else {
+            foreach ($union_type->asClassList($this->code_base) as $i => $clazz) {
+                $class_list[] = $clazz;
+            }
         }
 
         return $class_list;
@@ -464,7 +480,7 @@ class ContextNode
                 $this->context,
                 $this->node->children['expr'] ??
                     $this->node->children['class']
-            ))->getClassList();
+            ))->getClassList(true);
         } catch (CodeBaseException $exception) {
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredProperty)(
