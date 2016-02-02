@@ -1,5 +1,10 @@
 <?php declare(strict_types=1);
 
+// Phan does a ton of GC and this offers a major speed
+// improvment if your system can handle it (which it
+// should be able to)
+gc_disable();
+
 // Check the environment to make sure Phan can run successfully
 require_once(__DIR__ . '/requirements.php');
 
