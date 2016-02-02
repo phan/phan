@@ -1123,7 +1123,6 @@ class UnionTypeVisitor extends KindVisitorImplementation
                     $node->children['class'] ?? $node->children['expr']
                 ) as $i => $class
             ) {
-
                 $class_fqsen = $class->getFQSEN();
 
                 if (!$class->hasMethodWithName(

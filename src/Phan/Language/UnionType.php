@@ -179,8 +179,9 @@ class UnionType implements \Serializable
             $class_name = $class_fqsen->getName();
             $function_name =
                 $class_name . '::' . $function_fqsen->getName();
+            $function_name = strtolower($function_name);
         } else {
-            $function_name = $function_fqsen->getName();
+            $function_name = strtolower($function_fqsen->getName());
         }
 
         $function_name_original = $function_name;
@@ -188,6 +189,8 @@ class UnionType implements \Serializable
 
         $configurations = [];
         while (isset($map[$function_name])) {
+
+
             // Get some static data about the function
             $type_name_struct = $map[$function_name];
             if (empty($type_name_struct)) {
@@ -694,7 +697,10 @@ class UnionType implements \Serializable
         static $map = [];
 
         if (!$map) {
-            $map = require(__DIR__.'/Internal/FunctionSignatureMap.php');
+            $map_raw = require(__DIR__.'/Internal/FunctionSignatureMap.php');
+            foreach ($map_raw as $key => $value) {
+                $map[strtolower($key)] = $value;
+            }
         }
 
         return $map;

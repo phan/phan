@@ -90,7 +90,7 @@ class ArgumentType
                 return $carry || (
                     array_reduce(
                         $alternate_method->getParameterList(),
-                        function (bool $carry, Parameter $parameter) {
+                        function (bool $carry, $parameter) {
                             return ($carry || $parameter->isVariadic());
                         },
                         false

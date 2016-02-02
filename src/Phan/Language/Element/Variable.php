@@ -42,6 +42,26 @@ class Variable extends TypedElement
     }
 
     /**
+     * @return bool
+     * This will always return false in so far as variables
+     * cannot be passed by reference.
+     */
+    public function isPassByReference()
+    {
+        return false;
+    }
+
+    /**
+     * @return bool
+     * This will always return false in so far as variables
+     * cannot be variadic
+     */
+    public function isVariadic()
+    {
+        return false;
+    }
+
+    /**
      * @param Node $node
      * An AST_VAR node
      *
