@@ -543,6 +543,13 @@ class Clazz extends AddressableElement
         // Don't overwrite overridden methods with
         // parent methods
         if ($code_base->hasMethodWithFQSEN($method_fqsen)) {
+
+            // Note that we're overriding something
+            $existing_method =
+                $code_base->getMethodByFQSEN($method_fqsen);
+            $existing_method->setIsOverride(true);
+
+            // Don't add the method
             return;
         }
 
@@ -574,6 +581,21 @@ class Clazz extends AddressableElement
         );
 
         return $code_base->hasMethodWithFQSEN($method_fqsen);
+    }
+
+    /**
+     * @return Method
+     * The method with the given name
+     */
+    public function getMethodByName(
+        CodeBase $code_base,
+        string $name
+    ) : Method {
+        return $this->getMethodByNameInContext(
+            $code_base,
+            $name,
+            $this->getContext()
+        );
     }
 
     /**
@@ -768,54 +790,70 @@ class Clazz extends AddressableElement
      * The entire code base from which we'll find ancestor
      * details
      *
+     * @param FullyQualifiedClassName[]
+     * A list of class FQSENs to turn into a list of
+     * Clazz objects
+     *
      * @return Clazz[]
      */
-    public function getAncestorClazzList(CodeBase $code_base)
-    {
-        $ancestor_class_list = [];
-        foreach ($this->getAncestorFQSENList($code_base) as $fqsen) {
+    private function getClassListFromFQSENList(
+        CodeBase $code_base,
+        array $fqsen_list
+    ) : array {
+        $class_list = [];
+        foreach ($fqsen_list as $fqsen) {
             if ($code_base->hasClassWithFQSEN($fqsen)) {
-                $ancestor_class_list[] =
-                    $code_base->getClassByFQSEN($fqsen);
+                $class_list[] = $code_base->getClassByFQSEN($fqsen);
             }
         }
-        return $ancestor_class_list;
+        return $class_list;
     }
 
+    /**
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return Clazz[]
+     */
+    public function getAncestorClassList(CodeBase $code_base)
+    {
+        return $this->getClassListFromFQSENList(
+            $code_base,
+            $this->getAncestorFQSENList($code_base)
+        );
+    }
 
     /**
-     * Determine if this method overrides another method
-     *
-     * @return void
+     * @return FullyQualifiedClassName[]
+     * The set of FQSENs representing extended classes and traits
+     * for which this class could have overriding methods and
+     * properties.
      */
-    public function analyzeMethodOverrides(CodeBase $code_base)
+    public function getOverridableAncestorFQSENList(CodeBase $code_base)
     {
-        return $this->memoize(__METHOD__, function () use ($code_base) {
+        $ancestor_list = $this->getTraitFQSENList();
 
-            // Get the list of ancestors of this class
-            $ancestor_class_list = $this->getAncestorClazzList(
-                $code_base
-            );
+        if ($this->hasParentClassFQSEN()) {
+            $ancestor_list[] = $this->getParentClassFQSEN();
+        }
 
-            // For each method, check to see if its overriding
-            // something. We're relying here on having copied
-            // methods to subclasses.
-            foreach ($this->getMethodMap($code_base) as $name => $method) {
-                $is_override = array_reduce(
-                    $ancestor_class_list,
-                    function (bool $carry, Clazz $class) use ($code_base, $name) {
-                        return ($carry || $class->hasMethodWithName(
-                            $code_base,
-                            $name
-                        ));
-                    },
-                    false
-                );
+        return $ancestor_list;
+    }
 
-                // Tell the method if its overriding something or not
-                $method->setIsOverride($is_override);
-            }
-        });
+    /**
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return Clazz[]
+     */
+    public function getOverridableAncestorClassList(CodeBase $code_base)
+    {
+        return $this->getClassListFromFQSENList(
+            $code_base,
+            $this->getOverridableAncestorFQSENList($code_base)
+        );
     }
 
     /**
@@ -1007,15 +1045,8 @@ class Clazz extends AddressableElement
      *
      * @return void
      */
-    public function hydrateOnce(CodeBase $code_base) {
-        // Then import them
+    protected function hydrateOnce(CodeBase $code_base) {
         $this->importAncestorClasses($code_base);
-
-        // Then figure out which methods are overrides of
-        // ancestor methods
-        if (Config::get()->dead_code_detection) {
-            $this->analyzeMethodOverrides($code_base);
-        }
     }
 
 }

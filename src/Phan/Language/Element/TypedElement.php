@@ -38,7 +38,6 @@ abstract class TypedElement implements TypedElementInterface
      */
     private $flags = 0;
 
-
     /**
      * @var Context
      * The context in which the structural element lives
@@ -186,11 +185,11 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function setIsDeprecated(bool $is_deprecated)
     {
-        $this->flags = Flags::bitVectorWithState(
-            $this->flags,
+        $this->setFlags(Flags::bitVectorWithState(
+            $this->getFlags(),
             Flags::IS_DEPRECATED,
             $is_deprecated
-        );
+        ));
     }
 
     /**

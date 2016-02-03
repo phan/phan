@@ -29,6 +29,9 @@ abstract class ClassElement extends AddressableElement
     }
 
     /**
+     * @param CodeBase $code_base
+     * The code base with which to look for classes
+     *
      * @return Clazz
      * The class that defined this element
      *

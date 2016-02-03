@@ -136,24 +136,6 @@ class Analysis
     }
 
     /**
-     * Expand all classes to include parent methods, properties
-     * and constants. Expand their types to include all extended,
-     * inherited or used classes, interfaces and traits.
-     *
-     * @return void
-     */
-    public static function hydrateElements(CodeBase $code_base) {
-        $class_count = count($code_base->getClassMap());
-
-        // Take a pass to import all details from ancestors
-        $i = 0;
-        foreach ($code_base->getClassMap() as $fqsen => $class) {
-            CLI::progress('hydrate', ++$i/$class_count);
-            $class->hydrate($code_base);
-        }
-    }
-
-    /**
      * Take a pass over all classes verifying various
      * states.
      *

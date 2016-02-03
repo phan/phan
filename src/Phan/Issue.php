@@ -77,6 +77,8 @@ class Issue
     const ParamTooMany              = 'PhanParamTooMany';
     const ParamTooManyInternal      = 'PhanParamTooManyInternal';
     const ParamTypeMismatch         = 'PhanParamTypeMismatch';
+    const ParamSignatureMismatch    = 'PhanSignatureMismatch';
+    const ParamSignatureMismatchInternal = 'PhanSignatureMismatchInternal';
 
     // Issue::CATEGORY_NOOP
     const NoopArray                 = 'PhanNoopArray';
@@ -528,6 +530,18 @@ class Issue
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Argument %d is %s but %s() takes %s"
+            ),
+            new Issue(
+                self::ParamSignatureMismatch,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                "Declaration of %s should be compatible with %s defined in %s:%d"
+            ),
+            new Issue(
+                self::ParamSignatureMismatchInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                "Declaration of %s should be compatible with internal %s"
             ),
 
             // Issue::CATEGORY_NOOP

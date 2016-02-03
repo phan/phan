@@ -1,0 +1,5 @@
+%s:6 PhanSignatureMismatch Declaration of function f() should be compatible with function f(int $a) defined in %s:3
+%s:12 PhanSignatureMismatch Declaration of function f(int $a, int $b) should be compatible with function f(int $a) defined in %s:3
+%s:15 PhanSignatureMismatch Declaration of function f(string $a) should be compatible with function f(int $a) defined in %s:3
+%s:18 PhanSignatureMismatch Declaration of function f($a) should be compatible with function f(int $a) defined in %s:3
+%s:25 PhanSignatureMismatch Declaration of function g() : int should be compatible with function g() : string defined in %s:22

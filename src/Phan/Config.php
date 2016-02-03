@@ -56,6 +56,12 @@ class Config
         // to fix in your code base.
         'quick_mode' => false,
 
+        // If enabled, check all methods that override a
+        // parent method to make sure its signature is
+        // compatible with the parent's. This check
+        // can add quite a bit of time to the analysis.
+        'analyze_signature_compatibility' => true,
+
         // The minimum severity level to report on. This can be
         // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or
         // Issue::SEVERITY_CRITICAL. Setting it to only

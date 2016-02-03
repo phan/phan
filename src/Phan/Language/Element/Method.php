@@ -2,6 +2,7 @@
 namespace Phan\Language\Element;
 
 use \Phan\CodeBase;
+use \Phan\Exception\CodeBaseException;
 use \Phan\Issue;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Parameter;
@@ -302,6 +303,43 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * @param CodeBase $code_base
+     * The code base with which to look for classes
+     *
+     * @return Method
+     * The Method that this Method is overriding
+     */
+    public function getOverriddenMethod(
+        CodeBase $code_base
+    ) : ClassElement {
+        // Get the class that defines this method
+        $class = $this->getDefiningClass($code_base);
+
+        // Get the list of ancestors of that class
+        $ancestor_class_list = $class->getAncestorClassList(
+            $code_base
+        );
+
+        // Hunt for any ancestor class that defines a method with
+        // the same name as this one
+        foreach ($ancestor_class_list as $ancestor_class) {
+            if ($ancestor_class->hasMethodWithName($code_base, $this->getName())) {
+                return $ancestor_class->getMethodByName(
+                    $code_base,
+                    $this->getName()
+                );
+            }
+        }
+
+        // Throw an exception if this method doesn't override
+        // anything
+        throw new CodeBaseException(
+            $this->getFQSEN(),
+            "Method $this does not override another method"
+        );
+    }
+
+    /**
      * @return string
      * A string representation of this method signature
      */
@@ -316,8 +354,7 @@ class Method extends ClassElement implements FunctionInterface
             $string .= ' : ' . (string)$this->getUnionType();
         }
 
-        $string .= ';';
-
         return $string;
     }
+
 }

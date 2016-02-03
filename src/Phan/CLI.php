@@ -48,7 +48,7 @@ class CLI
         // Parse command line args
         // still available: g,k,n,t,u,v,w,z
         $opts = getopt(
-            "f:m:o:c:aeqbr:pid:s:3:y:l:xj:h::",
+            "f:m:o:c:aeqbr:pid:s:3:y:l:xj:zh::",
             [
                 'backward-compatibility-checks',
                 'dead-code-detection',
@@ -69,6 +69,7 @@ class CLI
                 'quick',
                 'state-file:',
                 'processes:',
+                'signature-compatibility',
             ]
         );
 
@@ -193,6 +194,10 @@ class CLI
                 case 'j':
                 case 'processes':
                     Config::get()->processes = (int)$value;
+                    break;
+                case 'z':
+                case 'signature-compatibility':
+                    Config::get()->analyze_signature_compatibility = (bool)$value;
                     break;
                 case 'y':
                 case 'minimum-severity':
@@ -370,7 +375,11 @@ Usage: {$argv[0]} [options] [files...]
 
  -j, --processes <int>
   The number of parallel processes to run during the analysis
-  phase. Defaults to 1. This is EXPERIMENTAL.
+  phase. Defaults to 1.
+
+ -z, --signature-compatibility
+  Analyze signatures for methods that are overrides to ensure
+  compatiiblity with what they're overriding.
 
  -h,--help
   This help information

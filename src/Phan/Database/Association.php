@@ -62,7 +62,7 @@ abstract class Association
      * @param ModelOne $model
      * The source model of the association
      *
-     * @return null
+     * @return void
      */
     abstract public function write(Database $database, ModelOne $model);
 

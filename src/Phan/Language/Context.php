@@ -434,6 +434,9 @@ class Context extends FileRef implements \Serializable
         return $serialized;
     }
 
+    /**
+     * @return void
+     */
     public function unserialize($serialized)
     {
         list($file_ref, $serialized) = explode('^', $serialized);
