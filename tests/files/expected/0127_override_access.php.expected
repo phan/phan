@@ -1,0 +1,3 @@
+%s:8 PhanAccessNonStaticToStatic Cannot make non static method \c0::f() static
+%s:12 PhanAccessSignatureMismatch Access level to function f($p) must be compatible with function f($p) defined in %s:4
+%s:16 PhanAccessSignatureMismatch Access level to function f($p) must be compatible with function f($p) defined in %s:4

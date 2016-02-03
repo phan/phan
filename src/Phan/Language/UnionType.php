@@ -441,6 +441,7 @@ class UnionType implements \Serializable
             if (empty($source_type)) {
                 continue;
             }
+
             foreach ($target->getTypeSet() as $target_type) {
                 if (empty($target_type)) {
                     continue;

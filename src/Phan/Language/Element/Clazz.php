@@ -748,11 +748,6 @@ class Clazz extends AddressableElement
      */
     public function getFQSEN() : FullyQualifiedClassName
     {
-        /*
-        assert(!empty($this->fqsen),
-            "FQSEN for $this cannot be empty");
-         */
-
         return $this->fqsen;
     }
 

@@ -100,23 +100,27 @@ class Issue
     // Issue::CATEGORY_ACCESS
     const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
     const AccessPropertyProtected   = 'PhanAccessPropertyProtected';
+    const AccessSignatureMismatch   = 'PhanAccessSignatureMismatch';
+    const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
+    const AccessStaticToNonStatic   = 'PhanAccessStaticToNonStatic';
+    const AccessNonStaticToStatic   = 'PhanAccessNonStaticToStatic';
 
     // Issue::CATEGORY_COMPATIBLE
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
     const CompatiblePHP7            = 'PhanCompatiblePHP7';
 
-    const CATEGORY_ACCESS            = 1<<1;
-    const CATEGORY_ANALYSIS          = 1<<2;
-    const CATEGORY_COMPATIBLE        = 1<<3;
-    const CATEGORY_CONTEXT           = 1<<4;
-    const CATEGORY_DEPRECATED        = 1<<5;
-    const CATEGORY_NOOP              = 1<<6;
-    const CATEGORY_PARAMETER         = 1<<7;
-    const CATEGORY_REDEFINE          = 1<<8;
-    const CATEGORY_STATIC            = 1<<9;
-    const CATEGORY_TYPE              = 1<<10;
-    const CATEGORY_UNDEFINED         = 1<<11;
-    const CATEGORY_VARIABLE          = 1<<12;
+    const CATEGORY_ACCESS            = 1 << 1;
+    const CATEGORY_ANALYSIS          = 1 << 2;
+    const CATEGORY_COMPATIBLE        = 1 << 3;
+    const CATEGORY_CONTEXT           = 1 << 4;
+    const CATEGORY_DEPRECATED        = 1 << 5;
+    const CATEGORY_NOOP              = 1 << 6;
+    const CATEGORY_PARAMETER         = 1 << 7;
+    const CATEGORY_REDEFINE          = 1 << 8;
+    const CATEGORY_STATIC            = 1 << 9;
+    const CATEGORY_TYPE              = 1 << 10;
+    const CATEGORY_UNDEFINED         = 1 << 11;
+    const CATEGORY_VARIABLE          = 1 << 12;
 
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
@@ -638,6 +642,30 @@ class Issue
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Cannot access private property %s"
+            ),
+            new Issue(
+                self::AccessSignatureMismatch,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to %s must be compatible with %s defined in %s:%d"
+            ),
+            new Issue(
+                self::AccessSignatureMismatchInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Access level to %s must be compatible with internal %s"
+            ),
+            new Issue(
+                self::AccessStaticToNonStatic,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot make static method %s() non static"
+            ),
+            new Issue(
+                self::AccessNonStaticToStatic,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot make non static method %s() static"
             ),
 
             // Issue::CATEGORY_COMPATIBLE

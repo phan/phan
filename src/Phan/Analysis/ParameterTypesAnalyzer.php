@@ -96,6 +96,15 @@ class ParameterTypesAnalyzer
         // Get the method that is being overridden
         $o_method = $method->getOverriddenMethod($code_base);
 
+        // Get the class that the overridden method lives on
+        $o_class = $o_method->getDefiningClass($code_base);
+
+        // PHP doesn't complain about signature mismatches
+        // with traits, so neither shall we
+        if ($o_class->isTrait()) {
+            return;
+        }
+
         // Get the parameters for that method
         $o_parameter_list = $o_method->getParameterList();
 
@@ -104,7 +113,11 @@ class ParameterTypesAnalyzer
 
         // Make sure the count of parameters matches
         if ($method->getNumberOfRequiredParameters()
-            != $o_method->getNumberOfRequiredParameters()
+            > $o_method->getNumberOfParameters()
+        ) {
+            $signatures_match = false;
+        } else if ($method->getNumberOfParameters()
+            < $o_method->getNumberOfRequiredParameters()
         ) {
             $signatures_match = false;
 
@@ -133,9 +146,11 @@ class ParameterTypesAnalyzer
                 }
 
                 // If we have types, make sure they line up
-                if (!$parameter->getUnionType()->canCastToExpandedUnionType(
-                    $o_parameter->getUnionType(),
-                    $code_base
+                //
+                // TODO: should we be expanding the types on $o_parameter
+                //       via ->asExpandedTypes($code_base)?
+                if (!$o_parameter->getUnionType()->canCastToUnionType(
+                    $parameter->getUnionType()
                 )) {
                     $signatures_match = false;
                     break;
@@ -146,26 +161,31 @@ class ParameterTypesAnalyzer
         // Return types should be mappable
         if (!$o_method->getUnionType()->isEmpty()) {
 
-            if (!$method->getUnionType()->canCastToExpandedUnionType(
-                $o_method->getUnionType(),
-                $code_base
+            if (!$method->getUnionType()->asExpandedTypes($code_base)->canCastToUnionType(
+                $o_method->getUnionType()
             )) {
                 $signatures_match = false;
             }
         }
 
-        // Access must be mappable
-        if ($method->isPublic() != $o_method->isPublic()
-            || ($method->isPrivate() != $o_method->isPrivate())
-        ) {
-            $signature_matches = false;
-        }
-
         // Static or non-static should match
         if ($method->isStatic() != $o_method->isStatic()) {
-            $signature_matches = false;
+            if ($o_method->isStatic()) {
+                Issue::emit(
+                    Issue::AccessStaticToNonStatic,
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart(),
+                    $o_method->getFQSEN()
+                );
+            } else {
+                Issue::emit(
+                    Issue::AccessNonStaticToStatic,
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart(),
+                    $o_method->getFQSEN()
+                );
+            }
         }
-
 
         if (!$signatures_match) {
             if ($o_method->isInternal()) {
@@ -188,6 +208,33 @@ class ParameterTypesAnalyzer
                 );
             }
         }
+
+        // Access must be compatible
+        if ($method->isPublic() != $o_method->isPublic()
+            || ($method->isPrivate() != $o_method->isPrivate())
+        ) {
+            if ($o_method->isInternal()) {
+                Issue::emit(
+                    Issue::AccessSignatureMismatchInternal,
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method
+                );
+            } else {
+                Issue::emit(
+                    Issue::AccessSignatureMismatch,
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method,
+                    $o_method,
+                    $o_method->getFileRef()->getFile(),
+                    $o_method->getFileRef()->getLineNumberStart()
+                );
+            }
+
+        }
+
     }
 
 }
