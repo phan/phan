@@ -782,6 +782,18 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
             // could be called on
             foreach ($context_node->getClassList() as $class) {
                 $class->addReference($this->context);
+
+                if ($class->isDeprecated()) {
+                    Issue::emit(
+                        Issue::DeprecatedClass,
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        (string)$class->getFQSEN(),
+                        $class->getContext()->getFile(),
+                        $class->getContext()->getLineNumberStart()
+                    );
+                }
+
             }
 
             $this->analyzeCallToMethod(

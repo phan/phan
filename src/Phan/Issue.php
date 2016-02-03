@@ -63,6 +63,7 @@ class Issue
     const ContextNotObject          = 'PhanContextNotObject';
 
     // Issue::CATEGORY_DEPRECATED
+    const DeprecatedClass           = 'PhanDeprecatedClass';
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
 
     // Issue::CATEGORY_PARAMETER
@@ -459,6 +460,12 @@ class Issue
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
                 "Call to deprecated function %s() defined at %s:%d"
+            ),
+            new Issue(
+                self::DeprecatedClass,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Call to deprecated class %s defined at %s:%d"
             ),
 
             // Issue::CATEGORY_PARAMETER
