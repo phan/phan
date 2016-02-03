@@ -46,7 +46,7 @@ class CLI
         global $argv;
 
         // Parse command line args
-        // still available: g,k,n,t,u,v,w,z
+        // still available: g,k,n,t,u,v,w
         $opts = getopt(
             "f:m:o:c:aeqbr:pid:s:3:y:l:xj:zh::",
             [

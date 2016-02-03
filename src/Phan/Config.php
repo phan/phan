@@ -99,6 +99,12 @@ class Config
         // what references what.
         'dead_code_detection_prefer_false_negative' => true,
 
+        // If disabled, Phan will not read docblock type
+        // annotation comments (such as for @return, @param,
+        // @var, @suppress, @deprecated) and only rely on
+        // types expressed in code.
+        'read_type_annotations' => true,
+
         // If a file path is given, the code base will be
         // read from and written to the given location in
         // order to attempt to save some work from being

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use \Phan\Config;
 use \Phan\Language\Context;
 use \Phan\Language\Element\Comment\Parameter as CommentParameter;
 use \Phan\Language\UnionType;
@@ -114,6 +115,12 @@ class Comment
         string $comment,
         Context $context
     ) : Comment {
+
+        if (!Config::get()->read_type_annotations) {
+            return new Comment(
+                false, [], [], new UnionType(), []
+            );
+        }
 
         $is_deprecated = false;
         $variable_list = [];
