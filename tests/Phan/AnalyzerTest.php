@@ -50,11 +50,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
     }
 
-    public function tearDown() {
-    }
-
     public function testClassInCodeBase() {
-
 
         $context =
             $this->contextForCode("

@@ -37,7 +37,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
         $this->context = new Context;
     }
 
-    public function tearDown() {
+    protected function tearDown() {
         $this->context = null;
     }
 
