@@ -140,6 +140,8 @@ class ParameterTypesAnalyzer
 
                 // Its not OK to have a more relaxed type on an
                 // overriding method
+                //
+                // https://3v4l.org/XTm3P
                 if ($parameter->getUnionType()->isEmpty()) {
                     $signatures_match = false;
                     break;
@@ -149,6 +151,8 @@ class ParameterTypesAnalyzer
                 //
                 // TODO: should we be expanding the types on $o_parameter
                 //       via ->asExpandedTypes($code_base)?
+                //
+                //       @see https://3v4l.org/ke3kp
                 if (!$o_parameter->getUnionType()->canCastToUnionType(
                     $parameter->getUnionType()
                 )) {
