@@ -132,7 +132,7 @@ class Config
         'progress_bar_sample_rate' => 0.005,
 
         // The number of processes to fork off during the analysis
-        // phase. EXPERIMENTAL.
+        // phase.
         'processes' => 1,
 
         // The vesion of the AST (defined in php-ast)

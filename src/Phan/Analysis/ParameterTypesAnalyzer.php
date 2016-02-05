@@ -214,8 +214,8 @@ class ParameterTypesAnalyzer
         }
 
         // Access must be compatible
-        if ($method->isPublic() != $o_method->isPublic()
-            || ($method->isPrivate() != $o_method->isPrivate())
+        if ($o_method->isProtected() && $method->isPrivate()
+            || $o_method->isPublic() && !$method->isPublic()
         ) {
             if ($o_method->isInternal()) {
                 Issue::emit(
