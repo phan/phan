@@ -1,0 +1,50 @@
+#!/usr/bin/env php
+<?php
+
+$files = [];
+while($line = trim(fgets(STDIN))) {
+    $elements = explode(' ', $line, 3);
+
+    list($file, $line) = explode(':', $elements[0]);
+    $source = $elements[1];
+    $message = $elements[2];
+
+    if (empty($files[$file])) {
+        $files[$file] = [];
+    }
+
+    $files[$file][] = [
+        'line' => $line,
+        'source' => $source,
+        'message' => $message,
+    ];
+}
+
+$document = new \DomDocument('1.0', 'ISO-8859-15');
+
+$checkstyle = new \DOMElement('checkstyle');
+$document->appendChild($checkstyle);
+$checkstyle->appendChild(new \DOMAttr('version', '5.0'));
+
+// Write each file to the DOM
+foreach ($files as $file_name => $error_list) {
+    $file = new \DOMElement('file');
+    $checkstyle->appendChild($file);
+    $file->appendChild(new \DOMAttr('name', $file_name));
+
+    // Write each error to the file
+    foreach ($error_list as $error_map) {
+        $error = new \DOMElement('error');
+        $file->appendChild($error);
+
+        // Write each element of the error as an attribute
+        // of the error
+        foreach ($error_map as $key => $value) {
+            $error->appendChild(
+                new \DOMAttr($key, (string)$value)
+            );
+        }
+    }
+}
+
+print $document->saveXML();

@@ -66,7 +66,6 @@ class ParallelParentCollector implements IssueCollectorInterface
 
     public function __destruct()
     {
-
         // Shut down and remove the queue
         $success = msg_remove_queue(
             $this->message_queue_resource
