@@ -24,4 +24,7 @@ class Test {
     public static function get($letter) {
         return self::$vals[$letter];
     }
+	public function fn($letter) {
+        return $this->vals[$letter];
+    }
 }

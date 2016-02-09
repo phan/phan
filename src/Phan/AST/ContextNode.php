@@ -810,6 +810,8 @@ class ContextNode
             return;
         }
 
+        $llnode = $this->node;
+
         if ($this->node->kind !== \ast\AST_DIM) {
             if (!($this->node->children['expr'] instanceof Node)) {
                 return;
@@ -825,6 +827,7 @@ class ContextNode
             }
 
             $temp = $this->node->children['expr']->children['expr'];
+            $llnode = $this->node->children['expr'];
             $lnode = $temp;
         } else {
             $temp = $this->node->children['expr'];
@@ -841,6 +844,7 @@ class ContextNode
             && ($temp->kind == \ast\AST_PROP
             || $temp->kind == \ast\AST_STATIC_PROP)
         ) {
+            $llnode = $lnode;
             $lnode = $temp;
 
             // Lets just hope the 0th is the expression
@@ -856,6 +860,15 @@ class ContextNode
         // Foo::$bar['baz'] is not
         if ($lnode->kind === \ast\AST_STATIC_PROP
             && $this->node->kind !== \ast\AST_CALL
+        ) {
+            return;
+        }
+
+        // $this->$bar['baz']; is a problem
+        // $this->bar['baz'] is not
+        if ($lnode->kind === \ast\AST_PROP
+            && !($lnode->children['prop'] instanceof Node)
+            && !($llnode->children['prop'] instanceof Node)
         ) {
             return;
         }
