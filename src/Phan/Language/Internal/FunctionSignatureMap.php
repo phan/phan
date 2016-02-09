@@ -1378,7 +1378,7 @@ return [
 'DOMDocument::validate' => ['bool'],
 'dom_document_xinclude' => ['int', 'options'=>'int'],
 'DOMDocument::xinclude' => ['int', 'options='=>'int'],
-'DOMElement::__construct' => ['DOMElement', 'name'=>'string', 'value'=>'string', 'uri'=>'string'],
+'DOMElement::__construct' => ['DOMElement', 'name'=>'string', 'value='=>'string', 'uri='=>'string'],
 'DomElement::get_attribute_node' => ['DomAttribute', 'name'=>'string'],
 'DOMElement::getAttributeNode' => ['DOMAttr', 'name'=>'string'],
 'DOMElement::getAttributeNodeNS' => ['DOMAttr', 'namespaceuri'=>'string', 'localname'=>'string'],

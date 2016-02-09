@@ -334,7 +334,7 @@ Usage: {$argv[0]} [options] [files...]
   path.
 
  -m <mode>, --output-mode
-  Output mode from 'text', 'json', or 'codeclimate'
+  Output mode from 'text', 'json', 'codeclimate', or 'checkstyle'
 
  -o, --output <filename>
   Output filename
@@ -358,7 +358,7 @@ Usage: {$argv[0]} [options] [files...]
   Check for potential PHP 5 -> PHP 7 BC issues
 
  -i, --ignore-undeclared
- Ignore undeclared functions and classes
+  Ignore undeclared functions and classes
 
  -y, --minimum-severity <level in {0,5,10}>
   Minimum severity level (low=0, normal=5, critical=10) to report.

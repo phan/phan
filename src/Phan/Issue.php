@@ -727,6 +727,22 @@ class Issue
 
     /**
      * @return string
+     * A descriptive name of the severity of hte issue
+     */
+    public function getSeverityName() : string
+    {
+        switch ($this->getSeverity()) {
+        case self::SEVERITY_LOW:
+            return 'low';
+        case self::SEVERITY_NORMAL:
+            return 'normal';
+        case self::SEVERITY_CRITICAL:
+            return 'critical';
+        }
+    }
+
+    /**
+     * @return string
      */
     public function getTemplate() : string
     {

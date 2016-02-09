@@ -1,8 +1,9 @@
 <?php declare(strict_types = 1);
 namespace Phan\Output;
 
-use Phan\Output\Printer\JSONPrinter;
+use Phan\Output\Printer\CheckstylePrinter;
 use Phan\Output\Printer\CodeClimatePrinter;
+use Phan\Output\Printer\JSONPrinter;
 use Phan\Output\Printer\PlainTextPrinter;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -18,7 +19,7 @@ class PrinterFactory
      */
     public function getTypes():array
     {
-        return ['text', 'json', 'codeclimate'];
+        return ['text', 'json', 'codeclimate', 'checkstyle'];
     }
 
     public function getPrinter($type, OutputInterface $output):IssuePrinterInterface
@@ -29,6 +30,9 @@ class PrinterFactory
                 break;
             case 'json':
                 $printer = new JSONPrinter();
+                break;
+            case 'checkstyle':
+                $printer = new CheckstylePrinter();
                 break;
             case 'text':
             default:
