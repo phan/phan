@@ -4,20 +4,14 @@ if [[ -z $WORKSPACE ]]
 then
     export WORKSPACE=.
 fi
-
 cd $WORKSPACE
 
-JUNK=/var/tmp/junk.txt
-
 for dir in \
-    src
+    src \
+    tests/Phan \
+    vendor/phpunit/phpunit/src vendor/symfony/console
 do
     if [ -d "$dir" ]; then
-        find $dir -name '*.php' >> $JUNK
+        find $dir -name '*.php'
     fi
 done
-
-cat $JUNK | \
-    awk '!x[$0]++'
-
-rm $JUNK
