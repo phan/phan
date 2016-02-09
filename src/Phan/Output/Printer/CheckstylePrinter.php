@@ -37,7 +37,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
 
         $checkstyle = new \DOMElement('checkstyle');
         $document->appendChild($checkstyle);
-        $checkstyle->appendChild(new \DOMAttr('version', '5.0'));
+        $checkstyle->appendChild(new \DOMAttr('version', '6.5'));
 
         // Write each file to the DOM
         foreach ($this->files as $file_name => $error_list) {

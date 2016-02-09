@@ -17,6 +17,7 @@ while($line = trim(fgets(STDIN))) {
         'line' => $line,
         'source' => $source,
         'message' => $message,
+        'severity' => 'error',
     ];
 }
 
@@ -24,7 +25,7 @@ $document = new \DomDocument('1.0', 'ISO-8859-15');
 
 $checkstyle = new \DOMElement('checkstyle');
 $document->appendChild($checkstyle);
-$checkstyle->appendChild(new \DOMAttr('version', '5.0'));
+$checkstyle->appendChild(new \DOMAttr('version', '6.5'));
 
 // Write each file to the DOM
 foreach ($files as $file_name => $error_list) {
