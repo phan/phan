@@ -1239,9 +1239,34 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
             // elsewhere.
         }
 
-        // Check to make sure we're doing something with the
-        // property
-        $this->analyzeNoOp($node, Issue::NoopProperty);
+        if (isset($property)) {
+            $this->analyzeNoOp($node, Issue::NoopProperty);
+        } else {
+
+            // Get the set of classes that are being referenced
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node->children['expr']
+            ))->getClassList(true);
+
+            // Find out of any of them have a __get magic method
+            $has_getter =
+                array_reduce($class_list, function($carry, $class) {
+                    return (
+                        $carry ||
+                        $class->hasMethodWithName(
+                            $this->code_base,
+                            '__get'
+                        )
+                    );
+                }, false);
+
+            // If they don't, then analyze for Noops.
+            if (!$has_getter) {
+                $this->analyzeNoOp($node, Issue::NoopProperty);
+            }
+        }
 
         return $this->context;
     }

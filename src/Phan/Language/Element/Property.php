@@ -85,7 +85,7 @@ class Property extends ClassElement
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() : FQSEN
+    public function getFQSEN() : FullyQualifiedPropertyName
     {
         assert(!empty($this->fqsen),
             "FQSEN must be defined for $this\n");
