@@ -14,7 +14,9 @@ use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
-use Phan\Output\Printer\CodeClimatePrinter;
+use Phan\Output\ParallelConsoleOutput;
+use Phan\Output\PrinterFactory;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Phan\Phan;
 
 // Create our CLI interface and load arguments
@@ -52,7 +54,11 @@ foreach ($codeclimate_config['include_paths'] as $path) {
     }
 }
 
-$printer = new CodeClimatePrinter($cli->getOutput());
+$output = new ConsoleOutput();
+$factory = new PrinterFactory();
+$printer = $factory->getPrinter('codeclimate', $output);
+Phan::setPrinter($printer);
+
 $filter = new ChainedIssueFilter([
     new FileIssueFilter(new Phan()),
     new CategoryIssueFilter(-1 ^ Issue::CATEGORY_UNDEFINED)
@@ -62,4 +68,3 @@ Phan::setIssueCollector($collector);
 
 // Analyze the file list provided via the CLI
 Phan::analyzeFileList($code_base, $include_paths);
-
