@@ -14,6 +14,7 @@ use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
 use Phan\Output\Filter\FileIssueFilter;
+use Phan\Output\Filter\MinimumSeverityFilter;
 use Phan\Output\ParallelConsoleOutput;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -22,14 +23,33 @@ use Phan\Phan;
 // Create our CLI interface and load arguments
 $cli = new CLI();
 
-// Enable PHP5 -> PHP7 checks
-Config::get()->backward_compatibility_checks = true;
-
-// Re-analyze all files
-Config::get()->reanalyze_file_list = true;
-
 // Obtain the config
 $codeclimate_config = json_decode(file_get_contents('/config.json'), true);
+
+// Parse the config
+if (isset($codeclimate_config['config']['minimum-severity'])) {
+    $minimum_severity = $codeclimate_config['config']['minimum-severity'];
+} else {
+    $minimum_severity = 0;
+}
+
+$mask = -1;
+
+if (isset($codeclimate_config['config']['ignore-undeclared'])) {
+    $mask ^= Issue::CATEGORY_UNDEFINED;
+}
+
+if (isset($codeclimate_config['config']['quick'])) {
+    Config::get()->quick_mode = true;
+}
+
+if (isset($codeclimate_config['config']['backward-compatibility-checks'])) {
+    Config::get()->backward_compatibility_checks = true;
+}
+
+if (isset($codeclimate_config['config']['dead-code-detection'])) {
+    Config::get()->dead_code_detection = true;
+}
 
 $include_paths = [];
 
@@ -61,7 +81,8 @@ Phan::setPrinter($printer);
 
 $filter = new ChainedIssueFilter([
     new FileIssueFilter(new Phan()),
-    new CategoryIssueFilter(-1 ^ Issue::CATEGORY_UNDEFINED)
+    new MinimumSeverityFilter($minimum_severity),
+    new CategoryIssueFilter($mask)
 ]);
 $collector = new BufferingCollector($filter);
 Phan::setIssueCollector($collector);
