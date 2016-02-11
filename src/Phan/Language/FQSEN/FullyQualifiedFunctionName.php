@@ -19,6 +19,16 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
     }
 
     /**
+     * @return string
+     * The canonical representation of the name of the object. Functions
+     * and Methods, for instance, lowercase their names.
+     */
+    public static function canonicalName(string $name) : string
+    {
+        return strtolower($name);
+    }
+
+    /**
      * @param Context $context
      * The context in which the FQSEN string was found
      *
