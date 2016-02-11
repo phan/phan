@@ -54,9 +54,10 @@ class ParentConstructorCalledAnalyzer
         if (!$parent_clazz->isAbstract()
             && !$clazz->getIsParentConstructorCalled()
         ) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $code_base,
+                $clazz->getContext(),
                 Issue::TypeParentConstructorCalled,
-                $clazz->getFileRef()->getFile(),
                 $clazz->getFileRef()->getLineNumberStart(),
                 (string)$clazz->getFQSEN(),
                 (string)$parent_clazz->getFQSEN()

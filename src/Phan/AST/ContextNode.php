@@ -911,9 +911,10 @@ class ContextNode
                 || strpos($line, ']}') === false
                 || strpos($line, '>{') === false
             ) {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
                     Issue::CompatiblePHP7,
-                    $this->context->getFile(),
                     $this->node->lineno ?? 0
                 );
             }

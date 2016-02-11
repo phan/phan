@@ -2,7 +2,7 @@
 namespace Phan\Analysis;
 
 use \Phan\AST\ContextNode;
-use \Phan\AST\Visitor\KindVisitorImplementation;
+use \Phan\AST\AnalysisVisitor;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
@@ -22,21 +22,8 @@ use \ast\Node;
 use \ast\Node\Decl;
 use Phan\Phan;
 
-class AssignmentVisitor extends KindVisitorImplementation
+class AssignmentVisitor extends AnalysisVisitor
 {
-
-    /**
-     * @var CodeBase
-     */
-    private $code_base;
-
-    /**
-     * @var Context
-     * The context in which the node we're going to be looking
-     * at exits.
-     */
-    private $context;
-
     /**
      * @var Node
      */
@@ -83,8 +70,8 @@ class AssignmentVisitor extends KindVisitorImplementation
         UnionType $right_type,
         bool $is_dim_assignment = false
     ) {
-        $this->code_base = $code_base;
-        $this->context = $context;
+        parent::__construct($code_base, $context);
+
         $this->assignment_node = $assignment_node;
         $this->right_type = $right_type;
         $this->is_dim_assignment = $is_dim_assignment;
@@ -279,9 +266,8 @@ class AssignmentVisitor extends KindVisitorImplementation
                 $property->getUnionType(),
                 $this->code_base
             )) {
-                Issue::emit(
+                $this->emitIssue(
                     Issue::TypeMismatchProperty,
-                    $this->context->getFile(),
                     $node->lineno ?? 0,
                     (string)$this->right_type,
                     "{$clazz->getFQSEN()}::{$property->getName()}",
@@ -311,9 +297,8 @@ class AssignmentVisitor extends KindVisitorImplementation
                 // swallow it
             }
         } elseif (!empty($class_list)) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::UndeclaredProperty,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 $property_name
             );

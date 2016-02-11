@@ -2,9 +2,9 @@
 namespace Phan\Analysis;
 
 use Phan\Phan;
+use \Phan\AST\AnalysisVisitor;
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
-use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\CodeBase;
 use \Phan\Config;
 use \Phan\Debug;
@@ -18,9 +18,9 @@ use \Phan\Language\Context;
 use \Phan\Language\Element\ClassConstant;
 use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Comment;
+use \Phan\Language\Element\Func;
 use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method;
-use \Phan\Language\Element\Func;
 use \Phan\Language\Element\PassByReferenceVariable;
 use \Phan\Language\Element\Property;
 use \Phan\Language\Element\Variable;
@@ -35,20 +35,8 @@ use \Phan\Language\UnionType;
 use \ast\Node;
 use \ast\Node\Decl;
 
-class PostOrderAnalysisVisitor extends KindVisitorImplementation
+class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
-    /**
-     * @var CodeBase
-     */
-    private $code_base;
-
-    /**
-     * @var Context
-     * The context in which the node we're going to be looking
-     * at exits.
-     */
-    private $context;
-
     /**
      * @var Node|null
      */
@@ -72,8 +60,7 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
         Context $context,
         Node $parent_node = null
     ) {
-        $this->code_base = $code_base;
-        $this->context = $context;
+        parent::__construct($code_base, $context);
         $this->parent_node = $parent_node;
     }
 
@@ -317,9 +304,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
         // Check the expression type to make sure its
         // something we can iterate over
         if ($expression_type->isScalar()) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::TypeMismatchForeach,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 (string)$expression_type
             );
@@ -396,9 +382,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
         if ($type->isType(ArrayType::instance())
             || $type->isGenericArray()
         ) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::TypeConversionFromArray,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 'string'
             );
@@ -585,9 +570,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                 $this->code_base
             )
         ) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::TypeMismatchReturn,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 (string)$expression_type,
                 $method->getName(),
@@ -784,9 +768,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                 $class->addReference($this->context);
 
                 if ($class->isDeprecated()) {
-                    Issue::emit(
+                    $this->emitIssue(
                         Issue::DeprecatedClass,
-                        $this->context->getFile(),
                         $node->lineno ?? 0,
                         (string)$class->getFQSEN(),
                         $class->getContext()->getFile(),
@@ -810,9 +793,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                     && (!$this->context->hasClassFQSEN()
                     || $class->getFQSEN() != $this->context->getClassFQSEN())
                 ) {
-                    Issue::emit(
+                    $this->emitIssue(
                         Issue::TypeInstantiateAbstract,
-                        $this->context->getFile(),
                         $node->lineno ?? 0,
                         (string)$class->getFQSEN()
                     );
@@ -820,9 +802,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
 
                 // Make sure we're not instantiating an interface
                 if ($class->isInterface()) {
-                    Issue::emit(
+                    $this->emitIssue(
                         Issue::TypeInstantiateInterface,
-                        $this->context->getFile(),
                         $node->lineno ?? 0,
                         (string)$class->getFQSEN()
                     );
@@ -859,9 +840,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                 $node->children['class']
             ))->getClassList();
         } catch (CodeBaseException $exception) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::UndeclaredClassInstanceof,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 (string)$exception->getFQSEN()
             );
@@ -899,9 +879,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
         // on something other than 'parent'
         if ($method_name === '__construct') {
             if ($static_class !== 'parent') {
-                Issue::emit(
+                $this->emitIssue(
                     Issue::UndeclaredStaticMethod,
-                    $this->context->getFile(),
                     $node->lineno ?? 0,
                     "{$static_class}::{$method_name}()"
                 );
@@ -930,9 +909,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
 
                 if (!empty($class_list)) {
                     $class = array_values($class_list)[0];
-                    Issue::emit(
+                    $this->emitIssue(
                         Issue::StaticCallToNonStatic,
-                        $this->context->getFile(),
                         $node->lineno ?? 0,
                         "{$class->getFQSEN()}::{$method_name}()",
                         $method->getFileRef()->getFile(),
@@ -1009,9 +987,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                 && !$return_type->hasType(VoidType::instance())
                 && !$return_type->hasType(NullType::instance())
             ) {
-                Issue::emit(
+                $this->emitIssue(
                     Issue::TypeMissingReturn,
-                    $this->context->getFile(),
                     $node->lineno ?? 0,
                     $method->getFQSEN(),
                     (string)$return_type
@@ -1025,9 +1002,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
                 && !$return_type->hasType(VoidType::instance())
                 && !$return_type->hasType(NullType::instance())
             ) {
-                Issue::emit(
+                $this->emitIssue(
                     Issue::TypeMissingReturn,
-                    $this->context->getFile(),
                     $node->lineno ?? 0,
                     $method->getFQSEN(),
                     (string)$return_type
@@ -1061,9 +1037,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
             && !$return_type->hasType(VoidType::instance())
             && !$return_type->hasType(NullType::instance())
         ) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::TypeMissingReturn,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 $method->getFQSEN(),
                 (string)$return_type
@@ -1173,9 +1148,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
             if (strpos($line, '{') === false
                 || strpos($line, '}') === false
             ) {
-                Issue::emit(
+                $this->emitIssue(
                     Issue::CompatibleExpressionPHP7,
-                    $this->context->getFile(),
                     $node->lineno ?? 0,
                     "{$dollars}{$temp}[]"
                 );
@@ -1195,9 +1169,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
             if (strpos($line, '{') === false
                 || strpos($line, '}') === false
             ) {
-                Issue::emit(
+                $this->emitIssue(
                     Issue::CompatiblePHP7,
-                    $this->context->getFile(),
                     $node->lineno ?? 0
                 );
             }
@@ -1544,9 +1517,8 @@ class PostOrderAnalysisVisitor extends KindVisitorImplementation
         if ($this->parent_node instanceof Node &&
             $this->parent_node->kind == \ast\AST_STMT_LIST
         ) {
-            Issue::emit(
+            $this->emitIssue(
                 $issue_type,
-                $this->context->getFile(),
                 $node->lineno ?? 0
             );
         }

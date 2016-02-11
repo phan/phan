@@ -41,9 +41,10 @@ class ParameterTypesAnalyzer
                 // Otherwise, make sure the class exists
                 $type_fqsen = $type->asFQSEN();
                 if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
                         Issue::UndeclaredTypeParameter,
-                        $method->getFileRef()->getFile(),
                         $method->getFileRef()->getLineNumberStart(),
                         (string)$type_fqsen
                     );
@@ -175,16 +176,18 @@ class ParameterTypesAnalyzer
         // Static or non-static should match
         if ($method->isStatic() != $o_method->isStatic()) {
             if ($o_method->isStatic()) {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
                     Issue::AccessStaticToNonStatic,
-                    $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart(),
                     $o_method->getFQSEN()
                 );
             } else {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
                     Issue::AccessNonStaticToStatic,
-                    $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart(),
                     $o_method->getFQSEN()
                 );
@@ -193,17 +196,19 @@ class ParameterTypesAnalyzer
 
         if (!$signatures_match) {
             if ($o_method->isInternal()) {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
                     Issue::ParamSignatureMismatchInternal,
-                    $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
                     $o_method
                 );
             } else {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
                     Issue::ParamSignatureMismatch,
-                    $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
                     $o_method,
@@ -218,17 +223,19 @@ class ParameterTypesAnalyzer
             || $o_method->isPublic() && !$method->isPublic()
         ) {
             if ($o_method->isInternal()) {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
                     Issue::AccessSignatureMismatchInternal,
-                    $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
                     $o_method
                 );
             } else {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
                     Issue::AccessSignatureMismatch,
-                    $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart(),
                     $method,
                     $o_method,

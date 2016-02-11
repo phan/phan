@@ -51,18 +51,20 @@ class DuplicateFunctionAnalyzer
         $method_name = $method->getName();
 
         if ($original_method->isInternal()) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
                 Issue::RedefineFunctionInternal,
-                $method->getFileRef()->getFile(),
                 $method->getFileRef()->getLineNumberStart(),
                 $method_name,
                 $method->getFileRef()->getFile(),
                 $method->getFileRef()->getLineNumberStart()
             );
         } else {
-            Issue::emit(
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
                 Issue::RedefineFunction,
-                $method->getFileRef()->getFile(),
                 $method->getFileRef()->getLineNumberStart(),
                 $method_name,
                 $method->getFileRef()->getFile(),

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use \Phan\AST\Visitor\KindVisitorImplementation;
+use \Phan\AST\AnalysisVisitor;
 use \Phan\CodeBase;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN;
@@ -10,19 +10,7 @@ use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \ast\Node;
 
-abstract class ScopeVisitor extends KindVisitorImplementation {
-
-    /**
-     * @var CodeBase
-     */
-    protected $code_base;
-
-    /**
-     * @var Context
-     * The context in which the node we're going to be looking
-     * at exits.
-     */
-    protected $context;
+abstract class ScopeVisitor extends AnalysisVisitor {
 
     /**
      * @param CodeBase $code_base
@@ -36,8 +24,7 @@ abstract class ScopeVisitor extends KindVisitorImplementation {
         CodeBase $code_base,
         Context $context
     ) {
-        $this->code_base = $code_base;
-        $this->context = $context;
+        parent::__construct($code_base, $context);
     }
 
     /**

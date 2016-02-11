@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use \Phan\CodeBase;
+use \Phan\Language\Context;
+
 /**
  * An issue emitted during the course of analysis
  */
@@ -802,9 +805,111 @@ class Issue
         int $line,
         ...$template_parameters
     ) {
+        self::emitWithParameters(
+            $type,
+            $file,
+            $line,
+            $template_parameters
+        );
+    }
+
+    /**
+     * @param string $type
+     * The type of the issue
+     *
+     * @param string $file
+     * The name of the file where the issue was found
+     *
+     * @param int $line
+     * The line number (start) where the issue was found
+     *
+     * @param array $template_parameters
+     * Any template parameters required for the issue
+     * message
+     *
+     * @return void
+     */
+    public static function emitWithParameters(
+        string $type,
+        string $file,
+        int $line,
+        array $template_parameters
+    ) {
         $issue = self::fromType($type);
+
         // Temporary hack for WI-27451 https://youtrack.jetbrains.com/issue/WI-27451
         $instance = $issue($file, $line, $template_parameters);
+
         Phan::getIssueCollector()->collectIssue($instance);
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base within which we're operating
+     *
+     * @param Context $context
+     * The context in which the node we're going to be looking
+     * at exits.
+     *
+     * @param string $issue_type
+     * The type of issue to emit such as Issue::ParentlessClass
+     *
+     * @param int $lineno
+     * The line number where the issue was found
+     *
+     * @param mixed parameters
+     * Template parameters for the issue's error message
+     *
+     * @return void
+     */
+    public static function maybeEmit(
+        CodeBase $code_base,
+        Context $context,
+        string $issue_type,
+        int $lineno,
+        ...$parameters
+    ) {
+        self::maybeEmitWithParameters(
+            $code_base, $context, $issue_type, $lineno, $parameters
+        );
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base within which we're operating
+     *
+     * @param Context $context
+     * The context in which the node we're going to be looking
+     * at exits.
+     *
+     * @param string $issue_type
+     * The type of issue to emit such as Issue::ParentlessClass
+     *
+     * @param int $lineno
+     * The line number where the issue was found
+     *
+     * @param array parameters
+     * Template parameters for the issue's error message
+     *
+     * @return void
+     */
+    public static function maybeEmitWithParameters(
+        CodeBase $code_base,
+        Context $context,
+        string $issue_type,
+        int $lineno,
+        array $parameters
+    ) {
+        if ($context->hasSuppressIssue($code_base, $issue_type)) {
+            return;
+        }
+
+        Issue::emitWithParameters(
+            $issue_type,
+            $context->getFile(),
+            $lineno,
+            $parameters
+        );
+
     }
 }

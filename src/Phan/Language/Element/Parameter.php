@@ -128,9 +128,10 @@ class Parameter extends Variable
                 Parameter::fromNode($context, $code_base, $child_node);
 
             if (!$parameter->isOptional() && $is_optional_seen) {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
                     Issue::ParamReqAfterOpt,
-                    $context->getFile(),
                     $node->lineno ?? 0
                 );
             } elseif ($parameter->isOptional()

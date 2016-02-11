@@ -38,9 +38,10 @@ class PropertyTypesAnalyzer
                 // Otherwise, make sure the class exists
                 $type_fqsen = $type->asFQSEN();
                 if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $property->getContext(),
                         Issue::UndeclaredTypeProperty,
-                        $property->getFileRef()->getFile(),
                         $property->getFileRef()->getLineNumberStart(),
                         (string)$type_fqsen
                     );

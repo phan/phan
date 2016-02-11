@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 namespace Phan\AST;
 
+use \Phan\AST\AnalysisVisitor;
 use \Phan\AST\ContextNode;
-use \Phan\AST\Visitor\KindVisitorImplementation;
 use \Phan\Analysis\BinaryOperatorFlagVisitor;
 use \Phan\CodeBase;
 use \Phan\Debug;
@@ -42,22 +42,8 @@ use \ast\Node\Decl;
  * Determine the UnionType associated with a
  * given node
  */
-class UnionTypeVisitor extends KindVisitorImplementation
+class UnionTypeVisitor extends AnalysisVisitor
 {
-
-    /**
-     * @var CodeBase
-     * The code base within which we're operating
-     */
-    private $code_base;
-
-    /**
-     * @var Context
-     * The context in which the node we're going to be looking
-     * at exits.
-     */
-    private $context;
-
     /**
      * @var bool
      * Set to true to cause loggable issues to be thrown
@@ -82,9 +68,10 @@ class UnionTypeVisitor extends KindVisitorImplementation
         Context $context,
         bool $should_catch_issue_exception = true
     ) {
-        $this->context = $context;
-        $this->code_base = $code_base;
-        $this->should_catch_issue_exception = $should_catch_issue_exception;
+        parent::__construct($code_base, $context);
+
+        $this->should_catch_issue_exception =
+            $should_catch_issue_exception;
     }
 
     /**
@@ -424,9 +411,8 @@ class UnionTypeVisitor extends KindVisitorImplementation
                     )->asUnionType();
                 } else {
                     if (!$class->isTrait()) {
-                        Issue::emit(
+                        $this->emitIssue(
                             Issue::ParentlessClass,
-                            $this->context->getFile(),
                             $node->lineno ?? 0,
                             (string)$class->getFQSEN()
                         );
@@ -789,9 +775,8 @@ class UnionTypeVisitor extends KindVisitorImplementation
         }
 
         if ($element_types->isEmpty()) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::TypeArraySuspicious,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 (string)$union_type
             );
@@ -859,9 +844,8 @@ class UnionTypeVisitor extends KindVisitorImplementation
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
             if (!Variable::isSuperglobalVariableWithName($variable_name)) {
-                Issue::emit(
+                $this->emitIssue(
                     Issue::UndeclaredVariable,
-                    $this->context->getFile(),
                     $node->lineno ?? 0,
                     $variable_name
                 );
@@ -952,9 +936,8 @@ class UnionTypeVisitor extends KindVisitorImplementation
 
             return $constant->getUnionType();
         } catch (NodeException $exception) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::Unanalyzable,
-                $this->context->getFile(),
                 $node->lineno ?? 0
             );
         }
@@ -987,9 +970,8 @@ class UnionTypeVisitor extends KindVisitorImplementation
             Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
         } catch (CodeBaseException $exception) {
             $property_name = $node->children['prop'];
-            Issue::emit(
+            $this->emitIssue(
                 Issue::UndeclaredProperty,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 "{$exception->getFQSEN()}->{$property_name}"
             );
@@ -1148,9 +1130,8 @@ class UnionTypeVisitor extends KindVisitorImplementation
         } catch (IssueException $exception) {
             // Swallow it
         } catch (CodeBaseException $exception) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::UndeclaredClassMethod,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 $method_name,
                 (string)$exception->getFQSEN()
@@ -1286,9 +1267,8 @@ class UnionTypeVisitor extends KindVisitorImplementation
 
         // This is a self-referential node
         if (!$this->context->isInClassScope()) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::ContextNotObject,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 $class_name
             );
@@ -1303,9 +1283,8 @@ class UnionTypeVisitor extends KindVisitorImplementation
             );
 
             if (!$class->hasParentClassFQSEN()) {
-                Issue::emit(
+                $this->emitIssue(
                     Issue::ParentlessClass,
-                    $this->context->getFile(),
                     $node->lineno ?? 0,
                     (string)$class->getFQSEN()
                 );

@@ -7,6 +7,7 @@ use \Phan\Language\Element\Clazz;
 use \Phan\Language\Element\Func;
 use \Phan\Language\Element\FunctionInterface;
 use \Phan\Language\Element\Method;
+use \Phan\Language\Element\TypedElement;
 use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -404,6 +405,9 @@ class Context extends FileRef implements \Serializable
     }
 
     /**
+     * @param CodeBase $code_base
+     * The code base from which to retrieve the element
+     *
      * @return Method
      * Get the closure in this scope or fail real hard
      */
@@ -416,6 +420,71 @@ class Context extends FileRef implements \Serializable
 
         return $code_base->getFunctionByFQSEN(
             $this->getClosureFQSEN()
+        );
+    }
+
+    /**
+     * @return bool
+     * True if we're within the scope of a class, method,
+     * function or closure. False if we're in the global
+     * scope
+     */
+    public function isInElementScope() : bool
+    {
+        return (
+            $this->isClosureScope()
+            || $this->isMethodScope()
+            || $this->isInClassScope()
+        );
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base from which to retrieve the TypedElement
+     *
+     * @return TypedElement
+     * The element who's scope we're in. If we're in the global
+     * scope this method will go down in flames and take your
+     * process with it.
+     */
+    public function getElementInScope(CodeBase $code_base) : TypedElement
+    {
+        assert($this->isInElementScope(),
+            "Cannot get element in scope if we're in the global scope");
+
+        if ($this->isClosureScope()) {
+            return $this->getClosureInScope($code_base);
+        } else if ($this->isMethodScope()) {
+            return $this->getMethodInScope($code_base);
+        } else if ($this->isInClassScope()) {
+            return $this->getClassInScope($code_base);
+        }
+
+        throw new CodeBaseException(null,
+            "Cannot get element in scope if we're in the global scope"
+        );
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base from which to retrieve a possible TypedElement
+     * that contains an issue suppression list
+     *
+     * @return bool
+     * True if issues with the given name are suppressed within
+     * this context.
+     */
+    public function hasSuppressIssue(
+        CodeBase $code_base,
+        string $issue_name
+    ) : bool
+    {
+        if (!$this->isInElementScope()) {
+            return false;
+        }
+
+        return $this->getElementInScope($code_base)->hasSuppressIssue(
+            $issue_name
         );
     }
 

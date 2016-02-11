@@ -220,16 +220,18 @@ class ReferenceCountsAnalyzer
             }
 
             if ($element instanceof AddressableElement) {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $code_base,
+                    $element->getContext(),
                     $issue_type,
-                    $element->getFileRef()->getFile(),
                     $element->getFileRef()->getLineNumberStart(),
                     (string)$element->getFQSEN()
                 );
             } else {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $code_base,
+                    $element->getContext(),
                     $issue_type,
-                    $element->getFileRef()->getFile(),
                     $element->getFileRef()->getLineNumberStart(),
                     (string)$element
                 );

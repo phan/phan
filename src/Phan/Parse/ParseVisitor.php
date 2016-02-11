@@ -396,9 +396,8 @@ class ParseVisitor extends ScopeVisitor
                 if ((string)$union_type != 'null'
                     && !$union_type->canCastToUnionType($variable->getUnionType())
                 ) {
-                    Issue::emit(
+                    $this->emitIssue(
                         Issue::TypeMismatchProperty,
-                        $this->context->getFile(),
                         $child_node->lineno ?? 0,
                         (string)$union_type,
                         (string)$property->getFQSEN(),

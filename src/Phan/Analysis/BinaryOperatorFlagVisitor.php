@@ -87,9 +87,10 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         if ($left->hasType(ArrayType::instance())
             || $right->hasType(ArrayType::instance())
         ) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
                 Issue::TypeArrayOperator,
-                $this->context->getFile(),
                 $node->lineno ?? 0
             );
 
@@ -185,9 +186,10 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 ArrayType::instance()->asUnionType()
             )
             ) {
-                Issue::emit(
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
                     Issue::TypeComparisonFromArray,
-                    $this->context->getFile(),
                     $node->lineno ?? 0,
                     (string)$right
                 );
@@ -198,9 +200,10 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             )
             ) {
                 // and the same for the left side
-                Issue::emit(
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
                     Issue::TypeComparisonToArray,
-                    $this->context->getFile(),
                     $node->lineno ?? 0,
                     (string)$left
                 );
@@ -367,18 +370,20 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 ArrayType::instance()->asUnionType()
             )
         ) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
                 Issue::TypeInvalidRightOperand,
-                $this->context->getFile(),
                 $node->lineno ?? 0
             );
             return new UnionType();
         } elseif ($right_is_array
             && !$left->canCastToUnionType(ArrayType::instance()->asUnionType())
         ) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
                 Issue::TypeInvalidLeftOperand,
-                $this->context->getFile(),
                 $node->lineno ?? 0
             );
             return new UnionType();

@@ -69,9 +69,10 @@ class ArgumentType
 
         // Emit an error if this method is marked as deprecated
         if ($method->isDeprecated()) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $code_base,
+                $context,
                 Issue::DeprecatedFunction,
-                $context->getFile(),
                 $context->getLineNumberStart(),
                 (string)$method->getFQSEN(),
                 $method->getFileRef()->getFile(),
@@ -126,18 +127,20 @@ class ArgumentType
 
             if (!$alternate_found) {
                 if ($method->isInternal()) {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
                         Issue::ParamTooFewInternal,
-                        $context->getFile(),
                         $node->lineno ?? 0,
                         $argcount,
                         (string)$method->getFQSEN(),
                         $method->getNumberOfRequiredParameters()
                     );
                 } else {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
                         Issue::ParamTooFew,
-                        $context->getFile(),
                         $node->lineno ?? 0,
                         $argcount,
                         (string)$method->getFQSEN(),
@@ -164,18 +167,20 @@ class ArgumentType
             if (!$alternate_found) {
                 $max = $method->getNumberOfParameters();
                 if ($method->isInternal()) {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
                         Issue::ParamTooManyInternal,
-                        $context->getFile(),
                         $node->lineno ?? 0,
                         $argcount,
                         (string)$method->getFQSEN(),
                         $max
                     );
                 } else {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
                         Issue::ParamTooMany,
-                        $context->getFile(),
                         $node->lineno ?? 0,
                         $argcount,
                         (string)$method->getFQSEN(),
@@ -240,9 +245,10 @@ class ArgumentType
                         && $argument->kind != \ast\AST_STATIC_PROP
                     )
                 ) {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
                         Issue::TypeNonVarPassByRef,
-                        $context->getFile(),
                         $node->lineno ?? 0,
                         ($i+1),
                         (string)$method->getFQSEN()
@@ -259,9 +265,10 @@ class ArgumentType
                         && $argument->kind == \ast\AST_STATIC_PROP
                         && $argument->kind == \ast\AST_PROP
                     ) {
-                        Issue::emit(
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
                             Issue::ContextNotObject,
-                            $context->getFile(),
                             $node->lineno ?? 0,
                             "$variable_name"
                         );
@@ -325,9 +332,10 @@ class ArgumentType
                     : 'unknown';
 
                 if ($method->isInternal()) {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
                         Issue::TypeMismatchArgumentInternal,
-                        $context->getFile(),
                         $node->lineno ?? 0,
                         ($i+1),
                         $parameter_name,
@@ -336,9 +344,10 @@ class ArgumentType
                         (string)$parameter_type
                     );
                 } else {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
                         Issue::TypeMismatchArgument,
-                        $context->getFile(),
                         $node->lineno ?? 0,
                         ($i+1),
                         $parameter_name,
@@ -467,9 +476,10 @@ class ArgumentType
                         if (!$arg1_type->canCastToUnionType(
                             StringType::instance()->asUnionType()
                         )) {
-                            Issue::emit(
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
                                 Issue::ParamSpecial1,
-                                $context->getFile(),
                                 $context->getLineNumberStart(),
                                 2,
                                 'glue',
@@ -484,9 +494,10 @@ class ArgumentType
                         if (!$arg2_type->canCastToUnionType(
                             ArrayType::instance()->asUnionType()
                         )) {
-                            Issue::emit(
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
                                 Issue::ParamSpecial1,
-                                $context->getFile(),
                                 $context->getLineNumberStart(),
                                 2,
                                 'pieces',
@@ -509,9 +520,10 @@ class ArgumentType
             case 'array_uintersect_assoc':
             case 'array_intersect_ukey':
                 if ($argcount < 3) {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
                         Issue::ParamTooFewInternal,
-                        $context->getFile(),
                         $context->getLineNumberStart(),
                         $argcount,
                         (string)$method->getFQSEN(),
@@ -563,9 +575,10 @@ class ArgumentType
             case 'array_diff_uassoc':
             case 'array_uintersect_uassoc':
                 if ($argcount < 4) {
-                    Issue::emit(
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
                         Issue::ParamTooFewInternal,
-                        $context->getFile(),
                         $context->getLineNumberStart(),
                         $argcount,
                         (string)$method->getFQSEN(),

@@ -270,9 +270,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $uses = $node->children['uses'];
             foreach ($uses->children as $use) {
                 if ($use->kind != \ast\AST_CLOSURE_VAR) {
-                    Issue::emit(
+                    $this->emitIssue(
                         Issue::VariableUseClause,
-                        $this->context->getFile(),
                         $node->lineno ?? 0
                     );
                     continue;
@@ -297,9 +296,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     // If this is not pass-by-reference variable we
                     // have a problem
                     if (!($use->flags & \ast\flags\PARAM_REF)) {
-                        Issue::emit(
+                        $this->emitIssue(
                             Issue::UndeclaredVariable,
-                            $this->context->getFile(),
                             $node->lineno ?? 0,
                             $variable_name
                         );
@@ -469,9 +467,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
 
         } catch (CodeBaseException $exception) {
-            Issue::emit(
+            $this->emitIssue(
                 Issue::UndeclaredClassCatch,
-                $this->context->getFile(),
                 $node->lineno ?? 0,
                 (string)$exception->getFQSEN()
             );

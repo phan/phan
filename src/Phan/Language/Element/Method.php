@@ -245,9 +245,10 @@ class Method extends ClassElement implements FunctionInterface
                             && !$default_type->canCastToUnionType(
                                 $parameter->getUnionType()
                         )) {
-                            Issue::emit(
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
                                 Issue::TypeMismatchDefault,
-                                $context->getFile(),
                                 $node->lineno ?? 0,
                                 (string)$parameter->getUnionType(),
                                 $parameter->getName(),
