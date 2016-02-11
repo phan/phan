@@ -395,10 +395,11 @@ class ArgumentType
 
         // If it can't, emit the log message
         if (!$can_cast) {
-            Phan::getIssueCollector()->collectIssue(
+            Issue::maybeEmitInstance(
+                $code_base,
+                $context,
                 $issue_instance($node_type)
             );
-
         }
 
         return $can_cast;

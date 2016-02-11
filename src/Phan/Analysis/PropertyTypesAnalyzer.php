@@ -22,7 +22,11 @@ class PropertyTypesAnalyzer
             try {
                 $union_type = $property->getUnionType();
             } catch (IssueException $exception) {
-                Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
+                Issue::maybeEmitInstance(
+                    $code_base,
+                    $property->getContext(),
+                    $exception->getIssueInstance()
+                );
                 continue;
             }
 

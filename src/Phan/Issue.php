@@ -934,10 +934,48 @@ class Issue
     ) {
         $issue = self::fromType($type);
 
-        // Temporary hack for WI-27451 https://youtrack.jetbrains.com/issue/WI-27451
-        $instance = $issue($file, $line, $template_parameters);
+        self::emitInstance(
+            $issue($file, $line, $template_parameters)
+        );
+    }
 
-        Phan::getIssueCollector()->collectIssue($instance);
+    /**
+     * @param IssueInstance $issue_instance
+     * An issue instance to emit
+     *
+     * @return void
+     */
+    public static function emitInstance(
+        IssueInstance $issue_instance
+    ) {
+        Phan::getIssueCollector()->collectIssue($issue_instance);
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base within which we're operating
+     *
+     * @param Context $context
+     * The context in which the instance was found
+     *
+     * @param IssueInstance $issue_instance
+     * An issue instance to emit
+     *
+     * @return void
+     */
+    public static function maybeEmitInstance(
+        CodeBase $code_base,
+        Context $context,
+        IssueInstance $issue_instance
+    ) {
+        if ($context->hasSuppressIssue(
+                $code_base,
+                $issue_instance->getIssue()->getType()
+        )) {
+            return;
+        }
+
+        self::emitInstance($issue_instance);
     }
 
     /**

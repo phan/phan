@@ -258,7 +258,11 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->context
                 );
             } catch (IssueException $exception) {
-                Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
                 return $this->context;
             }
 

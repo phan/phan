@@ -119,7 +119,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $should_catch_issue_exception
                 ))($node);
             } catch (IssueException $exception) {
-                Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
+                Issue::maybeEmitInstance(
+                    $code_base,
+                    $context,
+                    $exception->getIssueInstance()
+                );
                 return new UnionType();
             }
         }
@@ -967,7 +971,11 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             return $property->getUnionType();
         } catch (IssueException $exception) {
-            Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
         } catch (CodeBaseException $exception) {
             $property_name = $node->children['prop'];
             $this->emitIssue(

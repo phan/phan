@@ -692,7 +692,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         ?? $expression->children['method']
                 );
             } catch (IssueException $exception) {
-                Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
                 return $this->context;
             }
 
@@ -813,7 +817,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
 
         } catch (IssueException $exception) {
-            Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
         } catch (\Exception $exception) {
             // If we can't figure out what kind of a call
             // this is, don't worry about it
@@ -926,8 +934,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $node
             );
         } catch (IssueException $exception) {
-            Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
-
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
         } catch (\Exception $exception) {
 
             // If we can't figure out the class for this method
@@ -1073,7 +1084,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
 
         } catch (IssueException $exception) {
-            Phan::getIssueCollector()->collectIssue($exception->getIssueInstance());
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
             return $this->context;
         } catch (NodeException $exception) {
 
