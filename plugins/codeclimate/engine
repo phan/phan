@@ -34,7 +34,7 @@ $codeclimate_config = json_decode(file_get_contents('/config.json'), true);
 $include_paths = [];
 
 // Todo: wrap with `-l` console logic instead of custom function
-$queue_with_include_paths = function ($dir_path) use ($include_paths, &$queue_with_include_paths) {
+$queue_with_include_paths = function ($dir_path) use (&$include_paths, &$queue_with_include_paths) {
     foreach (scandir($dir_path) as $f) {
         if ($f !== '.' and $f !== '..') {
             if (is_dir("$dir_path/$f")) {
