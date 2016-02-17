@@ -48,3 +48,4 @@
 %s:214 PhanUndeclaredProperty Reference to undeclared property \c22->p
 %s:217 PhanUndeclaredTrait Class uses undeclared trait \t2
 %s:220 PhanUndeclaredVariable Variable $v10 is undeclared
+

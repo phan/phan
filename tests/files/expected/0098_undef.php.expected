@@ -12,3 +12,4 @@
 %s:37 PhanTraitParentReference Reference to parent from trait \t
 %s:40 PhanParentlessClass Reference to parent of class \g that does not extend anything
 %s:43 PhanUndeclaredExtendedClass Class extends undeclared class \undef
+

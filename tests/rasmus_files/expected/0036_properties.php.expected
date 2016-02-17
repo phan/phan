@@ -4,3 +4,4 @@
 %s:12 PhanTypeMismatchProperty Assigning array to property but \a::text is int|string
 %s:18 PhanAccessPropertyProtected Cannot access protected property \a::$foo
 %s:19 PhanUndeclaredProperty Reference to undeclared property bar
+

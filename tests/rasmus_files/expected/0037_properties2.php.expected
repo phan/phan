@@ -1,2 +1,3 @@
 %s:13 PhanTypeMismatchProperty Assigning int[] to property but \b::text is string
 %s:20 PhanAccessPropertyProtected Cannot access protected property \b::$text
+

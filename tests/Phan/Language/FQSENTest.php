@@ -28,7 +28,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
     public function testFullyQualifiedClassName() {
         $this->assertFQSENEqual(
             FullyQualifiedClassName::make('Name\\Space', 'A'),
-            '\\Name\\Space\\a'
+            '\\name\\space\\a'
         );
 
         $this->assertFQSENEqual(
@@ -44,19 +44,19 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         $this->assertFQSENEqual(
             FullyQualifiedClassName::fromFullyQualifiedString(
                 '\\Name\\Space\\A'
-            ), '\\Name\\Space\\a'
+            ), '\\name\\space\\a'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedClassName::fromFullyQualifiedString(
                 '\\Namespace\\A,1'
-            ), '\\Namespace\\a,1'
+            ), '\\namespace\\a,1'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedClassName::fromStringInContext(
                 '\\Namespace\\A', $this->context
-            ), '\\Namespace\\a'
+            ), '\\namespace\\a'
         );
 
         $this->assertFQSENEqual(
@@ -71,31 +71,31 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
             FullyQualifiedMethodName::make(
                 FullyQualifiedClassName::make('\\Name\\Space', 'a'),
                 'f'
-            ), '\\Name\\Space\\a::f'
+            ), '\\name\\space\\a::f'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedMethodName::fromFullyQualifiedString(
                 '\\Name\\a::f'
-            ), '\\Name\\a::f'
+            ), '\\name\\a::f'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedMethodName::fromFullyQualifiedString(
                 'Name\\a::f'
-            ), '\\Name\\a::f'
+            ), '\\name\\a::f'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedMethodName::fromFullyQualifiedString(
                 '\\Name\\Space\\a::f,2'
-            ), '\\Name\\Space\\a::f,2'
+            ), '\\name\\space\\a::f,2'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedMethodName::fromFullyQualifiedString(
                 '\\Name\\Space\\a,1::f,2'
-            ), '\\Name\\Space\\a,1::f,2'
+            ), '\\name\\space\\a,1::f,2'
         );
 
         $this->assertFQSENEqual(
@@ -109,31 +109,31 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         $this->assertFQSENEqual(
             FullyQualifiedPropertyName::make(
                 FullyQualifiedClassName::make('\\Name\\Space', 'a'), 'p'
-            ), '\\Name\\Space\\a::p'
+            ), '\\name\\space\\a::p'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedPropertyName::fromFullyQualifiedString(
                 '\\Name\\a::p'
-            ), '\\Name\\a::p'
+            ), '\\name\\a::p'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedPropertyName::fromFullyQualifiedString(
                 'Name\\a::p'
-            ), '\\Name\\a::p'
+            ), '\\name\\a::p'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedPropertyName::fromFullyQualifiedString(
                 '\\Name\\Space\\a::p,2'
-            ), '\\Name\\Space\\a::p,2'
+            ), '\\name\\space\\a::p,2'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedPropertyName::fromFullyQualifiedString(
                 '\\Name\\Space\\a,1::p,2'
-            ), '\\Name\\Space\\a,1::p,2'
+            ), '\\name\\space\\a,1::p,2'
         );
 
         $this->assertFQSENEqual(
@@ -147,31 +147,31 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         $this->assertFQSENEqual(
             FullyQualifiedClassConstantName::make(
                 FullyQualifiedClassName::make('\\Name\\Space', 'a'), 'c'
-            ), '\\Name\\Space\\a::c'
+            ), '\\name\\space\\a::c'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedClassConstantName::fromFullyQualifiedString(
                 '\\Name\\a::c'
-            ), '\\Name\\a::c'
+            ), '\\name\\a::c'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedClassConstantName::fromFullyQualifiedString(
                 'Name\\a::c'
-            ), '\\Name\\a::c'
+            ), '\\name\\a::c'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedClassConstantName::fromFullyQualifiedString(
                 '\\Name\\Space\\a::c,2'
-            ), '\\Name\\Space\\a::c,2'
+            ), '\\name\\space\\a::c,2'
         );
 
         $this->assertFQSENEqual(
             FullyQualifiedClassConstantName::fromFullyQualifiedString(
                 '\\Name\\Space\\a,1::c,2'
-            ), '\\Name\\Space\\a,1::c,2'
+            ), '\\name\\space\\a,1::c,2'
         );
 
         $this->assertFQSENEqual(
@@ -185,7 +185,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         $this->assertFQSENEqual(
             FullyQualifiedGlobalConstantName::make(
                 '\\Name\\Space', 'c'
-            ), '\\Name\\Space\\c'
+            ), '\\name\\space\\c'
         );
 
         $this->assertFQSENEqual(
@@ -215,7 +215,7 @@ class FQSENTest extends \PHPUnit_Framework_TestCase {
         $this->assertFQSENEqual(
             FullyQualifiedFunctionName::make(
                 '\\Name\\Space', 'g'
-            ), '\\Name\\Space\\g'
+            ), '\\name\\space\\g'
         );
 
         $this->assertFQSENEqual(

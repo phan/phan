@@ -88,7 +88,9 @@ abstract class AbstractPhanFileTest
         // text changes and only if you promise to be careful.
         /*
         $saved_output = $output;
-        $saved_output = preg_replace('/[^ :\n]*\/'.$test_file_name.'/', '%s', $saved_output);
+        $test_file_elements= explode('/', $test_file_path);
+        $test_file_name = array_pop($test_file_elements);
+        $saved_output = preg_replace('/[^ :\n]*\/' . $test_file_name . '/', '%s', $saved_output);
         $saved_output = preg_replace('/closure_[^\(]*\(/', 'closure_%s(', $saved_output);
         if (!empty($saved_output) && strlen($saved_output) > 0) {
             $saved_output .= "\n";

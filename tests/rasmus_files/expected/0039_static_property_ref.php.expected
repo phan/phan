@@ -1,2 +1,3 @@
 %s:9 PhanTypeMismatchArgument Argument 1 (arg2) is int but \test2() takes string defined at %s:6
 %s:10 PhanTypeMismatchArgument Argument 1 (arg) is int|string but \test3() takes array defined at %s:7
+

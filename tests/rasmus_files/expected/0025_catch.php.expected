@@ -1,3 +1,4 @@
 %s:4 PhanUndeclaredClassMethod Call to method __construct from undeclared class \ex
 %s:5 PhanUndeclaredClassCatch Catching undeclared class \exceptio
 %s:6 PhanUndeclaredClassMethod Call to method getMessage from undeclared class \exceptio
+

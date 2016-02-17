@@ -281,6 +281,10 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             $namespace = substr($namespace, 0, -1);
         }
 
+        // Namespaces are case-insensitive
+        // See https://github.com/php/php-langspec/blob/master/spec/18-namespaces.md
+        $namespace = strtolower($namespace);
+
         return $namespace;
     }
 

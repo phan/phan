@@ -1,3 +1,4 @@
 %s:12 PhanSignatureMismatch Declaration of function f($p) should be compatible with function f(\cb $p) defined in %s:8
 %s:16 PhanSignatureMismatch Declaration of function f(\cc $p) should be compatible with function f(\cb $p) defined in %s:8
 %s:20 PhanSignatureMismatch Declaration of function f(\ca $p) should be compatible with function f(\cb $p) defined in %s:8
+
