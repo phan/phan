@@ -1235,7 +1235,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
-                $node->children['expr']
+                $node->children['expr'] ?? $node->children['class'] ?? null
             ))->getClassList(true);
 
             // Find out of any of them have a __get magic method
