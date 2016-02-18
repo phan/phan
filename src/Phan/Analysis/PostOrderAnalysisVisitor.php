@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use Phan\Phan;
 use \Phan\AST\AnalysisVisitor;
 use \Phan\AST\ContextNode;
 use \Phan\AST\UnionTypeVisitor;
@@ -13,7 +12,6 @@ use \Phan\Exception\IssueException;
 use \Phan\Exception\NodeException;
 use \Phan\Exception\TypeException;
 use \Phan\Issue;
-use \Phan\Langauge\Type;
 use \Phan\Language\Context;
 use \Phan\Language\Element\ClassConstant;
 use \Phan\Language\Element\Clazz;
@@ -27,11 +25,13 @@ use \Phan\Language\Element\Variable;
 use \Phan\Language\FQSEN;
 use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use \Phan\Language\Type;
 use \Phan\Language\Type\ArrayType;
 use \Phan\Language\Type\CallableType;
 use \Phan\Language\Type\NullType;
 use \Phan\Language\Type\VoidType;
 use \Phan\Language\UnionType;
+use \Phan\Phan;
 use \ast\Node;
 use \ast\Node\Decl;
 
@@ -567,6 +567,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$method->isReturnTypeUndefined()
             && !$expression_type->canCastToExpandedUnionType(
                 $method_return_type,
+                $this->code_base
+            )
+            && !$method->getUnionType()->canCastToExpandedUnionType(
+                Type::fromNamespaceAndName('\\', 'Generator')->asUnionType(),
                 $this->code_base
             )
         ) {
