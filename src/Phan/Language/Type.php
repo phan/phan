@@ -654,8 +654,11 @@ class Type
             $recursion_depth
         ) : UnionType {
 
+            // We're going to assume that if the type hierarchy
+            // is taller than some value we probably messed up
+            // and should bail out.
             assert(
-                $recursion_depth < 10,
+                $recursion_depth < 20,
                 "Recursion has gotten out of hand for type $this"
             );
 
