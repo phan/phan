@@ -103,6 +103,10 @@ class Type
         // namespace and name
         $namespace = $namespace ?: '\\';
 
+        // Namespaces are case-insensitive
+        // See https://github.com/php/php-langspec/blob/master/spec/18-namespaces.md
+        $namespace = strtolower($namespace);
+
         if ('\\' === $namespace) {
             $name = self::canonicalNameFromName($name);
         } else {
