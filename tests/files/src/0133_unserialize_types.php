@@ -5,6 +5,6 @@ class C implements Serializable {
         return 'string';
     }
 
-    public function unserialize(string $serizlized) {
+    public function unserialize($serizlized) {
     }
 }
