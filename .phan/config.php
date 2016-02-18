@@ -69,7 +69,12 @@ return [
     ],
 
     // A list of directories to scan for code to include
-    // in analysis
+    // in analysis. Note that we're adding a few specific
+    // directories from within `vendor/` here to parse but
+    // are inhibiting analysis on everything within `vendor/`
+    // under `exclude_analysis_directory_list`. This lets
+    // Phan understand local references to 3rd party code, but
+    // doesn't spend time checking 3rd party code.
     'directory_list' => [
         'src',
         'tests/Phan',
@@ -77,8 +82,14 @@ return [
         'vendor/symfony/console',
     ],
 
-    // A list of directories holding code that we want
-    // to parse, but not analyze
+    // A list of directories holding code that should not
+    // be analyzed. Directories holding third party code
+    // (such as vendor/) should be set here.
+    //
+    // n.b.: If you'd like to parse but not analyze 3rd
+    //       party code, directories containing that code
+    //       should be added to the `directory_list` as
+    //       to `excluce_analysis_directory_list`.
     "exclude_analysis_directory_list" => [
         'vendor/'
     ],

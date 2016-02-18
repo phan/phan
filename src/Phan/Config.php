@@ -33,9 +33,14 @@ class Config
         // of the project
         'directory_list' => [],
 
-        // A list of directories holding code that we want
-        // to parse, but not analyze. Directories holding
-        // third party code should be set here.
+        // A list of directories holding code that should not
+        // be analyzed. Directories holding third party code
+        // (such as vendor/) should be set here.
+        //
+        // n.b.: If you'd like to parse but not analyze 3rd
+        //       party code, directories containing that code
+        //       should be added to the `directory_list` as
+        //       to `excluce_analysis_directory_list`.
         'exclude_analysis_directory_list' => [],
 
         // Backwards Compatibility Checking. This is slow

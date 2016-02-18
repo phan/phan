@@ -326,7 +326,9 @@ Usage: {$argv[0]} [options] [files...]
 
  -3, --exclude-directory-list <dir_list>
   A comma-separated list of directories for which any files
-  therein should be parsed but not analyzed.
+  included from that directory will not be analysis. Note
+  that adding a directory here will not cause its files to
+  be parsed.
 
  -d, --project-root-directory
   Hunt for a directory named .phan in the current or parent
