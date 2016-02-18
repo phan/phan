@@ -84,7 +84,6 @@ class UnionType implements \Serializable
                 return Type::fromFullyQualifiedString($type_name);
             }, explode('|', $fully_qualified_string))
         );
-
     }
 
     /**
@@ -655,14 +654,17 @@ class UnionType implements \Serializable
      * @param string $serialized
      * A serialized UnionType
      *
-     * @return UnionType
-     * A UnionType representing the given serialized form
+     * @return void
      *
      * @see \Serializable
      */
     public function unserialize($serialized)
     {
-        return self::fromFullyQualifiedString($serialized);
+        $this->type_set = new Set(
+            array_map(function (string $type_name) {
+                return Type::fromFullyQualifiedString($type_name);
+            }, explode('|', $serialized ?? ''))
+        );
     }
 
     /**

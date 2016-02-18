@@ -7814,7 +7814,7 @@ return [
 'sem_release' => ['bool', 'id'=>''],
 'sem_remove' => ['bool', 'id'=>''],
 'Serializable::serialize' => ['string'],
-'Serializable::unserialize' => ['void', 'serialized'=>'string'],
+'Serializable::unserialize' => ['void', 'serialized'=>''],
 'serialize' => ['string', 'variable'=>''],
 'session_abort' => [''],
 'session_cache_expire' => ['int', 'new_cache_expire='=>'int'],
