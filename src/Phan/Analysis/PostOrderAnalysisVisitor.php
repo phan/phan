@@ -1231,11 +1231,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->analyzeNoOp($node, Issue::NoopProperty);
         } else {
 
+            assert(isset($node->children['expr'])
+                || isset($node->children['class']),
+                    "Property nodes must either have an expression or class at {$this->context}");
+
             // Get the set of classes that are being referenced
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
-                $node->children['expr'] ?? $node->children['class'] ?? null
+                $node->children['expr'] ?? $node->children['class']
             ))->getClassList(true);
 
             // Find out of any of them have a __get magic method
