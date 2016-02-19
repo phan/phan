@@ -24,8 +24,7 @@ See the [tests][tests] directory for some examples of the various checks.
 
 # Getting it running
 
-Phan requires PHP 7+ with the [php-ast][phpast] extension loaded. The code you
-analyze can be written for any version of PHP.
+Phan requires PHP 7+ with the [php-ast][phpast] and sqlite extension loaded. The code you analyze can be written for any version of PHP.
 
 ## Standalone usage
 
