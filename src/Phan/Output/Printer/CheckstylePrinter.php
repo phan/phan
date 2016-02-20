@@ -74,6 +74,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
             }
         }
 
+        $document->formatOutput = true;
         $this->output->write($document->saveXML());
         $this->files = [];
     }
