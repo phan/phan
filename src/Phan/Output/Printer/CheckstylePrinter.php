@@ -52,11 +52,25 @@ final class CheckstylePrinter implements BufferedPrinterInterface
 
                 // Write each element of the error as an attribute
                 // of the error
-                foreach ($error_map as $key => $value) {
-                    $error->appendChild(
-                        new \DOMAttr($key, (string)$value)
-                    );
-                }
+                 $error->appendChild(
+                   new\DOMAttr('line', (string)$error_map['line'])
+                );
+                // map phan severity to Jenkins/Checkstyle severity levels
+                switch($error_map['severity']) {
+                    case 'low':      $level = 'info';    break;
+                    case 'critical': $level = 'error';   break;
+                    case 'normal':
+                    default:         $level = 'warning'; break;
+		        }
+                $error->appendChild(
+                   new\DOMAttr('severity', (string)$level)
+                );
+                $error->appendChild(
+                   new\DOMAttr('message', (string)$error_map['message'])
+                );
+                $error->appendChild(
+                   new\DOMAttr('source', (string)$error_map['source'])
+                );
             }
         }
 
