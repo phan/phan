@@ -386,7 +386,8 @@ class AssignmentVisitor extends AnalysisVisitor
         $variable = Variable::fromNodeInContext(
             $this->assignment_node,
             $this->context,
-            $this->code_base
+            $this->code_base,
+            false
         );
 
 
