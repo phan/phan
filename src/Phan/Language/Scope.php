@@ -20,6 +20,20 @@ class Scope
     private $variable_map = [];
 
     /**
+     * When entering a new file, we need to copy all globally
+     * scope variables to the local scope so that they become
+     * accessible.
+     *
+     * @return void
+     */
+    public function copyGlobalToLocal()
+    {
+        foreach (self::$global_variable_map as $name => $variable) {
+            $this->addVariable($variable);
+        }
+    }
+
+    /**
      * @return bool
      * True if a variable with the given name is defined
      * within this scope
@@ -29,6 +43,18 @@ class Scope
         return (
             !empty($this->variable_map[$name])
             || !empty(self::$global_variable_map[$name])
+        );
+    }
+
+    /**
+     * @return bool
+     * True if a variable with the given name is defined
+     * within this local scope (ignoring the global scope)
+     */
+    public function hasLocalVariableWithName(string $name) : bool
+    {
+        return (
+            !empty($this->variable_map[$name])
         );
     }
 
@@ -47,24 +73,23 @@ class Scope
      */
     public function getVariableMap() : array
     {
-        return array_merge(
-            $this->variable_map,
-            self::$global_variable_map
-        );
+        return $this->variable_map;
     }
 
     /**
      * @param Variable $variable
      * A variable to add to the global scope
      *
-     * @return Scope;
+     * @return Scope
      */
     public function withGlobalVariable(Variable $variable) : Scope
     {
+        // Add the variable globally
         self::$global_variable_map[$variable->getName()] =
             $variable;
 
-        return $this;
+        // Add it locally as well
+        return $this->withVariable($variable);
     }
 
     /**

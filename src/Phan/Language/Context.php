@@ -311,8 +311,29 @@ class Context extends FileRef implements \Serializable
     public function withScopeVariable(
         Variable $variable
     ) : Context {
+        if ($this->isInGlobalScope()) {
+            return $this->withGlobalScopeVariable($variable);
+        } else {
+            return $this->withScope(
+                $this->getScope()->withVariable($variable)
+            );
+        }
+    }
+
+    /**
+     * @param Variable $variable
+     * A variable to add to the scope for the new
+     * context
+     *
+     * @return Context
+     * A new context based on this with a variable
+     * as defined by the parameters in scope
+     */
+    public function withGlobalScopeVariable(
+        Variable $variable
+    ) : Context {
         return $this->withScope(
-            $this->getScope()->withVariable($variable)
+            $this->getScope()->withGlobalVariable($variable)
         );
     }
 
@@ -330,8 +351,13 @@ class Context extends FileRef implements \Serializable
     public function addScopeVariable(
         Variable $variable
     ) {
-        $this->scope =
-            $this->getScope()->withVariable($variable);
+        if ($this->isInGlobalScope()) {
+            $this->scope =
+                $this->getScope()->withGlobalVariable($variable);
+        } else {
+            $this->scope =
+                $this->getScope()->withVariable($variable);
+        }
     }
 
     /**
@@ -436,6 +462,16 @@ class Context extends FileRef implements \Serializable
             || $this->isMethodScope()
             || $this->isInClassScope()
         );
+    }
+
+    /**
+     * @return bool
+     * True if we're in the global scope (not in a class,
+     * method, function, closure).
+     */
+    public function isInGlobalScope() : bool
+    {
+        return !$this->isInElementScope();
     }
 
     /**

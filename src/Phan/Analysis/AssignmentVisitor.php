@@ -180,10 +180,9 @@ class AssignmentVisitor extends AnalysisVisitor
                         $node->flags ?? 0
                     );
 
-                    $this->context->getScope()
-                        ->withGlobalVariable($variable);
-
-                    return $this->context;
+                    return $this->context->withGlobalScopeVariable(
+                        $variable
+                    );
                 }
             }
         }

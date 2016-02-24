@@ -1,5 +1,4 @@
 <?php declare(strict_types = 1);
-
 namespace Phan\Tests;
 
 use Phan\CodeBase;
@@ -46,7 +45,7 @@ abstract class AbstractPhanFileTest
             $files, array_map(
                 function ($filename) use ($sourceDir, $expectedDir) {
                     return [
-                        $sourceDir . DIRECTORY_SEPARATOR . $filename,
+                        [$sourceDir . DIRECTORY_SEPARATOR . $filename],
                         $expectedDir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX
                     ];
                 }, $files
@@ -60,11 +59,11 @@ abstract class AbstractPhanFileTest
      * to the files's counterpart in
      * `tests/files/expected`
      *
-     * @param string $test_file_path
+     * @param string[] $test_file_list
      * @param string $expected_file_path
      * @dataProvider getTestFiles
      */
-    public function testFiles($test_file_path, $expected_file_path) {
+    public function testFiles($test_file_list, $expected_file_path) {
         $expected_output = '';
         if (is_file($expected_file_path)) {
             // Read the expected output
@@ -79,7 +78,7 @@ abstract class AbstractPhanFileTest
         Phan::setPrinter($printer);
         Phan::setIssueCollector(new BufferingCollector());
 
-        Phan::analyzeFileList($this->codeBase, [$test_file_path]);
+        Phan::analyzeFileList($this->codeBase, $test_file_list);
 
         $output = $stream->fetch();
 
@@ -88,7 +87,7 @@ abstract class AbstractPhanFileTest
         // text changes and only if you promise to be careful.
         /*
         $saved_output = $output;
-        $test_file_elements= explode('/', $test_file_path);
+        $test_file_elements= explode('/', $test_file_list[0]);
         $test_file_name = array_pop($test_file_elements);
         $saved_output = preg_replace('/[^ :\n]*\/' . $test_file_name . '/', '%s', $saved_output);
         $saved_output = preg_replace('/closure_[^\(]*\(/', 'closure_%s(', $saved_output);
@@ -146,6 +145,7 @@ abstract class AbstractPhanFileTest
         $wanted_re = str_replace('%c', '.', $wanted_re);
         // %f allows two points "-.0.0" but that is the best *simple* expression
 
-        $this->assertRegExp("/^$wanted_re\$/", $output, "Unexpected output in $test_file_path");
+        $this->assertRegExp("/^$wanted_re\$/", $output,
+            "Unexpected output in {$test_file_list[0]}");
     }
 }

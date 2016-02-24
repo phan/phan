@@ -427,6 +427,10 @@ class Analysis
             return $context;
         }
 
+        // Whenever we enter a file, we copy all global scope
+        // variables to the local scope
+        $context->getScope()->copyGlobalToLocal();
+
         // Start recursively analyzing the tree
         return self::analyzeNodeInContext($code_base, $context, $node);
     }

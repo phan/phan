@@ -112,7 +112,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Look for variables that exist in catch, but not try
         foreach ($catch_scope_list as $catch_scope) {
             foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
-                if (!$try_scope->hasVariableWithName($variable_name)) {
+                if (!$try_scope->hasLocalVariableWithName($variable_name)) {
 
                     // Note that it can be null
                     $variable->getUnionType()->addType(
@@ -121,7 +121,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
                     // Add it to the try scope
                     $try_scope->addVariable($variable);
-
                 }
             }
         }
@@ -129,11 +128,12 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // If we have a finally, overwite types for each
         // element
         if (!empty($node->children['finallyStmts'])
-            || !empty($node->children['finally'])) {
+            || !empty($node->children['finally'])
+        ) {
             $finally_scope = $scope_list[count($scope_list)-1];
 
             foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
-                if ($finally_scope->hasVariableWithName($variable_name)) {
+                if ($finally_scope->hasLocalVariableWithName($variable_name)) {
                     $finally_variable =
                         $finally_scope->getVariableWithName($variable_name);
 
@@ -158,8 +158,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Return the context of the try with the types of
         // variables within its scope limited appropriately
         return $this->child_context_list[0];
-
-        // return self::visit($node);
     }
 
     /**
