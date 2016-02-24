@@ -68,13 +68,13 @@ return [
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
-    // A list of directories to scan for code to include
-    // in analysis. Note that we're adding a few specific
-    // directories from within `vendor/` here to parse but
-    // are inhibiting analysis on everything within `vendor/`
-    // under `exclude_analysis_directory_list`. This lets
-    // Phan understand local references to 3rd party code, but
-    // doesn't spend time checking 3rd party code.
+    // A list of directories that should be parsed for class and
+    // method information. After excluding the directories
+    // defined in exclude_analysis_directory_list, the remaining
+    // files will be statically analyzed for errors.
+    //
+    // Thus, both first-party and third-party code being used by
+    // your application should be included in this list.
     'directory_list' => [
         'src',
         'tests/Phan',
@@ -82,9 +82,12 @@ return [
         'vendor/symfony/console',
     ],
 
-    // A list of directories holding code that should not
-    // be analyzed. Directories holding third party code
-    // (such as vendor/) should be set here.
+    // A directory list that defines files that will be excluded
+    // from static analysis, but whose class and method
+    // information should be included.
+    //
+    // Generally, you'll want to include the directories for
+    // third-party code (such as "vendor/") in this list.
     //
     // n.b.: If you'd like to parse but not analyze 3rd
     //       party code, directories containing that code

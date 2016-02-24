@@ -322,13 +322,23 @@ Usage: {$argv[0]} [options] [files...]
   passing in a small subset of files to be re-analyzed.
 
  -l, --directory <directory>
-  A directory to recursively read PHP files from to analyze
+  A directory that should be parsed for class and
+  method information. After excluding the directories
+  defined in --exclude-directory-list, the remaining
+  files will be statically analyzed for errors.
+
+  Thus, both first-party and third-party code being used by
+  your application should be included in this list.
+
+  You may include multiple `--directory DIR` options.
 
  -3, --exclude-directory-list <dir_list>
-  A comma-separated list of directories for which any files
-  included from that directory will not be analysis. Note
-  that adding a directory here will not cause its files to
-  be parsed.
+  A comma-separated list of directories that defines files
+  that will be excluded from static analysis, but whose
+  class and method information should be included.
+
+  Generally, you'll want to include the directories for
+  third-party code (such as "vendor/") in this list.
 
  -d, --project-root-directory
   Hunt for a directory named .phan in the current or parent
