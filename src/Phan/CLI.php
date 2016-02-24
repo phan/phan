@@ -455,6 +455,7 @@ EOB;
         string $msg,
         float $p
     ) {
+
         // Bound the percentage to [0, 1]
         $p = min(max($p, 0.0), 1.0);
 
@@ -467,6 +468,13 @@ EOB;
         if ($p < 1.0
             && rand(0, 1000) > (1000 * Config::get()->progress_bar_sample_rate
             )) {
+            return;
+        }
+
+        // If we're on windows, just print a dot to show we're
+        // working
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            fwrite(STDERR, '.');
             return;
         }
 
