@@ -128,7 +128,8 @@ class Phan implements IgnoredFilesFilterInterface {
             $analyze_file_path_list,
             function($file_path) {
                 return !self::isExcludedAnalysisFile($file_path);
-            });
+            }
+        );
 
         // Get the count of all files we're going to analyze
         $file_count = count($analyze_file_path_list);
@@ -152,7 +153,8 @@ class Phan implements IgnoredFilesFilterInterface {
             $pool = new ForkPool(
                 Config::get()->processes,
                 $analyze_file_path_list,
-                function () {},
+                function () {
+                },
                 $analysis_worker,
                 function () {
                     self::display();

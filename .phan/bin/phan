@@ -10,10 +10,6 @@ export BIN=$ROOT/.phan/bin
 export DATA=$ROOT/.phan/data
 mkdir -p $DATA;
 
-# The directory holding the latest successful run
-# of phan and the hash that it ran over
-export LATEST=`readlink -f $DATA/latest`
-
 # Go to the root of this git repo
 pushd $ROOT > /dev/null
 
@@ -25,43 +21,18 @@ pushd $ROOT > /dev/null
     export RUN=$DATA/$REV
     mkdir -p $RUN
 
-    if [ ! -d $LATEST ]; then
-        # Generate a file list
-        $BIN/mkfilelist > $RUN/files
+    $BIN/mkfilelist > $RUN/files
 
-        # Run the analysis, populating a state file
-        # to make the next run faster
-        phan \
-            --progress-bar \
-            --project-root-directory $ROOT \
-            --file-list $RUN/files \
-            --state-file $RUN/state \
-            --output $RUN/issues || exit $?
-    else
-        export LATEST_REV=`basename $LATEST`
-
-        # Copy the latest database for the new run if possible
-        cp $LATEST/state $RUN/state > /dev/null 2>&1
-
-        # Figure out the set of files that have changed since
-        # the last analysis
-        git diff $LATEST_REV --name-only | grep ".php$" > $RUN/files
-
-        # Run the analysis, emitting output to the console
-        # and using a previous state file.
-        phan \
-            --progress-bar \
-            --project-root-directory $ROOT \
-            --state-file $RUN/state \
-            --file-list-only $RUN/files \
-            --expand-file-list \
-            --output $RUN/issues || exit $?
-    fi
-
+    # Run the analysis, emitting output to the console
+    # and using a previous state file.
+    phan \
+        --progress-bar \
+        --project-root-directory $ROOT \
+        --output $RUN/issues || exit $?
 
     # Re-link the latest directory
     rm -f $ROOT/.phan/data/latest
-    ln -s $RUN $ROOT/.phan/data/latest
+    ln -s $RUN $DATA/latest
 
     # Output any issues that were found
     cat $RUN/issues
