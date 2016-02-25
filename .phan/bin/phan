@@ -28,7 +28,7 @@ pushd $ROOT > /dev/null
     phan \
         --progress-bar \
         --project-root-directory $ROOT \
-        --output $RUN/issues || exit $?
+        --output $RUN/issues && exit $?
 
     # Re-link the latest directory
     rm -f $ROOT/.phan/data/latest
