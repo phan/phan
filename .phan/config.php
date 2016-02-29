@@ -70,7 +70,7 @@ return [
 
     // The number of processes to fork off during the analysis
     // phase.
-    'processes' => 3,
+    'processes' => 1,
 
     // A list of directories that should be parsed for class and
     // method information. After excluding the directories
