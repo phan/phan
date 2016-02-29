@@ -9,9 +9,10 @@ gc_disable();
 require_once(__DIR__ . '/requirements.php');
 require_once(__DIR__ . '/Phan/Bootstrap.php');
 
-use Phan\CLI;
-use Phan\Config;
-use Phan\Prep;
+use \Phan\CLI;
+use \Phan\Config;
+use \Phan\Debug;
+use \Phan\Prep;
 
 // Create our CLI interface and load arguments
 $cli = new CLI();
@@ -24,11 +25,13 @@ $visit_node = function(\ast\Node $node, string $file_path) {
 
     // Take a look at Phan\AST\Visitor\Element to see all
     // of the kinds of nodes
-    if ($node->kind == \ast\AST_CONST) {
+    if ($node->kind == \ast\AST_CLASS_CONST) {
 
-        if (is_string($node->children['name']->children['name'])) {
-            $name = $node->children['name']->children['name'];
-            if (preg_match('/.*AST.*/', $name)) {
+        // Debug::printNode($node);
+
+        if (is_string($node->children['const'])) {
+            $name = $node->children['const'];
+            if (preg_match('/.*SEARCH.*/', $name)) {
                 print "$file_path:{$node->lineno} $name\n";
             }
         }

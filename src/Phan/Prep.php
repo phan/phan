@@ -31,6 +31,11 @@ class Prep {
                 Config::get()->ast_version
             );
 
+            // Skip empty files
+            if (!$node) {
+                continue;
+            }
+
             self::scanNodeInFile($node, $file_path, $visit_node);
         }
     }
