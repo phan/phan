@@ -48,7 +48,6 @@ class ForkPool {
         // Fork as many times as requested to get the given
         // pool size
         for ($proc_id = 0; $proc_id < $pool_size; $proc_id++) {
-
             // Fork
             $pid = 0;
             if (($pid = pcntl_fork()) < 0) {
@@ -100,8 +99,19 @@ class ForkPool {
     public function wait() {
         // Wait for all children to return
         foreach ($this->child_pid_list as $child_pid) {
-            pcntl_waitpid($child_pid, $status);
+            if (pcntl_waitpid($child_pid, $status) < 0) {
+                error_log(posix_strerror(posix_get_last_error()));
+            }
+
+            // Check to see if the child died a graceful death
+            $status = 0;
+            if (pcntl_wifsignaled($status)) {
+                $return_code = pcntl_wexitstatus($status);
+                $term_sig = pcntl_wtermsig($status);
+                error_log("Child terminated with return code $return_code and signal $term_sig");
+            }
         }
+
     }
 
 }

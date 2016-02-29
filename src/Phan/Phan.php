@@ -76,13 +76,13 @@ class Phan implements IgnoredFilesFilterInterface {
             if (!file_exists($file_path)) {
                 continue;
             }
-
             try {
                 // Parse the file
                 Analysis::parseFile($code_base, $file_path);
 
                 // Save this to the set of files to analyze
                 $analyze_file_path_list[] = $file_path;
+
 
             } catch (\Throwable $throwable) {
                 error_log($file_path . ' ' . $throwable->getMessage() . "\n");
@@ -153,8 +153,7 @@ class Phan implements IgnoredFilesFilterInterface {
             $pool = new ForkPool(
                 Config::get()->processes,
                 $analyze_file_path_list,
-                function () {
-                },
+                function () {},
                 $analysis_worker,
                 function () {
                     self::display();

@@ -68,6 +68,10 @@ return [
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
+    // The number of processes to fork off during the analysis
+    // phase.
+    'processes' => 3,
+
     // A list of directories that should be parsed for class and
     // method information. After excluding the directories
     // defined in exclude_analysis_directory_list, the remaining

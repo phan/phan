@@ -39,7 +39,6 @@ class Analysis
      */
     public static function parseFile(CodeBase $code_base, string $file_path) : Context
     {
-
         $context = (new Context)->withFile($file_path);
 
         // Convert the file to an Abstract Syntax Tree
