@@ -112,6 +112,13 @@ class Context extends FileRef implements \Serializable
      */
     public function hasNamespaceMapFor(int $flags, string $name) : bool
     {
+        // Look for the mapping on the part before a
+        // slash
+        $name_parts = explode('\\', $name, 2);
+        if (count($name_parts) > 1) {
+            $name = $name_parts[0];
+        }
+
         return !empty($this->namespace_map[$flags][strtolower($name)]);
     }
 
@@ -125,6 +132,15 @@ class Context extends FileRef implements \Serializable
     ) : FullyQualifiedGlobalStructuralElement {
         $name = strtolower($name);
 
+        // Look for the mapping on the part before a
+        // slash
+        $name_parts = explode('\\', $name, 2);
+        $suffix = '';
+        if (count($name_parts) > 1) {
+            $name = $name_parts[0];
+            $suffix = $name_parts[1];
+        }
+
         assert(
             !empty($this->namespace_map[$flags][$name]),
             "No namespace defined for $name"
@@ -135,7 +151,25 @@ class Context extends FileRef implements \Serializable
             "Namespace map for $flags $name was not an FQSEN"
         );
 
-        return $this->namespace_map[$flags][$name];
+        $fqsen = $this->namespace_map[$flags][$name];
+
+        if (!$suffix) {
+            return $fqsen;
+        }
+
+        switch ($flags) {
+        case T_CLASS:
+            return FullyQualifiedClassName::fromFullyQualifiedString(
+                (string)$fqsen . '\\' . $suffix
+            );
+        case T_FUNCTION:
+            return FullyQualifiedFunctionName::fromFullyQualifiedString(
+                (string)$fqsen . '\\' . $suffix
+            );
+        }
+
+        assert(false, "Unknown flag $flags");
+        return $fqsen;
     }
 
     /**
