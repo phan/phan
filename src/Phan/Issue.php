@@ -9,6 +9,8 @@ use \Phan\Language\Context;
  */
 class Issue
 {
+    const SyntaxError               = 'PhanSyntaxError';
+
     // Issue::CATEGORY_UNDEFINED
     const EmptyFile                 = 'PhanEmptyFile';
     const ParentlessClass           = 'PhanParentlessClass';
@@ -199,6 +201,13 @@ class Issue
         }
 
         $error_list = [
+            new Issue(
+                self::SyntaxError,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "%s",
+                self::REMEDIATION_A
+            ),
 
             // Issue::CATEGORY_UNDEFINED
             new Issue(

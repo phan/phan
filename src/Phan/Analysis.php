@@ -1,21 +1,22 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use ast\Node;
-use Phan\Analysis\ContextMergeVisitor;
-use Phan\Analysis\DuplicateClassAnalyzer;
-use Phan\Analysis\DuplicateFunctionAnalyzer;
-use Phan\Analysis\ParameterTypesAnalyzer;
-use Phan\Analysis\ParentClassExistsAnalyzer;
-use Phan\Analysis\ParentConstructorCalledAnalyzer;
-use Phan\Parse\ParseVisitor;
-use Phan\Analysis\PostOrderAnalysisVisitor;
-use Phan\Analysis\PreOrderAnalysisVisitor;
-use Phan\Analysis\PropertyTypesAnalyzer;
-use Phan\Analysis\ReferenceCountsAnalyzer;
-use Phan\CodeBase;
-use Phan\Language\Context;
-use Phan\Language\FQSEN;
+use \Phan\Analysis\ContextMergeVisitor;
+use \Phan\Analysis\DuplicateClassAnalyzer;
+use \Phan\Analysis\DuplicateFunctionAnalyzer;
+use \Phan\Analysis\ParameterTypesAnalyzer;
+use \Phan\Analysis\ParentClassExistsAnalyzer;
+use \Phan\Analysis\ParentConstructorCalledAnalyzer;
+use \Phan\Analysis\PostOrderAnalysisVisitor;
+use \Phan\Analysis\PreOrderAnalysisVisitor;
+use \Phan\Analysis\PropertyTypesAnalyzer;
+use \Phan\Analysis\ReferenceCountsAnalyzer;
+use \Phan\CodeBase;
+use \Phan\Issue;
+use \Phan\Language\Context;
+use \Phan\Language\FQSEN;
+use \Phan\Parse\ParseVisitor;
+use \ast\Node;
 
 /**
  * This class is the entry point into the static analyzer.
@@ -44,10 +45,21 @@ class Analysis
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
         // of this method
-        $node = \ast\parse_file(
-            $file_path,
-            Config::get()->ast_version
-        );
+        try {
+            $node = \ast\parse_file(
+                $file_path,
+                Config::get()->ast_version
+            );
+        } catch (\ParseError $parse_error) {
+            Issue::emit(
+                Issue::SyntaxError,
+                $file_path,
+                $parse_error->getLine(),
+                $parse_error->getMessage()
+            );
+
+            return $context;
+        }
 
         if (Config::get()->dump_ast) {
             echo $file_path . "\n"
@@ -405,15 +417,30 @@ class Analysis
      *
      * @return Context
      */
-    public static function analyzeFile(CodeBase $code_base, string $file_path) : Context
-    {
+    public static function analyzeFile(
+        CodeBase $code_base,
+        string $file_path
+    ) : Context {
+        // Set the file on the context
+        $context = (new Context)->withFile($file_path);
+
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
         // of this method
-        $node = \ast\parse_file($file_path, Config::get()->ast_version);
-
-        // Set the file on the context
-        $context = (new Context)->withFile($file_path);
+        try {
+            $node = \ast\parse_file(
+                $file_path,
+                Config::get()->ast_version
+            );
+        } catch (\ParseError $parse_error) {
+            Issue::emit(
+                Issue::SyntaxError,
+                $file_path,
+                $parse_error->getLine(),
+                $parse_error->getMessage()
+            );
+            return $context;
+        }
 
         // Ensure we have some content
         if (empty($node)) {

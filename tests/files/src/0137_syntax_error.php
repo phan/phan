@@ -1,0 +1,3 @@
+<?php
+
+funcion f[] ( ... )
