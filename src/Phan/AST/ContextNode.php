@@ -509,8 +509,8 @@ class ContextNode
                 // If there's a getter on properties than all
                 // bets are off.
                 if ($class->hasMethodWithName(
-                    $this->code_base,
-                    '__get'
+                        $this->code_base,
+                        '__get'
                 )) {
                     throw new UnanalyzableException(
                         $this->node,
@@ -527,6 +527,20 @@ class ContextNode
                 $this->context
             );
         }
+
+        // If missing properties are cool, create it on
+        // the first class we found
+        if (Config::get()->allow_missing_properties) {
+            if (count($class_list) > 0) {
+                $class = $class_list[0];
+                return $class->getPropertyByNameInContext(
+                    $this->code_base,
+                    $property_name,
+                    $this->context
+                );
+            }
+        }
+
 
         // If the class isn't found, we'll get the message elsewhere
         if ($class_fqsen) {
