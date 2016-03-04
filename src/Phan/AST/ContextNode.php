@@ -281,6 +281,12 @@ class ContextNode
                     $method_name,
                     $this->context
                 );
+            } else if ($class->hasMethodWithName($this->code_base, '__call')) {
+                return $class->getMethodByNameInContext(
+                    $this->code_base,
+                    '__call',
+                    $this->context
+                );
             }
         }
 

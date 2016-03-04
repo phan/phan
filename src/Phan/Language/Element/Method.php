@@ -171,6 +171,11 @@ class Method extends ClassElement implements FunctionInterface
         $method->setIsDeprecated($comment->isDeprecated());
         $method->setSuppressIssueList($comment->getSuppressIssueList());
 
+        if ($method->getName() == '__call') {
+            $method->setNumberOfOptionalParameters(999);
+            $method->setNumberOfRequiredParameters(0);
+        }
+
         // Take a look at method return types
         if($node->children['returnType'] !== null) {
             // Get the type of the parameter
