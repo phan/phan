@@ -392,7 +392,9 @@ class Clazz extends AddressableElement
 
             // If we don't have the property but do have a
             // __get method, then we can create the property
-            if ($this->hasMethodWithName($code_base, '__get')) {
+            if ($this->hasMethodWithName($code_base, '__get')
+                || Config::get()->allow_missing_properties
+            ) {
                 $property = new Property(
                     $context,
                     $name,
