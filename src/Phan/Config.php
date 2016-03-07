@@ -155,6 +155,12 @@ class Config
         // parts of Phan took to run. You likely don't care to do
         // this.
         'profiler_enabled' => false,
+
+        // Add any issue types (such as 'PhanUndeclaredMethod')
+        // here to inhibit them from being reported
+        'suppress_issue_types' => [
+            // 'PhanUndeclaredMethod',
+        ],
     ];
 
     /**

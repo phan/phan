@@ -506,7 +506,7 @@ class Issue
             new Issue(
                 self::VariableUseClause,
                 self::CATEGORY_VARIABLE,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Non-variables not allowed within use clause",
                 self::REMEDIATION_B
             ),
@@ -533,14 +533,14 @@ class Issue
             new Issue(
                 self::DeprecatedFunction,
                 self::CATEGORY_DEPRECATED,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Call to deprecated function %s() defined at %s:%d",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::DeprecatedClass,
                 self::CATEGORY_DEPRECATED,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Call to deprecated class %s defined at %s:%d",
                 self::REMEDIATION_B
             ),
@@ -619,14 +619,14 @@ class Issue
             new Issue(
                 self::ParamSignatureMismatch,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Declaration of %s should be compatible with %s defined in %s:%d",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::ParamSignatureMismatchInternal,
                 self::CATEGORY_PARAMETER,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Declaration of %s should be compatible with internal %s",
                 self::REMEDIATION_B
             ),
@@ -670,28 +670,28 @@ class Issue
             new Issue(
                 self::UnreferencedClass,
                 self::CATEGORY_NOOP,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Possibly zero references to class %s",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::UnreferencedMethod,
                 self::CATEGORY_NOOP,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Possibly zero references to method %s",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::UnreferencedProperty,
                 self::CATEGORY_NOOP,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Possibly zero references to property %s",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::UnreferencedConstant,
                 self::CATEGORY_NOOP,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Possibly zero references to constant %s",
                 self::REMEDIATION_B
             ),
@@ -700,14 +700,14 @@ class Issue
             new Issue(
                 self::RedefineClass,
                 self::CATEGORY_REDEFINE,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "%s defined at %s:%d was previously defined as %s at %s:%d",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::RedefineClassInternal,
                 self::CATEGORY_REDEFINE,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "%s defined at %s:%d was previously defined as %s internally",
                 self::REMEDIATION_B
             ),
@@ -744,14 +744,14 @@ class Issue
             new Issue(
                 self::AccessSignatureMismatch,
                 self::CATEGORY_ACCESS,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Access level to %s must be compatible with %s defined in %s:%d",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::AccessSignatureMismatchInternal,
                 self::CATEGORY_ACCESS,
-                self::SEVERITY_CRITICAL,
+                self::SEVERITY_NORMAL,
                 "Access level to %s must be compatible with internal %s",
                 self::REMEDIATION_B
             ),
@@ -981,6 +981,19 @@ class Issue
         Context $context,
         IssueInstance $issue_instance
     ) {
+
+        // If this issue type has been suppressed in
+        // the config, ignore it
+        if (in_array(
+                $issue_instance->getIssue()->getType(),
+                Config::get()->suppress_issue_types ?? []
+            )
+        ) {
+            return;
+        }
+
+        // If this issue type has been suppressed in
+        // this scope from a doc block, ignore it.
         if ($context->hasSuppressIssue(
                 $code_base,
                 $issue_instance->getIssue()->getType()
