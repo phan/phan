@@ -51,9 +51,10 @@ class Analysis
                 Config::get()->ast_version
             );
         } catch (\ParseError $parse_error) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $code_base,
+                $context,
                 Issue::SyntaxError,
-                $file_path,
                 $parse_error->getLine(),
                 $parse_error->getMessage()
             );
@@ -70,9 +71,10 @@ class Analysis
         }
 
         if (empty($node)) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $code_base,
+                $context,
                 Issue::EmptyFile,
-                $file_path,
                 0,
                 $file_path
             );
@@ -433,9 +435,10 @@ class Analysis
                 Config::get()->ast_version
             );
         } catch (\ParseError $parse_error) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $code_base,
+                $context,
                 Issue::SyntaxError,
-                $file_path,
                 $parse_error->getLine(),
                 $parse_error->getMessage()
             );
@@ -444,9 +447,10 @@ class Analysis
 
         // Ensure we have some content
         if (empty($node)) {
-            Issue::emit(
+            Issue::maybeEmit(
+                $code_base,
+                $context,
                 Issue::EmptyFile,
-                $file_path,
                 0,
                 $file_path
             );

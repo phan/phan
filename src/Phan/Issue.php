@@ -1060,6 +1060,16 @@ class Issue
         int $lineno,
         array $parameters
     ) {
+        // If this issue type has been suppressed in
+        // the config, ignore it
+        if (in_array(
+                $issue_type,
+                Config::get()->suppress_issue_types ?? []
+            )
+        ) {
+            return;
+        }
+
         if ($context->hasSuppressIssue($code_base, $issue_type)) {
             return;
         }
