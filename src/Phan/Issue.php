@@ -981,11 +981,10 @@ class Issue
         Context $context,
         IssueInstance $issue_instance
     ) {
-
         // If this issue type has been suppressed in
         // the config, ignore it
         if (in_array(
-                $issue_instance->getIssue()->getType(),
+                'Phan'.$issue_instance->getIssue()->getType(),
                 Config::get()->suppress_issue_types ?? []
             )
         ) {
