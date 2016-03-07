@@ -533,14 +533,14 @@ class Issue
             new Issue(
                 self::DeprecatedFunction,
                 self::CATEGORY_DEPRECATED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Call to deprecated function %s() defined at %s:%d",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::DeprecatedClass,
                 self::CATEGORY_DEPRECATED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Call to deprecated class %s defined at %s:%d",
                 self::REMEDIATION_B
             ),

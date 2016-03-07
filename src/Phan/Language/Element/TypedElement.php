@@ -207,6 +207,14 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
+     * @return string[]
+     */
+    public function getSuppressIssueList() : array
+    {
+        return $this->suppress_issue_list ?: [];
+    }
+
+    /**
      * return bool
      * True if this element would like to suppress the given
      * issue name
