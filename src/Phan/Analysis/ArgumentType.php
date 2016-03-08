@@ -655,18 +655,17 @@ class ArgumentType
                         $arglist->children[0],
                         $context,
                         $code_base,
-                        ArrayType::instance()->asUnionType(),
+                        StringType::instance()->asUnionType(),
                         function (UnionType $node_type) use ($context, $method) {
-                        // "arg#1(token) is %s but {$method->getFQSEN()}() takes string when passed only one arg"
                             return Issue::fromType(Issue::ParamSpecial2)(
-                            $context->getFile(),
-                            $context->getLineNumberStart(), [
-                                1,
-                                'token',
-                                (string)$node_type,
-                                (string)$method->getFQSEN(),
-                                'string'
-                            ]
+                                $context->getFile(),
+                                $context->getLineNumberStart(), [
+                                    1,
+                                    'token',
+                                    (string)$node_type,
+                                    (string)$method->getFQSEN(),
+                                    'string'
+                                ]
                             );
                         }
                     );
