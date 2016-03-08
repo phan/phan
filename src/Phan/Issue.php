@@ -434,21 +434,21 @@ class Issue
             new Issue(
                 self::TypeComparisonToArray,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_LOW,
                 "%s to array comparison",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::TypeComparisonFromArray,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_LOW,
                 "array to %s comparison",
                 self::REMEDIATION_B
             ),
             new Issue(
                 self::TypeConversionFromArray,
                 self::CATEGORY_TYPE,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_LOW,
                 "array to %s conversion",
                 self::REMEDIATION_B
             ),
