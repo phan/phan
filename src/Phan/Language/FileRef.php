@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use \Phan\CodeBase\File;
-use \Phan\Config;
+use Phan\CodeBase\File;
+use Phan\Config;
 
 /**
  * An object representing the context in which any

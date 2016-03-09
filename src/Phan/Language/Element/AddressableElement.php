@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\CodeBase;
-use \Phan\Database;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FileRef;
-use \Phan\Model\CalledBy;
+use Phan\CodeBase;
+use Phan\Database;
+use Phan\Language\FQSEN;
+use Phan\Language\FileRef;
+use Phan\Model\CalledBy;
 
 abstract class AddressableElement extends TypedElement implements AddressableElementInterface
 {

@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\Output\BufferedPrinterInterface;
-use \Phan\Output\Collector\BufferingCollector;
-use \Phan\Output\Collector\ParallelChildCollector;
-use \Phan\Output\Collector\ParallelParentCollector;
-use \Phan\Output\IgnoredFilesFilterInterface;
-use \Phan\Output\IssueCollectorInterface;
-use \Phan\Output\IssuePrinterInterface;
+use Phan\Output\BufferedPrinterInterface;
+use Phan\Output\Collector\BufferingCollector;
+use Phan\Output\Collector\ParallelChildCollector;
+use Phan\Output\Collector\ParallelParentCollector;
+use Phan\Output\IgnoredFilesFilterInterface;
+use Phan\Output\IssueCollectorInterface;
+use Phan\Output\IssuePrinterInterface;
 
 class Phan implements IgnoredFilesFilterInterface {
 

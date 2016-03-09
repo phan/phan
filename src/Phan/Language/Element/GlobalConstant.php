@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
-use \Phan\Language\UnionType;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\UnionType;
 
 class GlobalConstant extends AddressableElement implements ConstantInterface
 {

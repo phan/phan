@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Model;
 
-use \Phan\Database;
-use \Phan\Database\Column;
-use \Phan\Database\ModelOne;
-use \Phan\Database\Schema;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FileRef;
+use Phan\Database;
+use Phan\Database\Column;
+use Phan\Database\ModelOne;
+use Phan\Database\Schema;
+use Phan\Language\FQSEN;
+use Phan\Language\FileRef;
 
 class CalledBy extends ModelOne
 {

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Output\Collector;
 
-use \Phan\IssueInstance;
-use \Phan\Output\IssueCollectorInterface;
+use Phan\IssueInstance;
+use Phan\Output\IssueCollectorInterface;
 
 /**
  * A ParallelParentCollector collects issues as normal proxying

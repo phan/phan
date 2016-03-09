@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Exception;
 
-use \Phan\Debug;
-use \Phan\Language\FQSEN;
+use Phan\Debug;
+use Phan\Language\FQSEN;
 
 class CodeBaseException extends \Exception
 {

@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use \Phan\CodeBase;
-use \Phan\Exception\CodeBaseException;
-use \Phan\Exception\IssueException;
-use \Phan\Language\Context;
-use \Phan\Language\UnionType;
-use \ast\Node;
+use Phan\CodeBase;
+use Phan\Exception\CodeBaseException;
+use Phan\Exception\IssueException;
+use Phan\Language\Context;
+use Phan\Language\UnionType;
+use ast\Node;
 
 /**
  * A FutureUnionType is a UnionType that is lazily loaded.

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\Language\FutureUnionType;
-use \Phan\Language\Type\NullType;
-use \Phan\Language\UnionType;
+use Phan\Language\FutureUnionType;
+use Phan\Language\Type\NullType;
+use Phan\Language\UnionType;
 
 trait ElementFutureUnionType
 {

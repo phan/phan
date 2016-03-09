@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Issue;
-use \Phan\Language\Element\Clazz;
-use \Phan\Language\FQSEN;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Issue;
+use Phan\Language\Element\Clazz;
+use Phan\Language\FQSEN;
 
 class ParentConstructorCalledAnalyzer
 {

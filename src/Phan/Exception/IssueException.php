@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Exception;
 
-use \Exception;
-use \Phan\IssueInstance;
+use Exception;
+use Phan\IssueInstance;
 
 /**
  * # Example Usage

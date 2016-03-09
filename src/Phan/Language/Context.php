@@ -1,19 +1,19 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use \Phan\CodeBase;
-use \Phan\Exception\CodeBaseException;
-use \Phan\Language\Element\Clazz;
-use \Phan\Language\Element\Func;
-use \Phan\Language\Element\FunctionInterface;
-use \Phan\Language\Element\Method;
-use \Phan\Language\Element\TypedElement;
-use \Phan\Language\Element\Variable;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
-use \Phan\Language\Scope;
+use Phan\CodeBase;
+use Phan\Exception\CodeBaseException;
+use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
+use Phan\Language\Element\TypedElement;
+use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Scope;
 
 /**
  * An object representing the context in which any

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Database;
 
-use \Exception;
-use \Phan\Database;
-use \Phan\Exception\NotFoundException;
+use Exception;
+use Phan\Database;
+use Phan\Exception\NotFoundException;
 
 /**
  * Objects implementing this interface can be

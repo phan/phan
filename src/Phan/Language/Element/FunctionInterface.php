@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\CodeBase;
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\CodeBase;
+use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 
 /**
  * Interface defining the behavior of both Methods

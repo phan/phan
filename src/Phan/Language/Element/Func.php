@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\CodeBase;
-use \Phan\Issue;
-use \Phan\Language\Context;
-use \Phan\Language\Element\Parameter;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \Phan\Language\Type\CallableType;
-use \Phan\Language\Type\NullType;
-use \Phan\Language\UnionType;
-use \ast\Node;
-use \ast\Node\Decl;
+use Phan\CodeBase;
+use Phan\Issue;
+use Phan\Language\Context;
+use Phan\Language\Element\Parameter;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Type\CallableType;
+use Phan\Language\Type\NullType;
+use Phan\Language\UnionType;
+use ast\Node;
+use ast\Node\Decl;
 
 class Func extends AddressableElement implements FunctionInterface
 {

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Database;
 
-use \Phan\Database;
+use Phan\Database;
 
 abstract class Association
 {

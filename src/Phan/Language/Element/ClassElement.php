@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\CodeBase;
-use \Phan\Exception\CodeBaseException;
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedClassElement;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\UnionType;
+use Phan\CodeBase;
+use Phan\Exception\CodeBaseException;
+use Phan\Language\Context;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassElement;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\UnionType;
 
 abstract class ClassElement extends AddressableElement
 {

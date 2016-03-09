@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
-use \Phan\Language\UnionType;
+use Phan\Language\Context;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\UnionType;
 
 class Property extends ClassElement
 {

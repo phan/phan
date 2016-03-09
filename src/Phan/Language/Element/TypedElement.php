@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\CodeBase;
-use \Phan\Database;
-use \Phan\Language\Context;
-use \Phan\Language\FileRef;
-use \Phan\Language\UnionType;
+use Phan\CodeBase;
+use Phan\Database;
+use Phan\Language\Context;
+use Phan\Language\FileRef;
+use Phan\Language\UnionType;
 
 /**
  * Any PHP structural element that also has a type and is

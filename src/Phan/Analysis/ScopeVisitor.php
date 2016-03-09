@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use \Phan\AST\AnalysisVisitor;
-use \Phan\CodeBase;
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
-use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \ast\Node;
+use Phan\AST\AnalysisVisitor;
+use Phan\CodeBase;
+use Phan\Language\Context;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use ast\Node;
 
 abstract class ScopeVisitor extends AnalysisVisitor {
 

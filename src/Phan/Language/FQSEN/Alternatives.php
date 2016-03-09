@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
-use \Phan\Language\FQSEN;
+use Phan\Language\FQSEN;
 
 /**
  * This trait allows an FQSEN to have an alternate ID for when

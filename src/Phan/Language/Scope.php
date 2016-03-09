@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language;
 
-use \Phan\Language\Element\Variable;
+use Phan\Language\Element\Variable;
 
 class Scope
 {

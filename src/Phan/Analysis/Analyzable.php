@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Debug;
-use \Phan\Language\Context;
-use \Phan\Analysis;
-use \ast\Node;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Debug;
+use Phan\Language\Context;
+use Phan\Analysis;
+use ast\Node;
 
 /**
  * Objects implementing this trait store a handle to

@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use \Phan\AST\Visitor\Element;
-use \Phan\AST\Visitor\FlagVisitorImplementation;
-use \Phan\CodeBase;
-use \Phan\Debug;
-use \Phan\Exception\CodeBaseException;
-use \Phan\Language\Context;
-use \Phan\Language\UnionType;
-use \Phan\Language\Type\{
+use Phan\AST\Visitor\Element;
+use Phan\AST\Visitor\FlagVisitorImplementation;
+use Phan\CodeBase;
+use Phan\Debug;
+use Phan\Exception\CodeBaseException;
+use Phan\Language\Context;
+use Phan\Language\UnionType;
+use Phan\Language\Type\{
     ArrayType,
     BoolType,
     CallableType,
@@ -24,8 +24,8 @@ use \Phan\Language\Type\{
     StringType,
     VoidType
 };
-use \Phan\Issue;
-use \ast\Node;
+use Phan\Issue;
+use ast\Node;
 
 class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 {

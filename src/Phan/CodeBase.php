@@ -1,26 +1,26 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\CodeBase\ClassMap;
-use \Phan\Language\Element\AddressableElement;
-use \Phan\Language\Element\ClassConstant;
-use \Phan\Language\Element\Clazz;
-use \Phan\Language\Element\Func;
-use \Phan\Language\Element\FunctionFactory;
-use \Phan\Language\Element\GlobalConstant;
-use \Phan\Language\Element\Method;
-use \Phan\Language\Element\Property;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
-use \Phan\Language\FQSEN\FullyQualifiedClassElement;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
-use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
-use \Phan\Language\UnionType;
-use \Phan\Map;
-use \Phan\Set;
+use Phan\CodeBase\ClassMap;
+use Phan\Language\Element\AddressableElement;
+use Phan\Language\Element\ClassConstant;
+use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionFactory;
+use Phan\Language\Element\GlobalConstant;
+use Phan\Language\Element\Method;
+use Phan\Language\Element\Property;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
+use Phan\Language\FQSEN\FullyQualifiedClassElement;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\UnionType;
+use Phan\Map;
+use Phan\Set;
 
 /**
  * A CodeBase represents the known state of a code base

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\CodeBase;
-use \Phan\Language\Context;
+use Phan\CodeBase;
+use Phan\Language\Context;
 
 /**
  * An issue emitted during the course of analysis

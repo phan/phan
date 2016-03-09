@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\CodeBase;
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \Phan\Language\Type\NullType;
-use \Phan\Language\UnionType;
+use Phan\CodeBase;
+use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Type\NullType;
+use Phan\Language\UnionType;
 
 trait FunctionTrait {
 

@@ -1,22 +1,22 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\Analysis\ContextMergeVisitor;
-use \Phan\Analysis\DuplicateClassAnalyzer;
-use \Phan\Analysis\DuplicateFunctionAnalyzer;
-use \Phan\Analysis\ParameterTypesAnalyzer;
-use \Phan\Analysis\ParentClassExistsAnalyzer;
-use \Phan\Analysis\ParentConstructorCalledAnalyzer;
-use \Phan\Analysis\PostOrderAnalysisVisitor;
-use \Phan\Analysis\PreOrderAnalysisVisitor;
-use \Phan\Analysis\PropertyTypesAnalyzer;
-use \Phan\Analysis\ReferenceCountsAnalyzer;
-use \Phan\CodeBase;
-use \Phan\Issue;
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
-use \Phan\Parse\ParseVisitor;
-use \ast\Node;
+use Phan\Analysis\ContextMergeVisitor;
+use Phan\Analysis\DuplicateClassAnalyzer;
+use Phan\Analysis\DuplicateFunctionAnalyzer;
+use Phan\Analysis\ParameterTypesAnalyzer;
+use Phan\Analysis\ParentClassExistsAnalyzer;
+use Phan\Analysis\ParentConstructorCalledAnalyzer;
+use Phan\Analysis\PostOrderAnalysisVisitor;
+use Phan\Analysis\PreOrderAnalysisVisitor;
+use Phan\Analysis\PropertyTypesAnalyzer;
+use Phan\Analysis\ReferenceCountsAnalyzer;
+use Phan\CodeBase;
+use Phan\Issue;
+use Phan\Language\Context;
+use Phan\Language\FQSEN;
+use Phan\Parse\ParseVisitor;
+use ast\Node;
 
 /**
  * This class is the entry point into the static analyzer.

@@ -2,10 +2,10 @@
 declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\Config;
-use \Phan\Language\Context;
-use \Phan\Language\Element\Comment\Parameter as CommentParameter;
-use \Phan\Language\UnionType;
+use Phan\Config;
+use Phan\Language\Context;
+use Phan\Language\Element\Comment\Parameter as CommentParameter;
+use Phan\Language\UnionType;
 
 /**
  */

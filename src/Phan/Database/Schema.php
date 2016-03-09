@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Database;
 
-use \Phan\Database;
-use \SQLite3;
+use Phan\Database;
+use SQLite3;
 
 /**
  * A schema for a persistent model

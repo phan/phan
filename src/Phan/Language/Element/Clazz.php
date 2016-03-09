@@ -1,22 +1,22 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Exception\CodeBaseException;
-use \Phan\Exception\IssueException;
-use \Phan\Issue;
-use \Phan\Language\Context;
-use \Phan\Language\Element\ClassConstant;
-use \Phan\Language\Element\Method;
-use \Phan\Language\Element\Property;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
-use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
-use \Phan\Language\Type;
-use \Phan\Language\UnionType;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Exception\CodeBaseException;
+use Phan\Exception\IssueException;
+use Phan\Issue;
+use Phan\Language\Context;
+use Phan\Language\Element\ClassConstant;
+use Phan\Language\Element\Method;
+use Phan\Language\Element\Property;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 class Clazz extends AddressableElement
 {

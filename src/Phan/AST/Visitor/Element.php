@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\AST\Visitor;
 
-use \Phan\Debug;
-use \ast\Node;
+use Phan\Debug;
+use ast\Node;
 
 class Element
 {

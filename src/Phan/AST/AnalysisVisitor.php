@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
-use \Phan\AST\Visitor\KindVisitorImplementation;
-use \Phan\CodeBase;
-use \Phan\Issue;
-use \Phan\Language\Context;
+use Phan\AST\Visitor\KindVisitorImplementation;
+use Phan\CodeBase;
+use Phan\Issue;
+use Phan\Language\Context;
 
 abstract class AnalysisVisitor extends KindVisitorImplementation
 {

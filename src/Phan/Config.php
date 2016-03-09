@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\Issue;
+use Phan\Issue;
 
 /**
  * Program configuration.

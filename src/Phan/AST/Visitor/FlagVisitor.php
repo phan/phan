@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\AST\Visitor;
 
-use \ast\Node;
+use ast\Node;
 
 /**
  * A visitor of AST nodes based on the node's flag value

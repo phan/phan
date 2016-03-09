@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use \Phan\CodeBase;
-use \Phan\Config;
-use \SQLite3;
+use Phan\CodeBase;
+use Phan\Config;
+use SQLite3;
 
 /**
  * This class is the entry point into the static analyzer.
