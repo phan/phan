@@ -71,12 +71,17 @@ class Clazz extends AddressableElement
         array $trait_fqsen_list = []
     ) {
         // Add variable '$this' to the scope
-        $context = $context->withScopeVariable(new Variable(
-            $context,
-            'this',
-            $type,
-            0
-        ));
+        $context = $context->withScope(
+            $context->getScope()->withVariable(
+                new Variable(
+                    $context,
+                    'this',
+                    $type,
+                    0
+                )
+            )
+        );
+
 
         parent::__construct(
             $context,
