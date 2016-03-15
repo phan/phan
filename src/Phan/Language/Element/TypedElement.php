@@ -124,7 +124,7 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function setUnionType(UnionType $type)
     {
-        $this->type = $type;
+        $this->type = clone($type);
     }
 
     /**
