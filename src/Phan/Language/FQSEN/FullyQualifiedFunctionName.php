@@ -88,7 +88,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
         $name = 'closure_' . substr(md5(implode('|', [
             $context->getFile(),
             $context->getLineNumberStart()
-        ])), 0, 8);
+        ])), 0, 12);
 
         return static::fromStringInContext(
             $name,
