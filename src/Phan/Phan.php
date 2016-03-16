@@ -117,11 +117,6 @@ class Phan implements IgnoredFilesFilterInterface {
         // state in memory
         Analysis::analyzeFunctions($code_base);
 
-        // We can only save classes, methods, properties and
-        // constants after we've merged parent classes in.
-        // TODO: Reinstate this
-        // $code_base->store();
-
         // Filter out any files that are to be excluded from
         // analysis
         $analyze_file_path_list = array_filter(
@@ -134,6 +129,14 @@ class Phan implements IgnoredFilesFilterInterface {
         // Get the count of all files we're going to analyze
         $file_count = count($analyze_file_path_list);
 
+        // Get a map from process_id to the set of files that
+        // the given process should analyze in a stable order
+        $process_file_list_map =
+            (new Ordering($code_base))->orderForProcessCount(
+                Config::get()->processes,
+                $analyze_file_path_list
+            );
+
         // This worker takes a file and analyzes it
         $analysis_worker = function($i, $file_path)
             use ($file_count, $code_base) {
@@ -141,9 +144,17 @@ class Phan implements IgnoredFilesFilterInterface {
                 Analysis::analyzeFile($code_base, $file_path);
             };
 
+        // Determine how many processes we're running on. This may be
+        // less than the provided number if the files are bunched up
+        // excessively.
+        $process_count = count($process_file_list_map);
+
+        assert($process_count > 0 && $process_count <= Config::get()->processes,
+            "The process count must be between 1 and the given number of processes");
+
         // Check to see if we're running as multiple processes
         // or not
-        if (Config::get()->processes > 1) {
+        if ($process_count > 1) {
 
             // Collect all issues, blocking
             self::display();
@@ -151,8 +162,7 @@ class Phan implements IgnoredFilesFilterInterface {
             // Run analysis one file at a time, splitting the set of
             // files up among a given number of child processes.
             $pool = new ForkPool(
-                Config::get()->processes,
-                $analyze_file_path_list,
+                $process_file_list_map,
                 function () {},
                 $analysis_worker,
                 function () {
@@ -164,6 +174,9 @@ class Phan implements IgnoredFilesFilterInterface {
             $pool->wait();
 
         } else {
+            // Get the task data from the 0th processor
+            $analyze_file_path_list = array_values($process_file_list_map)[0];
+
             // If we're not running as multiple processes, just iterate
             // over the file list and analyze them
             foreach ($analyze_file_path_list as $i => $file_path) {

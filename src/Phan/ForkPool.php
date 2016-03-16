@@ -28,12 +28,14 @@ class ForkPool {
      * A closure to execute upon shutting down a child
      */
     public function __construct(
-        int $pool_size,
-        array $task_data_iterator,
+        array $process_task_data_iterator,
         \Closure $startup_closure,
         \Closure $task_closure,
         \Closure $shutdown_closure
     ) {
+
+        $pool_size = count($process_task_data_iterator);
+
         assert($pool_size > 1,
             'The pool size must be >= 2 to use the fork pool.');
 
@@ -78,11 +80,10 @@ class ForkPool {
         // starting up
         $startup_closure();
 
-        // Otherwise, take on a slice of the task list
+        // Get the work for this process
+        $task_data_iterator = array_values($process_task_data_iterator)[$proc_id];
         foreach ($task_data_iterator as $i => $task_data) {
-            if (($i % $pool_size) === $proc_id) {
-                $task_closure($i, $task_data);
-            }
+            $task_closure($i, $task_data);
         }
 
         // Execute each child's shutdown closure before

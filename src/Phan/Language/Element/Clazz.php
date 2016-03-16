@@ -289,6 +289,67 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return int
+     * This class's depth in the class hierarchy
+     */
+    public function getHierarchyDepth(CodeBase $code_base) : int
+    {
+        if (!$this->hasParentClassFQSEN()) {
+            return 0;
+        }
+
+        if (!$code_base->hasClassWithFQSEN(
+            $this->getParentClassFQSEN()
+        )) {
+            // Let this emit an issue elsewhere for the
+            // parent not existing
+            return 0;
+        }
+
+        // Get the parent class
+        $parent = $code_base->getClassByFQSEN(
+            $this->getParentClassFQSEN()
+        );
+
+        return (1 + $parent->getHierarchyDepth($code_base));
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return FullyQualifiedClassName
+     * The FQSEN of the root class on this class's hiearchy
+     */
+    public function getHierarchyRootFQSEN(
+        CodeBase $code_base
+    ) : FullyQualifiedClassName {
+        if (!$this->hasParentClassFQSEN()) {
+            return $this->getFQSEN();
+        }
+
+        if (!$code_base->hasClassWithFQSEN(
+            $this->getParentClassFQSEN()
+        )) {
+            // Let this emit an issue elsewhere for the
+            // parent not existing
+            return $this->getFQSEN();
+        }
+
+        // Get the parent class
+        $parent = $code_base->getClassByFQSEN(
+            $this->getParentClassFQSEN()
+        );
+
+        return $parent->getHierarchyRootFQSEN($code_base);
+    }
+
+    /**
      * @param FQSEN $fqsen
      * Add the given FQSEN to the list of implemented
      * interfaces for this class
