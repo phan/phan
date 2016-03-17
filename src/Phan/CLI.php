@@ -55,7 +55,7 @@ class CLI
                 'directory:',
                 'dump-ast',
                 'exclude-directory-list:',
-                'expand-file-list',
+                'exclude-file:',
                 'file-list-only:',
                 'file-list:',
                 'help',
@@ -169,10 +169,6 @@ class CLI
                 case 'dump-ast':
                     Config::get()->dump_ast = true;
                     break;
-                case 'e':
-                case 'expand-file-list':
-                    Config::get()->expand_file_list = true;
-                    break;
                 case 'o':
                 case 'output':
                     $this->output = new StreamOutput(fopen($value, 'w'));
@@ -183,8 +179,13 @@ class CLI
                     break;
                 case '3':
                 case 'exclude-directory-list':
-                    Config::get()->exclude_analysis_directory_list =
-                    explode(',', $value);
+                    Config::get()->exclude_analysis_directory_list = explode(',', $value);
+                    break;
+                case 'exclude-file':
+                    Config::get()->exclude_file_list = array_merge(
+                        Config::get()->exclude_file_list,
+                        is_array($value) ? $value : [$value]
+                    );
                     break;
                 case 's':
                 case 'state-file':
@@ -256,9 +257,7 @@ class CLI
             }
         }
 
-
         if (!$this->file_list_only) {
-
             // Merge in any remaining args on the CLI
             $this->file_list = array_merge(
                 $this->file_list,
@@ -281,6 +280,21 @@ class CLI
 
             // Don't scan anything twice
             $this->file_list = array_unique($this->file_list);
+        }
+
+        // Exclude any files that should be excluded from
+        // parsing and analysis (not read at all)
+        if (count(Config::get()->exclude_file_list) > 0) {
+            $exclude_file_set = [];
+            foreach (Config::get()->exclude_file_list as $file) {
+                $exclude_file_set[$file] = true;
+            }
+
+            $this->file_list = array_filter($this->file_list,
+                function(string $file) use ($exclude_file_set) : bool {
+                    return empty($exclude_file_set[$file]);
+                }
+            );
         }
 
         // We can't run dead code detection on multiple cores because
@@ -332,6 +346,11 @@ Usage: {$argv[0]} [options] [files...]
 
   You may include multiple `--directory DIR` options.
 
+ --exclude-file <file>
+  A file that should not be parsed or analyzed (or read
+  at all). This is useful for excluding hopelessly
+  unanalyzable files.
+
  -3, --exclude-directory-list <dir_list>
   A comma-separated list of directories that defines files
   that will be excluded from static analysis, but whose
@@ -356,12 +375,6 @@ Usage: {$argv[0]} [options] [files...]
 
  -a, --dump-ast
   Emit an AST for each file rather than analyze
-
- -e, --expand-file-list
-  Expand the list of files passed in to include any files
-  that depend on elements defined in those files. This is
-  useful when running Phan from a state file and passing in
-  just the set of changed files.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls

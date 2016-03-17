@@ -37,6 +37,13 @@ class Config
         // your application should be included in this list.
         'directory_list' => [],
 
+        // A file list that defines files that will be excluded
+        // from parsing and analysis and will not be read at all.
+        //
+        // This is useful for excluding hopelessly unanalyzable
+        // files that can't be removed for whatever reason.
+        'exclude_file_list' => [],
+
         // A directory list that defines files that will be excluded
         // from static analysis, but whose class and method
         // information should be included.

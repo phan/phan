@@ -68,6 +68,13 @@ return [
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
+    // A file list that defines files that will be excluded
+    // from parsing and analysis and will not be read at all.
+    //
+    // This is useful for excluding hopelessly unanalyzable
+    // files that can't be removed for whatever reason.
+    'exclude_file_list' => [],
+
     // The number of processes to fork off during the analysis
     // phase.
     'processes' => 1,
