@@ -47,6 +47,15 @@ class Scope
     }
 
     /**
+     * @return Variable
+     */
+    public function getVariableWithName(string $name) : Variable
+    {
+        return $this->variable_map[$name]
+            ?? self::$global_variable_map[$name];
+    }
+
+    /**
      * @return bool
      * True if a variable with the given name is defined
      * within this local scope (ignoring the global scope)
@@ -61,10 +70,9 @@ class Scope
     /**
      * @return Variable
      */
-    public function getVariableWithName(string $name) : Variable
+    public function getLocalVariableWithName(string $name) : Variable
     {
-        return $this->variable_map[$name]
-            ?? self::$global_variable_map[$name];
+        return $this->variable_map[$name];
     }
 
     /**

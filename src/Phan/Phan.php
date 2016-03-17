@@ -262,10 +262,6 @@ class Phan implements IgnoredFilesFilterInterface {
     private static function display() {
         $collector = self::$issueCollector;
 
-        if (Config::get()->progress_bar) {
-            fwrite(STDERR, "\n");
-        }
-
         $printer = self::$printer;
 
         foreach ($collector->getCollectedIssues() as $issue) {

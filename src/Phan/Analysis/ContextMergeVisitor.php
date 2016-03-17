@@ -97,8 +97,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
             foreach ($catch_scope_list as $catch_scope) {
 
                 // Merge types if try and catch have a variable in common
-                if ($catch_scope->hasVariableWithName($variable_name)) {
-                    $catch_variable = $catch_scope->getVariableWithName(
+                if ($catch_scope->hasLocalVariableWithName($variable_name)) {
+                    $catch_variable = $catch_scope->getLocalVariableWithName(
                         $variable_name
                     );
 
@@ -135,7 +135,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
                 if ($finally_scope->hasLocalVariableWithName($variable_name)) {
                     $finally_variable =
-                        $finally_scope->getVariableWithName($variable_name);
+                        $finally_scope->getLocalVariableWithName($variable_name);
 
                     // Overwrite the variable with the type from the
                     // finally
@@ -149,7 +149,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
             // Look for variables that exist in finally, but not try
             foreach ($finally_scope->getVariableMap() as $variable_name => $variable) {
-                if (!$try_scope->hasVariableWithName($variable_name)) {
+                if (!$try_scope->hasLocalVariableWithName($variable_name)) {
                     $try_scope->addVariable($variable);
                 }
             }
