@@ -50,28 +50,30 @@ class DuplicateFunctionAnalyzer
 
         $method_name = $method->getName();
 
-        if ($original_method->isInternal()) {
-            Issue::maybeEmit(
-                $code_base,
-                $method->getContext(),
-                Issue::RedefineFunctionInternal,
-                $method->getFileRef()->getLineNumberStart(),
-                $method_name,
-                $method->getFileRef()->getFile(),
-                $method->getFileRef()->getLineNumberStart()
-            );
-        } else {
-            Issue::maybeEmit(
-                $code_base,
-                $method->getContext(),
-                Issue::RedefineFunction,
-                $method->getFileRef()->getLineNumberStart(),
-                $method_name,
-                $method->getFileRef()->getFile(),
-                $method->getFileRef()->getLineNumberStart(),
-                $original_method->getFileRef()->getFile(),
-                $original_method->getFileRef()->getLineNumberStart()
-            );
+        if (!$method->hasSuppressIssue(Issue::RedefineFunction)) {
+            if ($original_method->isInternal()) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::RedefineFunctionInternal,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method_name,
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart()
+                );
+            } else {
+                Issue::maybeEmit(
+                    $code_base,
+                    $method->getContext(),
+                    Issue::RedefineFunction,
+                    $method->getFileRef()->getLineNumberStart(),
+                    $method_name,
+                    $method->getFileRef()->getFile(),
+                    $method->getFileRef()->getLineNumberStart(),
+                    $original_method->getFileRef()->getFile(),
+                    $original_method->getFileRef()->getLineNumberStart()
+                );
+            }
         }
     }
 }
