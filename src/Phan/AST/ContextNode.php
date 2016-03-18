@@ -506,7 +506,7 @@ class ContextNode
                 $this->code_base,
                 $property_name
             )) {
-                // If there's a getter on properties than all
+                // If there's a getter on properties then all
                 // bets are off.
                 if ($class->hasMethodWithName(
                         $this->code_base,
