@@ -475,7 +475,7 @@ class Clazz extends AddressableElement
                     Issue::fromType(Issue::UndeclaredProperty)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [ "{$this->getFQSEN()}::\$$name}" ]
+                        [ "{$this->getFQSEN()}::\$$name" ]
                     )
                 );
             }
