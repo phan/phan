@@ -449,52 +449,80 @@ class Clazz extends AddressableElement
         Context $context
     ) : Property {
 
+        // Get the FQSEN of the property we're looking for
         $property_fqsen = FullyQualifiedPropertyName::make(
             $this->getFQSEN(), $name
         );
 
-        // Check to see if we have the property
-        if (!$code_base->hasPropertyWithFQSEN($property_fqsen)) {
+        $property = null;
 
-            // If we don't have the property but do have a
-            // __get method, then we can create the property
-            if ($this->hasMethodWithName($code_base, '__get')
-                || Config::get()->allow_missing_properties
-            ) {
-                $property = new Property(
-                    $context,
-                    $name,
-                    new UnionType(),
-                    0
-                );
+        // Figure out if we have the property
+        $has_property =
+            $code_base->hasPropertyWithFQSEN($property_fqsen);
 
-                $property->setFQSEN($property_fqsen);
-                $this->addProperty($code_base, $property);
-            } else {
+        // Figure out if the property is accessible
+        $is_property_accessible = false;
+        if ($has_property) {
+            $property = $code_base->getPropertyByFQSEN(
+                $property_fqsen
+            );
+
+            $is_remote_access = (
+                !$context->hasClassFQSEN()
+                || $context->getClassFQSEN() != $this->getFQSEN()
+            );
+
+            $is_property_accessible = (
+                !$is_remote_access
+                || $property->isPublic()
+            );
+        }
+
+        // If the property exists and is accessible, return it
+        if ($is_property_accessible) {
+            return $property;
+        }
+
+        // Check to see if we can use a __get magic method
+        if ($this->hasMethodWithName($code_base, '__get')) {
+            $method = $this->getMethodByName($code_base, '__get');
+
+            // Make sure the magic method is accessible
+            if ($method->isPrivate()) {
                 throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredProperty)(
+                    Issue::fromType(Issue::AccessPropertyPrivate)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
-                        [ "{$this->getFQSEN()}::\$$name" ]
+                        [ (string)$property_fqsen ]
+                    )
+                );
+            } else if ($method->isProtected()) {
+                throw new IssueException(
+                    Issue::fromType(Issue::AccessPropertyProtected)(
+                        $context->getFile(),
+                        $context->getLineNumberStart(),
+                        [ (string)$property_fqsen ]
                     )
                 );
             }
-        }
 
-        $property = $code_base->getPropertyByFQSEN(
-            $property_fqsen
-        );
+            $property = new Property(
+                $context,
+                $name,
+                $method->getUnionType(),
+                0
+            );
 
-        // If we're getting the property from outside of this
-        // class and the property isn't public and we don't
-        // have a getter or setter, emit an access error
-        if ((!$context->hasClassFQSEN() || $context->getClassFQSEN() != $this->getFQSEN())
-            && !$property->isPublic()
-            && !$this->hasMethodWithName($code_base, '__get')
-            && !$this->hasMethodWithName($code_base, '__set')
-        ) {
+            $property->setFQSEN($property_fqsen);
+            $this->addProperty($code_base, $property);
+
+            return $property;
+
+        } else if ($has_property) {
+
+            // If we have a property, but its inaccessible, emit
+            // an issue
             if ($property->isPrivate()) {
-
                 throw new IssueException(
                     Issue::fromType(Issue::AccessPropertyPrivate)(
                         $context->getFile(),
@@ -514,7 +542,28 @@ class Clazz extends AddressableElement
             }
         }
 
-        return $property;
+        // Check to see if missing properties are allowed
+        if (Config::get()->allow_missing_properties) {
+            $property = new Property(
+                $context,
+                $name,
+                new UnionType(),
+                0
+            );
+
+            $property->setFQSEN($property_fqsen);
+            $this->addProperty($code_base, $property);
+
+            return $property;
+        }
+
+        throw new IssueException(
+            Issue::fromType(Issue::UndeclaredProperty)(
+                $context->getFile(),
+                $context->getLineNumberStart(),
+                [ "{$this->getFQSEN()}::\$$name}" ]
+            )
+        );
     }
 
     /**

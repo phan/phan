@@ -216,6 +216,7 @@ class Config
         return $instance;
     }
 
+    /** @return mixed */
     public function __get(string $name)
     {
         return $this->configuration[$name];
