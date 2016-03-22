@@ -20,8 +20,13 @@ use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Phan\Phan;
 
+// chdir to the code path in order to support the .phan/config.php file
+$old_cwd = getcwd();
+
 // Create our CLI interface and load arguments
+chdir('/code');
 $cli = new CLI();
+chdir($old_cwd);
 
 // Obtain the config
 $codeclimate_config = json_decode(file_get_contents('/config.json'), true);
