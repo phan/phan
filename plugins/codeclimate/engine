@@ -56,16 +56,34 @@ if (isset($codeclimate_config['config']['dead-code-detection'])) {
     Config::get()->dead_code_detection = true;
 }
 
+if (isset($codeclimate_config['config']['file_extensions'])) {
+    $file_extensions = explode(",", $codeclimate_config['config']['file_extensions']);
+}
+else
+{
+    $file_extensions = ['php'];
+}
+
+
 $include_paths = [];
 
+$queue_file = function ($file_path) use (&$include_paths, $file_extensions) {
+    $file_info = new SplFileInfo($file_path);
+
+    if (in_array($file_info->getExtension(), $file_extensions))
+    {
+        $include_paths[] = realpath($file_path);
+    }
+};
+
 // Todo: wrap with `-l` console logic instead of custom function
-$queue_with_include_paths = function ($dir_path) use (&$include_paths, &$queue_with_include_paths) {
+$queue_with_include_paths = function ($dir_path) use (&$include_paths, &$queue_with_include_paths, &$queue_file) {
     foreach (scandir($dir_path) as $f) {
         if ($f !== '.' and $f !== '..') {
             if (is_dir("$dir_path/$f")) {
                 $queue_with_include_paths("$dir_path/$f");
             } else {
-                $include_paths[] = "$dir_path/$f";
+                $queue_file("$dir_path/$f");
             }
         }
     }
@@ -75,7 +93,7 @@ foreach ($codeclimate_config['include_paths'] as $path) {
     if (is_dir('/code/' . $path)) {
         $queue_with_include_paths('/code/' . $path);
     } else {
-        $include_paths[] = "/code/$path";
+        $queue_file("/code/$path");
     }
 }
 
