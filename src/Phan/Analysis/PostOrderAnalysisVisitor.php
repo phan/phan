@@ -23,6 +23,7 @@ use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
@@ -913,17 +914,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // it on 'parent', 'self' or 'static', we're possibly in a bad spot.
             if (!$method->isStatic() && !in_array($static_class, ['self', 'parent', 'static'])) {
                 if ($this->context->hasClassFQSEN()) {
-                    $fullQualifiedClassName = \Phan\Language\FQSEN\FullyQualifiedClassName::fromStringInContext($static_class, $this->context);
+                    $fully_qualified_class_name =
+                        FullyQualifiedClassName::fromStringInContext($static_class, $this->context);
 
                     // Always allow calls on FQSEN; i.e. ClassName::nonStaticMethodCall()
-                    if ($this->context->getClassFQSEN() === $fullQualifiedClassName)
+                    if ($this->context->getClassFQSEN() === $fully_qualified_class_name)
                         return $this->context;
 
                     $clazz = $this->context->getClassInScope($this->code_base);
 
                     // Call is allowed when $static_class is own of our parents
                     while ($clazz->hasParentClassFQSEN()) {
-                        if ($clazz->getParentClassFQSEN() == $fullQualifiedClassName)
+                        if ($clazz->getParentClassFQSEN() == $fully_qualified_class_name)
                             return $this->context;
 
                         $clazz = $this->code_base->getClassByFQSEN($clazz->getParentClassFQSEN());
