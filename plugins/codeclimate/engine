@@ -97,6 +97,12 @@ foreach ($codeclimate_config['include_paths'] as $path) {
     }
 }
 
+// skip run if there are no paths
+if (empty($include_paths))
+{
+    exit();
+}
+
 $output = new ConsoleOutput();
 $factory = new PrinterFactory();
 $printer = $factory->getPrinter('codeclimate', $output);
