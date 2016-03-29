@@ -30,8 +30,18 @@ class IssueInstance
         $this->issue = $issue;
         $this->file = $file;
         $this->line = $line;
+
+        $template = $issue->getTemplate();
+
+        if (Config::get()->markdown_issue_messages) {
+            $template = preg_replace(
+                '/([^ ]*%s[^ ]*)/', '`\1`',
+                $template
+            );
+        }
+
         $this->message = vsprintf(
-            $issue->getTemplate(),
+            $template,
             $template_parameters
         );
     }

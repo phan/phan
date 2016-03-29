@@ -70,6 +70,7 @@ class CLI
                 'state-file:',
                 'processes:',
                 'signature-compatibility',
+                'markdown-issue-messages',
             ]
         );
 
@@ -213,6 +214,9 @@ class CLI
                 case 'x':
                 case 'dead-code-detection':
                     Config::get()->dead_code_detection = true;
+                    break;
+                case 'markdown-issue-messages':
+                    Config::get()->markdown_issue_messages = true;
                     break;
                 default:
                     $this->usage("Unknown option '-$key'");
