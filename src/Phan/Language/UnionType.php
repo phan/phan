@@ -565,25 +565,27 @@ class UnionType implements \Serializable
      */
     public function genericArrayElementTypes() : UnionType
     {
-        // If array is in there, then it can be any type
-        // Same for mixed
-        if ($this->hasType(ArrayType::instance())
-            || $this->hasType(MixedType::instance())
-        ) {
-            return MixedType::instance()->asUnionType();
-        }
-
-        if ($this->hasType(ArrayType::instance())) {
-            return NullType::instance()->asUnionType();
-        }
-
-        return new UnionType(
+        $union_type = new UnionType(
             $this->type_set->filter(function (Type $type) : bool {
                 return $type->isGenericArray();
             })->map(function (Type $type) : Type {
                 return $type->genericArrayElementType();
             })
         );
+
+        // If array is in there, then it can be any type
+        // Same for mixed
+        if ($this->hasType(ArrayType::instance())
+            || $this->hasType(MixedType::instance())
+        ) {
+            $union_type->addType(MixedType::instance());
+        }
+
+        if ($this->hasType(ArrayType::instance())) {
+            $union_type->addType(NullType::instance());
+        }
+
+        return $union_type;
     }
 
     /**
