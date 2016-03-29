@@ -1,0 +1,28 @@
+---
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+        - ruby
+        - javascript
+        - python
+        - php
+  fixme:
+    enabled: true
+  phpmd:
+    enabled: true
+  phan:
+    enabled: true
+    config:
+        file_extensions: "php"
+        minimum-severity: 0
+        ignore-undeclared: false
+        quick: false
+        backward-compatibility-checks: true
+        dead-code-detection: true
+ratings:
+  paths:
+    - "**.php"
+exclude_paths:
+  - tests/**/*
