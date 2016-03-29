@@ -16,7 +16,6 @@ engines:
     enabled: true
     config:
         file_extensions: "php"
-        minimum-severity: 0
         ignore-undeclared: false
         quick: false
         backward-compatibility-checks: true
