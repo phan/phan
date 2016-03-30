@@ -4,9 +4,6 @@ engines:
     enabled: true
     config:
       languages:
-        - ruby
-        - javascript
-        - python
         - php
   fixme:
     enabled: true
