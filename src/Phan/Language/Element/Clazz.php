@@ -611,26 +611,12 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         string $name
     ) : bool {
-
-
-        $has_constant = $code_base->hasClassConstantWithFQSEN(
+        return $code_base->hasClassConstantWithFQSEN(
             FullyQualifiedClassConstantName::make(
                 $this->getFQSEN(),
                 $name
             )
         );
-
-        if ($has_constant) {
-            return $has_constant;
-        }
-
-        // If we're requesting the implicit constant
-        // 'class', create it on the fly.
-        if ('class' == $name) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
