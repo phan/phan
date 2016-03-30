@@ -64,7 +64,6 @@ else
     $file_extensions = ['php'];
 }
 
-
 $include_paths = [];
 
 $queue_file = function ($file_path) use (&$include_paths, $file_extensions) {
@@ -105,6 +104,7 @@ if (empty($include_paths))
 
 $output = new ConsoleOutput();
 $factory = new PrinterFactory();
+Config::get()->markdown_issue_messages = true;
 $printer = $factory->getPrinter('codeclimate', $output);
 Phan::setPrinter($printer);
 
