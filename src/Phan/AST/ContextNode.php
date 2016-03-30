@@ -710,14 +710,6 @@ class ContextNode
 
         $constant_name = $this->node->children['const'];
 
-        // class name fetch
-        if ($constant_name == 'class') {
-            throw new UnanalyzableException(
-                $this->node,
-                "Can't get class constant for implicit 'class'"
-            );
-        }
-
         $class_fqsen = null;
 
         try {

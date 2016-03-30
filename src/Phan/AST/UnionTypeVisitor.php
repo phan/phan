@@ -926,11 +926,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         $constant_name = $node->children['const'];
 
-        // class name fetch
-        if ($constant_name == 'class') {
-            return StringType::instance()->asUnionType();
-        }
-
         try {
             $constant = (new ContextNode(
                 $this->code_base,

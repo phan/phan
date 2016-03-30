@@ -16,6 +16,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type;
+use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 
 class Clazz extends AddressableElement
@@ -610,12 +611,26 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         string $name
     ) : bool {
-        return $code_base->hasClassConstantWithFQSEN(
+
+
+        $has_constant = $code_base->hasClassConstantWithFQSEN(
             FullyQualifiedClassConstantName::make(
                 $this->getFQSEN(),
                 $name
             )
         );
+
+        if ($has_constant) {
+            return $has_constant;
+        }
+
+        // If we're requesting the implicit constant
+        // 'class', create it on the fly.
+        if ('class' == $name) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1158,6 +1173,24 @@ class Clazz extends AddressableElement
      * @return void
      */
     protected function hydrateOnce(CodeBase $code_base) {
+        // Create the 'class' constant
+        $constant = new ClassConstant(
+            $this->getContext(),
+            'class',
+            StringType::instance()->asUnionType(),
+            0
+        );
+
+        $constant->setFQSEN(
+            FullyQualifiedClassConstantName::make(
+                $this->getFQSEN(),
+                'class'
+            )
+        );
+
+        $this->addConstant($code_base, $constant);
+
+        // Load parent methods, properties, constants
         $this->importAncestorClasses($code_base);
     }
 

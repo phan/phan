@@ -475,7 +475,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Mark that this class constant has been referenced
             // from this context
             $constant->addReference($this->context);
-
         } catch (\Exception $exception) {
             // Swallow any exceptions. We'll log the errors
             // elsewhere.

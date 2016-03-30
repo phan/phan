@@ -6,7 +6,7 @@ engines:
       languages:
         - php
   fixme:
-    enabled: true
+    enabled: false
   phpmd:
     enabled: true
   phan:
