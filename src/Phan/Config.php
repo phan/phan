@@ -168,6 +168,9 @@ class Config
         'suppress_issue_types' => [
             // 'PhanUndeclaredMethod',
         ],
+
+        // Emit issue messages with markdown formatting
+        'markdown_issue_messages' => false,
     ];
 
     /**
