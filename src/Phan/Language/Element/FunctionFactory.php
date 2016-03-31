@@ -241,9 +241,9 @@ class FunctionFactory {
                 $alternate_function->getNumberOfRequiredParameters()
             );
 
-            if ($alternate_method->getName() == '__call') {
-                $alternate_method->setNumberOfOptionalParameters(999);
-                $alternate_method->setNumberOfRequiredParameters(0);
+            if ($alternate_function->getName() == '__call') {
+                $alternate_function->setNumberOfOptionalParameters(999);
+                $alternate_function->setNumberOfRequiredParameters(0);
             }
 
             return $alternate_function;
