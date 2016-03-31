@@ -1,0 +1,4 @@
+%s:5 PhanTypeMismatchArgument Argument 1 (p) is array but \f() takes int defined at %s:3
+%s:6 PhanTypeMismatchArgument Argument 1 (p) is int[] but \f() takes int defined at %s:3
+%s:16 PhanTypeMismatchArgument Argument 1 (p) is array but \f() takes int defined at %s:3
+%s:17 PhanTypeMismatchArgument Argument 1 (p) is array but \f() takes int defined at %s:3

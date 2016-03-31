@@ -358,12 +358,12 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $left_is_array = (
             !empty($left->genericArrayElementTypes())
             && empty($left->nonGenericArrayTypes())
-        );
+        ) || $left->isType(ArrayType::instance());
 
         $right_is_array = (
             !empty($right->genericArrayElementTypes())
             && empty($right->nonGenericArrayTypes())
-        );
+        ) || $right->isType(ArrayType::instance());
 
         if ($left_is_array
             && !$right->canCastToUnionType(
