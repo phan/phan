@@ -126,6 +126,11 @@ class FunctionFactory {
             - $reflection_method->getNumberOfRequiredParameters()
         );
 
+        if ($method->getName() == '__call') {
+            $method->setNumberOfOptionalParameters(999);
+            $method->setNumberOfRequiredParameters(0);
+        }
+
         $method->setFQSEN(
             FullyQualifiedMethodName::fromStringInContext(
                 $method->getName(),
