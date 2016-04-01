@@ -106,6 +106,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             "Expected left side of assignment to be a var in {$this->context}"
         );
 
+        if ($right_type->isType(VoidType::instance())) {
+            $this->emitIssue(
+                Issue::TypeVoidAssignment,
+                $node->lineno ?? 0
+            );
+        }
+
         // Handle the assignment based on the type of the
         // right side of the equation and the kind of item
         // on the left

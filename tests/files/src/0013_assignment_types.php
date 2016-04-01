@@ -11,10 +11,18 @@ class A {
     public function instance() : A {
         return $this;
     }
+
+    /** @return void */
+    public function nothing() {
+    }
+
+    public function unannotatedNothing() {
+    }
 }
 
 class B {
     private $a;
+    private $b;
 
     public function __construct() {
         $str = 'string';
@@ -22,5 +30,9 @@ class B {
         $a = new A;
         $str = $a->str();
         $this->a = $a->instance();
+
+        $str = $a->nothing();
+        $str = $a->unannotatedNothing();
+        $this->b = $a->nothing();
     }
 }
