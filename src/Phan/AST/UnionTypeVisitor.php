@@ -777,13 +777,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         } catch (CodeBaseException $exception) {}
 
-        $implements_array_access = $union_type->asExpandedTypes(
-            $this->code_base
-        )->hasType(
-            Type::fromNamespaceAndName('\\', 'ArrayAccess')
-        );
-
-        if (!$implements_array_access && $element_types->isEmpty()) {
+        if ($element_types->isEmpty()) {
             $this->emitIssue(
                 Issue::TypeArraySuspicious,
                 $node->lineno ?? 0,
