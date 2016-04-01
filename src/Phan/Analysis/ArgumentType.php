@@ -227,6 +227,13 @@ class ArgumentType
     ) {
         foreach ($node->children ?? [] as $i => $argument) {
 
+            // If this is a call to `__call`, offset the
+            // arguments so as to skip the method name
+            // parameter
+            if ($method->getName() == '__call') {
+                $i += 1;
+            }
+
             // Get the parameter associated with this argument
             $parameter = $method->getParameterList()[$i] ?? null;
 
