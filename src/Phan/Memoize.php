@@ -36,6 +36,24 @@ trait Memoize
     }
 
     /**
+     * @param string $key
+     * A unique key to test to see if its been seen before
+     *
+     * @return bool
+     * True if this is the first time this function has been
+     * called on this class with this key.
+     */
+    protected function isFirstExecution(string $key) : bool
+    {
+        if (!array_key_exists($key, $this->memoized_data)) {
+            $this->memoized_data[$key] = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Memoize the result of $fn(), saving the result
      * with key $key.
      *

@@ -257,9 +257,11 @@ abstract class TypedElement implements TypedElementInterface
      * @return void
      */
     public function hydrate(CodeBase $code_base) {
-        return $this->memoize(__METHOD__, function() use ($code_base) {
-            $this->hydrateOnce($code_base );
-        });
+        if (!$this->isFirstExecution(__METHOD__)) {
+            return;
+        }
+
+        $this->hydrateOnce($code_base );
     }
 
     /**

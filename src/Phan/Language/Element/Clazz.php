@@ -316,6 +316,11 @@ class Clazz extends AddressableElement
             $this->getParentClassFQSEN()
         );
 
+        // Prevent infinite loops
+        if ($parent == $this) {
+            return 0;
+        }
+
         return (1 + $parent->getHierarchyDepth($code_base));
     }
 
@@ -346,6 +351,11 @@ class Clazz extends AddressableElement
         $parent = $code_base->getClassByFQSEN(
             $this->getParentClassFQSEN()
         );
+
+        // Prevent infinite loops
+        if ($parent == $this) {
+            return $this->getFQSEN();
+        }
 
         return $parent->getHierarchyRootFQSEN($code_base);
     }
@@ -981,29 +991,31 @@ class Clazz extends AddressableElement
      */
     public function importAncestorClasses(CodeBase $code_base)
     {
-        $this->memoize(__METHOD__, function () use ($code_base) {
-            foreach ($this->getNonParentAncestorFQSENList($code_base) as $fqsen) {
-                if (!$code_base->hasClassWithFQSEN($fqsen)) {
-                    continue;
-                }
+        if (!$this->isFirstExecution(__METHOD__)) {
+            return;
+        }
 
-                $ancestor = $code_base->getClassByFQSEN($fqsen);
-
-                // Force the parent to import its own before
-                // we import from it
-                $ancestor->importAncestorClasses($code_base);
-
-                $this->importAncestorClass(
-                    $code_base, $ancestor
-                );
+        foreach ($this->getNonParentAncestorFQSENList($code_base) as $fqsen) {
+            if (!$code_base->hasClassWithFQSEN($fqsen)) {
+                continue;
             }
 
-            // TODO: importParentClass doesn't need to be
-            //       separate from the loop above.
+            $ancestor = $code_base->getClassByFQSEN($fqsen);
 
-            // Copy information from the parent(s)
-            $this->importParentClass($code_base);
-        });
+            // Force the parent to import its own before
+            // we import from it
+            $ancestor->importAncestorClasses($code_base);
+
+            $this->importAncestorClass(
+                $code_base, $ancestor
+            );
+        }
+
+        // TODO: importParentClass doesn't need to be
+        //       separate from the loop above.
+
+        // Copy information from the parent(s)
+        $this->importParentClass($code_base);
     }
 
     /*
@@ -1018,40 +1030,46 @@ class Clazz extends AddressableElement
      */
     public function importParentClass(CodeBase $code_base)
     {
-        $this->memoize(__METHOD__, function () use ($code_base) {
-            if (!$this->hasParentClassFQSEN()) {
-                return;
-            }
+        if (!$this->isFirstExecution(__METHOD__)) {
+            return;
+        }
+
+        if (!$this->hasParentClassFQSEN()) {
+            return;
+        }
+
+        if ($this->getParentClassFQSEN() == $this->getFQSEN()) {
+            return;
+        }
+
+        // Let the parent class finder worry about this
+        if (!$code_base->hasClassWithFQSEN(
+            $this->getParentClassFQSEN()
+        )) {
+            return;
+        }
+
+        assert(
+            $code_base->hasClassWithFQSEN($this->getParentClassFQSEN()),
+            "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist."
+        );
+
+        // Get the parent class
+        $parent = $code_base->getClassByFQSEN(
+            $this->getParentClassFQSEN()
+        );
+
+        $parent->addReference($this->getContext());
 
 
-            // Let the parent class finder worry about this
-            if (!$code_base->hasClassWithFQSEN(
-                $this->getParentClassFQSEN()
-            )) {
-                return;
-            }
+        // Tell the parent to import its own parents first
+        $parent->importAncestorClasses($code_base);
 
-            assert(
-                $code_base->hasClassWithFQSEN($this->getParentClassFQSEN()),
-                "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist."
-            );
-
-            // Get the parent class
-            $parent = $code_base->getClassByFQSEN(
-                $this->getParentClassFQSEN()
-            );
-
-            $parent->addReference($this->getContext());
-
-            // Tell the parent to import its own parents first
-            $parent->importAncestorClasses($code_base);
-
-            // Import elements from the parent
-            $this->importAncestorClass(
-                $code_base,
-                $parent
-            );
-        });
+        // Import elements from the parent
+        $this->importAncestorClass(
+            $code_base,
+            $parent
+        );
     }
 
     /**
@@ -1067,29 +1085,29 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         Clazz $superclazz
     ) {
-        $this->memoize(
-            (string)$superclazz->getFQSEN(),
-            function () use ($code_base, $superclazz) {
+        if (!$this->isFirstExecution(
+            __METHOD__ . ':' . (string)$superclazz->getFQSEN()
+        )) {
+            return;
+        }
 
-                $superclazz->addReference($this->getContext());
+        $superclazz->addReference($this->getContext());
 
-                // Copy properties
-                foreach ($superclazz->getPropertyMap($code_base) as $property) {
-                    $this->addProperty($code_base, $property);
-                }
+        // Copy properties
+        foreach ($superclazz->getPropertyMap($code_base) as $property) {
+            $this->addProperty($code_base, $property);
+        }
 
-                // Copy constants
-                foreach ($superclazz->getConstantMap($code_base) as $constant) {
-                    $this->addConstant($code_base, $constant);
-                }
+        // Copy constants
+        foreach ($superclazz->getConstantMap($code_base) as $constant) {
+            $this->addConstant($code_base, $constant);
+        }
 
 
-                // Copy methods
-                foreach ($superclazz->getMethodMap($code_base) as $method) {
-                    $this->addMethod($code_base, $method);
-                }
-            }
-        );
+        // Copy methods
+        foreach ($superclazz->getMethodMap($code_base) as $method) {
+            $this->addMethod($code_base, $method);
+        }
     }
 
     /**
