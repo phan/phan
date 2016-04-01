@@ -225,19 +225,15 @@ class ArgumentType
         Node $node,
         Context $context
     ) {
+        // There's nothing reasonable we can do here
+        if ($method->getName() == '__call') {
+            return;
+        }
+
         foreach ($node->children ?? [] as $i => $argument) {
 
-            $argument_offset = $i;
-
-            // If this is a call to `__call`, offset the
-            // arguments so as to skip the method name
-            // parameter
-            if ($method->getName() == '__call') {
-                $argument_offset += 1;
-            }
-
             // Get the parameter associated with this argument
-            $parameter = $method->getParameterList()[$argument_offset] ?? null;
+            $parameter = $method->getParameterList()[$i] ?? null;
 
             // This issue should be caught elsewhere
             if (!$parameter) {
@@ -307,13 +303,13 @@ class ArgumentType
             foreach ($method->alternateGenerator($code_base)
                 as $alternate_id => $alternate_method
             ) {
-                if (empty($alternate_method->getParameterList()[$argument_offset])) {
+                if (empty($alternate_method->getParameterList()[$i])) {
                     continue;
                 }
 
                 // Get the parameter associated with this argument
                 $alternate_parameter =
-                    $alternate_method->getParameterList()[$argument_offset] ?? null;
+                    $alternate_method->getParameterList()[$i] ?? null;
 
                 // Expand the types to find all parents and traits
                 $alternate_parameter_type_expanded =
