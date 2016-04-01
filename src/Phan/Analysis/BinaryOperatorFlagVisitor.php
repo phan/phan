@@ -91,7 +91,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->code_base,
                 $this->context,
                 Issue::TypeArrayOperator,
-                $node->lineno ?? 0
+                $node->lineno ?? 0,
+                $left, $right
             );
 
             return new UnionType();

@@ -421,7 +421,7 @@ class Issue
                 self::TypeArrayOperator,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid array operator",
+                "Invalid array operator between types %s and %s",
                 self::REMEDIATION_B
             ),
             new Issue(
