@@ -483,7 +483,7 @@ class ArgumentType
                     );
 
                     if ((string)$arg1_type == 'array') {
-                        if (!$arg1_type->canCastToUnionType(
+                        if (!$arg2_type->canCastToUnionType(
                             StringType::instance()->asUnionType()
                         )) {
                             Issue::maybeEmit(
