@@ -766,27 +766,24 @@ class UnionTypeVisitor extends AnalysisVisitor
         $array_access_type =
             Type::fromNamespaceAndName('\\', 'ArrayAccess');
 
+
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess
-
         try {
             foreach ($union_type->asClassList($this->code_base) as $class) {
-                if ($class->getUnionType()->hasType($array_access_type)) {
+                if ($class->getUnionType()->asExpandedTypes($this->code_base)->hasType($array_access_type)) {
                     return $element_types;
                 }
             }
-        } catch (CodeBaseException $exception) {
-            // Swallow it
-        }
+        } catch (CodeBaseException $exception) {}
 
-        if ($union_type->hasType(Type::fromNamespaceAndName(
-            '\\',
-            'ArrayAccess'
-        ))) {
-            // TODO: check to see if there's a property
-        }
+        $implements_array_access = $union_type->asExpandedTypes(
+            $this->code_base
+        )->hasType(
+            Type::fromNamespaceAndName('\\', 'ArrayAccess')
+        );
 
-        if ($element_types->isEmpty()) {
+        if (!$implements_array_access && $element_types->isEmpty()) {
             $this->emitIssue(
                 Issue::TypeArraySuspicious,
                 $node->lineno ?? 0,
