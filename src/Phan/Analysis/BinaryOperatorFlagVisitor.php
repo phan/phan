@@ -84,8 +84,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['right']
         );
 
-        if ($left->hasType(ArrayType::instance())
-            || $right->hasType(ArrayType::instance())
+        if ($left->isType(ArrayType::instance())
+            || $right->isType(ArrayType::instance())
         ) {
             Issue::maybeEmit(
                 $this->code_base,
