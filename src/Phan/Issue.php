@@ -54,6 +54,7 @@ class Issue
     const TypeMissingReturn         = 'PhanTypeMissingReturn';
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
+    const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -499,6 +500,13 @@ class Issue
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
                 "Call to method %s on non-class type %s",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::TypeVoidAssignment,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "Cannot assign void return value",
                 self::REMEDIATION_B
             ),
 

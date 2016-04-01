@@ -1,0 +1,2 @@
+%s:34 PhanTypeVoidAssignment Cannot assign void return value
+%s:36 PhanTypeVoidAssignment Cannot assign void return value
