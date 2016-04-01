@@ -100,6 +100,10 @@ class Config
         // will cut down on false positives.
         'null_casts_as_any_type' => false,
 
+        // If enabled, scalars (int, float, bool, string, null)
+        // are treated as if they can cast to each other.
+        'scalar_implicit_cast' => false,
+
         // Set to true in order to attempt to detect dead
         // (unreferenced) code. Keep in mind that the
         // results will only be a guess given that classes,

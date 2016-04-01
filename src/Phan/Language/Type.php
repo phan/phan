@@ -4,6 +4,7 @@ namespace Phan\Language;
 use Phan\AST\ContextNode;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
@@ -731,6 +732,12 @@ class Type
 
         if ($s===$d) {
             return true;
+        }
+
+        if (Config::get()->scalar_implicit_cast) {
+            if ($type->isScalar() && $this->isScalar()) {
+                return true;
+            }
         }
 
         if ($s==='int' && $d==='float') {

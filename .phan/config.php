@@ -36,6 +36,10 @@ return [
     // type to be cast to null.
     "null_casts_as_any_type" => false,
 
+    // If enabled, scalars (int, float, bool, string, null)
+    // are treated as if they can cast to each other.
+    'scalar_implicit_cast' => false,
+
     // Backwards Compatibility Checking
     'backward_compatibility_checks' => false,
 
