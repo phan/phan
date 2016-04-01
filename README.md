@@ -13,7 +13,7 @@ Phan is a static analyzer for PHP.
 * Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
 * Experimental dead code detection
 
-See [Phan Error Types](https://github.com/etsy/phan/wiki/Error-Types) for descriptions
+See [Phan Error Types](https://github.com/etsy/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
 and examples of all issues that can be detected by Phan. Take a look at the
 [\Phan\Issue](https://github.com/etsy/phan/blob/master/src/Phan/Issue.php) to see the
 definition of each error type.
