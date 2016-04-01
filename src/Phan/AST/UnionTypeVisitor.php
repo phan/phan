@@ -725,7 +725,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         $union_type = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['expr']
+            $node->children['expr'],
+            $this->should_catch_issue_exception
         );
 
         if ($union_type->isEmpty()) {
@@ -776,6 +777,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         } catch (CodeBaseException $exception) {
             // Swallow it
+        }
+
+        if ($union_type->hasType(Type::fromNamespaceAndName(
+            '\\',
+            'ArrayAccess'
+        ))) {
+            // TODO: check to see if there's a property
         }
 
         if ($element_types->isEmpty()) {
@@ -829,7 +837,6 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitVar(Node $node) : UnionType
     {
-
         // $$var or ${...} (whose idea was that anyway?)
         if (($node->children['name'] instanceof Node)
             && ($node->children['name']->kind == \ast\AST_VAR
@@ -848,10 +855,12 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
             if (!Variable::isSuperglobalVariableWithName($variable_name)) {
-                $this->emitIssue(
-                    Issue::UndeclaredVariable,
-                    $node->lineno ?? 0,
-                    $variable_name
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredVariable)(
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        [$variable_name]
+                    )
                 );
             }
         } else {

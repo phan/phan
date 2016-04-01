@@ -1153,6 +1153,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitDim(Node $node) : Context
     {
+        // Check the array type to trigger
+        // TypeArraySuspicious
+        try {
+            $array_type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $node,
+                false
+            );
+        } catch (IssueException $exception) {
+            // Swallow it. We'll deal with issues elsewhere
+        }
+
         if (!Config::get()->backward_compatibility_checks) {
             return $this->context;
         }
