@@ -4,14 +4,24 @@ Phan is a static analyzer for PHP.
 
 # Features
 
-* Checks for calls and instantiations of undeclared functions, methods, closures and classes
-* Checks types of all arguments and return values to/from functions, closures and methods
-* Supports `@param`, `@return`, `@var` and `@deprecated` [phpdoc][doctypes] comments including union and void/null types
-* Checks for [Uniform Variable Syntax][uniform] PHP 5 -> PHP 7 BC breaks
-* Undefined variable tracking
+* Checks for all methods, functions, classes, traits, interfaces, constants, properties and variables to be defined and accessible.
+* Checks for type safety and arity issues on method/function/closure calls.
+* Checks for PHP7/PHP5 backward compatibility
+* Checks for sanity with array accesses
+* Checks for type safety on binary operations
+* Checks for valid and type safe return values on methods, functions, and closures
+* Checks for No-Ops on arrays, closures, constants, properties, variables.
+* Checks for unused/dead code.
+* Checks for classes, functions and methods being redefined
 * Supports namespaces, traits and variadics
-* Generics (from phpdoc hints - int[], string[], UserObject[], etc.)
-* Experimental dead code detection
+* Supports [Union Types](https://github.com/etsy/phan/wiki/About-Union-Types)
+* Supports generic arrays such as `int[]`, `UserObject[]`, etc..
+* Supports phpdoc [type annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
+* Supports `@deprecated` annotation for deprecating classes, methods and functions
+* Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#suppress).
+* Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
+* Can be run on many cores.
+* Output is emitted in text, checkstyle, json or codeclimate formats.
 
 See [Phan Error Types](https://github.com/etsy/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
 and examples of all issues that can be detected by Phan. Take a look at the
