@@ -126,7 +126,7 @@ class FunctionFactory {
             - $reflection_method->getNumberOfRequiredParameters()
         );
 
-        if ($method->getName() == '__call') {
+        if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
             $method->setNumberOfOptionalParameters(999);
             $method->setNumberOfRequiredParameters(0);
         }
@@ -241,9 +241,11 @@ class FunctionFactory {
                 $alternate_function->getNumberOfRequiredParameters()
             );
 
-            if ($alternate_function->getName() == '__call') {
-                $alternate_function->setNumberOfOptionalParameters(999);
-                $alternate_function->setNumberOfRequiredParameters(0);
+            if ($alternate_function instanceof Method) {
+                if ($alternate_function->getIsMagicCall() || $alternate_function->getIsMagicCallStatic()) {
+                    $alternate_function->setNumberOfOptionalParameters(999);
+                    $alternate_function->setNumberOfRequiredParameters(0);
+                }
             }
 
             return $alternate_function;

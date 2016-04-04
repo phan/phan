@@ -1289,10 +1289,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 array_reduce($class_list, function($carry, $class) {
                     return (
                         $carry ||
-                        $class->hasMethodWithName(
-                            $this->code_base,
-                            '__get'
-                        )
+                        $class->hasGetMethod($this->code_base)
                     );
                 }, false);
 

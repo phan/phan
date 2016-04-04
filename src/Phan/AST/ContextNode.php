@@ -281,12 +281,10 @@ class ContextNode
                     $method_name,
                     $this->context
                 );
-            } else if ($class->hasMethodWithName($this->code_base, '__call')) {
-                return $class->getMethodByNameInContext(
-                    $this->code_base,
-                    '__call',
-                    $this->context
-                );
+            } else if (!$is_static && $class->hasCallMethod($this->code_base)) {
+                return $class->getCallMethod($this->code_base);
+            } else if ($is_static && $class->hasCallStaticMethod($this->code_base)) {
+                return $class->getCallStaticMethod($this->code_base);
             }
         }
 
@@ -508,10 +506,7 @@ class ContextNode
             )) {
                 // If there's a getter on properties then all
                 // bets are off.
-                if ($class->hasMethodWithName(
-                        $this->code_base,
-                        '__get'
-                )) {
+                if ($class->hasGetMethod($this->code_base)) {
                     throw new UnanalyzableException(
                         $this->node,
                         "Can't determine if property {$property_name} exists in class {$class->getFQSEN()} with __get defined"

@@ -8,6 +8,7 @@ use Phan\Exception\CodeBaseException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
@@ -226,8 +227,10 @@ class ArgumentType
         Context $context
     ) {
         // There's nothing reasonable we can do here
-        if ($method->getName() == '__call') {
-            return;
+        if ($method instanceof Method) {
+            if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
+                return;
+            }
         }
 
         foreach ($node->children ?? [] as $i => $argument) {

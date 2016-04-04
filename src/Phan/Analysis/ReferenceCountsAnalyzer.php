@@ -199,9 +199,7 @@ class ReferenceCountsAnalyzer
         if ($element instanceof Property) {
             $defining_class = $element->getDefiningClass($code_base);
 
-            if ($defining_class->hasMethodWithName($code_base, '__set')
-                || $defining_class->hasMethodWithName($code_base, '__get')
-            ) {
+            if ($defining_class->hasGetOrSetMethod($code_base)) {
                 return;
             }
         }

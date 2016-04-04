@@ -48,24 +48,54 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function getIsMagic() : bool {
         return in_array($this->getName(), [
-            '__get',
-            '__set',
-            '__construct',
-            '__destruct',
             '__call',
             '__callStatic',
-            '__get',
-            '__set',
-            '__isset',
-            '__unset',
-            '__sleep',
-            '__wakeup',
-            '__toString',
-            '__invoke',
-            '__set_state',
             '__clone',
-            '__debugInfo'
+            '__construct',
+            '__debugInfo',
+            '__destruct',
+            '__get',
+            '__invoke',
+            '__isset',
+            '__set',
+            '__set_state',
+            '__sleep',
+            '__toString',
+            '__unset',
+            '__wakeup',
         ]);
+    }
+
+    /**
+     * @return bool
+     * True if this is the magic `__call` method
+     */
+    public function getIsMagicCall() : bool {
+        return ($this->getName() === '__call');
+    }
+
+    /**
+     * @return bool
+     * True if this is the magic `__callStatic` method
+     */
+    public function getIsMagicCallStatic() : bool {
+        return ($this->getName() === '__callStatic');
+    }
+
+    /**
+     * @return bool
+     * True if this is the magic `__get` method
+     */
+    public function getIsMagicGet() : bool {
+        return ($this->getName() === '__get');
+    }
+
+    /**
+     * @return bool
+     * True if this is the magic `__set` method
+     */
+    public function getIsMagicSet() : bool {
+        return ($this->getName() === '__set');
     }
 
     /**
@@ -171,7 +201,7 @@ class Method extends ClassElement implements FunctionInterface
         $method->setIsDeprecated($comment->isDeprecated());
         $method->setSuppressIssueList($comment->getSuppressIssueList());
 
-        if ($method->getName() == '__call') {
+        if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {
             $method->setNumberOfOptionalParameters(999);
             $method->setNumberOfRequiredParameters(0);
         }
