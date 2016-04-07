@@ -6232,7 +6232,7 @@ return [
 'ob_implicit_flush' => ['', 'flag='=>'int'],
 'ob_inflatehandler' => ['string', 'data'=>'string', 'mode'=>'int'],
 'ob_list_handlers' => ['false|array'],
-'ob_start' => ['bool', 'user_function='=>'string|array', 'chunk_size='=>'int', 'flags='=>'int'],
+'ob_start' => ['bool', 'user_function='=>'string|array|callable', 'chunk_size='=>'int', 'flags='=>'int'],
 'ob_tidyhandler' => ['string', 'input'=>'string', 'mode='=>'int'],
 'oci_bind_array_by_name' => ['bool', 'stmt'=>'', 'name'=>'string', '&var'=>'array', 'max_table_length'=>'int', 'max_item_length='=>'int', 'type='=>'int'],
 'oci_bind_by_name' => ['bool', 'stmt'=>'', 'name'=>'string', '&var'=>'', 'maxlength='=>'int', 'type='=>'int'],
