@@ -746,7 +746,8 @@ class Type
 
         if (($s==='array'
             || $s==='string'
-            || (strpos($s, '[]')!==false))
+            || (strpos($s, '[]')!==false)
+            || $s==='closure')
             && $d==='callable'
         ) {
             return true;
