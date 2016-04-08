@@ -39,7 +39,8 @@ class Phan implements IgnoredFilesFilterInterface {
      *
      * @param array $results
      */
-    private static function collectSerializedResults(array $results) {
+    private static function collectSerializedResults(array $results)
+    {
         $collector = self::getIssueCollector();
         foreach ($results as $issues) {
             if (empty($issues)) {

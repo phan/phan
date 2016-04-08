@@ -125,7 +125,8 @@ class ForkPool {
      * @param resource[] $sockets the socket pair for IPC
      * @return resource
      */
-    private static function streamForParent(array $sockets) {
+    private static function streamForParent(array $sockets)
+    {
         list($for_read, $for_write) = $sockets;
 
         // The parent will not use the write channel, so it
@@ -149,7 +150,8 @@ class ForkPool {
      * @param resource[] $sockets the socket pair for IPC.
      * @return resource
      */
-    private static function streamForChild(array $sockets) {
+    private static function streamForChild(array $sockets)
+    {
         list($for_read, $for_write) = $sockets;
 
         // The while will not use the read channel, so it must
@@ -165,7 +167,8 @@ class ForkPool {
      *
      * @return array
      */
-    private function readResultsFromChildren() {
+    private function readResultsFromChildren()
+    {
         // Create an array of all active streams, indexed by
         // resource id.
         $streams = [];
@@ -214,7 +217,8 @@ class ForkPool {
     /**
      * Wait for all child processes to complete
      */
-    public function wait() {
+    public function wait()
+    {
 
         // Read all the streams from child processes into an array.
         $content = $this->readResultsFromChildren();

@@ -4,13 +4,14 @@ namespace Phan\Test;
 
 use Phan\ForkPool;
 
-class ForkPoolTest extends \PHPUnit_Framework_TestCase {
-
+class ForkPoolTest extends \PHPUnit_Framework_TestCase
+{
 	/**
 	 * Test that workers are able to send their data back
 	 * to the parent process.
 	 */
-	public function testBasicForkJoin() {
+    public function testBasicForkJoin()
+    {
 		$data = [
 			[1, 2, 3, 4],
 			[5, 6, 7, 8],
@@ -34,7 +35,8 @@ class ForkPoolTest extends \PHPUnit_Framework_TestCase {
 	/**
 	 * Test that the startup function works.
 	 */
-	public function testStartupFunction() {
+    public function testStartupFunction()
+    {
 		$did_startup = false;
 		$pool = new ForkPool(
 			[[1], [2], [3], [4]],
