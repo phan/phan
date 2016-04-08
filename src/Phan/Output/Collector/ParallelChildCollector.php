@@ -81,4 +81,10 @@ class ParallelChildCollector implements IssueCollectorInterface
         return [];
     }
 
+    /**
+     * This method has not effect on a ParallelChildCollector.
+     */
+    public function reset()
+    {
+    }
 }

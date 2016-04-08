@@ -31,6 +31,9 @@
         <testsuite name="AnalyzerTest">
             <file>tests/Phan/AnalyzerTest.php</file>
         </testsuite>
+        <testsuite name="ForkPoolTest">
+            <file>tests/Phan/ForkPoolTest.php</file>
+        </testsuite>
         <testsuite name="PhanTest">
             <file>tests/Phan/PhanTest.php</file>
         </testsuite>

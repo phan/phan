@@ -3,8 +3,6 @@ namespace Phan;
 
 use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\Collector\BufferingCollector;
-use Phan\Output\Collector\ParallelChildCollector;
-use Phan\Output\Collector\ParallelParentCollector;
 use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
@@ -33,6 +31,25 @@ class Phan implements IgnoredFilesFilterInterface {
         IssueCollectorInterface $issueCollector
     ) {
         self::$issueCollector = $issueCollector;
+    }
+
+    /**
+     * Take an array of serialized issues, deserialize them and then add
+     * them to the issue collector.
+     *
+     * @param array $results
+     */
+    private static function collectSerializedResults(array $results) {
+        $collector = self::getIssueCollector();
+        foreach ($results as $issues) {
+            if (empty($issues)) {
+                continue;
+            }
+
+            foreach ($issues as $issue) {
+                $collector->collectIssue($issue);
+            }
+        }
     }
 
     /**
@@ -156,22 +173,26 @@ class Phan implements IgnoredFilesFilterInterface {
         // or not
         if ($process_count > 1) {
 
-            // Collect all issues, blocking
-            self::display();
-
             // Run analysis one file at a time, splitting the set of
             // files up among a given number of child processes.
             $pool = new ForkPool(
                 $process_file_list_map,
-                function () {},
+                function () {
+                    // Remove any issues that were collected prior to forking
+                    // to prevent duplicate issues in the output.
+                    self::getIssueCollector()->reset();
+                },
                 $analysis_worker,
                 function () {
-                    self::display();
+                    // Return the collected issues to be serialized.
+                    return self::getIssueCollector()->getCollectedIssues();
                 }
             );
 
-            // Wait for all tasks to complete
-            $pool->wait();
+            // Wait for all tasks to complete and collect the results.
+            self::collectSerializedResults($pool->wait());
+
+            self::display();
 
         } else {
             // Get the task data from the 0th processor

@@ -10,6 +10,9 @@ class ForkPool {
     /** @var int[] */
     private $child_pid_list = [];
 
+    /** @var resource[] */
+    private $read_streams = [];
+
     /**
      * @param int $pool_size
      * The number of worker processes to create
@@ -50,6 +53,14 @@ class ForkPool {
         // Fork as many times as requested to get the given
         // pool size
         for ($proc_id = 0; $proc_id < $pool_size; $proc_id++) {
+
+            // Create an IPC socket pair.
+            $sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+            if (!$sockets) {
+                error_log("unable to create stream socket pair");
+                exit(EXIT_FAILURE);
+            }
+
             // Fork
             $pid = 0;
             if (($pid = pcntl_fork()) < 0) {
@@ -61,6 +72,7 @@ class ForkPool {
             if ($pid > 0) {
                 $is_parent = true;
                 $this->child_pid_list[] = $pid;
+                $this->read_streams[] = self::streamForParent($sockets);
                 continue;
             }
 
@@ -76,6 +88,9 @@ class ForkPool {
             return;
         }
 
+        // Get the write stream for the child.
+        $write_stream = self::streamForChild($sockets);
+
         // Execute anything the children wanted to execute upon
         // starting up
         $startup_closure();
@@ -88,16 +103,122 @@ class ForkPool {
 
         // Execute each child's shutdown closure before
         // exiting the process
-        $shutdown_closure();
+        $results = $shutdown_closure();
+
+        // If this child produced results, serialize them onto
+        // the stream to the parent.
+        if ($results) {
+            fwrite($write_stream, serialize($results));
+        }
+
+        fclose($write_stream);
 
         // Children exit after completing their work
         exit(EXIT_SUCCESS);
+
+    }
+
+    /**
+     * Prepare the socket pair to be used in a parent process and
+     * return the stream the parent will use to read results.
+     *
+     * @param resource[] $sockets the socket pair for IPC
+     * @return resource
+     */
+    private static function streamForParent(array $sockets) {
+        list($for_read, $for_write) = $sockets;
+
+        // The parent will not use the write channel, so it
+        // must be closed to prevent deadlock.
+        fclose($for_write);
+
+        // stream_select will be used to read multiple streams, so these
+        // must be set to non-blocking mode.
+        if (!stream_set_blocking($for_read, false)) {
+            error_log('unable to set read stream to non-blocking');
+            exit(EXIT_FAILURE);
+        }
+
+        return $for_read;
+    }
+
+    /**
+     * Prepare the socket pair to be used in a child process and return
+     * the stream the child will use to write results.
+     *
+     * @param resource[] $sockets the socket pair for IPC.
+     * @return resource
+     */
+    private static function streamForChild(array $sockets) {
+        list($for_read, $for_write) = $sockets;
+
+        // The while will not use the read channel, so it must
+        // be closed to prevent deadlock.
+        fclose($for_read);
+        return $for_write;
+    }
+
+    /**
+     * Read the results that each child process has serialized on their write streams.
+     * The results are returned in an array, one for each worker. The order of the results
+     * is not maintained.
+     *
+     * @return array
+     */
+    private function readResultsFromChildren() {
+        // Create an array of all active streams, indexed by
+        // resource id.
+        $streams = [];
+        foreach ($this->read_streams as $stream) {
+            $streams[intval($stream)] = $stream;
+        }
+
+        // Create an array for the content received on each stream,
+        // indexed by resource id.
+        $content = array_fill_keys(array_keys($streams), '');
+
+        // Read the data off of all the stream.
+        while (count($streams) >0) {
+            $needs_read = array_values($streams);
+            $needs_write = NULL;
+            $needs_except = NULL;
+
+            // Wait for data on at least one stream.
+            $num = stream_select($needs_read, $needs_write, $needs_except, NULL /* no timeout */);
+            if ($num === false) {
+                error_log("unable to select on read stream");
+                exit(EXIT_FAILURE);
+            }
+
+            // For each stream that was ready, read the content.
+            foreach ($needs_read as $file) {
+                $buffer = fread($file, 1024);
+                if (strlen($buffer) > 0) {
+                    $content[intval($file)] .= $buffer;
+                }
+
+                // If the stream has closed, stop trying to select on it.
+                if (feof($file)) {
+                    fclose($file);
+                    unset($streams[intval($file)]);
+                }
+            }
+        }
+
+        // Unmarshal the content into its original form.
+        return array_values(array_map(function($data) {
+            return unserialize($data);
+        }, $content));
     }
 
     /**
      * Wait for all child processes to complete
      */
     public function wait() {
+
+        // Read all the streams from child processes into an array.
+        $content = $this->readResultsFromChildren();
+
         // Wait for all children to return
         foreach ($this->child_pid_list as $child_pid) {
             if (pcntl_waitpid($child_pid, $status) < 0) {
@@ -113,6 +234,7 @@ class ForkPool {
             }
         }
 
+        return $content;
     }
 
 }
