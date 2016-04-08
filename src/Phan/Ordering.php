@@ -41,6 +41,7 @@ class Ordering
         if (Config::get()->randomize_file_order) {
             $random_proc_file_map = [];
             $i = 0;
+            shuffle($analysis_file_list);
             foreach ($analysis_file_list as $i => $file) {
                 $random_proc_file_map[$i++ % $process_count][] = $file;
             }
