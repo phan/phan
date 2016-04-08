@@ -175,6 +175,12 @@ class Config
 
         // Emit issue messages with markdown formatting
         'markdown_issue_messages' => false,
+
+        // Assign files to be analyzed on random processes
+        // in random order. You very likely don't want to
+        // set this to true. This is meant for debugging
+        // and fuzz testing purposes only.
+        'randomize_file_order' => false,
     ];
 
     /**

@@ -38,6 +38,15 @@ class Ordering
         assert($process_count > 0,
             "The process count must be greater than zero.");
 
+        if (Config::get()->randomize_file_order) {
+            $random_proc_file_map = [];
+            $i = 0;
+            foreach ($analysis_file_list as $i => $file) {
+                $random_proc_file_map[$i++ % $process_count][] = $file;
+            }
+            return $random_proc_file_map;
+        }
+
         // Create a Set from the file list
         $analysis_file_map = [];
         foreach ($analysis_file_list as $i => $file) {
