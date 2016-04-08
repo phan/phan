@@ -74,4 +74,12 @@ final class BufferingCollector implements IssueCollectorInterface
     {
         $this->issues = [];
     }
+
+    /**
+     * Removes all collected issues.
+     */
+    public function reset()
+    {
+        $this->issues = [];
+    }
 }

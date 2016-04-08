@@ -16,4 +16,9 @@ interface IssueCollectorInterface
      * @return IssueInstance[]
      */
     public function getCollectedIssues():array;
+
+    /**
+     * Remove all collected issues.
+     */
+    public function reset();
 }
