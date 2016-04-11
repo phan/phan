@@ -527,23 +527,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         // Make sure we're actually returning from a method.
-        if (!$this->context->isMethodScope()
-            && !$this->context->isClosureScope()) {
+        if (!$this->context->isInFunctionLikeScope()) {
             return $this->context;
         }
 
         // Get the method/function/closure we're in
-        $method = null;
-        if ($this->context->isClosureScope()) {
-            $method = $this->context->getClosureInScope($this->code_base);
-        } elseif ($this->context->isMethodScope()) {
-            $method = $this->context->getMethodInScope($this->code_base);
-        }
+        $method = $this->context->getFunctionLikeInScope($this->code_base);
 
-        assert(
-            !empty($method),
-            "We're supposed to be in either method or closure scope."
-        );
+        assert(!empty($method),
+            "We're supposed to be in either method or closure scope.");
 
         // Figure out what we intend to return
         $method_return_type = $method->getUnionType();
@@ -656,7 +648,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $variable_name
             )) {
                 $variable = $this->context->getScope()
-                    ->getVariableWithName($variable_name);
+                    ->getVariableByName($variable_name);
 
                 $union_type = $variable->getUnionType();
                 if ($union_type->isEmpty()) {
@@ -805,7 +797,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // Make sure we're not instantiating an abstract
                 // class
                 if ($class->isAbstract()
-                    && (!$this->context->hasClassFQSEN()
+                    && (!$this->context->isInClassScope()
                     || $class->getFQSEN() != $this->context->getClassFQSEN())
                 ) {
                     $this->emitIssue(
@@ -919,7 +911,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If the method isn't static and we're not calling
             // it on 'parent', 'self' or 'static', we're possibly in a bad spot.
             if (!$method->isStatic() && !in_array($static_class, ['self', 'parent', 'static'])) {
-                if ($this->context->hasClassFQSEN()) {
+                if ($this->context->isInClassScope()) {
                     $fully_qualified_class_name =
                         FullyQualifiedClassName::fromStringInContext($static_class, $this->context);
 
@@ -1001,10 +993,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitMethod(Decl $node) : Context
     {
-        $method =
-            $this->context->getMethodInScope($this->code_base);
+        assert($this->context->isInFunctionLikeScope(),
+            "Must be in function-like scope to get method");
+
+        $method = $this->context->getFunctionLikeInScope($this->code_base);
 
         $return_type = $method->getUnionType();
+
+        if (!$method instanceof Method) {
+            Debug::printNode($node);
+            print $method . "\n";
+        }
 
         assert($method instanceof Method,
             "Function found where method expected at {$this->context}");
@@ -1068,7 +1067,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitFuncDecl(Decl $node) : Context
     {
         $method =
-            $this->context->getMethodInScope($this->code_base);
+            $this->context->getFunctionLikeInScope($this->code_base);
 
         $return_type = $method->getUnionType();
 
@@ -1463,7 +1462,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Create a backup of the method's scope so that we can
         // reset it after fucking with it below
-        $original_method_scope = $method->getContext()->getScope();
+        $original_method_scope = $method->getInternalScope();
 
         foreach ($argument_list->children as $i => $argument) {
             $parameter = $method->getParameterList()[$i] ?? null;
@@ -1515,25 +1514,60 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 $argument
                             ))->getOrCreateVariable();
 
+                            $pass_by_reference_variable =
+                                new PassByReferenceVariable(
+                                    $parameter,
+                                    $variable
+                                );
+
                             $parameter_list = $method->getParameterList();
-                            $parameter_list[$i] = $variable;
+                            $parameter_list[$i] = $pass_by_reference_variable;
                             $method->setParameterList($parameter_list);
 
                             // Add it to the scope of the function wrapped
                             // in a way that makes it addressable as the
                             // parameter its mimicking
-                            $method->getContext()->addScopeVariable(
+                            $method->getInternalScope()->addVariable(
+                                $pass_by_reference_variable
+                            );
+
+                        } else if ($argument->kind == \ast\AST_STATIC_PROP) {
+
+                            // Get the variable
+                            $property = (new ContextNode(
+                                $this->code_base,
+                                $this->context,
+                                $argument
+                            ))->getOrCreateProperty(
+                                $argument->children['prop'] ?? ''
+                            );
+
+                            $pass_by_reference_variable =
                                 new PassByReferenceVariable(
                                     $parameter,
-                                    $variable
-                                )
+                                    $property
+                                );
+
+                            $parameter_list = $method->getParameterList();
+                            $parameter_list[$i] = $pass_by_reference_variable;
+                            $method->setParameterList($parameter_list);
+
+                            // Add it to the scope of the function wrapped
+                            // in a way that makes it addressable as the
+                            // parameter its mimicking
+                            $method->getInternalScope()->addVariable(
+                                $pass_by_reference_variable
                             );
+
                         }
+
                     } else {
                         // Overwrite the method's variable representation
                         // of the parameter with the parameter with the
                         // new type
-                        $method->getContext()->addScopeVariable($parameter);
+                        $method->getInternalScope()->addVariable(
+                            $parameter
+                        );
                     }
                 }
             }
@@ -1546,8 +1580,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // method in scope
         if ($has_argument_parameter_mismatch
             && !$method->isInternal()
-            && (!$this->context->isMethodScope()
-                || $method->getFQSEN() !== $this->context->getMethodFQSEN())
+            && (!$this->context->isInFunctionLikeScope()
+                || $method->getFQSEN() !== $this->context->getFunctionLikeFQSEN())
         ) {
             $method->analyze($method->getContext(), $code_base);
         }
@@ -1558,7 +1592,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Reset the scope to its original version before we
         // put new parameters in it
-        $method->getContext()->setScope($original_method_scope);
+        $method->setInternalScope($original_method_scope);
     }
 
     /**

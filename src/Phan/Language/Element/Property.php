@@ -31,13 +31,15 @@ class Property extends ClassElement
         Context $context,
         string $name,
         UnionType $type,
-        int $flags
+        int $flags,
+        FullyQualifiedPropertyName $fqsen
     ) {
         parent::__construct(
             $context,
             $name,
             $type,
-            $flags
+            $flags,
+            $fqsen
         );
     }
 

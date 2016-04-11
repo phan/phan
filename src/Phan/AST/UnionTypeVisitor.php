@@ -855,7 +855,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }
         } else {
-            $variable = $this->context->getScope()->getVariableWithName(
+            $variable = $this->context->getScope()->getVariableByName(
                 $variable_name
             );
 
@@ -1239,13 +1239,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                 ))->getUnqualifiedNameForAnonymousClass();
 
             // Turn that into a fully qualified name
-                $fqsen = FullyQualifiedClassName::fromStringInContext(
-                    $anonymous_class_name,
-                    $this->context
-                );
+            $fqsen = FullyQualifiedClassName::fromStringInContext(
+                $anonymous_class_name,
+                $this->context
+            );
 
             // Turn that into a union type
-                return Type::fromFullyQualifiedString((string)$fqsen)->asUnionType();
+            return Type::fromFullyQualifiedString((string)$fqsen)->asUnionType();
         }
 
         // Things of the form `new $method->name()`

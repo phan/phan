@@ -3,34 +3,116 @@ declare(strict_types=1);
 namespace Phan\Language;
 
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 
-class Scope
+abstract class Scope
 {
+    /**
+     * @var Scope|null
+     */
+    private $parent_scope = null;
+
+    /**
+     * @var FQSEN|null
+     */
+    private $fqsen = null;
 
     /**
      * @var Variable[]
-     * A map from name to variables for all
-     * variables registered under $GLOBALS.
      */
-    static $global_variable_map = [];
+    protected $variable_map = [];
 
     /**
-     * @var Variable[]
-     */
-    private $variable_map = [];
-
-    /**
-     * When entering a new file, we need to copy all globally
-     * scope variables to the local scope so that they become
-     * accessible.
      *
-     * @return void
      */
-    public function copyGlobalToLocal()
+    public function __construct(
+        Scope $parent_scope = null,
+        FQSEN $fqsen = null
+    ) {
+        $this->parent_scope = $parent_scope;
+        $this->fqsen = $fqsen;
+    }
+
+    /**
+     * @return bool
+     * True if this scope has a parent scope
+     */
+    public function hasParentScope() : bool
     {
-        foreach (self::$global_variable_map as $name => $variable) {
-            $this->addVariable($variable);
-        }
+        return (null != $this->parent_scope);
+    }
+
+    /**
+     * @return Scope
+     * Get the parent scope of this scope
+     */
+    public function getParentScope() : Scope
+    {
+        return $this->parent_scope;
+    }
+
+    /**
+     * @return bool
+     * True if this scope has an FQSEN
+     */
+    public function hasFQSEN() : bool
+    {
+        return (null != $this->fqsen);
+    }
+
+    /**
+     *
+     */
+    public function getFQSEN()
+    {
+        return $this->fqsen;
+    }
+
+    /**
+     * @return bool
+     * True if we're in a class scope
+     */
+    public function isInClassScope() : bool
+    {
+        return $this->hasParentScope()
+            ? $this->getParentScope()->isInClassScope() : false;
+    }
+
+    /**
+     * @return FullyQualifiedClassName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     */
+    public function getClassFQSEN() : FullyQualifiedClassName
+    {
+        assert($this->hasParentScope(),
+            "Cannot get class FQSEN on scope $this");
+
+        return $this->getParentScope()->getClassFQSEN();
+    }
+
+    /**
+     * @return bool
+     * True if we're in a method/function/closure scope
+     */
+    public function isInFunctionLikeScope() : bool
+    {
+        return $this->hasParentScope()
+            ? $this->getParentScope()->isInFunctionLikeScope() : false;
+    }
+
+    /**
+     * @return FullyQualifiedMethodName|FullyQualifiedFunctionName
+     * Crawl the scope hierarchy to get a method FQSEN.
+     */
+    public function getFunctionLikeFQSEN()
+    {
+        assert($this->hasParentScope(),
+            "Cannot get method/function/closure FQSEN on scope $this");
+
+        return $this->getParentScope()->getFunctionLikeFQSEN();
     }
 
     /**
@@ -40,37 +122,13 @@ class Scope
      */
     public function hasVariableWithName(string $name) : bool
     {
-        return (
-            !empty($this->variable_map[$name])
-            || !empty(self::$global_variable_map[$name])
-        );
+        return (!empty($this->variable_map[$name]));
     }
 
     /**
      * @return Variable
      */
-    public function getVariableWithName(string $name) : Variable
-    {
-        return $this->variable_map[$name]
-            ?? self::$global_variable_map[$name];
-    }
-
-    /**
-     * @return bool
-     * True if a variable with the given name is defined
-     * within this local scope (ignoring the global scope)
-     */
-    public function hasLocalVariableWithName(string $name) : bool
-    {
-        return (
-            !empty($this->variable_map[$name])
-        );
-    }
-
-    /**
-     * @return Variable
-     */
-    public function getLocalVariableWithName(string $name) : Variable
+    public function getVariableByName(string $name) : Variable
     {
         return $this->variable_map[$name];
     }
@@ -82,22 +140,6 @@ class Scope
     public function getVariableMap() : array
     {
         return $this->variable_map;
-    }
-
-    /**
-     * @param Variable $variable
-     * A variable to add to the global scope
-     *
-     * @return Scope
-     */
-    public function withGlobalVariable(Variable $variable) : Scope
-    {
-        // Add the variable globally
-        self::$global_variable_map[$variable->getName()] =
-            $variable;
-
-        // Add it locally as well
-        return $this->withVariable($variable);
     }
 
     /**
@@ -122,11 +164,51 @@ class Scope
     }
 
     /**
+     * @param Variable $variable
+     * A variable to add to the set of global variables
+     *
+     * @return void
+     */
+    public function addGlobalVariable(Variable $variable)
+    {
+        assert($this->hasParentScope(),
+            "No global scope available. This should not happen.");
+
+        $this->getParentScope()->addGlobalVariable($variable);
+    }
+
+    /**
+     * @return bool
+     * True if a global variable with the given name exists
+     */
+    public function hasGlobalVariableWithName(string $name) : bool
+    {
+        assert($this->hasParentScope(),
+            "No global scope available. This should not happen.");
+
+        return $this->getParentScope()->hasGlobalVariableWithName(
+            $name
+        );
+    }
+
+    /**
+     * @return Variable
+     * The global variable with the given name
+     */
+    public function getGlobalVariableByName(string $name) : Variable
+    {
+        assert($this->hasParentScope(),
+            "No global scope available. This should not happen.");
+
+        return $this->getParentScope()->getGlobalVariableByName($name);
+    }
+
+    /**
      * @return string
      * A string representation of this scope
      */
     public function __toString() : string
     {
-        return implode(',', $this->getVariableMap());
+        return $this->getFQSEN() . "\t" . implode(',', $this->getVariableMap());
     }
 }

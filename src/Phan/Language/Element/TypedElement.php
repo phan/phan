@@ -73,11 +73,10 @@ abstract class TypedElement implements TypedElementInterface
         UnionType $type,
         int $flags
     ) {
-        $this->context = $context;
+        $this->context = clone($context);
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
-
         $this->setIsInternal($context->isInternal());
     }
 

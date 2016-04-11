@@ -13,6 +13,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope;
 
 /**
@@ -30,7 +31,6 @@ class Context extends FileRef implements \Serializable
 
     /**
      * @var array
-     * ...
      */
     private $namespace_map = [];
 
@@ -42,33 +42,9 @@ class Context extends FileRef implements \Serializable
 
     /**
      * @var Scope
+     * The current scope in this context
      */
-    private $scope = null;
-
-    /**
-     * @var FullyQualifiedClassName|null
-     * A fully-qualified structural element name describing
-     * the current class or the empty-string if we are not
-     * in a class scope.
-     */
-    private $class_fqsen = null;
-
-    /**
-     * @var FQSEN|null
-     * A fully-qualified structural element name describing
-     * the current function or method or the empty-string if
-     * we are not in a function or method scope.
-     */
-    private $method_fqsen = null;
-
-    /**
-     * @var FullyQualifiedFunctionName|null
-     * A fully-qualified structural element name describing
-     * the current closure we're in or null if we're not
-     * in a closure.
-     */
-    private $closure_fqsen = null;
-
+    private $scope;
 
     /**
      * Create a new context
@@ -77,10 +53,7 @@ class Context extends FileRef implements \Serializable
     {
         $this->namespace = '';
         $this->namespace_map = [];
-        $this->class_fqsen = null;
-        $this->method_fqsen = null;
-        $this->closure_fqsen = null;
-        $this->scope = new Scope();
+        $this->scope = new GlobalScope;
     }
 
     /*
@@ -186,100 +159,6 @@ class Context extends FileRef implements \Serializable
     }
 
     /**
-     * @param FullyQualifiedClassName $fqsen
-     * A fully-qualified structural element name describing
-     * the current class in scope.
-     *
-     * @return Context
-     * A clone of this context with the given value is returned
-     */
-    public function withClassFQSEN(FullyQualifiedClassName $fqsen) : Context
-    {
-        $context = clone($this);
-        $context->class_fqsen = $fqsen;
-        return $context;
-    }
-
-    /**
-     * @return bool
-     * True if a class fqsen is defined within this context.
-     */
-    public function hasClassFQSEN() : bool
-    {
-        return !empty($this->class_fqsen);
-    }
-
-    /**
-     * @return FullyQualifiedClassName
-     * A fully-qualified structural element name describing
-     * the current class in scope.
-     */
-    public function getClassFQSEN() : FullyQualifiedClassName
-    {
-        return $this->class_fqsen;
-    }
-
-    /**
-     * @return bool
-     * True if this context is currently within a class
-     * scope, else false.
-     */
-    public function isInClassScope() : bool
-    {
-        return !empty($this->class_fqsen);
-    }
-
-    /*
-     * @param FullyQualifiedMethodName $fqsen
-     * A fully-qualified structural element name describing
-     * the current function or method in scope.
-     *
-     * @return Context
-     * A clone of this context with the given value is returned
-     */
-    public function withMethodFQSEN(FQSEN $fqsen = null) : Context
-    {
-        $context = clone($this);
-        $context->method_fqsen = $fqsen;
-        return $context;
-    }
-
-    /*
-     * @return FullyQualifiedMethodName
-     * A fully-qualified structural element name describing
-     * the current function or method in scope.
-     */
-    public function getMethodFQSEN() : FQSEN
-    {
-        return $this->method_fqsen;
-    }
-
-    /*
-     * @param FullyQualifiedFunctionName $fqsen
-     * A fully-qualified structural element name describing
-     * the current closure in scope.
-     *
-     * @return Context
-     * A clone of this context with the given value is returned
-     */
-    public function withClosureFQSEN(FullyQualifiedFunctionName $fqsen = null) : Context
-    {
-        $context = clone($this);
-        $context->closure_fqsen = $fqsen;
-        return $context;
-    }
-
-    /*
-     * @return FullyQualifiedFunctionName
-     * A fully-qualified structural element name describing
-     * the current closure in scope
-     */
-    public function getClosureFQSEN() : FullyQualifiedFunctionName
-    {
-        return $this->closure_fqsen;
-    }
-
-    /**
      * @param int $strict_types
      * The strict_type setting for the file
      *
@@ -309,18 +188,7 @@ class Context extends FileRef implements \Serializable
      */
     public function getScope() : Scope
     {
-        return $this->scope ?? new Scope();
-    }
-
-    /**
-     * @return Context
-     * A new context with the given scope
-     */
-    public function withScope(Scope $scope) : Context
-    {
-        $context = clone($this);
-        $context->scope = $scope;
-        return $context;
+        return $this->scope;
     }
 
     /**
@@ -331,6 +199,17 @@ class Context extends FileRef implements \Serializable
     public function setScope(Scope $scope)
     {
         $this->scope = $scope;
+    }
+
+    /**
+     * @return Context
+     * A new context with the given scope
+     */
+    public function withScope(Scope $scope) : Context
+    {
+        $context = clone($this);
+        $context->setScope($scope);
+        return $context;
     }
 
     /**
@@ -345,13 +224,9 @@ class Context extends FileRef implements \Serializable
     public function withScopeVariable(
         Variable $variable
     ) : Context {
-        if ($this->isInGlobalScope()) {
-            return $this->withGlobalScopeVariable($variable);
-        } else {
-            return $this->withScope(
-                $this->getScope()->withVariable($variable)
-            );
-        }
+        return $this->withScope(
+            $this->getScope()->withVariable($variable)
+        );
     }
 
     /**
@@ -359,16 +234,10 @@ class Context extends FileRef implements \Serializable
      * A variable to add to the scope for the new
      * context
      *
-     * @return Context
-     * A new context based on this with a variable
-     * as defined by the parameters in scope
+     * @return void
      */
-    public function withGlobalScopeVariable(
-        Variable $variable
-    ) : Context {
-        return $this->withScope(
-            $this->getScope()->withGlobalVariable($variable)
-        );
+    public function addGlobalScopeVariable(Variable $variable) {
+        $this->getScope()->addGlobalVariable($variable);
     }
 
     /**
@@ -385,13 +254,27 @@ class Context extends FileRef implements \Serializable
     public function addScopeVariable(
         Variable $variable
     ) {
-        if ($this->isInGlobalScope()) {
-            $this->scope =
-                $this->getScope()->withGlobalVariable($variable);
-        } else {
-            $this->scope =
-                $this->getScope()->withVariable($variable);
-        }
+        $this->getScope()->addVariable($variable);
+    }
+
+    /**
+     * @return bool
+     * True if this context is currently within a class
+     * scope, else false.
+     */
+    public function isInClassScope() : bool
+    {
+        return $this->getScope()->isInClassScope();
+    }
+
+    /**
+     * @return FullyQualifiedClassName
+     * A fully-qualified structural element name describing
+     * the current class in scope.
+     */
+    public function getClassFQSEN() : FullyQualifiedClassName
+    {
+        return $this->getScope()->getClassFQSEN();
     }
 
     /**
@@ -407,10 +290,8 @@ class Context extends FileRef implements \Serializable
      */
     public function getClassInScope(CodeBase $code_base) : Clazz
     {
-        assert(
-            $this->isInClassScope(),
-            "Must be in class scope to get class"
-        );
+        assert($this->isInClassScope(),
+            "Must be in class scope to get class");
 
         if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
             throw new CodeBaseException(
@@ -426,11 +307,23 @@ class Context extends FileRef implements \Serializable
 
     /**
      * @return bool
-     * True if we're within a method scope
+     * True if this context is currently within a method,
+     * function or closure scope.
      */
-    public function isMethodScope() : bool
+    public function isInFunctionLikeScope() : bool
     {
-        return !empty($this->method_fqsen);
+        return $this->getScope()->isInFunctionLikeScope();
+    }
+
+    /*
+     * @return FullyQualifiedMethodName|FullyQualifiedFunctionName|FullyQualifiedClosureName
+     * A fully-qualified structural element name describing
+     * the current function or method in scope.
+     */
+    public function getFunctionLikeFQSEN()
+    {
+        assert($this->getScope()->isInFunctionLikeScope());
+        return $this->getScope()->getFunctionLikeFQSEN();
     }
 
     /**
@@ -440,47 +333,27 @@ class Context extends FileRef implements \Serializable
      * @return FunctionInterface
      * Get the method in this scope or fail real hard
      */
-    public function getMethodInScope(CodeBase $code_base) : FunctionInterface
-    {
-        assert(
-            $this->isMethodScope(),
-            "Must be in method scope to get method. Actually in {$this}"
-        );
+    public function getFunctionLikeInScope(
+        CodeBase $code_base
+    ) : FunctionInterface {
+        assert($this->isInFunctionLikeScope(),
+            "Must be in method scope to get method. Actually in {$this}");
 
-        return ($this->getMethodFQSEN() instanceof FullyQualifiedFunctionName)
-            ? $code_base->getFunctionByFQSEN($this->getMethodFQSEN())
-            : $code_base->getMethodByFQSEN($this->getMethodFQSEN());
-    }
+        $fqsen = $this->getFunctionLikeFQSEN();
 
-    /**
-     * @param CodeBase $code_base
-     * The global code base holding all state
-     *
-     * @return bool
-     * True if we're within a closure scope
-     */
-    public function isClosureScope() : bool
-    {
-        return !empty($this->closure_fqsen);
-    }
+        if ($fqsen instanceof FullyQualifiedFunctionName) {
+            assert($code_base->hasFunctionWithFQSEN($fqsen),
+                "The function with FQSEN $fqsen does not exist");
+            return $code_base->getFunctionByFQSEN($fqsen);
+        }
 
-    /**
-     * @param CodeBase $code_base
-     * The code base from which to retrieve the element
-     *
-     * @return Method
-     * Get the closure in this scope or fail real hard
-     */
-    public function getClosureInScope(CodeBase $code_base) : Func
-    {
-        assert(
-            $this->isClosureScope(),
-            "Must be in closure scope to get closure. Actually in {$this}"
-        );
+        if ($fqsen instanceof FullyQualifiedMethodName) {
+            assert($code_base->hasMethodWithFQSEN($fqsen),
+                "The method with FQSEN $fqsen does not exist");
+            return $code_base->getMethodByFQSEN($fqsen);
+        }
 
-        return $code_base->getFunctionByFQSEN(
-            $this->getClosureFQSEN()
-        );
+        assert(false, "FQSEN must be for a function or method");
     }
 
     /**
@@ -492,8 +365,7 @@ class Context extends FileRef implements \Serializable
     public function isInElementScope() : bool
     {
         return (
-            $this->isClosureScope()
-            || $this->isMethodScope()
+            $this->isInFunctionLikeScope()
             || $this->isInClassScope()
         );
     }
@@ -522,10 +394,8 @@ class Context extends FileRef implements \Serializable
         assert($this->isInElementScope(),
             "Cannot get element in scope if we're in the global scope");
 
-        if ($this->isClosureScope()) {
-            return $this->getClosureInScope($code_base);
-        } else if ($this->isMethodScope()) {
-            return $this->getMethodInScope($code_base);
+        if ($this->isInFunctionLikeScope()) {
+            return $this->getFunctionLikeInScope($code_base);
         } else if ($this->isInClassScope()) {
             return $this->getClassInScope($code_base);
         }
@@ -565,7 +435,6 @@ class Context extends FileRef implements \Serializable
 
         $serialized .= '^' . implode('|', [
             $this->getNamespace(),
-            (string)$this->class_fqsen,
             (string)$this->method_fqsen,
             (string)$this->closure_fqsen
         ]);
@@ -581,30 +450,7 @@ class Context extends FileRef implements \Serializable
         list($file_ref, $serialized) = explode('^', $serialized);
         parent::unserialize($file_ref);
 
-        list($namespace,
-            $class_fqsen,
-            $method_fqsen,
-            $closure_fqsen) = explode('|', $serialized);
-
+        list($namespace) = explode('|', $serialized);
         $this->namespace = $namespace;
-
-        $this->class_fqsen = $class_fqsen
-            ? FullyQualifiedClassName::fromFullyQualifiedString($class_fqsen)
-            : null;
-
-        // Determine if we have a method or a function
-        if (false === strpos($method_fqsen, '::')) {
-            $this->method_fqsen = $method_fqsen
-                ? FullyQualifiedFunctionName::fromFullyQualifiedString($method_fqsen)
-                : null;
-        } else {
-            $this->method_fqsen = $method_fqsen
-                ? FullyQualifiedMethodName::fromFullyQualifiedString($method_fqsen)
-                : null;
-        }
-
-        $this->closure_fqsen = $closure_fqsen
-            ? FullyQualifiedFunctionName::fromFullyQualifiedString($closure_fqsen)
-            : null;
     }
 }

@@ -216,123 +216,6 @@ class Analysis
     }
 
     /**
-     * @param CodeBase $code_base
-     * A code base needs to be passed in because we require
-     * it to be initialized before any classes or files are
-     * loaded.
-     *
-     * @param Context $context
-     * The context in which this node exists
-     *
-     * @param Node $node
-     * A node to parse and scan for errors
-     *
-     * @return Context
-     * The context from within the node is returned
-     */
-    public static function analyzeNodeInContext(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null,
-        int $depth = 0
-    ) : Context {
-        // Visit the given node populating the code base
-        // with anything we learn and get a new context
-        // indicating the state of the world within the
-        // given node
-        $node_context = (new PreOrderAnalysisVisitor(
-            $code_base,
-            $context->withLineNumberStart($node->lineno ?? 0)
-        ))($node);
-
-        assert(!empty($context), 'Context cannot be null');
-
-        // We collect all child context so that the
-        // PostOrderAnalysisVisitor can optionally operate on
-        // them
-        $child_context_list = [];
-
-        $child_context = $node_context;
-
-        // With a context that is inside of the node passed
-        // to this method, we analyze all children of the
-        // node.
-        foreach ($node->children ?? [] as $child_node) {
-            // Skip any non Node children.
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-
-            if (!self::shouldVisit($child_node)) {
-                $child_context->withLineNumberStart(
-                    $child_node->lineno ?? 0
-                );
-                continue;
-            }
-
-            // All nodes but conditionals pass context to
-            // their siblings. Child nodes of conditionals
-            // operate in a context independent of eachother
-            switch ($child_node->kind) {
-                case \ast\AST_CATCH_LIST:
-                case \ast\AST_IF_ELEM:
-                    $child_context = $node_context;
-                    break;
-            }
-
-            switch($node->kind) {
-                case \ast\AST_TRY:
-                    $child_context = clone($node_context);
-                    break;
-            }
-
-            // Step into each child node and get an
-            // updated context for the node
-            $child_context = self::analyzeNodeInContext(
-                $code_base,
-                $child_context->withLineNumberStart($child_node->lineno ?? 0),
-                $child_node,
-                $node,
-                $depth + 1
-            );
-
-            $child_context_list[] = $child_context;
-        }
-
-        // For if statements, we need to merge the contexts
-        // of all child context into a single scope based
-        // on any possible branching structure
-        $node_context = (new ContextMergeVisitor(
-            $code_base,
-            $node_context,
-            $child_context_list
-        ))($node);
-
-        // Now that we know all about our context (like what
-        // 'self' means), we can analyze statements like
-        // assignments and method calls.
-        $node_context = (new PostOrderAnalysisVisitor(
-            $code_base,
-            $node_context->withLineNumberStart($node->lineno ?? 0),
-            $parent_node
-        ))($node);
-
-        // When coming out of a scoped element, we pop the
-        // context to be the incoming context. Otherwise,
-        // we pass our new context up to our parent
-        switch ($node->kind) {
-            case \ast\AST_CLASS:
-            case \ast\AST_METHOD:
-            case \ast\AST_FUNC_DECL:
-            case \ast\AST_CLOSURE:
-                return $context;
-            default:
-                return $node_context;
-        }
-    }
-
-    /**
      * Take a look at all globally accessible elements and see if
      * we can find any dead code that is never referenced
      *
@@ -363,7 +246,7 @@ class Analysis
      * True if the given node should be visited or false if
      * it should be skipped entirely
      */
-    private static function shouldVisit(Node $node)
+    public static function shouldVisit(Node $node)
     {
 
         // When doing dead code detection, we need to go
@@ -457,11 +340,8 @@ class Analysis
             return $context;
         }
 
-        // Whenever we enter a file, we copy all global scope
-        // variables to the local scope
-        $context->getScope()->copyGlobalToLocal();
+        // TODO: Formerly where we did copyGlobalToLocal
 
-        // Start recursively analyzing the tree
-        return self::analyzeNodeInContext($code_base, $context, $node);
+        return (new BlockAnalysisVisitor($code_base, $context))($node);
     }
 }

@@ -3,8 +3,9 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
@@ -49,7 +50,8 @@ class FunctionFactory {
             $context,
             $fqsen->getName(),
             new UnionType(),
-            0
+            0,
+            $fqsen
         );
 
         $function->setNumberOfRequiredParameters(
@@ -60,8 +62,6 @@ class FunctionFactory {
             $reflection_function->getNumberOfParameters()
             - $reflection_function->getNumberOfRequiredParameters()
         );
-
-        $function->setFQSEN($fqsen);
 
         return self::functionListFromFunction($function, $code_base);
     }
@@ -88,10 +88,9 @@ class FunctionFactory {
             $context,
             $fqsen->getName(),
             $return_type,
-            0
+            0,
+            $fqsen
         );
-
-        $func->setFQSEN($fqsen);
 
         return self::functionListFromFunction($func, $code_base);
     }
@@ -105,6 +104,12 @@ class FunctionFactory {
         \ReflectionClass $class,
         \ReflectionMethod $reflection_method
     ) : array {
+
+        $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
+            $reflection_method->getName(),
+            $context
+        );
+
         $reflection_method = new \ReflectionMethod(
             $class->getName(),
             $reflection_method->name
@@ -114,7 +119,8 @@ class FunctionFactory {
             $context,
             $reflection_method->name,
             new UnionType(),
-            $reflection_method->getModifiers()
+            $reflection_method->getModifiers(),
+            $method_fqsen
         );
 
         $method->setNumberOfRequiredParameters(
@@ -130,13 +136,6 @@ class FunctionFactory {
             $method->setNumberOfOptionalParameters(999);
             $method->setNumberOfRequiredParameters(0);
         }
-
-        $method->setFQSEN(
-            FullyQualifiedMethodName::fromStringInContext(
-                $method->getName(),
-                $context
-            )
-        );
 
         return self::functionListFromFunction($method, $code_base);
     }

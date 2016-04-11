@@ -1,11 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis;
+use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
 use Phan\Language\Context;
-use Phan\Analysis;
 use ast\Node;
 
 /**
@@ -99,12 +100,8 @@ trait Analyzable
 
         // Analyze the node in a cloned context so that we
         // don't overwrite anything
-        $context = Analysis::analyzeNodeInContext(
-            $code_base,
-            clone($context),
+        return (new BlockAnalysisVisitor($code_base, clone($context)))(
             $this->getNode()
         );
-
-        return $context;
     }
 }

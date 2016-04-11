@@ -9,6 +9,7 @@ use Phan\Debug;
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
+use Phan\Language\Scope\BranchScope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\Set;
@@ -73,6 +74,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
      */
     public function visit(Node $node) : Context
     {
+
+        // TODO: if ($this->context->isInGlobalScope()) {
+        //            copy local to global
+        //       }
+
         return end($this->child_context_list) ?: $this->context;
     }
 
@@ -97,8 +103,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
             foreach ($catch_scope_list as $catch_scope) {
 
                 // Merge types if try and catch have a variable in common
-                if ($catch_scope->hasLocalVariableWithName($variable_name)) {
-                    $catch_variable = $catch_scope->getLocalVariableWithName(
+                if ($catch_scope->hasVariableWithName($variable_name)) {
+                    $catch_variable = $catch_scope->getVariableByName(
                         $variable_name
                     );
 
@@ -112,7 +118,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Look for variables that exist in catch, but not try
         foreach ($catch_scope_list as $catch_scope) {
             foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
-                if (!$try_scope->hasLocalVariableWithName($variable_name)) {
+                if (!$try_scope->hasVariableWithName($variable_name)) {
 
                     // Note that it can be null
                     $variable->getUnionType()->addType(
@@ -133,9 +139,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
             $finally_scope = $scope_list[count($scope_list)-1];
 
             foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
-                if ($finally_scope->hasLocalVariableWithName($variable_name)) {
+                if ($finally_scope->hasVariableWithName($variable_name)) {
                     $finally_variable =
-                        $finally_scope->getLocalVariableWithName($variable_name);
+                        $finally_scope->getVariableByName($variable_name);
 
                     // Overwrite the variable with the type from the
                     // finally
@@ -149,7 +155,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
             // Look for variables that exist in finally, but not try
             foreach ($finally_scope->getVariableMap() as $variable_name => $variable) {
-                if (!$try_scope->hasLocalVariableWithName($variable_name)) {
+                if (!$try_scope->hasVariableWithName($variable_name)) {
                     $try_scope->addVariable($variable);
                 }
             }
@@ -201,7 +207,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // Get a list of all variables in all scopes
         $variable_map = [];
-        foreach ($scope_list as $scope) {
+        foreach ($scope_list as $i => $scope) {
             foreach ($scope->getVariableMap() as $name => $variable) {
                 $variable_map[$name] = $variable;
             }
@@ -238,7 +244,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                             return null;
                         }
 
-                        return $scope->getVariableWithName($variable_name);
+                        return $scope->getVariableByName($variable_name);
                     },
                     $scope_list
                 ));
@@ -257,11 +263,16 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 );
             };
 
-        $scope = new Scope();
+        // Clone the incoming scope so we can modify it
+        // with the outgoing merged scope
+        $scope = clone($this->context->getScope());
+
         foreach ($variable_map as $name => $variable) {
             // Skip variables that are only partially defined
             if (!$is_defined_on_all_branches($name)) {
-                continue;
+                $variable->getUnionType()->addType(
+                    NullType::instance()
+                );
             }
 
             // Limit the type of the variable to the subset

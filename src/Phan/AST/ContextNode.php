@@ -406,7 +406,7 @@ class ContextNode
             );
         }
 
-        return $this->context->getScope()->getVariableWithName(
+        return $this->context->getScope()->getVariableByName(
             $variable_name
         );
     }
@@ -613,19 +613,18 @@ class ContextNode
             $flags |= \ast\flags\MODIFIER_STATIC;
         }
 
+        $property_fqsen = FullyQualifiedPropertyName::make(
+            $class->getFQSEN(),
+            $property_name
+        );
+
         // Otherwise, we'll create it
         $property = new Property(
             $this->context,
             $property_name,
             new UnionType(),
-            $flags
-        );
-
-        $property->setFQSEN(
-            FullyQualifiedPropertyName::make(
-                $class->getFQSEN(),
-                $property_name
-            )
+            $flags,
+            $property_fqsen
         );
 
         $class->addProperty($this->code_base, $property);

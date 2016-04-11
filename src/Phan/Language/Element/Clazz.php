@@ -6,6 +6,9 @@ use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\Language\Scope\GlobalScope;
+use Phan\Language\Scope\ClassScope;
+use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Method;
@@ -22,6 +25,7 @@ use Phan\Language\UnionType;
 class Clazz extends AddressableElement
 {
     use \Phan\Memoize;
+    use ClosedScopeElement;
 
     /**
      * @var \Phan\Language\FQSEN
@@ -58,6 +62,9 @@ class Clazz extends AddressableElement
      * ast\kind_uses_flags() can be used to determine whether
      * a certain kind has a meaningful flags value.
      *
+     * @param FullyQualifiedClassName $fqsen
+     * A fully qualified name for this class
+     *
      * @param FullyQualifiedClassName|null $parent_class_fqsen
      * @param FullyQualifiedClassName[]|null $interface_fqsen_list
      * @param FullyQualifiedClassName[]|null $trait_fqsen_list
@@ -67,33 +74,28 @@ class Clazz extends AddressableElement
         string $name,
         UnionType $type,
         int $flags,
+        FullyQualifiedClassName $fqsen,
         FullyQualifiedClassName $parent_class_fqsen = null,
         array $interface_fqsen_list = [],
         array $trait_fqsen_list = []
     ) {
-        // Add variable '$this' to the scope
-        $context = $context->withScope(
-            $context->getScope()->withVariable(
-                new Variable(
-                    $context,
-                    'this',
-                    $type,
-                    0
-                )
-            )
-        );
-
-
         parent::__construct(
             $context,
             $name,
             $type,
-            $flags
+            $flags,
+            $fqsen
         );
 
         $this->parent_class_fqsen = $parent_class_fqsen;
         $this->interface_fqsen_list = $interface_fqsen_list;
         $this->trait_fqsen_list = $trait_fqsen_list;
+
+        $this->setInternalScope(new ClassScope(
+            $context->getScope(),
+            $fqsen
+        ));
+
     }
 
     /**
@@ -149,21 +151,20 @@ class Clazz extends AddressableElement
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
 
-        $context = new Context();
+        $context = new Context;
+
+        $class_fqsen = FullyQualifiedClassName::fromStringInContext(
+            $class->getName(),
+            $context
+        );
 
         // Build a base class element
         $clazz = new Clazz(
             $context,
             $class->getName(),
             UnionType::fromStringInContext($class->getName(), $context),
-            $flags
-        );
-
-        $clazz->setFQSEN(
-            FullyQualifiedClassName::fromStringInContext(
-                $class->getName(),
-                $context
-            )
+            $flags,
+            $class_fqsen
         );
 
         // If this class has a parent class, add it to the
@@ -183,21 +184,21 @@ class Clazz extends AddressableElement
             $reflection_property =
                 new \ReflectionProperty($class->getName(), $name);
 
-            $property_context =
-                $context->withClassFQSEN($clazz->getFQSEN());
+            $property_context = $context->withScope(
+                new ClassScope(new GlobalScope, $clazz->getFQSEN())
+            );
+
+            $property_fqsen = FullyQualifiedPropertyName::make(
+                $clazz->getFQSEN(),
+                $name
+            );
 
             $property = new Property(
                 $property_context,
                 $name,
                 Type::fromObject($value)->asUnionType(),
-                0
-            );
-
-            $property->setFQSEN(
-                FullyQualifiedPropertyName::make(
-                    $clazz->getFQSEN(),
-                    $name
-                )
+                0,
+                $property_fqsen
             );
 
             $clazz->addProperty($code_base, $property);
@@ -220,27 +221,31 @@ class Clazz extends AddressableElement
         }
 
         foreach ($class->getConstants() as $name => $value) {
+            $constant_fqsen = FullyQualifiedClassConstantName::make(
+                $clazz->getFQSEN(),
+                $name
+            );
+
             $constant = new ClassConstant(
                 $context,
                 $name,
                 Type::fromObject($value)->asUnionType(),
-                0
-            );
-
-            $constant->setFQSEN(
-                FullyQualifiedClassConstantName::make(
-                    $clazz->getFQSEN(),
-                    $name
-                )
+                0,
+                $constant_fqsen
             );
 
             $clazz->addConstant($code_base, $constant);
         }
 
         foreach ($class->getMethods() as $reflection_method) {
+
+            $method_context = $context->withScope(
+                new ClassScope(new GlobalScope, $clazz->getFQSEN())
+            );
+
             $method_list =
                 FunctionFactory::methodListFromReflectionClassAndMethod(
-                    $context->withClassFQSEN($clazz->getFQSEN()),
+                    $method_context,
                     $code_base,
                     $class,
                     $reflection_method
@@ -479,7 +484,7 @@ class Clazz extends AddressableElement
             );
 
             $is_remote_access = (
-                !$context->hasClassFQSEN()
+                !$context->isInClassScope()
                 || $context->getClassFQSEN() != $this->getFQSEN()
             );
 
@@ -521,10 +526,10 @@ class Clazz extends AddressableElement
                 $context,
                 $name,
                 $method->getUnionType(),
-                0
+                0,
+                $property_fqsen
             );
 
-            $property->setFQSEN($property_fqsen);
             $this->addProperty($code_base, $property);
 
             return $property;
@@ -559,10 +564,10 @@ class Clazz extends AddressableElement
                 $context,
                 $name,
                 new UnionType(),
-                0
+                0,
+                $property_fqsen
             );
 
-            $property->setFQSEN($property_fqsen);
             $this->addProperty($code_base, $property);
 
             return $property;
@@ -747,8 +752,7 @@ class Clazz extends AddressableElement
                 // but doesn't exist yet
                 $default_constructor =
                     Method::defaultConstructorForClassInContext(
-                        $this,
-                        $context->withClassFQSEN($this->getFQSEN())
+                        $this, $context
                     );
 
                 $this->addMethod($code_base, $default_constructor);
@@ -1287,22 +1291,31 @@ class Clazz extends AddressableElement
      * @return void
      */
     protected function hydrateOnce(CodeBase $code_base) {
+        $constant_fqsen = FullyQualifiedClassConstantName::make(
+            $this->getFQSEN(),
+            'class'
+        );
+
         // Create the 'class' constant
         $constant = new ClassConstant(
             $this->getContext(),
             'class',
             StringType::instance()->asUnionType(),
-            0
-        );
-
-        $constant->setFQSEN(
-            FullyQualifiedClassConstantName::make(
-                $this->getFQSEN(),
-                'class'
-            )
+            0,
+            $constant_fqsen
         );
 
         $this->addConstant($code_base, $constant);
+
+        // Add variable '$this' to the scope
+        $this->getInternalScope()->addVariable(
+            new Variable(
+                $this->getContext(),
+                'this',
+                $this->getUnionType(),
+                0
+            )
+        );
 
         // Load parent methods, properties, constants
         $this->importAncestorClasses($code_base);

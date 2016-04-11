@@ -1,0 +1,1 @@
+%s:12 PhanTypeMismatchReturn Returning type null|string but f() is declared to return int

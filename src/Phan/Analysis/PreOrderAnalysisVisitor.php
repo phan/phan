@@ -23,7 +23,8 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Language\Scope;
+use Phan\Language\Scope\ClassScope;
+use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -31,7 +32,6 @@ use ast\Node\Decl;
 
 class PreOrderAnalysisVisitor extends ScopeVisitor
 {
-
     /**
      * @param Context $context
      * The context of the parser at the node for which we'd
@@ -42,6 +42,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Context $context
     ) {
         parent::__construct($code_base, $context);
+    }
+
+    public function visit(Node $node) : Context
+    {
+        return $this->context;
     }
 
     /**
@@ -74,11 +79,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Hunt for the alternate of this class defined
         // in this file
         do {
-            $class_fqsen =
-                FullyQualifiedClassName::fromStringInContext(
-                    $class_name,
-                    $this->context
-                )->withAlternateId($alternate_id++);
+            $class_fqsen = FullyQualifiedClassName::fromStringInContext(
+                $class_name,
+                $this->context
+            )->withAlternateId($alternate_id++);
 
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {
                 throw new CodeBaseException(
@@ -96,8 +100,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             || $this->context->getLineNumberStart() != $clazz->getFileRef()->getLineNumberStart()
         );
 
-        return $clazz->getContext()->withClassFQSEN(
-            $class_fqsen
+        return $clazz->getContext()->withScope(
+            $clazz->getInternalScope()
         );
     }
 
@@ -114,6 +118,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     public function visitMethod(Decl $node) : Context
     {
         $method_name = (string)$node->name;
+
+        assert($this->context->isInClassScope(),
+            "Must be in class context to see a method");
+
         $clazz = $this->getContextClass();
 
         if (!$clazz->hasMethodWithName(
@@ -139,10 +147,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $this->context
         );
 
+        $context = $this->context->withScope(
+            $method->getInternalScope()
+        );
+
         // For any @var references in the method declaration,
         // add them as variables to the method's scope
         foreach ($comment->getVariableList() as $parameter) {
-            $method->getContext()->addScopeVariable(
+            $context->addScopeVariable(
                 $parameter->asVariable($this->context)
             );
         }
@@ -150,14 +162,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Add $this to the scope of non-static methods
         if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
             assert(
-                $clazz->getContext()->getScope()
-                ->hasVariableWithName('this'),
+                $clazz->getInternalScope()->hasVariableWithName('this'),
                 "Classes must have a \$this variable."
             );
 
-            $method->getContext()->addScopeVariable(
-                $clazz->getContext()->getScope()
-                    ->getVariableWithName('this')
+            $context->addScopeVariable(
+                $clazz->getInternalScope()->getVariableByName('this')
             );
         }
 
@@ -165,14 +175,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // so that changes to the variable don't alter the
         // parameter definition
         foreach ($method->getParameterList() as $parameter) {
-            $method->getContext()->addScopeVariable(
+            $context->addScopeVariable(
                 clone($parameter)
             );
         }
 
-        return $method->getContext()->withMethodFQSEN(
-            $method->getFQSEN()
-        );
+        return $context;
     }
 
     /**
@@ -190,7 +198,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $function_name = (string)$node->name;
 
         try {
-            $method = (new ContextNode(
+            $canonical_function = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
@@ -205,25 +213,55 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // Hunt for the alternate associated with the file we're
         // looking at currently in this context.
-        foreach ($method->alternateGenerator($this->code_base)
-            as $i => $alternate_method
+        $function = null;
+        foreach ($canonical_function->alternateGenerator($this->code_base)
+            as $i => $alternate_function
         ) {
-            if ($alternate_method->getFileRef()->getProjectRelativePath()
+            if ($alternate_function->getFileRef()->getProjectRelativePath()
                 === $this->context->getProjectRelativePath()
             ) {
-                return $method->getContext()->withMethodFQSEN(
-                    $alternate_method->getFQSEN()
-                );
+                $function = $alternate_function;
+                break;
             }
         }
 
-        // No alternate was found
-        throw new CodeBaseException(
-            null,
-            "Can't find function {$function_name} in context {$this->context} - aborting"
+        if (empty($function)) {
+            // No alternate was found
+            throw new CodeBaseException(
+                null,
+                "Can't find function {$function_name} in context {$this->context} - aborting"
+            );
+        }
+
+        $context = $this->context->withScope(
+            $function->getInternalScope()
         );
 
-        return $this->context;
+        // Parse the comment above the method to get
+        // extra meta information about the method.
+        $comment = Comment::fromStringInContext(
+            $node->docComment ?? '',
+            $this->context
+        );
+
+        // For any @var references in the method declaration,
+        // add them as variables to the method's scope
+        foreach ($comment->getVariableList() as $parameter) {
+            $context->addScopeVariable(
+                $parameter->asVariable($this->context)
+            );
+        }
+
+        // Add each method parameter to the scope. We clone it
+        // so that changes to the variable don't alter the
+        // parameter definition
+        foreach ($function->getParameterList() as $parameter) {
+            $context->addScopeVariable(
+                clone($parameter)
+            );
+        }
+
+        return $context;
     }
 
     /**
@@ -238,28 +276,24 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitClosure(Decl $node) : Context
     {
-        $closure_fqsen =
-            FullyQualifiedFunctionName::fromClosureInContext(
-                $this->context->withLineNumberStart($node->lineno ?? 0)
-            );
+        $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
+            $this->context->withLineNumberStart($node->lineno ?? 0)
+        );
+
+        $func = Func::fromNode(
+            $this->context,
+            $this->code_base,
+            $node,
+            $closure_fqsen
+        );
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
-        $context = $this->context->withScope(new Scope());
         if ($this->context->getScope()->hasVariableWithName('this')) {
-            $context->addScopeVariable(
-                $this->context->getScope()->getVariableWithName('this')
+            $func->getInternalScope()->addVariable(
+                $this->context->getScope()->getVariableByName('this')
             );
         }
-
-        $func = Func::fromNode(
-            $context,
-            $this->code_base,
-            $node
-        );
-
-        // Override the FQSEN with the found alternate ID
-        $func->setFQSEN($closure_fqsen);
 
         // Make the closure reachable by FQSEN from anywhere
         $this->code_base->addFunction($func);
@@ -314,10 +348,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                         );
                     }
                 } else {
-                    $variable =
-                        $this->context->getScope()->getVariableWithName(
-                            $variable_name
-                        );
+                    $variable = $this->context->getScope()->getVariableByName(
+                        $variable_name
+                    );
 
                     // If this isn't a pass-by-reference variable, we
                     // clone the variable so state within this scope
@@ -328,7 +361,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 }
 
                 // Pass the variable into a new scope
-                $context = $context->withScopeVariable($variable);
+                $func->getInternalScope()->addVariable($variable);
             }
         }
 
@@ -346,11 +379,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 );
 
                 // Add it to the scope
-                $context = $context->withScopeVariable($parameter);
+                $func->getInternalScope()->addVariable($parameter);
             }
         }
 
-        return $context->withClosureFQSEN($closure_fqsen);
+        return $this->context->withScope($func->getInternalScope());
     }
 
     /**
@@ -508,12 +541,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitIfElem(Node $node) : Context
     {
-        // Clone the scope for each branch of a conditional.
-        // They'll be merged upon existing all branches.
-        $context = $this->context->withScope(
-            clone($this->context->getScope())
-        );
-
         // Look to see if any proofs we do within the condition
         // can say anything about types within the statement
         // list.
@@ -522,11 +549,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         ) {
             return (new ConditionVisitor(
                 $this->code_base,
-                $context
+                $this->context
             ))($node->children['cond']);
         }
 
-        return $context;
+        return $this->context;
     }
 
     /**

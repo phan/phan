@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Scope\ClosedScope;
 
 /**
  * Interface defining the behavior of both Methods
@@ -18,6 +19,17 @@ interface FunctionInterface extends AddressableElementInterface {
      * structural element
      */
     public function getFQSEN();
+
+    /**
+     * @return void
+     */
+    public function setInternalScope(ClosedScope $internal_scope);
+
+    /**
+     * @return ClosedScope
+     * The internal scope of this closed scope element
+     */
+    public function getInternalScope() : ClosedScope;
 
     /**
      * @return int

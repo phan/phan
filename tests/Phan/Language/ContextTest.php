@@ -2,14 +2,16 @@
 
 namespace Phan\Tests\Language;
 
-use \Phan\Parse\ParseVisitor;
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Debug;
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Debug;
+use Phan\Language\Context;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Scope\ClassScope;
+use Phan\Language\Scope\FunctionLikeScope;
+use Phan\Parse\ParseVisitor;
 
 class ContextTest extends \PHPUnit_Framework_TestCase {
 
@@ -30,15 +32,19 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
         $context_namespace =
             $context->withNamespace('\A');
 
-        $context_class =
-            $context_namespace->withClassFQSEN(
+        $context_class = $context_namespace->withScope(
+            new ClassScope(
+                $context_namespace->getScope(),
                 FullyQualifiedClassName::fromFullyQualifiedString('\\A\\B')
-            );
+            )
+        );
 
-        $context_method =
-            $context_namespace->withMethodFQSEN(
+        $context_method = $context_namespace->withScope(
+            new FunctionLikeScope(
+                $context_namespace->getScope(),
                 FullyQualifiedMethodName::fromFullyQualifiedString('\\A\\b::c')
-            );
+            )
+        );
 
         $this->assertTrue(!empty($context));
         $this->assertTrue(!empty($context_namespace));

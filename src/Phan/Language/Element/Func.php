@@ -3,6 +3,7 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Issue;
+use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Context;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
@@ -18,6 +19,7 @@ class Func extends AddressableElement implements FunctionInterface
     use \Phan\Analysis\Analyzable;
     use \Phan\Memoize;
     use FunctionTrait;
+    use ClosedScopeElement;
 
     /**
      * @param \phan\Context $context
@@ -40,14 +42,20 @@ class Func extends AddressableElement implements FunctionInterface
         Context $context,
         string $name,
         UnionType $type,
-        int $flags
+        int $flags,
+        FullyQualifiedFunctionName $fqsen
     ) {
         parent::__construct(
             $context,
             $name,
             $type,
-            $flags
+            $flags,
+            $fqsen
         );
+
+        $this->setInternalScope(new FunctionLikeScope(
+            $context->getScope(), $fqsen
+        ));
     }
 
     /**
@@ -59,6 +67,9 @@ class Func extends AddressableElement implements FunctionInterface
      * @param Node $node
      * An AST node representing a function
      *
+     * @param FQSEN $fqsen
+     * A fully qualified name for the function
+     *
      * @return Func
      * A Func representing the AST node in the
      * given context
@@ -66,8 +77,19 @@ class Func extends AddressableElement implements FunctionInterface
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
-        Decl $node
+        Decl $node,
+        FQSEN $fqsen
     ) : Func {
+
+        // Create the skeleton function object from what
+        // we know so far
+        $func = new Func(
+            $context,
+            (string)$node->name,
+            new UnionType(),
+            $node->flags ?? 0,
+            $fqsen
+        );
 
         // Parse the comment above the function to get
         // extra meta information about the function.
@@ -87,19 +109,10 @@ class Func extends AddressableElement implements FunctionInterface
 
         // Add each parameter to the scope of the function
         foreach ($parameter_list as $parameter) {
-            $context = $context->withScopeVariable(
+            $func->getInternalScope()->addVariable(
                 $parameter
             );
         }
-
-        // Create the skeleton function object from what
-        // we know so far
-        $func = new Func(
-            $context,
-            (string)$node->name,
-            new UnionType(),
-            $node->flags ?? 0
-        );
 
         // If the function is Analyzable, set the node so that
         // we can come back to it whenever we like and
@@ -125,7 +138,10 @@ class Func extends AddressableElement implements FunctionInterface
         // Check to see if the comment specifies that the
         // function is deprecated
         $func->setIsDeprecated($comment->isDeprecated());
-        $func->setSuppressIssueList($comment->getSuppressIssueList());
+
+        $func->setSuppressIssueList(
+            $comment->getSuppressIssueList()
+        );
 
         // Take a look at function return types
         if($node->children['returnType'] !== null) {

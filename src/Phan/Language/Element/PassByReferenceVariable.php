@@ -10,9 +10,9 @@ use Phan\Language\UnionType;
 use ast\Node;
 
 /**
- * This class wraps a parameter and a variable and proxies
- * calls to the variable but keeps the name of the parameter
- * allowing us to pass a variable into a method as a
+ * This class wraps a parameter and a element and proxies
+ * calls to the element but keeps the name of the parameter
+ * allowing us to pass a element into a method as a
  * pass-by-reference parameter so that its value can be
  * updated when re-analyzing the method.
  */
@@ -22,15 +22,15 @@ class PassByReferenceVariable extends Variable
     /** @var Parameter */
     private $parameter;
 
-    /** @var Variable */
-    private $variable;
+    /** @var TypedElement */
+    private $element;
 
     public function __construct(
         Parameter $parameter,
-        Variable $variable
+        TypedElement $element
     ) {
         $this->parameter = $parameter;
-        $this->variable = $variable;
+        $this->element = $element;
     }
 
     public function getName() : string
@@ -40,46 +40,46 @@ class PassByReferenceVariable extends Variable
 
     public function getUnionType() : UnionType
     {
-        return $this->variable->getUnionType();
+        return $this->element->getUnionType();
     }
 
     public function setUnionType(UnionType $type)
     {
-        $this->variable->setUnionType($type);
+        $this->element->setUnionType($type);
     }
 
     public function getFlags() : int
     {
-        return $this->variable->getFlags();
+        return $this->element->getFlags();
     }
 
     public function setFlags(int $flags)
     {
-        $this->variable->setFlags($flags);
+        $this->element->setFlags($flags);
     }
 
     public function getContext() : Context
     {
-        return $this->variable->getContext();
+        return $this->element->getContext();
     }
 
     public function getFileRef() : FileRef
     {
-        return $this->variable->getFileRef();
+        return $this->element->getFileRef();
     }
 
     public function isDeprecated() : bool
     {
-        return $this->variable->isDeprecated();
+        return $this->element->isDeprecated();
     }
 
     public function setIsDeprecated(bool $is_deprecated)
     {
-        $this->variable->setIsDeprecated($is_deprecated);
+        $this->element->setIsDeprecated($is_deprecated);
     }
 
     public function isInternal() : bool
     {
-        return $this->variable->isInternal();
+        return $this->element->isInternal();
     }
 }

@@ -23,7 +23,8 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\FutureUnionType;
-use Phan\Language\Scope;
+use Phan\Language\Scope\ClassScope;
+use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\NullType;
@@ -85,10 +86,8 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
 
-        assert(
-            !empty($class_name),
-            "Class must have name in {$this->context}"
-        );
+        assert(!empty($class_name),
+            "Class must have name in {$this->context}");
 
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
             $class_name,
@@ -113,11 +112,9 @@ class ParseVisitor extends ScopeVisitor
                 $class_name,
                 $this->context
             ),
-            $node->flags ?? 0
+            $node->flags ?? 0,
+            $class_fqsen
         );
-
-        // Override the FQSEN with the found alternate ID
-        $clazz->setFQSEN($class_fqsen);
 
         // Get a comment on the class declaration
         $comment = Comment::fromStringInContext(
@@ -126,6 +123,7 @@ class ParseVisitor extends ScopeVisitor
         );
 
         $clazz->setIsDeprecated($comment->isDeprecated());
+
         $clazz->setSuppressIssueList(
             $comment->getSuppressIssueList()
         );
@@ -189,13 +187,9 @@ class ParseVisitor extends ScopeVisitor
             }
         }
 
-        // Update the context to signal that we're now
-        // within a class context.
-        $context = $class_context->withClassFQSEN(
-            $class_fqsen
+        return $class_context->withScope(
+            $clazz->getInternalScope()
         );
-
-        return $context;
     }
 
     /**
@@ -249,11 +243,9 @@ class ParseVisitor extends ScopeVisitor
 
         $method_name = (string)$node->name;
 
-        $method_fqsen =
-            FullyQualifiedMethodName::fromStringInContext(
-                $method_name,
-                $this->context
-            );
+        $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
+            $method_name, $this->context
+        );
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
@@ -262,17 +254,12 @@ class ParseVisitor extends ScopeVisitor
                 $method_fqsen->withAlternateId(++$alternate_id);
         }
 
-        // Create a new context with a new scope
-        $context = $this->context->withScope(new Scope);
-
         $method = Method::fromNode(
-            $context,
+            clone($this->context),
             $this->code_base,
-            $node
+            $node,
+            $method_fqsen
         );
-
-        // Override the FQSEN with the found alternate ID
-        $method->setFQSEN($method_fqsen);
 
         $clazz->addMethod($this->code_base, $method);
 
@@ -290,12 +277,10 @@ class ParseVisitor extends ScopeVisitor
             );
         }
 
-        // Send the context into the method and reset the scope
-        $context = $this->context->withMethodFQSEN(
-            $method->getFQSEN()
+        // Create a new context with a new scope
+        return $this->context->withScope(
+            $method->getInternalScope()
         );
-
-        return $context;
     }
 
     /**
@@ -366,22 +351,22 @@ class ParseVisitor extends ScopeVisitor
                 . $this->context
             );
 
-            $property =
-                new Property(
-                    clone($this->context
-                        ->withLineNumberStart($child_node->lineno ?? 0)),
-                    is_string($child_node->children['name'])
-                        ? $child_node->children['name']
-                        : '_error_',
-                    $union_type,
-                    $node->flags ?? 0
-                );
+            $property_name = is_string($child_node->children['name'])
+                ? $child_node->children['name']
+                : '_error_';
 
-            $property->setFQSEN(
-                FullyQualifiedPropertyName::make(
-                    $clazz->getFQSEN(),
-                    $property->getName()
-                )
+            $property_fqsen = FullyQualifiedPropertyName::make(
+                $clazz->getFQSEN(),
+                $property_name
+            );
+
+            $property = new Property(
+                clone($this->context
+                    ->withLineNumberStart($child_node->lineno ?? 0)),
+                $property_name,
+                $union_type,
+                $node->flags ?? 0,
+                $property_fqsen
             );
 
             // Add the property to the class
@@ -453,10 +438,9 @@ class ParseVisitor extends ScopeVisitor
                     ->withLineNumberEnd($child_node->endLineno ?? 0),
                 $name,
                 new UnionType(),
-                $child_node->flags ?? 0
+                $child_node->flags ?? 0,
+                $fqsen
             );
-
-            $constant->setFQSEN($fqsen);
 
             $constant->setFutureUnionType(
                 new FutureUnionType(
@@ -510,23 +494,16 @@ class ParseVisitor extends ScopeVisitor
                 ->withLineNumberStart($node->lineno ?? 0)
                 ->withLineNumberEnd($node->endLineno ?? 0),
             $this->code_base,
-            $node
+            $node,
+            $function_fqsen
         );
 
-        $func->setFQSEN($function_fqsen);
         $this->code_base->addFunction($func);
 
         // Send the context into the function and reset the scope
-        $context = $this->context->withMethodFQSEN(
-            $function_fqsen
-        )->withScope(new Scope);
-
-        // Add each method parameter to the scope. We clone it
-        // so that changes to the variable don't alter the
-        // parameter definition
-        foreach ($func->getParameterList() as $parameter) {
-            $context->addScopeVariable(clone($parameter));
-        }
+        $context = $this->context->withScope(
+            $func->getInternalScope()
+        );
 
         return $context;
     }
@@ -549,12 +526,12 @@ class ParseVisitor extends ScopeVisitor
         // it can be called with anything.
         $expression = $node->children['expr'];
         if ($expression->kind === \ast\AST_NAME
-            && $this->context->isMethodScope()
+            && $this->context->isInFunctionLikeScope()
             && in_array($expression->children['name'], [
                 'func_get_args', 'func_get_arg', 'func_num_args'
             ])
         ) {
-            $this->context->getMethodInScope($this->code_base)
+            $this->context->getFunctionLikeInScope($this->code_base)
                 ->setNumberOfOptionalParameters(999999);
         }
 
@@ -614,21 +591,19 @@ class ParseVisitor extends ScopeVisitor
         }
 
         // Make sure we're actually returning from a method.
-        if (!$this->context->isMethodScope()
-            && !$this->context->isClosureScope()) {
+        if (!$this->context->isInFunctionLikeScope()) {
             return $this->context;
         }
 
         // Get the method/function/closure we're in
         $method = null;
-        if ($this->context->isClosureScope()) {
-            $method = $this->context->getClosureInScope($this->code_base);
-        } elseif ($this->context->isMethodScope()) {
-            $method = $this->context->getMethodInScope($this->code_base);
+        if ($this->context->isInFunctionLikeScope()) {
+            $method = $this->context->getFunctionLikeInScope(
+                $this->code_base
+            );
         }
 
-        assert(
-            !empty($method),
+        assert(!empty($method),
             "We're supposed to be in either method or closure scope."
         );
 
@@ -712,6 +687,8 @@ class ParseVisitor extends ScopeVisitor
      */
     private function getContextClass() : Clazz
     {
+        assert($this->context->isInClassScope(),
+            "Must be in class scope");
         return $this->context->getClassInScope($this->code_base);
     }
 }

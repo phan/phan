@@ -180,9 +180,11 @@ class AssignmentVisitor extends AnalysisVisitor
                         $node->flags ?? 0
                     );
 
-                    return $this->context->withGlobalScopeVariable(
+                    $this->context->addGlobalScopeVariable(
                         $variable
                     );
+
+                    return $this->context;
                 }
             }
         }
@@ -347,7 +349,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $variable_name
         )) {
             $variable =
-                $this->context->getScope()->getVariableWithName(
+                $this->context->getScope()->getVariableByName(
                     $variable_name
                 );
 
@@ -389,7 +391,6 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->code_base,
             false
         );
-
 
         // Set that type on the variable
         $variable->getUnionType()->addUnionType(

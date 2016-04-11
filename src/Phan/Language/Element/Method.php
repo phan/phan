@@ -8,6 +8,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -19,6 +20,48 @@ class Method extends ClassElement implements FunctionInterface
     use \Phan\Analysis\Analyzable;
     use \Phan\Memoize;
     use FunctionTrait;
+    use ClosedScopeElement;
+
+    /**
+     * @param Context $context
+     * The context in which the structural element lives
+     *
+     * @param string $name,
+     * The name of the typed structural element
+     *
+     * @param UnionType $type,
+     * A '|' delimited set of types satisfyped by this
+     * typed structural element.
+     *
+     * @param int $flags,
+     * The flags property contains node specific flags. It is
+     * always defined, but for most nodes it is always zero.
+     * ast\kind_uses_flags() can be used to determine whether
+     * a certain kind has a meaningful flags value.
+     *
+     * @param FQSEN $fqsen
+     * A fully qualified name for the element
+     */
+    public function __construct(
+        Context $context,
+        string $name,
+        UnionType $type,
+        int $flags,
+        FQSEN $fqsen
+    ) {
+        parent::__construct(
+            $context,
+            $name,
+            $type,
+            $flags,
+            $fqsen
+        );
+
+        $this->setInternalScope(new FunctionLikeScope(
+            $context->getScope(), $fqsen
+        ));
+    }
+
 
     /**
      * @return bool
@@ -106,18 +149,18 @@ class Method extends ClassElement implements FunctionInterface
         Clazz $clazz,
         Context $context
     ) : Method {
+
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $clazz->getFQSEN(),
+            '__construct'
+        );
+
         $method = new Method(
             $context,
             '__construct',
             $clazz->getUnionType(),
-            0
-        );
-
-        $method->setFQSEN(
-            FullyQualifiedMethodName::make(
-                $clazz->getFQSEN(),
-                '__construct'
-            )
+            0,
+            $method_fqsen
         );
 
         return $method;
@@ -139,8 +182,19 @@ class Method extends ClassElement implements FunctionInterface
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
-        Decl $node
+        Decl $node,
+        FullyQualifiedMethodName $fqsen
     ) : Method {
+
+        // Create the skeleton method object from what
+        // we know so far
+        $method = new Method(
+            $context,
+            (string)$node->name,
+            new UnionType(),
+            $node->flags ?? 0,
+            $fqsen
+        );
 
         // Parse the comment above the method to get
         // extra meta information about the method.
@@ -161,19 +215,10 @@ class Method extends ClassElement implements FunctionInterface
 
         // Add each parameter to the scope of the function
         foreach ($parameter_list as $parameter) {
-            $context = $context->withScopeVariable(
+            $method->getInternalScope()->addVariable(
                 $parameter
             );
         }
-
-        // Create the skeleton method object from what
-        // we know so far
-        $method = new Method(
-            $context,
-            (string)$node->name,
-            new UnionType(),
-            $node->flags ?? 0
-        );
 
         // If the method is Analyzable, set the node so that
         // we can come back to it whenever we like and
@@ -227,7 +272,7 @@ class Method extends ClassElement implements FunctionInterface
                 // We can't actually figure out 'static' at this
                 // point, but fill it in regardless. It will be partially
                 // correct
-                if ($context->hasClassFQSEN()) {
+                if ($context->isInClassScope()) {
                     // n.b.: We're leaving the reference to self, static
                     //       or $this in the type because I'm guessing
                     //       it doesn't really matter. Apologies if it
