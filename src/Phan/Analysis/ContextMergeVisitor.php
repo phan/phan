@@ -270,9 +270,13 @@ class ContextMergeVisitor extends KindVisitorImplementation
         foreach ($variable_map as $name => $variable) {
             // Skip variables that are only partially defined
             if (!$is_defined_on_all_branches($name)) {
-                $variable->getUnionType()->addType(
-                    NullType::instance()
-                );
+                if ($this->context->getIsStrictTypes()) {
+                    continue;
+                } else {
+                    $variable->getUnionType()->addType(
+                        NullType::instance()
+                    );
+                }
             }
 
             // Limit the type of the variable to the subset

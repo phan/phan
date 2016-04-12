@@ -680,7 +680,6 @@ class ParseVisitor extends ScopeVisitor
         return $this->context;
     }
 
-
     /**
      * @return Clazz
      * Get the class on this scope or fail real hard
