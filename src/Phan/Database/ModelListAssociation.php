@@ -58,7 +58,7 @@ class ModelListAssociation extends Association
      * @param ModelOne $model
      * The source model of the association
      *
-     * @return Model
+     * @return void
      * Read a model from the database with the given pk
      */
     public function read(Database $database, ModelOne $model)
