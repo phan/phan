@@ -588,6 +588,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method->getUnionType()->addUnionType($expression_type);
         }
 
+        // Mark the method as returning something
+        $method->setHasReturn(
+            ($node->children['expr'] ?? null) !== null
+        );
+
         return $this->context;
     }
 

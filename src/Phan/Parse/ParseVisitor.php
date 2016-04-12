@@ -596,19 +596,18 @@ class ParseVisitor extends ScopeVisitor
         }
 
         // Get the method/function/closure we're in
-        $method = null;
-        if ($this->context->isInFunctionLikeScope()) {
-            $method = $this->context->getFunctionLikeInScope(
-                $this->code_base
-            );
-        }
+        $method = $this->context->getFunctionLikeInScope(
+            $this->code_base
+        );
 
         assert(!empty($method),
             "We're supposed to be in either method or closure scope."
         );
 
         // Mark the method as returning something
-        $method->setHasReturn(true);
+        $method->setHasReturn(
+            ($node->children['expr'] ?? null) !== null
+        );
 
         return $this->context;
     }
