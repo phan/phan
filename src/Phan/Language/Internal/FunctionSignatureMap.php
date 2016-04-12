@@ -1073,7 +1073,7 @@ return [
 'DateTimeImmutable::add' => ['DateTimeImmutable', 'interval'=>'dateinterval'],
 'DateTimeImmutable::__construct' => ['DateTimeImmutable', 'time='=>'string', 'timezone='=>'datetimezone'],
 'DateTimeImmutable::createFromFormat' => ['DateTimeImmutable', 'format'=>'string', 'time'=>'string', 'timezone='=>'datetimezone'],
-'DateTimeImmutable::createFromMutable' => ['DateTimeImmutable'],
+'DateTimeImmutable::createFromMutable' => ['DateTimeImmutable', 'datetime'=>'datetime'],
 'DateTimeImmutable::diff' => ['DateInterval', 'datetime2'=>'datetime', 'absolute='=>'bool'],
 'DateTimeImmutable::format' => ['DateTimeImmutable', 'format'=>'string'],
 'DateTimeImmutable::getLastErrors' => ['array'],
