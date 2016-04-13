@@ -7971,7 +7971,7 @@ return [
 'SoapClient::__setLocation' => ['string', 'new_location='=>'string'],
 'SoapClient::__setSoapHeaders' => ['bool', 'soapheaders='=>''],
 'SoapClient::__soapCall' => ['', 'function_name'=>'string', 'arguments'=>'array', 'options='=>'array', 'input_headers='=>'', 'output_headers='=>'array'],
-'SoapClient::SoapClient' => ['object', 'wsdl'=>'', 'options'=>'array'],
+'SoapClient::SoapClient' => ['object', 'wsdl'=>'', 'options='=>'array'],
 'SoapFault::__construct' => ['', 'faultcode'=>'string', 'faultstring'=>'string', 'faultactor='=>'string', 'detail='=>'string', 'faultname='=>'string', 'headerfault='=>'string'],
 'SoapFault::SoapFault' => ['object', 'faultcode'=>'string', 'faultstring'=>'string', 'faultactor'=>'string', 'detail'=>'', 'faultname'=>'string', 'headerfault'=>''],
 'SoapFault::__toString' => ['string'],

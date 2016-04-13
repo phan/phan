@@ -1,10 +1,8 @@
 <?php
-namespace Something
+namespace NS1
 {
-
     class A
     {
-
         public function __construct()
         {
             self::callNonStaticMethod();
@@ -13,42 +11,42 @@ namespace Something
         }
 
         public function callNonStaticMethod()
-        {}
+        {
+        }
     }
 }
-namespace AnotherNamespace
+
+namespace NS2
 {
-
-    class B extends \Something\A
+    class B extends \NS1\A
     {
-
         public function __construct()
         {
             self::callNonStaticMethod();
             static::callNonStaticMethod();
             parent::callNonStaticMethod();
-            \Something\A::callNonStaticMethod();
+            \NS1\A::callNonStaticMethod();
         }
     }
 
     class C extends B
     {
-
         public function __construct()
         {
             self::callNonStaticMethod();
             static::callNonStaticMethod();
             parent::callNonStaticMethod();
-            \Something\A::callNonStaticMethod();
-            \Something\A::callNonStaticMethod();
-            \AnotherNamespace\B::callNonStaticMethod();
+            \NS1\A::callNonStaticMethod();
+            \NS1\A::callNonStaticMethod();
+            \NS2\B::callNonStaticMethod();
         }
     }
 }
 namespace
 {
+    error_reporting(E_ALL | E_STRICT);
 
-    new Something\A();
-    new AnotherNamespace\B();
-    new AnotherNamespace\C();
+    new NS1\A();
+    new NS2\B();
+    new NS2\C();
 }
