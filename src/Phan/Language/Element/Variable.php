@@ -112,6 +112,8 @@ class Variable extends TypedElement
         string $name
     ) : bool {
         return in_array($name, [
+            'argv',
+            'argc',
             '_GET',
             '_POST',
             '_COOKIE',
