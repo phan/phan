@@ -1005,11 +1005,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         $return_type = $method->getUnionType();
 
-        if (!$method instanceof Method) {
-            Debug::printNode($node);
-            print $method . "\n";
-        }
-
         assert($method instanceof Method,
             "Function found where method expected at {$this->context}");
 

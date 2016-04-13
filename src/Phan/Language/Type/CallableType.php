@@ -14,7 +14,7 @@ class CallableType extends NativeType
 
     public static function instanceWithClosureFQSEN(FQSEN $fqsen)
     {
-        $instance = self::instance();
+        $instance = clone(self::instance());
         $instance->fqsen = $fqsen;
         return $instance;
     }
