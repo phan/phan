@@ -1562,7 +1562,7 @@ return [
 'Error::__clone' => ['Error'],
 'Error::__construct' => ['Error', 'message='=>'string', 'code='=>'int', 'previous='=>'Throwable|Error'],
 'ErrorException::__clone' => ['ErrorException'],
-'ErrorException::__construct' => ['ErrorException', 'message='=>'string', 'code='=>'int', 'previous='=>'Throwable|ErrorException'],
+'ErrorException::__construct' => ['ErrorException', 'message='=>'string', 'code='=>'int', 'severity='=>'int', 'filename='=>'string', 'lineno='=>'int', 'previous='=>'Throwable|ErrorException'],
 'ErrorException::getCode' => ['int'],
 'ErrorException::getFile' => ['string'],
 'ErrorException::getLine' => ['int'],
