@@ -516,11 +516,27 @@ class ContextNode
                 continue;
             }
 
-            return $class->getPropertyByNameInContext(
+            $property = $class->getPropertyByNameInContext(
                 $this->code_base,
                 $property_name,
                 $this->context
             );
+
+            if ($property->isDeprecated()) {
+                throw new IssueException(
+                    Issue::fromType(Issue::DeprecatedProperty)(
+                        $this->context->getFile(),
+                        $this->node->lineno ?? 0,
+                        [
+                            (string)$property->getFQSEN(),
+                            $property->getFileRef()->getFile(),
+                            $property->getFileRef()->getLineNumberStart(),
+                        ]
+                    )
+                );
+            }
+
+            return $property;
         }
 
         // If missing properties are cool, create it on

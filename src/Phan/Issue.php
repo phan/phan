@@ -71,6 +71,7 @@ class Issue
     // Issue::CATEGORY_DEPRECATED
     const DeprecatedClass           = 'PhanDeprecatedClass';
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
+    const DeprecatedProperty        = 'PhanDeprecatedProperty';
 
     // Issue::CATEGORY_PARAMETER
     const ParamReqAfterOpt          = 'PhanParamReqAfterOpt';
@@ -550,6 +551,13 @@ class Issue
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
                 "Call to deprecated class %s defined at %s:%d",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::DeprecatedProperty,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Reference to deprecated property %s defined at %s:%d",
                 self::REMEDIATION_B
             ),
 

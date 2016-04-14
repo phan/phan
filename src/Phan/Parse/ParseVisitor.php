@@ -397,6 +397,8 @@ class ParseVisitor extends ScopeVisitor
                 );
             }
 
+            $property->setIsDeprecated($comment->isDeprecated());
+
             // Wait until after we've added the (at)var type
             // before setting the future so that calling
             // $property->getUnionType() doesn't force the
