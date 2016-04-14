@@ -912,34 +912,38 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $node
             ))->getMethod($method_name, true);
 
-            // If the method isn't static and we're not calling
-            // it on 'parent', 'self' or 'static', we're possibly in a bad spot.
+            // Get the method thats calling the static method
+            $calling_method = null;
+            if ($this->context->isInMethodScope()) {
+                $calling_function_like =
+                    $this->context->getFunctionLikeInScope($this->code_base);
+
+                if ($calling_function_like instanceof Method) {
+                    $calling_method = $calling_function_like;
+                }
+            }
+
+            // If the method being called isn't actually static and it's
+            // not a call to parent::f from f, we may be in trouble.
             if (!$method->isStatic()
+
+                // Allow static calls to parent if we're not in a static method
+                // or if its to the overridden method
                 && !(
                     'parent' === $static_class
                     && $this->context->isInMethodScope()
-                    && $this->context->getFunctionLikeFQSEN()->getName() == $method->getFQSEN()->getName()
+                    && (
+                        $this->context->getFunctionLikeFQSEN()->getName() == $method->getFQSEN()->getName()
+                        || ($calling_method && !$calling_method->isStatic())
+                    )
+
+                // Allow static calls to methods from within the constructor
+                ) && !(
+                    $this->context->isInClassScope()
+                    && $this->context->isInFunctionLikeScope()
+                    && $this->context->getFunctionLikeFQSEN()->getName() == '__construct'
                 )
             ) {
-                if ($this->context->isInClassScope()) {
-                    $fully_qualified_class_name =
-                        FullyQualifiedClassName::fromStringInContext($static_class, $this->context);
-
-                    // Always allow calls on FQSEN; i.e. ClassName::nonStaticMethodCall()
-                    if ($this->context->getClassFQSEN() === $fully_qualified_class_name)
-                        return $this->context;
-
-                    $clazz = $this->context->getClassInScope($this->code_base);
-
-                    // Call is allowed when $static_class is own of our parents
-                    while ($clazz->hasParentClassFQSEN()) {
-                        if ($clazz->getParentClassFQSEN() == $fully_qualified_class_name)
-                            return $this->context;
-
-                        $clazz = $this->code_base->getClassByFQSEN($clazz->getParentClassFQSEN());
-                    }
-                }
-
                 $class_list = (new ContextNode(
                     $this->code_base,
                     $this->context,
@@ -949,19 +953,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if (!empty($class_list)) {
                     $class = array_values($class_list)[0];
 
-                    if (!(
-                        $this->context->isInClassScope()
-                        && $this->context->isInFunctionLikeScope()
-                        && $this->context->getFunctionLikeFQSEN()->getName() == '__construct'
-                    )) {
-                        $this->emitIssue(
-                            Issue::StaticCallToNonStatic,
-                            $node->lineno ?? 0,
-                            "{$class->getFQSEN()}::{$method_name}()",
-                            $method->getFileRef()->getFile(),
-                            $method->getFileRef()->getLineNumberStart()
-                        );
-                    }
+                    $this->emitIssue(
+                        Issue::StaticCallToNonStatic,
+                        $node->lineno ?? 0,
+                        "{$class->getFQSEN()}::{$method_name}()",
+                        $method->getFileRef()->getFile(),
+                        $method->getFileRef()->getLineNumberStart()
+                    );
                 }
             }
 
