@@ -914,7 +914,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // If the method isn't static and we're not calling
             // it on 'parent', 'self' or 'static', we're possibly in a bad spot.
-            if (!$method->isStatic() && !in_array($static_class, ['parent'])) {
+            if (!$method->isStatic()
+                && !(
+                    'parent' === $static_class
+                    && $this->context->isInMethodScope()
+                    && $this->context->getFunctionLikeFQSEN()->getName() == $method->getName()
+                )
+            ) {
                 if ($this->context->isInClassScope()) {
                     $fully_qualified_class_name =
                         FullyQualifiedClassName::fromStringInContext($static_class, $this->context);
@@ -943,13 +949,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 if (!empty($class_list)) {
                     $class = array_values($class_list)[0];
 
-                    $is_in_constructor = (
+                    if (!(
                         $this->context->isInClassScope()
                         && $this->context->isInFunctionLikeScope()
                         && $this->context->getFunctionLikeFQSEN()->getName() == '__construct'
-                    );
-
-                    if (!$is_in_constructor) {
+                    )) {
                         $this->emitIssue(
                             Issue::StaticCallToNonStatic,
                             $node->lineno ?? 0,

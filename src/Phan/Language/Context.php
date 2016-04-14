@@ -315,6 +315,18 @@ class Context extends FileRef implements \Serializable
         return $this->getScope()->isInFunctionLikeScope();
     }
 
+    /**
+     * @return bool
+     * True if this context is currently within a method.
+     */
+    public function isInMethodScope() : bool
+    {
+        return (
+            $this->isInClassScope()
+            && $this->isInFunctionLikeScope()
+        );
+    }
+
     /*
      * @return FullyQualifiedMethodName|FullyQualifiedFunctionName|FullyQualifiedClosureName
      * A fully-qualified structural element name describing
