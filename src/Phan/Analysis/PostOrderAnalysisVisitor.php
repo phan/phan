@@ -918,7 +918,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 && !(
                     'parent' === $static_class
                     && $this->context->isInMethodScope()
-                    && $this->context->getFunctionLikeFQSEN()->getName() == $method->getName()
+                    && $this->context->getFunctionLikeFQSEN()->getName() == $method->getFQSEN()->getName()
                 )
             ) {
                 if ($this->context->isInClassScope()) {
