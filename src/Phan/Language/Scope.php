@@ -42,7 +42,7 @@ abstract class Scope
      */
     public function hasParentScope() : bool
     {
-        return (null != $this->parent_scope);
+        return !empty($this->parent_scope);
     }
 
     /**
@@ -60,7 +60,7 @@ abstract class Scope
      */
     public function hasFQSEN() : bool
     {
-        return (null != $this->fqsen);
+        return !empty($this->fqsen);
     }
 
     /**
@@ -88,7 +88,7 @@ abstract class Scope
     public function getClassFQSEN() : FullyQualifiedClassName
     {
         assert($this->hasParentScope(),
-            "Cannot get class FQSEN on scope $this");
+            "Cannot get class FQSEN on scope");
 
         return $this->getParentScope()->getClassFQSEN();
     }
@@ -110,7 +110,7 @@ abstract class Scope
     public function getFunctionLikeFQSEN()
     {
         assert($this->hasParentScope(),
-            "Cannot get method/function/closure FQSEN on scope $this");
+            "Cannot get method/function/closure FQSEN on scope");
 
         return $this->getParentScope()->getFunctionLikeFQSEN();
     }
