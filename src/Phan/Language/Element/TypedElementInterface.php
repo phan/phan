@@ -35,18 +35,6 @@ interface TypedElementInterface
     public function setUnionType(UnionType $type);
 
     /**
-     * @return int
-     */
-    public function getFlags() : int;
-
-    /**
-     * @param int $flags
-     *
-     * @return void
-     */
-    public function setFlags(int $flags);
-
-    /**
      * @return Context
      * The context in which this structural element exists
      */

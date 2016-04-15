@@ -39,6 +39,13 @@ abstract class TypedElement implements TypedElementInterface
     private $flags = 0;
 
     /**
+     * @var int
+     * The Phan flags property contains node specific flags that
+     * are internal to Phan.
+     */
+    private $phan_flags = 0;
+
+    /**
      * @var Context
      * The context in which the structural element lives
      */
@@ -145,6 +152,24 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
+     * @return int
+     */
+    protected function getPhanFlags() : int
+    {
+        return $this->phan_flags;
+    }
+
+    /**
+     * @param int $phan_flags
+     *
+     * @return void
+     */
+    protected function setPhanFlags(int $phan_flags)
+    {
+        $this->phan_flags = $phan_flags;
+    }
+
+    /**
      * @return Context
      * The context in which this structural element exists
      */
@@ -171,7 +196,7 @@ abstract class TypedElement implements TypedElementInterface
     public function isDeprecated() : bool
     {
         return Flags::bitVectorHasState(
-            $this->flags,
+            $this->phan_flags,
             Flags::IS_DEPRECATED
         );
     }
@@ -184,8 +209,8 @@ abstract class TypedElement implements TypedElementInterface
      */
     public function setIsDeprecated(bool $is_deprecated)
     {
-        $this->setFlags(Flags::bitVectorWithState(
-            $this->getFlags(),
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
             Flags::IS_DEPRECATED,
             $is_deprecated
         ));
@@ -230,7 +255,7 @@ abstract class TypedElement implements TypedElementInterface
     public function isInternal() : bool
     {
         return Flags::bitVectorHasState(
-            $this->getFlags(),
+            $this->getPhanFlags(),
             Flags::IS_INTERNAL
         );
     }
@@ -240,9 +265,9 @@ abstract class TypedElement implements TypedElementInterface
      */
     private function setIsInternal(bool $is_internal)
     {
-        $this->setFlags(
+        $this->setPhanFlags(
             Flags::bitVectorWithState(
-                $this->getFlags(),
+                $this->getPhanFlags(),
                 Flags::IS_INTERNAL,
                 $is_internal
             )

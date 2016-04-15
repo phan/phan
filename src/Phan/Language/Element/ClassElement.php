@@ -61,7 +61,7 @@ abstract class ClassElement extends AddressableElement
     public function getIsOverride() : bool
     {
         return Flags::bitVectorHasState(
-            $this->getFlags(),
+            $this->getPhanFlags(),
             Flags::IS_OVERRIDE
         );
     }
@@ -74,8 +74,8 @@ abstract class ClassElement extends AddressableElement
      */
     public function setIsOverride(bool $is_override)
     {
-        $this->setFlags(Flags::bitVectorWithState(
-            $this->getFlags(),
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
             Flags::IS_OVERRIDE,
             $is_override
         ));

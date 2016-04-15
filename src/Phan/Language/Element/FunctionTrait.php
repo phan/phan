@@ -12,14 +12,14 @@ trait FunctionTrait {
     /**
      * @return int
      */
-    abstract public function getFlags() : int;
+    abstract public function getPhanFlags() : int;
 
     /**
-     * @param int $flags
+     * @param int $phan_flags
      *
      * @return void
      */
-    abstract public function setFlags(int $flags);
+    abstract public function setPhanFlags(int $phan_flags);
 
 
     /**
@@ -95,7 +95,7 @@ trait FunctionTrait {
     public function isReturnTypeUndefined() : bool
     {
         return Flags::bitVectorHasState(
-            $this->getFlags(),
+            $this->getPhanFlags(),
             Flags::IS_RETURN_TYPE_UNDEFINED
         );
     }
@@ -111,8 +111,8 @@ trait FunctionTrait {
     public function setIsReturnTypeUndefined(
         bool $is_return_type_undefined
     ) {
-        $this->setFlags(Flags::bitVectorWithState(
-            $this->getFlags(),
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
             Flags::IS_RETURN_TYPE_UNDEFINED,
             $is_return_type_undefined
         ));
@@ -125,7 +125,7 @@ trait FunctionTrait {
     public function getHasReturn() : bool
     {
         return Flags::bitVectorHasState(
-            $this->getFlags(),
+            $this->getPhanFlags(),
             Flags::HAS_RETURN
         );
     }
@@ -139,8 +139,8 @@ trait FunctionTrait {
      */
     public function setHasReturn(bool $has_return)
     {
-        $this->setFlags(Flags::bitVectorWithState(
-            $this->getFlags(),
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
             Flags::HAS_RETURN,
             $has_return
         ));

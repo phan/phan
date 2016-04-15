@@ -4,16 +4,16 @@ namespace Phan\Language\Element;
 class Flags
 {
     // Typed Structural Element
-    const IS_DEPRECATED                = (1 << 33);
-    const IS_INTERNAL                  = (1 << 34);
+    const IS_DEPRECATED                = (1 << 01);
+    const IS_INTERNAL                  = (1 << 02);
 
     // Classes
-    const IS_PARENT_CONSTRUCTOR_CALLED = (1 << 35);
+    const IS_PARENT_CONSTRUCTOR_CALLED = (1 << 03);
 
     // Methods
-    const IS_RETURN_TYPE_UNDEFINED     = (1 << 36);
-    const HAS_RETURN                   = (1 << 37);
-    const IS_OVERRIDE                  = (1 << 38);
+    const IS_RETURN_TYPE_UNDEFINED     = (1 << 04);
+    const HAS_RETURN                   = (1 << 05);
+    const IS_OVERRIDE                  = (1 << 06);
 
     /**
      * Either enable or disable the given flag on

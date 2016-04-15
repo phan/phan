@@ -919,7 +919,7 @@ class Clazz extends AddressableElement
     public function getIsParentConstructorCalled() : bool
     {
         return Flags::bitVectorHasState(
-            $this->getFlags(),
+            $this->getPhanFlags(),
             Flags::IS_PARENT_CONSTRUCTOR_CALLED
         );
     }
@@ -930,8 +930,8 @@ class Clazz extends AddressableElement
     public function setIsParentConstructorCalled(
         bool $is_parent_constructor_called
     ) {
-        $this->setFlags(Flags::bitVectorWithState(
-            $this->getFlags(),
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
             Flags::IS_PARENT_CONSTRUCTOR_CALLED,
             $is_parent_constructor_called
         ));
