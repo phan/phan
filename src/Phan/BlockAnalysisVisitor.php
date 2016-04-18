@@ -183,6 +183,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
                 continue;
             }
 
+            // The conditions need to communicate to the outter
+            // scope for things like assigning veriables.
             if ($child_node->kind != \ast\AST_IF_ELEM) {
                 $child_context = $context->withScope(
                     new BranchScope($context->getScope())
@@ -282,6 +284,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $context->withLineNumberStart($node->lineno ?? 0),
             $this->parent_node
         ))($node);
+
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,

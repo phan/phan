@@ -185,20 +185,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitIfElem(Node $node) : Context
     {
-        if (!isset($node->children['cond'])
-            || !($node->children['cond'] instanceof Node)
-        ) {
-            return $this->context;
-        }
-
-        // Get the type just to make sure everything
-        // is defined.
-        $expression_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $node->children['cond']
-        );
-
         return $this->context;
     }
 

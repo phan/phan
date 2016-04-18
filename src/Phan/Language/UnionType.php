@@ -558,6 +558,23 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return bool
+     * True if this type has any generic types
+     */
+    public function hasGenericArray() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return (false !==
+            $this->type_set->find(function (Type $type) : bool {
+                return $type->isGenericArray();
+            })
+        );
+    }
+
+    /**
      * Takes "a|b[]|c|d[]|e" and returns "b|d"
      *
      * @return UnionType

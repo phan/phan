@@ -175,6 +175,8 @@ class ConditionVisitor extends KindVisitorImplementation
             return $this->context;
         }
 
+        $context = $this->context;
+
         try {
             // Get the variable we're operating on
             $variable = (new ContextNode(
@@ -197,7 +199,7 @@ class ConditionVisitor extends KindVisitorImplementation
             $variable->getUnionType()->addUnionType($type);
 
             // Overwrite the variable with its new type
-            $this->context->addScopeVariable(
+            $context = $context->withScopeVariable(
                 $variable
             );
 
@@ -205,7 +207,7 @@ class ConditionVisitor extends KindVisitorImplementation
             // Swallow it
         }
 
-        return $this->context;
+        return $context;
     }
 
     /**
@@ -258,6 +260,8 @@ class ConditionVisitor extends KindVisitorImplementation
             $map[$functionName]
         );
 
+        $context = $this->context;
+
         try {
             // Get the variable we're operating on
             $variable = (new ContextNode(
@@ -269,18 +273,34 @@ class ConditionVisitor extends KindVisitorImplementation
             // Make a copy of the variable
             $variable = clone($variable);
 
-            // Change the type to match the is_a relationship
-            $variable->setUnionType($type);
+            $variable->setUnionType(
+                clone($variable->getUnionType())
+            );
 
-            // Overwrite the variable with its new type
-            $this->context->addScopeVariable(
+            // Change the type to match the is_a relationship
+            if ($type->isType(ArrayType::instance())
+                && $variable->getUnionType()->hasGenericArray()
+            ) {
+                // If the variable is already a generic array,
+                // note that it can be an arbitrary array without
+                // erasing the existing generic type.
+                $variable->getUnionType()->addUnionType($type);
+            } else {
+                // Otherwise, overwrite the type for any simple
+                // primitive types.
+                $variable->setUnionType($type);
+            }
+
+            // Overwrite the variable with its new type in this
+            // scope without overwriting other scopes
+            $context = $context->withScopeVariable(
                 $variable
             );
         } catch (\Exception $exception) {
             // Swallow it
         }
 
-        return $this->context;
+        return $context;
     }
 
     /**
