@@ -248,7 +248,8 @@ class ConditionVisitor extends KindVisitorImplementation
             'is_real' => 'float',
             'is_resource' => 'resource',
             'is_scalar' => 'int|float|bool|string|null',
-            'is_string' => 'string'
+            'is_string' => 'string',
+            'empty' => 'null',
         );
 
         $functionName = $node->children['expr']->children['name'];
@@ -269,6 +270,12 @@ class ConditionVisitor extends KindVisitorImplementation
                 $this->context,
                 $node->children['args']->children[0]
             ))->getVariable();
+
+            if ($variable->getUnionType()->isEmpty()) {
+                $variable->getUnionType()->addType(
+                    NullType::instance()
+                );
+            }
 
             // Make a copy of the variable
             $variable = clone($variable);
