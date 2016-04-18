@@ -6,7 +6,16 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Langauge\Type;
+use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\BoolType;
+use Phan\Language\Type\CallableType;
+use Phan\Language\Type\FloatType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\ResourceType;
+use Phan\Language\Type\ScalarType;
+use Phan\Language\Type\StringType;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -199,6 +208,71 @@ class ConditionVisitor extends KindVisitorImplementation
 
         return $this->context;
     }
+
+	public function visitCall(Node $node) : Context
+	{
+		// Only look at things of the form
+		// `is_string($variable)`
+		if (count($node->children['args']->children) !== 1
+			|| !$node->children['args']->children[0] instanceof Node
+			|| $node->children['args']->children[0]->kind !== \ast\AST_VAR
+		) {
+			return $this->context;
+		}
+
+		// Translate the function name into the UnionType it asserts
+		$map = array(
+			'is_array' => 'array',
+			'is_bool' => 'bool',
+			'is_callable' => 'callable',
+			'is_double' => 'float',
+			'is_float' => 'float',
+			'is_int' => 'int',
+			'is_integer' => 'int',
+			'is_long' => 'int',
+			'is_null' => 'null',
+			'is_numeric' => 'string|int|float',
+			'is_object' => 'object',
+			'is_real' => 'float',
+			'is_resource' => 'resource',
+			'is_scalar' => 'int|float|bool|string|null',
+			'is_string' => 'string'
+		);
+
+		$functionName = $node->children['expr']->children['name'];
+		if (!isset($map[$functionName])) {
+			return $this->context;
+		}
+
+		$type = UnionType::fromFullyQualifiedString(
+			$map[$functionName]
+		);
+
+		try {
+			// Get the variable we're operating on
+			$variable = (new ContextNode(
+				$this->code_base,
+				$this->context,
+				$node->children['args']->children[0]
+			))->getVariable();
+
+			// Make a copy of the variable
+			$variable = clone($variable);
+
+			// Change the type to match the is_a relationship
+			$variable->setUnionType($type);
+
+			// Overwrite the variable with its new type
+			$this->context->addScopeVariable(
+				$variable
+			);
+
+        } catch (\Exception $exception) {
+            // Swallow it
+        }
+
+        return $this->context;
+	}
 
     /**
      * @param Node $node
