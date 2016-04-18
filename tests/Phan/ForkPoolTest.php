@@ -4,6 +4,9 @@ namespace Phan\Test;
 
 use Phan\ForkPool;
 
+/**
+ * @requires extension pcntl
+ */
 class ForkPoolTest extends \PHPUnit_Framework_TestCase
 {
 	/**
