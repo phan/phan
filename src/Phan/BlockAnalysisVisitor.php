@@ -252,7 +252,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
 
         assert(!empty($context), 'Context cannot be null');
 
-        if ($condition_node = $node->children['cond']) {
+        if (($condition_node = $node->children['cond']) && $condition_node instanceof Node) {
             $context = (new BlockAnalysisVisitor(
                 $this->code_base,
                 $context->withLineNumberStart($condition_node->lineno ?? 0),
