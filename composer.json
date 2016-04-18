@@ -19,7 +19,6 @@
         "symfony/console": "~2.3|~3.0"
     },
     "require-dev": {
-        "ext-pcntl": "*",
         "phpunit/phpunit": "~5",
         "phpdocumentor/phpdocumentor": "dev-master",
         "squizlabs/php_codesniffer": "^2.5"
