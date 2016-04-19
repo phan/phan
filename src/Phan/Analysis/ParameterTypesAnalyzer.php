@@ -73,7 +73,7 @@ class ParameterTypesAnalyzer
 
         // Hydrate the class this method is coming from in
         // order to understand if its an override or not
-        $class = $method->getDefiningClass($code_base);
+        $class = $method->getClass($code_base);
         $class->hydrate($code_base);
 
         // Check to see if the method is an override
@@ -98,7 +98,7 @@ class ParameterTypesAnalyzer
         $o_method = $method->getOverriddenMethod($code_base);
 
         // Get the class that the overridden method lives on
-        $o_class = $o_method->getDefiningClass($code_base);
+        $o_class = $o_method->getClass($code_base);
 
         // PHP doesn't complain about signature mismatches
         // with traits, so neither shall we

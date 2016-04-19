@@ -1007,7 +1007,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $has_interface_class = false;
         if ($method instanceof Method) {
             try {
-                $class = $method->getDefiningClass($this->code_base);
+                $class = $method->getClass($this->code_base);
                 $has_interface_class = $class->isInterface();
             } catch (\Exception $exception) {
 
@@ -1107,6 +1107,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ))->getMethod($method_name, false);
 
 
+
+
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,
@@ -1131,6 +1133,37 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // Swallow it
             return $this->context;
+        }
+
+        // Make sure the magic method is accessible
+        if ($method->isPrivate()
+            && !$method->getDefiningClass($this->code_base)->isTrait()
+            && (!$this->context->isInClassScope()
+                || $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
+            )
+        ) {
+            $this->emitIssue(
+                Issue::AccessMethodPrivate,
+                $node->lineno ?? 0,
+                (string)$method->getFQSEN(),
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
+            );
+        } else if ($method->isProtected()
+            && !$method->getDefiningClass($this->code_base)->isTrait()
+            && (!$this->context->isInClassScope()
+            || !$this->context->getClassFQSEN()->asType()->canCastToType(
+                    $method->getClassFQSEN()->asType()
+                )
+            )
+        ) {
+            $this->emitIssue(
+                Issue::AccessMethodProtected,
+                $node->lineno ?? 0,
+                (string)$method->getFQSEN(),
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
+            );
         }
 
         // Check the call for paraemter and argument types

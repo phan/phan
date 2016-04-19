@@ -1126,7 +1126,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
                     return $method->getUnionType();
                 } catch (IssueException $exception) {
-                    $exception->getIssueInstance()();
                     return new UnionType();
                 }
             }

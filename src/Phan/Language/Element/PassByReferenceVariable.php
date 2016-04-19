@@ -58,12 +58,12 @@ class PassByReferenceVariable extends Variable
         $this->element->setFlags($flags);
     }
 
-    protected function getPhanFlags() : int
+    public function getPhanFlags() : int
     {
         return $this->element->getPhanFlags();
     }
 
-    protected function setPhanFlags(int $phan_flags)
+    public function setPhanFlags(int $phan_flags)
     {
         $this->element->setPhanFlags($phan_flags);
     }

@@ -154,7 +154,7 @@ abstract class TypedElement implements TypedElementInterface
     /**
      * @return int
      */
-    protected function getPhanFlags() : int
+    public function getPhanFlags() : int
     {
         return $this->phan_flags;
     }
@@ -164,7 +164,7 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    protected function setPhanFlags(int $phan_flags)
+    public function setPhanFlags(int $phan_flags)
     {
         $this->phan_flags = $phan_flags;
     }

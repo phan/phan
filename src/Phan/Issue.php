@@ -107,6 +107,8 @@ class Issue
     // Issue::CATEGORY_ACCESS
     const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
     const AccessPropertyProtected   = 'PhanAccessPropertyProtected';
+    const AccessMethodPrivate       = 'PhanAccessMethodPrivate';
+    const AccessMethodProtected     = 'PhanAccessMethodProtected';
     const AccessSignatureMismatch   = 'PhanAccessSignatureMismatch';
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
     const AccessStaticToNonStatic   = 'PhanAccessStaticToNonStatic';
@@ -755,6 +757,20 @@ class Issue
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Cannot access private property %s",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::AccessMethodProtected,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access protected method %s defined at %s:%d",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::AccessMethodPrivate,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access private method %s defined at %s:%d",
                 self::REMEDIATION_B
             ),
             new Issue(

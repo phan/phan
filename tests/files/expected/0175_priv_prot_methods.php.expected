@@ -1,0 +1,5 @@
+%s.php:12 PhanAccessMethodPrivate Cannot access private method \d::priv defined at %s.php:4
+%s.php:18 PhanAccessMethodProtected Cannot access protected method \c::prot defined at %s.php:5
+%s.php:19 PhanAccessMethodPrivate Cannot access private method \c::priv defined at %s.php:4
+%s.php:23 PhanAccessMethodProtected Cannot access protected method \d::prot defined at %s.php:5
+%s.php:24 PhanAccessMethodPrivate Cannot access private method \d::priv defined at %s.php:4

@@ -163,7 +163,7 @@ class ReferenceCountsAnalyzer
                 return;
             }
 
-            $class_fqsen = $element->getDefiningClassFQSEN();
+            $class_fqsen = $element->getClassFQSEN();
 
             // Don't analyze elements defined in a parent
             // class
@@ -172,7 +172,7 @@ class ReferenceCountsAnalyzer
             }
 
             $defining_class =
-                $element->getDefiningClass($code_base);
+                $element->getClass($code_base);
 
             // Don't analyze elements on interfaces or on
             // abstract classes, as they're uncallable.
@@ -197,7 +197,7 @@ class ReferenceCountsAnalyzer
         // __get or __set method given that we can't track
         // their access
         if ($element instanceof Property) {
-            $defining_class = $element->getDefiningClass($code_base);
+            $defining_class = $element->getClass($code_base);
 
             if ($defining_class->hasGetOrSetMethod($code_base)) {
                 return;

@@ -2,7 +2,7 @@
 namespace NS;
 class C {
     /** @return \DateTime */
-    private function f() {
+    function f() {
         return new \DateTime();
     }
 }

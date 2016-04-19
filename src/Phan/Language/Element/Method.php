@@ -57,6 +57,11 @@ class Method extends ClassElement implements FunctionInterface
             $fqsen
         );
 
+        // Presume that this is the original definition
+        // of this method, and let it be overwritten
+        // if it isn't.
+        $this->setDefiningFQSEN($fqsen);
+
         $this->setInternalScope(new FunctionLikeScope(
             $context->getScope(), $fqsen
         ));
@@ -394,7 +399,7 @@ class Method extends ClassElement implements FunctionInterface
         CodeBase $code_base
     ) : ClassElement {
         // Get the class that defines this method
-        $class = $this->getDefiningClass($code_base);
+        $class = $this->getClass($code_base);
 
         // Get the list of ancestors of that class
         $ancestor_class_list = $class->getAncestorClassList(
@@ -416,7 +421,7 @@ class Method extends ClassElement implements FunctionInterface
         // anything
         throw new CodeBaseException(
             $this->getFQSEN(),
-            "Method $this does not override another method"
+            "Method $this with FQSEN {$this->getFQSEN()} does not override another method"
         );
     }
 

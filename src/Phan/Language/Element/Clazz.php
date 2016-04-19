@@ -688,6 +688,7 @@ class Clazz extends AddressableElement
 
         if ($method->getFQSEN() !== $method_fqsen) {
             $method = clone($method);
+            $method->setDefiningFQSEN($method->getFQSEN());
             $method->setFQSEN($method_fqsen);
         }
 
