@@ -60,12 +60,14 @@ class ArgumentType
         // Special common cases where we want slightly
         // better multi-signature error messages
         if ($method->isInternal()) {
-            self::analyzeInternalArgumentType(
+            if(self::analyzeInternalArgumentType(
                 $method,
                 $node,
                 $context,
                 $code_base
-            );
+            )) {
+                return;
+            }
         }
 
         // Emit an error if this method is marked as deprecated
@@ -427,7 +429,7 @@ class ArgumentType
      *
      * @param CodeBase $code_base
      *
-     * @return null
+     * @return bool
      *
      * @see \Phan\Deprecated\Pass2::arg_check
      * Formerly `function arg_check`
@@ -499,6 +501,7 @@ class ArgumentType
                                 'array'
                             );
                         }
+						return true;
                     } elseif ((string)$arg1_type == 'string') {
                         if (!$arg2_type->canCastToUnionType(
                             ArrayType::instance()->asUnionType()
@@ -517,8 +520,9 @@ class ArgumentType
                                 'string'
                             );
                         }
+                        return true;
                     }
-                    return;
+                    return false;
                 }
 
                 // Any other arg counts we will let the regular
@@ -539,7 +543,7 @@ class ArgumentType
                         $method->getNumberOfRequiredParameters()
                     );
 
-                    return;
+                    return true;
                 }
 
                 self::analyzeNodeUnionTypeCast(
@@ -579,7 +583,7 @@ class ArgumentType
                         }
                     );
                 }
-                return;
+                return true;
 
             case 'array_diff_uassoc':
             case 'array_uintersect_uassoc':
@@ -594,7 +598,7 @@ class ArgumentType
                         $method->getNumberOfRequiredParameters()
                     );
 
-                    return;
+                    return true;
                 }
 
                 // The last 2 arguments must be a callable and there
@@ -653,7 +657,7 @@ class ArgumentType
                         }
                     );
                 }
-                return;
+                return true;
 
             case 'strtok':
                 // (string str, string token) or (string token)
@@ -677,9 +681,11 @@ class ArgumentType
                             );
                         }
                     );
+                    return true;
                 }
                 // The arginfo check will handle the other case
                 break;
+
             case 'min':
             case 'max':
                 if ($argcount == 1) {
@@ -703,7 +709,7 @@ class ArgumentType
                             );
                         }
                     )) {
-                        return;
+                        return true;
                     }
                 }
                 // The arginfo check will handle the other case
@@ -711,5 +717,6 @@ class ArgumentType
             default:
                 break;
         }
+        return false;
     }
 }
