@@ -128,7 +128,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         (new ContextNode(
             $this->code_base,
             $this->context,
-            $node
+            $node->children['var']
+        ))->analyzeBackwardCompatibility();
+
+        (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['expr']
         ))->analyzeBackwardCompatibility();
 
         if ($node->children['expr'] instanceof Node
