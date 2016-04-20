@@ -46,6 +46,9 @@
         <testsuite name="LanguageTest">
             <directory>tests/Phan/Language</directory>
         </testsuite>
+        <testsuite name="OutputPrinterTest">
+            <directory>tests/Phan/Output/Printer</directory>
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist>

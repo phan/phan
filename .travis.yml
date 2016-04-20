@@ -9,6 +9,7 @@ env:
   - TEST_SUITE="PhanTest"
   - TEST_SUITE="RasmusTest"
   - TEST_SUITE="LanguageTest"
+  - TEST_SUITE="OutputPrinterTest"
 
 sudo: false
 
