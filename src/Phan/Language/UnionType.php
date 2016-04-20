@@ -282,6 +282,20 @@ class UnionType implements \Serializable
 
     /**
      * @return bool
+     * True if this type has a type referencing the
+     * class context 'static'.
+     */
+    public function hasStaticType() : bool
+    {
+        return (false !==
+            $this->type_set->find(function (Type $type) : bool {
+                return $type->isStaticType();
+            })
+        );
+    }
+
+    /**
+     * @return bool
      * True if and only if this UnionType contains
      * the given type and no others.
      */
@@ -491,6 +505,13 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @param CodeBase $code_base
+     * The code base in which to find classes
+     *
+     * @param Context $context
+     * The context in which we're resolving this union
+     * type.
+     *
      * @return Clazz[]
      * A list of classes representing the non-native types
      * associated with this UnionType
@@ -500,7 +521,8 @@ class UnionType implements \Serializable
      * an associated class
      */
     public function asClassList(
-        CodeBase $code_base
+        CodeBase $code_base,
+        Context $context
     ) {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
@@ -508,15 +530,19 @@ class UnionType implements \Serializable
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
 
-            // See if the class exists
-            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-                throw new CodeBaseException(
-                    $class_fqsen,
-                    "Cannot find class $class_fqsen"
-                );
-            }
+            if ($class_type->isStaticType()) {
+                yield $context->getClassInScope($code_base);
+            } else {
+                // See if the class exists
+                if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                    throw new CodeBaseException(
+                        $class_fqsen,
+                        "Cannot find class $class_fqsen"
+                    );
+                }
 
-            yield $code_base->getClassByFQSEN($class_fqsen);
+                yield $code_base->getClassByFQSEN($class_fqsen);
+            }
         }
     }
 

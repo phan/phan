@@ -9,6 +9,7 @@ use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
+use Phan\Language\Type;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -365,6 +366,32 @@ class Method extends ClassElement implements FunctionInterface
         }
 
         return $method;
+    }
+
+    /**
+     * @param Context $context
+     *
+     * @return UnionType
+     * The type of this method in its given context.
+     */
+    public function getUnionType() : UnionType
+    {
+        $context = $this->getContext();
+
+        $union_type = parent::getUnionType();
+
+        // If the type is 'static', add this context's class
+        // to the return type
+        if ($union_type->hasStaticType()
+            && $context->isInClassScope()
+        ) {
+            $union_type = clone($union_type);
+            $union_type->addType(
+                $this->getFQSEN()->getFullyQualifiedClassName()->asType()
+            );
+        }
+
+        return $union_type;
     }
 
     /**

@@ -770,7 +770,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess
         try {
-            foreach ($union_type->asClassList($this->code_base) as $class) {
+            foreach ($union_type->asClassList($this->code_base, $this->context) as $class) {
                 if ($class->getUnionType()->asExpandedTypes($this->code_base)->hasType($array_access_type)) {
                     return $element_types;
                 }

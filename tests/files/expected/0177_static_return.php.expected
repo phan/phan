@@ -1,0 +1,2 @@
+%s:18 PhanTypeMismatchArgument Argument 1 (p) is \c1|\c2|static but \f() takes \c0 defined at %s:14
+%s:19 PhanTypeMismatchArgument Argument 1 (p) is \c1|static but \f() takes \c0 defined at %s:14

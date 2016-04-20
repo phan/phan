@@ -21,6 +21,7 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
+use Phan\Language\Type\StaticType;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -225,6 +226,8 @@ class Type
                 return StringType::instance();
             case 'void':
                 return VoidType::instance();
+            case 'static':
+                return StaticType::instance();
         }
 
         assert(
@@ -385,6 +388,9 @@ class Type
                     return \Phan\Language\Type\StringType::instance();
                 case 'void':
                     return \Phan\Language\Type\VoidType::instance();
+                case 'static':
+                    return \Phan\Language\Type\StaticType::instance();
+
             }
         }
 
@@ -532,6 +538,16 @@ class Type
     }
 
     /**
+     * @return bool
+     * True if this type is a type referencing the
+     * class context 'static'.
+     */
+    public function isStaticType() : bool
+    {
+        return ('static' === (string)$this);
+    }
+
+    /**
      * @param string $type_string
      * A string defining a type such as 'self' or 'int'.
      *
@@ -543,8 +559,8 @@ class Type
         string $type_string
     ) : bool {
         return in_array($type_string, [
-            'static', 'self', '$this', 'parent',
-            '\static', '\self', '\$this', '\parent'
+            'self', '$this', 'parent',
+            '\self', '\$this', '\parent'
         ]);
     }
 
