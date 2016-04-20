@@ -54,7 +54,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
                 // of the error
                 foreach ($error_map as $key => $value) {
                     $error->appendChild(
-                        new \DOMAttr($key, (string)$value)
+                        new \DOMAttr($key, htmlspecialchars((string)$value, ENT_NOQUOTES, 'UTF-8'))
                     );
                 }
             }
