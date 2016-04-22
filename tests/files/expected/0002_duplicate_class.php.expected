@@ -1,2 +1,2 @@
-%s:9 PhanRedefineClass Class \duplicateclass defined at %s:9 was previously defined as Class \duplicateclass at %s:3
+%s:9 PhanRedefineClass Class \DuplicateClass defined at %s:9 was previously defined as Class \DuplicateClass at %s:3
 

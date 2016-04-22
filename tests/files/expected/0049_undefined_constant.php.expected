@@ -1,2 +1,2 @@
-%s:2 PhanUndeclaredClassConstant Reference to constant CONST from undeclared class \undefinedclass
+%s:2 PhanUndeclaredClassConstant Reference to constant CONST from undeclared class \UndefinedClass
 

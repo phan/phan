@@ -33,7 +33,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** flush printer buffer */
     public function flush()
     {
-        $document = new \DomDocument('1.0', 'ISO-8859-15');
+        $document = new \DOMDocument('1.0', 'ISO-8859-15');
 
         $checkstyle = new \DOMElement('checkstyle');
         $document->appendChild($checkstyle);

@@ -1,2 +1,2 @@
-%s:5 PhanUndeclaredConstant Reference to undeclared constant \undefclassconst::MY_CONST
+%s:5 PhanUndeclaredConstant Reference to undeclared constant \UndefClassConst::MY_CONST
 

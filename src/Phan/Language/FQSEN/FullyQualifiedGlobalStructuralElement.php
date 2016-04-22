@@ -80,10 +80,10 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $namespace = implode('\\', array_merge([$namespace], $name_parts));
         $namespace = self::cleanNamespace($namespace);
 
-        $key = implode('|', [
+        $key = strtolower(implode('|', [
             get_called_class(),
             static::toString($namespace, $name, $alternate_id)
-        ]);
+        ]));
 
         $fqsen = self::memoizeStatic($key, function () use ($namespace, $name, $alternate_id) {
             return new static(
@@ -280,10 +280,6 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         if ('\\' === substr($namespace, -1)) {
             $namespace = substr($namespace, 0, -1);
         }
-
-        // Namespaces are case-insensitive
-        // See https://github.com/php/php-langspec/blob/master/spec/18-namespaces.md
-        $namespace = strtolower($namespace);
 
         return $namespace;
     }

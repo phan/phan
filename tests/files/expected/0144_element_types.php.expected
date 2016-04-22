@@ -1,1 +1,1 @@
-%s:13 PhanUndeclaredMethod Call to undeclared method \datetime::doesnotexist
+%s:13 PhanUndeclaredMethod Call to undeclared method \DateTime::doesNotExist

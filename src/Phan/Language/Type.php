@@ -105,26 +105,20 @@ class Type
         // namespace and name
         $namespace = $namespace ?: '\\';
 
-        // Namespaces are case-insensitive
-        // See https://github.com/php/php-langspec/blob/master/spec/18-namespaces.md
-        $namespace = strtolower($namespace);
-
         if ('\\' === $namespace) {
             $name = self::canonicalNameFromName($name);
-        } else {
-            $name = strtolower($name);
         }
 
         // Make sure we only ever create exactly one
         // object for any unique type
         static $canonical_object_map = [];
         $key = $namespace . '\\' . $name;
-        if (empty($canonical_object_map[$key])) {
-            $canonical_object_map[$key] =
+        if (empty($canonical_object_map[strtolower($key)])) {
+            $canonical_object_map[strtolower($key)] =
                 new static($namespace, $name);
         }
 
-        return $canonical_object_map[$key];
+        return $canonical_object_map[strtolower($key)];
     }
 
     /**
@@ -203,7 +197,7 @@ class Type
         $type_name =
             self::canonicalNameFromName($type_name);
 
-        switch ($type_name) {
+        switch (strtolower($type_name)) {
             case 'array':
                 return ArrayType::instance();
             case 'bool':
@@ -365,7 +359,7 @@ class Type
             return self::fromInternalTypeName($type_name);
         } else {
             // Check to see if its a builtin type
-            switch (self::canonicalNameFromName($type_name)) {
+            switch (strtolower(self::canonicalNameFromName($type_name))) {
                 case 'array':
                     return \Phan\Language\Type\ArrayType::instance();
                 case 'bool':
@@ -507,7 +501,7 @@ class Type
     private static function isNativeTypeString(string $type_name) : bool
     {
         return in_array(
-            str_replace('[]', '', $type_name),
+            str_replace('[]', '', strtolower($type_name)),
             [
                 'int',
                 'float',
@@ -735,8 +729,8 @@ class Type
             return true;
         }
 
-        $s = (string)$this;
-        $d = (string)$type;
+        $s = strtolower((string)$this);
+        $d = strtolower((string)$type);
 
         if ($s[0]=='\\') {
             $s = substr($s, 1);
@@ -871,8 +865,7 @@ class Type
             'integer'  => 'int',
         ];
 
-        $name = strtolower($name);
-        return $map[$name] ?? $name;
+        return $map[strtolower($name)] ?? $name;
     }
 
     /**

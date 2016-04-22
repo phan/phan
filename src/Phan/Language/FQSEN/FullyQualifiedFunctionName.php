@@ -25,7 +25,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
      */
     public static function canonicalName(string $name) : string
     {
-        return strtolower($name);
+        return $name;
     }
 
     /**

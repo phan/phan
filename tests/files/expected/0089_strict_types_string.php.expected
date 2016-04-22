@@ -1,2 +1,2 @@
-%s:5 PhanTypeMismatchArgumentInternal Argument 1 (string) is \c but \strlen() takes string
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (string) is \C but \strlen() takes string
 

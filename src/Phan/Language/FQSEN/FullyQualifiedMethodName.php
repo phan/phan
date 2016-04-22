@@ -16,6 +16,6 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement
      */
     public static function canonicalName(string $name) : string
     {
-        return strtolower($name);
+        return $name;
     }
 }

@@ -1,2 +1,2 @@
-%s:2 PhanUndeclaredExtendedClass Class extends undeclared class \c2
+%s:2 PhanUndeclaredExtendedClass Class extends undeclared class \C2
 

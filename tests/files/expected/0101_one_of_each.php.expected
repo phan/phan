@@ -1,5 +1,5 @@
-%s:5 PhanAccessPropertyPrivate Cannot access private property \c1::$p
-%s:9 PhanAccessPropertyProtected Cannot access protected property \c2::$p
+%s:5 PhanAccessPropertyPrivate Cannot access private property \C1::$p
+%s:9 PhanAccessPropertyProtected Cannot access protected property \C2::$p
 %s:14 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
 %s:14 PhanUndeclaredVariable Variable $v1 is undeclared
 %s:17 PhanContextNotObject Cannot access parent when not in object context
@@ -13,39 +13,39 @@
 %s:64 PhanParamTooFew Call with 0 arg(s) to \f6() which requires 1 arg(s) defined at %s:63
 %s:71 PhanParamTooMany Call with 2 arg(s) to \f7() which only takes 1 arg(s) defined at %s:70
 %s:74 PhanParamTooManyInternal Call with 2 arg(s) to \strlen() which only takes 1 arg(s)
-%s:80 PhanRedefineClass Class \c15 defined at %s:80 was previously defined as Class \c15 at %s:79
-%s:83 PhanRedefineClassInternal Class \datetime defined at %s:83 was previously defined as Class \datetime internally
+%s:80 PhanRedefineClass Class \C15 defined at %s:80 was previously defined as Class \C15 at %s:79
+%s:83 PhanRedefineClassInternal Class \DateTime defined at %s:83 was previously defined as Class \DateTime internally
 %s:87 PhanRedefineFunction Function f9 defined at %s:87 was previously defined at %s:86
 %s:90 PhanRedefineFunctionInternal Function strlen defined at %s:90 was previously defined internally
-%s:94 PhanStaticCallToNonStatic Static call to non-static method \c19::f() defined at %s:93
+%s:94 PhanStaticCallToNonStatic Static call to non-static method \C19::f() defined at %s:93
 %s:98 PhanNonClassMethodCall Call to method f on non-class type null
 %s:104 PhanTypeArraySuspicious Suspicious array access to bool
 %s:107 PhanTypeComparisonFromArray array to string comparison
 %s:110 PhanTypeComparisonToArray int to array comparison
-%s:116 PhanTypeInstantiateAbstract Instantiation of abstract class \c6
-%s:119 PhanTypeInstantiateInterface Instantiation of interface \c7
+%s:116 PhanTypeInstantiateAbstract Instantiation of abstract class \C6
+%s:119 PhanTypeInstantiateInterface Instantiation of interface \C7
 %s:129 PhanTypeMismatchArgument Argument 1 (i) is string but \f8() takes int defined at %s:128
 %s:132 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
 %s:138 PhanTypeMismatchForeach null passed to foreach instead of array
 %s:141 PhanTypeMismatchDefault Default value for int $p can't be bool
 %s:144 PhanTypeMismatchReturn Returning type string but f() is declared to return int
-%s:147 PhanTypeMissingReturn Method \c9::f is declared to return int but has no return value
-%s:150 PhanUndeclaredClassMethod Call to method f from undeclared class \f
-%s:155 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
-%s:158 PhanUndeclaredTypeProperty Property of undeclared type \undef
-%s:161 PhanParentlessClass Reference to parent of class \c12 that does not extend anything
-%s:164 PhanTraitParentReference Reference to parent from trait \t1
-%s:172 PhanUndeclaredClassCatch Catching undeclared class \undef
-%s:176 PhanUndeclaredConstant Reference to undeclared constant \c16::C
-%s:180 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \undef
-%s:183 PhanUndeclaredClassMethod Call to method f5 from undeclared class \undef
-%s:183 PhanUndeclaredTypeParameter Parameter of undeclared type \undef
-%s:192 PhanUndeclaredExtendedClass Class extends undeclared class \undef
+%s:147 PhanTypeMissingReturn Method \C9::f is declared to return int but has no return value
+%s:150 PhanUndeclaredClassMethod Call to method f from undeclared class \F
+%s:155 PhanUndeclaredTypeParameter Parameter of undeclared type \Undef
+%s:158 PhanUndeclaredTypeProperty Property of undeclared type \Undef
+%s:161 PhanParentlessClass Reference to parent of class \C12 that does not extend anything
+%s:164 PhanTraitParentReference Reference to parent from trait \T1
+%s:172 PhanUndeclaredClassCatch Catching undeclared class \Undef
+%s:176 PhanUndeclaredConstant Reference to undeclared constant \C16::C
+%s:180 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \Undef
+%s:183 PhanUndeclaredClassMethod Call to method f5 from undeclared class \Undef
+%s:183 PhanUndeclaredTypeParameter Parameter of undeclared type \Undef
+%s:192 PhanUndeclaredExtendedClass Class extends undeclared class \Undef
 %s:195 PhanUndeclaredFunction Call to undeclared function \f10()
-%s:198 PhanUndeclaredInterface Class implements undeclared interface \c18
-%s:206 PhanUndeclaredProperty Reference to undeclared property \c14->undef
-%s:210 PhanUndeclaredStaticMethod Static call to undeclared method \c21::f
-%s:214 PhanUndeclaredProperty Reference to undeclared property \c22->p
-%s:217 PhanUndeclaredTrait Class uses undeclared trait \t2
+%s:198 PhanUndeclaredInterface Class implements undeclared interface \C18
+%s:206 PhanUndeclaredProperty Reference to undeclared property \C14->undef
+%s:210 PhanUndeclaredStaticMethod Static call to undeclared method \C21::f
+%s:214 PhanUndeclaredProperty Reference to undeclared property \C22->p
+%s:217 PhanUndeclaredTrait Class uses undeclared trait \T2
 %s:220 PhanUndeclaredVariable Variable $v10 is undeclared
 

@@ -73,7 +73,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
         self::assertTrue(
             $this->code_base->hasClassWithFQSEN(
-                FullyQualifiedClassName::fromFullyQualifiedString('\A\b')
+                FullyQualifiedClassName::fromFullyQualifiedString('\A\B')
             )
         );
     }
@@ -90,7 +90,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
             ");
 
         $class_fqsen =
-            FullyQualifiedClassName::fromFullyQualifiedString('\A\b');
+            FullyQualifiedClassName::fromFullyQualifiedString('\A\B');
 
         self::assertTrue(
             $this->code_base->hasClassWithFQSEN($class_fqsen),

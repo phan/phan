@@ -178,10 +178,11 @@ class UnionType implements \Serializable
             $class_name = $class_fqsen->getName();
             $function_name =
                 $class_name . '::' . $function_fqsen->getName();
-            $function_name = strtolower($function_name);
         } else {
-            $function_name = strtolower($function_fqsen->getName());
+            $function_name = $function_fqsen->getName();
         }
+
+        $function_name = strtolower($function_name);
 
         $function_name_original = $function_name;
         $alternate_id = 0;

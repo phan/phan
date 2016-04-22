@@ -77,7 +77,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
     public function testInternalObject() {
         $this->assertUnionTypeStringEqual(
             'new SplStack();',
-            '\\arrayaccess|\\countable|\\iterator|\\serializable|\\spldoublylinkedlist|\\splstack|\\traversable'
+            '\\ArrayAccess|\\Countable|\\Iterator|\\Serializable|\\SplDoublyLinkedList|\\SplStack|\\Traversable'
         );
     }
 
