@@ -552,7 +552,7 @@ class Type
     public static function isSelfTypeString(
         string $type_string
     ) : bool {
-        return in_array($type_string, [
+        return in_array(strtolower($type_string), [
             'self', '$this', 'parent',
             '\self', '\$this', '\parent'
         ]);
