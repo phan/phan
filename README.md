@@ -50,6 +50,23 @@ To get phan running;
 
 You can see the full list of command line options by running `phan -h`.
 
+## Instalation with homebrew
+
+To get phan running on a Mac with homebrew
+
+Ensure that homebrew is installed (go to http://brew.sh/ and install it)
+
+1. brew update
+2. brew install php70 php70-ast phan
+3. Check if it is running:
+
+```sh
+phan -h
+```
+You will see the full list of command line options.
+
+This will install `phan` on the global environment of homebrew, allowing integration with any other software running on the same Mac (like `Jenkins`).
+
 ## Attaching it to your project integration process
 
 Require a dependency:
