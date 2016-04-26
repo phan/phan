@@ -274,6 +274,10 @@ class Context extends FileRef implements \Serializable
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
+
+        assert($this->getScope()->hasParentScope(),
+            "No parent scope from $this");
+
         return $this->getScope()->getClassFQSEN();
     }
 
