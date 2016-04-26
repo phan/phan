@@ -228,6 +228,8 @@ class ConditionVisitor extends KindVisitorImplementation
         if (count($node->children['args']->children) !== 1
             || !$node->children['args']->children[0] instanceof Node
             || $node->children['args']->children[0]->kind !== \ast\AST_VAR
+            || !($node->children['expr'] instanceof Node)
+            || !is_string($node->children['expr']->children['name'])
         ) {
             return $this->context;
         }
