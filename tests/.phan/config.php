@@ -104,4 +104,8 @@ return [
         'vendor/'
     ],
 
+    // A list of plugin files to execute
+    'plugins' => [
+    ],
+
 ];

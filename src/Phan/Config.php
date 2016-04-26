@@ -181,6 +181,10 @@ class Config
         // set this to true. This is meant for debugging
         // and fuzz testing purposes only.
         'randomize_file_order' => false,
+
+        // A list of plugin files to execute
+        'plugins' => [
+        ],
     ];
 
     /**

@@ -112,4 +112,10 @@ return [
         'vendor/'
     ],
 
+    // A list of plugin files to execute
+    'plugins' => [
+        '.phan/plugins/DemoPlugin.php',
+        '.phan/plugins/DollarDollarPlugin.php',
+    ],
+
 ];

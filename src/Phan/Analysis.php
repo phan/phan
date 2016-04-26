@@ -14,8 +14,11 @@ use Phan\Analysis\ReferenceCountsAnalyzer;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Func;
+use Phan\Language\Element\Method;
 use Phan\Language\FQSEN;
 use Phan\Parse\ParseVisitor;
+use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
 
 /**
@@ -183,6 +186,11 @@ class Analysis
             PropertyTypesAnalyzer::analyzePropertyTypes(
                 $code_base, $class
             );
+
+            // Let any configured plugins analyze the class
+            ConfigPluginSet::instance()->analyzeClass(
+                $code_base, $class
+            );
         }
     }
 
@@ -212,6 +220,18 @@ class Analysis
             ParameterTypesAnalyzer::analyzeParameterTypes(
                 $code_base, $function_or_method
             );
+
+            // Let any plugins analyze the methods or functions
+            if ($function_or_method instanceof Func) {
+                ConfigPluginSet::instance()->analyzeFunction(
+                    $code_base, $function_or_method
+                );
+            } else if ($function_or_method instanceof Method) {
+                ConfigPluginSet::instance()->analyzeMethod(
+                    $code_base, $function_or_method
+                );
+            }
+
         }
     }
 
@@ -339,8 +359,6 @@ class Analysis
             );
             return $context;
         }
-
-        // TODO: Formerly where we did copyGlobalToLocal
 
         return (new BlockAnalysisVisitor($code_base, $context))($node);
     }

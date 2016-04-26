@@ -8,6 +8,7 @@ use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Scope\BranchScope;
+use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
 use ast\Node\Decl;
 
@@ -122,6 +123,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $context->withLineNumberStart($node->lineno ?? 0),
             $this->parent_node
         ))($node);
+
+        // Let any configured plugins analyze the node
+        ConfigPluginSet::instance()->analyzeNode(
+            $this->code_base, $context, $node, $this->parent_node
+        );
 
         return $context;
     }

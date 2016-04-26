@@ -130,6 +130,7 @@ class Issue
     const CATEGORY_TYPE              = 1 << 10;
     const CATEGORY_UNDEFINED         = 1 << 11;
     const CATEGORY_VARIABLE          = 1 << 12;
+    const CATEGORY_PLUGIN            = 1 << 13;
 
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
