@@ -15,6 +15,24 @@ class GlobalScope extends Scope {
 
     /**
      * @return bool
+     * True if we're in a class scope
+     */
+    public function isInClassScope() : bool
+    {
+        return false;
+    }
+
+    /**
+     * @return bool
+     * True if we're in a method/function/closure scope
+     */
+    public function isInFunctionLikeScope() : bool
+    {
+        return false;
+    }
+
+    /**
+     * @return bool
      * True if a variable with the given name is defined
      * within this scope
      */
