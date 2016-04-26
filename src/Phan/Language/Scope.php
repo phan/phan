@@ -42,7 +42,10 @@ abstract class Scope
      */
     public function hasParentScope() : bool
     {
-        return !empty($this->parent_scope);
+        return (
+            !empty($this->parent_scope)
+            && $this->parent_scope !== null
+        );
     }
 
     /**
