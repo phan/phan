@@ -1124,7 +1124,17 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $this->context
                     );
 
-                    return $method->getUnionType();
+                    $union_type = $method->getUnionType();
+
+                    // Remove any references to \static once we're
+                    // talking about the method's return type outside
+                    // of its class
+                    if ($union_type->hasStaticType()) {
+                        $union_type = clone($union_type);
+                        $union_type->removeType(\Phan\Language\Type\StaticType::instance());
+                    }
+
+                    return $union_type;
                 } catch (IssueException $exception) {
                     return new UnionType();
                 }

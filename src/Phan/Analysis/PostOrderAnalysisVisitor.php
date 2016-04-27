@@ -1111,10 +1111,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->context,
                 $node
             ))->getMethod($method_name, false);
-
-
-
-
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,

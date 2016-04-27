@@ -157,14 +157,20 @@ class ContextNode
 
         if ($ignore_missing_classes) {
             try {
-                foreach ($union_type->asClassList($this->code_base, $this->context) as $i => $clazz) {
+                foreach ($union_type->asClassList(
+                    $this->code_base,
+                    $this->context
+                ) as $i => $clazz) {
                     $class_list[] = $clazz;
                 }
             } catch (CodeBaseException $exception) {
                 // swallow it
             }
         } else {
-            foreach ($union_type->asClassList($this->code_base, $this->context) as $i => $clazz) {
+            foreach ($union_type->asClassList(
+                $this->code_base,
+                $this->context
+            ) as $i => $clazz) {
                 $class_list[] = $clazz;
             }
         }

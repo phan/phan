@@ -12,6 +12,7 @@ use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\StaticType;
 use Phan\Language\UnionType;
 use ast\Node;
 use ast\Node\Decl;
@@ -376,15 +377,11 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function getUnionType() : UnionType
     {
-        $context = $this->getContext();
-
         $union_type = parent::getUnionType();
 
         // If the type is 'static', add this context's class
         // to the return type
-        if ($union_type->hasStaticType()
-            && $context->isInClassScope()
-        ) {
+        if ($union_type->hasStaticType()) {
             $union_type = clone($union_type);
             $union_type->addType(
                 $this->getFQSEN()->getFullyQualifiedClassName()->asType()

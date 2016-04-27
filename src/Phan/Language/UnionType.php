@@ -245,6 +245,16 @@ class UnionType implements \Serializable
     }
 
     /**
+     * Remove a type name to the list of types
+     *
+     * @return void
+     */
+    public function removeType(Type $type)
+    {
+        $this->type_set->detach($type);
+    }
+
+    /**
      * @return bool
      * True if this union type contains the given named
      * type.
