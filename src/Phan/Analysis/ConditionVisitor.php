@@ -220,7 +220,7 @@ class ConditionVisitor extends KindVisitorImplementation
             || !$node->children['args']->children[0] instanceof Node
             || $node->children['args']->children[0]->kind !== \ast\AST_VAR
             || !($node->children['expr'] instanceof Node)
-            || empty($node->children['expr']->children['name'])
+            || empty($node->children['expr']->children['name'] ?? null)
             || !is_string($node->children['expr']->children['name'])
         ) {
             return $this->context;
