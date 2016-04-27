@@ -1,23 +1,22 @@
 <?php
 
 class C {
-    /**
-     * @return static
-     */
+    /** @return static */
     static function instance() {
         return new static;
     }
 
-    function f() : int {
-        return 42;
+    /** @return static */
+    function f() {
+        return $this;
     }
 
 }
 
-class D extends C {
-}
+class D extends C {}
 
-function g(string $p) {}
+class E {}
+function g(E $p) {}
 
 g(D::instance()->f());
 g(C::instance()->f());
