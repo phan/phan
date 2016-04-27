@@ -6,6 +6,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -530,6 +531,18 @@ class UnionType implements \Serializable
             $class_fqsen = $class_type->asFQSEN();
 
             if ($class_type->isStaticType()) {
+                if (!$context->isInClassScope()) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::ContextNotObject)(
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [
+                                (string)$class_type
+                            ]
+                        )
+                    );
+
+                }
                 yield $context->getClassInScope($code_base);
             } else {
                 // See if the class exists

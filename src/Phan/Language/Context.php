@@ -289,7 +289,7 @@ class Context extends FileRef implements \Serializable
     public function getClassInScope(CodeBase $code_base) : Clazz
     {
         assert($this->isInClassScope(),
-            "Must be in class scope to get class");
+            "Must be in class scope to get class from $this");
 
         if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
             throw new CodeBaseException(
