@@ -2,7 +2,6 @@
 namespace Phan;
 
 use Phan\CodeBase\ClassMap;
-use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -19,8 +18,6 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\UnionType;
-use Phan\Map;
-use Phan\Set;
 
 /**
  * A CodeBase represents the known state of a code base

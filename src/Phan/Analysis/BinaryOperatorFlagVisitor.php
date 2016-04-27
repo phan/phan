@@ -4,25 +4,14 @@ namespace Phan\Analysis;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
-use Phan\Debug;
-use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\Language\Type\{
     ArrayType,
     BoolType,
-    CallableType,
     FloatType,
-    GenericArrayType,
     IntType,
-    MixedType,
-    NativeType,
-    NullType,
-    ObjectType,
-    ResourceType,
-    ScalarType,
-    StringType,
-    VoidType
+    StringType
 };
 use Phan\Issue;
 use ast\Node;

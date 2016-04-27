@@ -5,7 +5,6 @@ use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
-use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 

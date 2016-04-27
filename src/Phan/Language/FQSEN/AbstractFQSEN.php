@@ -3,7 +3,6 @@ namespace Phan\Language\FQSEN;
 
 use Phan\Language\Context;
 use Phan\Language\Type;
-use Phan\Language\UnionType;
 use Phan\Language\FQSEN;
 
 /**

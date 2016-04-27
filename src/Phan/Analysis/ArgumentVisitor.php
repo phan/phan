@@ -5,7 +5,6 @@ use Phan\AST\ContextNode;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Language\Element\Variable;
 use ast\Node;
 use ast\Node\Decl;
 

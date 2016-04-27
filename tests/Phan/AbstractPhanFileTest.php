@@ -3,7 +3,6 @@ namespace Phan\Tests;
 
 use Phan\CodeBase;
 use Phan\Output\Collector\BufferingCollector;
-use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Phan;
 use Symfony\Component\Console\Output\BufferedOutput;

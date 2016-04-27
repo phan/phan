@@ -14,7 +14,6 @@ use \Phan\Config;
 use \Phan\Language\Context;
 use \Phan\Language\FQSEN\FullyQualifiedClassName;
 use \Phan\Language\Type;
-use \Phan\Phan;
 
 class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 

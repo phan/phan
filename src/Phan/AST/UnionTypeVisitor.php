@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
-use Phan\AST\AnalysisVisitor;
-use Phan\AST\ContextNode;
 use Phan\Analysis\BinaryOperatorFlagVisitor;
 use Phan\CodeBase;
 use Phan\Debug;
@@ -17,24 +15,17 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
-use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
-use Phan\Language\Type\NativeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
-use Phan\Language\Type\ResourceType;
-use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\Phan;
 use ast\Node;
 use ast\Node\Decl;
 

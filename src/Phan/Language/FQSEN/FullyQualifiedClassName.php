@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\FQSEN;
 
-use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 

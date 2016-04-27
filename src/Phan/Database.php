@@ -2,7 +2,6 @@
 namespace Phan;
 
 use Phan\CodeBase;
-use Phan\Config;
 use SQLite3;
 
 /**

@@ -6,7 +6,6 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
-use Phan\Phan;
 
 class PropertyTypesAnalyzer
 {

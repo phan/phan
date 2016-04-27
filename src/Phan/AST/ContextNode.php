@@ -1,10 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
-use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
@@ -19,7 +17,6 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;

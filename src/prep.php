@@ -10,8 +10,6 @@ require_once(__DIR__ . '/requirements.php');
 require_once(__DIR__ . '/Phan/Bootstrap.php');
 
 use Phan\CLI;
-use Phan\Config;
-use Phan\Debug;
 use Phan\Prep;
 
 // Create our CLI interface and load arguments

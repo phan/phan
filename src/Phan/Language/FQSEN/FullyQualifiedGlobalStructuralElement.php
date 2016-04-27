@@ -4,7 +4,6 @@ namespace Phan\Language\FQSEN;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
-use Phan\Language\UnionType;
 
 /**
  * A Fully-Qualified Global Structural Element

@@ -10,8 +10,6 @@ use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN;
-use Phan\Language\FQSEN\FullyQualifiedClassElement;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\CodeBase\ClassMap;
 use Phan\Map;
 
