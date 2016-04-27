@@ -268,10 +268,11 @@ class Analysis
      */
     public static function shouldVisit(Node $node)
     {
-
         // When doing dead code detection, we need to go
         // super deep
-        if (Config::get()->dead_code_detection) {
+        if (Config::get()->dead_code_detection
+            || Config::get()->should_visit_all_nodes
+        ) {
             return true;
         }
 

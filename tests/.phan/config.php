@@ -58,6 +58,15 @@ return [
     // time
     "quick_mode" => false,
 
+    // By default, Phan will not analyze all node types
+    // in order to save time. If this config is set to true,
+    // Phan will dig deeper into the AST tree and do an
+    // analysis on all nodes, possibly finding more issues.
+    //
+    // See \Phan\Analysis::shouldVisit for the set of skipped
+    // nodes.
+    'should_visit_all_nodes' => true,
+
     // The minimum severity level to report on. This can be
     // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or
     // Issue::SEVERITY_CRITICAL.
