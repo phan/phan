@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use Phan\Issue;
-
 /**
  * Program configuration.
  * See `./phan -h` for command line usage, or take a

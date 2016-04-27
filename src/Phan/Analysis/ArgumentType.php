@@ -3,31 +3,16 @@ namespace Phan\Analysis;
 
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
-use Phan\Debug;
-use Phan\Exception\CodeBaseException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
-use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
-use Phan\Language\Type\FloatType;
-use Phan\Language\Type\GenericArrayType;
-use Phan\Language\Type\IntType;
-use Phan\Language\Type\MixedType;
-use Phan\Language\Type\NativeType;
-use Phan\Language\Type\NullType;
-use Phan\Language\Type\ObjectType;
-use Phan\Language\Type\ResourceType;
-use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\Phan;
 use ast\Node;
 
 class ArgumentType

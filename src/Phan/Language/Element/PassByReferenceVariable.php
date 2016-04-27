@@ -1,9 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use Phan\AST\ContextNode;
 use Phan\CodeBase;
-use Phan\Debug;
 use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;

@@ -4,7 +4,6 @@ namespace Phan\Tests\Language;
 
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Debug;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;

@@ -3,7 +3,6 @@ namespace Phan\Language\Element;
 
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
-use Phan\Exception\CodeBaseException;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use ast\Node;

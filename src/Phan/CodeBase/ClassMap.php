@@ -1,16 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan\CodeBase;
 
-use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassConstant;
-use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN;
-use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
-use Phan\Language\FQSEN\FullyQualifiedClassElement;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
-use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
 /**
  * Maps for elements associated with an individual class

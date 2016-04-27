@@ -5,22 +5,17 @@ use Phan\AST\ContextNode;
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
-use Phan\Exception\NodeException;
-use Phan\Exception\TypeException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Parameter;
-use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
 use Phan\Language\UnionType;
 use ast\Node;
 use ast\Node\Decl;
-use Phan\Phan;
 
 class AssignmentVisitor extends AnalysisVisitor
 {

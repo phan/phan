@@ -3,7 +3,6 @@ namespace Phan\Language\Element;
 
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
-use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\UnionType;
 
 class ClassConstant extends ClassElement implements ConstantInterface

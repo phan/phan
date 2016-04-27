@@ -5,7 +5,6 @@ use Phan\CodeBase;
 use Phan\Database;
 use Phan\Language\FQSEN;
 use Phan\Language\FileRef;
-use Phan\Model\CalledBy;
 
 interface AddressableElementInterface extends TypedElementInterface
 {

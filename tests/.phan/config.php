@@ -1,6 +1,5 @@
 <?php
 
-use \Phan\Config;
 use \Phan\Issue;
 
 /**

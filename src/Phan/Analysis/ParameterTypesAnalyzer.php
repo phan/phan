@@ -7,8 +7,6 @@ use Phan\Issue;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN;
-use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\MixedType;
 
 class ParameterTypesAnalyzer

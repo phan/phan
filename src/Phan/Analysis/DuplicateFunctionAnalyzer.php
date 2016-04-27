@@ -3,12 +3,9 @@ namespace Phan\Analysis;
 
 use Phan\CodeBase;
 use Phan\Issue;
-use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
-use Phan\Language\Element\Method;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Language\FQSEN\FullyQualifiedMethodName;
 
 class DuplicateFunctionAnalyzer
 {

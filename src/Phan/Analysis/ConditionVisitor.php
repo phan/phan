@@ -2,21 +2,12 @@
 namespace Phan\Analysis;
 
 use Phan\AST\ContextNode;
-use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Langauge\Type;
 use Phan\Language\Context;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\BoolType;
-use Phan\Language\Type\CallableType;
-use Phan\Language\Type\FloatType;
-use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\ObjectType;
-use Phan\Language\Type\ResourceType;
-use Phan\Language\Type\ScalarType;
-use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use ast\Node;
 

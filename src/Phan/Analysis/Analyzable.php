@@ -5,7 +5,6 @@ use Phan\Analysis;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Debug;
 use Phan\Language\Context;
 use ast\Node;
 
