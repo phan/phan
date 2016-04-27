@@ -154,7 +154,8 @@ class Method extends ClassElement implements FunctionInterface
      */
     public static function defaultConstructorForClassInContext(
         Clazz $clazz,
-        Context $context
+        Context $context,
+        CodeBase $code_base
     ) : Method {
 
         $method_fqsen = FullyQualifiedMethodName::make(
@@ -169,6 +170,13 @@ class Method extends ClassElement implements FunctionInterface
             0,
             $method_fqsen
         );
+
+        if ($clazz->hasMethodWithName($code_base, $clazz->getName())) {
+            $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
+            $method->setParameterList($old_style_constructor->getParameterList());
+            $method->setNumberOfRequiredParameters($old_style_constructor->getNumberOfRequiredParameters());
+            $method->setNumberOfOptionalParameters($old_style_constructor->getNumberOfOptionalParameters());
+        }
 
         return $method;
     }
