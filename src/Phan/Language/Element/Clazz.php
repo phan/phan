@@ -749,7 +749,7 @@ class Clazz extends AddressableElement
                 // but doesn't exist yet
                 $default_constructor =
                     Method::defaultConstructorForClassInContext(
-                        $this, $context
+                        $this, $context, $code_base
                     );
 
                 $this->addMethod($code_base, $default_constructor);
