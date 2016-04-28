@@ -1329,7 +1329,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         Context $context,
         $node
     ) : UnionType {
-
         // For simple nodes or very complicated nodes,
         // recurse
         if (!($node instanceof \ast\Node)

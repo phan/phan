@@ -89,6 +89,9 @@ class ParseVisitor extends ScopeVisitor
             $this->context
         );
 
+        assert($class_fqsen instanceof FullyQualifiedClassName,
+            "The class FQSEN must be a FullyQualifiedClassName");
+
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
         while ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
@@ -103,10 +106,7 @@ class ParseVisitor extends ScopeVisitor
         $clazz = new Clazz(
             $class_context,
             $class_name,
-            UnionType::fromStringInContext(
-                $class_name,
-                $this->context
-            ),
+            $class_fqsen->asUnionType(),
             $node->flags ?? 0,
             $class_fqsen
         );

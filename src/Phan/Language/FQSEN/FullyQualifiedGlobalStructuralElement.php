@@ -98,10 +98,12 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     /**
      * @param $fully_qualified_string
      * An fully qualified string like '\Namespace\Class'
+     *
+     * @return static
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
-    ) : FullyQualifiedGlobalStructuralElement {
+    ) {
 
         $key = get_called_class() . '|' . $fully_qualified_string;
 
@@ -151,12 +153,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      *
      * @param $fqsen_string
      * An FQSEN string like '\Namespace\Class'
+     *
+     * @return static
      */
     public static function fromStringInContext(
         string $fqsen_string,
         Context $context
-    ) : FullyQualifiedGlobalStructuralElement {
-
+    ) {
         // Check to see if we're fully qualified
         if (0 === strpos($fqsen_string, '\\')) {
             return static::fromFullyQualifiedString($fqsen_string);
@@ -231,12 +234,12 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /**
-     * @return FQSEN
+     * @return static
      * A FQSEN with the given alternate_id set
      */
     public function withAlternateId(
         int $alternate_id
-    ) : FQSEN {
+    ) {
         if ($this->getAlternateId() === $alternate_id) {
             return $this;
         }

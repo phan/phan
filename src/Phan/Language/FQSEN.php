@@ -14,7 +14,7 @@ interface FQSEN
      * An FQSEN string like '\Namespace\Class::method' or
      * 'Class' or 'Class::method'.
      *
-     * @return FQSEN
+     * @return static
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
@@ -28,7 +28,7 @@ interface FQSEN
      * An FQSEN string like '\Namespace\Class::method' or
      * 'Class' or 'Class::method'.
      *
-     * @return FQSEN
+     * @return static
      */
     public static function fromStringInContext(
         string $string,
