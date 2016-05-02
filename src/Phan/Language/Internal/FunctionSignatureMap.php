@@ -7990,7 +7990,7 @@ return [
 'SoapServer::setObject' => ['', 'obj'=>'object'],
 'SoapServer::setPersistence' => ['', 'mode'=>'int'],
 'SoapServer::SoapServer' => ['object', 'wsdl'=>'string|null', 'options'=>'array'],
-'SoapVar::__construct' => ['', 'data'=>'string', 'encoding'=>'string', 'type_name='=>'string', 'type_namespace='=>'string', 'node_name='=>'string', 'node_namespace='=>'string'],
+'SoapVar::__construct' => ['', 'data'=>'mixed', 'encoding'=>'string', 'type_name='=>'string', 'type_namespace='=>'string', 'node_name='=>'string', 'node_namespace='=>'string'],
 'SoapVar::SoapVar' => ['object', 'data'=>'', 'encoding'=>'string', 'type_name='=>'string', 'type_namespace='=>'string', 'node_name='=>'string', 'node_namespace='=>'string'],
 'socket_accept' => ['resource', 'socket'=>''],
 'socket_bind' => ['bool', 'socket'=>'', 'addr'=>'string', 'port='=>'int'],
