@@ -7,9 +7,9 @@ final class StaticType extends Type
 {
     const NAME = 'static';
 
-    public static function instance()
+    public static function instance() : StaticType
     {
-        static $instance = null;
+        static $instance;
 
         if (empty($instance)) {
             $instance = static::make('\\', static::NAME);
