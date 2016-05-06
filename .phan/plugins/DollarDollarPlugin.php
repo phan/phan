@@ -112,8 +112,7 @@ class DollarDollarVisitor extends AnalysisVisitor {
      *
      * @return void
      */
-    public function visitVar(Node $node)
-    {
+    public function visitVar(Node $node) {
         if ($node->children['name'] instanceof Node) {
             $this->plugin->emitIssue(
                 $this->code_base,
