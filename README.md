@@ -50,7 +50,7 @@ To get phan running;
 
 You can see the full list of command line options by running `phan -h`.
 
-## Instalation with homebrew
+## Installation with Homebrew
 
 To get phan running on a Mac with homebrew
 
