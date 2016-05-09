@@ -883,8 +883,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     "{$static_class}::{$method_name}()"
                 );
             }
-
-            return $this->context;
         }
 
         try {
@@ -1110,7 +1108,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             return $this->context;
         } catch (NodeException $exception) {
-
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.

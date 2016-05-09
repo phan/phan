@@ -1,0 +1,2 @@
+%s:11 PhanTypeMismatchArgument Argument 1 (var) is null but \B::__construct() takes \A defined at %s:6
+%s:15 PhanTypeMismatchArgument Argument 1 (var) is null but \B::__construct() takes \A defined at %s:6
