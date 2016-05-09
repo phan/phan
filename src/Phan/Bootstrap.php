@@ -24,6 +24,7 @@ foreach ([
 
 define('EXIT_SUCCESS', 0);
 define('EXIT_FAILURE', 1);
+define('EXIT_ISSUES_FOUND', EXIT_FAILURE);
 
 // Customize assertions
 assert_options(ASSERT_ACTIVE, true);

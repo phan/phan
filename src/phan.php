@@ -39,7 +39,12 @@ if (Config::get()->expand_file_list) {
 }
 
 // Analyze the file list provided via the CLI
-Phan::analyzeFileList(
-    $code_base,
-    $file_list
-);
+$is_issue_found =
+    Phan::analyzeFileList(
+        $code_base,
+        $file_list
+    );
+
+// Provide an exit status code based on if
+// issues were found
+exit($is_issue_found ? EXIT_ISSUES_FOUND : EXIT_SUCCESS);

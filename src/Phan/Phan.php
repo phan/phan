@@ -65,15 +65,16 @@ class Phan implements IgnoredFilesFilterInterface {
      * @param string[] $file_path_list
      * A list of files to scan
      *
-     * @return null
-     * We emit messages to STDOUT. Nothing is returned.
+     * @return bool
+     * We emit messages to the configured printer and return
+     * true if issues were found.
      *
      * @see \Phan\CodeBase
      */
     public static function analyzeFileList(
         CodeBase $code_base,
         array $file_path_list
-    ) {
+    ) : bool {
         $file_count = count($file_path_list);
 
         // We'll construct a set of files that we'll
@@ -193,8 +194,6 @@ class Phan implements IgnoredFilesFilterInterface {
             // Wait for all tasks to complete and collect the results.
             self::collectSerializedResults($pool->wait());
 
-            self::display();
-
         } else {
             // Get the task data from the 0th processor
             $analyze_file_path_list = array_values($process_file_list_map)[0];
@@ -209,10 +208,16 @@ class Phan implements IgnoredFilesFilterInterface {
             // in the code base and emit errors for dead
             // code.
             Analysis::analyzeDeadCode($code_base);
-
-            // Collect all issues, blocking
-            self::display();
         }
+
+        // Get a count of the number of issues that were found
+        $is_issue_found =
+            0 !== count((self::$issueCollector)->getCollectedIssues());
+
+        // Collect all issues, blocking
+        self::display();
+
+        return $is_issue_found;
     }
 
     /**
