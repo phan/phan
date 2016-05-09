@@ -91,7 +91,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         $catch_scope_list = [];
         foreach ($node->children['catches'] ?? [] as $i => $catch_node) {
-            $catch_scope_list[] = $scope_list[$i+1];
+            $catch_scope_list[] = $scope_list[((int)$i)+1];
         }
 
         // Merge in the types for any variables found in a catch.
