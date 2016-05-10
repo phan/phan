@@ -146,6 +146,45 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return string[]
+     * Get a map from property name to its type for the given
+     * class name.
+     */
+    public static function internalPropertyMapForClassName(
+        string $class_name
+    ) : array {
+        $map = self::internalPropertyMap();
+
+        $canonical_class_name = strtolower($class_name);
+
+        if (isset($map[$canonical_class_name])) {
+            return $map[$canonical_class_name];
+        }
+
+        return [];
+    }
+
+    /**
+     * @return array
+     * A map from builtin class properties to type information
+     *
+     * @see \Phan\Language\Internal\PropertyMap
+     */
+    private static function internalPropertyMap() : array
+    {
+        static $map = [];
+
+        if (!$map) {
+            $map_raw = require(__DIR__.'/Internal/PropertyMap.php');
+            foreach ($map_raw as $key => $value) {
+                $map[strtolower($key)] = $value;
+            }
+        }
+
+        return $map;
+    }
+
+    /**
      * A list of types for parameters associated with the
      * given builtin function with the given name
      *

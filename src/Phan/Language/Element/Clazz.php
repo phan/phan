@@ -202,6 +202,35 @@ class Clazz extends AddressableElement
             $clazz->addProperty($code_base, $property);
         }
 
+        foreach (UnionType::internalPropertyMapForClassName(
+            $clazz->getName()
+        ) as $property_name => $property_type_string) {
+            $property_context = $context->withScope(
+                new ClassScope(new GlobalScope, $clazz->getFQSEN())
+            );
+
+            $property_type =
+                UnionType::fromStringInContext(
+                    $property_type_string,
+                    new Context
+                );
+
+            $property_fqsen = FullyQualifiedPropertyName::make(
+                $clazz->getFQSEN(),
+                $property_name
+            );
+
+            $property = new Property(
+                $property_context,
+                $property_name,
+                $property_type,
+                0,
+                $property_fqsen
+            );
+
+            $clazz->addProperty($code_base, $property);
+        }
+
         foreach ($class->getInterfaceNames() as $name) {
             $clazz->addInterfaceClassFQSEN(
                 FullyQualifiedClassName::fromFullyQualifiedString(
