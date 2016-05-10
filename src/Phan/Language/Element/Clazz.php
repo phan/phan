@@ -175,11 +175,13 @@ class Clazz extends AddressableElement
             $clazz->setParentClassFQSEN($parent_class_fqsen);
         }
 
-        foreach ($class->getDefaultProperties() as $name => $value) {
-            // TODO: whats going on here?
-            $reflection_property =
-                new \ReflectionProperty($class->getName(), $name);
+        // n.b.: public properties on internal classes don't get
+        //       listed via reflection until they're set unless
+        //       they have a default value. Therefore, we don't
+        //       bother iterating over `$class->getProperties()`
+        //       `$class->getStaticProperties()`.
 
+        foreach ($class->getDefaultProperties() as $name => $value) {
             $property_context = $context->withScope(
                 new ClassScope(new GlobalScope, $clazz->getFQSEN())
             );
