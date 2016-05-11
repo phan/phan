@@ -1041,6 +1041,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
         }
 
+        $parameters_seen = [];
+        foreach ($method->getParameterList() as $i => $parameter) {
+            if (isset($parameters_seen[$parameter->getName()])) {
+                $this->emitIssue(
+                    Issue::ParamRedefined,
+                    $node->lineno ?? 0,
+                    '$' . $parameter->getName()
+                );
+            } else {
+                $parameters_seen[$parameter->getName()] = $i;
+            }
+        }
+
 
         return $this->context;
     }
@@ -1073,6 +1086,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $method->getFQSEN(),
                 (string)$return_type
             );
+        }
+
+        $parameters_seen = [];
+        foreach ($method->getParameterList() as $i => $parameter) {
+            if (isset($parameters_seen[$parameter->getName()])) {
+                $this->emitIssue(
+                    Issue::ParamRedefined,
+                    $node->lineno ?? 0,
+                    '$' . $parameter->getName()
+                );
+            } else {
+                $parameters_seen[$parameter->getName()] = $i;
+            }
         }
 
         return $this->context;

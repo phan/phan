@@ -86,6 +86,7 @@ class Issue
     const ParamTypeMismatch         = 'PhanParamTypeMismatch';
     const ParamSignatureMismatch    = 'PhanSignatureMismatch';
     const ParamSignatureMismatchInternal = 'PhanSignatureMismatchInternal';
+    const ParamRedefined            = 'PhanParamRedefined';
 
     // Issue::CATEGORY_NOOP
     const NoopArray                 = 'PhanNoopArray';
@@ -647,6 +648,13 @@ class Issue
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Declaration of %s should be compatible with internal %s",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::ParamRedefined,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Redefinition of parameter %s",
                 self::REMEDIATION_B
             ),
 

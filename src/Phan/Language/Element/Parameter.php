@@ -124,6 +124,8 @@ class Parameter extends Variable
             $parameter =
                 Parameter::fromNode($context, $code_base, $child_node);
 
+            // print "$parameter" . "\t" . ($parameter->isOptional() ? 'opt' : 'req') . "\t" . ($is_optional_seen ? 'seen' : 'unseen') . "\n";
+
             if (!$parameter->isOptional() && $is_optional_seen) {
                 Issue::maybeEmit(
                     $code_base,
