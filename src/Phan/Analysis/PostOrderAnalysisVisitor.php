@@ -908,10 +908,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // not a call to parent::f from f, we may be in trouble.
             if (!$method->isStatic()
 
-                // Allow static calls to parent if we're not in a static method
-                // or if its to the overridden method
+                // Allow static calls to parent if we're not in a static
+                // method or if its to the overridden method
                 && !(
-                    'parent' === $static_class
+                    (
+                        'parent' === $static_class
+                        || 'self' === $static_class
+                        || 'static' === $static_class
+                    )
                     && $this->context->isInMethodScope()
                     && (
                         $this->context->getFunctionLikeFQSEN()->getName() == $method->getFQSEN()->getName()
