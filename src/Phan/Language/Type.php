@@ -672,7 +672,7 @@ class Type
                 "Recursion has gotten out of hand for type $this"
             );
 
-            if ($this->isNativeType()) {
+            if ($this->isNativeType() && !$this->isGenericArray()) {
                 return $this->asUnionType();
             }
 
