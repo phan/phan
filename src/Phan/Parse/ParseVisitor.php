@@ -398,7 +398,7 @@ class ParseVisitor extends ScopeVisitor
             // before setting the future so that calling
             // $property->getUnionType() doesn't force the
             // future to be reified.
-            if (!empty($future_union_type)) {
+            if ($future_union_type instanceof FutureUnionType) {
                 $property->setFutureUnionType($future_union_type);
             }
 
