@@ -12,6 +12,6 @@ class C1 {
 }
 
 $c = new C1;
-$c->is = [new A1]; // line 17
-$c->is = [new A1, new A1]; // line 18
-$c->is = [new A1, new B1]; // line 19
+$c->is = [new A1]; // line 15
+$c->is = [new A1, new A1]; // line 16
+$c->is = [new A1, new B1]; // line 17
