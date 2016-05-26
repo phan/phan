@@ -5,6 +5,7 @@ use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
@@ -245,6 +246,51 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
+    public function visitEncapsList(Node $node) : Context
+    {
+        foreach ((array)$node->children as $child_node) {
+            // Confirm that variables exists
+            if ($child_node instanceof Node
+                && $child_node->kind == \ast\AST_VAR
+            ) {
+                $variable_name = $child_node->children['name'];
+
+                // Ignore $$var type things
+                if (!is_string($variable_name)) {
+                    continue;
+                }
+
+                // Don't worry about non-existent undeclared variables
+                // in the global scope if configured to do so
+                if(Config::get()->ignore_undeclared_variables_in_global_scope
+                    && $this->context->isInGlobalScope()
+                ) {
+                    continue;
+                }
+
+                if (!$this->context->getScope()->hasVariableWithName($variable_name)
+                    && !Variable::isSuperglobalVariableWithName($variable_name)
+                ) {
+                    $this->emitIssue(
+                        Issue::UndeclaredVariable,
+                        $child_node->lineno ?? 0,
+                        $variable_name
+                    );
+                }
+            }
+        }
+
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitDoWhile(Node $node) : Context
     {
         return $this->context;
@@ -393,6 +439,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitVar(Node $node) : Context
     {
+
         $this->analyzeNoOp($node, Issue::NoopVariable);
         return $this->context;
     }

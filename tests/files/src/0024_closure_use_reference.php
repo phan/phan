@@ -6,5 +6,3 @@ $closure = function () use (&$a, &$b) {
 };
 
 $closure();
-
-print "$a $b\n";

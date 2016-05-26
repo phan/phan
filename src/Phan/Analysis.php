@@ -285,7 +285,6 @@ class Analysis
             case \ast\AST_CONST_ELEM:
             case \ast\AST_CONTINUE:
             case \ast\AST_EMPTY:
-            case \ast\AST_ENCAPS_LIST:
             case \ast\AST_EXIT:
             case \ast\AST_INCLUDE_OR_EVAL:
             case \ast\AST_ISSET:
