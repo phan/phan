@@ -35,6 +35,16 @@ return [
     // type to be cast to null.
     "null_casts_as_any_type" => false,
 
+    // If enabled, scalars (int, float, bool, string, null)
+    // are treated as if they can cast to each other.
+    'scalar_implicit_cast' => false,
+
+    // If true, seemingly undeclared variables in the global
+    // scope will be ignored. This is useful for projects
+    // with complicated cross-file globals that you have no
+    // hope of fixing.
+    'ignore_undeclared_variables_in_global_scope' => false,
+
     // Backwards Compatibility Checking
     'backward_compatibility_checks' => false,
 
@@ -73,7 +83,6 @@ return [
 
     // A list of files to include in analysis
     'file_list' => [
-        // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
     // A file list that defines files that will be excluded
@@ -109,7 +118,6 @@ return [
     //       should be added to the `directory_list` as
     //       to `excluce_analysis_directory_list`.
     "exclude_analysis_directory_list" => [
-        'vendor/'
     ],
 
     // A list of plugin files to execute
@@ -117,3 +125,4 @@ return [
     ],
 
 ];
+

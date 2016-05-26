@@ -39,6 +39,12 @@ return [
     // are treated as if they can cast to each other.
     'scalar_implicit_cast' => false,
 
+    // If true, seemingly undeclared variables in the global
+    // scope will be ignored. This is useful for projects
+    // with complicated cross-file globals that you have no
+    // hope of fixing.
+    'ignore_undeclared_variables_in_global_scope' => false,
+
     // Backwards Compatibility Checking
     'backward_compatibility_checks' => false,
 

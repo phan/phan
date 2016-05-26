@@ -345,7 +345,7 @@ class Issue
             new Issue(
                 self::UndeclaredVariable,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_LOW,
+                self::SEVERITY_NORMAL,
                 "Variable \$%s is undeclared",
                 self::REMEDIATION_B
             ),

@@ -3,6 +3,7 @@ namespace Phan\AST;
 
 use Phan\Analysis\BinaryOperatorFlagVisitor;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
@@ -836,7 +837,10 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node->children['name'];
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
-            if (!Variable::isSuperglobalVariableWithName($variable_name)) {
+            if (!Variable::isSuperglobalVariableWithName($variable_name)
+                && (!Config::get()->ignore_undeclared_variables_in_global_scope
+                    || !$this->context->isInGlobalScope())
+            ) {
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredVariable)(
                         $this->context->getFile(),
