@@ -531,6 +531,24 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return bool
+     * True if this union has array-like types (is of type array, is
+     * a generic array, or implements ArrayAccess).
+     */
+    public function hasArrayLike() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return (false ===
+            $this->type_set->find(function (Type $type) : bool {
+                return !$type->isArrayLike();
+            })
+        );
+    }
+
+    /**
      * @return UnionType
      * Get the subset of types which are not native
      */

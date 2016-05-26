@@ -144,7 +144,6 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitDim(Node $node) : Context
     {
-
         // Make the right type a generic (i.e. int -> int[])
         $right_type =
             $this->right_type->asGenericArrayTypes();
@@ -262,6 +261,9 @@ class AssignmentVisitor extends AnalysisVisitor
                 return $this->context;
             }
 
+            // print "{$this->right_type->asExpandedTypes($this->code_base)} ?= ";
+            // print "{$property->getUnionType()->asExpandedTypes($this->code_base)}\n";
+
             if (!$this->right_type->canCastToExpandedUnionType(
                 $property->getUnionType(),
                 $this->code_base
@@ -275,6 +277,16 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
 
                 return $this->context;
+            } else {
+                // If we're assigning to an array element then we don't
+                // know what the constitutation of the parameter is
+                // outside of the scope of this assignment, so we add to
+                // its union type rather than replace it.
+                if ($this->is_dim_assignment) {
+                    $property->getUnionType()->addUnionType(
+                        $this->right_type
+                    );
+                }
             }
 
             // After having checked it, add this type to it

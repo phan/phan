@@ -512,7 +512,11 @@ class Clazz extends AddressableElement
 
             $is_remote_access = (
                 !$context->isInClassScope()
-                || $context->getClassFQSEN() != $this->getFQSEN()
+                || !$context->getClassInScope($code_base)
+                    ->getUnionType()->canCastToExpandedUnionType(
+                        $this->getUnionType(),
+                        $code_base
+                    )
             );
 
             $is_property_accessible = (

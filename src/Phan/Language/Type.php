@@ -574,6 +574,23 @@ class Type
 
     /**
      * @return bool
+     * True if this type is array-like (is of type array, is
+     * a generic array, or implements ArrayAccess).
+     */
+    public function isArrayLike() : bool
+    {
+        $array_access_type =
+            Type::fromNamespaceAndName('\\', 'ArrayAccess');
+
+        return (
+            $this == ArrayType::instance()
+            || $this->isGenericArray()
+            || $this === $array_access_type
+        );
+    }
+
+    /**
+     * @return bool
      * True if this is a generic type such as 'int[]' or
      * 'string[]'.
      */
@@ -773,7 +790,7 @@ class Type
         }
 
         if (strpos($s, '[]') !== false
-            && $d==='array'
+            && ($d == 'array' || $d == '\ArrayAccess')
         ) {
             return true;
         }
