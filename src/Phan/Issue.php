@@ -1032,6 +1032,15 @@ class Issue
             return;
         }
 
+        // If a white-list of allowed issue types is defined,
+        // only emit issues on the white-list
+        if (count(Config::get()->whitelist_issue_types) > 0
+            && !in_array($issue_instance->getIssue()->getType(),
+                Config::get()->whitelist_issue_types ?? [])
+        ) {
+            return;
+        }
+
         // If this issue type has been suppressed in
         // this scope from a doc block, ignore it.
         if ($context->hasSuppressIssue(
@@ -1103,10 +1112,17 @@ class Issue
     ) {
         // If this issue type has been suppressed in
         // the config, ignore it
-        if (in_array(
-                $issue_type,
-                Config::get()->suppress_issue_types ?? []
-            )
+        if (in_array($issue_type,
+            Config::get()->suppress_issue_types ?? [])
+        ) {
+            return;
+        }
+
+        // If a white-list of allowed issue types is defined,
+        // only emit issues on the white-list
+        if (count(Config::get()->whitelist_issue_types) > 0
+            && !in_array($issue_type,
+                Config::get()->whitelist_issue_types ?? [])
         ) {
             return;
         }
