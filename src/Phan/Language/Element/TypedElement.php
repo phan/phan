@@ -226,7 +226,7 @@ abstract class TypedElement implements TypedElementInterface
     {
         $this->suppress_issue_list = [];
         foreach ($suppress_issue_list as $i => $issue_name) {
-            $this->suppress_issue_list[$issue_name] = $issue_name;
+            $this->suppress_issue_list[$issue_name] = 0;
         }
     }
 

@@ -433,9 +433,18 @@ class Context extends FileRef implements \Serializable
             return false;
         }
 
-        return $this->getElementInScope($code_base)->hasSuppressIssue(
-            $issue_name
-        );
+        $has_suppress_issue =
+            $this->getElementInScope($code_base)->hasSuppressIssue(
+                $issue_name
+            );
+
+        // Increment the suppression use count
+        if ($has_suppress_issue) {
+            ++$this->getElementInScope($code_base)
+                ->getSuppressIssueList()[$issue_name];
+        }
+
+        return $has_suppress_issue;
     }
 
     public function serialize()

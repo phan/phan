@@ -227,6 +227,10 @@ return [
     'plugins' => [
         '.phan/plugins/DemoPlugin.php',
         '.phan/plugins/DollarDollarPlugin.php',
+
+        // NOTE: This plugin only produces correct results when
+        //       Phan is run on a single core (-j1).
+        // '.phan/plugins/UnusedSuppressionPlugin.php',
     ],
 
 ];

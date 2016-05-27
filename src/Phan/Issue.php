@@ -1119,7 +1119,6 @@ class Issue
         ) {
             return;
         }
-
         // If a white-list of allowed issue types is defined,
         // only emit issues on the white-list
         if (!Config::get()->disable_suppression
