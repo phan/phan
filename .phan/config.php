@@ -147,7 +147,7 @@ return [
         // 'PhanTypeMismatchDefault',
         // 'PhanTypeMismatchForeach',
         // 'PhanTypeMismatchProperty',
-        'PhanTypeMismatchReturn',
+        // 'PhanTypeMismatchReturn',
         // 'PhanTypeMissingReturn',
         // 'PhanTypeNonVarPassByRef',
         // 'PhanTypeParentConstructorCalled',
