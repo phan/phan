@@ -148,6 +148,11 @@ class Config
         // the file is read
         'stored_state_file_path' => null,
 
+        // Set to true in order to ignore issue suppression.
+        // This is useful for testing the state of your code, but
+        // unlikely to be useful outside of that.
+        'disable_suppression' => false,
+
         // If set to true, we'll dump the AST instead of
         // analyzing files
         'dump_ast' => false,
