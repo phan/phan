@@ -699,6 +699,10 @@ class Type
                 ? $this->genericArrayElementType()->asFQSEN()
                 : $this->asFQSEN();
 
+            if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+                return $union_type;
+            }
+
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                 return $union_type;
             }
