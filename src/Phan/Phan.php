@@ -148,6 +148,12 @@ class Phan implements IgnoredFilesFilterInterface {
         // Get the count of all files we're going to analyze
         $file_count = count($analyze_file_path_list);
 
+        // Prevent an ugly failure if we have no files to
+        // analyze.
+        if (0 == $file_count) {
+            return false;
+        }
+
         // Get a map from process_id to the set of files that
         // the given process should analyze in a stable order
         $process_file_list_map =
