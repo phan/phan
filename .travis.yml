@@ -38,7 +38,6 @@ before_deploy:
 
 deploy:
   provider: releases
-  api_key: $API_KEY
   file: build/phan.phar
   skip_cleanup: true
   on:
