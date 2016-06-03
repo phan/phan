@@ -39,6 +39,8 @@ Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://git
 
 See the [tests](https://github.com/etsy/phan/blob/master/tests/files) directory for some examples of the various checks.
 
+Phan is imperfect and shouldn't be used to prove that your PHP-based rocket guidance system is free of defects.
+
 # Getting Phan Running
 
 Take a look at [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for various methods of getting Phan running on your system.
