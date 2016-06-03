@@ -23,20 +23,21 @@ Phan is a static analyzer for PHP.
 * Can be run on many cores.
 * Output is emitted in text, checkstyle, json or codeclimate formats.
 
-See [Phan Error Types](https://github.com/etsy/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
+See [Phan Issue Types](https://github.com/etsy/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
 and examples of all issues that can be detected by Phan. Take a look at the
 [\Phan\Issue](https://github.com/etsy/phan/blob/master/src/Phan/Issue.php) to see the
 definition of each error type.
 
 Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://github.com/etsy/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base) to get a sense of what the process of doing ongoing analysis might look like for you.
 
-See the [tests][tests] directory for some examples of the various checks.
+See the [tests](https://github.com/etsy/phan/blob/master/tests/files) directory for some examples of the various checks.
 
 # Getting Phan Running
 
 Take a look at [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for various methods of getting Phan running on your system.
 
-Phan depends on PHP 7+ and the [php-ast](https://github.com/nikic/php-ast) extension. With those dependencies installed, you can get Phan running via
+Phan depends on PHP 7+ and the [php-ast](https://github.com/nikic/php-ast) extension. With those [dependencies installed](https://github.com/etsy/phan/wiki/Getting-Started#installing-phan-dependencies),
+you can get Phan running via any of the following methods.
 
 * [Composer](https://github.com/etsy/phan/wiki/Getting-Started#composer)
 * [Source](https://github.com/etsy/phan/wiki/Getting-Started#from-source)
@@ -146,6 +147,63 @@ phan --minimum-severity=10 \
      `find src -type f -path '*.php'`
 ```
 
+## Annotating Your Source Code
+
+Phan reads and understands most [PHPDoc](http://www.phpdoc.org/docs/latest/guides/types.html)
+type annotations including [Union Types](https://github.com/etsy/phan/wiki/About-Union-Types)
+(like `int|MyClass|string|null`) and generic array types (like `int[]` or `string[]|MyClass[]`).
+
+Take a look at [Annotating Your Source Code](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
+and [About Union Types](https://github.com/etsy/phan/wiki/About-Union-Types) for some help
+getting started with defining types in your code.
+
+One important note is that Phan doesn't support `(int|string)[]` style annotations. Instead, use
+`int[]|string[]`. When you have arrays of mixed types, just use `array`.
+
+The following code shows off the various annotations that are supported.
+
+```php
+/**
+ * @return void
+ */
+function f() {}
+
+/** @deprecated */
+class C {
+    /** @var int */
+    const C = 42;
+
+    /** @var string[]|null */
+    public $p = null;
+
+    /**
+     * @param int|null $p
+     * @return string[]|null
+     */
+    public static function f($p) {
+        if (is_null($p)) {
+            return null;
+        }
+
+        return array_map(
+            /** @param int $i */
+            function($i) {
+                return "thing $i";
+            },
+            range(0, $p)
+        );
+    }
+}
+```
+
+Just like in PHP, any type can be nulled in the function declaration which also
+means a null is allowed to be passed in for that parameter.
+
+By default, and completely arbitrarily, for things like `int[]` it checks the first 5
+elements. If the first 5 are of the same type, it assumes the rest are as well. If it can't
+determine the array sub-type it just becomes `array` which will pass through most type
+checks. In practical terms, this means that `[1,2,'a']` is seen as `array` but `[1,2,3]`
+is `int[]` and `['a','b','c']` as `string[]`.
 
 # Generating a file list
 
@@ -161,105 +219,13 @@ setting things in the global scope at the top of your file list. If you have a `
 that sets global variables that everything else needs put that first in the list followed by your
 various entry points, then all your library files containing your classes.
 
-## More on phpdoc types
-
-All the [phpdoc][doctypes] types listed on that page should work with one exception.
-It says that `(int|string)[]` would indicate an array of ints or strings. phan doesn't support
-a mixed-type constraint like that. You can say `int[]|string[]` meaning that the array has to
-contain either all ints or all strings, but if you have mixed types, just use `array`.
-
-That means you can do:
-
-```php
-<?php
-/**
- * MyFunc
- * @param int                 $arg1
- * @param int|string          $arg2
- * @param int[]|int           $arg3
- * @param Datetime|Datetime[] $arg4
- * @return array|null
- */
-function MyFunc($arg1, $arg2, $arg3, $arg4=null) {
-	return null;
-}
-```
-Just like in PHP, any type can be nulled in the function declaration which also
-means a null is allowed to be passed in for that parameter.
-
-By default, and completely arbitrarily, for things like `int[]` it checks the first 5
-elements. If the first 5 are of the same type, it assumes the rest are as well. If it can't
-determine the array sub-type it just becomes `array` which will pass through most type
-checks. In practical terms, this means that `[1,2,'a']` is seen as `array` but `[1,2,3]`
-is `int[]` and `['a','b','c']` as `string[]`.
-
-## Quick Mode Explained
-
-In Quick-mode the scanner doesn't rescan a function or a method's code block every time
-a call is seen. This means that the problem here won't be detected:
-
-```php
-<?php
-function test($arg):int {
-	return $arg;
-}
-test("abc");
-```
-
-This would normally generate:
-
-```sh
-test.php:3 TypeError return string but `test()` is declared to return int
-```
-
-The initial scan of the function's code block has no type information for `$arg`. It
-isn't until we see the call and rescan test()'s code block that we can detect
-that it is actually returning the passed in `string` instead of an `int` as declared.
-
-  [phpast]: https://github.com/nikic/php-ast
-  [scrutinizer]: https://scrutinizer-ci.com/docs/guides/php/automated-code-reviews
-  [doctypes]: http://www.phpdoc.org/docs/latest/guides/types.html
-  [tests]: https://github.com/etsy/phan/blob/master/tests/files
-  [php7ast]: https://wiki.php.net/rfc/abstract_syntax_tree
-  [php7dev]: https://github.com/rlerdorf/php7dev
-  [uniform]: https://wiki.php.net/rfc/uniform_variable_syntax
-
 # Development
 
 Take a look at [Developer's Guide to Phan](https://github.com/etsy/phan/wiki/Developer's-Guide-To-Phan) for help getting started hacking on Phan.
-
-## Bugs
 
 When you find an issue, please take the time to create a tiny reproducing code snippet that illustrates
 the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to
 [tests][tests] then `./test` and send a PR with your fix and test. Alternatively, you can open an Issue with
 details.
 
-## How it works
-
-One of the big changes in PHP 7 is the fact that the parser now uses a real
-Abstract Syntax Tree ([AST][php7ast]). This makes it much easier to write code
-analysis tools by pulling the tree and walking it looking for interesting things.
-
-Phan has 2 passes. On the first pass it reads every file, gets the AST and recursively parses it
-looking only for functions, methods and classes in order to populate a bunch of
-global hashes which will hold all of them. It also loads up definitions for all internal
-functions and classes. The type info for these come from a big file called FunctionSignatureMap.
-
-The real complexity hits you hard in the second pass. Here some things are done recursively depth-first
-and others not. For example, we catch something like `foreach($arr as $k=>$v)` because we need to tell the
-foreach code block that `$k` and `$v` exist. For other things we need to recurse as deeply as possible
-into the tree before unrolling our way back out. For example, for something like `c(b(a(1)))` we need
-to call `a(1)` and check that `a()` actually takes an int, then get the return type and pass it to `b()`
-and check that, before doing the same to `c()`.
-
-There is a Scope object which keeps track of all variables. It mimics PHP's scope handling in that it
-has a globals along with entries for each function, method and closure. This is used to detect
-undefined variables and also type-checked on a `return $var`.
-
-## Running tests
-
-```sh
-composer install
-./vendor/bin/phpunit
-```
+To run Phan's tests, just run `./test`.

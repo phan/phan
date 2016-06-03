@@ -71,6 +71,30 @@ class Config
         // an analysis. You should consider setting this
         // to true only when you wish you had more issues
         // to fix in your code base.
+        //
+        // In quick-mode the scanner doesn't rescan a function
+        // or a method's code block every time a call is seen.
+        // This means that the problem here won't be detected:
+        //
+        // ```php
+        // <?php
+        // function test($arg):int {
+        // 	return $arg;
+        // }
+        // test("abc");
+        // ```
+        //
+        // This would normally generate:
+        //
+        // ```sh
+        // test.php:3 TypeError return string but `test()` is declared to return int
+        // ```
+        //
+        // The initial scan of the function's code block has no
+        // type information for `$arg`. It isn't until we see
+        // the call and rescan test()'s code block that we can
+        // detect that it is actually returning the passed in
+        // `string` instead of an `int` as declared.
         'quick_mode' => false,
 
         // By default, Phan will not analyze all node types
