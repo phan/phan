@@ -149,7 +149,7 @@ class Type
                 // If this looks like a generic type string, explicitly
                 // make it as such
                 if (self::isGenericArrayString($type_name)
-                    && ($pos = strpos($type_name, '[]')) !== false
+                    && ($pos = strrpos($type_name, '[]')) !== false
                 ) {
                     return GenericArrayType::fromElementType(Type::make(
                         $namespace,
@@ -181,7 +181,7 @@ class Type
     ) : Type {
         // If this is a generic type (like int[]), return
         // a generic of internal types.
-        if (false !== ($pos = strpos($type_name, '[]'))) {
+        if (false !== ($pos = strrpos($type_name, '[]'))) {
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
                     substr($type_name, 0, $pos)
@@ -304,7 +304,7 @@ class Type
         // the type of each element
         $non_generic_array_type_name = $type_name;
         if ($is_generic_array_type
-           && false !== ($pos = strpos($type_name, '[]'))
+           && false !== ($pos = strrpos($type_name, '[]'))
         ) {
             $non_generic_array_type_name =
                 substr($type_name, 0, $pos);
@@ -627,7 +627,7 @@ class Type
             "Cannot call genericArrayElementType on non-generic array"
         );
 
-        if (($pos = strpos($this->name, '[]')) !== false) {
+        if (($pos = strrpos($this->name, '[]')) !== false) {
             assert(
                 $this->name !== '[]' && $this->name !== 'array',
                 "Non-generic type '{$this->name}' requested to be non-generic"

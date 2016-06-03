@@ -2,6 +2,10 @@
 
 namespace Phan\Tests\Language;
 
+use Phan\Language\Type;
+use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\IntType;
+
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();
 $internal_interface_name_list = get_declared_interfaces();
@@ -78,6 +82,28 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
         $this->assertUnionTypeStringEqual(
             'new SplStack();',
             '\\ArrayAccess|\\Countable|\\Iterator|\\Serializable|\\SplDoublyLinkedList|\\SplStack|\\Traversable'
+        );
+    }
+
+    public function testGenericArrayType() {
+        $type = GenericArrayType::fromElementType(
+            GenericArrayType::fromElementType(
+                IntType::instance()
+            )
+        );
+
+        $this->assertEquals(
+            $type->genericArrayElementType()->__toString(),
+            "int[]"
+        );
+    }
+
+    public function testGenericArrayTypeFromString() {
+        $type = Type::fromFullyQualifiedString("int[][]");
+
+        $this->assertEquals(
+            $type->genericArrayElementType()->__toString(),
+            "int[]"
         );
     }
 

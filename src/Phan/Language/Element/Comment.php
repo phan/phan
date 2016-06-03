@@ -19,7 +19,7 @@ class Comment
     // A legal type identifier optionally with a []
     // indicating that its a generic typed array
     const generic_array_type_regex =
-        self::simple_type_regex . '(\[\])?';
+        self::simple_type_regex . '(\[\])*';
 
     // A list of one or more types delimited by the '|'
     // character
