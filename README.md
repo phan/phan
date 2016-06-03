@@ -4,15 +4,21 @@ Phan is a static analyzer for PHP.
 
 # Features
 
-* Checks for all methods, functions, classes, traits, interfaces, constants, properties and variables to be defined and accessible.
-* Checks for type safety and arity issues on method/function/closure calls.
-* Checks for PHP7/PHP5 backward compatibility
-* Checks for sanity with array accesses
-* Checks for type safety on binary operations
-* Checks for valid and type safe return values on methods, functions, and closures
-* Checks for No-Ops on arrays, closures, constants, properties, variables.
-* Checks for unused/dead code.
-* Checks for classes, functions and methods being redefined
+Phan is a static analyzer that looks for common issues and will verify type compatibility
+on various operations when type information is available or can be deduced. Phan does not
+make any serious attempt to understand flow control and narrow types based on conditionals.
+
+Phan is able to perform the following kinds of analysis.
+
+* Check for all methods, functions, classes, traits, interfaces, constants, properties and variables to be defined and accessible.
+* Check for type safety and arity issues on method/function/closure calls.
+* Check for PHP7/PHP5 backward compatibility
+* Check for sanity with array accesses
+* Check for type safety on binary operations
+* Check for valid and type safe return values on methods, functions, and closures
+* Check for No-Ops on arrays, closures, constants, properties, variables.
+* Check for unused/dead code.
+* Check for classes, functions and methods being redefined
 * Supports namespaces, traits and variadics
 * Supports [Union Types](https://github.com/etsy/phan/wiki/About-Union-Types)
 * Supports generic arrays such as `int[]`, `UserObject[]`, etc..
@@ -22,6 +28,7 @@ Phan is a static analyzer for PHP.
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores.
 * Output is emitted in text, checkstyle, json or codeclimate formats.
+* Can run user plugins on source for checks specific to your code.
 
 See [Phan Issue Types](https://github.com/etsy/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
 and examples of all issues that can be detected by Phan. Take a look at the
