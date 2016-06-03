@@ -57,7 +57,54 @@ getting Phan's dependencies installed on your system.
 
 # Usage
 
-Running `phan --help` will show usage information for the CLI tool.
+Phan needs to be configured with details on where to find code to analyze and how to analyze it. The
+easiest way to tell Phan where to find source code is to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file).
+A simple `.phan/config.php` file might look something like the following.
+
+```php
+<?php
+
+/**
+ * This configuration will be read and overlaid on top of the
+ * default configuration. Command line arguments will be applied
+ * after this file is read.
+ */
+return [
+
+    // A list of directories that should be parsed for class and
+    // method information. After excluding the directories
+    // defined in exclude_analysis_directory_list, the remaining
+    // files will be statically analyzed for errors.
+    //
+    // Thus, both first-party and third-party code being used by
+    // your application should be included in this list.
+    'directory_list' => [
+        'src',
+        'vendor/symfony/console',
+    ],
+
+    // A directory list that defines files that will be excluded
+    // from static analysis, but whose class and method
+    // information should be included.
+    //
+    // Generally, you'll want to include the directories for
+    // third-party code (such as "vendor/") in this list.
+    //
+    // n.b.: If you'd like to parse but not analyze 3rd
+    //       party code, directories containing that code
+    //       should be added to the `directory_list` as
+    //       to `excluce_analysis_directory_list`.
+    "exclude_analysis_directory_list" => [
+        'vendor/'
+    ],
+];
+```
+
+Take a look at [Creating a Config File](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) and
+[Incrementally Strengthening Analysis](https://github.com/etsy/phan/wiki/Incrementally-Strengthening-Analysis) for
+more details.
+
+Running `phan --help` will show usage information and command-line options.
 
 ```
 Usage: ./phan [options] [files...]
@@ -71,15 +118,28 @@ Usage: ./phan [options] [files...]
   passing in a small subset of files to be re-analyzed.
 
  -l, --directory <directory>
-  A directory to recursively read PHP files from to analyze
+  A directory that should be parsed for class and
+  method information. After excluding the directories
+  defined in --exclude-directory-list, the remaining
+  files will be statically analyzed for errors.
+
+  Thus, both first-party and third-party code being used by
+  your application should be included in this list.
+
+  You may include multiple `--directory DIR` options.
+
+ --exclude-file <file>
+  A file that should not be parsed or analyzed (or read
+  at all). This is useful for excluding hopelessly
+  unanalyzable files.
 
  -3, --exclude-directory-list <dir_list>
-  A comma-separated list of directories for which any files
-  therein should be parsed but not analyzed.
+  A comma-separated list of directories that defines files
+  that will be excluded from static analysis, but whose
+  class and method information should be included.
 
- -s, --state-file <filename>
-  Save state to the given file and read from it to speed up
-  future executions
+  Generally, you'll want to include the directories for
+  third-party code (such as "vendor/") in this list.
 
  -d, --project-root-directory
   Hunt for a directory named .phan in the current or parent
@@ -87,7 +147,7 @@ Usage: ./phan [options] [files...]
   path.
 
  -m <mode>, --output-mode
-  Output mode: text, codeclimate
+  Output mode from 'text', 'json', 'codeclimate', or 'checkstyle'
 
  -o, --output <filename>
   Output filename
@@ -98,12 +158,6 @@ Usage: ./phan [options] [files...]
  -a, --dump-ast
   Emit an AST for each file rather than analyze
 
- -e, --expand-file-list
-  Expand the list of files passed in to include any files
-  that depend on elements defined in those files. This is
-  useful when running Phan from a state file and passing in
-  just the set of changed files.
-
  -q, --quick
   Quick mode - doesn't recurse into all function calls
 
@@ -111,7 +165,7 @@ Usage: ./phan [options] [files...]
   Check for potential PHP 5 -> PHP 7 BC issues
 
  -i, --ignore-undeclared
- Ignore undeclared functions and classes
+  Ignore undeclared functions and classes
 
  -y, --minimum-severity <level in {0,5,10}>
   Minimum severity level (low=0, normal=5, critical=10) to report.
@@ -126,25 +180,16 @@ Usage: ./phan [options] [files...]
   properties that are probably never referenced and can
   possibly be removed.
 
+ -j, --processes <int>
+  The number of parallel processes to run during the analysis
+  phase. Defaults to 1.
+
+ -z, --signature-compatibility
+  Analyze signatures for methods that are overrides to ensure
+  compatiiblity with what they're overriding.
+
  -h,--help
   This help information
-```
-
-A thorough analysis might be run via something like
-
-```bash
-phan --minimum-severity=0 \
-     --backward-compatibility-checks \
-     `find src -type f -path '*.php'`
-```
-
-while a casual analysis just looking for the worst offenders might look like
-
-```bash
-phan --minimum-severity=10 \
-     --quick \
-     --ignore-undeclared \
-     `find src -type f -path '*.php'`
 ```
 
 ## Annotating Your Source Code
