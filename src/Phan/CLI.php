@@ -111,13 +111,14 @@ class CLI
                 case 'file-list':
                     $file_list = is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
-                        if (is_file($file_name) && is_readable($file_name)) {
+                        $file_path = Config::projectPath($file_name);
+                        if (is_file($file_path) && is_readable($file_path)) {
                             $this->file_list = array_merge(
                                 $this->file_list,
-                                file($file_name, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
+                                file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
                             );
                         } else {
-                            error_log("Unable to read file $file_name");
+                            error_log("Unable to read file $file_path");
                         }
                     }
                     break;
@@ -439,10 +440,11 @@ EOB;
             );
 
             foreach (array_keys(iterator_to_array($iterator)) as $file_name) {
-                if (is_file($file_name) && is_readable($file_name)) {
+                $file_path = Config::projectPath($file_name);
+                if (is_file($file_path) && is_readable($file_path)) {
                     $file_list[] = $file_name;
                 } else {
-                    error_log("Unable to read file $file_name");
+                    error_log("Unable to read file $file_path");
                 }
             }
         } catch (\Exception $exception) {

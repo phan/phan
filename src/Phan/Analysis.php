@@ -46,7 +46,7 @@ class Analysis
         // of this method
         try {
             $node = \ast\parse_file(
-                $file_path,
+                Config::projectPath($file_path),
                 Config::get()->ast_version
             );
         } catch (\ParseError $parse_error) {
@@ -330,7 +330,7 @@ class Analysis
         // of this method
         try {
             $node = \ast\parse_file(
-                $file_path,
+                Config::projectPath($file_path),
                 Config::get()->ast_version
             );
         } catch (\ParseError $parse_error) {

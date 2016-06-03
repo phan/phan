@@ -361,6 +361,11 @@ class Config
      */
     public static function projectPath(string $relative_path)
     {
+        // Make sure its actually relative
+        if (DIRECTORY_SEPARATOR == substr($relative_path, 0, 1)) {
+            return $relative_path;
+        }
+
         return implode(DIRECTORY_SEPARATOR, [
             Config::get()->getProjectRootDirectory(),
             $relative_path
