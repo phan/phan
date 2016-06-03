@@ -32,98 +32,27 @@ Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://git
 
 See the [tests][tests] directory for some examples of the various checks.
 
-# Getting it running
+# Getting Phan Running
 
-Phan requires PHP 7+ with the [php-ast][phpast] and sqlite extension loaded. The code you analyze can be written for any version of PHP.
+Take a look at [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for various methods of getting Phan running on your system.
 
-## Standalone usage
+Phan depends on PHP 7+ and the [php-ast](https://github.com/nikic/php-ast) extension. With those dependencies installed, you can get Phan running via
 
-To get phan running;
+* [Composer](https://github.com/etsy/phan/wiki/Getting-Started#composer)
+* [Source](https://github.com/etsy/phan/wiki/Getting-Started#from-source)
+* [Phan.phar](https://github.com/etsy/phan/wiki/Getting-Started#from-phanphar)
+* [Docker Image](https://github.com/etsy/phan/wiki/Getting-Started#from-a-docker-image)
+* [Code Climate](https://github.com/etsy/phan/wiki/Getting-Started#from-code-climate)
+* [Homebrew](https://github.com/etsy/phan/wiki/Getting-Started#from-homebrew)
 
-1. Clone the repo
-2. Run `composer install` to load dependencies
-3. Test phan on itself by running the following
+Once installed, you can make sure Phan is running correctly by running `phan -h` to see its command-line options.
 
-```sh
-./phan
-```
+With Phan running, you'll want to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) in
+your project to tell Phan how to analyze your source code. Take a look at [Incrementally Strengthening Analysis](https://github.com/etsy/phan/wiki/Incrementally-Strengthening-Analysis)
+for some tips on how to slowly ramp up the stricntess of the analysis as your code becomes better equipped to be analyzed.
 
-You can see the full list of command line options by running `phan -h`.
-
-## Installation with Homebrew
-
-To get phan running on a Mac with homebrew
-
-Ensure that homebrew is installed (go to http://brew.sh/ and install it)
-
-1. brew update
-2. brew install php70 php70-ast phan
-3. Check if it is running:
-
-```sh
-phan -h
-```
-You will see the full list of command line options.
-
-This will install `phan` on the global environment of homebrew, allowing integration with any other software running on the same Mac (like `Jenkins`).
-
-## Attaching it to your project integration process
-
-Require a dependency:
-```sh
-composer require --dev "etsy/phan:dev-master"
-```
-
-Define a step or run manually
-```sh
-find src/ -type f -name '*.php' > phan.in
-./vendor/bin/phan -f phan.in -3 vendor -o phan.out
-```
-
-The `phan.out` file will contain the analyzer output. This should look like this:
-
-```
-test1.php:191 UndefError call to undefined function get_real_size()
-test1.php:232 UndefError static call to undeclared class core\session\manager
-test1.php:386 UndefError Trying to instantiate undeclared class lang_installer
-test2.php:4 TypeError arg#1(arg) is object but escapeshellarg() takes string
-test2.php:4 TypeError arg#1(msg) is int but logmsg() takes string defined at sth.php:5
-test2.php:4 TypeError arg#2(level) is string but logmsg() takes int defined at sth.php:5
-test3.php:11 TypeError arg#1(number) is string but number_format() takes float
-test3.php:12 TypeError arg#1(string) is int but htmlspecialchars() takes string
-test3.php:13 TypeError arg#1(str) is int but md5() takes string
-test3.php:14 TypeError arg#1(separator) is int but explode() takes string
-test3.php:14 TypeError arg#2(str) is int but explode() takes string
-```
-
-You can see the full list of command line options by running `./vendor/bin/phan -h`.
-
-## Getting requirements
-
-### PHP 7
-
-If you don't have a version of PHP 7 installed, you can grab a [php7dev][php7dev] Vagrant image or one of the many Docker builds out there.
-
-### AST extension
-
-Compile [php-ast][phpast]. Something along these lines should do it:
-
-```sh
-git clone https://github.com/nikic/php-ast.git
-cd php-ast
-phpize
-./configure
-make install
-```
-
-And add `extension=ast.so` to your `php.ini` file. Check that it is there with `php -m`.
-If it isn't you probably added it to the wrong `php.ini` file. Check `php --ini` to see
-where it is looking.
-
-If `phpize` is unavailable on your system, you may need to install the PHP developer
-packages which are often available with names such as `php-dev`.
-
-Windows users can grab `ast.dll` directly from [PECL snaps](http://windows.php.net/downloads/pecl/snaps/ast/)
+Take a look at [Installing Phan Dependencies](https://github.com/etsy/phan/wiki/Getting-Started#installing-phan-dependencies) for help
+getting Phan's dependencies installed on your system.
 
 # Usage
 
