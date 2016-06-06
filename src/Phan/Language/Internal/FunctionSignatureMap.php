@@ -7977,7 +7977,7 @@ return [
 'SoapFault::SoapFault' => ['object', 'faultcode'=>'string', 'faultstring'=>'string', 'faultactor'=>'string', 'detail'=>'', 'faultname'=>'string', 'headerfault'=>''],
 'SoapFault::__toString' => ['string'],
 'SoapHeader::__construct' => ['', 'namespace'=>'string', 'name'=>'string', 'data='=>'mixed', 'mustunderstand='=>'bool', 'actor='=>'string'],
-'SoapHeader::SoapHeader' => ['object', 'namespace'=>'string', 'name'=>'string', 'data'=>'', 'mustunderstand'=>'bool', 'actor'=>''],
+'SoapHeader::SoapHeader' => ['object', 'namespace'=>'string', 'name'=>'string', 'data='=>'mixed', 'mustunderstand='=>'bool', 'actor='=>'string'],
 'SoapParam::__construct' => ['', 'data'=>'mixed', 'name'=>'string'],
 'SoapParam::SoapParam' => ['object', 'data'=>'', 'name'=>'string'],
 'SoapServer::addFunction' => ['', 'functions'=>''],
