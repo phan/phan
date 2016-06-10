@@ -38,6 +38,12 @@ class CLI
     private $file_list_only = false;
 
     /**
+     * @var string|null
+     * A possibly null path to the config file to load
+     */
+    private $config_file = null;
+
+    /**
      * Create and read command line arguments, configuring
      * \Phan\Config as a side effect.
      */
@@ -46,9 +52,9 @@ class CLI
         global $argv;
 
         // Parse command line args
-        // still available: g,k,n,t,u,v,w
+        // still available: g,n,t,u,v,w
         $opts = getopt(
-            "f:m:o:c:aeqbr:pid:s:3:y:l:xj:zh::",
+            "f:m:o:c:k:aeqbr:pid:s:3:y:l:xj:zh::",
             [
                 'backward-compatibility-checks',
                 'dead-code-detection',
@@ -69,6 +75,7 @@ class CLI
                 'quick',
                 'state-file:',
                 'processes:',
+                'config-file:',
                 'signature-compatibility',
                 'markdown-issue-messages',
             ]
@@ -79,6 +86,14 @@ class CLI
         Config::get()->setProjectRootDirectory(
             $opts['d'] ?? getcwd()
         );
+
+        // Before reading the config, check for an override on
+        // the location of the config file path.
+        if (isset($opts['k'])) {
+            $this->config_file = $opts['k'];
+        } else if (isset($opts['config-file'])) {
+            $this->config_file = $opts['config-file'];
+        }
 
         // Now that we have a root directory, attempt to read a
         // configuration file `.phan/config.php` if it exists
@@ -135,6 +150,9 @@ class CLI
                             );
                         }
                     }
+                    break;
+                case 'k':
+                case 'config-file':
                     break;
                 case 'm':
                 case 'output-mode':
@@ -369,6 +387,10 @@ Usage: {$argv[0]} [options] [files...]
   directory and read configuration file config.php from that
   path.
 
+ -k, --config-file
+  A path to a config file to load (instead of the default of
+  .phan/config.php).
+
  -m <mode>, --output-mode
   Output mode from 'text', 'json', 'codeclimate', or 'checkstyle'
 
@@ -521,7 +543,9 @@ EOB;
 
         // If the file doesn't exist here, try a directory up
         $config_file_name =
-            implode(DIRECTORY_SEPARATOR, [
+            !empty($this->config_file)
+            ? realpath($this->config_file)
+            : implode(DIRECTORY_SEPARATOR, [
                 Config::get()->getProjectRootDirectory(),
                 '.phan',
                 'config.php'
