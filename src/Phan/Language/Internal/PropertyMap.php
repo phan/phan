@@ -71,10 +71,10 @@ return [
         'document' => 'DOMDocument'
     ],
     'domentity' => [
-        'publicid' => 'string',
-        'systemid' => 'string',
-        'notationname' => 'string',
-        'actualencoding' => 'string',
+        'publicId' => 'string',
+        'systemId' => 'string',
+        'notationName' => 'string',
+        'actualEncoding' => 'string',
         'encoding' => 'string',
         'version' => 'string'
     ],
@@ -155,8 +155,8 @@ return [
         'querystring' => 'string'
     ],
     'domnotation' => [
-        'publicid' => 'string',
-        'systemid' => 'string'
+        'publicId' => 'string',
+        'systemId' => 'string'
     ],
     'snmpexception' => [
         'code' => 'string'
@@ -192,25 +192,25 @@ return [
         'status' => 'string'
     ],
     'domdocument' => [
-        'actualencoding' => 'string',
+        'actualEncoding' => 'string',
         'config' => 'DOMConfiguration',
         'doctype' => 'DOMDocumentType',
-        'documentelement' => 'DOMElement',
-        'documenturi' => 'string',
+        'documentElement' => 'DOMElement',
+        'documentURI' => 'string',
         'encoding' => 'string',
-        'formatoutput' => 'bool',
+        'formatOutput' => 'bool',
         'implementation' => 'DOMImplementation',
-        'preservewhitespace' => 'bool',
+        'preserveWhiteSpace' => 'bool',
         'recover' => 'bool',
-        'resolveexternals' => 'bool',
+        'resolveExternals' => 'bool',
         'standalone' => 'bool',
-        'stricterrorchecking' => 'bool',
-        'substituteentities' => 'bool',
-        'validateonparse' => 'bool',
+        'strictErrorChecking' => 'bool',
+        'substituteEntities' => 'bool',
+        'validateOnParse' => 'bool',
         'version' => 'string',
-        'xmlencoding' => 'string',
-        'xmlstandalone' => 'bool',
-        'xmlversion' => 'string'
+        'xmlEncoding' => 'string',
+        'xmlStandalone' => 'bool',
+        'xmlVersion' => 'string'
     ],
     'libxmlerror' => [
         'level' => 'int',
@@ -241,12 +241,12 @@ return [
         'pending' => 'bool'
     ],
     'domdocumenttype' => [
-        'publicid' => 'string',
-        'systemid' => 'string',
+        'publicId' => 'string',
+        'systemId' => 'string',
         'name' => 'string',
         'entities' => 'DOMNamedNodeMap',
         'notations' => 'DOMNamedNodeMap',
-        'internalsubset' => 'string'
+        'internalSubset' => 'string'
     ],
     'errorexception' => [
         'severity' => 'int'
@@ -276,8 +276,8 @@ return [
         'name' => 'string'
     ],
     'domelement' => [
-        'schematypeinfo' => 'bool',
-        'tagname' => 'string'
+        'schemaTypeInfo' => 'bool',
+        'tagName' => 'string'
     ],
     'tidynode' => [
         'value' => 'string',
@@ -326,27 +326,27 @@ return [
         'code' => 'string'
     ],
     'domnode' => [
-        'nodename' => 'string',
-        'nodevalue' => 'string',
-        'nodetype' => 'int',
-        'parentnode' => 'DOMNode',
-        'childnodes' => 'DOMNodeList',
-        'firstchild' => 'DOMNode',
-        'lastchild' => 'DOMNode',
-        'previoussibling' => 'DOMNode',
-        'nextsibling' => 'DOMNode',
+        'nodeName' => 'string',
+        'nodeValue' => 'string',
+        'nodeType' => 'int',
+        'parentNode' => 'DOMNode',
+        'childNodes' => 'DOMNodeList',
+        'firstChild' => 'DOMNode',
+        'lastChild' => 'DOMNode',
+        'previousSibling' => 'DOMNode',
+        'nextSibling' => 'DOMNode',
         'attributes' => 'DOMNamedNodeMap',
-        'ownerdocument' => 'DOMDocument',
-        'namespaceuri' => 'string',
+        'ownerDocument' => 'DOMDocument',
+        'namespaceURI' => 'string',
         'prefix' => 'string',
-        'localname' => 'string',
-        'baseuri' => 'string',
-        'textcontent' => 'string'
+        'localName' => 'string',
+        'baseURI' => 'string',
+        'textContent' => 'string'
     ],
     'domattr' => [
         'name' => 'string',
-        'ownerelement' => 'DOMElement',
-        'schematypeinfo' => 'bool',
+        'ownerElement' => 'DOMElement',
+        'schemaTypeInfo' => 'bool',
         'specified' => 'bool',
         'value' => 'string'
     ],
@@ -389,7 +389,7 @@ return [
         'output' => 'EventBuffer'
     ],
     'domtext' => [
-        'wholetext' => 'string'
+        'wholeText' => 'string'
     ],
     'exception' => [
         'message' => 'string',
