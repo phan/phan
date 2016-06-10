@@ -1321,7 +1321,7 @@ return [
 'DomainException::getTrace' => ['array'],
 'DomainException::getTraceAsString' => ['string'],
 'DomainException::__toString' => ['string'],
-'DOMAttr::__construct' => ['DOMAttr', 'name'=>'string', 'value'=>'string'],
+'DOMAttr::__construct' => ['DOMAttr', 'name'=>'string', 'value='=>'string'],
 'DomAttribute::name' => ['string'],
 'DomAttribute::set_value' => ['bool', 'content'=>'string'],
 'DomAttribute::specified' => ['bool'],
