@@ -5,6 +5,7 @@ use Phan\AST\ContextNode;
 use Phan\Analysis\ScopeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Debug;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -12,11 +13,13 @@ use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\FutureUnionType;
@@ -449,6 +452,56 @@ class ParseVisitor extends ScopeVisitor
 
             $clazz->addConstant(
                 $this->code_base,
+                $constant
+            );
+        }
+
+        return $this->context;
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_CONST`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitConstDecl(Node $node) : Context
+    {
+        foreach ($node->children ?? [] as $child_node) {
+
+            // Get the name of the constant
+            $name = $child_node->children['name'];
+
+            // Give it a fully-qualified name
+            $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
+                $name,
+                $this->context
+            );
+
+            // Create the constant
+            $constant = new GlobalConstant(
+                $this->context
+                    ->withLineNumberStart($child_node->lineno ?? 0)
+                    ->withLineNumberEnd($child_node->endLineno ?? 0),
+                $name,
+                new UnionType(),
+                $child_node->flags ?? 0,
+                $fqsen
+            );
+
+            $constant->setFutureUnionType(
+                new FutureUnionType(
+                    $this->code_base,
+                    $this->context,
+                    $child_node->children['value']
+                )
+            );
+
+            $this->code_base->addGlobalConstant(
                 $constant
             );
         }

@@ -1,0 +1,3 @@
+%s:8 PhanUndeclaredConstant Reference to undeclared constant \this
+%s:13 PhanTypeMismatchReturn Returning type int but g() is declared to return \C
+%s:18 PhanTypeMismatchReturn Returning type int but h() is declared to return \C

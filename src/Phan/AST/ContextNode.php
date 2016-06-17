@@ -14,6 +14,7 @@ use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
@@ -652,7 +653,7 @@ class ContextNode
     }
 
     /**
-     * @return ClassConstant
+     * @return GlobalConstant
      * Get the (non-class) constant associated with this node
      * in this context
      *
@@ -663,7 +664,7 @@ class ContextNode
      * An exception is thrown if we can't find the given
      * class
      */
-    public function getConst() : ClassConstant
+    public function getConst() : GlobalConstant
     {
         assert(
             $this->node->kind === \ast\AST_CONST,
@@ -690,7 +691,7 @@ class ContextNode
                 Issue::fromType(Issue::UndeclaredConstant)(
                     $this->context->getFile(),
                     $this->node->lineno ?? 0,
-                    [ $constant_name ]
+                    [ $fqsen ]
                 )
             );
         }

@@ -895,7 +895,26 @@ class UnionTypeVisitor extends AnalysisVisitor
                     constant($node->children['name']->children['name'])
                 )->asUnionType();
             } else {
-                return new UnionType();
+                // Figure out the name of the constant if its
+                // a string.
+                $constant_name =
+                    isset($node->children['name']->children['name'])
+                    ? $node->children['name']->children['name']
+                    : '';
+
+                // If the constant is referring to the current
+                // class, return that as a type
+                if (Type::isSelfTypeString($constant_name)) {
+                    return $this->visitClassNode($node);
+                }
+
+                $constant = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node
+                ))->getConst();
+
+                return $constant->getUnionType();
             }
         }
 

@@ -468,7 +468,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitConst(Node $node) : Context
     {
-
         try {
             $constant = (new ContextNode(
                 $this->code_base,
@@ -1372,12 +1371,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 || isset($node->children['class']),
                     "Property nodes must either have an expression or class at {$this->context}");
 
-            // Get the set of classes that are being referenced
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['expr'] ?? $node->children['class']
-            ))->getClassList(true);
+            $class_list = [];
+            try {
+                // Get the set of classes that are being referenced
+                $class_list = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node->children['expr'] ?? $node->children['class']
+                ))->getClassList(true);
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
+            }
 
             // Find out of any of them have a __get magic method
             $has_getter =

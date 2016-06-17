@@ -281,7 +281,6 @@ class Analysis
             case \ast\AST_CLOSURE_USES:
             case \ast\AST_CLOSURE_VAR:
             case \ast\AST_COALESCE:
-            case \ast\AST_CONST_DECL:
             case \ast\AST_CONST_ELEM:
             case \ast\AST_CONTINUE:
             case \ast\AST_EMPTY:
