@@ -27,6 +27,8 @@
         <const name="MULTI_EXPECTED_DIR" value="./tests/multi_files/expected"/>
         <const name="SOAP_TEST_FILE_DIR" value="./tests/soap_files/src"/>
         <const name="SOAP_EXPECTED_DIR" value="./tests/soap_files/expected"/>
+        <const name="INTL_TEST_FILE_DIR" value="./tests/intl_files/src"/>
+        <const name="INTL_EXPECTED_DIR" value="./tests/intl_files/expected"/>
     </php>
 
     <testsuites>
@@ -47,6 +49,9 @@
         </testsuite>
         <testsuite name="SoapTest">
             <file>tests/Phan/SoapTest.php</file>
+        </testsuite>
+        <testsuite name="IntlTest">
+            <file>tests/Phan/IntlTest.php</file>
         </testsuite>
         <testsuite name="LanguageTest">
             <directory>tests/Phan/Language</directory>
