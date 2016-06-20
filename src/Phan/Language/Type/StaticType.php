@@ -7,7 +7,7 @@ final class StaticType extends Type
 {
     const NAME = 'static';
 
-    public static function instance() : StaticType
+    public static function instance() : Type
     {
         static $instance;
 
