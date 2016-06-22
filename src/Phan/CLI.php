@@ -392,7 +392,7 @@ Usage: {$argv[0]} [options] [files...]
   .phan/config.php).
 
  -m <mode>, --output-mode
-  Output mode from 'text', 'json', 'codeclimate', or 'checkstyle'
+  Output mode from 'text', 'json', 'csv', 'codeclimate', or 'checkstyle'
 
  -o, --output <filename>
   Output filename
