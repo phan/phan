@@ -393,6 +393,15 @@ class Method extends ClassElement implements FunctionInterface
             );
         }
 
+        // If the type is a generic array of 'static', add
+        // a generic array of this context's class to the return type
+        if ($union_type->genericArrayElementTypes()->hasStaticType()) {
+            $union_type = clone($union_type);
+            $union_type->addType(
+                $this->getFQSEN()->getFullyQualifiedClassName()->asType()->asGenericArrayType()
+            );
+        }
+
         return $union_type;
     }
 

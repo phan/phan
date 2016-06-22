@@ -533,7 +533,7 @@ class Type
      */
     public function isStaticType() : bool
     {
-        return ('static' === (string)$this);
+        return ('static' === (string)$this || '\\static' === (string)$this);
     }
 
     /**
