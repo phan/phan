@@ -736,15 +736,15 @@ class Type
 
     public function isSubclassOf(CodeBase $code_base, Type $parent)
     {
-        $thisClazz = $code_base->getClassByFQSEN(
+        $this_clazz = $code_base->getClassByFQSEN(
             $this->asFQSEN()
         );
 
-        $parentClazz = $code_base->getClassByFQSEN(
+        $parent_clazz = $code_base->getClassByFQSEN(
             $parent->asFQSEN()
         );
 
-        return $thisClazz->isSubclassOf($code_base, $parentClazz);
+        return $this_clazz->isSubclassOf($code_base, $parent_clazz);
     }
 
     /**
