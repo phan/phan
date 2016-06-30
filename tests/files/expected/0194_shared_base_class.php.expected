@@ -1,0 +1,2 @@
+%s:26 PhanAccessPropertyProtected Cannot access protected property \A::$var
+%s:27 PhanAccessMethodProtected Cannot access protected method \A::func defined at %s:6

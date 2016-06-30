@@ -321,6 +321,32 @@ class Clazz extends AddressableElement
         return $this->parent_class_fqsen;
     }
 
+    public function isSubclassOf(CodeBase $code_base, Clazz $other) : bool
+    {
+        if (!$this->hasParentClassFQSEN()) {
+            return false;
+        }
+
+        if (!$code_base->hasClassWithFQSEN(
+            $this->getParentClassFQSEN()
+        )) {
+            // Let this emit an issue elsewhere for the
+            // parent not existing
+            return false;
+        }
+
+        // Get the parent class
+        $parent = $code_base->getClassByFQSEN(
+            $this->getParentClassFQSEN()
+        );
+
+        if ($parent === $other) {
+            return true;
+        }
+
+        return $parent->isSubclassOf($code_base, $other);
+    }
+
     /**
      * @param CodeBase $code_base
      * The entire code base from which we'll find ancestor
