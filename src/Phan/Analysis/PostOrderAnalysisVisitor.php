@@ -1218,8 +1218,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } else if ($method->isProtected()
             && !$method->getDefiningClass($this->code_base)->isTrait()
             && (!$this->context->isInClassScope()
-            || !$this->context->getClassFQSEN()->asType()->canCastToType(
+            || (!$this->context->getClassFQSEN()->asType()->canCastToType(
                     $method->getClassFQSEN()->asType()
+                )
+                && !$this->context->getClassFQSEN()->asType()->isSubclassOf(
+                        $this->code_base,
+                        $method->getDefiningClassFQSEN()->asType()
+                    )
                 )
             )
         ) {
