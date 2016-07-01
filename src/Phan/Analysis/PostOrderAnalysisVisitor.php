@@ -808,7 +808,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             foreach ($context_node->getClassList() as $class) {
                 $class->addReference($this->context);
 
-                if ($class->isDeprecated()) {
+                if ($class->isDeprecated()
+                    && (!$this->context->isInElementScope()
+                        || !$this->context->getElementInScope($this->code_base)->isDeprecated()
+                    )
+                ) {
                     $this->emitIssue(
                         Issue::DeprecatedClass,
                         $node->lineno ?? 0,

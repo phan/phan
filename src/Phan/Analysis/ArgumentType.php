@@ -55,8 +55,13 @@ class ArgumentType
             }
         }
 
-        // Emit an error if this method is marked as deprecated
-        if ($method->isDeprecated()) {
+        // Emit an error if this method is marked as deprecated, unless it
+        // is being called from a deprecated method
+        if ($method->isDeprecated()
+            && (!$context->isInElementScope()
+                || !$context->getElementInScope($code_base)->isDeprecated()
+            )
+        ) {
             Issue::maybeEmit(
                 $code_base,
                 $context,
