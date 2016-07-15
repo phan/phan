@@ -8,6 +8,7 @@ use Phan\Config;
 use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment;
@@ -131,11 +132,15 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context->addScopeVariable($variable);
 
             } else if ($child_node->kind == \ast\AST_PROP) {
-                $property = (new ContextNode(
-                    $this->code_base,
-                    $this->context,
-                    $child_node
-                ))->getProperty($child_node->children['prop']);
+                try {
+                    $property = (new ContextNode(
+                        $this->code_base,
+                        $this->context,
+                        $child_node
+                    ))->getProperty($child_node->children['prop']);
+                } catch (UnanalyzableException $exception) {
+                    // Ignore it. There's nothing we can do.
+                }
 
                 // Set the element type on each element of
                 // the list
