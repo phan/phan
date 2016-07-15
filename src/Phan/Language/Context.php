@@ -114,12 +114,12 @@ class Context extends FileRef implements \Serializable
 
         assert(
             !empty($this->namespace_map[$flags][$name]),
-            "No namespace defined for $name"
+            "No namespace defined for name"
         );
 
         assert(
             $this->namespace_map[$flags][$name] instanceof FQSEN,
-            "Namespace map for $flags $name was not an FQSEN"
+            "Namespace map was not an FQSEN"
         );
 
         $fqsen = $this->namespace_map[$flags][$name];
@@ -347,19 +347,19 @@ class Context extends FileRef implements \Serializable
         CodeBase $code_base
     ) : FunctionInterface {
         assert($this->isInFunctionLikeScope(),
-            "Must be in method scope to get method. Actually in {$this}");
+            "Must be in method scope to get method.");
 
         $fqsen = $this->getFunctionLikeFQSEN();
 
         if ($fqsen instanceof FullyQualifiedFunctionName) {
             assert($code_base->hasFunctionWithFQSEN($fqsen),
-                "The function with FQSEN $fqsen does not exist");
+                "The function does not exist");
             return $code_base->getFunctionByFQSEN($fqsen);
         }
 
         if ($fqsen instanceof FullyQualifiedMethodName) {
             assert($code_base->hasMethodWithFQSEN($fqsen),
-                "The method with FQSEN $fqsen does not exist");
+                "Method does not exist");
             return $code_base->getMethodByFQSEN($fqsen);
         }
 

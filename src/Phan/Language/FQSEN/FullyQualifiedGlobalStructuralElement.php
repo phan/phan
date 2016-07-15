@@ -35,19 +35,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         string $name,
         int $alternate_id = 0
     ) {
-        assert(
-            !empty($name),
-            "The name cannot be empty"
-        );
+        assert(!empty($name), "The name cannot be empty");
 
-        assert(
-            !empty($namespace),
-            "The namespace cannot be empty"
-        );
+        assert(!empty($namespace), "The namespace cannot be empty");
 
         assert(
             $namespace[0] === '\\',
-            "The first character of a namespace must be \\, but got $namespace"
+            "The first character of a namespace must be \\"
         );
 
         parent::__construct($name);
@@ -116,27 +110,21 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
             assert(
                 is_int($alternate_id),
-                "Alternate must be an integer in $fully_qualified_string"
+                "Alternate must be an integer"
             );
 
             $parts = explode('\\', $fqsen_string);
             $name = array_pop($parts);
 
-            assert(
-                !empty($name),
-                "The name cannot be empty in the FQSEN '$fully_qualified_string'"
-            );
+            assert(!empty($name), "The name cannot be empty");
 
             $namespace = '\\' . implode('\\', array_filter($parts));
 
-            assert(
-                !empty($namespace),
-                "The namespace cannot be empty in the FQSEN '$fully_qualified_string'"
-            );
+            assert(!empty($namespace), "The namespace cannot be empty");
 
             assert(
                 $namespace[0] === '\\',
-                "The first character of the namespace '$namespace' must be \\"
+                "The first character of the namespace must be \\"
             );
 
             return static::make(
@@ -172,16 +160,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         assert(
             is_int($alternate_id),
-            "Alternate must be an integer in $fqsen_string"
+            "Alternate must be an integer"
         );
 
         $parts = explode('\\', $fqsen_string);
         $name = array_pop($parts);
 
-        assert(
-            !empty($name),
-            "The name cannot be empty in $fqsen_string"
-        );
+        assert(!empty($name), "The name cannot be empty");
 
         // Check for a name map
         if ($context->hasNamespaceMapFor(static::getNamespaceMapType(), $name)) {
@@ -244,8 +229,10 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             return $this;
         }
 
-        assert($alternate_id < 1000,
-            "Your alternate IDs have run away in $this.");
+        assert(
+            $alternate_id < 1000,
+            "Your alternate IDs have run away"
+        );
 
         return static::make(
             $this->getNamespace(),

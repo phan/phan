@@ -52,7 +52,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
 
         assert(
             is_int($alternate_id),
-            "Alternate must be an integer in $fqsen_string"
+            "Alternate must be an integer"
         );
 
         $parts = explode('\\', $fqsen_string);
@@ -60,7 +60,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
 
         assert(
             !empty($name),
-            "The name cannot be empty in $fqsen_string"
+            "The name cannot be empty"
         );
 
         // Check for a name map

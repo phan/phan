@@ -86,10 +86,7 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visit(Node $node) : Context
     {
-        assert(
-            false,
-            "Unknown left side of assignment {$this->context}"
-        );
+        assert(false, "Unknown left side of assignment in {$this->context}");
 
         return $this->visitVar($node);
     }
@@ -178,10 +175,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     // You're not going to believe this, but I just
                     // found a piece of code like $GLOBALS[mt_rand()].
                     // Super weird, right?
-                    assert(
-                        is_string($dim),
-                        "dim is not a string at {$this->context}"
-                    );
+                    assert(is_string($dim), "dim is not a string");
 
                     $variable = new Variable(
                         $this->context,
@@ -229,10 +223,7 @@ class AssignmentVisitor extends AnalysisVisitor
             return $this->context;
         }
 
-        assert(
-            is_string($property_name),
-            "Property must be string in context {$this->context}"
-        );
+        assert(is_string($property_name), "Property must be string");
 
         try {
             $class_list = (new ContextNode(

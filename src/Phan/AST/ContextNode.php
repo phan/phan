@@ -218,7 +218,7 @@ class ContextNode
 
         assert(
             is_string($method_name),
-            "Method name must be a string. Found non-string at {$this->context}"
+            "Method name must be a string. Found non-string in context."
         );
 
         try {

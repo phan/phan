@@ -90,7 +90,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
                 $fully_qualified_string,
                 '::'
             ),
-            "Fully qualified class element lacks '::' delimiter in $fully_qualified_string."
+            "Fully qualified class element lacks '::' delimiter"
         );
 
         list(
@@ -107,7 +107,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         // name reference back
         assert(
             $fully_qualified_class_name instanceof FullyQualifiedClassName,
-            "$fully_qualified_class_name must be an instanceof FullyQualifiedClassName from string $fully_qualified_string but got " . get_class($fully_qualified_class_name)
+            "FQSEN must be an instanceof FullyQualifiedClassName"
         );
 
         // Split off the alternate ID
@@ -115,10 +115,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(
-            is_int($alternate_id),
-            "Alternate must be an integer in $fully_qualified_string"
-        );
+        assert(is_int($alternate_id), "Alternate must be an integer");
 
         return static::make(
             $fully_qualified_class_name,
@@ -145,7 +142,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
 
             assert(
                 $context->isInClassScope(),
-                "Cannot reference class element without class name when not in class scope. Got $fqsen_string."
+                "Cannot reference class element without class name when not in class scope."
             );
 
             $fully_qualified_class_name = $context->getClassFQSEN();
@@ -155,7 +152,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
                     $fqsen_string,
                     '::'
                 ),
-                "Fully qualified class element lacks '::' delimiter in $fqsen_string."
+                "Fully qualified class element lacks '::' delimiter"
             );
 
             list(
@@ -177,7 +174,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
 
         assert(
             is_int($alternate_id),
-            "Alternate must be an integer in $fqsen_string"
+            "Alternate must be an integer"
         );
 
         return static::make(
@@ -221,7 +218,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     ) : FQSEN {
 
         assert($alternate_id < 1000,
-            "Your alternate IDs have run away in $this.");
+            "Your alternate IDs have run away");
 
         return static::make(
             $this->getFullyQualifiedClassName(),

@@ -93,7 +93,7 @@ class Type
                 $name,
                 '|'
             ),
-            "Type name '{$name}' may not contain a pipe."
+            "Type name may not contain a pipe."
         );
 
         // Create a canonical representation of the
@@ -254,7 +254,7 @@ class Type
 
         assert(
             !empty($namespace) && !empty($type_name),
-            "Type '$fully_qualified_string' was not fully qualified"
+            "Type was not fully qualified"
         );
 
         return self::fromNamespaceAndName(
@@ -281,7 +281,7 @@ class Type
 
         assert(
             $string !== '',
-            "Type cannot be empty in $context"
+            "Type cannot be empty"
         );
 
         $namespace = null;
@@ -394,7 +394,7 @@ class Type
             // method be dependent on the code base
             assert(
                 'parent' !== $non_generic_array_type_name,
-                __METHOD__ . " does not know how to handle the type name 'parent' in $context"
+                __METHOD__ . " does not know how to handle the type name 'parent'"
             );
 
             return GenericArrayType::fromElementType(
@@ -415,7 +415,7 @@ class Type
             // method be dependent on the code base
             assert(
                 'parent' !== $type_name,
-                __METHOD__ . " does not know how to handle the type name 'parent' in $context"
+                __METHOD__ . " does not know how to handle the type name 'parent'"
             );
 
             return static::fromFullyQualifiedString(
@@ -630,7 +630,7 @@ class Type
         if (($pos = strrpos($this->name, '[]')) !== false) {
             assert(
                 $this->name !== '[]' && $this->name !== 'array',
-                "Non-generic type '{$this->name}' requested to be non-generic"
+                "Non-generic type requested to be non-generic"
             );
 
             return Type::make(
@@ -686,7 +686,7 @@ class Type
             // and should bail out.
             assert(
                 $recursion_depth < 20,
-                "Recursion has gotten out of hand for type $this"
+                "Recursion has gotten out of hand"
             );
 
             if ($this->isNativeType() && !$this->isGenericArray()) {

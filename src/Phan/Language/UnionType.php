@@ -96,10 +96,7 @@ class UnionType implements \Serializable
 
         return new UnionType(
             array_map(function (string $type_name) use ($context, $type_string) {
-                assert(
-                    $type_name !== '',
-                    "Type cannot be empty. Type '$type_name' given as part of the union type '$type_string' in $context."
-                );
+                assert($type_name !== '', "Type cannot be empty.");
                 return Type::fromStringInContext(
                     $type_name,
                     $context
@@ -734,7 +731,7 @@ class UnionType implements \Serializable
     ) : UnionType {
         assert(
             $recursion_depth < 10,
-            "Recursion has gotten out of hand for type $this"
+            "Recursion has gotten out of hand"
         );
 
         $union_type = new UnionType();

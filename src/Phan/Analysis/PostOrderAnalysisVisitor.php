@@ -95,7 +95,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         assert(
             $node->children['var'] instanceof Node,
-            "Expected left side of assignment to be a var in {$this->context}"
+            "Expected left side of assignment to be a var"
         );
 
         if ($right_type->isType(VoidType::instance())) {
@@ -1047,7 +1047,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $return_type = $method->getUnionType();
 
         assert($method instanceof Method,
-            "Function found where method expected at {$this->context}");
+            "Function found where method expected");
 
         $has_interface_class = false;
         if ($method instanceof Method) {
@@ -1291,7 +1291,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             while ($temp instanceof Node) {
                 assert(
                     isset($temp->children['name']),
-                    "Expected to find a name at {$this->context}, something else found."
+                    "Expected to find a name in context, something else found."
                 );
                 $temp = $temp->children['name'];
                 $depth++;
@@ -1374,7 +1374,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             assert(isset($node->children['expr'])
                 || isset($node->children['class']),
-                    "Property nodes must either have an expression or class at {$this->context}");
+                    "Property nodes must either have an expression or class");
 
             $class_list = [];
             try {

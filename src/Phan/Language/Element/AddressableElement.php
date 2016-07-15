@@ -66,9 +66,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * structural element
      */
     public function getFQSEN() {
-        assert(!empty($this->fqsen),
-            "Empty FQSEN for $this\n");
-
+        assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 

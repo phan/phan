@@ -1223,7 +1223,7 @@ class Clazz extends AddressableElement
 
         assert(
             $code_base->hasClassWithFQSEN($this->getParentClassFQSEN()),
-            "Clazz {$this->getParentClassFQSEN()} should already have been proven to exist."
+            "Clazz should already have been proven to exist."
         );
 
         // Get the parent class
