@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use Phan\AST\ContextNode;
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
@@ -115,20 +116,35 @@ class AssignmentVisitor extends AnalysisVisitor
                 continue;
             }
 
-            $variable = Variable::fromNodeInContext(
-                $child_node,
-                $this->context,
-                $this->code_base,
-                false
-            );
+            if ($child_node->kind == \ast\AST_VAR) {
 
-            // Set the element type on each element of
-            // the list
-            $variable->setUnionType($element_type);
+                $variable = Variable::fromNodeInContext(
+                    $child_node,
+                    $this->context,
+                    $this->code_base,
+                    false
+                );
 
-            // Note that we're not creating a new scope, just
-            // adding variables to the existing scope
-            $this->context->addScopeVariable($variable);
+                // Set the element type on each element of
+                // the list
+                $variable->setUnionType($element_type);
+
+                // Note that we're not creating a new scope, just
+                // adding variables to the existing scope
+                $this->context->addScopeVariable($variable);
+
+            } else if ($child_node->kind == \ast\AST_PROP) {
+                $property = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $child_node
+                ))->getProperty($child_node->children['prop']);
+
+                // Set the element type on each element of
+                // the list
+                $property->setUnionType($element_type);
+            }
+
         }
 
         return $this->context;
