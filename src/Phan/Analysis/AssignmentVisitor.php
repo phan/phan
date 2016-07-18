@@ -97,6 +97,25 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
+     * This happens for code like the following
+     * ```
+     * list($a) = [1, 2, 3];
+     * ```
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitArray(Node $node) : Context
+    {
+        // TODO: I'm not sure how to figure this one out
+        return $this->context;
+    }
+
+    /**
      * @param Node $node
      * A node to parse
      *
