@@ -476,6 +476,14 @@ class ParseVisitor extends ScopeVisitor
             // Get the name of the constant
             $name = $child_node->children['name'];
 
+            $this->addConstant(
+                $child_node->children['name'],
+                $child_node->children['value'],
+                $child_node->flags ?? 0
+            );
+
+            /*
+
             // Give it a fully-qualified name
             $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
                 $name,
@@ -504,9 +512,56 @@ class ParseVisitor extends ScopeVisitor
             $this->code_base->addGlobalConstant(
                 $constant
             );
+
+            */
         }
 
         return $this->context;
+    }
+
+    /**
+     * @param string $name
+     * The name of the constant
+     *
+     * @param Node|mixed $value
+     * Either a node or a constant to be used as the value of
+     * the constant.
+     *
+     * @param int $flags
+     * Any flags on the definition of the constant
+     *
+     * @return void
+     */
+    private function addConstant(string $name, $value, int $flags = 0)
+    {
+        // Give it a fully-qualified name
+        $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
+            $name,
+            $this->context
+        );
+
+        // Create the constant
+        $constant = new GlobalConstant(
+            $this->context
+                ->withLineNumberStart($child_node->lineno ?? 0)
+                ->withLineNumberEnd($child_node->endLineno ?? 0),
+            $name,
+            new UnionType(),
+            $flags,
+            $fqsen
+        );
+
+        $constant->setFutureUnionType(
+            new FutureUnionType(
+                $this->code_base,
+                $this->context,
+                $value
+            )
+        );
+
+        $this->code_base->addGlobalConstant(
+            $constant
+        );
     }
 
     /**
@@ -575,6 +630,7 @@ class ParseVisitor extends ScopeVisitor
         // then set its optional args to something very high so
         // it can be called with anything.
         $expression = $node->children['expr'];
+
         if ($expression->kind === \ast\AST_NAME
             && $this->context->isInFunctionLikeScope()
             && in_array($expression->children['name'], [
@@ -583,6 +639,20 @@ class ParseVisitor extends ScopeVisitor
         ) {
             $this->context->getFunctionLikeInScope($this->code_base)
                 ->setNumberOfOptionalParameters(999999);
+        } else if ($expression->kind === \ast\AST_NAME
+            && $expression->children['name'] === 'define'
+        ) {
+            $args = $node->children['args'];
+            if ($args->kind === \ast\AST_ARG_LIST
+                && isset($args->children[0])
+                && is_string($args->children[0])
+            ) {
+                $this->addConstant(
+                    $args->children[0],
+                    $args->children[1] ?? null,
+                    0
+                );
+            }
         }
 
         return $this->context;
