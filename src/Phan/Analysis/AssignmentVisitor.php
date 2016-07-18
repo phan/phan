@@ -87,7 +87,11 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visit(Node $node) : Context
     {
-        assert(false, "Unknown left side of assignment in {$this->context}");
+        assert(
+            false,
+            "Unknown left side of assignment in {$this->context} with node type "
+            . Debug::nodeName($node)
+        );
 
         return $this->visitVar($node);
     }
