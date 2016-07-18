@@ -84,7 +84,7 @@ class CLI
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
         Config::get()->setProjectRootDirectory(
-            $opts['d'] ?? getcwd()
+            $opts['d'] ?? $opts['project-root-directory'] ?? getcwd()
         );
 
         // Before reading the config, check for an override on
