@@ -472,96 +472,14 @@ class ParseVisitor extends ScopeVisitor
     public function visitConstDecl(Node $node) : Context
     {
         foreach ($node->children ?? [] as $child_node) {
-
-            // Get the name of the constant
-            $name = $child_node->children['name'];
-
             $this->addConstant(
                 $child_node->children['name'],
                 $child_node->children['value'],
                 $child_node->flags ?? 0
             );
-
-            /*
-
-            // Give it a fully-qualified name
-            $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
-                $name,
-                $this->context
-            );
-
-            // Create the constant
-            $constant = new GlobalConstant(
-                $this->context
-                    ->withLineNumberStart($child_node->lineno ?? 0)
-                    ->withLineNumberEnd($child_node->endLineno ?? 0),
-                $name,
-                new UnionType(),
-                $child_node->flags ?? 0,
-                $fqsen
-            );
-
-            $constant->setFutureUnionType(
-                new FutureUnionType(
-                    $this->code_base,
-                    $this->context,
-                    $child_node->children['value']
-                )
-            );
-
-            $this->code_base->addGlobalConstant(
-                $constant
-            );
-
-            */
         }
 
         return $this->context;
-    }
-
-    /**
-     * @param string $name
-     * The name of the constant
-     *
-     * @param Node|mixed $value
-     * Either a node or a constant to be used as the value of
-     * the constant.
-     *
-     * @param int $flags
-     * Any flags on the definition of the constant
-     *
-     * @return void
-     */
-    private function addConstant(string $name, $value, int $flags = 0)
-    {
-        // Give it a fully-qualified name
-        $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
-            $name,
-            $this->context
-        );
-
-        // Create the constant
-        $constant = new GlobalConstant(
-            $this->context
-                ->withLineNumberStart($child_node->lineno ?? 0)
-                ->withLineNumberEnd($child_node->endLineno ?? 0),
-            $name,
-            new UnionType(),
-            $flags,
-            $fqsen
-        );
-
-        $constant->setFutureUnionType(
-            new FutureUnionType(
-                $this->code_base,
-                $this->context,
-                $value
-            )
-        );
-
-        $this->code_base->addGlobalConstant(
-            $constant
-        );
     }
 
     /**
@@ -797,6 +715,51 @@ class ParseVisitor extends ScopeVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * @param string $name
+     * The name of the constant
+     *
+     * @param Node|mixed $value
+     * Either a node or a constant to be used as the value of
+     * the constant.
+     *
+     * @param int $flags
+     * Any flags on the definition of the constant
+     *
+     * @return void
+     */
+    private function addConstant(string $name, $value, int $flags = 0)
+    {
+        // Give it a fully-qualified name
+        $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
+            $name,
+            $this->context
+        );
+
+        // Create the constant
+        $constant = new GlobalConstant(
+            $this->context
+                ->withLineNumberStart($child_node->lineno ?? 0)
+                ->withLineNumberEnd($child_node->endLineno ?? 0),
+            $name,
+            new UnionType(),
+            $flags,
+            $fqsen
+        );
+
+        $constant->setFutureUnionType(
+            new FutureUnionType(
+                $this->code_base,
+                $this->context,
+                $value
+            )
+        );
+
+        $this->code_base->addGlobalConstant(
+            $constant
+        );
     }
 
     /**
