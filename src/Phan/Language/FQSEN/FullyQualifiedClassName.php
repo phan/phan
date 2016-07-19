@@ -3,12 +3,14 @@ namespace Phan\Language\FQSEN;
 
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Memoize;
 
 /**
  * A Fully-Qualified Class Name
  */
 class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
 {
+    use Memoize;
 
     /**
      * @return int
@@ -58,5 +60,16 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     public function asUnionType() : UnionType
     {
         return $this->asType()->asUnionType();
+    }
+
+    /**
+     * @return FullyQualifiedClassName
+     * The FQSEN for \stdClass.
+     */
+    public static function getStdClassFQSEN() : FullyQualifiedClassName
+    {
+        return self::memoizeStatic(__METHOD__, function() {
+            return self::fromFullyQualifiedString("\stdClass");
+        });
     }
 }

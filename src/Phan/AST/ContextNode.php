@@ -3,6 +3,7 @@ namespace Phan\AST;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
@@ -18,6 +19,7 @@ use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -543,9 +545,14 @@ class ContextNode
             return $property;
         }
 
+        $std_class_fqsen =
+            FullyQualifiedClassName::getStdClassFQSEN();
+
         // If missing properties are cool, create it on
         // the first class we found
-        if (Config::get()->allow_missing_properties) {
+        if (($class_fqsen && ($class_fqsen === $std_class_fqsen))
+            || Config::get()->allow_missing_properties
+        ) {
             if (count($class_list) > 0) {
                 $class = $class_list[0];
                 return $class->getPropertyByNameInContext(
@@ -555,7 +562,6 @@ class ContextNode
                 );
             }
         }
-
 
         // If the class isn't found, we'll get the message elsewhere
         if ($class_fqsen) {
@@ -607,7 +613,7 @@ class ContextNode
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
-                $this->node
+                $this->node->children['expr']
             ))->getClassList();
         } catch (CodeBaseException $exception) {
             throw new IssueException(

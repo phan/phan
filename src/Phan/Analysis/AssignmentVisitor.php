@@ -15,6 +15,7 @@ use Phan\Language\Element\Comment;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\UnionType;
 use ast\Node;
 use ast\Node\Decl;
@@ -296,9 +297,6 @@ class AssignmentVisitor extends AnalysisVisitor
                 return $this->context;
             }
 
-            // print "{$this->right_type->asExpandedTypes($this->code_base)} ?= ";
-            // print "{$property->getUnionType()->asExpandedTypes($this->code_base)}\n";
-
             if (!$this->right_type->canCastToExpandedUnionType(
                 $property->getUnionType(),
                 $this->code_base
@@ -332,14 +330,24 @@ class AssignmentVisitor extends AnalysisVisitor
             return $this->context;
         }
 
-        if (Config::get()->allow_missing_properties) {
+        $std_class_fqsen =
+            FullyQualifiedClassName::getStdClassFQSEN();
+
+        if (Config::get()->allow_missing_properties
+            || (!empty($class_list)
+                && $class_list[0]->getFQSEN() == $std_class_fqsen)
+        ) {
             try {
                 // Create the property
-                (new ContextNode(
+                $property = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $node
                 ))->getOrCreateProperty($property_name);
+
+                $property->getUnionType()->addUnionType(
+                    $this->right_type
+                );
             } catch (\Exception $exception) {
                 // swallow it
             }
