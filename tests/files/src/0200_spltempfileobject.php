@@ -1,0 +1,2 @@
+<?php
+$v = new SplTempFileObject();

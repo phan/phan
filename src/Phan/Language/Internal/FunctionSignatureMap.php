@@ -8530,7 +8530,7 @@ return [
 'SplSubject::attach' => ['', 'observer'=>'splobserver'],
 'SplSubject::detach' => ['', 'observer'=>'splobserver'],
 'SplSubject::notify' => [''],
-'SplTempFileObject::__construct' => ['SplTempFileObject', 'max_memory'=>'int'],
+'SplTempFileObject::__construct' => ['SplTempFileObject', 'max_memory='=>'int'],
 'SplType::__construct' => ['', 'initial_value='=>'mixed', 'strict='=>'bool'],
 'Spoofchecker::areConfusable' => ['bool', 's1'=>'string', 's2'=>'string', '&error='=>'string'],
 'Spoofchecker::__construct' => [''],
