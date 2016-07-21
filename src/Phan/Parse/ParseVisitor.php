@@ -473,6 +473,7 @@ class ParseVisitor extends ScopeVisitor
     {
         foreach ($node->children ?? [] as $child_node) {
             $this->addConstant(
+                $child_node,
                 $child_node->children['name'],
                 $child_node->children['value'],
                 $child_node->flags ?? 0
@@ -566,6 +567,7 @@ class ParseVisitor extends ScopeVisitor
                 && is_string($args->children[0])
             ) {
                 $this->addConstant(
+                    $node,
                     $args->children[0],
                     $args->children[1] ?? null,
                     0
@@ -718,6 +720,9 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
+     * @param Node $node
+     * The node where the constant was found
+     *
      * @param string $name
      * The name of the constant
      *
@@ -730,7 +735,7 @@ class ParseVisitor extends ScopeVisitor
      *
      * @return void
      */
-    private function addConstant(string $name, $value, int $flags = 0)
+    private function addConstant(Node $node, string $name, $value, int $flags = 0)
     {
         // Give it a fully-qualified name
         $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
@@ -741,8 +746,7 @@ class ParseVisitor extends ScopeVisitor
         // Create the constant
         $constant = new GlobalConstant(
             $this->context
-                ->withLineNumberStart($child_node->lineno ?? 0)
-                ->withLineNumberEnd($child_node->endLineno ?? 0),
+                ->withLineNumberStart($node->lineno ?? 0),
             $name,
             new UnionType(),
             $flags,

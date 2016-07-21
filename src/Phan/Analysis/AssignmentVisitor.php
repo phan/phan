@@ -162,13 +162,13 @@ class AssignmentVisitor extends AnalysisVisitor
                         $this->context,
                         $child_node
                     ))->getProperty($child_node->children['prop']);
+
+                    // Set the element type on each element of
+                    // the list
+                    $property->setUnionType($element_type);
                 } catch (UnanalyzableException $exception) {
                     // Ignore it. There's nothing we can do.
                 }
-
-                // Set the element type on each element of
-                // the list
-                $property->setUnionType($element_type);
             }
 
         }
