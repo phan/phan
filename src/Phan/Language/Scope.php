@@ -227,6 +227,21 @@ abstract class Scope
     }
 
     /**
+     * @return TemplateType[]
+     * The set of all template types parameterizing this generic
+     * class
+     */
+    public function getTemplateTypeMap() : array
+    {
+        return array_merge(
+            $this->template_type_map,
+            $this->hasParentScope()
+                ? $this->getParentScope()->getTemplateTypeMap()
+                : []
+        );
+    }
+
+    /**
      * @return bool
      * True if the given template type identifier is defined within
      * this context

@@ -119,6 +119,13 @@ class Issue
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
     const CompatiblePHP7            = 'PhanCompatiblePHP7';
 
+    // Issue::CATEGORY_GENERIC
+    const TemplateTypeConstant      = 'PhanTemplateTypeConstant';
+    const TemplateTypeStaticMethod  = 'PhanTemplateTypeStaticMethod';
+    const TemplateTypeStaticProperty = 'PhanTemplateTypeStaticProperty';
+    const GenericGlobalVariable     = 'PhanGenericGlobalVariable';
+    const GenericConstructorTypes   = 'PhanGenericConstructorTypes';
+
     const CATEGORY_ACCESS            = 1 << 1;
     const CATEGORY_ANALYSIS          = 1 << 2;
     const CATEGORY_COMPATIBLE        = 1 << 3;
@@ -132,6 +139,7 @@ class Issue
     const CATEGORY_UNDEFINED         = 1 << 11;
     const CATEGORY_VARIABLE          = 1 << 12;
     const CATEGORY_PLUGIN            = 1 << 13;
+    const CATEGORY_GENERIC           = 1 << 14;
 
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
@@ -146,6 +154,8 @@ class Issue
         self::CATEGORY_TYPE              => 'TypeError',
         self::CATEGORY_UNDEFINED         => 'UndefError',
         self::CATEGORY_VARIABLE          => 'VarError',
+        self::CATEGORY_PLUGIN            => 'Plugin',
+        self::CATEGORY_GENERIC           => 'Generic',
     ];
 
     const SEVERITY_LOW      = 0;
@@ -826,7 +836,41 @@ class Issue
                 "%s expression may not be PHP 7 compatible",
                 self::REMEDIATION_B
             ),
-
+            new Issue(
+                self::TemplateTypeConstant,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "constant %s may not have a template type",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::TemplateTypeStaticMethod,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "static method %s may not use template types",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::TemplateTypeStaticProperty,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "static property %s may not have a template type",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::GenericGlobalVariable,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Global variable %s may not be assigned an instance of a generic class",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::GenericConstructorTypes,
+                self::CATEGORY_GENERIC,
+                self::SEVERITY_NORMAL,
+                "Missing template parameters %s on constructor for generic class %s",
+                self::REMEDIATION_B
+            ),
         ];
 
         $error_map = [];

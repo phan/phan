@@ -730,9 +730,11 @@ class UnionTypeVisitor extends AnalysisVisitor
             // concrete type
             $template_type_map = [];
             foreach ($constructor_method->getParameterList() as $i => $parameter) {
-                $template_type_map[
-                    $parameter->getUnionType()->__toString()
-                ] = $arg_type_list[$i];
+                if (isset($arg_type_list[$i])) {
+                    $template_type_map[
+                        $parameter->getUnionType()->__toString()
+                    ] = $arg_type_list[$i];
+                }
             }
 
             // Create a new GenericType that assigns concrete

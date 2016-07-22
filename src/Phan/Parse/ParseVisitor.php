@@ -274,6 +274,45 @@ class ParseVisitor extends ScopeVisitor
 
         if ('__construct' === $method_name) {
             $clazz->setIsParentConstructorCalled(false);
+
+            if ($clazz->isGeneric()) {
+
+                // Get the set of template type identifiers defined on
+                // the class
+                $template_type_identifiers = array_keys(
+                    $clazz->getTemplateTypeMap()
+                );
+
+                // Get the set of template type identifiers defined
+                // across all parameter types
+                $parameter_template_type_identifiers = [];
+                foreach ($method->getParameterList() as $parameter) {
+                    foreach ($parameter->getUnionType()->getTypeSet()
+                        as $type
+                    ) {
+                        if ($type instanceof TemplateType) {
+                            $parameter_template_type_identifiers[] =
+                                $type->getName();
+                        }
+                    }
+                }
+
+                $missing_template_type_identifiers = array_diff(
+                    $template_type_identifiers,
+                    $parameter_template_type_identifiers
+                );
+
+                if ($missing_template_type_identifiers) {
+                    $this->emitIssue(
+                        Issue::GenericConstructorTypes,
+                        $node->lineno ?? 0,
+                        implode(',', $missing_template_type_identifiers),
+                        (string)$clazz->getFQSEN()
+                    );
+                }
+            }
+
+
         } elseif ('__invoke' === $method_name) {
             $clazz->getUnionType()->addType(
                 CallableType::instance()
@@ -285,6 +324,7 @@ class ParseVisitor extends ScopeVisitor
                 StringType::instance()
             );
         }
+
 
         // Create a new context with a new scope
         return $this->context->withScope(

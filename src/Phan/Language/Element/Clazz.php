@@ -1323,6 +1323,16 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @return TemplateType[]
+     * The set of all template types parameterizing this generic
+     * class
+     */
+    public function getTemplateTypeMap() : array
+    {
+        return $this->getInternalScope()->getTemplateTypeMap();
+    }
+
+    /**
      * @return string
      * A string describing this class
      */

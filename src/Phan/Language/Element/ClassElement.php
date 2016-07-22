@@ -140,4 +140,15 @@ abstract class ClassElement extends AddressableElement
         ));
     }
 
+    /**
+     * @return bool
+     * True if this is a static method
+     */
+    public function isStatic() : bool {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\MODIFIER_STATIC
+        );
+    }
+
 }

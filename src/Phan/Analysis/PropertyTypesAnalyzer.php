@@ -39,18 +39,30 @@ class PropertyTypesAnalyzer
                     continue;
                 }
 
-                // Otherwise, make sure the class exists
-                $type_fqsen = $type->asFQSEN();
-                if (!$code_base->hasClassWithFQSEN($type_fqsen)
-                    && !($type instanceof TemplateType)
-                ) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $property->getContext(),
-                        Issue::UndeclaredTypeProperty,
-                        $property->getFileRef()->getLineNumberStart(),
-                        (string)$type_fqsen
-                    );
+                if ($type instanceof TemplateType) {
+                    if ($property->isStatic()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $property->getContext(),
+                            Issue::TemplateTypeStaticProperty,
+                            $property->getFileRef()->getLineNumberStart(),
+                            (string)$property->getFQSEN()
+                        );
+                    }
+                } else {
+
+                    // Make sure the class exists
+                    $type_fqsen = $type->asFQSEN();
+
+                    if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $property->getContext(),
+                            Issue::UndeclaredTypeProperty,
+                            $property->getFileRef()->getLineNumberStart(),
+                            (string)$type_fqsen
+                        );
+                    }
                 }
             }
         }

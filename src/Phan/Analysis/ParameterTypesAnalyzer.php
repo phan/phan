@@ -36,18 +36,30 @@ class ParameterTypesAnalyzer
                     continue;
                 }
 
-                // Otherwise, make sure the class exists
-                $type_fqsen = $type->asFQSEN();
-                if (!$code_base->hasClassWithFQSEN($type_fqsen)
-                    && !($type instanceof TemplateType)
-                ) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $method->getContext(),
-                        Issue::UndeclaredTypeParameter,
-                        $method->getFileRef()->getLineNumberStart(),
-                        (string)$type_fqsen
-                    );
+                if ($type instanceof TemplateType) {
+                    if ($method instanceof Method) {
+                        if ($method->isStatic()) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $method->getContext(),
+                                Issue::TemplateTypeStaticMethod,
+                                $method->getFileRef()->getLineNumberStart(),
+                                (string)$method->getFQSEN()
+                            );
+                        }
+                    }
+                } else {
+                    // Make sure the class exists
+                    $type_fqsen = $type->asFQSEN();
+                    if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $method->getContext(),
+                            Issue::UndeclaredTypeParameter,
+                            $method->getFileRef()->getLineNumberStart(),
+                            (string)$type_fqsen
+                        );
+                    }
                 }
             }
         }
