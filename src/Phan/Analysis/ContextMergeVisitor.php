@@ -8,7 +8,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\Set;
+use Phan\Library\Set;
 use ast\Node;
 
 class ContextMergeVisitor extends KindVisitorImplementation

@@ -449,7 +449,6 @@ class Context extends FileRef implements \Serializable
 
     public function serialize()
     {
-
         $serialized = parent::serialize();
 
         $serialized .= '^' . implode('|', [

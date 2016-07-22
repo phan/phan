@@ -59,6 +59,9 @@
         <testsuite name="OutputPrinterTest">
             <directory>tests/Phan/Output/Printer</directory>
         </testsuite>
+        <testsuite name="TupleTest">
+            <directory>tests/Phan/Library/TupleTest.php</directory>
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist>

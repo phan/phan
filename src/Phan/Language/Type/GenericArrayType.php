@@ -19,7 +19,7 @@ class GenericArrayType extends ArrayType
      */
     protected function __construct(Type $type)
     {
-        parent::__construct('\\', self::NAME);
+        parent::__construct('\\', self::NAME, []);
         $this->element_type = $type;
     }
 
@@ -65,7 +65,6 @@ class GenericArrayType extends ArrayType
     {
         return $this->element_type;
     }
-
 
     public function __toString() : string
     {

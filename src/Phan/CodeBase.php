@@ -18,6 +18,8 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\UnionType;
+use Phan\Library\Map;
+use Phan\Library\Set;
 
 /**
  * A CodeBase represents the known state of a code base

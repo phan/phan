@@ -13,10 +13,10 @@ abstract class AbstractPhanFileTest
 {
     const EXPECTED_SUFFIX = '.expected';
 
-    private $codeBase;
+    private $code_base;
 
-    public function setCodeBase(CodeBase $codeBase = null) {
-        $this->codeBase = $codeBase;
+    public function setCodeBase(CodeBase $code_base = null) {
+        $this->code_base = $code_base;
     }
 
     /**
@@ -77,7 +77,7 @@ abstract class AbstractPhanFileTest
         Phan::setPrinter($printer);
         Phan::setIssueCollector(new BufferingCollector());
 
-        Phan::analyzeFileList($this->codeBase, $test_file_list);
+        Phan::analyzeFileList($this->code_base, $test_file_list);
 
         $output = $stream->fetch();
 

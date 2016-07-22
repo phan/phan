@@ -1,0 +1,7 @@
+%s:11 PhanTemplateTypeStaticProperty static property \C::p may not have a template type
+%s:16 PhanTemplateTypeStaticMethod static method \C::f may not use template types
+%s:21 PhanTemplateTypeStaticMethod static method \C::g may not use template types
+%s:21 PhanTypeMissingReturn Method \C::g is declared to return T but has no return value
+%s:27 PhanGenericConstructorTypes Missing template parameters T on constructor for generic class \C
+%s:27 PhanUndeclaredTypeParameter Parameter of undeclared type \X
+%s:30 PhanParamTooFew Call with 0 arg(s) to \C::__construct() which requires 2 arg(s) defined at %s:27
