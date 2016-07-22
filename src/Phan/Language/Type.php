@@ -15,14 +15,56 @@ use Phan\Language\Type\NodeTypeKindVisitor;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
+use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
-use Phan\Language\Type\StaticType;
+use Phan\Language\UnionType;
+use Phan\Library\Tuple3;
 use ast\Node;
 
 class Type
 {
     use \Phan\Memoize;
+
+    /**
+     * @var string
+     * A legal type identifier (e.g. 'int' or 'DateTime')
+     */
+    const simple_type_regex =
+        '[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*';
+
+    /**
+     * @var string
+     * A regex matching template parameter types such
+     * as '<int,DateTime|null,string>'
+     */
+    const template_parameter_type_list_regex =
+        '<'
+        . '('
+        . '(' . self::simple_type_regex . '(\[\])*' . ')'
+        . '(' . '\s*,\s*'
+        . '(' . self::simple_type_regex . '(\[\])*' . ')'
+        . ')*'
+        . ')'
+        . '>';
+
+    /**
+     * @var string
+     * A type with an optional template parameter list
+     * such as 'Set<Datetime>', 'int' or 'Tuple2<int>'.
+     */
+    const simple_type_with_template_parameter_list_regex =
+        '(' . self::simple_type_regex . ')'
+        . '(' . self::template_parameter_type_list_regex . ')?';
+
+    /**
+     * @var string
+     * A legal type identifier matching a type optionally with a []
+     * indicating that its a generic typed array (e.g. 'int[]',
+     * 'string' or 'Set<DateTime>')
+     */
+    const type_regex =
+        self::simple_type_with_template_parameter_list_regex . '(\[\])*';
 
     /**
      * @var string
@@ -38,19 +80,32 @@ class Type
     protected $name = null;
 
     /**
+     * @var UnionType[]
+     * A possibly empty list of concrete types that
+     * act as parameters to this type if it is a templated
+     * type.
+     */
+    protected $template_parameter_type_list = [];
+
+    /**
      * @param string $name
      * The name of the type such as 'int' or 'MyClass'
      *
      * @param string $namespace
      * The (optional) namespace of the type such as '\'
      * or '\Phan\Language'.
+     *
+     * @param UnionType[] $template_parameter_type_list
+     * A (possibly empty) list of template parameter types
      */
     protected function __construct(
         string $namespace,
-        string $name
+        string $name,
+        $template_parameter_type_list
     ) {
         $this->namespace = $namespace;
         $this->name = $name;
+        $this->template_parameter_type_list = $template_parameter_type_list;
     }
 
     /**
@@ -60,16 +115,39 @@ class Type
      * @param string $namespace
      * The (optional) namespace of the type such as '\'
      * or '\Phan\Language'.
+     *
+     * @param UnionType[] $template_parameter_type_list
+     * A (possibly empty) list of template parameter types
+     *
+     * @return Type
+     * A single canonical instance of the given type.
      */
     protected static function make(
         string $namespace,
-        string $name
+        string $type_name,
+        $template_parameter_type_list
     ) : Type {
-        assert(
-            $namespace && 0 === strpos(
+
+        $namespace = trim($namespace);
+
+        if ('\\' === $namespace) {
+            $type_name = self::canonicalNameFromName($type_name);
+        }
+
+        // If this looks like a generic type string, explicitly
+        // make it as such
+        if (self::isGenericArrayString($type_name)
+            && ($pos = strrpos($type_name, '[]')) !== false
+        ) {
+            return GenericArrayType::fromElementType(Type::make(
                 $namespace,
-                '\\'
-            ),
+                substr($type_name, 0, $pos),
+                $template_parameter_type_list
+            ));
+        }
+
+        assert(
+            $namespace && 0 === strpos($namespace, '\\'),
             "Namespace must be fully qualified"
         );
 
@@ -84,13 +162,13 @@ class Type
         );
 
         assert(
-            !empty($name),
+            !empty($type_name),
             "Type name cannot be empty"
         );
 
         assert(
             false === strpos(
-                $name,
+                $type_name,
                 '|'
             ),
             "Type name may not contain a pipe."
@@ -101,65 +179,48 @@ class Type
         $namespace = $namespace ?: '\\';
 
         if ('\\' === $namespace) {
-            $name = self::canonicalNameFromName($name);
+            $type_name = self::canonicalNameFromName($type_name);
         }
 
         // Make sure we only ever create exactly one
         // object for any unique type
         static $canonical_object_map = [];
-        $key = $namespace . '\\' . $name;
-        if (empty($canonical_object_map[strtolower($key)])) {
-            $canonical_object_map[strtolower($key)] =
-                new static($namespace, $name);
+
+        $key = $namespace . '\\' . $type_name;
+
+        if ($template_parameter_type_list) {
+            $key .= '<' . implode(',', array_map(function (UnionType $union_type) {
+                return (string)$union_type;
+            }, $template_parameter_type_list)) . '>';
         }
 
-        return $canonical_object_map[strtolower($key)];
+        $key = strtolower($key);
+
+        if (empty($canonical_object_map[$key])) {
+            $canonical_object_map[$key] =
+                new static($namespace, $type_name, $template_parameter_type_list);
+        }
+
+        return $canonical_object_map[$key];
     }
 
     /**
-     * This is the base level constructor for types
+     * @param Type $type
+     * The base type of this generic type referencing a
+     * generic class
      *
-     * @param string $name
-     * The name of the type such as 'int' or 'MyClass'
-     *
-     * @param string $namespace
-     * The (optional) namespace of the type such as '\'
-     * or '\Phan\Language'.
-     *
-     * @return Type
-     * A type representing the given path is returned. Note
-     * that we return cached types. Don't attempt to change
-     * a type once you get it.
+     * @param UnionType[] $template_parameter_type_list
+     * A map from a template type identifier to a
+     * concrete union type
      */
-    public static function fromNamespaceAndName(
-        string $namespace,
-        string $type_name
+    public static function fromType(
+        Type $type,
+        $template_parameter_type_list
     ) : Type {
-        $namespace = trim($namespace);
-
-        return self::memoizeStatic(
-            $namespace . '\\' . $type_name,
-            function () use ($namespace, $type_name) : Type {
-                // Only if we're in the root namespace can we
-                // canonicalize native types.
-                if ('\\' === $namespace) {
-                    $type_name = self::canonicalNameFromName($type_name);
-                }
-
-                // If this looks like a generic type string, explicitly
-                // make it as such
-                if (self::isGenericArrayString($type_name)
-                    && ($pos = strrpos($type_name, '[]')) !== false
-                ) {
-                    return GenericArrayType::fromElementType(Type::make(
-                        $namespace,
-                        substr($type_name, 0, $pos)
-                    ));
-                }
-
-                // If we have a namespace, we're all set
-                return Type::make($namespace, $type_name);
-            }
+        return self::make(
+            $type->getNamespace(),
+            $type->getName(),
+            $template_parameter_type_list
         );
     }
 
@@ -173,12 +234,16 @@ class Type
     }
 
     /**
+     * @param string $type_name
+     * The name of the internal type such as 'int'
+     *
      * @return Type
      * Get a type for the given type name
      */
     public static function fromInternalTypeName(
         string $type_name
     ) : Type {
+
         // If this is a generic type (like int[]), return
         // a generic of internal types.
         if (false !== ($pos = strrpos($type_name, '[]'))) {
@@ -226,6 +291,24 @@ class Type
     }
 
     /**
+     * @param string $namespace
+     * A fully qualified namespace
+     *
+     * @param string $type_name
+     * The name of the type
+     *
+     * @return Type
+     * A type representing the given namespace and type
+     * name.
+     */
+    public static function fromNamespaceAndName(
+        string $namespace,
+        string $type_name
+    ) : Type {
+        return self::make($namespace, $type_name, []);
+    }
+
+    /**
      * @param string $fully_qualified_string
      * A fully qualified type name
      *
@@ -247,19 +330,31 @@ class Type
             return self::fromInternalTypeName($fully_qualified_string);
         }
 
-        list($namespace, $type_name) =
-            self::namespaceAndTypeFromString(
-                $fully_qualified_string
-            );
+        $tuple = self::typeStringComponents($fully_qualified_string);
+
+        $namespace = $tuple->_0;
+        $type_name = $tuple->_1;
+        $template_parameter_type_name_list = $tuple->_2;
+
+        // Map the names of the types to actual types in the
+        // template parameter type list
+        $template_parameter_type_list = array_map(function (string $type_name) {
+            return Type::fromFullyQualifiedString($type_name)->asUnionType();
+        }, $template_parameter_type_name_list);
+
+        if (0 !== strpos($namespace, '\\')) {
+            $namespace = '\\' . $namespace;
+        }
 
         assert(
             !empty($namespace) && !empty($type_name),
             "Type was not fully qualified"
         );
 
-        return self::fromNamespaceAndName(
+        return self::make(
             $namespace,
-            $type_name
+            $type_name,
+            $template_parameter_type_list
         );
     }
 
@@ -284,16 +379,19 @@ class Type
             "Type cannot be empty"
         );
 
-        $namespace = null;
+        // Extract the namespace, type and parameter type name list
+        $tuple = self::typeStringComponents($string);
 
-        // Extract the namespace if the type string is
-        // fully-qualified
-        if ('\\' === $string[0]) {
-            list($namespace, $string) =
-                self::namespaceAndTypeFromString($string);
-        }
+        $namespace = $tuple->_0;
+        $type_name = $tuple->_1;
+        $template_parameter_type_name_list = $tuple->_2;
 
-        $type_name = $string;
+        // Map the names of the types to actual types in the
+        // template parameter type list
+        $template_parameter_type_list =
+            array_map(function (string $type_name) use ($context) {
+                return Type::fromStringInContext($type_name, $context)->asUnionType();
+            }, $template_parameter_type_name_list);
 
         // @var bool
         // True if this type name if of the form 'C[]'
@@ -329,22 +427,25 @@ class Type
             if ($is_generic_array_type) {
                 return GenericArrayType::fromElementType(Type::make(
                     $fqsen->getNamespace(),
-                    $fqsen->getName()
+                    $fqsen->getName(),
+                    $template_parameter_type_list
                 ));
             }
 
             return Type::make(
                 $fqsen->getNamespace(),
-                $fqsen->getName()
+                $fqsen->getName(),
+                $template_parameter_type_list
             );
         }
 
         // If this was a fully qualified type, we're all
         // set
-        if (!empty($namespace)) {
-            return self::fromNamespaceAndName(
+        if (!empty($namespace) && 0 === strpos($namespace, '\\')) {
+            return self::make(
                 $namespace,
-                $type_name
+                $type_name,
+                $template_parameter_type_list
             );
         }
 
@@ -423,11 +524,18 @@ class Type
             );
         }
 
+        // Merge the current namespace with the given relative
+        // namespace
+        if (!empty($context->getNamespace()) && !empty($namespace)) {
+            $namespace = $context->getNamespace() . '\\' . $namespace;
+        } else if (!empty($context->getNamespace())) {
+            $namespace = $context->getNamespace();
+        } else {
+            $namespace = '\\' . $namespace;
+        }
+
         // Attach the context's namespace to the type name
-        return self::fromNamespaceAndName(
-            $context->getNamespace() ?: '\\',
-            $type_name
-        );
+        return self::make($namespace, $type_name, $template_parameter_type_list);
     }
 
     /**
@@ -580,7 +688,7 @@ class Type
     public function isArrayLike() : bool
     {
         $array_access_type =
-            Type::fromNamespaceAndName('\\', 'ArrayAccess');
+            Type::make('\\', 'ArrayAccess', []);
 
         return (
             $this == ArrayType::instance()
@@ -635,7 +743,8 @@ class Type
 
             return Type::make(
                 $this->getNamespace(),
-                substr($this->getName(), 0, $pos)
+                substr($this->getName(), 0, $pos),
+                $this->template_parameter_type_list
             );
         }
 
@@ -657,6 +766,60 @@ class Type
         }
 
         return GenericArrayType::fromElementType($this);
+    }
+
+    /**
+     * @return bool
+     * True if this type has any template parameter types
+     */
+    public function hasTemplateParameterTypes() : bool
+    {
+        return !empty($this->template_parameter_type_list);
+    }
+
+    /**
+     * @return UnionType[]
+     * The set of types filling in template parameter types defined
+     * on the class specified by this type.
+     */
+    public function getTemplateParameterTypeList()
+    {
+        return $this->template_parameter_type_list;
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base to look up classes against
+     *
+     * @return Type[]
+     * A map from template type identifier to a concrete type
+     */
+    public function getTemplateParameterTypeMap(CodeBase $code_base) {
+        $fqsen = $this->asFQSEN();
+
+        if (!($fqsen instanceof FullyQualifiedClassName)) {
+            return [];
+        }
+
+        if (!$code_base->hasClassWithFQSEN($fqsen)) {
+            return [];
+        }
+
+        $class = $code_base->getClassByFQSEN($fqsen);
+
+        $class_template_type_list = $class->getTemplateTypeMap();
+
+        $template_parameter_type_list =
+            $this->getTemplateParameterTypeList();
+
+        $map = [];
+        foreach (array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
+            if (isset($template_parameter_type_list[$i])) {
+                $map[$identifier] = $template_parameter_type_list[$i];
+            }
+        }
+
+        return $map;
     }
 
     /**
@@ -880,7 +1043,18 @@ class Type
      */
     public function __toString()
     {
-        return $this->asFQSENString();
+        $string = $this->asFQSENString();
+
+        $template_parameter_string =
+            implode(',', array_map(function (UnionType $type) {
+                return (string)$type;
+            }, $this->template_parameter_type_list));
+
+        if (!empty($template_parameter_string)) {
+            $string .= '<' . $template_parameter_string . '>';
+        }
+
+        return $string;
     }
 
     /**
@@ -907,24 +1081,57 @@ class Type
     }
 
     /**
-     * @return string[]
+     * @param string $type_string
+     * Any type string such as 'int' or 'Set<int>'
+     *
+     * @return Tuple3<string,string,array>
      * A pair with the 0th element being the namespace and the first
      * element being the type name.
      */
-    private static function namespaceAndTypeFromString(
-        string $type_name
-    ) : array {
+    private static function typeStringComponents(
+        string $type_string
+    ) {
+        // Check to see if we have template parameter types
+        $match = [];
+        $template_parameter_type_name_list = [];
+        if (preg_match('/' . self::type_regex. '/', $type_string, $match)) {
+            $type_string = $match[1];
+
+            // If we have a generic array symbol '[]', append that back
+            // on to the type string
+            if (isset($match[7])) {
+
+                // Figure out the dimensionality of the type array
+                $gmatch = [];
+                if (preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
+                    $type_string .= $gmatch[0];
+                }
+            }
+
+            $template_parameter_type_name_list = !empty($match[3])
+                ?  preg_split('/\s*,\s*/', $match[3])
+                : [];
+        }
+
+        // Determine if the type name is fully qualified
+        // (as specified by a leading backslash).
+        $is_fully_qualified = (0 === strpos($type_string, '\\'));
+
         $fq_class_name_elements =
-            array_filter(explode('\\', $type_name));
+            array_filter(explode('\\', $type_string));
 
         $class_name =
-            array_pop($fq_class_name_elements);
+            (string)array_pop($fq_class_name_elements);
 
-        $namespace =
-            '\\' . implode('\\', array_filter(
+        $namespace = ($is_fully_qualified ? '\\' : '')
+            . implode('\\', array_filter(
                 $fq_class_name_elements
             ));
 
-        return [$namespace, $class_name];
+        return new Tuple3(
+            $namespace,
+            $class_name,
+            $template_parameter_type_name_list
+        );
     }
 }

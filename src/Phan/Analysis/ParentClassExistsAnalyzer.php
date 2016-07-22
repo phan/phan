@@ -24,7 +24,7 @@ class ParentClassExistsAnalyzer
             return;
         }
 
-        if ($clazz->hasParentClassFQSEN()) {
+        if ($clazz->hasParentType()) {
             self::fqsenExistsForClass(
                 $clazz->getParentClassFQSEN(),
                 $code_base,

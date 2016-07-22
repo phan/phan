@@ -7,6 +7,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Type\TemplateType;
 
 abstract class Scope
 {
@@ -24,6 +25,14 @@ abstract class Scope
      * @var Variable[]
      */
     protected $variable_map = [];
+
+    /**
+     * @var TemplateType[]
+     * A map from template type identifiers to the
+     * TemplateType that parameterizes the generic class
+     * in this scope.
+     */
+    private $template_type_map = [];
 
     /**
      *
@@ -204,6 +213,80 @@ abstract class Scope
             "No global scope available. This should not happen.");
 
         return $this->getParentScope()->getGlobalVariableByName($name);
+    }
+
+    /**
+     * @return bool
+     * True if there are any template types parameterizing a
+     * generic class in this scope.
+     */
+    public function hasAnyTemplateType() : bool
+    {
+        return !empty($this->template_type_map)
+            || ($this->hasParentScope() && $this->getParentScope()->hasAnyTemplateType());
+    }
+
+    /**
+     * @return TemplateType[]
+     * The set of all template types parameterizing this generic
+     * class
+     */
+    public function getTemplateTypeMap() : array
+    {
+        return array_merge(
+            $this->template_type_map,
+            $this->hasParentScope()
+                ? $this->getParentScope()->getTemplateTypeMap()
+                : []
+        );
+    }
+
+    /**
+     * @return bool
+     * True if the given template type identifier is defined within
+     * this context
+     */
+    public function hasTemplateType(
+        string $template_type_identifier
+    ) : bool {
+
+        return isset(
+            $this->template_type_map[$template_type_identifier]
+        ) || ($this->hasParentScope() ? $this->getParentScope()->hasTemplateType(
+            $template_type_identifier
+        ) : false);
+    }
+
+    /**
+     * @param TemplateType $template_type
+     * A template type parameterizing the generic class in scope
+     *
+     * @return void
+     */
+    public function addTemplateType(TemplateType $template_type) {
+        $this->template_type_map[$template_type->getName()] = $template_type;
+    }
+
+    /**
+     * @param string $generic_type_identifier
+     * The identifier for a generic type
+     *
+     * @return TemplateType
+     * A TemplateType parameterizing the generic class in scope
+     */
+    public function getTemplateType(
+        string $template_type_identifier
+    ) : TemplateType {
+
+        assert(
+            $this->hasTemplateType($template_type_identifier),
+            "Cannot get template type with identifier $template_type_identifier"
+        );
+
+        return $this->template_type_map[$template_type_identifier]
+            ?? $this->getParentScope()->getTemplateType(
+                $template_type_identifier
+            );
     }
 
     /**

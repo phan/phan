@@ -1,0 +1,9 @@
+%s:42 PhanTypeMismatchReturn Returning type int but failMismatch() is declared to return T0
+%s:46 PhanTypeMissingReturn Method \Tuple2::failVoid is declared to return T0 but has no return value
+%s:51 PhanTypeMismatchReturn Returning type T1 but failAnotherGeneric() is declared to return T0
+%s:55 PhanTemplateTypeStaticMethod static method \Tuple2::failStatic may not use template types
+%s:56 PhanTypeMismatchReturn Returning type int but failStatic() is declared to return T0
+%s:64 PhanTypeMismatchArgument Argument 1 (p0) is int but \f() takes string defined at %s:61
+%s:64 PhanTypeMismatchArgument Argument 2 (p1) is string but \f() takes int defined at %s:61
+%s:65 PhanTypeMismatchArgument Argument 1 (p0) is int but \f() takes string defined at %s:61
+%s:65 PhanTypeMismatchArgument Argument 2 (p1) is string but \f() takes int defined at %s:61
