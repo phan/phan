@@ -596,7 +596,7 @@ class Type
      */
     public function isGenericArray() : bool
     {
-        return self::isGenericArrayString($this->name);
+        return self::isGenericArrayString($this->getName());
     }
 
     /**
@@ -627,15 +627,15 @@ class Type
             "Cannot call genericArrayElementType on non-generic array"
         );
 
-        if (($pos = strrpos($this->name, '[]')) !== false) {
+        if (($pos = strrpos($this->getName(), '[]')) !== false) {
             assert(
-                $this->name !== '[]' && $this->name !== 'array',
+                $this->getName() !== '[]' && $this->getName() !== 'array',
                 "Non-generic type requested to be non-generic"
             );
 
             return Type::make(
                 $this->getNamespace(),
-                substr($this->name, 0, $pos)
+                substr($this->getName(), 0, $pos)
             );
         }
 
@@ -649,9 +649,9 @@ class Type
      */
     public function asGenericArrayType() : Type
     {
-        if ($this->name == 'array'
-            || $this->name == 'mixed'
-            || strpos($this->name, '[]') !== false
+        if ($this->getName() == 'array'
+            || $this->getName() == 'mixed'
+            || strpos($this->getName(), '[]') !== false
         ) {
             return ArrayType::instance();
         }
@@ -859,19 +859,28 @@ class Type
 
     /**
      * @return string
+     * A string representation of this type in FQSEN form.
+     */
+    public function asFQSENString() : string
+    {
+        if (!$this->hasNamespace()) {
+            return $this->getName();
+        }
+
+        if ('\\' === $this->getNamespace()) {
+            return '\\' . $this->getName();
+        }
+
+        return "{$this->getNamespace()}\\{$this->getName()}";
+    }
+
+    /**
+     * @return string
      * A human readable representation of this type
      */
     public function __toString()
     {
-        if (!$this->hasNamespace()) {
-            return $this->name;
-        }
-
-        if ('\\' === $this->namespace) {
-            return '\\' . $this->name;
-        }
-
-        return "{$this->namespace}\\{$this->name}";
+        return $this->asFQSENString();
     }
 
     /**

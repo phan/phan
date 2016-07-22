@@ -38,7 +38,7 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
     public static function fromType(Type $type) : FullyQualifiedClassName
     {
         return self::fromFullyQualifiedString(
-            (string)$type
+            $type->asFQSENString()
         );
     }
 
