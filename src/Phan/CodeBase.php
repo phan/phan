@@ -83,7 +83,7 @@ class CodeBase
     private $class_fqsen_class_map_map;
 
     /**
-     * @var Set[]|Method[][]
+     * @var Set[]
      * A map from a string method name to a Set of
      * Methods
      */

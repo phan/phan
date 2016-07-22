@@ -24,6 +24,9 @@ class IntlTest extends AbstractPhanFileTest {
         parent::testFiles($test_file_list, $expected_file_path);
     }
 
+    /**
+     * @suppress PhanUndeclaredConstant
+     */
     public function getTestFiles() {
         return $this->scanSourceFilesDir(INTL_TEST_FILE_DIR, INTL_EXPECTED_DIR);
     }

@@ -576,7 +576,7 @@ class ContextNode
 
         throw new NodeException(
             $this->node,
-            "Cannot figure out property"
+            "Cannot figure out property from {$this->context}"
         );
     }
 

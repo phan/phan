@@ -24,6 +24,9 @@ class SoapTest extends AbstractPhanFileTest {
         parent::testFiles($test_file_list, $expected_file_path);
     }
 
+    /**
+     * @suppress PhanUndeclaredConstant
+     */
     public function getTestFiles() {
         return $this->scanSourceFilesDir(SOAP_TEST_FILE_DIR, SOAP_EXPECTED_DIR);
     }
