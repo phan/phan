@@ -5,6 +5,7 @@ namespace Phan\Language\Element;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 
 /**
@@ -25,6 +26,9 @@ class Comment
     // character
     const union_type_regex =
         self::generic_array_type_regex . '(\|' . self::generic_array_type_regex . ')*';
+
+    // A legal generic type identifier (such as T)
+    const generic_type_regex = self::simple_type_regex;
 
     /**
      * @var bool
@@ -53,10 +57,16 @@ class Comment
     private $parameter_map = [];
 
     /**
+     * @var string[]
+     * A list of template types parameterizing a generic class
+     */
+    private $template_type_list = [];
+
+    /**
      * @var UnionType
      * A UnionType defined by a @return directive
      */
-    private $return = null;
+    private $return_union_type = null;
 
     /**
      * @var string[]
@@ -76,6 +86,9 @@ class Comment
      *
      * @param CommentParameter[] $parameter_list
      *
+     * @param string[] $template_type_list
+     * A list of template types parameterizing a generic class
+     *
      * @param UnionType $return
      *
      * @param string[] $suppress_issue_list
@@ -85,13 +98,15 @@ class Comment
         bool $is_deprecated,
         array $variable_list,
         array $parameter_list,
-        UnionType $return,
+        array $template_type_list,
+        UnionType $return_union_type,
         array $suppress_issue_list
     ) {
         $this->is_deprecated = $is_deprecated;
         $this->variable_list = $variable_list;
         $this->parameter_list = $parameter_list;
-        $this->return = $return;
+        $this->template_type_list = $template_type_list;
+        $this->return_union_type = $return_union_type;
         $this->suppress_issue_list = $suppress_issue_list;
 
         foreach ($this->parameter_list as $i => $parameter) {
@@ -118,14 +133,15 @@ class Comment
 
         if (!Config::get()->read_type_annotations) {
             return new Comment(
-                false, [], [], new UnionType(), []
+                false, [], [], [], new UnionType(), []
             );
         }
 
         $is_deprecated = false;
         $variable_list = [];
         $parameter_list = [];
-        $return = null;
+        $template_type_list = [];
+        $return_union_type = new UnionType();
         $suppress_issue_list = [];
 
         $lines = explode("\n", $comment);
@@ -138,10 +154,15 @@ class Comment
             } elseif (stripos($line, '@var') !== false) {
                 $variable_list[] =
                     self::parameterFromCommentLine($context, $line);
-            } elseif (stripos($line, '@return') !== false) {
-                if (preg_match('/@return\s+(' . self::union_type_regex . '+)/', $line, $match)) {
-                    $return = $match[1];
+            } elseif (stripos($line, '@generic') !== false) {
+                if (($template_type =
+                    self::templateTypeFromCommentLine($context, $line))
+                ) {
+                    $template_type_list[] = $template_type;
                 }
+            } elseif (stripos($line, '@return') !== false) {
+                $return_union_type =
+                    self::returnTypeFromCommentLine($context, $line);
             } elseif (stripos($line, '@suppress') !== false) {
                 $suppress_issue_list[] =
                     self::suppressIssueFromCommentLine($line);
@@ -154,18 +175,42 @@ class Comment
             }
         }
 
-        $return_type = UnionType::fromStringInContext(
-            $return ?: '',
-            $context
-        );
-
         return new Comment(
             $is_deprecated,
             $variable_list,
             $parameter_list,
-            $return_type,
+            $template_type_list,
+            $return_union_type,
             $suppress_issue_list
         );
+    }
+
+    /**
+     * @param Context $context
+     * The context in which the comment line appears
+     *
+     * @param string $line
+     * An individual line of a comment
+     *
+     * @return UnionType
+     * The declared return type
+     */
+    private static function returnTypeFromCommentLine(
+        Context $context,
+        string $line
+    ) {
+        $return_union_type_string = '';
+
+        if (preg_match('/@return\s+(' . self::union_type_regex . '+)/', $line, $match)) {
+            $return_union_type_string = $match[1];
+        }
+
+        $return_union_type = UnionType::fromStringInContext(
+            $return_union_type_string,
+            $context
+        );
+
+        return $return_union_type;
     }
 
     /**
@@ -217,6 +262,30 @@ class Comment
     }
 
     /**
+     * @param Context $context
+     * The context in which the comment line appears
+     *
+     * @param string $line
+     * An individual line of a comment
+     *
+     * @return TemplateType|null
+     * A generic type identifier or null if a valid type identifier
+     * wasn't found.
+     */
+    private static function templateTypeFromCommentLine(
+        Context $context,
+        string $line
+    ) {
+        $match = [];
+        if (preg_match('/@generic\s+(' . self::generic_type_regex. ')/', $line, $match)) {
+            $template_type_identifier = $match[1];
+            return new TemplateType($template_type_identifier);
+        }
+
+        return null;
+    }
+
+    /**
      * @param string $line
      * An individual line of a comment
      *
@@ -249,7 +318,7 @@ class Comment
      */
     public function getReturnType() : UnionType
     {
-        return $this->return;
+        return $this->return_union_type;
     }
 
     /**
@@ -259,7 +328,7 @@ class Comment
      */
     public function hasReturnUnionType() : bool
     {
-        return !empty($this->return) && !$this->return->isEmpty();
+        return !empty($this->return_union_type) && !$this->return_union_type->isEmpty();
     }
 
     /**
@@ -270,6 +339,15 @@ class Comment
     public function getParameterList() : array
     {
         return $this->parameter_list;
+    }
+
+    /**
+     * @return TemplateType[]
+     * A list of template types parameterizing a generic class
+     */
+    public function getTemplateTypeList() : array
+    {
+        return $this->template_type_list;
     }
 
     /**
@@ -335,8 +413,8 @@ class Comment
             $string  .= " * @var $parameter\n";
         }
 
-        if ($this->return) {
-            $string .= " * @return {$this->return}\n";
+        if ($this->return_union_type) {
+            $string .= " * @return {$this->return_union_type}\n";
         }
 
         $string .= " */\n";

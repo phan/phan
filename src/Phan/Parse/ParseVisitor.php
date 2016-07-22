@@ -23,10 +23,12 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\FutureUnionType;
+use Phan\Language\GenericUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use ast\Node;
 use ast\Node\Decl;
@@ -114,11 +116,22 @@ class ParseVisitor extends ScopeVisitor
             $class_fqsen
         );
 
+        // Set the scope of the class's context to be the
+        // internal scope of the class
+        $class_context = $class_context->withScope(
+            $clazz->getInternalScope()
+        );
+
         // Get a comment on the class declaration
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
             $this->context
         );
+
+        // Add any template types parameterizing a generic class
+        foreach ($comment->getTemplateTypeList() as $template_type) {
+            $class_context->getScope()->addTemplateType($template_type);
+        }
 
         $clazz->setIsDeprecated($comment->isDeprecated());
 
@@ -185,9 +198,7 @@ class ParseVisitor extends ScopeVisitor
             }
         }
 
-        return $class_context->withScope(
-            $clazz->getInternalScope()
-        );
+        return $class_context;
     }
 
     /**

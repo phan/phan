@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN;
@@ -35,10 +36,11 @@ class ParameterTypesAnalyzer
                     continue;
                 }
 
-
                 // Otherwise, make sure the class exists
                 $type_fqsen = $type->asFQSEN();
-                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                if (!$code_base->hasClassWithFQSEN($type_fqsen)
+                    && !($type instanceof TemplateType)
+                ) {
                     Issue::maybeEmit(
                         $code_base,
                         $method->getContext(),

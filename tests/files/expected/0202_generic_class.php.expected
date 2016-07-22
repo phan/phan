@@ -1,0 +1,5 @@
+%s:46 PhanTypeMissingReturn Method \Tuple2::failVoid is declared to return T0 but has no return value
+%s:64 PhanTypeMismatchArgument Argument 1 (p0) is int but \f() takes string defined at %s:61
+%s:64 PhanTypeMismatchArgument Argument 2 (p1) is string but \f() takes int defined at %s:61
+%s:65 PhanTypeMismatchArgument Argument 1 (p0) is int but \f() takes string defined at %s:61
+%s:65 PhanTypeMismatchArgument Argument 2 (p1) is string but \f() takes int defined at %s:61

@@ -21,11 +21,13 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\GenericType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use ast\Node;
 use ast\Node\Decl;
@@ -678,9 +680,67 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitNew(Node $node) : UnionType
     {
-        return $this->visitClassNode($node->children['class']);
-    }
+        $union_type = $this->visitClassNode($node->children['class']);
 
+        // For any types that are templates, map them to concrete
+        // types based on the parameters passed in.
+        return new UnionType(array_map(function (Type $type) use ($node) {
+
+            // Get a fully qualified name for the type
+            $fqsen = $type->asFQSEN();
+
+            // If this isn't a class, its fine as is
+            if (!($fqsen instanceof FullyQualifiedClassName)) {
+                return $type;
+            }
+
+            // If we don't have the class, we'll catch that problem
+            // elsewhere
+            if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
+                return $type;
+            }
+
+            $class = $this->code_base->getClassByFQSEN($fqsen);
+
+            // If this class doesn't have any generics on it, we're
+            // fine as we are with this Type
+            if (!$class->isGeneric()) {
+                return $type;
+            }
+
+            // Now things are interesting. We need to map the
+            // arguments to the generic types and return a special
+            // kind of type.
+
+            // Get the constructor so that we can figure out what
+            // template types we're going to be mapping
+            $constructor_method =
+                $class->getMethodByName($this->code_base, '__construct');
+
+            // Map each argument to its type
+            $arg_type_list = array_map(function($arg_node) {
+                return UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $arg_node
+                );
+            }, $node->children['args']->children ?? []);
+
+            // Map each template type identifier to the argument's
+            // concrete type
+            $template_type_map = [];
+            foreach ($constructor_method->getParameterList() as $i => $parameter) {
+                $template_type_map[
+                    $parameter->getUnionType()->__toString()
+                ] = $arg_type_list[$i];
+            }
+
+            // Create a new GenericType that assigns concrete
+            // types to template type identifiers.
+            return new GenericType($type, $template_type_map);
+
+        }, $union_type->getTypeSet()->toArray()));
+    }
 
     /**
      * Visit a node with kind `\ast\AST_INSTANCEOF`
@@ -984,6 +1044,21 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node
             ))->getProperty($node->children['prop']);
 
+            // Map template types to concrete types
+            if ($property->getUnionType()->hasTemplateType()) {
+
+                // Get the type of the object calling the property
+                $expression_type = UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $node->children['expr']
+                );
+
+                return $property->getUnionType()->withTemplateTypeMap(
+                    $expression_type->getTemplateTypeMap()
+                );
+            }
+
             return $property->getUnionType();
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
@@ -1039,8 +1114,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitCall(Node $node) : UnionType
     {
+        // Things like `$func()`. We don't understand these.
         if ($node->children['expr']->kind !== \ast\AST_NAME) {
-            // Things like `$func()`
             return new UnionType();
         }
 
@@ -1145,6 +1220,22 @@ class UnionTypeVisitor extends AnalysisVisitor
                     );
 
                     $union_type = $method->getUnionType();
+
+                    // Map template types to concrete types
+                    if ($union_type->hasTemplateType()) {
+
+                        // Get the type of the object calling the property
+                        $expression_type = UnionType::fromNode(
+                            $this->context,
+                            $this->code_base,
+                            $node->children['expr']
+                        );
+
+                        // Map template types to concrete types
+                        $union_type = $union_type->withTemplateTypeMap(
+                            $expression_type->getTemplateTypeMap()
+                        );
+                    }
 
                     // Remove any references to \static or \static[]
                     // once we're talking about the method's return
@@ -1254,7 +1345,6 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function visitClassNode(Node $node) : UnionType
     {
-
         // Things of the form `new $class_name();`
         if ($node->kind == \ast\AST_VAR) {
             return new UnionType();
@@ -1288,8 +1378,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         // Get the name of the class
-        $class_name =
-            $node->children['name'];
+        $class_name = $node->children['name'];
 
         // If this is a straight-forward class name, recurse into the
         // class node and get its type
@@ -1377,16 +1466,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         $class_name = $node->children['name'];
 
-        // Check to see if the name is fully qualified
-        if (!($node->flags & \ast\flags\NAME_NOT_FQ)) {
-            if (0 !== strpos($class_name, '\\')) {
-                $class_name = '\\' . $class_name;
-            }
-            return UnionType::fromFullyQualifiedString(
-                $class_name
-            );
-        }
-
         if ('parent' === $class_name) {
             if (!$context->isInClassScope()) {
                 throw new IssueException(
@@ -1439,10 +1518,26 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
 
-        return UnionType::fromStringInContext(
-            $class_name,
-            $context
-        );
+        // We're going to convert the class reference to a type
+        $type = null;
+
+        // Check to see if the name is fully qualified
+        if (!($node->flags & \ast\flags\NAME_NOT_FQ)) {
+            if (0 !== strpos($class_name, '\\')) {
+                $class_name = '\\' . $class_name;
+            }
+
+            $type = Type::fromFullyQualifiedString(
+                $class_name
+            );
+        } else {
+            $type = Type::fromStringInContext(
+                $class_name,
+                $context
+            );
+        }
+
+        return $type->asUnionType();
     }
 
     /**

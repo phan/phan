@@ -6,6 +6,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
+use Phan\Language\Type\TemplateType;
 
 class PropertyTypesAnalyzer
 {
@@ -40,7 +41,9 @@ class PropertyTypesAnalyzer
 
                 // Otherwise, make sure the class exists
                 $type_fqsen = $type->asFQSEN();
-                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                if (!$code_base->hasClassWithFQSEN($type_fqsen)
+                    && !($type instanceof TemplateType)
+                ) {
                     Issue::maybeEmit(
                         $code_base,
                         $property->getContext(),

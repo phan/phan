@@ -601,6 +601,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 Type::fromNamespaceAndName('\\', 'Generator')->asUnionType(),
                 $this->code_base
             )
+            && !$method->getUnionType()->hasTemplateType()
         ) {
             $this->emitIssue(
                 Issue::TypeMismatchReturn,
@@ -849,9 +850,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         (string)$class->getFQSEN()
                     );
                 }
-
             }
-
 
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(

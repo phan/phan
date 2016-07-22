@@ -1314,6 +1314,15 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @return bool
+     * True if this class contains generic types
+     */
+    public function isGeneric() : bool
+    {
+        return $this->getInternalScope()->hasAnyTemplateType();
+    }
+
+    /**
      * @return string
      * A string describing this class
      */
