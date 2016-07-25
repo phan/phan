@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @generic T
+ * @template T
  */
 class C {
     /** @var T */
@@ -30,7 +30,7 @@ class C {
 $v = new C;
 
 
-/** @generic T */
+/** @template T */
 class C2 {
     /**
      * @param int
@@ -39,7 +39,7 @@ class C2 {
     public function __construct($a, $b) {}
 }
 
-/** @generic T */
+/** @template T */
 class C3 {
     /**
      * @param T

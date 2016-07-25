@@ -27,8 +27,8 @@ class Comment
     const union_type_regex =
         self::generic_array_type_regex . '(\|' . self::generic_array_type_regex . ')*';
 
-    // A legal generic type identifier (such as T)
-    const generic_type_regex = self::simple_type_regex;
+    // A legal generic template type identifier (such as T)
+    const template_type_regex = self::simple_type_regex;
 
     /**
      * @var bool
@@ -154,7 +154,7 @@ class Comment
             } elseif (stripos($line, '@var') !== false) {
                 $variable_list[] =
                     self::parameterFromCommentLine($context, $line);
-            } elseif (stripos($line, '@generic') !== false) {
+            } elseif (stripos($line, '@template') !== false) {
                 if (($template_type =
                     self::templateTypeFromCommentLine($context, $line))
                 ) {
@@ -277,7 +277,7 @@ class Comment
         string $line
     ) {
         $match = [];
-        if (preg_match('/@generic\s+(' . self::generic_type_regex. ')/', $line, $match)) {
+        if (preg_match('/@template\s+(' . self::template_type_regex. ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return new TemplateType($template_type_identifier);
         }

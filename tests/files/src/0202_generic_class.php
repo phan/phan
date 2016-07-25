@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
 /**
- * @generic T0
+ * @template T0
  * The type of element 0
  *
- * @generic T1
+ * @template T1
  * The type of element 1
  */
 class Tuple2 {
