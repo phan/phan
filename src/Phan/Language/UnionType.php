@@ -18,12 +18,21 @@ use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\TemplateType;
-use Phan\Set;
+use Phan\Library\Set;
 use ast\Node;
 
 class UnionType implements \Serializable
 {
     use \Phan\Memoize;
+
+    /**
+     * @var string
+     * A list of one or more types delimited by the '|'
+     * character (e.g. 'int|DateTime|string[]')
+     */
+    const union_type_regex =
+        Type::type_regex
+        . '(\|' . Type::type_regex . ')*';
 
     /**
      * @var Set
@@ -335,7 +344,7 @@ class UnionType implements \Serializable
     {
         return (false !==
             $this->type_set->find(function (Type $type) : bool {
-                return ($type instanceof GenericType);
+                return $type->hasTemplateParameterTypes();
             })
         );
     }
@@ -345,42 +354,80 @@ class UnionType implements \Serializable
      * A map from template type identifiers to the UnionType
      * to replace it with
      */
-    public function getTemplateTypeMap() : array
+    public function getTemplateParameterTypeList() : array
     {
-        if ($this->isEmpty() || !$this->hasGenericType()) {
+        if ($this->isEmpty()) {
             return [];
         }
 
         return array_reduce($this->getTypeSet()->toArray(),
             function (array $map, Type $type) {
-                if ($type instanceof GenericType) {
-                    $map = array_merge($type->getTemplateTypeMap(), $map);
-                }
-                return $map;
+                return array_merge(
+                    $type->getTemplateParameterTypeList(),
+                    $map
+                );
             },
             []
         );
     }
 
+
     /**
-     * @param UnionType[] $template_type_map
+     * @param CodeBase $code_base
+     * The code base to look up classes against
+     *
+     * @return UnionType[]
+     * A map from template type identifiers to the UnionType
+     * to replace it with
+     */
+    public function getTemplateParameterTypeMap(
+        CodeBase $code_base
+    ) : array {
+        if ($this->isEmpty()) {
+            return [];
+        }
+
+        return array_reduce($this->getTypeSet()->toArray(),
+            function (array $map, Type $type) use ($code_base) {
+                return array_merge(
+                    $type->getTemplateParameterTypeMap($code_base),
+                    $map
+                );
+            },
+            []
+        );
+    }
+
+
+    /**
+     * @param UnionType[] $template_parameter_type_map
      * A map from template type identifiers to concrete types
      *
      * @return UnionType
      * This UnionType with any template types contained herein
      * mapped to concrete types defined in the given map.
      */
-    public function withTemplateTypeMap(
-        array $template_type_map
+    public function withTemplateParameterTypeMap(
+        array $template_parameter_type_map
     ) : UnionType {
-        return new UnionType(array_map(function (Type $type) use ($template_type_map) {
-            if ($type instanceof TemplateType) {
-                if (isset($template_type_map[$type->getName()])) {
-                    return $template_type_map[$type->getName()]->getTypeSet()->toArray()[0];
+
+        $concrete_type_list = [];
+        foreach ($this->getTypeSet() as $i => $type) {
+            if ($type instanceof TemplateType
+                && isset($template_parameter_type_map[$type->getName()])
+            ) {
+                $union_type =
+                    $template_parameter_type_map[$type->getName()];
+
+                foreach ($union_type->getTypeSet() as $concrete_type) {
+                    $concrete_type_list[] = $concrete_type;
                 }
+            } else {
+                $concrete_type_list[] = $type;
             }
-            return $type;
-        }, $this->getTypeSet()->toArray()));
+        }
+
+        return new UnionType($concrete_type_list);
     }
 
     /**

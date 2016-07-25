@@ -21,7 +21,6 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
-use Phan\Language\Type\GenericType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -403,7 +402,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ('parent' === $node->children['name']) {
                 $class = $this->context->getClassInScope($this->code_base);
 
-                if ($class->hasParentClassFQSEN()) {
+                if ($class->hasParentType()) {
                     return Type::fromFullyQualifiedString(
                         (string)$class->getParentClassFQSEN()
                     )->asUnionType();
@@ -726,21 +725,17 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }, $node->children['args']->children ?? []);
 
-            // Map each template type identifier to the argument's
-            // concrete type
-            $template_type_map = [];
+            // Map each template type o the argument's concrete type
+            $template_type_list = [];
             foreach ($constructor_method->getParameterList() as $i => $parameter) {
                 if (isset($arg_type_list[$i])) {
-                    $template_type_map[
-                        $parameter->getUnionType()->__toString()
-                    ] = $arg_type_list[$i];
+                    $template_type_list[] = $arg_type_list[$i];
                 }
             }
 
-            // Create a new GenericType that assigns concrete
+            // Create a new type that assigns concrete
             // types to template type identifiers.
-            return new GenericType($type, $template_type_map);
-
+            return Type::fromType($type, $template_type_list);
         }, $union_type->getTypeSet()->toArray()));
     }
 
@@ -1056,9 +1051,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $node->children['expr']
                 );
 
-                return $property->getUnionType()->withTemplateTypeMap(
-                    $expression_type->getTemplateTypeMap()
+                $union_type = $property->getUnionType()->withTemplateParameterTypeMap(
+                    $expression_type->getTemplateParameterTypeMap($this->code_base)
                 );
+
+                return $union_type;
             }
 
             return $property->getUnionType();
@@ -1234,8 +1231,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                         );
 
                         // Map template types to concrete types
-                        $union_type = $union_type->withTemplateTypeMap(
-                            $expression_type->getTemplateTypeMap()
+                        $union_type = $union_type->withTemplateParameterTypeMap(
+                            $expression_type->getTemplateParameterTypeMap($this->code_base)
                         );
                     }
 
@@ -1410,7 +1407,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->code_base
             );
 
-            if (!$class->hasParentClassFQSEN()) {
+            if (!$class->hasParentType()) {
                 $this->emitIssue(
                     Issue::ParentlessClass,
                     $node->lineno ?? 0,
@@ -1491,7 +1488,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
             }
 
-            if (!$class->hasParentClassFQSEN()) {
+            if (!$class->hasParentType()) {
                 throw new IssueException(
                     Issue::fromType(Issue::ParentlessClass)(
                         $context->getFile(),

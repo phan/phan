@@ -12,7 +12,7 @@ final class StaticType extends Type
         static $instance;
 
         if (empty($instance)) {
-            $instance = static::make('\\', static::NAME);
+            $instance = static::make('\\', static::NAME, []);
         }
 
         return $instance;

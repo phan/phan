@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan;
+namespace Phan\Library;
 
 /**
  * A map from object to object with key comparisons

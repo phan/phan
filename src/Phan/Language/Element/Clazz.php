@@ -6,17 +6,20 @@ use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
-use Phan\Language\Scope\GlobalScope;
-use Phan\Language\Scope\ClassScope;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Scope\ClassScope;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Library\None;
+use Phan\Library\Option;
+use Phan\Library\Some;
 
 class Clazz extends AddressableElement
 {
@@ -27,6 +30,13 @@ class Clazz extends AddressableElement
      * @var \Phan\Language\FQSEN
      */
     private $parent_class_fqsen = null;
+
+    /**
+     * @var Type|null
+     * The type of the parent of this class if it extends
+     * anything, else null.
+     */
+    private $parent_type = null;
 
     /**
      * @var \Phan\Language\FQSEN[]
@@ -61,7 +71,7 @@ class Clazz extends AddressableElement
      * @param FullyQualifiedClassName $fqsen
      * A fully qualified name for this class
      *
-     * @param FullyQualifiedClassName|null $parent_class_fqsen
+     * @param Type|null $parent_type
      * @param FullyQualifiedClassName[]|null $interface_fqsen_list
      * @param FullyQualifiedClassName[]|null $trait_fqsen_list
      */
@@ -71,7 +81,7 @@ class Clazz extends AddressableElement
         UnionType $type,
         int $flags,
         FullyQualifiedClassName $fqsen,
-        FullyQualifiedClassName $parent_class_fqsen = null,
+        Type $parent_type = null,
         array $interface_fqsen_list = [],
         array $trait_fqsen_list = []
     ) {
@@ -83,7 +93,7 @@ class Clazz extends AddressableElement
             $fqsen
         );
 
-        $this->parent_class_fqsen = $parent_class_fqsen;
+        $this->parent_type = $parent_type;
         $this->interface_fqsen_list = $interface_fqsen_list;
         $this->trait_fqsen_list = $trait_fqsen_list;
 
@@ -91,7 +101,6 @@ class Clazz extends AddressableElement
             $context->getScope(),
             $fqsen
         ));
-
     }
 
     /**
@@ -172,7 +181,9 @@ class Clazz extends AddressableElement
                     '\\' . $parent_class->getName()
                 );
 
-            $clazz->setParentClassFQSEN($parent_class_fqsen);
+            $parent_type = $parent_class_fqsen->asType();
+
+            $clazz->setParentType($parent_type);
         }
 
         // n.b.: public properties on internal classes don't get
@@ -199,7 +210,7 @@ class Clazz extends AddressableElement
                 $property_fqsen
             );
 
-            $clazz->addProperty($code_base, $property);
+            $clazz->addProperty($code_base, $property, new None);
         }
 
         foreach (UnionType::internalPropertyMapForClassName(
@@ -228,7 +239,7 @@ class Clazz extends AddressableElement
                 $property_fqsen
             );
 
-            $clazz->addProperty($code_base, $property);
+            $clazz->addProperty($code_base, $property, new None);
         }
 
         foreach ($class->getInterfaceNames() as $name) {
@@ -279,7 +290,7 @@ class Clazz extends AddressableElement
                 );
 
             foreach ($method_list as $method) {
-                $clazz->addMethod($code_base, $method);
+                $clazz->addMethod($code_base, $method, new None);
             }
         }
 
@@ -287,19 +298,52 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @param FQSEN $fqsen
-     * The parent class to associate with this class
+     * @param Type|null $parent_type
+     * The type of the parent (extended) class of this class.
      *
-     * @return null
+     * @return void
      */
-    public function setParentClassFQSEN(FullyQualifiedClassName $fqsen)
+    public function setParentType(Type $parent_type = null)
     {
-        $this->parent_class_fqsen = $fqsen;
+        // Get a reference to the local list of templated
+        // types. We'll use this to map templated types on the
+        // parent to locally templated types.
+        $template_type_map =
+            $this->getInternalScope()->getTemplateTypeMap();
+
+        // Figure out if the given parent type contains any template
+        // types.
+        $contains_templated_type = false;
+        foreach ($parent_type->getTemplateParameterTypeList() as $i => $union_type) {
+            foreach ($union_type->getTypeSet() as $type) {
+                if (isset($template_type_map[$type->getName()])) {
+                    $contains_templated_type = true;
+                    break 2;
+                }
+            }
+        }
+
+        // If necessary, map the template parameter type list through the
+        // local list of templated types.
+        if ($contains_templated_type) {
+            $parent_type = Type::fromType(
+                $parent_type,
+                array_map(function (UnionType $union_type) use ($template_type_map) : UnionType {
+                    return new UnionType(
+                        array_map(function (Type $type) use ($template_type_map) : Type {
+                            return $template_type_map[$type->getName()] ?? $type;
+                        }, $union_type->getTypeSet()->toArray())
+                    );
+                }, $parent_type->getTemplateParameterTypeList())
+            );
+        }
+
+        $this->parent_type = $parent_type;
 
         // Add the parent to the union type of this
         // class
         $this->getUnionType()->addUnionType(
-            UnionType::fromFullyQualifiedString((string)$fqsen)
+            $parent_type->asUnionType()
         );
     }
 
@@ -307,23 +351,65 @@ class Clazz extends AddressableElement
      * @return bool
      * True if this class has a parent class
      */
-    public function hasParentClassFQSEN() : bool
+    public function hasParentType() : bool
     {
-        return !empty($this->parent_class_fqsen);
+        return !empty($this->parent_type);
+    }
+
+    /**
+     * @return Option<Type>
+     * If a parent type is defined, get Some<Type>, else None.
+     */
+    public function getParentTypeOption()
+    {
+        if ($this->hasParentType()) {
+            return new Some($this->parent_type);
+        }
+
+        return new None;
     }
 
     /**
      * @return FQSEN
      * The parent class of this class if one exists
+     *
+     * @throws \Exception
+     * An exception is thrown if this class has no parent
      */
     public function getParentClassFQSEN() : FullyQualifiedClassName
     {
-        return $this->parent_class_fqsen;
+        $parent_type_option = $this->getParentTypeOption();
+
+        if (!$parent_type_option->isDefined()) {
+            throw new \Exception("Class $this has no parent");
+        }
+
+        return $parent_type_option->get()->asFQSEN();
+    }
+
+    /**
+     * @return Clazz
+     * The parent class of this class if defined
+     *
+     * @throws \Exception
+     * An exception is thrown if this class has no parent
+     */
+    public function getParentClass(CodeBase $code_base) : Clazz
+    {
+        $parent_type_option = $this->getParentTypeOption();
+
+        if (!$parent_type_option->isDefined()) {
+            throw new \Exception("Class $this has no parent");
+        }
+
+        return $code_base->getClassByFQSEN(
+            $parent_type_option->get()->asFQSEN()
+        );
     }
 
     public function isSubclassOf(CodeBase $code_base, Clazz $other) : bool
     {
-        if (!$this->hasParentClassFQSEN()) {
+        if (!$this->hasParentType()) {
             return false;
         }
 
@@ -336,9 +422,7 @@ class Clazz extends AddressableElement
         }
 
         // Get the parent class
-        $parent = $code_base->getClassByFQSEN(
-            $this->getParentClassFQSEN()
-        );
+        $parent = $this->getParentClass($code_base);
 
         if ($parent === $other) {
             return true;
@@ -357,7 +441,7 @@ class Clazz extends AddressableElement
      */
     public function getHierarchyDepth(CodeBase $code_base) : int
     {
-        if (!$this->hasParentClassFQSEN()) {
+        if (!$this->hasParentType()) {
             return 0;
         }
 
@@ -370,9 +454,7 @@ class Clazz extends AddressableElement
         }
 
         // Get the parent class
-        $parent = $code_base->getClassByFQSEN(
-            $this->getParentClassFQSEN()
-        );
+        $parent = $this->getParentClass($code_base);
 
         // Prevent infinite loops
         if ($parent == $this) {
@@ -393,7 +475,7 @@ class Clazz extends AddressableElement
     public function getHierarchyRootFQSEN(
         CodeBase $code_base
     ) : FullyQualifiedClassName {
-        if (!$this->hasParentClassFQSEN()) {
+        if (!$this->hasParentType()) {
             return $this->getFQSEN();
         }
 
@@ -406,9 +488,7 @@ class Clazz extends AddressableElement
         }
 
         // Get the parent class
-        $parent = $code_base->getClassByFQSEN(
-            $this->getParentClassFQSEN()
-        );
+        $parent = $this->getParentClass($code_base);
 
         // Prevent infinite loops
         if ($parent == $this) {
@@ -446,11 +526,24 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * Add a property to this class
+     *
+     * @param CodeBase $code_base
+     * A reference to the code base in which the ancestor exists
+     *
+     * @param Property $property
+     * The property to copy onto this class
+     *
+     * @param Option<Type> $type_option
+     * A possibly defined type used to define template
+     * parameter types when importing the property
+     *
      * @return void
      */
     public function addProperty(
         CodeBase $code_base,
-        Property $property
+        Property $property,
+        $type_option
     ) {
         // Ignore properties we already have
         if ($this->hasPropertyWithName($code_base, $property->getName())) {
@@ -465,6 +558,18 @@ class Clazz extends AddressableElement
         if ($property->getFQSEN() !== $property_fqsen) {
             $property = clone($property);
             $property->setFQSEN($property_fqsen);
+
+            // If we have a parent type defined, map the property's
+            // type through it
+            if ($type_option->isDefined()) {
+                $property->setUnionType(
+                    $property->getUnionType()->withTemplateParameterTypeMap(
+                        $type_option->get()->getTemplateParameterTypeMap(
+                            $code_base
+                        )
+                    )
+                );
+            }
         }
 
         $code_base->addProperty($property);
@@ -587,7 +692,7 @@ class Clazz extends AddressableElement
                 $property_fqsen
             );
 
-            $this->addProperty($code_base, $property);
+            $this->addProperty($code_base, $property, new None);
 
             return $property;
 
@@ -625,7 +730,7 @@ class Clazz extends AddressableElement
                 $property_fqsen
             );
 
-            $this->addProperty($code_base, $property);
+            $this->addProperty($code_base, $property, new None);
 
             return $property;
         }
@@ -719,11 +824,24 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * Add a method to this class
+     *
+     * @param CodeBase $code_base
+     * A reference to the code base in which the ancestor exists
+     *
+     * @param Method $method
+     * The method to copy onto this class
+     *
+     * @param Option<Type> $type_option
+     * A possibly defined type used to define template
+     * parameter types when importing the method
+     *
      * @return null
      */
     public function addMethod(
         CodeBase $code_base,
-        Method $method
+        Method $method,
+        $type_option
     ) {
         $method_fqsen = FullyQualifiedMethodName::make(
             $this->getFQSEN(),
@@ -747,6 +865,38 @@ class Clazz extends AddressableElement
             $method = clone($method);
             $method->setDefiningFQSEN($method->getFQSEN());
             $method->setFQSEN($method_fqsen);
+
+
+            // If we have a parent type defined, map the method's
+            // return type and parameter types through it
+            if ($type_option->isDefined()) {
+
+                // Map the method's return type
+                $method->setUnionType(
+                    $method->getUnionType()->withTemplateParameterTypeMap(
+                        $type_option->get()->getTemplateParameterTypeMap(
+                            $code_base
+                        )
+                    )
+                );
+
+                // Map each method parameter
+                $method->setParameterList(
+                    array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+                        $mapped_parameter = clone($parameter);
+
+                        $mapped_parameter->setUnionType(
+                            $mapped_parameter->getUnionType()->withTemplateParameterTypeMap(
+                                $type_option->get()->getTemplateParameterTypeMap(
+                                    $code_base
+                                )
+                            )
+                        );
+
+                        return $mapped_parameter;
+                    }, $method->getParameterList())
+                );
+            }
         }
 
         $code_base->addMethod($method);
@@ -813,7 +963,7 @@ class Clazz extends AddressableElement
                         $this, $context, $code_base
                     );
 
-                $this->addMethod($code_base, $default_constructor);
+                $this->addMethod($code_base, $default_constructor, $this->getParentTypeOption());
 
                 return $default_constructor;
             }
@@ -1073,7 +1223,7 @@ class Clazz extends AddressableElement
     {
         $ancestor_list = $this->getNonParentAncestorFQSENList($code_base);
 
-        if ($this->hasParentClassFQSEN()) {
+        if ($this->hasParentType()) {
             $ancestor_list[] = $this->getParentClassFQSEN();
         }
 
@@ -1129,7 +1279,7 @@ class Clazz extends AddressableElement
     {
         $ancestor_list = $this->getTraitFQSENList();
 
-        if ($this->hasParentClassFQSEN()) {
+        if ($this->hasParentType()) {
             $ancestor_list[] = $this->getParentClassFQSEN();
         }
 
@@ -1179,12 +1329,9 @@ class Clazz extends AddressableElement
             $ancestor->importAncestorClasses($code_base);
 
             $this->importAncestorClass(
-                $code_base, $ancestor
+                $code_base, $ancestor, new None
             );
         }
-
-        // TODO: importParentClass doesn't need to be
-        //       separate from the loop above.
 
         // Copy information from the parent(s)
         $this->importParentClass($code_base);
@@ -1206,7 +1353,7 @@ class Clazz extends AddressableElement
             return;
         }
 
-        if (!$this->hasParentClassFQSEN()) {
+        if (!$this->hasParentType()) {
             return;
         }
 
@@ -1227,12 +1374,9 @@ class Clazz extends AddressableElement
         );
 
         // Get the parent class
-        $parent = $code_base->getClassByFQSEN(
-            $this->getParentClassFQSEN()
-        );
+        $parent = $this->getParentClass($code_base);
 
         $parent->addReference($this->getContext());
-
 
         // Tell the parent to import its own parents first
         $parent->importAncestorClasses($code_base);
@@ -1240,7 +1384,8 @@ class Clazz extends AddressableElement
         // Import elements from the parent
         $this->importAncestorClass(
             $code_base,
-            $parent
+            $parent,
+            $this->getParentTypeOption()
         );
     }
 
@@ -1248,37 +1393,54 @@ class Clazz extends AddressableElement
      * Add properties, constants and methods from the given
      * class to this.
      *
-     * @param Clazz $superclazz
+     * @param CodeBase $code_base
+     * A reference to the code base in which the ancestor exists
+     *
+     * @param Clazz $class
      * A class to import from
      *
-     * @return null
+     * @param Option<Type> $type_option
+     * A possibly defined ancestor type used to define template
+     * parameter types when importing ancestor properties and
+     * methods
+     *
+     * @return void
      */
     public function importAncestorClass(
         CodeBase $code_base,
-        Clazz $superclazz
+        Clazz $class,
+        $type_option
     ) {
         if (!$this->isFirstExecution(
-            __METHOD__ . ':' . (string)$superclazz->getFQSEN()
+            __METHOD__ . ':' . (string)$class->getFQSEN()
         )) {
             return;
         }
 
-        $superclazz->addReference($this->getContext());
+        $class->addReference($this->getContext());
 
         // Copy properties
-        foreach ($superclazz->getPropertyMap($code_base) as $property) {
-            $this->addProperty($code_base, $property);
+        foreach ($class->getPropertyMap($code_base) as $property) {
+            $this->addProperty(
+                $code_base,
+                $property,
+                $type_option
+            );
         }
 
         // Copy constants
-        foreach ($superclazz->getConstantMap($code_base) as $constant) {
+        foreach ($class->getConstantMap($code_base) as $constant) {
             $this->addConstant($code_base, $constant);
         }
 
 
         // Copy methods
-        foreach ($superclazz->getMethodMap($code_base) as $method) {
-            $this->addMethod($code_base, $method);
+        foreach ($class->getMethodMap($code_base) as $method) {
+            $this->addMethod(
+                $code_base,
+                $method,
+                $type_option
+            );
         }
     }
 
