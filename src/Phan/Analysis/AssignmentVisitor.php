@@ -8,6 +8,7 @@ use Phan\Config;
 use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
+use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -167,6 +168,8 @@ class AssignmentVisitor extends AnalysisVisitor
                     // the list
                     $property->setUnionType($element_type);
                 } catch (UnanalyzableException $exception) {
+                    // Ignore it. There's nothing we can do.
+                } catch (NodeException $exception) {
                     // Ignore it. There's nothing we can do.
                 }
             }
