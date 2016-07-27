@@ -25,6 +25,7 @@ use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
@@ -1245,8 +1246,19 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
 
                     if ($union_type->genericArrayElementTypes()->hasStaticType()) {
+
                         $union_type = clone($union_type);
-                        $union_type->removeType(\Phan\Language\Type\StaticType::instance()->asGenericArrayType());
+
+                        // Find the static type on the list
+                        $static_type = $union_type->getTypeSet()->find(function (Type $type) : bool {
+                            return (
+                                $type->isGenericArray()
+                                && $type->genericArrayElementType()->isStaticType()
+                            );
+                        });
+
+                        // Remove it from the list
+                        $union_type->removeType($static_type);
                     }
 
                     return $union_type;

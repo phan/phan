@@ -2,8 +2,7 @@
 namespace Phan\Library;
 
 /**
- * @template T
- * The type of the element
+ * @extends Option<null>
  */
 class None extends Option
 {
@@ -23,8 +22,8 @@ class None extends Option
     }
 
     /**
-     * @param T $else
-     * @return T
+     * @param mixed $else
+     * @return mixed
      */
     public function getOrElse($else)
     {
@@ -32,15 +31,12 @@ class None extends Option
     }
 
     /**
-     * @return T
-     *
-     * @suppress PhanTypeMissingReturn
-     * This method will in all cases throw an exception without
-     * returning a value
+     * @return null
      */
     public function get()
     {
         throw new \Exception("Cannot call get on None");
+        return null;
     }
 
     /**

@@ -28,6 +28,11 @@ final class StaticType extends Type
         return false;
     }
 
+    public function isStaticType() : bool
+    {
+        return true;
+    }
+
     public function __toString() : string
     {
         // Native types can just use their

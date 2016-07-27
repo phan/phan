@@ -66,7 +66,6 @@ class GenericArrayType extends ArrayType
         return $this->element_type;
     }
 
-
     public function __toString() : string
     {
         return "{$this->element_type}[]";

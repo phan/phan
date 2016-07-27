@@ -4,6 +4,8 @@ namespace Phan\Library;
 /**
  * @template T
  * The type of the element
+ *
+ * @extends Option<T>
  */
 class Some extends Option
 {
