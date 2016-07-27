@@ -6,7 +6,6 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
-use Phan\Language\Type\TemplateType;
 
 class PropertyTypesAnalyzer
 {
@@ -39,30 +38,16 @@ class PropertyTypesAnalyzer
                     continue;
                 }
 
-                if ($type instanceof TemplateType) {
-                    if ($property->isStatic()) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $property->getContext(),
-                            Issue::TemplateTypeStaticProperty,
-                            $property->getFileRef()->getLineNumberStart(),
-                            (string)$property->getFQSEN()
-                        );
-                    }
-                } else {
-
-                    // Make sure the class exists
-                    $type_fqsen = $type->asFQSEN();
-
-                    if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $property->getContext(),
-                            Issue::UndeclaredTypeProperty,
-                            $property->getFileRef()->getLineNumberStart(),
-                            (string)$type_fqsen
-                        );
-                    }
+                // Otherwise, make sure the class exists
+                $type_fqsen = $type->asFQSEN();
+                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $property->getContext(),
+                        Issue::UndeclaredTypeProperty,
+                        $property->getFileRef()->getLineNumberStart(),
+                        (string)$type_fqsen
+                    );
                 }
             }
         }

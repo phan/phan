@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Phan\Library;
+namespace Phan;
 
 /**
  * A set of objects supporting union and

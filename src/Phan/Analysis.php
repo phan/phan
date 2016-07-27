@@ -109,9 +109,6 @@ class Analysis
      */
     public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context
     {
-        // Save a reference to the outer context
-        $outer_context = $context;
-
         // Visit the given node populating the code base
         // with anything we learn and get a new context
         // indicating the state of the world within the
@@ -144,18 +141,6 @@ class Analysis
             $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
 
             assert(!empty($child_context), 'Context cannot be null');
-        }
-
-        // For closed context elements (that have an inner scope)
-        // return the outer context instead of their inner context
-        // after we finish parsing their children.
-        if (in_array($node->kind, [
-            \ast\AST_CLASS,
-            \ast\AST_METHOD,
-            \ast\AST_FUNC_DECL,
-            \ast\AST_CLOSURE,
-        ])) {
-            return $outer_context;
         }
 
         // Pass the context back up to our parent

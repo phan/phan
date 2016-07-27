@@ -4,7 +4,6 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
-use Phan\Language\Type\TemplateType;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN;
@@ -36,30 +35,17 @@ class ParameterTypesAnalyzer
                     continue;
                 }
 
-                if ($type instanceof TemplateType) {
-                    if ($method instanceof Method) {
-                        if ($method->isStatic()) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $method->getContext(),
-                                Issue::TemplateTypeStaticMethod,
-                                $method->getFileRef()->getLineNumberStart(),
-                                (string)$method->getFQSEN()
-                            );
-                        }
-                    }
-                } else {
-                    // Make sure the class exists
-                    $type_fqsen = $type->asFQSEN();
-                    if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $method->getContext(),
-                            Issue::UndeclaredTypeParameter,
-                            $method->getFileRef()->getLineNumberStart(),
-                            (string)$type_fqsen
-                        );
-                    }
+
+                // Otherwise, make sure the class exists
+                $type_fqsen = $type->asFQSEN();
+                if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::UndeclaredTypeParameter,
+                        $method->getFileRef()->getLineNumberStart(),
+                        (string)$type_fqsen
+                    );
                 }
             }
         }

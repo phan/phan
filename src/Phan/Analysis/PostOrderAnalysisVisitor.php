@@ -817,6 +817,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $class->getContext()->getLineNumberStart()
                     );
                 }
+
             }
 
             $this->analyzeCallToMethod(
@@ -848,7 +849,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         (string)$class->getFQSEN()
                     );
                 }
+
             }
+
 
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
@@ -1069,16 +1072,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $node->lineno ?? 0,
                     $method->getFQSEN(),
                     (string)$return_type
-                );
-            }
-
-            if ($method->isStatic()
-                && $method->getUnionType()->hasTemplateType()
-            ) {
-                $this->emitIssue(
-                    Issue::TemplateTypeStaticMethod,
-                    $node->lineno ?? 0,
-                    $method->getFQSEN()
                 );
             }
         }

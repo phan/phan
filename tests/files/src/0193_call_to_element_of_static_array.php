@@ -1,19 +1,19 @@
 <?php
 
-class C10 {
+class First {
     /** @return static[] */
-    public static function f() {
+    public static function getList() {
         return [new static()];
     }
 }
 
-class C11 extends C10 {
-    public function g() {
+class Second extends First {
+    public function bar() {
         return 2;
     }
 }
 
-function f() {
-    $v = C11::f();
-    return $v[0]->g();
+function baz() {
+    $seconds = Second::getList();
+    return $seconds[0]->bar();
 }

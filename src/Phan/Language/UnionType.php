@@ -13,26 +13,15 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FloatType;
-use Phan\Language\Type\GenericType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
-use Phan\Language\Type\TemplateType;
-use Phan\Library\Set;
+use Phan\Set;
 use ast\Node;
 
 class UnionType implements \Serializable
 {
     use \Phan\Memoize;
-
-    /**
-     * @var string
-     * A list of one or more types delimited by the '|'
-     * character (e.g. 'int|DateTime|string[]')
-     */
-    const union_type_regex =
-        Type::type_regex
-        . '(\|' . Type::type_regex . ')*';
 
     /**
      * @var Set
@@ -103,14 +92,6 @@ class UnionType implements \Serializable
     ) : UnionType {
         if (empty($type_string)) {
             return new UnionType();
-        }
-
-        // If our scope has a generic type identifier defined on it
-        // that matches the type string, return that UnionType.
-        if ($context->getScope()->hasTemplateType($type_string)) {
-            return $context->getScope()->getTemplateType(
-                $type_string
-            )->asUnionType();
         }
 
         return new UnionType(
@@ -331,115 +312,6 @@ class UnionType implements \Serializable
         return (false !==
             $this->type_set->find(function (Type $type) : bool {
                 return $type->isSelfType();
-            })
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this union type has any types that are generic
-     * types.
-     */
-    private function hasGenericType() : bool
-    {
-        return (false !==
-            $this->type_set->find(function (Type $type) : bool {
-                return $type->hasTemplateParameterTypes();
-            })
-        );
-    }
-
-    /**
-     * @return UnionType[]
-     * A map from template type identifiers to the UnionType
-     * to replace it with
-     */
-    public function getTemplateParameterTypeList() : array
-    {
-        if ($this->isEmpty()) {
-            return [];
-        }
-
-        return array_reduce($this->getTypeSet()->toArray(),
-            function (array $map, Type $type) {
-                return array_merge(
-                    $type->getTemplateParameterTypeList(),
-                    $map
-                );
-            },
-            []
-        );
-    }
-
-
-    /**
-     * @param CodeBase $code_base
-     * The code base to look up classes against
-     *
-     * @return UnionType[]
-     * A map from template type identifiers to the UnionType
-     * to replace it with
-     */
-    public function getTemplateParameterTypeMap(
-        CodeBase $code_base
-    ) : array {
-        if ($this->isEmpty()) {
-            return [];
-        }
-
-        return array_reduce($this->getTypeSet()->toArray(),
-            function (array $map, Type $type) use ($code_base) {
-                return array_merge(
-                    $type->getTemplateParameterTypeMap($code_base),
-                    $map
-                );
-            },
-            []
-        );
-    }
-
-
-    /**
-     * @param UnionType[] $template_parameter_type_map
-     * A map from template type identifiers to concrete types
-     *
-     * @return UnionType
-     * This UnionType with any template types contained herein
-     * mapped to concrete types defined in the given map.
-     */
-    public function withTemplateParameterTypeMap(
-        array $template_parameter_type_map
-    ) : UnionType {
-
-        $concrete_type_list = [];
-        foreach ($this->getTypeSet() as $i => $type) {
-            if ($type instanceof TemplateType
-                && isset($template_parameter_type_map[$type->getName()])
-            ) {
-                $union_type =
-                    $template_parameter_type_map[$type->getName()];
-
-                foreach ($union_type->getTypeSet() as $concrete_type) {
-                    $concrete_type_list[] = $concrete_type;
-                }
-            } else {
-                $concrete_type_list[] = $type;
-            }
-        }
-
-        return new UnionType($concrete_type_list);
-    }
-
-    /**
-     * @return bool
-     * True if this union type has any types that are generic
-     * types
-     */
-    public function hasTemplateType() : bool
-    {
-        return (false !==
-            $this->type_set->find(function (Type $type) : bool {
-                return ($type instanceof TemplateType);
             })
         );
     }
@@ -709,7 +581,6 @@ class UnionType implements \Serializable
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->nonNativeTypes()->getTypeSet() as $class_type) {
-
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
 

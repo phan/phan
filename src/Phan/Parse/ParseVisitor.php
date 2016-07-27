@@ -23,15 +23,11 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\FutureUnionType;
-use Phan\Language\GenericUnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
-use Phan\Library\None;
-use Phan\Library\Some;
 use ast\Node;
 use ast\Node\Decl;
 
@@ -110,18 +106,12 @@ class ParseVisitor extends ScopeVisitor
             ->withLineNumberStart($node->lineno ?? 0)
             ->withLineNumberEnd($node->endLineno ?? -1);
 
-        $class = new Clazz(
+        $clazz = new Clazz(
             $class_context,
             $class_name,
             $class_fqsen->asUnionType(),
             $node->flags ?? 0,
             $class_fqsen
-        );
-
-        // Set the scope of the class's context to be the
-        // internal scope of the class
-        $class_context = $class_context->withScope(
-            $class->getInternalScope()
         );
 
         // Get a comment on the class declaration
@@ -130,20 +120,15 @@ class ParseVisitor extends ScopeVisitor
             $this->context
         );
 
-        // Add any template types parameterizing a generic class
-        foreach ($comment->getTemplateTypeList() as $template_type) {
-            $class->getInternalScope()->addTemplateType($template_type);
-        }
+        $clazz->setIsDeprecated($comment->isDeprecated());
 
-        $class->setIsDeprecated($comment->isDeprecated());
-
-        $class->setSuppressIssueList(
+        $clazz->setSuppressIssueList(
             $comment->getSuppressIssueList()
         );
 
         // Add the class to the code base as a globally
         // accessible object
-        $this->code_base->addClass($class);
+        $this->code_base->addClass($clazz);
 
         // Look to see if we have a parent class
         if (!empty($node->children['extends'])) {
@@ -180,14 +165,7 @@ class ParseVisitor extends ScopeVisitor
             );
 
             // Set the parent for the class
-            $class->setParentType($parent_fqsen->asType());
-        }
-
-        // If the class explicitly sets its overriding extension type,
-        // set that on the class
-        $extended_type_option = $comment->getExtendedTypeOption();
-        if ($extended_type_option->isDefined()) {
-            $class->setParentType($extended_type_option->get());
+            $clazz->setParentClassFQSEN($parent_fqsen);
         }
 
         // Add any implemeneted interfaces
@@ -199,7 +177,7 @@ class ParseVisitor extends ScopeVisitor
             ))->getQualifiedNameList();
 
             foreach ($interface_list as $name) {
-                $class->addInterfaceClassFQSEN(
+                $clazz->addInterfaceClassFQSEN(
                     FullyQualifiedClassName::fromFullyQualifiedString(
                         $name
                     )
@@ -207,7 +185,9 @@ class ParseVisitor extends ScopeVisitor
             }
         }
 
-        return $class_context;
+        return $class_context->withScope(
+            $clazz->getInternalScope()
+        );
     }
 
     /**
@@ -223,7 +203,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitUseTrait(Node $node) : Context
     {
         // Bomb out if we're not in a class context
-        $class = $this->getContextClass();
+        $clazz = $this->getContextClass();
 
         $trait_fqsen_string_list = (new ContextNode(
             $this->code_base,
@@ -238,7 +218,7 @@ class ParseVisitor extends ScopeVisitor
                 $this->context
             );
 
-            $class->addTraitFQSEN($trait_fqsen);
+            $clazz->addTraitFQSEN($trait_fqsen);
         }
 
         return $this->context;
@@ -257,7 +237,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitMethod(Decl $node) : Context
     {
         // Bomb out if we're not in a class context
-        $class = $this->getContextClass();
+        $clazz = $this->getContextClass();
 
         $method_name = (string)$node->name;
 
@@ -279,61 +259,21 @@ class ParseVisitor extends ScopeVisitor
             $method_fqsen
         );
 
-        $class->addMethod($this->code_base, $method, new None);
+        $clazz->addMethod($this->code_base, $method);
 
         if ('__construct' === $method_name) {
-            $class->setIsParentConstructorCalled(false);
-
-            if ($class->isGeneric()) {
-
-                // Get the set of template type identifiers defined on
-                // the class
-                $template_type_identifiers = array_keys(
-                    $class->getTemplateTypeMap()
-                );
-
-                // Get the set of template type identifiers defined
-                // across all parameter types
-                $parameter_template_type_identifiers = [];
-                foreach ($method->getParameterList() as $parameter) {
-                    foreach ($parameter->getUnionType()->getTypeSet()
-                        as $type
-                    ) {
-                        if ($type instanceof TemplateType) {
-                            $parameter_template_type_identifiers[] =
-                                $type->getName();
-                        }
-                    }
-                }
-
-                $missing_template_type_identifiers = array_diff(
-                    $template_type_identifiers,
-                    $parameter_template_type_identifiers
-                );
-
-                if ($missing_template_type_identifiers) {
-                    $this->emitIssue(
-                        Issue::GenericConstructorTypes,
-                        $node->lineno ?? 0,
-                        implode(',', $missing_template_type_identifiers),
-                        (string)$class->getFQSEN()
-                    );
-                }
-            }
-
-
+            $clazz->setIsParentConstructorCalled(false);
         } elseif ('__invoke' === $method_name) {
-            $class->getUnionType()->addType(
+            $clazz->getUnionType()->addType(
                 CallableType::instance()
             );
         } elseif ('__toString' === $method_name
             && !$this->context->getIsStrictTypes()
         ) {
-            $class->getUnionType()->addType(
+            $clazz->getUnionType()->addType(
                 StringType::instance()
             );
         }
-
 
         // Create a new context with a new scope
         return $this->context->withScope(
@@ -354,7 +294,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitPropDecl(Node $node) : Context
     {
         // Bomb out if we're not in a class context
-        $class = $this->getContextClass();
+        $clazz = $this->getContextClass();
 
         // Get a comment on the property declaration
         $comment = Comment::fromStringInContext(
@@ -414,7 +354,7 @@ class ParseVisitor extends ScopeVisitor
                 : '_error_';
 
             $property_fqsen = FullyQualifiedPropertyName::make(
-                $class->getFQSEN(),
+                $clazz->getFQSEN(),
                 $property_name
             );
 
@@ -428,7 +368,7 @@ class ParseVisitor extends ScopeVisitor
             );
 
             // Add the property to the class
-            $class->addProperty($this->code_base, $property, new None);
+            $clazz->addProperty($this->code_base, $property);
 
             $property->setSuppressIssueList(
                 $comment->getSuppressIssueList()
@@ -482,7 +422,7 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitClassConstDecl(Node $node) : Context
     {
-        $class = $this->getContextClass();
+        $clazz = $this->getContextClass();
 
         foreach ($node->children ?? [] as $child_node) {
             $name = $child_node->children['name'];
@@ -510,7 +450,7 @@ class ParseVisitor extends ScopeVisitor
                 )
             );
 
-            $class->addConstant(
+            $clazz->addConstant(
                 $this->code_base,
                 $constant
             );
@@ -660,8 +600,8 @@ class ParseVisitor extends ScopeVisitor
                     $meth = strtolower($node->children['method']);
 
                     if ($meth == '__construct') {
-                        $class = $this->getContextClass();
-                        $class->setIsParentConstructorCalled(true);
+                        $clazz = $this->getContextClass();
+                        $clazz->setIsParentConstructorCalled(true);
                     }
                 }
             }

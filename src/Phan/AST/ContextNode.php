@@ -29,8 +29,6 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
-use Phan\Library\None;
-use Phan\Library\Some;
 use ast\Node;
 
 /**
@@ -655,7 +653,7 @@ class ContextNode
             $property_fqsen
         );
 
-        $class->addProperty($this->code_base, $property, new None);
+        $class->addProperty($this->code_base, $property);
 
         return $property;
     }

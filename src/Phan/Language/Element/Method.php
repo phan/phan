@@ -80,6 +80,17 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return bool
+     * True if this is a static method
+     */
+    public function isStatic() : bool {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\MODIFIER_STATIC
+        );
+    }
+
+    /**
+     * @return bool
      * True if this is a magic method
      */
     public function getIsMagic() : bool {
