@@ -104,7 +104,7 @@ class Config
         //
         // See \Phan\Analysis::shouldVisit for the set of skipped
         // nodes.
-        'should_visit_all_nodes' => false,
+        'should_visit_all_nodes' => true,
 
         // If enabled, check all methods that override a
         // parent method to make sure its signature is
