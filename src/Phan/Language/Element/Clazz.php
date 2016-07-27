@@ -872,17 +872,24 @@ class Clazz extends AddressableElement
             if ($type_option->isDefined()) {
 
                 // Map the method's return type
-                $method->setUnionType(
-                    $method->getUnionType()->withTemplateParameterTypeMap(
-                        $type_option->get()->getTemplateParameterTypeMap(
-                            $code_base
+                if ($method->getUnionType()->hasTemplateType()) {
+                    $method->setUnionType(
+                        $method->getUnionType()->withTemplateParameterTypeMap(
+                            $type_option->get()->getTemplateParameterTypeMap(
+                                $code_base
+                            )
                         )
-                    )
-                );
+                    );
+                }
 
                 // Map each method parameter
                 $method->setParameterList(
                     array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+
+                        if (!$parameter->getUnionType()->hasTemplateType()) {
+                            return $parameter;
+                        }
+
                         $mapped_parameter = clone($parameter);
 
                         $mapped_parameter->setUnionType(

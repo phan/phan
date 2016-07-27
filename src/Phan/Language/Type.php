@@ -795,31 +795,33 @@ class Type
      * A map from template type identifier to a concrete type
      */
     public function getTemplateParameterTypeMap(CodeBase $code_base) {
-        $fqsen = $this->asFQSEN();
+        return $this->memoize(__METHOD__, function () use ($code_base) {
+            $fqsen = $this->asFQSEN();
 
-        if (!($fqsen instanceof FullyQualifiedClassName)) {
-            return [];
-        }
-
-        if (!$code_base->hasClassWithFQSEN($fqsen)) {
-            return [];
-        }
-
-        $class = $code_base->getClassByFQSEN($fqsen);
-
-        $class_template_type_list = $class->getTemplateTypeMap();
-
-        $template_parameter_type_list =
-            $this->getTemplateParameterTypeList();
-
-        $map = [];
-        foreach (array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
-            if (isset($template_parameter_type_list[$i])) {
-                $map[$identifier] = $template_parameter_type_list[$i];
+            if (!($fqsen instanceof FullyQualifiedClassName)) {
+                return [];
             }
-        }
 
-        return $map;
+            if (!$code_base->hasClassWithFQSEN($fqsen)) {
+                return [];
+            }
+
+            $class = $code_base->getClassByFQSEN($fqsen);
+
+            $class_template_type_list = $class->getTemplateTypeMap();
+
+            $template_parameter_type_list =
+                $this->getTemplateParameterTypeList();
+
+            $map = [];
+            foreach (array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
+                if (isset($template_parameter_type_list[$i])) {
+                    $map[$identifier] = $template_parameter_type_list[$i];
+                }
+            }
+
+            return $map;
+        });
     }
 
     /**
