@@ -1028,15 +1028,17 @@ class Type
      */
     public function asFQSENString() : string
     {
-        if (!$this->hasNamespace()) {
-            return $this->getName();
-        }
+        return $this->memoize(__METHOD__, function() {
+            if (!$this->hasNamespace()) {
+                return $this->getName();
+            }
 
-        if ('\\' === $this->getNamespace()) {
-            return '\\' . $this->getName();
-        }
+            if ('\\' === $this->getNamespace()) {
+                return '\\' . $this->getName();
+            }
 
-        return "{$this->getNamespace()}\\{$this->getName()}";
+            return "{$this->getNamespace()}\\{$this->getName()}";
+        });
     }
 
     /**
