@@ -155,14 +155,21 @@ class Comment
                 $variable_list[] =
                     self::parameterFromCommentLine($context, $line);
             } elseif (stripos($line, '@template') !== false) {
-                if (($template_type =
-                    self::templateTypeFromCommentLine($context, $line))
-                ) {
-                    $template_type_list[] = $template_type;
+
+                // Make sure support for generic types is enabled
+                if (Config::get()->generic_types_enabled) {
+                    if (($template_type =
+                        self::templateTypeFromCommentLine($context, $line))
+                    ) {
+                        $template_type_list[] = $template_type;
+                    }
                 }
             } elseif (stripos($line, '@extends') !== false) {
-                $extended_type =
-                    self::extendsFromCommentLine($context, $line);
+                // Make sure support for generic types is enabled
+                if (Config::get()->generic_types_enabled) {
+                    $extended_type =
+                        self::extendsFromCommentLine($context, $line);
+                }
             } elseif (stripos($line, '@return') !== false) {
                 $return_union_type =
                     self::returnTypeFromCommentLine($context, $line);

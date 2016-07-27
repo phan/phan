@@ -330,9 +330,7 @@ class Type
             return self::fromInternalTypeName($fully_qualified_string);
         }
 
-        $tuple = self::typeStringComponents(
-            $fully_qualified_string
-        );
+        $tuple = self::typeStringComponents($fully_qualified_string);
 
         $namespace = $tuple->_0;
         $type_name = $tuple->_1;
@@ -382,9 +380,7 @@ class Type
         );
 
         // Extract the namespace, type and parameter type name list
-        $tuple = self::typeStringComponents(
-            $string
-        );
+        $tuple = self::typeStringComponents($string);
 
         $namespace = $tuple->_0;
         $type_name = $tuple->_1;
