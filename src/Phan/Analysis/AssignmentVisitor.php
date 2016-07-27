@@ -171,7 +171,15 @@ class AssignmentVisitor extends AnalysisVisitor
                     // Ignore it. There's nothing we can do.
                 } catch (NodeException $exception) {
                     // Ignore it. There's nothing we can do.
+                } catch (IssueException $exception) {
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $exception->getIssueInstance()
+                    );
+                    return $this->context;
                 }
+
             }
 
         }
