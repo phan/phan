@@ -4,11 +4,12 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
-use Phan\Language\Type\TemplateType;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\TemplateType;
 
 class ParameterTypesAnalyzer
 {
@@ -121,6 +122,48 @@ class ParameterTypesAnalyzer
         // Get the parameters for that method
         $o_parameter_list = $o_method->getParameterList();
 
+        // If we have a parent type defined, map the method's
+        // return type and parameter types through it
+        $type_option = $class->getParentTypeOption();
+
+        // Map overridden method parameter types through any
+        // template type parameters we may have
+        if ($type_option->isDefined()) {
+            $o_parameter_list =
+                array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+
+                    if (!$parameter->getUnionType()->hasTemplateType()) {
+                        return $parameter;
+                    }
+
+                    $mapped_parameter = clone($parameter);
+
+                    $mapped_parameter->setUnionType(
+                        $mapped_parameter->getUnionType()->withTemplateParameterTypeMap(
+                            $type_option->get()->getTemplateParameterTypeMap(
+                                $code_base
+                            )
+                        )
+                    );
+
+                    return $mapped_parameter;
+                }, $o_parameter_list);
+        }
+
+        // Map overridden method return type through any template
+        // type parameters we may have
+        $o_return_union_type = $o_method->getUnionType();
+        if ($type_option->isDefined()
+            && $o_return_union_type->hasTemplateType()
+        ) {
+            $o_return_union_type =
+                $o_return_union_type->withTemplateParameterTypeMap(
+                    $type_option->get()->getTemplateParameterTypeMap(
+                        $code_base
+                    )
+                );
+        }
+
         // Determine if the signatures match up
         $signatures_match = true;
 
@@ -176,10 +219,10 @@ class ParameterTypesAnalyzer
         }
 
         // Return types should be mappable
-        if (!$o_method->getUnionType()->isEmpty()) {
+        if (!$o_return_union_type->isEmpty()) {
 
             if (!$method->getUnionType()->asExpandedTypes($code_base)->canCastToUnionType(
-                $o_method->getUnionType()
+                $o_return_union_type
             )) {
                 $signatures_match = false;
             }

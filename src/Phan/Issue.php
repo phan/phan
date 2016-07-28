@@ -84,8 +84,8 @@ class Issue
     const ParamTooMany              = 'PhanParamTooMany';
     const ParamTooManyInternal      = 'PhanParamTooManyInternal';
     const ParamTypeMismatch         = 'PhanParamTypeMismatch';
-    const ParamSignatureMismatch    = 'PhanSignatureMismatch';
-    const ParamSignatureMismatchInternal = 'PhanSignatureMismatchInternal';
+    const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
+    const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
     const ParamRedefined            = 'PhanParamRedefined';
 
     // Issue::CATEGORY_NOOP
