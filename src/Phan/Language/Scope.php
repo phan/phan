@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace Phan\Language;
 
+use Phan\Config;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -222,6 +223,10 @@ abstract class Scope
      */
     public function hasAnyTemplateType() : bool
     {
+        if (!Config::get()->generic_types_enabled) {
+            return false;
+        }
+
         return !empty($this->template_type_map)
             || ($this->hasParentScope() && $this->getParentScope()->hasAnyTemplateType());
     }

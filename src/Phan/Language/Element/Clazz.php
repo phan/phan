@@ -27,11 +27,6 @@ class Clazz extends AddressableElement
     use ClosedScopeElement;
 
     /**
-     * @var \Phan\Language\FQSEN
-     */
-    private $parent_class_fqsen = null;
-
-    /**
      * @var Type|null
      * The type of the parent of this class if it extends
      * anything, else null.
@@ -305,37 +300,39 @@ class Clazz extends AddressableElement
      */
     public function setParentType(Type $parent_type = null)
     {
-        // Get a reference to the local list of templated
-        // types. We'll use this to map templated types on the
-        // parent to locally templated types.
-        $template_type_map =
-            $this->getInternalScope()->getTemplateTypeMap();
+        if (Config::get()->generic_types_enabled) {
+            // Get a reference to the local list of templated
+            // types. We'll use this to map templated types on the
+            // parent to locally templated types.
+            $template_type_map =
+                $this->getInternalScope()->getTemplateTypeMap();
 
-        // Figure out if the given parent type contains any template
-        // types.
-        $contains_templated_type = false;
-        foreach ($parent_type->getTemplateParameterTypeList() as $i => $union_type) {
-            foreach ($union_type->getTypeSet() as $type) {
-                if (isset($template_type_map[$type->getName()])) {
-                    $contains_templated_type = true;
-                    break 2;
+            // Figure out if the given parent type contains any template
+            // types.
+            $contains_templated_type = false;
+            foreach ($parent_type->getTemplateParameterTypeList() as $i => $union_type) {
+                foreach ($union_type->getTypeSet() as $type) {
+                    if (isset($template_type_map[$type->getName()])) {
+                        $contains_templated_type = true;
+                        break 2;
+                    }
                 }
             }
-        }
 
-        // If necessary, map the template parameter type list through the
-        // local list of templated types.
-        if ($contains_templated_type) {
-            $parent_type = Type::fromType(
-                $parent_type,
-                array_map(function (UnionType $union_type) use ($template_type_map) : UnionType {
-                    return new UnionType(
-                        array_map(function (Type $type) use ($template_type_map) : Type {
-                            return $template_type_map[$type->getName()] ?? $type;
-                        }, $union_type->getTypeSet()->toArray())
-                    );
-                }, $parent_type->getTemplateParameterTypeList())
-            );
+            // If necessary, map the template parameter type list through the
+            // local list of templated types.
+            if ($contains_templated_type) {
+                $parent_type = Type::fromType(
+                    $parent_type,
+                    array_map(function (UnionType $union_type) use ($template_type_map) : UnionType {
+                        return new UnionType(
+                            array_map(function (Type $type) use ($template_type_map) : Type {
+                                return $template_type_map[$type->getName()] ?? $type;
+                            }, $union_type->getTypeSet()->toArray())
+                        );
+                    }, $parent_type->getTemplateParameterTypeList())
+                );
+            }
         }
 
         $this->parent_type = $parent_type;
@@ -559,16 +556,18 @@ class Clazz extends AddressableElement
             $property = clone($property);
             $property->setFQSEN($property_fqsen);
 
-            // If we have a parent type defined, map the property's
-            // type through it
-            if ($type_option->isDefined()) {
-                $property->setUnionType(
-                    $property->getUnionType()->withTemplateParameterTypeMap(
-                        $type_option->get()->getTemplateParameterTypeMap(
-                            $code_base
+            if (Config::get()->generic_types_enabled) {
+                // If we have a parent type defined, map the property's
+                // type through it
+                if ($type_option->isDefined()) {
+                    $property->setUnionType(
+                        $property->getUnionType()->withTemplateParameterTypeMap(
+                            $type_option->get()->getTemplateParameterTypeMap(
+                                $code_base
+                            )
                         )
-                    )
-                );
+                    );
+                }
             }
         }
 
@@ -866,43 +865,44 @@ class Clazz extends AddressableElement
             $method->setDefiningFQSEN($method->getFQSEN());
             $method->setFQSEN($method_fqsen);
 
+            if (Config::get()->generic_types_enabled) {
+                // If we have a parent type defined, map the method's
+                // return type and parameter types through it
+                if ($type_option->isDefined()) {
 
-            // If we have a parent type defined, map the method's
-            // return type and parameter types through it
-            if ($type_option->isDefined()) {
-
-                // Map the method's return type
-                if ($method->getUnionType()->hasTemplateType()) {
-                    $method->setUnionType(
-                        $method->getUnionType()->withTemplateParameterTypeMap(
-                            $type_option->get()->getTemplateParameterTypeMap(
-                                $code_base
-                            )
-                        )
-                    );
-                }
-
-                // Map each method parameter
-                $method->setParameterList(
-                    array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
-
-                        if (!$parameter->getUnionType()->hasTemplateType()) {
-                            return $parameter;
-                        }
-
-                        $mapped_parameter = clone($parameter);
-
-                        $mapped_parameter->setUnionType(
-                            $mapped_parameter->getUnionType()->withTemplateParameterTypeMap(
+                    // Map the method's return type
+                    if ($method->getUnionType()->hasTemplateType()) {
+                        $method->setUnionType(
+                            $method->getUnionType()->withTemplateParameterTypeMap(
                                 $type_option->get()->getTemplateParameterTypeMap(
                                     $code_base
                                 )
                             )
                         );
+                    }
 
-                        return $mapped_parameter;
-                    }, $method->getParameterList())
-                );
+                    // Map each method parameter
+                    $method->setParameterList(
+                        array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+
+                            if (!$parameter->getUnionType()->hasTemplateType()) {
+                                return $parameter;
+                            }
+
+                            $mapped_parameter = clone($parameter);
+
+                            $mapped_parameter->setUnionType(
+                                $mapped_parameter->getUnionType()->withTemplateParameterTypeMap(
+                                    $type_option->get()->getTemplateParameterTypeMap(
+                                        $code_base
+                                    )
+                                )
+                            );
+
+                            return $mapped_parameter;
+                        }, $method->getParameterList())
+                    );
+                }
             }
         }
 

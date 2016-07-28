@@ -1096,25 +1096,28 @@ class Type
         string $type_string
     ) {
         // Check to see if we have template parameter types
-        $match = [];
         $template_parameter_type_name_list = [];
-        if (preg_match('/' . self::type_regex. '/', $type_string, $match)) {
-            $type_string = $match[1];
 
-            // If we have a generic array symbol '[]', append that back
-            // on to the type string
-            if (isset($match[7])) {
+        if (Config::get()->generic_types_enabled) {
+            $match = [];
+            if (preg_match('/' . self::type_regex. '/', $type_string, $match)) {
+                $type_string = $match[1];
 
-                // Figure out the dimensionality of the type array
-                $gmatch = [];
-                if (preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
-                    $type_string .= $gmatch[0];
+                // If we have a generic array symbol '[]', append that back
+                // on to the type string
+                if (isset($match[7])) {
+
+                    // Figure out the dimensionality of the type array
+                    $gmatch = [];
+                    if (preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
+                        $type_string .= $gmatch[0];
+                    }
                 }
-            }
 
-            $template_parameter_type_name_list = !empty($match[3])
-                ?  preg_split('/\s*,\s*/', $match[3])
-                : [];
+                $template_parameter_type_name_list = !empty($match[3])
+                    ?  preg_split('/\s*,\s*/', $match[3])
+                    : [];
+            }
         }
 
         // Determine if the type name is fully qualified

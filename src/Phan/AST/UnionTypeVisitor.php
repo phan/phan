@@ -682,6 +682,10 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         $union_type = $this->visitClassNode($node->children['class']);
 
+        if (!Config::get()->generic_types_enabled) {
+            return $union_type;
+        }
+
         // For any types that are templates, map them to concrete
         // types based on the parameters passed in.
         return new UnionType(array_map(function (Type $type) use ($node) {

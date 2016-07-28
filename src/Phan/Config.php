@@ -311,7 +311,7 @@ class Config
 
         // Enable or disable support for generic templated
         // class types.
-        'generic_types_enabled' => true,
+        'generic_types_enabled' => false,
 
         // Assign files to be analyzed on random processes
         // in random order. You very likely don't want to
