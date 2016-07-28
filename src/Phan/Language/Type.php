@@ -591,7 +591,7 @@ class Type
      */
     public function isNativeType() : bool
     {
-        return self::isNativeTypeString((string)$this);
+        return false;
     }
 
     /**
