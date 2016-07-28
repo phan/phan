@@ -300,7 +300,8 @@ class Clazz extends AddressableElement
      */
     public function setParentType(Type $parent_type = null)
     {
-        if (Config::get()->generic_types_enabled) {
+        if ($this->getInternalScope()->hasAnyTemplateType()) {
+
             // Get a reference to the local list of templated
             // types. We'll use this to map templated types on the
             // parent to locally templated types.
