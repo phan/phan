@@ -1,0 +1,8 @@
+%s:28 PhanTypeMismatchArgument Argument 1 (p) is int but \f() takes bool defined at %s:3
+%s:28 PhanTypeMismatchArgument Argument 1 (p) is string but \C2::__construct() takes int defined at %s:23
+%s:36 PhanTypeMismatchArgument Argument 1 (p) is T1 but \f() takes bool defined at %s:3
+%s:49 PhanTypeMismatchArgument Argument 1 (p) is string but \f() takes bool defined at %s:3
+%s:50 PhanTypeMismatchArgument Argument 1 (p) is int but \f() takes bool defined at %s:3
+%s:55 PhanUndeclaredExtendedClass Class extends undeclared class \NotFound
+%s:58 PhanUndeclaredClass Reference to undeclared class \NotFound
+%s:67 PhanUndeclaredTypeParameter Parameter of undeclared type \NotFound

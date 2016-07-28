@@ -35,7 +35,7 @@ class ParentConstructorCalledAnalyzer
         }
 
         // Don't worry if there's no parent class
-        if (!$clazz->hasParentClassFQSEN()) {
+        if (!$clazz->hasParentType()) {
             return;
         }
 

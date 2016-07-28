@@ -326,7 +326,9 @@ class ArgumentType
                     ? $alternate_parameter->getUnionType()
                     : 'unknown';
 
-                if ($method->isInternal()) {
+                if ($parameter_type->hasTemplateType()) {
+                    // Don't worry about template types
+                } elseif ($method->isInternal()) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,

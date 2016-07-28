@@ -3,6 +3,7 @@ namespace Phan\Analysis;
 
 use Phan\CLI;
 use Phan\CodeBase;
+use Phan\CodeBase\ClassMap;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Element\AddressableElement;
@@ -10,8 +11,7 @@ use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN;
-use Phan\CodeBase\ClassMap;
-use Phan\Map;
+use Phan\Library\Map;
 
 class ReferenceCountsAnalyzer
 {
