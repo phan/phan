@@ -185,9 +185,9 @@ class ParseVisitor extends ScopeVisitor
 
         // If the class explicitly sets its overriding extension type,
         // set that on the class
-        $extended_type_option = $comment->getExtendedTypeOption();
-        if ($extended_type_option->isDefined()) {
-            $class->setParentType($extended_type_option->get());
+        $inherited_type_option = $comment->getInheritedTypeOption();
+        if ($inherited_type_option->isDefined()) {
+            $class->setParentType($inherited_type_option->get());
         }
 
         // Add any implemeneted interfaces

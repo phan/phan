@@ -2,7 +2,7 @@
 namespace Phan\Library;
 
 /**
- * @extends Option<null>
+ * @inherits Option<null>
  */
 class None extends Option
 {

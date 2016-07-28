@@ -52,9 +52,9 @@ class Comment
     /**
      * @var Option<Type>
      * Classes may specify their inherited type explicitly
-     * via `@extends Type`.
+     * via `@inherits Type`.
      */
-    private $extended_type = null;
+    private $inherited_type = null;
 
     /**
      * @var UnionType
@@ -83,7 +83,7 @@ class Comment
      * @param string[] $template_type_list
      * A list of template types parameterizing a generic class
      *
-     * @param Option<Type> $extended_type
+     * @param Option<Type> $inherited_type
      * An override on the type of the extended class
      *
      * @param UnionType $return
@@ -96,7 +96,7 @@ class Comment
         array $variable_list,
         array $parameter_list,
         array $template_type_list,
-        Option $extended_type,
+        Option $inherited_type,
         UnionType $return_union_type,
         array $suppress_issue_list
     ) {
@@ -104,7 +104,7 @@ class Comment
         $this->variable_list = $variable_list;
         $this->parameter_list = $parameter_list;
         $this->template_type_list = $template_type_list;
-        $this->extended_type = $extended_type;
+        $this->inherited_type = $inherited_type;
         $this->return_union_type = $return_union_type;
         $this->suppress_issue_list = $suppress_issue_list;
 
@@ -140,7 +140,7 @@ class Comment
         $variable_list = [];
         $parameter_list = [];
         $template_type_list = [];
-        $extended_type = new None;
+        $inherited_type = new None;
         $return_union_type = new UnionType();
         $suppress_issue_list = [];
 
@@ -164,11 +164,11 @@ class Comment
                         $template_type_list[] = $template_type;
                     }
                 }
-            } elseif (stripos($line, '@extends') !== false) {
+            } elseif (stripos($line, '@inherits') !== false) {
                 // Make sure support for generic types is enabled
                 if (Config::get()->generic_types_enabled) {
-                    $extended_type =
-                        self::extendsFromCommentLine($context, $line);
+                    $inherited_type =
+                        self::inheritsFromCommentLine($context, $line);
                 }
             } elseif (stripos($line, '@return') !== false) {
                 $return_union_type =
@@ -190,7 +190,7 @@ class Comment
             $variable_list,
             $parameter_list,
             $template_type_list,
-            $extended_type,
+            $inherited_type,
             $return_union_type,
             $suppress_issue_list
         );
@@ -303,12 +303,12 @@ class Comment
      * @return Option<Type>
      * An optional type overriding the extended type of the class
      */
-    private static function extendsFromCommentLine(
+    private static function inheritsFromCommentLine(
         Context $context,
         string $line
     ) {
         $match = [];
-        if (preg_match('/@extends\s+(' . Type::type_regex . ')/', $line, $match)) {
+        if (preg_match('/@inherits\s+(' . Type::type_regex . ')/', $line, $match)) {
             $type_string = $match[1];
 
             $type = new Some(Type::fromStringInContext(
@@ -391,9 +391,9 @@ class Comment
      * @return Option<Type>
      * An optional type declaring what a class extends.
      */
-    public function getExtendedTypeOption()
+    public function getInheritedTypeOption()
     {
-        return $this->extended_type;
+        return $this->inherited_type;
     }
 
     /**

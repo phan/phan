@@ -16,7 +16,7 @@ class C1 {
 }
 
 /**
- * @extends C1<int>
+ * @inherits C1<int>
  */
 class C2 extends C1 {
     /** @param int $p */
@@ -37,7 +37,7 @@ f((new C3(false))->p);
 
 /**
  * @template T2
- * @extends C1<T2>
+ * @inherits C1<T2>
  */
 class C4 extends C1 {
     /** @param T2 $p */
@@ -50,7 +50,7 @@ f((new C4('string'))->p);
 f((new C4(42))->p);
 
 /**
- * @extends NotFound<string>
+ * @inherits NotFound<string>
  */
 class C7 extends C1 {
     /** @param string $p */
@@ -60,7 +60,7 @@ class C7 extends C1 {
 }
 
 /**
- * @extends C1<NotFound>
+ * @inherits C1<NotFound>
  */
 class C8 extends C1 {
     /** @param NotFound $p */

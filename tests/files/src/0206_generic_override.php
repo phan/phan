@@ -22,7 +22,7 @@ class CA {
 }
 
 /**
- * @extends CA<int>
+ * @inherits CA<int>
  */
 class CB extends CA {
     /**

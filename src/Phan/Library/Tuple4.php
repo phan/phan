@@ -16,7 +16,7 @@ namespace Phan\Library;
  * @template T3
  * The type of element one
  *
- * @extends Tuple3<T0, T1, T2>
+ * @inherits Tuple3<T0, T1, T2>
  */
 class Tuple4 extends Tuple3
 {
