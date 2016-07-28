@@ -67,6 +67,10 @@ return [
     // time
     "quick_mode" => false,
 
+    // Enable or disable support for generic templated
+    // class types.
+    'generic_types_enabled' => false,
+
     // By default, Phan will not analyze all node types
     // in order to save time. If this config is set to true,
     // Phan will dig deeper into the AST tree and do an

@@ -556,18 +556,18 @@ class Clazz extends AddressableElement
             $property = clone($property);
             $property->setFQSEN($property_fqsen);
 
-            if (Config::get()->generic_types_enabled) {
-                // If we have a parent type defined, map the property's
-                // type through it
-                if ($type_option->isDefined()) {
-                    $property->setUnionType(
-                        $property->getUnionType()->withTemplateParameterTypeMap(
-                            $type_option->get()->getTemplateParameterTypeMap(
-                                $code_base
-                            )
+            // If we have a parent type defined, map the property's
+            // type through it
+            if ($type_option->isDefined()
+                && $property->getUnionType()->hasTemplateType()
+            ) {
+                $property->setUnionType(
+                    $property->getUnionType()->withTemplateParameterTypeMap(
+                        $type_option->get()->getTemplateParameterTypeMap(
+                            $code_base
                         )
-                    );
-                }
+                    )
+                );
             }
         }
 
@@ -865,44 +865,42 @@ class Clazz extends AddressableElement
             $method->setDefiningFQSEN($method->getFQSEN());
             $method->setFQSEN($method_fqsen);
 
-            if (Config::get()->generic_types_enabled) {
-                // If we have a parent type defined, map the method's
-                // return type and parameter types through it
-                if ($type_option->isDefined()) {
+            // If we have a parent type defined, map the method's
+            // return type and parameter types through it
+            if ($type_option->isDefined()) {
 
-                    // Map the method's return type
-                    if ($method->getUnionType()->hasTemplateType()) {
-                        $method->setUnionType(
-                            $method->getUnionType()->withTemplateParameterTypeMap(
+                // Map the method's return type
+                if ($method->getUnionType()->hasTemplateType()) {
+                    $method->setUnionType(
+                        $method->getUnionType()->withTemplateParameterTypeMap(
+                            $type_option->get()->getTemplateParameterTypeMap(
+                                $code_base
+                            )
+                        )
+                    );
+                }
+
+                // Map each method parameter
+                $method->setParameterList(
+                    array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+
+                        if (!$parameter->getUnionType()->hasTemplateType()) {
+                            return $parameter;
+                        }
+
+                        $mapped_parameter = clone($parameter);
+
+                        $mapped_parameter->setUnionType(
+                            $mapped_parameter->getUnionType()->withTemplateParameterTypeMap(
                                 $type_option->get()->getTemplateParameterTypeMap(
                                     $code_base
                                 )
                             )
                         );
-                    }
 
-                    // Map each method parameter
-                    $method->setParameterList(
-                        array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
-
-                            if (!$parameter->getUnionType()->hasTemplateType()) {
-                                return $parameter;
-                            }
-
-                            $mapped_parameter = clone($parameter);
-
-                            $mapped_parameter->setUnionType(
-                                $mapped_parameter->getUnionType()->withTemplateParameterTypeMap(
-                                    $type_option->get()->getTemplateParameterTypeMap(
-                                        $code_base
-                                    )
-                                )
-                            );
-
-                            return $mapped_parameter;
-                        }, $method->getParameterList())
-                    );
-                }
+                        return $mapped_parameter;
+                    }, $method->getParameterList())
+                );
             }
         }
 
