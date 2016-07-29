@@ -92,7 +92,7 @@ class Phan implements IgnoredFilesFilterInterface {
             $code_base->flushDependenciesForFile($file_path);
 
             // If the file is gone, no need to continue
-            if (!file_exists(realpath($file_path))) {
+            if (($real = realpath($file_path)) === false || !file_exists($real)) {
                 continue;
             }
             try {
