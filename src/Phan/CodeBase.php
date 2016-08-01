@@ -228,6 +228,12 @@ class CodeBase
             $clazz->hydrate($this);
         }
 
+        // Once we're in hydration mode, run one analysis
+        // of the class.
+        if ($this->should_hydrate_requested_elements) {
+            $clazz->analyze($this);
+        }
+
         return $clazz;
     }
 

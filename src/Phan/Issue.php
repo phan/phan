@@ -104,6 +104,8 @@ class Issue
     const RedefineClassInternal     = 'PhanRedefineClassInternal';
     const RedefineFunction          = 'PhanRedefineFunction';
     const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
+    const IncompatibleCompositionProp = 'PhanIncompatibleCompositionProp';
+    const IncompatibleCompositionMethod = 'PhanIncompatibleCompositionMethod';
 
     // Issue::CATEGORY_ACCESS
     const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
@@ -370,7 +372,7 @@ class Issue
                 self::UndeclaredTypeProperty,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Property of undeclared type %s",
+                "Property %s has undeclared type %s",
                 self::REMEDIATION_B
             ),
 
@@ -760,6 +762,20 @@ class Issue
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
                 "Function %s defined at %s:%d was previously defined internally",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::IncompatibleCompositionProp,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "%s and %s define the same property (%s) in the composition of %s. However, the definition differs and is considered incompatible. Class was composed in %s on line %d",
+                self::REMEDIATION_B
+            ),
+            new Issue(
+                self::IncompatibleCompositionMethod,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "Declaration of %s must be compatible with %s in %s on line %d",
                 self::REMEDIATION_B
             ),
 

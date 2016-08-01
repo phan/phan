@@ -128,7 +128,7 @@ interface FunctionInterface extends AddressableElementInterface {
     public function alternateGenerator(CodeBase $code_base) : \Generator;
 
     /**
-     * @return null
+     * @return void
      * Analyze the node associated with this object
      * in the given context
      */

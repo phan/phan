@@ -1,6 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Analysis\CompositionAnalyzer;
+use Phan\Analysis\DuplicateClassAnalyzer;
+use Phan\Analysis\ParentClassExistsAnalyzer;
+use Phan\Analysis\ParentConstructorCalledAnalyzer;
+use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -20,6 +25,7 @@ use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
+use Phan\Plugin\ConfigPluginSet;
 
 class Clazz extends AddressableElement
 {
@@ -524,6 +530,43 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @return FullyQualifiedClassName[]
+     * The the list of all inherited FQSENs (extended classes,
+     * interfaces and traits).
+     */
+    public function getInheritedFQSENList()
+    {
+        $interface_list = array_merge(
+            $this->getInterfaceFQSENList(),
+            $this->getTraitFQSENList()
+        );
+
+        if ($this->hasParentType()) {
+            $interface_list[] = $this->getParentClassFQSEN();
+        }
+
+        return $interface_list;
+    }
+
+    /**
+     * @return Clazz[]
+     * Get the list of all inherited classes (extendec classes,
+     * interfaces and traits).
+     */
+    public function getInheritedClassList(CodeBase $code_base) : array
+    {
+        // Any missing classes will be ignored as they'll be detected elsewhere.
+        return array_filter(array_map(
+            /** @return Clazz|null */
+            function (FullyQualifiedClassName $fqsen) use ($code_base) {
+                return $code_base->hasClassWithFQSEN($fqsen)
+                    ? $code_base->getClassByFQSEN($fqsen)
+                    : null;
+            }, $this->getInheritedFQSENList())
+        );
+    }
+
+    /**
      * Add a property to this class
      *
      * @param CodeBase $code_base
@@ -555,6 +598,7 @@ class Clazz extends AddressableElement
 
         if ($property->getFQSEN() !== $property_fqsen) {
             $property = clone($property);
+            $property->setDefiningFQSEN($property->getFQSEN());
             $property->setFQSEN($property_fqsen);
 
             // If we have a parent type defined, map the property's
@@ -1536,6 +1580,7 @@ class Clazz extends AddressableElement
      * @return void
      */
     protected function hydrateOnce(CodeBase $code_base) {
+
         $constant_fqsen = FullyQualifiedClassConstantName::make(
             $this->getFQSEN(),
             'class'
@@ -1564,6 +1609,60 @@ class Clazz extends AddressableElement
 
         // Load parent methods, properties, constants
         $this->importAncestorClasses($code_base);
+    }
+
+    /**
+     * This method should be called after hydration
+     *
+     * @return void
+     */
+    public function analyze(CodeBase $code_base)
+    {
+        if (!$this->isFirstExecution(__METHOD__)) {
+            return;
+        }
+
+        $this->analyzeOnce($code_base );
+    }
+
+    /**
+     * This method should be called after hydration
+     *
+     * @return void
+     */
+    protected function analyzeOnce(CodeBase $code_base) {
+
+        if ($this->isInternal()) {
+            return;
+        }
+
+        // Analyze this class to make sure that
+        CompositionAnalyzer::analyzeComposition(
+            $code_base, $this
+        );
+
+        // Make sure the parent classes exist
+        ParentClassExistsAnalyzer::analyzeParentClassExists(
+            $code_base, $this
+        );
+
+        DuplicateClassAnalyzer::analyzeDuplicateClass(
+            $code_base, $this
+        );
+
+        ParentConstructorCalledAnalyzer::analyzeParentConstructorCalled(
+            $code_base, $this
+        );
+
+        PropertyTypesAnalyzer::analyzePropertyTypes(
+            $code_base, $this
+        );
+
+        // Let any configured plugins analyze the class
+        ConfigPluginSet::instance()->analyzeClass(
+            $code_base, $this
+        );
+
     }
 
 }

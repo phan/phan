@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
@@ -160,49 +161,6 @@ class Analysis
 
         // Pass the context back up to our parent
         return $context;
-    }
-
-    /**
-     * Take a pass over all classes verifying various
-     * states.
-     *
-     * @return null
-     */
-    public static function analyzeClasses(CodeBase $code_base)
-    {
-        $class_count = count($code_base->getClassMap());
-
-        // Take a pass to import all details from ancestors
-        $i = 0;
-        foreach ($code_base->getClassMap() as $fqsen => $class) {
-            CLI::progress('classes', ++$i/$class_count);
-
-            if ($class->isInternal()) {
-                continue;
-            }
-
-            // Make sure the parent classes exist
-            ParentClassExistsAnalyzer::analyzeParentClassExists(
-                $code_base, $class
-            );
-
-            DuplicateClassAnalyzer::analyzeDuplicateClass(
-                $code_base, $class
-            );
-
-            ParentConstructorCalledAnalyzer::analyzeParentConstructorCalled(
-                $code_base, $class
-            );
-
-            PropertyTypesAnalyzer::analyzePropertyTypes(
-                $code_base, $class
-            );
-
-            // Let any configured plugins analyze the class
-            ConfigPluginSet::instance()->analyzeClass(
-                $code_base, $class
-            );
-        }
     }
 
     /**

@@ -54,12 +54,19 @@ class PropertyTypesAnalyzer
                     // Make sure the class exists
                     $type_fqsen = $type->asFQSEN();
 
-                    if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
+                    if (!$code_base->hasClassWithFQSEN($type_fqsen)
+                        && !($type instanceof TemplateType)
+                        && (
+                            !$property->hasDefiningFQSEN()
+                            || $property->getDefiningFQSEN() == $property->getFQSEN()
+                        )
+                    ) {
                         Issue::maybeEmit(
                             $code_base,
                             $property->getContext(),
                             Issue::UndeclaredTypeProperty,
                             $property->getFileRef()->getLineNumberStart(),
+                            (string)$property->getFQSEN(),
                             (string)$type_fqsen
                         );
                     }

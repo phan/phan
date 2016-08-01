@@ -1,4 +1,3 @@
-%s:4 PhanUndeclaredTypeProperty Property of undeclared type \Client
+%s:4 PhanUndeclaredTypeProperty Property \Test::client has undeclared type \Client
 %s:6 PhanUndeclaredTypeParameter Parameter of undeclared type \Client
 %s:8 PhanUndeclaredClassMethod Call to method test from undeclared class \Client
-

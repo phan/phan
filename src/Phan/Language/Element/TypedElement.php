@@ -280,7 +280,8 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public function hydrate(CodeBase $code_base) {
+    public function hydrate(CodeBase $code_base)
+    {
         if (!$this->isFirstExecution(__METHOD__)) {
             return;
         }
@@ -297,5 +298,4 @@ abstract class TypedElement implements TypedElementInterface
     protected function hydrateOnce(CodeBase $code_base) {
         // Do nothing unless overridden
     }
-
 }

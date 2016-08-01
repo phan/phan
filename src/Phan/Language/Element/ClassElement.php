@@ -10,11 +10,20 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 abstract class ClassElement extends AddressableElement
 {
     /**
-     * @var FullyQualifiedClassElement
+     * @var FullyQualifiedClassElement|null
      * The FQSEN of this element where it is originally
      * defined.
      */
     private $defining_fqsen = null;
+
+    /**
+     * @return bool
+     * True if this element has a defining FQSEN defined
+     */
+    public function hasDefiningFQSEN() : bool
+    {
+        return ($this->defining_fqsen != null);
+    }
 
     /**
      * @return FullyQualifiedClassElement
