@@ -323,8 +323,8 @@ class UnionType implements \Serializable
     /**
      * @return bool
      * True if this type has a type referencing the
-     * class context in which it exists such as 'static'
-     * or 'self'.
+     * class context in which it exists such as 'self'
+     * or '$this'
      */
     public function hasSelfType() : bool
     {
@@ -456,6 +456,45 @@ class UnionType implements \Serializable
                 return $type->isStaticType();
             })
         );
+    }
+
+    /**
+     * @return UnionType
+     * A new UnionType with any references to 'static' resolved
+     * in the given context.
+     */
+    public function withStaticResolvedInContext(
+        Context $context
+    ) : UnionType {
+
+        // If the context isn't in a class scope, there's nothing
+        // we can do
+        if (!$context->isInClassScope()) {
+            return $this;
+        }
+
+        // Find the static type on the list
+        $static_type = $this->getTypeSet()->find(function (Type $type) : bool {
+            return $type->isStaticType();
+        });
+
+        // If we don't actually have a static type, we're all set
+        if (!$static_type) {
+            return $this;
+        }
+
+        // Get a copy of this UnionType to avoid having to know
+        // who has copies of it out in the wild and what they're
+        // hoping for.
+        $union_type = clone($this);
+
+        // Remove the static type
+        $union_type->removeType($static_type);
+
+        // Add in the class in scope
+        $union_type->addType($context->getClassFQSEN()->asType());
+
+        return $union_type;
     }
 
     /**

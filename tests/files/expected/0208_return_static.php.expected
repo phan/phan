@@ -1,0 +1,1 @@
+%s:14 PhanTypeMismatchArgument Argument 1 (p) is \C but \g() takes int defined at %s:13

@@ -576,6 +576,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['expr']
         );
 
+        if ($expression_type->hasStaticType()) {
+            $expression_type =
+                $expression_type->withStaticResolvedInContext(
+                    $this->context
+                );
+        }
+
         // If there is no declared type, see if we can deduce
         // what it should be based on the return type
         if ($method_return_type->isEmpty()
