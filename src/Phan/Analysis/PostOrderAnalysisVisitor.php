@@ -640,6 +640,29 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
+    public function visitYield(Node $node) : Context
+    {
+        // Get the method/function/closure we're in
+        $method =
+            $this->context->getFunctionLikeInScope($this->code_base);
+
+        assert(!empty($method),
+            "We're supposed to be in either method or closure scope.");
+
+        // Mark the method as returning something
+        $method->setHasReturn(true);
+
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
     public function visitPropDecl(Node $node) : Context
     {
         return $this->context;
