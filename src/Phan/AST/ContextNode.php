@@ -722,6 +722,10 @@ class ContextNode
      * @throws UnanalyzableException
      * An exception is thrown if we hit a construct in which
      * we can't determine if the property exists or not
+     *
+     * @throws IssueException
+     * An exception is thrown if an issue is found while getting
+     * the list of possible classes.
      */
     public function getClassConst() : ClassConstant
     {
