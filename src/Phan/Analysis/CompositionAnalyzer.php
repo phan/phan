@@ -2,11 +2,13 @@
 namespace Phan\Analysis;
 
 use Phan\CodeBase;
+use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\UnionType;
 
 class CompositionAnalyzer
 {
@@ -37,8 +39,12 @@ class CompositionAnalyzer
         // and check to see if the types line up.
         foreach ($class->getPropertyList($code_base) as $property) {
 
-            $property_union_type =
-                $property->getUnionType();
+            try {
+                $property_union_type =
+                    $property->getUnionType();
+            } catch (IssueException $exception) {
+                $property_union_type = new UnionType;
+            }
 
             // Check for that property on each inherited
             // class/trait/interface
