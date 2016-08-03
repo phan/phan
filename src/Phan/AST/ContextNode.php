@@ -695,13 +695,20 @@ class ContextNode
         );
 
         if (!$this->code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-            throw new IssueException(
-                Issue::fromType(Issue::UndeclaredConstant)(
-                    $this->context->getFile(),
-                    $this->node->lineno ?? 0,
-                    [ $fqsen ]
-                )
+
+            $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                $constant_name
             );
+
+            if (!$this->code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredConstant)(
+                        $this->context->getFile(),
+                        $this->node->lineno ?? 0,
+                        [ $fqsen ]
+                    )
+                );
+            }
         }
 
         return $this->code_base->getGlobalConstantByFQSEN($fqsen);

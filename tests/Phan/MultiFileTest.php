@@ -26,6 +26,15 @@ class MultiFileTest extends AbstractPhanFileTest {
                 MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '245.php' . AbstractPhanFileTest::EXPECTED_SUFFIX
             ],
 
+            // Issue #301
+            [
+                [
+                    MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '301_a.php',
+                    MULTI_FILE_DIR . DIRECTORY_SEPARATOR . '301_b.php'
+                ],
+                MULTI_EXPECTED_DIR . DIRECTORY_SEPARATOR . '301.php' . AbstractPhanFileTest::EXPECTED_SUFFIX
+            ],
+
             // Manually add additional file sets and expected
             // output here.
 
