@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\NodeException;
 use Phan\Issue;
@@ -554,6 +555,34 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $this->code_base,
             $this->context
         ))($node->children['cond']);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitCall(Node $node) : Context
+    {
+        // Look only at nodes of the form `assert(expr, ...)`.
+        if (!isset($node->children['expr'])
+            || !isset($node->children['expr']->children['name'])
+            || $node->children['expr']->children['name'] !== 'assert'
+            || !isset($node->children['args'])
+            || !isset($node->children['args']->children[0])
+        ) {
+            return $this->context;
+        }
+
+        // Look to see if the asserted expression says anything about
+        // the types of any variables.
+        return (new ConditionVisitor(
+            $this->code_base,
+            $this->context
+        ))($node->children['args']->children[0]);
     }
 
     /**
