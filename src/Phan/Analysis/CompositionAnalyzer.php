@@ -27,7 +27,7 @@ class CompositionAnalyzer
 
         // Get the list of all inherited classes.
         $inherited_class_list =
-            $class->getInheritedClassList($code_base);
+            $class->getAncestorClassList($code_base);
 
         // No chance of failed composition if we don't inherit from
         // lots of stuff.
@@ -35,13 +35,15 @@ class CompositionAnalyzer
             return;
         }
 
+        // Since we're not necessarily getting this list of classes
+        // via getClass, we need to ensure that hydration has occurred.
+        $class->hydrate($code_base);
+
         // For each property, find out every inherited class that defines it
         // and check to see if the types line up.
         foreach ($class->getPropertyList($code_base) as $property) {
-
             try {
-                $property_union_type =
-                    $property->getUnionType();
+                $property_union_type = $property->getUnionType();
             } catch (IssueException $exception) {
                 $property_union_type = new UnionType;
             }
@@ -49,7 +51,6 @@ class CompositionAnalyzer
             // Check for that property on each inherited
             // class/trait/interface
             foreach ($inherited_class_list as $inherited_class) {
-
                 // Skip any classes/traits/interfaces not defining that
                 // property
                 if (!$inherited_class->hasPropertyWithName($code_base, $property->getName())) {
@@ -98,7 +99,6 @@ class CompositionAnalyzer
                     $class->getFileRef()->getFile(),
                     $class->getFileRef()->getLineNumberStart()
                 );
-
             }
         }
 

@@ -530,43 +530,6 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return FullyQualifiedClassName[]
-     * The the list of all inherited FQSENs (extended classes,
-     * interfaces and traits).
-     */
-    public function getInheritedFQSENList()
-    {
-        $interface_list = array_merge(
-            $this->getInterfaceFQSENList(),
-            $this->getTraitFQSENList()
-        );
-
-        if ($this->hasParentType()) {
-            $interface_list[] = $this->getParentClassFQSEN();
-        }
-
-        return $interface_list;
-    }
-
-    /**
-     * @return Clazz[]
-     * Get the list of all inherited classes (extendec classes,
-     * interfaces and traits).
-     */
-    public function getInheritedClassList(CodeBase $code_base) : array
-    {
-        // Any missing classes will be ignored as they'll be detected elsewhere.
-        return array_filter(array_map(
-            /** @return Clazz|null */
-            function (FullyQualifiedClassName $fqsen) use ($code_base) {
-                return $code_base->hasClassWithFQSEN($fqsen)
-                    ? $code_base->getClassByFQSEN($fqsen)
-                    : null;
-            }, $this->getInheritedFQSENList())
-        );
-    }
-
-    /**
      * Add a property to this class
      *
      * @param CodeBase $code_base
@@ -1374,10 +1337,6 @@ class Clazz extends AddressableElement
 
             $ancestor = $code_base->getClassByFQSEN($fqsen);
 
-            // Force the parent to import its own before
-            // we import from it
-            $ancestor->importAncestorClasses($code_base);
-
             $this->importAncestorClass(
                 $code_base, $ancestor, new None
             );
@@ -1429,7 +1388,6 @@ class Clazz extends AddressableElement
         $parent->addReference($this->getContext());
 
         // Tell the parent to import its own parents first
-        $parent->importAncestorClasses($code_base);
 
         // Import elements from the parent
         $this->importAncestorClass(
@@ -1469,6 +1427,9 @@ class Clazz extends AddressableElement
 
         $class->addReference($this->getContext());
 
+        // Make sure that the class imports its parents first
+        $class->hydrate($code_base);
+
         // Copy properties
         foreach ($class->getPropertyMap($code_base) as $property) {
             $this->addProperty(
@@ -1482,7 +1443,6 @@ class Clazz extends AddressableElement
         foreach ($class->getConstantMap($code_base) as $constant) {
             $this->addConstant($code_base, $constant);
         }
-
 
         // Copy methods
         foreach ($class->getMethodMap($code_base) as $method) {
@@ -1579,23 +1539,29 @@ class Clazz extends AddressableElement
      *
      * @return void
      */
-    protected function hydrateOnce(CodeBase $code_base) {
-
-        $constant_fqsen = FullyQualifiedClassConstantName::make(
-            $this->getFQSEN(),
-            'class'
-        );
+    protected function hydrateOnce(CodeBase $code_base)
+    {
+        foreach ($this->getAncestorFQSENList($code_base) as $fqsen) {
+            if ($code_base->hasClassWithFQSEN($fqsen)) {
+                $code_base->getClassByFQSEN(
+                    $fqsen
+                )->hydrate($code_base);
+            }
+        }
 
         // Create the 'class' constant
-        $constant = new ClassConstant(
-            $this->getContext(),
-            'class',
-            StringType::instance()->asUnionType(),
-            0,
-            $constant_fqsen
+        $this->addConstant($code_base,
+            new ClassConstant(
+                $this->getContext(),
+                'class',
+                StringType::instance()->asUnionType(),
+                0,
+                FullyQualifiedClassConstantName::make(
+                    $this->getFQSEN(),
+                    'class'
+                )
+            )
         );
-
-        $this->addConstant($code_base, $constant);
 
         // Add variable '$this' to the scope
         $this->getInternalScope()->addVariable(
@@ -1616,30 +1582,11 @@ class Clazz extends AddressableElement
      *
      * @return void
      */
-    public function analyze(CodeBase $code_base)
+    public final function analyze(CodeBase $code_base)
     {
-        if (!$this->isFirstExecution(__METHOD__)) {
-            return;
-        }
-
-        $this->analyzeOnce($code_base );
-    }
-
-    /**
-     * This method should be called after hydration
-     *
-     * @return void
-     */
-    protected function analyzeOnce(CodeBase $code_base) {
-
         if ($this->isInternal()) {
             return;
         }
-
-        // Analyze this class to make sure that
-        CompositionAnalyzer::analyzeComposition(
-            $code_base, $this
-        );
 
         // Make sure the parent classes exist
         ParentClassExistsAnalyzer::analyzeParentClassExists(
@@ -1658,11 +1605,15 @@ class Clazz extends AddressableElement
             $code_base, $this
         );
 
+        // Analyze this class to make sure that we don't have conflicting
+        // types between similar inherited methods.
+        CompositionAnalyzer::analyzeComposition(
+            $code_base, $this
+        );
+
         // Let any configured plugins analyze the class
         ConfigPluginSet::instance()->analyzeClass(
             $code_base, $this
         );
-
     }
-
 }

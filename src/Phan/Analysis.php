@@ -205,6 +205,19 @@ class Analysis
     }
 
     /**
+     * Take a pass over all classes/traits/interfaces
+     * verifying various states.
+     *
+     * @return void
+     */
+    public static function analyzeClasses($code_base)
+    {
+        foreach ($code_base->getClassMap() as $class) {
+            $class->analyze($code_base);
+        }
+    }
+
+    /**
      * Take a look at all globally accessible elements and see if
      * we can find any dead code that is never referenced
      *
