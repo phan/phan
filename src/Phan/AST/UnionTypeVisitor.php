@@ -1017,12 +1017,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 Issue::Unanalyzable,
                 $node->lineno ?? 0
             );
-        } catch (IssueException $exception) {
-            Issue::maybeEmitInstance(
-                $this->code_base,
-                $this->context,
-                $exception->getIssueInstance()
-            );
         }
 
         return new UnionType();
