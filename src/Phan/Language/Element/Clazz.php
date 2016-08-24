@@ -564,19 +564,28 @@ class Clazz extends AddressableElement
             $property->setDefiningFQSEN($property->getFQSEN());
             $property->setFQSEN($property_fqsen);
 
-            // If we have a parent type defined, map the property's
-            // type through it
-            if ($type_option->isDefined()
-                && $property->getUnionType()->hasTemplateType()
-            ) {
-                $property->setUnionType(
-                    $property->getUnionType()->withTemplateParameterTypeMap(
-                        $type_option->get()->getTemplateParameterTypeMap(
-                            $code_base
+            try {
+                // If we have a parent type defined, map the property's
+                // type through it
+                if ($type_option->isDefined()
+                    && $property->getUnionType()->hasTemplateType()
+                ) {
+                    $property->setUnionType(
+                        $property->getUnionType()->withTemplateParameterTypeMap(
+                            $type_option->get()->getTemplateParameterTypeMap(
+                                $code_base
+                            )
                         )
-                    )
+                    );
+                }
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $code_base,
+                    $property->getContext(),
+                    $exception->getIssueInstance()
                 );
             }
+
         }
 
         $code_base->addProperty($property);
@@ -1615,5 +1624,6 @@ class Clazz extends AddressableElement
         ConfigPluginSet::instance()->analyzeClass(
             $code_base, $this
         );
+
     }
 }
