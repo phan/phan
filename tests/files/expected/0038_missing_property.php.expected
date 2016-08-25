@@ -1,2 +1,1 @@
-%s:4 PhanUndeclaredProperty Reference to undeclared property missing_property
-
+%s:4 PhanUndeclaredProperty Reference to undeclared property \A->missing_property

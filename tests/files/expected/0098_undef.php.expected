@@ -6,7 +6,7 @@
 %s:22 PhanUndeclaredExtendedClass Class extends undeclared class \Undef
 %s:25 PhanParentlessClass Reference to parent of class \F that does not extend anything
 %s:28 PhanUndeclaredProperty Reference to undeclared property \C->undef
-%s:31 PhanUndeclaredProperty Reference to undeclared property undef
+%s:31 PhanUndeclaredProperty Reference to undeclared property \C->undef
 %s:34 PhanUndeclaredClassMethod Call to method f from undeclared class \Undef
 %s:34 PhanUndeclaredTypeParameter Parameter of undeclared type \Undef
 %s:37 PhanTraitParentReference Reference to parent from trait \T

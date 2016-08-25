@@ -1390,6 +1390,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitProp(Node $node) : Context
     {
+        $exception_or_null = null;
+
         try {
             $property = (new ContextNode(
                 $this->code_base,
@@ -1400,9 +1402,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Mark that this property has been referenced from
             // this context
             $property->addReference($this->context);
+        } catch (IssueException $exception) {
+            // We'll check out some reasons it might not exist
+            // before logging the issue
+            $exception_or_null = $exception;
         } catch (\Exception $exception) {
-            // Swallow any exceptions. We'll log the errors
-            // elsewhere.
+            // Swallow any exceptions. We'll catch it later.
         }
 
         if (isset($property)) {
@@ -1441,6 +1446,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If they don't, then analyze for Noops.
             if (!$has_getter) {
                 $this->analyzeNoOp($node, Issue::NoopProperty);
+
+                if ($exception_or_null) {
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $exception_or_null->getIssueInstance()
+                    );
+                }
             }
         }
 

@@ -1,0 +1,3 @@
+%s:10 PhanUndeclaredProperty Reference to undeclared property \A->asdf
+%s:13 PhanUndeclaredProperty Reference to undeclared property \A->asdf
+%s:16 PhanUndeclaredProperty Reference to undeclared property \A->asdf

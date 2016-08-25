@@ -366,7 +366,7 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->emitIssue(
                 Issue::UndeclaredProperty,
                 $node->lineno ?? 0,
-                $property_name
+                "{$class_list[0]->getFQSEN()}->$property_name"
             );
         } else {
             // If we hit this part, we couldn't figure out
