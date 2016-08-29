@@ -301,16 +301,10 @@ class ArgumentType
                 $alternate_parameter =
                     $alternate_method->getParameterList()[$i] ?? null;
 
-                // Expand the types to find all parents and traits
-                $alternate_parameter_type_expanded =
-                    $alternate_parameter
-                    ->getUnionType()
-                    ->asExpandedTypes($code_base);
-
                 // See if the argument can be cast to the
                 // parameter
                 if ($argument_type_expanded->canCastToUnionType(
-                    $alternate_parameter_type_expanded
+                    $alternate_parameter->getUnionType()
                 )) {
                     $alternate_found = true;
                     break;
