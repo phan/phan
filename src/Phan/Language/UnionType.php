@@ -540,6 +540,32 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return bool
+     * True iff this union contains only generic array types and the given union
+     * type is an array.
+     */
+    public function isNarrowedArrayFormOf(UnionType $union_type) : bool
+    {
+        return $this->isGenericArray() &&
+               $union_type->typeCount() === 1 &&
+               $union_type->hasType(ArrayType::instance());
+    }
+
+    /**
+     * @return bool
+     * True iff this union contains only a static type and the given union type
+     * type is the class the static type was referenced in.
+     */
+    public function isStaticFormOf(UnionType $union_type, Context $context) : bool {
+        $resolved = $this->withStaticResolvedInContext($context);
+
+        return $this->typeCount() === 1 &&
+               $this->hasStaticType() &&
+               $union_type->isEqualTo($resolved);
+    }
+
+
+    /**
      * @param Type[] $type_list
      * A list of types
      *
