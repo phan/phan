@@ -1075,7 +1075,7 @@ return [
 'DateTimeImmutable::createFromFormat' => ['DateTimeImmutable', 'format'=>'string', 'time'=>'string', 'timezone='=>'datetimezone'],
 'DateTimeImmutable::createFromMutable' => ['DateTimeImmutable', 'datetime'=>'datetime'],
 'DateTimeImmutable::diff' => ['DateInterval', 'datetime2'=>'datetime', 'absolute='=>'bool'],
-'DateTimeImmutable::format' => ['DateTimeImmutable', 'format'=>'string'],
+'DateTimeImmutable::format' => ['string|false', 'format'=>'string'],
 'DateTimeImmutable::getLastErrors' => ['array'],
 'DateTimeImmutable::getOffset' => ['int'],
 'DateTimeImmutable::getTimestamp' => ['int'],
