@@ -118,8 +118,10 @@ class Debug
             $string .= ' #' . $node->lineno;
         }
 
-        if (isset($node->endLineno)) {
-            $string .= ':' . $node->endLineno;
+        if ($node instanceof Decl) {
+            if (isset($node->endLineno)) {
+                $string .= ':' . $node->endLineno;
+            }
         }
 
         if (isset($node->name)) {

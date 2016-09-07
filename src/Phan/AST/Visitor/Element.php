@@ -3,6 +3,7 @@ namespace Phan\AST\Visitor;
 
 use Phan\Debug;
 use ast\Node;
+use ast\Node\Decl;
 
 class Element
 {
@@ -52,13 +53,17 @@ class Element
             case \ast\AST_CATCH:
                 return $visitor->visitCatch($this->node);
             case \ast\AST_CLASS:
-                return $visitor->visitClass($this->node);
+                $decl = $this->node;
+                assert($decl instanceof Decl);
+                return $visitor->visitClass($decl);
             case \ast\AST_CLASS_CONST:
                 return $visitor->visitClassConst($this->node);
             case \ast\AST_CLASS_CONST_DECL:
                 return $visitor->visitClassConstDecl($this->node);
             case \ast\AST_CLOSURE:
-                return $visitor->visitClosure($this->node);
+                $decl = $this->node;
+                assert($decl instanceof Decl);
+                return $visitor->visitClosure($decl);
             case \ast\AST_CLOSURE_USES:
                 return $visitor->visitClosureUses($this->node);
             case \ast\AST_CLOSURE_VAR:
@@ -90,7 +95,9 @@ class Element
             case \ast\AST_FOREACH:
                 return $visitor->visitForeach($this->node);
             case \ast\AST_FUNC_DECL:
-                return $visitor->visitFuncDecl($this->node);
+                $decl = $this->node;
+                assert($decl instanceof Decl);
+                return $visitor->visitFuncDecl($decl);
             case \ast\AST_ISSET:
                 return $visitor->visitIsset($this->node);
             case \ast\AST_GLOBAL:
@@ -112,7 +119,9 @@ class Element
             case \ast\AST_MAGIC_CONST:
                 return $visitor->visitMagicConst($this->node);
             case \ast\AST_METHOD:
-                return $visitor->visitMethod($this->node);
+                $decl = $this->node;
+                assert($decl instanceof Decl);
+                return $visitor->visitMethod($decl);
             case \ast\AST_METHOD_CALL:
                 return $visitor->visitMethodCall($this->node);
             case \ast\AST_NAME:
