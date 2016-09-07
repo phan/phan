@@ -1447,7 +1447,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$has_getter) {
                 $this->analyzeNoOp($node, Issue::NoopProperty);
 
-                if ($exception_or_null) {
+                if ($exception_or_null instanceof IssueException) {
                     Issue::maybeEmitInstance(
                         $this->code_base,
                         $this->context,
