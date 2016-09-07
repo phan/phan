@@ -33,10 +33,10 @@ class FileRef implements \Serializable
      * @param string $file
      * The path to the file in which this element is defined
      *
-     * @return Context
+     * @return static
      * This context with the given value is returned
      */
-    public function withFile(string $file) : FileRef
+    public function withFile(string $file)
     {
         $context = clone($this);
         $context->file = $file;
@@ -89,10 +89,10 @@ class FileRef implements \Serializable
      * @var int $line_number
      * The starting line number of the element within the file
      *
-     * @return Context
+     * @return static
      * This context with the given value is returned
      */
-    public function withLineNumberStart(int $line_number) : FileRef
+    public function withLineNumberStart(int $line_number)
     {
         $this->line_number_start = $line_number;
         return $this;
@@ -111,10 +111,10 @@ class FileRef implements \Serializable
      * @param int $line_number
      * The ending line number of the element within the $file
      *
-     * @return Context
+     * @return static
      * This context with the given value is returned
      */
-    public function withLineNumberEnd(int $line_number) : FileRef
+    public function withLineNumberEnd(int $line_number)
     {
         $this->line_number_end = $line_number;
         return $this;
