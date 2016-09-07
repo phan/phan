@@ -74,7 +74,7 @@ trait Alternatives
     ) : FQSEN;
 
     /**
-     * @return FQSEN
+     * @return static
      * Get the canonical (non-alternate) FQSEN associated
      * with this FQSEN
      */

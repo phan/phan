@@ -38,7 +38,7 @@ class Method extends ClassElement implements FunctionInterface
      * ast\kind_uses_flags() can be used to determine whether
      * a certain kind has a meaningful flags value.
      *
-     * @param FQSEN $fqsen
+     * @param FullyQualifiedMethodName $fqsen
      * A fully qualified name for the element
      */
     public function __construct(
@@ -46,7 +46,7 @@ class Method extends ClassElement implements FunctionInterface
         string $name,
         UnionType $type,
         int $flags,
-        FQSEN $fqsen
+        FullyQualifiedMethodName $fqsen
     ) {
         parent::__construct(
             $context,

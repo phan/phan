@@ -18,9 +18,8 @@ use Phan\Language\Scope;
  * An object representing the context in which any
  * structural element (such as a class or method) lives.
  */
-class Context extends FileRef implements \Serializable
+class Context extends FileRef
 {
-
     /**
      * @var string
      * The namespace of the file
@@ -445,30 +444,5 @@ class Context extends FileRef implements \Serializable
         }
 
         return $has_suppress_issue;
-    }
-
-    public function serialize()
-    {
-        $serialized = parent::serialize();
-
-        $serialized .= '^' . implode('|', [
-            $this->getNamespace(),
-            (string)$this->method_fqsen,
-            (string)$this->closure_fqsen
-        ]);
-
-        return $serialized;
-    }
-
-    /**
-     * @return void
-     */
-    public function unserialize($serialized)
-    {
-        list($file_ref, $serialized) = explode('^', $serialized);
-        parent::unserialize($file_ref);
-
-        list($namespace) = explode('|', $serialized);
-        $this->namespace = $namespace;
     }
 }

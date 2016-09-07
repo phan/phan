@@ -59,12 +59,14 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * @param int $alternate_id
      * An alternate ID for the elemnet for use when
      * there are multiple definitions of the element
+     *
+     * @return static
      */
     public static function make(
         string $namespace,
         string $name,
         int $alternate_id = 0
-    ) : FullyQualifiedGlobalStructuralElement {
+    ) {
 
         // Transfer any relative namespace stuff from the
         // name to the namespace.
@@ -208,9 +210,12 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         return $this->namespace;
     }
 
+    /**
+     * @return static
+     */
     public function withNamespace(
         string $namespace
-    ) : FullyQualifiedGlobalStructuralElement {
+    ) {
         return static::make(
             self::cleanNamespace($namespace),
             $this->getName(),

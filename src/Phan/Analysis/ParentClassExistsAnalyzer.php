@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 class ParentClassExistsAnalyzer
 {
@@ -57,7 +58,7 @@ class ParentClassExistsAnalyzer
      * True if the FQSEN exists. If not, a log line is emitted
      */
     private static function fqsenExistsForClass(
-        FQSEN $fqsen,
+        FullyQualifiedClassName $fqsen,
         CodeBase $code_base,
         Clazz $clazz,
         string $issue_type

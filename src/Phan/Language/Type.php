@@ -802,6 +802,8 @@ class Type
                 return [];
             }
 
+            assert($fqsen instanceof FullyQualifiedClassName);
+
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 return [];
             }
@@ -868,6 +870,8 @@ class Type
                 return $union_type;
             }
 
+            assert($class_fqsen instanceof FullyQualifiedClassName);
+
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                 return $union_type;
             }
@@ -901,12 +905,18 @@ class Type
 
     public function isSubclassOf(CodeBase $code_base, Type $parent)
     {
+        $fqsen = $this->asFQSEN();
+        assert($fqsen instanceof FullyQualifiedClassName);
+
         $this_clazz = $code_base->getClassByFQSEN(
-            $this->asFQSEN()
+            $fqsen
         );
 
+        $parent_fqsen = $parent->asFQSEN();
+        assert($parent_fqsen instanceof FullyQualifiedClassName);
+
         $parent_clazz = $code_base->getClassByFQSEN(
-            $parent->asFQSEN()
+            $parent_fqsen
         );
 
         return $this_clazz->isSubclassOf($code_base, $parent_clazz);

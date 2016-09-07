@@ -65,7 +65,7 @@ class Func extends AddressableElement implements FunctionInterface
      * @param Node $node
      * An AST node representing a function
      *
-     * @param FQSEN $fqsen
+     * @param FullyQualifiedFunctionName $fqsen
      * A fully qualified name for the function
      *
      * @return Func
@@ -76,7 +76,7 @@ class Func extends AddressableElement implements FunctionInterface
         Context $context,
         CodeBase $code_base,
         Decl $node,
-        FQSEN $fqsen
+        FullyQualifiedFunctionName $fqsen
     ) : Func {
 
         // Create the skeleton function object from what

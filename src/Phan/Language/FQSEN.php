@@ -50,11 +50,11 @@ interface FQSEN
     public static function canonicalName(string $name) : string;
 
     /**
-     * @return FQSEN
+     * @return static
      * Get the canonical (non-alternate) FQSEN associated
      * with this FQSEN
      */
-    public function getCanonicalFQSEN() : FQSEN;
+    public function getCanonicalFQSEN();
 
     /**
      * @return string

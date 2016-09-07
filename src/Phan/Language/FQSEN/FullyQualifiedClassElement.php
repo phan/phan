@@ -131,7 +131,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * @param $fqsen_string
      * An FQSEN string like '\Namespace\Class::methodName'
      *
-     * @return FullyQualifiedMethodName
+     * @return static
      */
     public static function fromStringInContext(
         string $fqsen_string,
@@ -210,12 +210,12 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     }
 
     /**
-     * @return FQSEN
+     * @return static
      * A FQSEN with the given alternate_id set
      */
     public function withAlternateId(
         int $alternate_id
-    ) : FQSEN {
+    ) {
 
         assert($alternate_id < 1000,
             "Your alternate IDs have run away");
