@@ -424,7 +424,7 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @return Method[]|\Generator
+     * @return \Generator
      * The set of all alternates to this method
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator {
@@ -446,7 +446,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function getOverriddenMethod(
         CodeBase $code_base
-    ) : ClassElement {
+    ) : Method {
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 
