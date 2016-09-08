@@ -816,7 +816,7 @@ class ContextNode
     }
 
     /**
-     * @return Method
+     * @return Func
      */
     public function getClosure() : Func
     {

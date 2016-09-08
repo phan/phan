@@ -122,13 +122,13 @@ interface FunctionInterface extends AddressableElementInterface {
     public function appendParameter(Parameter $parameter);
 
     /**
-     * @return FunctionInterface[]|\Generator
+     * @return \Generator
      * The set of all alternates to this function
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator;
 
     /**
-     * @return void
+     * @return Context
      * Analyze the node associated with this object
      * in the given context
      */

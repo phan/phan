@@ -66,7 +66,7 @@ trait Alternatives
     }
 
     /**
-     * @return FQSEN
+     * @return static
      * A FQSEN with the given alternate_id set
      */
     abstract public function withAlternateId(

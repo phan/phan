@@ -66,7 +66,7 @@ trait Analyzable
     }
 
     /**
-     * @return null
+     * @return Context
      * Analyze the node associated with this object
      * in the given context
      */

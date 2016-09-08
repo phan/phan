@@ -33,7 +33,7 @@ class FileRef implements \Serializable
      * @param string $file
      * The path to the file in which this element is defined
      *
-     * @return Context
+     * @return static
      * This context with the given value is returned
      */
     public function withFile(string $file) : FileRef
@@ -89,7 +89,7 @@ class FileRef implements \Serializable
      * @var int $line_number
      * The starting line number of the element within the file
      *
-     * @return Context
+     * @return static
      * This context with the given value is returned
      */
     public function withLineNumberStart(int $line_number) : FileRef
@@ -111,7 +111,7 @@ class FileRef implements \Serializable
      * @param int $line_number
      * The ending line number of the element within the $file
      *
-     * @return Context
+     * @return static
      * This context with the given value is returned
      */
     public function withLineNumberEnd(int $line_number) : FileRef

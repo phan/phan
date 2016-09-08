@@ -248,7 +248,7 @@ class Func extends AddressableElement implements FunctionInterface
     }
 
     /**
-     * @return Func[]|\Generator
+     * @return \Generator
      * The set of all alternates to this function
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator {

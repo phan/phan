@@ -316,7 +316,7 @@ class Type
      * The context in which the type string was
      * found
      *
-     * @return UnionType
+     * @return Type
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string

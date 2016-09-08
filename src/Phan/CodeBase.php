@@ -232,7 +232,7 @@ class CodeBase
     }
 
     /**
-     * @return Clazz[]|Map
+     * @return Map
      * A list of all classes
      */
     public function getClassMap() : Map
@@ -306,7 +306,7 @@ class CodeBase
     }
 
     /**
-     * @return Method[]|Set
+     * @return Set
      * A set of all known methods with the given name
      */
     public function getMethodSetByName(string $name) : Set
@@ -320,7 +320,7 @@ class CodeBase
     }
 
     /**
-     * @return Method[]|Func[]|Set
+     * @return Set
      * The set of all methods and functions
      */
     public function getFunctionAndMethodSet() : Set
@@ -380,7 +380,7 @@ class CodeBase
     }
 
     /**
-     * @return Map|Func[]
+     * @return Map
      */
     public function getFunctionMap() : Map
     {
@@ -475,7 +475,7 @@ class CodeBase
     }
 
     /**
-     * @return Map|GlobalConstant[]
+     * @return Map
      */
     public function getGlobalConstantMap() : Map
     {
@@ -569,7 +569,7 @@ class CodeBase
     }
 
     /**
-     * @return Map|ClassMap[]
+     * @return Map
      */
     public function getClassMapMap() : Map
     {
