@@ -265,7 +265,7 @@ class Method extends ClassElement implements FunctionInterface
         }
 
         // Pull out the method return type
-        $return_type_hint = UnionType::fromNode(
+        $return_type = UnionType::fromNode(
             $context,
             $code_base,
             $node->children['returnType']
@@ -291,13 +291,9 @@ class Method extends ClassElement implements FunctionInterface
             }
 
             // Check that the comment return type matches the method return type
-            // Note: A comment may specifiy a 'narrowed' array type and still
+            // Note: A comment may specify a 'narrowed' array type and still
             // match, e.g. @return SomeType[] matches fn() : array {}
-            if ($return_type_hint->isEmpty() ||
-                $comment_return_type->isEqualTo($return_type_hint) ||
-                $comment_return_type->isNarrowedArrayFormOf($return_type_hint) ||
-                $comment_return_type->isStaticFormOf($return_type_hint, $context)) {
-
+            if ($comment_return_type->isEquivalentToReturnType($return_type, $context)) {
                 $method->getUnionType()->addUnionType($comment_return_type);
             } else {
                 Issue::maybeEmit(
@@ -305,14 +301,14 @@ class Method extends ClassElement implements FunctionInterface
                     $context,
                     Issue::TypeMismatchReturn,
                     $node->lineno ?? 0,
-                    (string)$return_type_hint,
+                    (string)$return_type,
                     $method->getName(),
                     (string)$comment_return_type
                 );
             }
 
         } else {
-            $method->getUnionType()->addUnionType($return_type_hint);
+            $method->getUnionType()->addUnionType($return_type);
         }
 
         // Add params to local scope for user functions

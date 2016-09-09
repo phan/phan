@@ -41,4 +41,11 @@ class B extends A {
         return new B;
     }
 
+    /**
+     * @return A
+     */
+    public function returnB() : B {
+        return new B;
+    }
+
 }

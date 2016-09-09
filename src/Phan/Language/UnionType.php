@@ -540,30 +540,37 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @return bool
-     * True iff this union contains only generic array types and the given union
-     * type is an array.
+     * Determine if this UnionType is equivalent to the specified return type.
+     *
+     * Given:
+     *
+     * $array_union = UnionType::fromString('SomeType[]');
+     * $static_union = UnionType::fromString('static');
+     * $context = new Context(); // inside of SomeType
+     *
+     * The following cases are considered equivalent:
+     *
+     * $array_union->isEquivalentToReturnType(UnionType::fromString(''), $context);
+     * $array_union->isEquivalentToReturnType(UnionType::fromString('SomeType[]'), $context);
+     * $array_union->isEquivalentToReturnType(UnionType::fromString('array'), $context);
+     * $static_union->isEquivalentToReturnType(UnionType::fromString('SomeType'), $context);
+     *
+     * @param UnionType $return_type
+     * @param Context $context
+     *
+     * @return bool True IFF this union type is equivalent to the specified
+     *              return type.
      */
-    public function isNarrowedArrayFormOf(UnionType $union_type) : bool
-    {
-        return $this->isGenericArray() &&
-               $union_type->typeCount() === 1 &&
-               $union_type->hasType(ArrayType::instance());
+    public function isEquivalentToReturnType(
+        UnionType $return_type,
+        Context $context
+    ) : bool {
+
+        return $return_type->isEmpty() ||
+               $this->isEqualTo($return_type) ||
+               ($this->isGenericArray() && $return_type->isType(ArrayType::instance())) ||
+               $this->withStaticResolvedInContext($context)->isEqualTo($return_type);
     }
-
-    /**
-     * @return bool
-     * True iff this union contains only a static type and the given union type
-     * type is the class the static type was referenced in.
-     */
-    public function isStaticFormOf(UnionType $union_type, Context $context) : bool {
-        $resolved = $this->withStaticResolvedInContext($context);
-
-        return $this->typeCount() === 1 &&
-               $this->hasStaticType() &&
-               $union_type->isEqualTo($resolved);
-    }
-
 
     /**
      * @param Type[] $type_list
