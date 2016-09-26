@@ -33,7 +33,7 @@ $codeclimate_config = json_decode(file_get_contents('/config.json'), true);
 
 // Parse the config
 if (isset($codeclimate_config['config']['minimum-severity'])) {
-    $minimum_severity = $codeclimate_config['config']['minimum-severity'];
+    $minimum_severity = (int) $codeclimate_config['config']['minimum-severity'];
 } else {
     $minimum_severity = 0;
 }
