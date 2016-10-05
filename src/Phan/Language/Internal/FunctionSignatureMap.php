@@ -4888,7 +4888,7 @@ return [
 'mb_strwidth' => ['int', 'str'=>'string', 'encoding='=>'string'],
 'mb_substitute_character' => ['', 'substchar='=>''],
 'mb_substr_count' => ['int', 'haystack'=>'string', 'needle'=>'string', 'encoding='=>'string'],
-'mb_substr' => ['string', 'str'=>'string', 'start'=>'int', 'length='=>'int', 'encoding='=>'string'],
+'mb_substr' => ['string', 'str'=>'string', 'start'=>'int', 'length='=>'int|null', 'encoding='=>'string'],
 'm_checkstatus' => ['int', 'conn'=>'', 'identifier'=>'int'],
 'm_completeauthorizations' => ['int', 'conn'=>'', 'array'=>'int'],
 'm_connect' => ['int', 'conn'=>''],
