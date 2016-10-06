@@ -455,7 +455,10 @@ EOB;
         try {
             $iterator = new \RegexIterator(
                 new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($directory_name)
+                    new \RecursiveDirectoryIterator(
+                        $directory_name,
+                        \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
+                    )
                 ),
                 '/^.+\.php$/i',
                 \RecursiveRegexIterator::GET_MATCH
