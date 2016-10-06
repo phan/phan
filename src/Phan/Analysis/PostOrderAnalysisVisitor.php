@@ -1514,7 +1514,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 $argument
                             ))->getOrCreateProperty($argument->children['prop']);
                         } catch (IssueException $exception) {
-                            $exception->getIssueInstance()();
+                            Issue::maybeEmitInstance(
+                                $this->code_base,
+                                $this->context,
+                                $exception->getIssueInstance()
+                            );
                         } catch (\Exception $exception) {
                             // If we can't figure out what kind of a call
                             // this is, don't worry about it
@@ -1578,7 +1582,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                             ))->getOrCreateProperty($argument->children['prop']);
 
                         } catch (IssueException $exception) {
-                            $exception->getIssueInstance()();
+                            Issue::maybeEmitInstance(
+                                $this->code_base,
+                                $this->context,
+                                $exception->getIssueInstance()
+                            );
                         } catch (\Exception $exception) {
                             // If we can't figure out what kind of a call
                             // this is, don't worry about it
