@@ -7913,7 +7913,7 @@ return [
 'SimpleXMLElement::registerXPathNamespace' => ['bool', 'prefix'=>'string', 'ns'=>'string'],
 'SimpleXMLElement::__toString' => ['string'],
 'SimpleXMLElement::xpath' => ['array', 'path'=>'string'],
-'simplexml_import_dom' => ['simplemxml_element', 'node'=>'domnode', 'class_name='=>'string'],
+'simplexml_import_dom' => ['SimpleXMLElement', 'node'=>'domnode', 'class_name='=>'string'],
 'SimpleXMLIterator::current' => ['SimpleXMLIterator'],
 'SimpleXMLIterator::getChildren' => ['SimpleXMLIterator'],
 'SimpleXMLIterator::hasChildren' => ['bool'],
