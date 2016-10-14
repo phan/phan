@@ -8,7 +8,7 @@ namespace NS2 {
     }
 }
 
-namespace NS\C {
+namespace NS2\C {
     class D {
         const STATUS = 1;
         public function f() {

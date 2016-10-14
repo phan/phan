@@ -414,14 +414,20 @@ class Type
         // Gotta check this before checking for native types
         // because there are monsters out there that will
         // remap the names via things like `use \Foo\String`.
+        $non_generic_partially_qualified_array_type_name =
+            $non_generic_array_type_name;
+        if ($namespace) {
+            $non_generic_partially_qualified_array_type_name =
+                $namespace . '\\' . $non_generic_partially_qualified_array_type_name;
+        }
         if ($context->hasNamespaceMapFor(
             T_CLASS,
-            $non_generic_array_type_name
+            $non_generic_partially_qualified_array_type_name
         )) {
             $fqsen =
                 $context->getNamespaceMapFor(
                     T_CLASS,
-                    $non_generic_array_type_name
+                    $non_generic_partially_qualified_array_type_name
                 );
 
             if ($is_generic_array_type) {
