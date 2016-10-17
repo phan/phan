@@ -5,6 +5,7 @@ namespace Phan\Language\FQSEN;
  * A Fully-Qualified Method Name
  */
 class FullyQualifiedMethodName extends FullyQualifiedClassElement
+    implements FullyQualifiedFunctionLikeName
 {
 
     /**
@@ -16,4 +17,13 @@ class FullyQualifiedMethodName extends FullyQualifiedClassElement
     {
         return $name;
     }
+
+    /**
+     * @return bool
+     * True if this FQSEN represents a closure
+     */
+    public function isClosure() : bool {
+        return false;
+    }
+
 }

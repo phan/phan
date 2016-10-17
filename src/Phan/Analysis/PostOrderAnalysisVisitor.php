@@ -1004,7 +1004,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ) && !(
                     $this->context->isInClassScope()
                     && $this->context->isInFunctionLikeScope()
-                    && preg_match('/^closure_/', $this->context->getFunctionLikeFQSEN()->getName()) === 1
+                    && $this->context->getFunctionLikeFQSEN()->isClosure()
                 )
             ) {
                 $class_list = (new ContextNode(

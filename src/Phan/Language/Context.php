@@ -8,11 +8,12 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
-use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Scope;
+use Phan\Language\Scope\GlobalScope;
 
 /**
  * An object representing the context in which any
@@ -325,7 +326,7 @@ class Context extends FileRef
     }
 
     /*
-     * @return FullyQualifiedMethodName|FullyQualifiedFunctionName|FullyQualifiedClosureName
+     * @return FullyQualifiedFunctionLikeName|FullyQualifiedMethodName|FullyQualifiedFunctionName
      * A fully-qualified structural element name describing
      * the current function or method in scope.
      */
