@@ -1000,6 +1000,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context->isInClassScope()
                     && $this->context->isInFunctionLikeScope()
                     && $this->context->getFunctionLikeFQSEN()->getName() == '__construct'
+                // Allow static calls parent methods from closure
+                ) && !(
+                    $this->context->isInClassScope()
+                    && $this->context->isInFunctionLikeScope()
+                    && preg_match('/^closure_/', $this->context->getFunctionLikeFQSEN()->getName()) === 1
                 )
             ) {
                 $class_list = (new ContextNode(
