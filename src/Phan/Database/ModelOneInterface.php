@@ -13,11 +13,11 @@ interface ModelOneInterface
      * Get a map from column name to row values for
      * this instance
      */
-    abstract public function toRow() : array;
+    public function toRow() : array;
 
     /**
      * @return string|array
      * The value of the primary key for this model
      */
-    abstract public function primaryKeyValue();
+    public function primaryKeyValue();
 }
