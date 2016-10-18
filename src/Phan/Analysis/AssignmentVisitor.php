@@ -208,7 +208,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $node
             ))->getVariableName();
 
-            if ('GLOBALS' === $variable_name) {
+            if (Variable::isSuperglobalVariableWithName($variable_name)) {
                 $dim = $node->children['dim'];
 
                 if (is_string($dim)) {
