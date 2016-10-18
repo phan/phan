@@ -573,6 +573,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             || $node->children['expr']->children['name'] !== 'assert'
             || !isset($node->children['args'])
             || !isset($node->children['args']->children[0])
+            || !($node->children['args']->children[0] instanceof Node)
         ) {
             return $this->context;
         }
