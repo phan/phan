@@ -3,6 +3,7 @@ namespace Phan\Language\Element;
 
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -110,7 +111,7 @@ class Variable extends TypedElement
     public static function isSuperglobalVariableWithName(
         string $name
     ) : bool {
-        return in_array($name, [
+        if (in_array($name, [
             'argv',
             'argc',
             '_GET',
@@ -123,7 +124,10 @@ class Variable extends TypedElement
             '_SESSION',
             'GLOBALS',
             'http_response_header' // Revisit when we implement sub-block type refining
-        ]);
+        ])) {
+            return true;
+        }
+        return in_array($name, Config::get()->runkit_superglobals ?? []);
     }
 
     public function __toString() : string
