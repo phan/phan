@@ -3393,6 +3393,8 @@ return [
 'ifxus_seek_slob' => ['int', 'bid'=>'int', 'mode'=>'int', 'offset'=>'int'],
 'ifxus_tell_slob' => ['int', 'bid'=>'int'],
 'ifxus_write_slob' => ['int', 'bid'=>'int', 'content'=>'string'],
+'igbinary_serialize' => ['string|false', 'value'=>''],
+'igbinary_unserialize' => ['', 'str'=>'string'],
 'ignore_user_abort' => ['int', 'value='=>'bool'],
 'iis_add_server' => ['int', 'path'=>'string', 'comment'=>'string', 'server_ip'=>'string', 'port'=>'int', 'host_name'=>'string', 'rights'=>'int', 'start_server'=>'int'],
 'iis_get_dir_security' => ['int', 'server_instance'=>'int', 'virtual_path'=>'string'],
