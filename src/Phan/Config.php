@@ -306,6 +306,10 @@ class Config
             // 'PhanVariableUseClause',
         ],
 
+        // A custom list of additional superglobals, for projects using runkit.
+        // (E.g. ['_FOO']) // (Declared in runkit.superglobal ini directive)
+        'runkit_superglobals' => [],
+
         // Emit issue messages with markdown formatting
         'markdown_issue_messages' => false,
 
