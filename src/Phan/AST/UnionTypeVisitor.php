@@ -644,6 +644,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitCast(Node $node) : UnionType
     {
+        // TODO: Check if the cast is allowed based on the right side type
+        UnionType::fromNode($this->context, $this->code_base, $node->children['expr']);
         switch ($node->flags) {
             case \ast\flags\TYPE_NULL:
                 return NullType::instance()->asUnionType();
@@ -756,6 +758,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitInstanceOf(Node $node) : UnionType
     {
+        // Check to make sure the left side is valid
+        UnionType::fromNode($this->context, $this->code_base, $node->children['expr']);
         try {
             // Confirm that the right-side exists
             $union_type = $this->visitClassNode(
