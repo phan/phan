@@ -115,14 +115,16 @@ abstract class Plugin {
         string $issue_type,
         string $issue_message,
         int $severity = Issue::SEVERITY_NORMAL,
-        int $remediation_difficulty = Issue::REMEDIATION_B
+        int $remediation_difficulty = Issue::REMEDIATION_B,
+        int $issue_type_id = Issue::TYPE_ID_UNKNOWN
     ) {
         $issue = new Issue(
             $issue_type,
             Issue::CATEGORY_PLUGIN,
             $severity,
             $issue_message,
-            $remediation_difficulty
+            $remediation_difficulty,
+            $issue_type_id
         );
 
         $issue_instance = new IssueInstance(

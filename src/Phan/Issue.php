@@ -172,6 +172,9 @@ class Issue
     const REMEDIATION_E = 16000000;
     const REMEDIATION_F = 18000000;
 
+    // type id constants.
+    const TYPE_ID_UNKNOWN = 999;
+
     /** @var string */
     private $type;
 
@@ -192,19 +195,23 @@ class Issue
      * @param int $category
      * @param int $severity
      * @param string $template
+     * @param int $remediation_difficulty
+     * @param int $type_id (unique integer id for $type)
      */
     public function __construct(
         string $type,
         int $category,
         int $severity,
         string $template,
-        int $remediation_difficulty
+        int $remediation_difficulty,
+        int $type_id
     ) {
         $this->type = $type;
         $this->category = $category;
         $this->severity = $severity;
         $this->template = $template;
         $this->remediation_difficulty = $remediation_difficulty;
+        $this->type_id = $type_id;
     }
 
     /**
@@ -218,13 +225,20 @@ class Issue
             return $error_map;
         }
 
+        /**
+         * @var Issue[]
+         * Note: All type ids should be unique, and be grouped by the category.
+         * (E.g. If the category is (1 << x), then the type_id should be x*1000 + y
+         * If new type ids are added, existing ones should not be changed.
+         */
         $error_list = [
             new Issue(
                 self::SyntaxError,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "%s",
-                self::REMEDIATION_A
+                self::REMEDIATION_A,
+                1
             ),
 
             // Issue::CATEGORY_UNDEFINED
@@ -233,147 +247,168 @@ class Issue
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_LOW,
                 "Empty file %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1000
             ),
             new Issue(
                 self::ParentlessClass,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Reference to parent of class %s that does not extend anything",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1001
             ),
             new Issue(
                 self::UndeclaredClass,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Reference to undeclared class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1002
             ),
             new Issue(
                 self::UndeclaredExtendedClass,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Class extends undeclared class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1003
             ),
             new Issue(
                 self::UndeclaredInterface,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Class implements undeclared interface %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1004
             ),
             new Issue(
                 self::UndeclaredTrait,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Class uses undeclared trait %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1005
             ),
             new Issue(
                 self::UndeclaredClassCatch,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Catching undeclared class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1006
             ),
             new Issue(
                 self::UndeclaredClassConstant,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Reference to constant %s from undeclared class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1007
             ),
             new Issue(
                 self::UndeclaredClassInstanceof,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Checking instanceof against undeclared class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1008
             ),
             new Issue(
                 self::UndeclaredClassMethod,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Call to method %s from undeclared class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1009
             ),
             new Issue(
                 self::UndeclaredClassReference,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Reference to undeclared class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1010
             ),
             new Issue(
                 self::UndeclaredConstant,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Reference to undeclared constant %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1011
             ),
             new Issue(
                 self::UndeclaredFunction,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
                 "Call to undeclared function %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1012
             ),
             new Issue(
                 self::UndeclaredMethod,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Call to undeclared method %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1013
             ),
             new Issue(
                 self::UndeclaredStaticMethod,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Static call to undeclared method %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1014
             ),
             new Issue(
                 self::UndeclaredProperty,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Reference to undeclared property %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1015
             ),
             new Issue(
                 self::UndeclaredStaticProperty,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Static property '%s' on %s is undeclared",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1016
             ),
             new Issue(
                 self::TraitParentReference,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_LOW,
                 "Reference to parent from trait %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1017
             ),
             new Issue(
                 self::UndeclaredVariable,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Variable \$%s is undeclared",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1018
             ),
             new Issue(
                 self::UndeclaredTypeParameter,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Parameter of undeclared type %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1019
             ),
             new Issue(
                 self::UndeclaredTypeProperty,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
                 "Property %s has undeclared type %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1020
             ),
 
             // Issue::CATEGORY_ANALYSIS
@@ -382,7 +417,8 @@ class Issue
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_LOW,
                 "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/etsy/phan/issues/new.",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                2000
             ),
 
             // Issue::CATEGORY_TYPE
@@ -391,140 +427,160 @@ class Issue
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Assigning %s to property but %s is %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10001
             ),
             new Issue(
                 self::TypeMismatchDefault,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Default value for %s \$%s can't be %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10002
             ),
             new Issue(
                 self::TypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Argument %d (%s) is %s but %s() takes %s defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10003
             ),
             new Issue(
                 self::TypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Argument %d (%s) is %s but %s() takes %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10004
             ),
             new Issue(
                 self::TypeMismatchReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Returning type %s but %s() is declared to return %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10005
             ),
             new Issue(
                 self::TypeMissingReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Method %s is declared to return %s but has no return value",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10006
             ),
             new Issue(
                 self::TypeMismatchForeach,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "%s passed to foreach instead of array",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10007
             ),
             new Issue(
                 self::TypeArrayOperator,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Invalid array operator between types %s and %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10008
             ),
             new Issue(
                 self::TypeArraySuspicious,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Suspicious array access to %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10009
             ),
             new Issue(
                 self::TypeComparisonToArray,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
                 "%s to array comparison",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10010
             ),
             new Issue(
                 self::TypeComparisonFromArray,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
                 "array to %s comparison",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10011
             ),
             new Issue(
                 self::TypeConversionFromArray,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
                 "array to %s conversion",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10012
             ),
             new Issue(
                 self::TypeInstantiateAbstract,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Instantiation of abstract class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10013
             ),
             new Issue(
                 self::TypeInstantiateInterface,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Instantiation of interface %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10014
             ),
             new Issue(
                 self::TypeInvalidRightOperand,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Invalid operator: left operand is array and right is not",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10015
             ),
             new Issue(
                 self::TypeInvalidLeftOperand,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Invalid operator: right operand is array and left is not",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10016
             ),
             new Issue(
                 self::TypeParentConstructorCalled,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Must call parent::__construct() from %s which extends %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10017
             ),
             new Issue(
                 self::TypeNonVarPassByRef,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Only variables can be passed by reference at argument %d of %s()",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10018
             ),
             new Issue(
                 self::NonClassMethodCall,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
                 "Call to method %s on non-class type %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10019
             ),
             new Issue(
                 self::TypeVoidAssignment,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
                 "Cannot assign void return value",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10000
             ),
 
             // Issue::CATEGORY_VARIABLE
@@ -533,7 +589,8 @@ class Issue
                 self::CATEGORY_VARIABLE,
                 self::SEVERITY_NORMAL,
                 "Non-variables not allowed within use clause",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                12000
             ),
 
             // Issue::CATEGORY_STATIC
@@ -542,7 +599,8 @@ class Issue
                 self::CATEGORY_STATIC,
                 self::SEVERITY_NORMAL,
                 "Static call to non-static method %s defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                9000
             ),
 
             // Issue::CATEGORY_CONTEXT
@@ -551,7 +609,8 @@ class Issue
                 self::CATEGORY_CONTEXT,
                 self::SEVERITY_CRITICAL,
                 "Cannot access %s when not in object context",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                4000
             ),
 
             // Issue::CATEGORY_DEPRECATED
@@ -560,21 +619,24 @@ class Issue
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
                 "Call to deprecated function %s() defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                5000
             ),
             new Issue(
                 self::DeprecatedClass,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
                 "Call to deprecated class %s defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                5001
             ),
             new Issue(
                 self::DeprecatedProperty,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
                 "Reference to deprecated property %s defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                5002
             ),
 
             // Issue::CATEGORY_PARAMETER
@@ -583,91 +645,104 @@ class Issue
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
                 "Required argument follows optional",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7000
             ),
             new Issue(
                 self::ParamTooMany,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
                 "Call with %d arg(s) to %s() which only takes %d arg(s) defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7001
             ),
             new Issue(
                 self::ParamTooManyInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
                 "Call with %d arg(s) to %s() which only takes %d arg(s)",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7002
             ),
             new Issue(
                 self::ParamTooFew,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Call with %d arg(s) to %s() which requires %d arg(s) defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7003
             ),
             new Issue(
                 self::ParamTooFewInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Call with %d arg(s) to %s() which requires %d arg(s)",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7004
             ),
             new Issue(
                 self::ParamSpecial1,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Argument %d (%s) is %s but %s() takes %s when argument %d is %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7005
             ),
             new Issue(
                 self::ParamSpecial2,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Argument %d (%s) is %s but %s() takes %s when passed only one argument",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7006
             ),
             new Issue(
                 self::ParamSpecial3,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "The last argument to %s must be of type %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7007
             ),
             new Issue(
                 self::ParamSpecial4,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "The second to last argument to %s must be of type %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7008
             ),
             new Issue(
                 self::ParamTypeMismatch,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Argument %d is %s but %s() takes %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7009
             ),
             new Issue(
                 self::ParamSignatureMismatch,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Declaration of %s should be compatible with %s defined in %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7010
             ),
             new Issue(
                 self::ParamSignatureMismatchInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Declaration of %s should be compatible with internal %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7011
             ),
             new Issue(
                 self::ParamRedefined,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
                 "Redefinition of parameter %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                7012
             ),
 
             // Issue::CATEGORY_NOOP
@@ -676,63 +751,72 @@ class Issue
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
                 "Unused property",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                6000
             ),
             new Issue(
                 self::NoopArray,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
                 "Unused array",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                6001
             ),
             new Issue(
                 self::NoopConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
                 "Unused constant",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                6002
             ),
             new Issue(
                 self::NoopClosure,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
                 "Unused closure",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                6003
             ),
             new Issue(
                 self::NoopVariable,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_LOW,
                 "Unused variable",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                6004
             ),
             new Issue(
                 self::UnreferencedClass,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 "Possibly zero references to class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                6005
             ),
             new Issue(
                 self::UnreferencedMethod,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 "Possibly zero references to method %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                6006
             ),
             new Issue(
                 self::UnreferencedProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 "Possibly zero references to property %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                6007
             ),
             new Issue(
                 self::UnreferencedConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
                 "Possibly zero references to constant %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                6008
             ),
 
             // Issue::CATEGORY_REDEFINE
@@ -741,42 +825,48 @@ class Issue
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
                 "%s defined at %s:%d was previously defined as %s at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                8000
             ),
             new Issue(
                 self::RedefineClassInternal,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
                 "%s defined at %s:%d was previously defined as %s internally",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                8001
             ),
             new Issue(
                 self::RedefineFunction,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
                 "Function %s defined at %s:%d was previously defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                8002
             ),
             new Issue(
                 self::RedefineFunctionInternal,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
                 "Function %s defined at %s:%d was previously defined internally",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                8003
             ),
             new Issue(
                 self::IncompatibleCompositionProp,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
                 "%s and %s define the same property (%s) in the composition of %s. However, the definition differs and is considered incompatible. Class was composed in %s on line %d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                8004
             ),
             new Issue(
                 self::IncompatibleCompositionMethod,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
                 "Declaration of %s must be compatible with %s in %s on line %d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                8005
             ),
 
             // Issue::CATEGORY_ACCESS
@@ -785,56 +875,64 @@ class Issue
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Cannot access protected property %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1000
             ),
             new Issue(
                 self::AccessPropertyPrivate,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Cannot access private property %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1001
             ),
             new Issue(
                 self::AccessMethodProtected,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Cannot access protected method %s defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1002
             ),
             new Issue(
                 self::AccessMethodPrivate,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Cannot access private method %s defined at %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1003
             ),
             new Issue(
                 self::AccessSignatureMismatch,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_NORMAL,
                 "Access level to %s must be compatible with %s defined in %s:%d",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1004
             ),
             new Issue(
                 self::AccessSignatureMismatchInternal,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_NORMAL,
                 "Access level to %s must be compatible with internal %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1005
             ),
             new Issue(
                 self::AccessStaticToNonStatic,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Cannot make static method %s() non static",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1006
             ),
             new Issue(
                 self::AccessNonStaticToStatic,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Cannot make non static method %s() static",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                1007
             ),
 
             // Issue::CATEGORY_COMPATIBLE
@@ -843,49 +941,58 @@ class Issue
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
                 "Expression may not be PHP 7 compatible",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                3000
             ),
             new Issue(
                 self::CompatibleExpressionPHP7,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
                 "%s expression may not be PHP 7 compatible",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                3001
             ),
+
+            // Issue::CATEGORY_GENERIC
             new Issue(
                 self::TemplateTypeConstant,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
                 "constant %s may not have a template type",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                14000
             ),
             new Issue(
                 self::TemplateTypeStaticMethod,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
                 "static method %s may not use template types",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                14001
             ),
             new Issue(
                 self::TemplateTypeStaticProperty,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
                 "static property %s may not have a template type",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                14002
             ),
             new Issue(
                 self::GenericGlobalVariable,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
                 "Global variable %s may not be assigned an instance of a generic class",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                14003
             ),
             new Issue(
                 self::GenericConstructorTypes,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
                 "Missing template parameters %s on constructor for generic class %s",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                14004
             ),
         ];
 
@@ -903,6 +1010,14 @@ class Issue
     public function getType() : string
     {
         return $this->type;
+    }
+
+    /**
+     * @return int (Unique integer code corresponding to getType())
+     */
+    public function getTypeId() : int
+    {
+        return $this->type_id;
     }
 
     /**
