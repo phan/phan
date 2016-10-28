@@ -995,11 +995,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         || ($calling_method && !$calling_method->isStatic())
                     )
 
-                // Allow static calls to methods from within the constructor
+                // Allow static calls to methods from non-static class methods
                 ) && !(
                     $this->context->isInClassScope()
                     && $this->context->isInFunctionLikeScope()
-                    && $this->context->getFunctionLikeFQSEN()->getName() == '__construct'
+	                && ($calling_method && !$calling_method->isStatic())
                 // Allow static calls parent methods from closure
                 ) && !(
                     $this->context->isInClassScope()
