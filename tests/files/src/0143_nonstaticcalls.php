@@ -32,11 +32,11 @@ namespace NS2
     class C extends B
     {
     	public function __construct()
-	    {
-	    	$this->callStatics();
-	    }
+        {
+            $this->callStatics();
+        }
 
-		public function callStatics()
+        public function callStatics()
         {
             self::callNonStaticMethod();
             static::callNonStaticMethod();
