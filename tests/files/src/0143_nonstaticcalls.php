@@ -36,7 +36,7 @@ namespace NS2
 	    	$this->callStatics();
 	    }
 
-	    public function callStatics()
+		public function callStatics()
         {
             self::callNonStaticMethod();
             static::callNonStaticMethod();
