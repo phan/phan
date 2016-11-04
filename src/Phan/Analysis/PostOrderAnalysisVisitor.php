@@ -999,7 +999,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ) && !(
                     $this->context->isInClassScope()
                     && $this->context->isInFunctionLikeScope()
-	                && ($calling_method && !$calling_method->isStatic())
+                    && ($calling_method && !$calling_method->isStatic())
                 // Allow static calls parent methods from closure
                 ) && !(
                     $this->context->isInClassScope()

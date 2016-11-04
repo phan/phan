@@ -31,7 +31,7 @@ namespace NS2
 
     class C extends B
     {
-    	public function __construct()
+        public function __construct()
         {
             $this->callStatics();
         }
