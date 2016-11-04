@@ -1456,7 +1456,7 @@ return [
 'DOMNode::isDefaultNamespace' => ['bool', 'namespaceuri'=>'string'],
 'DOMNode::isSameNode' => ['bool', 'node'=>'domnode'],
 'DOMNode::isSupported' => ['bool', 'feature'=>'string', 'version'=>'string'],
-'DOMNodelist::item' => ['DOMNode', 'index'=>'int'],
+'DOMNodelist::item' => ['DOMElement', 'index'=>'int'],
 'DOMNode::lookupNamespaceURI' => ['string', 'prefix'=>'string'],
 'DOMNode::lookupPrefix' => ['string', 'namespaceuri'=>'string'],
 'DOMNode::normalize' => [''],
