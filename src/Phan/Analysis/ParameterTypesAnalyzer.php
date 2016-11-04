@@ -249,6 +249,11 @@ class ParameterTypesAnalyzer
             }
         }
 
+
+        if ($o_method->returnsRef() && !$method->returnsRef()) {
+            $signatures_match = false;
+        }
+
         if (!$signatures_match) {
             if ($o_method->isInternal()) {
                 Issue::maybeEmit(
