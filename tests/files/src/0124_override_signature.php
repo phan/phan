@@ -49,3 +49,11 @@ class C14 {
 class C15 extends C14 {
     public function i($a) {}
 }
+
+class C16 {
+    public function &j() {}
+}
+
+class C17 extends C16 {
+    public function j() {}
+}
