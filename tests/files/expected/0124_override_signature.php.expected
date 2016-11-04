@@ -3,4 +3,6 @@
 %s:15 PhanParamSignatureMismatch Declaration of function f(string $a) should be compatible with function f(int $a) defined in %s:3
 %s:18 PhanParamSignatureMismatch Declaration of function f($a) should be compatible with function f(int $a) defined in %s:3
 %s:25 PhanParamSignatureMismatch Declaration of function g() : int should be compatible with function g() : string defined in %s:22
+%s:51 PhanParamSignatureMismatch Declaration of function k(&$a) should be compatible with function k($a) defined in %s:46
+%s:52 PhanParamSignatureMismatch Declaration of function l($b) should be compatible with function l(&$b) defined in %s:47
 

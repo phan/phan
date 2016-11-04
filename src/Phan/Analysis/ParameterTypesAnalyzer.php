@@ -187,6 +187,13 @@ class ParameterTypesAnalyzer
 
                 $o_parameter = $o_parameter_list[$i];
 
+                // Changing pass by reference is not ok
+                // @see https://3v4l.org/Utuo8
+                if ($parameter->isPassByReference() != $o_parameter->isPassByReference()) {
+                    $signatures_match = false;
+                    break;
+                }
+
                 // A stricter type on an overriding method is cool
                 if ($o_parameter->getUnionType()->isEmpty()
                     || $o_parameter->getUnionType()->isType(MixedType::instance())
