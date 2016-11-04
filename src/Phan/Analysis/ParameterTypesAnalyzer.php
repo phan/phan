@@ -173,7 +173,7 @@ class ParameterTypesAnalyzer
         ) {
             $signatures_match = false;
         } else if ($method->getNumberOfParameters()
-            < $o_method->getNumberOfRequiredParameters()
+            < $o_method->getNumberOfParameters()
         ) {
             $signatures_match = false;
 
