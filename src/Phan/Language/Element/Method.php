@@ -69,12 +69,23 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return bool
-     * True if this is an abstract class
+     * True if this is an abstract method
      */
     public function isAbstract() : bool {
         return Flags::bitVectorHasState(
             $this->getFlags(),
             \ast\flags\MODIFIER_ABSTRACT
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this method returns reference
+     */
+    public function returnsRef() : bool {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\RETURNS_REF
         );
     }
 
@@ -459,7 +470,11 @@ class Method extends ClassElement implements FunctionInterface
     public function __toString() : string {
         $string = '';
 
-        $string .= 'function ' . $this->getName();
+        $string .= 'function ';
+        if ($this->returnsRef()) {
+            $string .= '&';
+        }
+        $string .= $this->getName();
 
         $string .= '(' . implode(', ', $this->getParameterList()) . ')';
 
