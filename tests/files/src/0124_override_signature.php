@@ -41,3 +41,11 @@ class C12 {
 class C13 extends C12 {
     public function __construct(string $b, bool $c) {}
 }
+
+class C14 {
+    public function i($a, $b = 'default') {}
+}
+
+class C15 extends C14 {
+    public function i($a) {}
+}
