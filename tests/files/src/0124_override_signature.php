@@ -57,3 +57,13 @@ class C16 {
 class C17 extends C16 {
     public function j() {}
 }
+
+class C18 {
+    public function k($a) {}
+    public function l(&$b) {}
+}
+
+class C19 extends C18 {
+    public function k(&$a) {}
+    public function l($b) {}
+}

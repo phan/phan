@@ -5,3 +5,5 @@
 %s:25 PhanParamSignatureMismatch Declaration of function g() : int should be compatible with function g() : string defined in %s:22
 %s:50 PhanParamSignatureMismatch Declaration of function i($a) should be compatible with function i($a, string $b = null) defined in %s:46
 %s:58 PhanParamSignatureMismatch Declaration of function j() should be compatible with function &j() defined in %s:54
+%s:67 PhanParamSignatureMismatch Declaration of function k(&$a) should be compatible with function k($a) defined in %s:62
+%s:68 PhanParamSignatureMismatch Declaration of function l($b) should be compatible with function l(&$b) defined in %s:63
