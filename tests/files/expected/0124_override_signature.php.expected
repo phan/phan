@@ -7,3 +7,4 @@
 %s:58 PhanParamSignatureMismatch Declaration of function j() should be compatible with function &j() defined in %s:54
 %s:67 PhanParamSignatureMismatch Declaration of function k(&$a) should be compatible with function k($a) defined in %s:62
 %s:68 PhanParamSignatureMismatch Declaration of function l($b) should be compatible with function l(&$b) defined in %s:63
+%s:76 PhanParamSignatureMismatch Declaration of function m($a) should be compatible with function m($a = null) defined in %s:72
