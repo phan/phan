@@ -222,7 +222,7 @@ return [
     // n.b.: If you'd like to parse but not analyze 3rd
     //       party code, directories containing that code
     //       should be added to the `directory_list` as
-    //       to `excluce_analysis_directory_list`.
+    //       to `exclude_analysis_directory_list`.
     "exclude_analysis_directory_list" => [
         'vendor/'
     ],
@@ -231,6 +231,8 @@ return [
     'plugins' => [
         '.phan/plugins/DemoPlugin.php',
         '.phan/plugins/DollarDollarPlugin.php',
+        // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without key as return type with values having keys deliberately.
+        // '.phan/plugins/DuplicateArrayKeyPlugin.php',
 
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
