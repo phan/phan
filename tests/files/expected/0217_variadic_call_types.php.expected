@@ -1,0 +1,7 @@
+%s:26 PhanTypeMismatchArgument Argument 5 (params) is int[] but \test_ints() takes int defined at %s:6
+%s:28 PhanTypeMismatchArgument Argument 1 (req) is string[] but \test_ints() takes string defined at %s:6
+%s:29 PhanParamTooFew Call with 0 arg(s) to \test_ints() which requires 1 arg(s) defined at %s:6
+%s:30 PhanTypeMismatchArgument Argument 2 (params) is \DateTime|\DateTimeInterface but \test_ints() takes int defined at %s:6
+%s:31 PhanTypeMismatchArgument Argument 2 (params) is int[] but \test_ints() takes int defined at %s:6
+%s:35 PhanTypeMismatchArgument Argument 1 (date_time_list) is int but \test_vararg_within_function() takes \DateTime defined at %s:9
+%s:38 PhanTypeMismatchArgument Argument 1 (a) is int[] but \accept_int() takes int defined at %s:17

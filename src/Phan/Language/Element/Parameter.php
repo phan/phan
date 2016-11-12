@@ -133,7 +133,7 @@ class Parameter extends Variable
                 );
             } elseif ($parameter->isOptional()
                 && !$is_optional_seen
-                && $parameter->getUnionType()->isEmpty()
+                && $parameter->getIndividualUnionType()->isEmpty()
             ) {
                 $is_optional_seen = true;
             }
@@ -265,6 +265,52 @@ class Parameter extends Variable
         );
     }
 
+    public function asNonVariadic() : Parameter
+    {
+        if (!$this->isVariadic()) {
+            return $this;
+        }
+        // TODO: Is it possible to cache this while maintaining correctness? PostOrderAnalysisVisitor clones the value to avoid it being reused.
+        //
+        // Also, figure out if the cloning still working correctly after this PR for fixing variadic args.
+        // create a single Parameter instance for analyzing callers
+        // of the corresponding method/function.
+        // e.g. $this->getUnionType() is of type T[]
+        //      $this->non_variadic->getUnionType() is of type T
+        return new Parameter(
+            $this->getContext(),
+            $this->getName(),
+            $this->getIndividualUnionType(),
+            Flags::bitVectorWithState($this->getFlags(), \ast\flags\PARAM_VARIADIC, false)
+        );
+        return $this->non_variadic;
+    }
+
+    /**
+     * Gets the individual union type, e.g. what would be passed as a single element to this parameter.
+     * NOTE: Modifying this will also modify the computed value of getUnionType() when varargs are(or aren't) used.
+     * TODO: Ensure types created via doc comments continue to work. Those should be arrays or traversable?
+     */
+    public function getIndividualUnionType() : UnionType {
+        return parent::getUnionType();
+    }
+
+    /**
+     * If this is variadic, this returns the corresponding generic array types.
+     * NOTE: This is a temporary variable. Modifying this won't result in persistent changes.
+     * (TODO(Issue #376) : This will need to change, e.g. by creating `class UnionTypeArrayView extends UnionType`.
+     *  Otherwise, type inference of `...$args` will be less effective without phpdoc types.)
+     *
+     * @override
+     * TODO: Is it possible to do this in the constructor?
+     * It seems like type inference would make $type change, so $type->asGenericArrayTypes() would also change?
+     */
+    public function getUnionType() : UnionType
+    {
+        $type = $this->getIndividualUnionType();
+        return $this->isVariadic() ? $type->asGenericArrayTypes() : $type;
+    }
+
     /**
      * @return bool
      * True if this parameter is pass-by-reference
@@ -282,8 +328,9 @@ class Parameter extends Variable
     {
         $string = '';
 
-        if (!$this->getUnionType()->isEmpty()) {
-            $string .= (string)$this->getUnionType() . ' ';
+        $typeObj = $this->getIndividualUnionType();
+        if (!$typeObj->isEmpty()) {
+            $string .= (string)$typeObj . ' ';
         }
 
         if ($this->isPassByReference()) {

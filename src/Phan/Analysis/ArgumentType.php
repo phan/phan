@@ -223,7 +223,7 @@ class ArgumentType
         foreach ($node->children ?? [] as $i => $argument) {
 
             // Get the parameter associated with this argument
-            $parameter = $method->getParameterList()[$i] ?? null;
+            $parameter = $method->getParameterForCaller($i);
 
             // This issue should be caught elsewhere
             if (!$parameter) {
@@ -293,13 +293,12 @@ class ArgumentType
             foreach ($method->alternateGenerator($code_base)
                 as $alternate_id => $alternate_method
             ) {
-                if (empty($alternate_method->getParameterList()[$i])) {
+                // Get the parameter associated with this argument
+                $candidate_alternate_parameter = $alternate_method->getParameterForCaller($i);
+                if (is_null($candidate_alternate_parameter)) {
                     continue;
                 }
-
-                // Get the parameter associated with this argument
-                $alternate_parameter =
-                    $alternate_method->getParameterList()[$i] ?? null;
+                $alternate_parameter = $candidate_alternate_parameter;
 
                 // See if the argument can be cast to the
                 // parameter
@@ -320,7 +319,7 @@ class ArgumentType
                     ? $alternate_parameter->getUnionType()
                     : 'unknown';
 
-                if ($parameter_type->hasTemplateType()) {
+                if (is_object($parameter_type) && $parameter_type->hasTemplateType()) {
                     // Don't worry about template types
                 } elseif ($method->isInternal()) {
                     Issue::maybeEmit(
