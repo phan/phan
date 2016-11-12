@@ -9,6 +9,9 @@ engines:
     enabled: false
   phpmd:
     enabled: true
+    checks:
+      Controversial/CamelCaseVariableName:
+        enabled: false
   phan:
     enabled: true
     config:
