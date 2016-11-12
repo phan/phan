@@ -100,19 +100,19 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
 
         $hasEntryWithoutKey = false;
         $keySet = [];
-        foreach ($node->children as $entry) {
+        foreach ($children as $entry) {
             $key = $entry->children['key'];
-            if (is_object($key)) {
-                // Skip non-literal keys. (TODO: Could check for constants (e.g. A::B) being used twice)
-                continue;
-            }
             // Skip array entries without literal keys.
             if ($key === null) {
                 $hasEntryWithoutKey = true;
                 continue;
             }
+            if (!is_scalar($key)) {
+                // Skip non-literal keys. (TODO: Could check for constants (e.g. A::B) being used twice)
+                continue;
+            }
             if (isset($keySet[$key])) {
-                $normalizedKey = self::_normalize_key($key);
+                $normalizedKey = self::normalizeKey($key);
                 $this->plugin->emitIssue(
                     $this->code_base,
                     $this->context,
@@ -147,7 +147,7 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
      * @param int|string|float $key - The array key literal to be normalized.
      * @return string - The normalized representation.
      */
-    private static function _normalize_key($key) : string {
+    private static function normalizeKey($key) : string {
         $tmp = [$key => true];
         return var_export(key($tmp), true);
     }
