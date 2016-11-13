@@ -801,6 +801,27 @@ class UnionType implements \Serializable
     }
 
     /**
+     * Takes "a|b[]|c|d[]|e|array|ArrayAccess" and returns "a|c|e|ArrayAccess"
+     *
+     * @return UnionType
+     * A UnionType with generic types(as well as the non-generic type "array")
+     * filtered out.
+     *
+     * @see nonGenericArrayTypes
+     */
+    public function nonArrayTypes() : UnionType
+    {
+        return new UnionType(
+            $this->type_set->filter(
+                function (Type $type) : bool {
+                    return !$type->isGenericArray()
+                        && $type !== ArrayType::instance();
+                }
+            )
+        );
+    }
+
+    /**
      * @return bool
      * True if this is exclusively generic types
      */

@@ -346,13 +346,13 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         }
 
         $left_is_array = (
-            !empty($left->genericArrayElementTypes())
-            && empty($left->nonGenericArrayTypes())
+            !$left->genericArrayElementTypes()->isEmpty()
+            && $left->nonArrayTypes()->isEmpty()
         ) || $left->isType(ArrayType::instance());
 
         $right_is_array = (
-            !empty($right->genericArrayElementTypes())
-            && empty($right->nonGenericArrayTypes())
+            !$right->genericArrayElementTypes()->isEmpty()
+            && $right->nonArrayTypes()->isEmpty()
         ) || $right->isType(ArrayType::instance());
 
         if ($left_is_array
