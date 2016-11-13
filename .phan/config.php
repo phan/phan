@@ -80,6 +80,10 @@ return [
     // nodes.
     'should_visit_all_nodes' => true,
 
+    // Override if runkit.superglobal ini directive is used.
+    // See Phan\Config.
+    'runkit_superglobals_map' => [],
+
     // The minimum severity level to report on. This can be
     // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or
     // Issue::SEVERITY_CRITICAL.

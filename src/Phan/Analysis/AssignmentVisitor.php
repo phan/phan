@@ -208,14 +208,15 @@ class AssignmentVisitor extends AnalysisVisitor
                 $node
             ))->getVariableName();
 
-            if (Variable::isSuperglobalVariableWithName($variable_name)) {
+            if ('GLOBALS' === $variable_name) {
+                // When setting $GLOBALS['a'] = 'b', ensure there is a global scope
                 $dim = $node->children['dim'];
 
                 if (is_string($dim)) {
                     // You're not going to believe this, but I just
                     // found a piece of code like $GLOBALS[mt_rand()].
                     // Super weird, right?
-                    assert(is_string($dim), "dim is not a string");
+                    // assert(is_string($dim), "dim is not a string");
 
                     $variable = new Variable(
                         $this->context,

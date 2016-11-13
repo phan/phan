@@ -11,6 +11,25 @@ use ast\Node;
 class Variable extends TypedElement
 {
     /**
+     * @access private
+     * @var string[] - Maps from a built in superglobal name to a UnionType spec string.
+     */
+    const _BUILTIN_SUPERGLOBAL_TYPES = [
+        'argv' => 'string[]',
+        'argc' => 'int',
+        '_GET' => 'string[]|string[][]',
+        '_POST' => 'string[]|string[][]',
+        '_COOKIE' => 'string[]|string[][]',
+        '_REQUEST' => 'string[]|string[][]',
+        '_SERVER' => 'array',
+        '_ENV' => 'string[]',
+        '_FILES' => 'int[][]|string[][]|int[][][]|string[][][]',  // Can have multiple files with the same name.
+        '_SESSION' => 'array',
+        'GLOBALS' => 'array',
+        'http_response_header' => 'string[]|null' // Revisit when we implement sub-block type refining
+    ];
+
+    /**
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
@@ -111,23 +130,25 @@ class Variable extends TypedElement
     public static function isSuperglobalVariableWithName(
         string $name
     ) : bool {
-        if (in_array($name, [
-            'argv',
-            'argc',
-            '_GET',
-            '_POST',
-            '_COOKIE',
-            '_REQUEST',
-            '_SERVER',
-            '_ENV',
-            '_FILES',
-            '_SESSION',
-            'GLOBALS',
-            'http_response_header' // Revisit when we implement sub-block type refining
-        ])) {
+        if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             return true;
         }
-        return in_array($name, Config::get()->runkit_superglobals ?? []);
+        return isset(Config::get()->runkit_superglobals_map[$name]);
+    }
+
+    /**
+     * @return UnionType|null
+     * Returns UnionType (Possible with empty set) if the variable with the given name is a superglobal.
+     * Returns null otherwise.
+     */
+    public static function getUnionTypeOfSuperglobalVariableWithName(
+        string $name
+    ) {
+        $typeString = self::_BUILTIN_SUPERGLOBAL_TYPES[$name] ?? Config::get()->runkit_superglobals_map[$name] ?? null;
+        if (is_string($typeString)) {
+            return UnionType::fromFullyQualifiedString($typeString);
+        }
+        return null;
     }
 
     public function __toString() : string
