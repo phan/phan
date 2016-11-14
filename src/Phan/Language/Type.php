@@ -697,7 +697,7 @@ class Type
             Type::make('\\', 'ArrayAccess', []);
 
         return (
-            $this == ArrayType::instance()
+            $this === ArrayType::instance()
             || $this->isGenericArray()
             || $this === $array_access_type
         );
