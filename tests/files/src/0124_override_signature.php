@@ -67,3 +67,11 @@ class C19 extends C18 {
     public function k(&$a) {}
     public function l($b) {}
 }
+
+class C20 {
+    public function m($a = null) {}
+}
+
+class C21 extends C20 {
+    public function m($a) {}
+}

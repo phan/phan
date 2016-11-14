@@ -169,7 +169,7 @@ class ParameterTypesAnalyzer
 
         // Make sure the count of parameters matches
         if ($method->getNumberOfRequiredParameters()
-            > $o_method->getNumberOfParameters()
+            > $o_method->getNumberOfRequiredParameters()
         ) {
             $signatures_match = false;
         } else if ($method->getNumberOfParameters()
