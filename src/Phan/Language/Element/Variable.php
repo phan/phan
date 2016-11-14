@@ -142,11 +142,16 @@ class Variable extends TypedElement
      * Returns null otherwise.
      */
     public static function getUnionTypeOfSuperglobalVariableWithName(
-        string $name
+        string $name,
+        Context $context
     ) {
-        $typeString = self::_BUILTIN_SUPERGLOBAL_TYPES[$name] ?? Config::get()->runkit_superglobals_map[$name] ?? null;
-        if (is_string($typeString)) {
-            return UnionType::fromFullyQualifiedString($typeString);
+        $type_string = self::_BUILTIN_SUPERGLOBAL_TYPES[$name] ?? Config::get()->runkit_superglobals_map[$name] ?? null;
+        if (is_string($type_string)) {
+            if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
+                // More efficient than using context.
+                return UnionType::fromFullyQualifiedString($type_string);
+            }
+            return UnionType::fromStringInContext($type_string, $context);
         }
         return null;
     }
