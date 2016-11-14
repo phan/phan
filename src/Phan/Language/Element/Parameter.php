@@ -265,6 +265,16 @@ class Parameter extends Variable
         );
     }
 
+    /**
+     * Returns the Parameter in the form expected by a caller.
+     *
+     * If this parameter is variadic (e.g. `DateTime ...$args`), then this
+     * would return a parameter with the type of the elements (e.g. `DateTime`)
+     *
+     * If this parameter is not variadic, returns $this.
+     *
+     * @return Parameter (usually $this)
+     */
     public function asNonVariadic() : Parameter
     {
         if (!$this->isVariadic()) {
