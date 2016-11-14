@@ -296,7 +296,7 @@ class Parameter extends Variable
     }
 
     /**
-     * If this parameter is variadic, calling `getUnionType` will return an array type such as `DateTime[]`. This
+     * If this Parameter is variadic, calling `getUnionType` will return an array type such as `DateTime[]`. This
      * method will return the element type (such as `DateTime`) for variadic parameters.
      */
     public function getVariadicElementUnionType() : UnionType {
