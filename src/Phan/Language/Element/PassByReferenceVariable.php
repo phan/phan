@@ -36,6 +36,14 @@ class PassByReferenceVariable extends Variable
         return $this->parameter->getName();
     }
 
+    /**
+     * Variables can't be variadic. This is the same as getUnionType for variables, but not necessarily for subclasses.
+     * method will return the element type (such as `DateTime`) for variadic parameters.
+     */
+    public function getVariadicElementUnionType() : UnionType {
+        return $this->element->getVariadicElementUnionType();
+    }
+
     public function getUnionType() : UnionType
     {
         return $this->element->getUnionType();
