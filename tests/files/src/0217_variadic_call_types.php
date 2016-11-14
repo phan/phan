@@ -40,7 +40,7 @@ test_ints_phpdoc(3);
 
 /**
  * @param int[] $args - FIXME: `int[]` should probably take precedence over the explicit type `array` and make this fail.
- * @return string[]
+ * @return int[]
  */
 function test_ints_phpdoc(...$args) {
     return $args;

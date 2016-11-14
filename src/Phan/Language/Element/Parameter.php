@@ -133,7 +133,7 @@ class Parameter extends Variable
                 );
             } elseif ($parameter->isOptional()
                 && !$is_optional_seen
-                && $parameter->getIndividualUnionType()->isEmpty()
+                && $parameter->getVariadicElementUnionType()->isEmpty()
             ) {
                 $is_optional_seen = true;
             }
@@ -280,35 +280,37 @@ class Parameter extends Variable
         return new Parameter(
             $this->getContext(),
             $this->getName(),
-            $this->getIndividualUnionType(),
+            $this->getVariadicElementUnionType(),
             Flags::bitVectorWithState($this->getFlags(), \ast\flags\PARAM_VARIADIC, false)
         );
-        return $this->non_variadic;
     }
 
     /**
-     * Gets the individual union type, e.g. what would be passed as a single element to this parameter.
-     * NOTE: Modifying this will also modify the computed value of getUnionType() when varargs are(or aren't) used.
-     * TODO: Ensure types created via doc comments continue to work. Those should be arrays or traversable?
+     * If this parameter is variadic, calling `getUnionType` will return an array type such as `DateTime[]`. This
+     * method will return the element type (such as `DateTime`) for variadic parameters.
      */
-    public function getIndividualUnionType() : UnionType {
+    public function getVariadicElementUnionType() : UnionType {
         return parent::getUnionType();
     }
 
     /**
-     * If this is variadic, this returns the corresponding generic array types.
-     * NOTE: This is a temporary variable. Modifying this won't result in persistent changes.
-     * (TODO(Issue #376) : This will need to change, e.g. by creating `class UnionTypeArrayView extends UnionType`.
-     *  Otherwise, type inference of `...$args` will be less effective without phpdoc types.)
+     * If this parameter is variadic (e.g. `DateTime ...$args`),
+     * then this returns the corresponding array type(s) of $args. (e.g. `DateTime[]`)
+     * NOTE: For variadic arguments, this is a temporary variable.
+     * Modifying this won't result in persistent changes.
+     * (TODO(Issue #376) : We will probably want to be able to modify the underlying variable,
+     *  e.g. by creating `class UnionTypeGenericArrayView extends UnionType`.
+     *  Otherwise, type inference of `...$args` based on the function source
+     *  will be less effective without phpdoc types.)
      *
      * @override
-     * TODO: Is it possible to do this in the constructor?
-     * It seems like type inference would make $type change, so $type->asGenericArrayTypes() would also change?
+     * TODO: Should the return value be set up in the constructor instead?
      */
     public function getUnionType() : UnionType
     {
-        $type = $this->getIndividualUnionType();
-        return $this->isVariadic() ? $type->asGenericArrayTypes() : $type;
+        return $this->isVariadic()
+            ? parent::getUnionType()->asGenericArrayTypes()
+            : parent::getUnionType();
     }
 
     /**
@@ -328,7 +330,7 @@ class Parameter extends Variable
     {
         $string = '';
 
-        $typeObj = $this->getIndividualUnionType();
+        $typeObj = $this->getVariadicElementUnionType();
         if (!$typeObj->isEmpty()) {
             $string .= (string)$typeObj . ' ';
         }

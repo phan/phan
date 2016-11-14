@@ -1610,7 +1610,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
                 if ($variable) {
                     $variable->getUnionType()->addUnionType(
-                        $parameter->getIndividualUnionType()
+                        $parameter->getVariadicElementUnionType()
                     );
                 }
             }
@@ -1654,7 +1654,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // If the parameter has no type, pass the
             // argument's type to it
-            if ($parameter->getIndividualUnionType()->isEmpty()) {
+            if ($parameter->getVariadicElementUnionType()->isEmpty()) {
                 $has_argument_parameter_mismatch = true;
                 // If this isn't an internal function or method
                 // and it has no type, add the argument's type
@@ -1676,7 +1676,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     // Then set the new type on that parameter based
                     // on the argument's type. We'll use this to
                     // retest the method with the passed in types
-                    $parameter->getIndividualUnionType()->addUnionType(
+                    $parameter->getVariadicElementUnionType()->addUnionType(
                         $argument_type
                     );
 
