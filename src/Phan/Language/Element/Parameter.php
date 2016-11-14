@@ -273,9 +273,9 @@ class Parameter extends Variable
      *
      * If this parameter is not variadic, returns $this.
      *
-     * @return Parameter (usually $this)
+     * @return static (usually $this)
      */
-    public function asNonVariadic() : Parameter
+    public function asNonVariadic()
     {
         if (!$this->isVariadic()) {
             return $this;

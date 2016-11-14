@@ -62,6 +62,15 @@ class Variable extends TypedElement
     }
 
     /**
+     * Stub for compatibility with Parameter, since we replace the Parameter with a Variable and call setParameterList in PostOrderAnalysisVisitor->visitStaticCall
+     * TODO: Should that code create a new Parameter instance instead?
+     * @return static
+     */
+    public function asNonVariadic() {
+        return $this;
+    }
+
+    /**
      * @param Node $node
      * An AST_VAR node
      *
