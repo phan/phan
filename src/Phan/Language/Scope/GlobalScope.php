@@ -75,6 +75,12 @@ class GlobalScope extends Scope {
      */
     public function addVariable(Variable $variable)
     {
+        $variable_name = $variable->getName();
+        if (Variable::isSuperglobalVariableWithName($variable_name)) {
+            // Silently ignore globally replacing $_POST, $argv, runkit superglobals, etc.
+            // with superglobals.,. TODO: Add a warning for incompatible assignments.
+            return;
+        }
         self::$global_variable_map[$variable->getName()] = $variable;
     }
 
