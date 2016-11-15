@@ -209,31 +209,8 @@ class AssignmentVisitor extends AnalysisVisitor
             ))->getVariableName();
 
             if (Variable::isSuperglobalVariableWithName($variable_name)) {
-                $dim = $node->children['dim'];
-                if ('GLOBALS' === $variable_name && is_string($dim)) {
-                    // You're not going to believe this, but I just
-                    // found a piece of code like $GLOBALS[mt_rand()].
-                    // Super weird, right?
-                    // assert(is_string($dim), "dim is not a string");
-                    if (Variable::isSuperglobalVariableWithName($dim)) {
-                        // Don't override types of superglobals such as $_POST, $argv through $_GLOBALS['_POST'] = expr either. TODO: Warn.
-                        return $this->context;
-                    }
-
-                    $variable = new Variable(
-                        $this->context,
-                        $dim,
-                        $this->right_type,
-                        $node->flags ?? 0
-                    );
-
-                    $this->context->addGlobalScopeVariable(
-                        $variable
-                    );
-                }
+                return $this->analyzeSuperglobalDim($node, $variable_name);
             }
-            // TODO: Assignment sanity checks.
-            return $this->context;
         }
 
         // Recurse into whatever we're []'ing
@@ -246,6 +223,42 @@ class AssignmentVisitor extends AnalysisVisitor
         ))($node->children['expr']);
 
         return $context;
+    }
+
+    /**
+     * Analyze an assignment where $variable_name is a superglobal, and return the new context.
+     * May create a new variable in $this->context.
+     * TODO: Emit issues if the assignment is incompatible with the pre-existing type?
+     */
+    private function analyzeSuperglobalDim(Node $node, string $variable_name) : Context {
+        $dim = $node->children['dim'];
+        if ('GLOBALS' === $variable_name) {
+            if (!is_string($dim)) {
+                // You're not going to believe this, but I just
+                // found a piece of code like $GLOBALS[mt_rand()].
+                // Super weird, right?
+                return $this->context;
+            }
+            // assert(is_string($dim), "dim is not a string");
+
+            if (Variable::isSuperglobalVariableWithName($dim)) {
+                // Don't override types of superglobals such as $_POST, $argv through $_GLOBALS['_POST'] = expr either. TODO: Warn.
+                return $this->context;
+            }
+
+            $variable = new Variable(
+                $this->context,
+                $dim,
+                $this->right_type,
+                $node->flags ?? 0
+            );
+
+            $this->context->addGlobalScopeVariable(
+                $variable
+            );
+        }
+        // TODO: Assignment sanity checks.
+        return $this->context;
     }
 
     /**
