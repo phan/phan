@@ -909,7 +909,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
             if (Variable::isSuperglobalVariableWithName($variable_name)) {
-                return Variable::getUnionTypeOfSuperglobalVariableWithName($variable_name, $this->context);
+                return Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name, $this->context);
             }
             if (!Config::get()->ignore_undeclared_variables_in_global_scope
                 || !$this->context->isInGlobalScope()

@@ -126,6 +126,7 @@ class Variable extends TypedElement
      * @return bool
      * True if the variable with the given name is a
      * superglobal
+     * Implies Variable::isHardcodedGlobalVariableWithName($name) is true
      */
     public static function isSuperglobalVariableWithName(
         string $name
@@ -133,24 +134,33 @@ class Variable extends TypedElement
         if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             return true;
         }
-        return isset(Config::get()->runkit_superglobals_map[$name]);
+        return in_array($name, Config::get()->runkit_superglobals);
+    }
+
+    /**
+     * Returns true for all superglobals and variables in globals_type_map.
+     */
+    public static function isHardcodedGlobalVariableWithName(
+        string $name
+    ) : bool {
+        return self::isSuperglobalVariableWithName($name) || array_key_exists($name, Config::get()->globals_type_map);
     }
 
     /**
      * @return UnionType|null
-     * Returns UnionType (Possible with empty set) if the variable with the given name is a superglobal.
+     * Returns UnionType (Possible with empty set) if and only if isHardcodedGlobalVariableWithName is true.
      * Returns null otherwise.
      */
-    public static function getUnionTypeOfSuperglobalVariableWithName(
+    public static function getUnionTypeOfHardcodedGlobalVariableWithName(
         string $name,
         Context $context
     ) {
-        $type_string = self::_BUILTIN_SUPERGLOBAL_TYPES[$name] ?? Config::get()->runkit_superglobals_map[$name] ?? null;
-        if (is_string($type_string)) {
-            if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
-                // More efficient than using context.
-                return UnionType::fromFullyQualifiedString($type_string);
-            }
+        if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
+            // More efficient than using context.
+            return UnionType::fromFullyQualifiedString(self::_BUILTIN_SUPERGLOBAL_TYPES[$name]);
+        }
+        if (array_key_exists($name, Config::get()->globals_type_map) || in_array($name, Config::get()->runkit_superglobals)) {
+            $type_string = Config::get()->globals_type_map[$name] ?? '';
             return UnionType::fromStringInContext($type_string, $context);
         }
         return null;

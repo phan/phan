@@ -82,7 +82,11 @@ return [
 
     // Override if runkit.superglobal ini directive is used.
     // See Phan\Config.
-    'runkit_superglobals_map' => [],
+    'runkit_superglobals' => [],
+
+    // Override to hardcode existence and types of (non-builtin) globals.
+    // Class names must be prefixed with '\\'.
+    'globals_type_map' => [],
 
     // The minimum severity level to report on. This can be
     // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or

@@ -210,7 +210,6 @@ class AssignmentVisitor extends AnalysisVisitor
 
             if (Variable::isSuperglobalVariableWithName($variable_name)) {
                 $dim = $node->children['dim'];
-                // When setting $GLOBALS['a'] = 'b', ensure there is a global scope
                 if ('GLOBALS' === $variable_name && is_string($dim)) {
                     // You're not going to believe this, but I just
                     // found a piece of code like $GLOBALS[mt_rand()].
