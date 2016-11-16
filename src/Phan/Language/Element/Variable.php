@@ -62,6 +62,15 @@ class Variable extends TypedElement
     }
 
     /**
+     * Stub for compatibility with Parameter, since we replace the Parameter with a Variable and call setParameterList in PostOrderAnalysisVisitor->visitStaticCall
+     * TODO: Should that code create a new Parameter instance instead?
+     * @return static
+     */
+    public function asNonVariadic() {
+        return $this;
+    }
+
+    /**
      * @param Node $node
      * An AST_VAR node
      *
@@ -128,6 +137,14 @@ class Variable extends TypedElement
             return true;
         }
         return in_array($name, Config::get()->runkit_superglobals ?? []);
+    }
+
+    /**
+     * Variables can't be variadic. This is the same as getUnionType for variables, but not necessarily for subclasses.
+     * method will return the element type (such as `DateTime`) for variadic parameters.
+     */
+    public function getVariadicElementUnionType() : UnionType {
+        return parent::getUnionType();
     }
 
     public function __toString() : string

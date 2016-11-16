@@ -151,6 +151,31 @@ trait FunctionTrait {
     }
 
     /**
+     * Gets the $ith parameter for the **caller**.
+     * In the case of variadic arguments, an infinite number of parameters exist.
+     * (The callee would see variadic arguments(T ...$args) as a single variable of type T[],
+     * while the caller sees a place expecting an expression of type T.
+     *
+     * @param int $i - offset of the parameter.
+     * @return Parameter|null The parameter type that the **caller** observes.
+     */
+    public function getParameterForCaller(int $i) {
+        $list = $this->parameter_list;
+        if (count($list) === 0) {
+            return null;
+        }
+        $parameter = $list[$i] ?? null;
+        if ($parameter) {
+            return $parameter->asNonVariadic();
+        }
+        $lastParameter = $list[count($list) - 1];
+        if ($lastParameter->isVariadic()) {
+            return $lastParameter->asNonVariadic();
+        }
+        return null;
+    }
+
+    /**
      * @param Parameter[] $parameter_list
      * A list of parameters to set on this method
      *

@@ -626,7 +626,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // Mark the method as returning something
         $method->setHasReturn(
-            ($node->children['expr'] ?? null) !== null
+            isset($node->children['expr'])
         );
 
         return $this->context;
@@ -1486,9 +1486,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // parameters
         $argument_list = $node->children['args'];
         foreach ($argument_list->children as $i => $argument) {
-            $parameter = $method->getParameterList()[$i] ?? null;
+            if (!is_object($argument)) {
+                continue;
+            }
 
-            if (!$parameter || !is_object($argument)) {
+            $parameter = $method->getParameterForCaller($i);
+            if (!$parameter) {
                 continue;
             }
 
@@ -1547,9 +1550,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables
         foreach ($argument_list->children as $i => $argument) {
-            $parameter = $method->getParameterList()[$i] ?? null;
+            if (!is_object($argument)) {
+                continue;
+            }
+            $parameter = $method->getParameterForCaller($i);
 
-            if (!$parameter || !is_object($argument)) {
+            if (!$parameter) {
                 continue;
             }
 
@@ -1604,7 +1610,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
                 if ($variable) {
                     $variable->getUnionType()->addUnionType(
-                        $parameter->getUnionType()
+                        $parameter->getVariadicElementUnionType()
                     );
                 }
             }
@@ -1637,7 +1643,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $original_method_scope = $method->getInternalScope();
 
         foreach ($argument_list->children as $i => $argument) {
-            $parameter = $method->getParameterList()[$i] ?? null;
+            // TODO(Issue #376): Support inference on the child in **the set of vargs**, not just the first vararg
+            // This is just testing the first vararg.
+            // The implementer will also need to restore the original parameter list.
+            $parameter = $original_parameter_list[$i] ?? null;
 
             if (!$parameter) {
                 continue;
@@ -1645,28 +1654,29 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             // If the parameter has no type, pass the
             // argument's type to it
-            if ($parameter->getUnionType()->isEmpty()) {
+            if ($parameter->getVariadicElementUnionType()->isEmpty()) {
                 $has_argument_parameter_mismatch = true;
-                $argument_type = UnionType::fromNode(
-                    $this->context,
-                    $this->code_base,
-                    $argument
-                );
-
                 // If this isn't an internal function or method
                 // and it has no type, add the argument's type
                 // to it so we can compare it to subsequent
                 // calls
                 if (!$parameter->isInternal()) {
+                    $argument_type = UnionType::fromNode(
+                        $this->context,
+                        $this->code_base,
+                        $argument
+                    );
+
                     // Clone the parameter in the original
                     // parameter list so we can reset it
                     // later
-                    $original_parameter_list[$i] = clone($parameter);
+                    // TODO: If there are varargs and this is beyond the end, ensure last arg is cloned.
+                    $original_parameter_list[$i] = clone($original_parameter_list[$i]);
 
                     // Then set the new type on that parameter based
                     // on the argument's type. We'll use this to
                     // retest the method with the passed in types
-                    $parameter->getUnionType()->addUnionType(
+                    $parameter->getVariadicElementUnionType()->addUnionType(
                         $argument_type
                     );
 
@@ -1678,7 +1688,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     // we're dealing with wrapped up and shoved into
                     // the scope of the method
                     if ($parameter->isPassByReference()) {
-                        if ($argument->kind == \ast\AST_VAR) {
+                        if ($original_parameter_list[$i]->isVariadic()) {
+                            // For now, give up and work on it later.
+                            // TODO(Issue #376): It's possible to have a parameter `&...$args`. Analysing that is going to be a problem.
+                            // Is it possible to create `PassByReferenceVariableCollection extends Variable` or something similar?
+                        } elseif ($argument->kind == \ast\AST_VAR) {
                             // Get the variable
                             $variable = (new ContextNode(
                                 $this->code_base,

@@ -75,7 +75,7 @@ class UnionType implements \Serializable
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) : UnionType {
-        if (empty($fully_qualified_string)) {
+        if ($fully_qualified_string === '') {
             return new UnionType();
         }
 
