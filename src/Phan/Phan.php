@@ -114,6 +114,10 @@ class Phan implements IgnoredFilesFilterInterface {
             exit(EXIT_SUCCESS);
         }
 
+        if (is_string(Config::get()->dump_signatures_file)) {
+            exit(self::dumpSignaturesToFile($code_base, Config::get()->dump_signatures_file));
+        }
+
         // With parsing complete, we need to tell the code base to
         // start hydrating any requested elements on their way out.
         // Hydration expands class types, imports parent methods,
@@ -308,6 +312,19 @@ class Phan implements IgnoredFilesFilterInterface {
         if ($printer instanceof BufferedPrinterInterface) {
             $printer->flush();
         }
+    }
+
+    /**
+     * Save json encoded function&method signature to a map.
+     * @return int - Exit code for process
+     */
+    private static function dumpSignaturesToFile(CodeBase $code_base, string $filename) : int {
+        $encoded_signatures = json_encode($code_base->exportFunctionAndMethodSet(), JSON_PRETTY_PRINT);
+        if (!file_put_contents($filename, $encoded_signatures)) {
+            error_log(sprintf("Could not save contents to path '%s'\n", $filename));
+            return EXIT_FAILURE;
+        }
+        return EXIT_SUCCESS;
     }
 
     /**

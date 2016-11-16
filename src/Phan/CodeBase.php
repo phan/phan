@@ -329,6 +329,40 @@ class CodeBase
     }
 
     /**
+     * @return string[][] -
+     * A human readable encoding of $this->func_and_method_set [string $filename => [int|string $pos => string $spec]]
+     * Excludes internal functions and methods.
+     */
+    public function exportFunctionAndMethodSet() : array {
+        $result = [];
+        foreach ($this->func_and_method_set as $function_or_method) {
+            if ($function_or_method->isInternal()) {
+                continue;
+            }
+            $fqsen = $function_or_method->getFQSEN();
+            $function_or_method_name = (string)$fqsen;
+            $signature = [(string)$function_or_method->getUnionType()];
+            foreach ($function_or_method->getParameterList() as $param) {
+                $name = $param->getName();
+                $paramType = (string)$param->getUnionType();
+                if ($param->isVariadic()) {
+                    $name = '...' . $name;
+                }
+                if ($param->isPassByReference()) {
+                    $name = '&' . $name;
+                }
+                if ($param->isOptional()) {
+                    $name = $name . '=';
+                }
+                $signature[$name] = $paramType;
+            }
+            $result[$function_or_method_name] = $signature;
+        }
+        ksort($result);
+        return $result;
+    }
+
+    /**
      * @param Func $function
      * A function to add to the code base
      *

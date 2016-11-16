@@ -181,6 +181,10 @@ class Config
         // analyzing files
         'dump_ast' => false,
 
+        // If set to a string, we'll dump the fully qualified lowercase
+        // function and method signatures instead of analyzing files.
+        'dump_signatures_file' => null,
+
         // If true (and if stored_state_file_path is set) we'll
         // look at the list of files passed in and expand the list
         // to include files that depend on the given files

@@ -60,6 +60,7 @@ class CLI
                 'dead-code-detection',
                 'directory:',
                 'dump-ast',
+                'dump-signatures-file:',
                 'exclude-directory-list:',
                 'exclude-file:',
                 'file-list-only:',
@@ -188,6 +189,9 @@ class CLI
                 case 'a':
                 case 'dump-ast':
                     Config::get()->dump_ast = true;
+                    break;
+                case 'dump-signatures-file':
+                    Config::get()->dump_signatures_file = $value;
                     break;
                 case 'o':
                 case 'output':
@@ -402,6 +406,10 @@ Usage: {$argv[0]} [options] [files...]
 
  -a, --dump-ast
   Emit an AST for each file rather than analyze
+
+ --dump-signatures-file <filename>
+  Emit JSON serialized signatures to the given file.
+  This uses a method signature format similar to FunctionSignatureMap.php.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
