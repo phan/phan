@@ -583,6 +583,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
         }
 
+        if ($method->getHasYield()) {  // Function that is syntactically a Generator.
+            return $this->context;  // Analysis was completed in PreOrderAnalysisVisitor
+        }
+        // This leaves functions which aren't syntactically generators.
+
         // If there is no declared type, see if we can deduce
         // what it should be based on the return type
         if ($method_return_type->isEmpty()
@@ -599,13 +604,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return $this->context;
         }
 
+
+        // C
         if (!$method->isReturnTypeUndefined()
             && !$expression_type->canCastToExpandedUnionType(
                 $method_return_type,
-                $this->code_base
-            )
-            && !$method->getUnionType()->canCastToExpandedUnionType(
-                Type::fromNamespaceAndName('\\', 'Generator')->asUnionType(),
                 $this->code_base
             )
         ) {
@@ -617,6 +620,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 (string)$method_return_type
             );
         }
+        // For functions that aren't syntactically Generators,
+        // update the set/existence of return values.
 
         if ($method->isReturnTypeUndefined()) {
             // Add the new type to the set of values returned by the
@@ -632,28 +637,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         return $this->context;
     }
 
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitYield(Node $node) : Context
-    {
-        // Get the method/function/closure we're in
-        $method =
-            $this->context->getFunctionLikeInScope($this->code_base);
-
-        assert(!empty($method),
-            "We're supposed to be in either method or closure scope.");
-
-        // Mark the method as returning something
-        $method->setHasReturn(true);
-
-        return $this->context;
-    }
 
     /**
      * @param Node $node

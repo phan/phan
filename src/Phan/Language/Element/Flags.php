@@ -14,6 +14,7 @@ class Flags
     const IS_RETURN_TYPE_UNDEFINED     = (1 << 04);
     const HAS_RETURN                   = (1 << 05);
     const IS_OVERRIDE                  = (1 << 06);
+    const HAS_YIELD                    = (1 << 07);
 
     /**
      * Either enable or disable the given flag on

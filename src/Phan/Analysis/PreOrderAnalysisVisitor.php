@@ -13,6 +13,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Constant;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
@@ -173,6 +174,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
+        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+            $this->setReturnTypeOfGenerator($method, $node);
+        }
+
         return $context;
     }
 
@@ -252,6 +257,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $context->addScopeVariable(
                 clone($parameter)
             );
+        }
+
+        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+            $this->setReturnTypeOfGenerator($function, $node);
         }
 
         return $context;
@@ -376,8 +385,100 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
+        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+            $this->setReturnTypeOfGenerator($func, $node);
+        }
+
         return $this->context->withScope($func->getInternalScope());
     }
+
+    /**
+     * The return type of the given FunctionInterface to a Generator.
+     * Emit an Issue if the documented return type is incompatible with that.
+     * @return void
+     */
+    private function setReturnTypeOfGenerator(FunctionInterface $func, Node $node)
+    {
+        // Currently, there is no way to describe the types passed to
+        // a Generator in phpdoc.
+        // So, nothing bothers recording the types beyond \Generator.
+        $func->setHasReturn(true);  // Returns \Generator, technically
+        $func->setHasYield(true);
+        if ($func->getUnionType()->isEmpty()) {
+            $func->setIsReturnTypeUndefined(true);
+            $func->getUnionType()->addUnionType(Type::fromNamespaceAndName('\\', 'Generator')->asUnionType());
+        }
+        if (!$func->isReturnTypeUndefined()) {
+            $func_return_type = $func->getUnionType();
+            if (!$func_return_type->canCastToExpandedUnionType(
+                    Type::fromNamespaceAndName('\\', 'Generator')->asUnionType(),
+                    $this->code_base)) {
+                // At least one of the documented return types must
+                // be Generator, Iterable, or Traversable.
+                // Check for the issue here instead of in visitReturn/visitYield so that
+                // the check is done exactly once.
+                $this->emitIssue(
+                    Issue::TypeMismatchReturn,
+                    $node->lineno ?? 0,
+                    '\\Generator',
+                    $func->getName(),
+                    (string)$func_return_type
+                );
+            }
+        }
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * This must be called before visitReturn is called within a function.
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public static function analyzeFunctionLikeIsGenerator(Node $node) : bool
+    {
+        foreach ($node->children ?? [] as $child_node) {
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+            // Technically, `return [yield 2];` is a valid php use of yield. So Analysis::shouldVisit doesn't help much.
+            if (self::analyzeNodeHasYield($child_node)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function analyzeNodeHasYield(Node $node)
+    {
+        // The ast module doesn't tell us if something has a yield statement.
+        // We want to stop if the type of a node is a closure or a anonymous class
+
+        // Get the method/function/closure we're in
+        switch ($node->kind) {
+        case \ast\AST_YIELD:
+        case \ast\AST_YIELD_FROM:
+            return true;
+        case \ast\AST_METHOD:
+        case \ast\AST_FUNC_DECL:
+        case \ast\AST_CLOSURE:
+        case \ast\AST_CLASS:
+            return false;
+        }
+        foreach ($node->children ?? [] as $child_node) {
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+            if (self::analyzeNodeHasYield($child_node)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * @param Node $node
