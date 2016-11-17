@@ -8,13 +8,24 @@ class CallableType extends NativeType
     const NAME = 'callable';
 
     /**
-     * @var FQSEN
+     * @var FQSEN|null
      */
     private $fqsen;
 
+    // Same as instance(), but guaranteed not to have memoized state.
+    private static function callableInstance() : CallableType {
+        static $instance = null;
+        if (empty($instance)) {
+            $instance = self::make('\\', static::NAME, []);
+        }
+        return $instance;
+    }
+
     public static function instanceWithClosureFQSEN(FQSEN $fqsen)
     {
-        $instance = clone(self::instance());
+        // Use an instance with no memoized or lazily initialized results.
+        // Avoids picking up changes to CallableType::instance() in the case that a result depends on asFQSEN()
+        $instance = clone(self::callableInstance());
         $instance->fqsen = $fqsen;
         return $instance;
     }

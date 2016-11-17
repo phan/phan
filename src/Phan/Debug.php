@@ -2,6 +2,7 @@
 namespace Phan;
 
 use ast\Node;
+use ast\Node\Decl;
 
 /**
  * Debug utilities
