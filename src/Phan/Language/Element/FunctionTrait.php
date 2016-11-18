@@ -117,12 +117,25 @@ trait FunctionTrait {
     /**
      * @return bool
      * True if this method returns a value
+     * (i.e. it has a return with an expression)
      */
     public function getHasReturn() : bool
     {
         return Flags::bitVectorHasState(
             $this->getPhanFlags(),
             Flags::HAS_RETURN
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this method yields any value(i.e. it is a \Generator)
+     */
+    public function getHasYield() : bool
+    {
+        return Flags::bitVectorHasState(
+            $this->getPhanFlags(),
+            Flags::HAS_YIELD
         );
     }
 
@@ -139,6 +152,22 @@ trait FunctionTrait {
             $this->getPhanFlags(),
             Flags::HAS_RETURN,
             $has_return
+        ));
+    }
+
+    /**
+     * @param bool $has_yield
+     * Set to true to mark this method as having a
+     * yield value
+     *
+     * @return void
+     */
+    public function setHasYield(bool $has_yield)
+    {
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::HAS_YIELD,
+            $has_yield
         ));
     }
 

@@ -1,0 +1,4 @@
+%s:4 PhanTypeMismatchReturn Returning type int but bad_generator() is declared to return \Generator
+%s:8 PhanTypeMismatchReturn Returning type int but bad_generator2() is declared to return \Iterator
+%s:12 PhanTypeMismatchReturn Returning type int but bad_generator3() is declared to return \Traversable
+%s:16 PhanTypeMismatchReturn Returning type \Generator but bad_generator4() is declared to return int

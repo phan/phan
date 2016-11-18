@@ -1,0 +1,4 @@
+%s:5 PhanTypeMismatchReturn Returning type int but {closure}() is declared to return \Generator
+%s:9 PhanTypeMismatchReturn Returning type int but {closure}() is declared to return \Iterator
+%s:13 PhanTypeMismatchReturn Returning type int but {closure}() is declared to return \Traversable
+%s:17 PhanTypeMismatchReturn Returning type \Generator but {closure}() is declared to return int

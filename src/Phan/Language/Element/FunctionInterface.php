@@ -90,14 +90,24 @@ interface FunctionInterface extends AddressableElementInterface {
      */
     public function getHasReturn() : bool;
     /**
-
      * @param bool $has_return
      * Set to true to mark this method as having a
-     * return value
+     * return value (Only through `return`)
      *
      * @return void
      */
     public function setHasReturn(bool $has_return);
+
+    /**
+     * @param bool $has_yield
+     * Set to true to mark this method as having a
+     * yield statement (Only through `yield`)
+     * This implies that it has a return value of \Generator.
+     * (or a parent interface)
+     *
+     * @return void
+     */
+    public function setHasYield(bool $has_return);
 
     /**
      * @return Parameter[]
