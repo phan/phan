@@ -908,9 +908,11 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node->children['name'];
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
-            if (!Variable::isSuperglobalVariableWithName($variable_name)
-                && (!Config::get()->ignore_undeclared_variables_in_global_scope
-                    || !$this->context->isInGlobalScope())
+            if (Variable::isSuperglobalVariableWithName($variable_name)) {
+                return Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name, $this->context);
+            }
+            if (!Config::get()->ignore_undeclared_variables_in_global_scope
+                || !$this->context->isInGlobalScope()
             ) {
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredVariable)(

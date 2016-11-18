@@ -310,9 +310,17 @@ class Config
             // 'PhanVariableUseClause',
         ],
 
-        // A custom list of additional superglobals, for projects using runkit.
-        // (E.g. ['_FOO']) // (Declared in runkit.superglobal ini directive)
+        // Override if runkit.superglobal ini directive is used.
+        // A custom list of additional superglobals and their types, for projects using runkit.
+        // (Corresponding keys are declared in runkit.superglobal ini directive)
+        // global_type_map should be set for entries.
+        // E.g ['_FOO'];
         'runkit_superglobals' => [],
+
+        // Override to hardcode existence and types of (non-builtin) globals in the global scope.
+        // Class names must be prefixed with '\\'.
+        // (E.g. ['_FOO' => '\\FooClass', 'page' => '\\PageClass', 'userId' => 'int'])
+        'globals_type_map' => [],
 
         // Emit issue messages with markdown formatting
         'markdown_issue_messages' => false,

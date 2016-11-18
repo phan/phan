@@ -11,6 +11,25 @@ use ast\Node;
 class Variable extends TypedElement
 {
     /**
+     * @access private
+     * @var string[] - Maps from a built in superglobal name to a UnionType spec string.
+     */
+    const _BUILTIN_SUPERGLOBAL_TYPES = [
+        'argv' => 'string[]',
+        'argc' => 'int',
+        '_GET' => 'string[]|string[][]',
+        '_POST' => 'string[]|string[][]',
+        '_COOKIE' => 'string[]|string[][]',
+        '_REQUEST' => 'string[]|string[][]',
+        '_SERVER' => 'array',
+        '_ENV' => 'string[]',
+        '_FILES' => 'int[][]|string[][]|int[][][]|string[][][]',  // Can have multiple files with the same name.
+        '_SESSION' => 'array',
+        'GLOBALS' => 'array',
+        'http_response_header' => 'string[]|null' // Revisit when we implement sub-block type refining
+    ];
+
+    /**
      * @param \phan\Context $context
      * The context in which the structural element lives
      *
@@ -116,27 +135,44 @@ class Variable extends TypedElement
      * @return bool
      * True if the variable with the given name is a
      * superglobal
+     * Implies Variable::isHardcodedGlobalVariableWithName($name) is true
      */
     public static function isSuperglobalVariableWithName(
         string $name
     ) : bool {
-        if (in_array($name, [
-            'argv',
-            'argc',
-            '_GET',
-            '_POST',
-            '_COOKIE',
-            '_REQUEST',
-            '_SERVER',
-            '_ENV',
-            '_FILES',
-            '_SESSION',
-            'GLOBALS',
-            'http_response_header' // Revisit when we implement sub-block type refining
-        ])) {
+        if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             return true;
         }
-        return in_array($name, Config::get()->runkit_superglobals ?? []);
+        return in_array($name, Config::get()->runkit_superglobals);
+    }
+
+    /**
+     * Returns true for all superglobals and variables in globals_type_map.
+     */
+    public static function isHardcodedGlobalVariableWithName(
+        string $name
+    ) : bool {
+        return self::isSuperglobalVariableWithName($name) || array_key_exists($name, Config::get()->globals_type_map);
+    }
+
+    /**
+     * @return UnionType|null
+     * Returns UnionType (Possible with empty set) if and only if isHardcodedGlobalVariableWithName is true.
+     * Returns null otherwise.
+     */
+    public static function getUnionTypeOfHardcodedGlobalVariableWithName(
+        string $name,
+        Context $context
+    ) {
+        if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
+            // More efficient than using context.
+            return UnionType::fromFullyQualifiedString(self::_BUILTIN_SUPERGLOBAL_TYPES[$name]);
+        }
+        if (array_key_exists($name, Config::get()->globals_type_map) || in_array($name, Config::get()->runkit_superglobals)) {
+            $type_string = Config::get()->globals_type_map[$name] ?? '';
+            return UnionType::fromStringInContext($type_string, $context);
+        }
+        return null;
     }
 
     /**
