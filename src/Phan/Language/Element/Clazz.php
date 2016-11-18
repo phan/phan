@@ -61,7 +61,7 @@ class Clazz extends AddressableElement
      * The name of the typed structural element
      *
      * @param UnionType $type,
-     * A '|' delimited set of types satisfyped by this
+     * A '|' delimited set of types satisfied by this
      * typed structural element.
      *
      * @param int $flags,

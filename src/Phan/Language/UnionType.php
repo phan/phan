@@ -173,11 +173,7 @@ class UnionType implements \Serializable
 
         $canonical_class_name = strtolower($class_name);
 
-        if (isset($map[$canonical_class_name])) {
-            return $map[$canonical_class_name];
-        }
-
-        return [];
+        return $map[$canonical_class_name] ?? [];
     }
 
     /**
