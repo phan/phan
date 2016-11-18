@@ -116,7 +116,7 @@ return [
         'code' => 'int'
     ],
     'tidy' => [
-        'errorbuffer' => 'string'
+        'errorBuffer' => 'string'
     ],
     'filteriterator' => [
         'name' => 'string'
