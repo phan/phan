@@ -322,6 +322,15 @@ class ArgumentType
                 if (is_object($parameter_type) && $parameter_type->hasTemplateType()) {
                     // Don't worry about template types
                 } elseif ($method->isInternal()) {
+                    // If we are not in strict mode and we accept a string parameter
+                    // and the argument we are passing has a __toString method then it is ok
+                    if(!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance())) {
+                        foreach($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
+                            if($clazz->hasMethodWithName($code_base, "__toString")) {
+                                return;
+                            }
+                        }
+                    }
                     Issue::maybeEmit(
                         $code_base,
                         $context,
