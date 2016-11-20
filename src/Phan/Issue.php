@@ -179,6 +179,9 @@ class Issue
     private $type;
 
     /** @var int */
+    private $type_id;
+
+    /** @var int */
     private $category;
 
     /** @var int */
