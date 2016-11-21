@@ -241,7 +241,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
 
                 if (!$this->context->getScope()->hasVariableWithName($variable_name)
-                    && !Variable::isSuperglobalVariableWithName($variable_name)
+                    && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())
                 ) {
                     $this->emitIssue(
                         Issue::UndeclaredVariable,
@@ -286,6 +286,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->code_base,
             false
         );
+        $variable_name = $variable->getName();
+        $optional_global_variable_type = Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name, $this->context);
+        if ($optional_global_variable_type) {
+            $variable->setUnionType($optional_global_variable_type);
+        } else {
+            $scope = $this->context->getScope();
+            if ($scope->hasGlobalVariableWithName($variable_name)) {
+                // TODO: Support @global, add a clone to the method context?
+                $actual_global_variable = $scope->getGlobalVariableByName($variable_name);
+                $this->context->addScopeVariable($actual_global_variable);
+                return $this->context;
+            }
+        }
 
         // Note that we're not creating a new scope, just
         // adding variables to the existing scope
