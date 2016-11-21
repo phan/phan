@@ -340,7 +340,7 @@ class Context extends FileRef
      * @param CodeBase $code_base
      * The global code base holding all state
      *
-     * @return FunctionInterface
+     * @return Element\Func|Element\Method
      * Get the method in this scope or fail real hard
      */
     public function getFunctionLikeInScope(
