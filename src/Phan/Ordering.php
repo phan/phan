@@ -70,6 +70,8 @@ class Ordering
         // elements within that hierarchy
         $root_fqsen_list = [];
 
+        $file_names_for_classes = [];
+
         // Iterate over each class extracting files
         foreach ($this->code_base->getClassMap() as $fqsen => $class) {
 
@@ -86,7 +88,14 @@ class Ordering
                 continue;
             }
             unset($analysis_file_map[$file_name]);
+            $file_names_for_classes[$file_name] = $class;
+        }
 
+        if (Config::get()->consistent_hashing_file_order) {
+            ksort($file_names_for_classes, SORT_STRING);
+        }
+
+        foreach ($file_names_for_classes as $file_name => $class) {
             // Get the class's depth in its object hierarchy and
             // the FQSEN of the object at the root of its hierarchy
             $hierarchy_depth = $class->getHierarchyDepth($this->code_base);
