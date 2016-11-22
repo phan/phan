@@ -1,6 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use \Phan\Library\Hasher;
+use \Phan\Library\Hasher\Consistent;
+use \Phan\Library\Hasher\Sequential;
+
 class Ordering
 {
     /** @param CodeBase */
@@ -46,6 +50,14 @@ class Ordering
                 $random_proc_file_map[$i++ % $process_count][] = $file;
             }
             return $random_proc_file_map;
+        }
+
+        // Construct a Hasher implementation based on config.
+        if (Config::get()->consistent_hashing_file_order) {
+            sort($analysis_file_list, SORT_STRING);
+            $hasher = new Consistent($process_count);
+        } else {
+            $hasher = new Sequential($process_count);
         }
 
         // Create a Set from the file list
@@ -99,7 +111,6 @@ class Ordering
 
         // Sort the set of files with a given root by their
         // depth in the hierarchy
-        $i = 1;
         foreach ($root_fqsen_list as $root_fqsen => $list) {
             usort($list, function(array $a, array $b) {
                 return ($a['depth'] <=> $b['depth']);
@@ -107,7 +118,7 @@ class Ordering
 
             // Choose which process this file list will be
             // run on
-            $process_id = ($i++ % $process_count);
+            $process_id = $hasher->getGroup((string)$root_fqsen);
 
             // Append each file to this process list
             foreach ($list as $item) {
@@ -118,11 +129,11 @@ class Ordering
 
         // Distribute any remaining files without classes evenly
         // between the processes
-        $i = 1;
+        $hasher->reset();
         foreach (array_keys($analysis_file_map) as $file) {
             // Choose which process this file list will be
             // run on
-            $process_id = ($i++ % $process_count);
+            $process_id = $hasher->getGroup((string)$file);
 
             $processor_file_list_map[$process_id][] = $file;
         }
