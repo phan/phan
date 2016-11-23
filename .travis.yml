@@ -21,7 +21,6 @@ matrix:
 cache:
   directories:
     - ./vendor
-    - ./build/ast
 
 before_install:
   - ./tests/setup.sh
