@@ -326,7 +326,6 @@ class ArgumentType
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
                     if(!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance())) {
-                        $classList = [];
                         try {
                             foreach($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
                                 if($clazz->hasMethodWithName($code_base, "__toString")) {
