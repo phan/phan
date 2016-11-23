@@ -5,6 +5,8 @@
 // should be able to)
 gc_disable();
 
+
+
 // Check the environment to make sure Phan can run successfully
 require_once(__DIR__ . '/requirements.php');
 
