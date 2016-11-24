@@ -19,7 +19,7 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\Library\Tuple3;
+use Phan\Library\Tuple4;
 use ast\Node;
 
 class Type
@@ -333,8 +333,9 @@ class Type
         $tuple = self::typeStringComponents($fully_qualified_string);
 
         $namespace = $tuple->_0;
-        $type_name = $tuple->_1;
-        $template_parameter_type_name_list = $tuple->_2;
+        $relative_namespace = $tuple->_1;
+        $type_name = $tuple->_2;
+        $template_parameter_type_name_list = $tuple->_3;
 
         // Map the names of the types to actual types in the
         // template parameter type list
@@ -383,8 +384,9 @@ class Type
         $tuple = self::typeStringComponents($string);
 
         $namespace = $tuple->_0;
-        $type_name = $tuple->_1;
-        $template_parameter_type_name_list = $tuple->_2;
+        $relative_namespace = $tuple->_1;
+        $type_name = $tuple->_2;
+        $template_parameter_type_name_list = $tuple->_3;
 
         // Map the names of the types to actual types in the
         // template parameter type list
@@ -392,6 +394,29 @@ class Type
             array_map(function (string $type_name) use ($context) {
                 return Type::fromStringInContext($type_name, $context)->asUnionType();
             }, $template_parameter_type_name_list);
+
+
+        if ($relative_namespace
+            && $context->hasNamespaceMapFor(
+                T_CLASS,
+                $relative_namespace
+            )
+        ) {
+            $fqsen = $context->getNamespaceMapFor(
+                T_CLASS,
+                $relative_namespace
+            );
+
+            $namespace = implode('\\', array_merge(
+                array_filter(explode('\\', (string)$fqsen)),
+                array_slice(array_filter(explode('\\', $namespace)), 1)
+            ));
+
+            // Force it to be fully qualified
+            if ($namespace[0] != '\\') {
+                $namespace = '\\' . $namespace;
+            }
+        }
 
         // @var bool
         // True if this type name if of the form 'C[]'
@@ -443,6 +468,10 @@ class Type
                 $fqsen->getName(),
                 $template_parameter_type_list
             );
+        }
+
+        else {
+            // print "Not found for $non_generic_array_type_name from $string with $namespace\n";
         }
 
         // If this was a fully qualified type, we're all
@@ -1104,7 +1133,7 @@ class Type
      * @param string $type_string
      * Any type string such as 'int' or 'Set<int>'
      *
-     * @return Tuple3<string,string,array>
+     * @return Tuple4<string,string|null,string,array>
      * A pair with the 0th element being the namespace and the first
      * element being the type name.
      */
@@ -1149,8 +1178,17 @@ class Type
                 $fq_class_name_elements
             ));
 
-        return new Tuple3(
+        // Get the 0th element of the namespace if it exists
+        // so we can look it up against any using clauses that
+        // define a relative namespace.
+        $relative_namespace = null;
+        if (isset($fq_class_name_elements[0])) {
+            $relative_namespace = $fq_class_name_elements[0];
+        }
+
+        return new Tuple4(
             $namespace,
+            $relative_namespace,
             $class_name,
             $template_parameter_type_name_list
         );
