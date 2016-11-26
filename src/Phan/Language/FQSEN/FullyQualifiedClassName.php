@@ -14,11 +14,11 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
 
     /**
      * @return int
-     * The namespace map type such as T_CLASS or T_FUNCTION
+     * The namespace map type such as \ast\flags\USE_NORMAL or \ast\flags\USE_FUNCTION
      */
     protected static function getNamespaceMapType() : int
     {
-        return T_CLASS;
+        return \ast\flags\USE_NORMAL;
     }
 
     /**

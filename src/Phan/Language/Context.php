@@ -129,11 +129,11 @@ class Context extends FileRef
         }
 
         switch ($flags) {
-        case T_CLASS:
+        case \ast\flags\USE_NORMAL:
             return FullyQualifiedClassName::fromFullyQualifiedString(
                 (string)$fqsen . '\\' . $suffix
             );
-        case T_FUNCTION:
+        case \ast\flags\USE_FUNCTION:
             return FullyQualifiedFunctionName::fromFullyQualifiedString(
                 (string)$fqsen . '\\' . $suffix
             );

@@ -172,14 +172,14 @@ abstract class ScopeVisitor extends AnalysisVisitor {
                 $target_node = $child_node;
             }
 
-            if ($target_node->flags == T_FUNCTION) {
+            if ($target_node->flags == \ast\flags\USE_FUNCTION) {
                 $parts = explode('\\', $target);
                 $function_name = array_pop($parts);
                 $target = FullyQualifiedFunctionName::make(
                     $prefix . '\\' . implode('\\', $parts),
                     $function_name
                 );
-            } else if ($target_node->flags == T_CONST) {
+            } else if ($target_node->flags == \ast\flags\USE_CONST) {
                 $parts = explode('\\', $target);
                 $name = array_pop($parts);
                 $target = FullyQualifiedGlobalConstantName::make(

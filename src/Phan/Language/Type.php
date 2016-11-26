@@ -421,12 +421,12 @@ class Type
                 $namespace . '\\' . $non_generic_partially_qualified_array_type_name;
         }
         if ($context->hasNamespaceMapFor(
-            T_CLASS,
+            \ast\flags\USE_NORMAL,
             $non_generic_partially_qualified_array_type_name
         )) {
             $fqsen =
                 $context->getNamespaceMapFor(
-                    T_CLASS,
+                    \ast\flags\USE_NORMAL,
                     $non_generic_partially_qualified_array_type_name
                 );
 
