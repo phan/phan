@@ -187,6 +187,8 @@ abstract class ScopeVisitor extends AnalysisVisitor {
                     $name
                 );
             } else {
+                assert($target_node->flags == \ast\flags\USE_NORMAL,
+                    'Unknown type for a use statement');
                 $target = FullyQualifiedClassName::fromFullyQualifiedString(
                     $prefix . '\\' . $target
                 );
