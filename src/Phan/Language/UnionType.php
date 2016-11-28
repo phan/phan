@@ -729,7 +729,7 @@ class UnionType implements \Serializable
      * The context in which we're resolving this union
      * type.
      *
-     * @return Clazz[]
+     * @return \Generator|Clazz[]
      * A list of classes representing the non-native types
      * associated with this UnionType
      *

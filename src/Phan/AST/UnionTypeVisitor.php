@@ -1561,7 +1561,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return Clazz[]
+     * @return \Generator|Clazz[]
      * A list of classes associated with the given node
      *
      * @throws IssueException

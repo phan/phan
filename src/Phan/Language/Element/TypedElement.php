@@ -134,6 +134,15 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
+     * Variables can't be variadic. This is the same as getUnionType for
+     * variables, but not necessarily for subclasses. Method will return
+     * the element type (such as `DateTime`) for variadic parameters.
+     */
+    public function getVariadicElementUnionType() : UnionType {
+        return $this->getUnionType();
+    }
+
+    /**
      * @return int
      */
     public function getFlags() : int
