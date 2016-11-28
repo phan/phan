@@ -209,6 +209,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
                 $this->code_base, $child_context, $node, $this->depth + 1
             ))($child_node);
 
+            // TODO(Issue #406): We can improve analysis of `if` blocks by using
+            // a BlockExitStatusChecker to avoid propogating invalid inferences.
+            // However, we need to check for a try block between this line's scope
+            // and the parent function's (or global) scope,
+            // to reduce false positives.
+            // (Variables will be available in `catch` and `finally`)
             $child_context_list[] = $child_context;
         }
 

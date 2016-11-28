@@ -1,0 +1,6 @@
+<?php
+function foo($b) {
+    $a = $b; if ($a) { if ($a > 0) {
+        return 42;
+    } }
+}

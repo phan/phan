@@ -1,0 +1,1 @@
+<?php if ($a) bar($a); else foo();

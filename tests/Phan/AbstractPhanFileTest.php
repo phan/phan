@@ -89,6 +89,7 @@ abstract class AbstractPhanFileTest
      *
      * @param string[] $test_file_list
      * @param string $expected_file_path
+     * @param ?string $config_file_path
      * @dataProvider getTestFiles
      */
     public function testFiles($test_file_list, $expected_file_path, $config_file_path = null) {

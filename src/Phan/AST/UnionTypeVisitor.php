@@ -484,7 +484,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 assert(
                     false,
                     "All flags must match. Found "
-                    . Debug::astFlagDescription($node->flags ?? 0)
+                    . Debug::astFlagDescription($node->flags ?? 0, $node->kind)
                 );
                 break;
         }

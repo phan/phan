@@ -1,0 +1,1 @@
+<?php if ($a === 3) {foo();} else {if ($a === 4);else {if (is_int($a)) foo(); else {echo 5;}}}
