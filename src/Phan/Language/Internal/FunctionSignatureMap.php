@@ -7637,7 +7637,7 @@ return [
 'ReflectionFunctionAbstract::isVariadic' => ['bool'],
 'ReflectionFunctionAbstract::returnsReference' => ['bool'],
 'ReflectionFunctionAbstract::__toString' => [''],
-'ReflectionFunction::__construct' => ['ReflectionFunction', 'name'=>'string'],
+'ReflectionFunction::__construct' => ['ReflectionFunction', 'name'=>'string|Closure'],
 'ReflectionFunction::export' => ['string', 'name'=>'string', 'return='=>'bool'],
 'ReflectionFunction::getClosure' => ['Closure'],
 'ReflectionFunction::getClosureScopeClass' => ['ReflectionClass'],
