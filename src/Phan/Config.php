@@ -335,6 +335,13 @@ class Config
         // and fuzz testing purposes only.
         'randomize_file_order' => false,
 
+        // Setting this to true makes the process assignment for file analysis
+        // as predictable as possible, using consistent hashing.
+        // Even if files are added or removed, or process counts change,
+        // relatively few files will move to a different group.
+        // (use when the number of files is much larger than the process count)
+        'consistent_hashing_file_order' => true,
+
         // A list of plugin files to execute
         'plugins' => [
         ],

@@ -1,6 +1,10 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use \Phan\Library\Hasher;
+use \Phan\Library\Hasher\Consistent;
+use \Phan\Library\Hasher\Sequential;
+
 class Ordering
 {
     /** @param CodeBase */
@@ -48,6 +52,14 @@ class Ordering
             return $random_proc_file_map;
         }
 
+        // Construct a Hasher implementation based on config.
+        if (Config::get()->consistent_hashing_file_order) {
+            sort($analysis_file_list, SORT_STRING);
+            $hasher = new Consistent($process_count);
+        } else {
+            $hasher = new Sequential($process_count);
+        }
+
         // Create a Set from the file list
         $analysis_file_map = [];
         foreach ($analysis_file_list as $i => $file) {
@@ -57,6 +69,8 @@ class Ordering
         // A map from the root of an object hierarchy to all
         // elements within that hierarchy
         $root_fqsen_list = [];
+
+        $file_names_for_classes = [];
 
         // Iterate over each class extracting files
         foreach ($this->code_base->getClassMap() as $fqsen => $class) {
@@ -74,7 +88,14 @@ class Ordering
                 continue;
             }
             unset($analysis_file_map[$file_name]);
+            $file_names_for_classes[$file_name] = $class;
+        }
 
+        if (Config::get()->consistent_hashing_file_order) {
+            ksort($file_names_for_classes, SORT_STRING);
+        }
+
+        foreach ($file_names_for_classes as $file_name => $class) {
             // Get the class's depth in its object hierarchy and
             // the FQSEN of the object at the root of its hierarchy
             $hierarchy_depth = $class->getHierarchyDepth($this->code_base);
@@ -99,7 +120,6 @@ class Ordering
 
         // Sort the set of files with a given root by their
         // depth in the hierarchy
-        $i = 1;
         foreach ($root_fqsen_list as $root_fqsen => $list) {
             usort($list, function(array $a, array $b) {
                 return ($a['depth'] <=> $b['depth']);
@@ -107,7 +127,7 @@ class Ordering
 
             // Choose which process this file list will be
             // run on
-            $process_id = ($i++ % $process_count);
+            $process_id = $hasher->getGroup((string)$root_fqsen);
 
             // Append each file to this process list
             foreach ($list as $item) {
@@ -118,11 +138,11 @@ class Ordering
 
         // Distribute any remaining files without classes evenly
         // between the processes
-        $i = 1;
+        $hasher->reset();
         foreach (array_keys($analysis_file_map) as $file) {
             // Choose which process this file list will be
             // run on
-            $process_id = ($i++ % $process_count);
+            $process_id = $hasher->getGroup((string)$file);
 
             $processor_file_list_map[$process_id][] = $file;
         }
