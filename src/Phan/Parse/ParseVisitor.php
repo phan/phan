@@ -153,13 +153,13 @@ class ParseVisitor extends ScopeVisitor
             // Check to see if the name isn't fully qualified
             if ($node->children['extends']->flags & \ast\flags\NAME_NOT_FQ) {
                 if ($this->context->hasNamespaceMapFor(
-                    T_CLASS,
+                    \ast\flags\USE_NORMAL,
                     $parent_class_name
                 )) {
                     // Get a fully-qualified name
                     $parent_class_name =
                         (string)($this->context->getNamespaceMapFor(
-                            T_CLASS,
+                            \ast\flags\USE_NORMAL,
                             $parent_class_name
                         ));
                 } else {
