@@ -743,7 +743,7 @@ class Clazz extends AddressableElement
         // Check to see if missing properties are allowed
         // or we're stdclass
         if (Config::get()->allow_missing_properties
-            || $this->getFQSEN() == FullyQualifiedClassName::getStdClassFQSEN()
+            || FullyQualifiedClassName::isClassWithDynamicProperties($this->getFQSEN())
         ) {
             $property = new Property(
                 $context,

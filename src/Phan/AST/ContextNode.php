@@ -547,12 +547,9 @@ class ContextNode
             return $property;
         }
 
-        $std_class_fqsen =
-            FullyQualifiedClassName::getStdClassFQSEN();
-
         // If missing properties are cool, create it on
         // the first class we found
-        if (($class_fqsen && ($class_fqsen === $std_class_fqsen))
+        if (($class_fqsen && FullyQualifiedClassName::isClassWithDynamicProperties($class_fqsen))
             || Config::get()->allow_missing_properties
         ) {
             if (count($class_list) > 0) {

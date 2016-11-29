@@ -72,4 +72,23 @@ class FullyQualifiedClassName extends FullyQualifiedGlobalStructuralElement
             return self::fromFullyQualifiedString("\stdClass");
         });
     }
+
+    /**
+     * @return FullyQualifiedClassName
+     * The FQSEN for \stdClass.
+     */
+    public static function getSimpleXMLElementFQSEN() : FullyQualifiedClassName
+    {
+        return self::memoizeStatic(__METHOD__, function() {
+            return self::fromFullyQualifiedString("\SimpleXMLElement");
+        });
+    }
+
+    // TODO: if this gets arbitrarily large,
+    // then check if in_array($class_fqsen, $arbitrary_types_fqsen, true) (or use SPLObjectStorage)
+    public static function isClassWithDynamicProperties(FullyQualifiedClassName $class_fqsen) : bool {
+        return $class_fqsen === FullyQualifiedClassName::getStdClassFQSEN() ||
+            $class_fqsen === FullyQualifiedClassName::getSimpleXMLElementFQSEN();
+    }
+
 }
