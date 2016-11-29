@@ -81,6 +81,13 @@ class Phan implements IgnoredFilesFilterInterface {
         // want to run an analysis on
         $analyze_file_path_list = [];
 
+        if (Config::get()->consistent_hashing_file_order) {
+            // Parse the files in lexicographic order.
+            // If there are duplicate class/function definitions,
+            // this ensures they are added to the maps in the same order.
+            sort($file_path_list, SORT_STRING);
+        }
+
         // This first pass parses code and populates the
         // global state we'll need for doing a second
         // analysis after.
