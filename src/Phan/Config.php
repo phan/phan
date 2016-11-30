@@ -340,7 +340,7 @@ class Config
         // Even if files are added or removed, or process counts change,
         // relatively few files will move to a different group.
         // (use when the number of files is much larger than the process count)
-        'consistent_hashing_file_order' => true,
+        'consistent_hashing_file_order' => false,
 
         // A list of plugin files to execute
         'plugins' => [
