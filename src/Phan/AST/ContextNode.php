@@ -615,7 +615,7 @@ class ContextNode
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
-                $this->node->children['expr']
+                $this->node->children['expr'] ?? null
             ))->getClassList();
         } catch (CodeBaseException $exception) {
             throw new IssueException(
