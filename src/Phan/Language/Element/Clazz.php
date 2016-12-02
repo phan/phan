@@ -1249,8 +1249,8 @@ class Clazz extends AddressableElement
     public function getNonParentAncestorFQSENList(CodeBase $code_base)
     {
         return array_merge(
-            $this->getTraitFQSENList(),
-            $this->getInterfaceFQSENList()
+            $this->getInterfaceFQSENList(),
+            $this->getTraitFQSENList()
         );
     }
 
