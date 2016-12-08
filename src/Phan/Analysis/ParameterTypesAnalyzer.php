@@ -7,7 +7,6 @@ use Phan\Issue;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
-use Phan\Language\FQSEN;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\TemplateType;
 

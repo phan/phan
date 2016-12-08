@@ -4,7 +4,6 @@ namespace Phan\CodeBase;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
-use Phan\Language\FQSEN;
 
 /**
  * Maps for elements associated with an individual class

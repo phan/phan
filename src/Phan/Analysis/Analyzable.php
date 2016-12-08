@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
-use Phan\Analysis;
 use Phan\BlockAnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Config;

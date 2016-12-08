@@ -2,7 +2,6 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
-use Phan\Database;
 use Phan\Language\FQSEN;
 use Phan\Language\FileRef;
 

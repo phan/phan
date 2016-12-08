@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;

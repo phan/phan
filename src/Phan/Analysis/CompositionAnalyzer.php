@@ -7,7 +7,6 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\UnionType;
 
 class CompositionAnalyzer

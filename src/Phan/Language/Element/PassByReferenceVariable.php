@@ -1,11 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\FileRef;
 use Phan\Language\UnionType;
-use ast\Node;
 
 /**
  * This class wraps a parameter and a element and proxies

@@ -1,7 +1,5 @@
 <?php declare(strict_types=1);
 namespace Phan;
-
-use Phan\CodeBase;
 use SQLite3;
 
 /**

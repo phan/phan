@@ -12,7 +12,6 @@ use Phan\Language\Type\IntType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use ast\Node;
-use ast\Node\Decl;
 
 class Parameter extends Variable
 {

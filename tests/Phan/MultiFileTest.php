@@ -1,8 +1,6 @@
 <?php declare(strict_types = 1);
 namespace Phan\Tests;
 
-use Phan\CodeBase;
-use Phan\Language\Type;
 
 class MultiFileTest extends AbstractPhanFileTest {
 

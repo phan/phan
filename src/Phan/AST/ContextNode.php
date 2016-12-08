@@ -3,7 +3,6 @@ namespace Phan\AST;
 
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Debug;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;

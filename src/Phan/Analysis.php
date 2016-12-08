@@ -1,19 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
-use Phan\Analysis\CompositionAnalyzer;
-use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
-use Phan\Analysis\ParentClassExistsAnalyzer;
-use Phan\Analysis\ParentConstructorCalledAnalyzer;
-use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
-use Phan\Language\FQSEN;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
