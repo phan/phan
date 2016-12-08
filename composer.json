@@ -12,6 +12,9 @@
             "name": "Andrew S. Morrison"
         }
     ],
+    "config": {
+        "sort-packages": true
+    },
     "require": {
         "php": ">=7.0",
         "ext-ast": "*",
