@@ -218,6 +218,15 @@ class Clazz extends AddressableElement
         foreach (UnionType::internalPropertyMapForClassName(
             $clazz->getName()
         ) as $property_name => $property_type_string) {
+
+
+            // An asterisk indicates that the class supports
+            // dynamic properties
+            if ($property_name === '*') {
+                $clazz->setHasDynamicProperties(true);
+                continue;
+            }
+
             $property_context = $context->withScope(
                 new ClassScope(new GlobalScope, $clazz->getFQSEN())
             );
@@ -743,7 +752,7 @@ class Clazz extends AddressableElement
         // Check to see if missing properties are allowed
         // or we're stdclass
         if (Config::get()->allow_missing_properties
-            || $this->getFQSEN() == FullyQualifiedClassName::getStdClassFQSEN()
+            || $this->getHasDynamicProperties($code_base)
         ) {
             $property = new Property(
                 $context,
@@ -1182,6 +1191,40 @@ class Clazz extends AddressableElement
             $is_parent_constructor_called
         ));
     }
+
+    /**
+     * @return bool
+     * True if this class calls its parent constructor
+     */
+    public function getHasDynamicProperties(CodeBase $code_base) : bool
+    {
+        return (
+            Flags::bitVectorHasState(
+                $this->getPhanFlags(),
+                Flags::CLASS_HAS_DYNAMIC_PROPERTIES
+            )
+            ||
+            (
+                $this->hasParentType()
+                && $code_base->hasClassWithFQSEN($this->getParentClassFQSEN())
+                && $this->getParentClass($code_base)->getHasDynamicProperties($code_base)
+            )
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function setHasDynamicProperties(
+        bool $has_dynamic_properties
+    ) {
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::CLASS_HAS_DYNAMIC_PROPERTIES,
+            $has_dynamic_properties
+        ));
+    }
+
 
     /**
      * @return bool

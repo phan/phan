@@ -45,13 +45,13 @@ class ContextNode
     /** @var Context */
     private $context;
 
-    /** @var Node|string */
+    /** @var Node|string|null */
     private $node;
 
     /**
      * @param CodeBase $code_base
      * @param Context $context
-     * @param Node|string $node
+     * @param Node|string|null $node
      */
     public function __construct(
         CodeBase $code_base,
@@ -547,6 +547,22 @@ class ContextNode
             return $property;
         }
 
+        // Since we didn't find the property on any of the
+        // possible classes, check for classes with dynamic
+        // properties
+        foreach ($class_list as $i => $class) {
+            if (Config::get()->allow_missing_properties
+                || $class->getHasDynamicProperties($this->code_base)
+            ) {
+                return $class->getPropertyByNameInContext(
+                    $this->code_base,
+                    $property_name,
+                    $this->context
+                );
+            }
+        }
+
+        /*
         $std_class_fqsen =
             FullyQualifiedClassName::getStdClassFQSEN();
 
@@ -564,6 +580,7 @@ class ContextNode
                 );
             }
         }
+        */
 
         // If the class isn't found, we'll get the message elsewhere
         if ($class_fqsen) {

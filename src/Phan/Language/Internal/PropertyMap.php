@@ -9,6 +9,9 @@ namespace Phan\Language\Internal;
  * This structure is of the form
  * [ class_name => [ property_name => type ] ]
  *
+ * with the special case that '*' as a property name indicates
+ * that the class supports dynamic properties.
+ *
  * # How to Generate
  *
  * ```sh
@@ -396,5 +399,11 @@ return [
         'code' => 'int',
         'file' => 'string',
         'line' => 'int'
+    ],
+    'stdclass' => [
+        '*' => true,
+    ],
+    'simplexmlelement' => [
+        '*' => true,
     ],
 ];
