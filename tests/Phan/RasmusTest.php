@@ -2,8 +2,6 @@
 
 namespace Phan\Tests;
 
-use Phan\CodeBase;
-use Phan\Language\Type;
 
 class RasmusTest extends AbstractPhanFileTest {
     /**

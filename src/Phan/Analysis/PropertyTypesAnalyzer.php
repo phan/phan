@@ -5,7 +5,6 @@ use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
-use Phan\Language\FQSEN;
 use Phan\Language\Type\TemplateType;
 
 class PropertyTypesAnalyzer

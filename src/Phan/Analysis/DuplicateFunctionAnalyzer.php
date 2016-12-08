@@ -4,7 +4,6 @@ namespace Phan\Analysis;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\FunctionInterface;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 
 class DuplicateFunctionAnalyzer

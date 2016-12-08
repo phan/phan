@@ -11,16 +11,13 @@ use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
-use Phan\Language\Type\NodeTypeKindVisitor;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
-use Phan\Language\UnionType;
 use Phan\Library\Tuple3;
-use ast\Node;
 
 class Type
 {

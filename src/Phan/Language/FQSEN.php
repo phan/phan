@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language;
 
-use Phan\Language\Type;
-
 /**
  * A Fully-Qualified Name
  */

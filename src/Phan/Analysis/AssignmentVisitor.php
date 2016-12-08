@@ -12,14 +12,11 @@ use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Language\Element\Comment;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\UnionType;
 use ast\Node;
-use ast\Node\Decl;
 
 class AssignmentVisitor extends AnalysisVisitor
 {

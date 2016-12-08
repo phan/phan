@@ -10,7 +10,6 @@ use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
-use Phan\Language\FQSEN;
 use Phan\Library\Map;
 
 class ReferenceCountsAnalyzer

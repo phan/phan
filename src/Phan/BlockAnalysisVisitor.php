@@ -5,7 +5,6 @@ use Phan\AST\AnalysisVisitor;
 use Phan\Analysis\ContextMergeVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
-use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Scope\BranchScope;
 use Phan\Plugin\ConfigPluginSet;

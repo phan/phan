@@ -4,7 +4,6 @@ namespace Phan\Language;
 
 use Phan\Config;
 use Phan\Language\Element\Variable;
-use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;

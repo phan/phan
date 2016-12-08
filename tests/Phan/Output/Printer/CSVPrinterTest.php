@@ -2,10 +2,8 @@
 
 namespace Phan\Tests\Output\Printer;
 
-use Phan\CodeBase;
 use Phan\Issue;
 use Phan\IssueInstance;
-use Phan\Language\Type;
 use Phan\Output\Printer\CSVPrinter;
 use PHPUnit_Framework_TestCase;
 use Symfony\Component\Console\Output\BufferedOutput;
