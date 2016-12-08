@@ -24,6 +24,7 @@ cache:
 
 before_install:
   - ./tests/setup.sh
+  - composer validate
 
 install:
   - composer --prefer-source install
