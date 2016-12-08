@@ -24,6 +24,7 @@ cache:
 
 before_install:
   - ./tests/setup.sh
+  - phpenv config-rm xdebug.ini
 
 install:
   - composer --prefer-source install
