@@ -220,6 +220,10 @@ return [
         'vendor/symfony/console',
     ],
 
+    // List of case-insensitive file extensions supported by Phan.
+    // (e.g. php, html, htm)
+    'analyzed_file_extensions' => ['php'],
+
     // A directory list that defines files that will be excluded
     // from static analysis, but whose class and method
     // information should be included.

@@ -35,6 +35,10 @@ class Config
         // your application should be included in this list.
         'directory_list' => [],
 
+        // List of case-insensitive file extensions supported by Phan.
+        // (e.g. php, html, htm)
+        'analyzed_file_extensions' => ['php'],
+
         // A file list that defines files that will be excluded
         // from parsing and analysis and will not be read at all.
         //
