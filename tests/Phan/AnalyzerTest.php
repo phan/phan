@@ -8,11 +8,11 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-use \Phan\Analysis;
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Analysis;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Language\Context;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 

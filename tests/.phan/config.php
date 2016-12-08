@@ -1,6 +1,6 @@
 <?php
 
-use \Phan\Issue;
+use Phan\Issue;
 
 /**
  * This configuration will be read and overlayed on top of the

@@ -2,14 +2,14 @@
 
 namespace Phan\Tests\Language;
 
-use \Phan\Language\Context;
-use \Phan\Language\FQSEN;
-use \Phan\Language\FQSEN\FullyQualifiedClassConstantName;
-use \Phan\Language\FQSEN\FullyQualifiedClassName;
-use \Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use \Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
-use \Phan\Language\FQSEN\FullyQualifiedMethodName;
-use \Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Context;
+use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
 class FQSENTest extends \PHPUnit_Framework_TestCase {
 

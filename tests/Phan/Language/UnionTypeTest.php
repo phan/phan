@@ -12,10 +12,10 @@ $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
 $internal_function_name_list = get_defined_functions()['internal'];
 
-use \Phan\CodeBase;
-use \Phan\Config;
-use \Phan\Language\Context;
-use \Phan\Language\UnionType;
+use Phan\CodeBase;
+use Phan\Config;
+use Phan\Language\Context;
+use Phan\Language\UnionType;
 
 class UnionTypeTest extends \PHPUnit_Framework_TestCase {
 
