@@ -20,7 +20,7 @@ matrix:
 
 cache:
   directories:
-    - ./vendor
+    - $HOME/.composer/cache
 
 before_install:
   - ./tests/setup.sh
