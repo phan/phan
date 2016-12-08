@@ -461,10 +461,17 @@ EOB;
 
         try {
             $file_extensions = Config::get()->analyzed_file_extensions;
+
             if (!is_array($file_extensions) || count($file_extensions) == 0) {
-                throw new InvalidArgumentException("Empty list in config analyzed_file_extensions - Nothing to analyze");
+                throw new \InvalidArgumentException(
+                    'Empty list in config analyzed_file_extensions. Nothing to analyze.'
+                );
             }
-            $extensionRegex = implode('|', array_map(function ($extension) { return preg_quote($extension, '/'); }, $file_extensions));
+
+            $extension_regex = implode('|', array_map(function ($extension) {
+                return preg_quote($extension, '/');
+            }, $file_extensions));
+
             $iterator = new \RegexIterator(
                 new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
@@ -472,7 +479,7 @@ EOB;
                         \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                     )
                 ),
-                '/^.+\.(' . $extensionRegex . ')$/i',
+                '/^.+\.(' . $extension_regex . ')$/i',
                 \RecursiveRegexIterator::GET_MATCH
             );
 
