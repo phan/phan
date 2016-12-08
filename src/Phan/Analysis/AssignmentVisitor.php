@@ -12,6 +12,7 @@ use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
@@ -357,13 +358,9 @@ class AssignmentVisitor extends AnalysisVisitor
             return $this->context;
         }
 
-        $std_class_fqsen =
-            FullyQualifiedClassName::getStdClassFQSEN();
+        $is_class_with_arbitrary_types = isset($class_list[0]) ? FullyQualifiedClassName::isClassWithDynamicProperties($class_list[0]->getFQSEN()) : false;
 
-        if (Config::get()->allow_missing_properties
-            || (!empty($class_list)
-                && $class_list[0]->getFQSEN() == $std_class_fqsen)
-        ) {
+        if (Config::get()->allow_missing_properties || $is_class_with_arbitrary_types) {
             try {
                 // Create the property
                 $property = (new ContextNode(
