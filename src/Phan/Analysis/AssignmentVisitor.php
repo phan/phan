@@ -96,6 +96,50 @@ class AssignmentVisitor extends AnalysisVisitor
     }
 
     /**
+     * The following is an example of how this'd happen.
+     *
+     * ```php
+     * class C {
+     *     function f() {
+     *         return [ 24 ];
+     *     }
+     * }
+     * (new C)->f()[1] = 42;
+     * ```
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitMethodCall(Node $node) : Context {
+        return $this->context;
+    }
+
+    /**
+     * The following is an example of how this'd happen.
+     *
+     * ```php
+     * function f() {
+     *     return [ 24 ];
+     * }
+     * f()[1] = 42;
+     * ```
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitCall(Node $node) : Context {
+        return $this->context;
+    }
+
+    /**
      * This happens for code like the following
      * ```
      * list($a) = [1, 2, 3];

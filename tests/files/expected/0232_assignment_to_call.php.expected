@@ -1,0 +1,2 @@
+%s:7 PhanTypeMismatchArgument Argument 1 (p) is string but \g() takes bool defined at %s:4
+%s:8 PhanTypeMismatchArgument Argument 1 (p) is string but \g() takes bool defined at %s:4
