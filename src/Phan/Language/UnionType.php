@@ -189,6 +189,12 @@ class UnionType implements \Serializable
             foreach ($map_raw as $key => $value) {
                 $map[strtolower($key)] = $value;
             }
+
+            // Merge in an empty type for dynamic properties on any
+            // classes listed as supporting them.
+            foreach (require(__DIR__.'/Internal/DynamicPropertyMap.php') as $class_name) {
+                $map[strtolower($class_name)]['*'] = '';
+            }
         }
 
         return $map;
