@@ -16,6 +16,8 @@ use ast\Node;
  *
  * Plugins must extends this class and return an instance
  * of themselves.
+ *
+ * @suppress PhanUnreferencedClass
  */
 class PluginImplementation extends Plugin {
 
