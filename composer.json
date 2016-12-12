@@ -18,7 +18,6 @@
     "require": {
         "php": ">=7.0",
         "ext-ast": "*",
-        "ext-sqlite3": "0.7-dev",
         "symfony/console": "~2.3|~3.0"
     },
     "require-dev": {
