@@ -246,13 +246,13 @@ class ConditionVisitor extends KindVisitorImplementation
             'empty' => 'null',
         );
 
-        $functionName = $node->children['expr']->children['name'];
-        if (!isset($map[$functionName])) {
+        $function_name = $node->children['expr']->children['name'];
+        if (!isset($map[$function_name])) {
             return $this->context;
         }
 
         $type = UnionType::fromFullyQualifiedString(
-            $map[$functionName]
+            $map[$function_name]
         );
 
         $context = $this->context;

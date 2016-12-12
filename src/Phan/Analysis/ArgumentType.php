@@ -109,7 +109,7 @@ class ArgumentType
             foreach ($method->alternateGenerator($code_base) as $alternate_method) {
                 $alternate_found = $alternate_found || (
                     $argcount >=
-                    $alternate_method->getNumberOfParameters()
+                    $alternate_method->getNumberOfRequiredParameters()
                 );
             }
 
