@@ -750,7 +750,8 @@ class Clazz extends AddressableElement
         }
 
         // Check to see if missing properties are allowed
-        // or we're stdclass
+        // or we're working with a class with dynamic
+        // properties such as stdclass.
         if (Config::get()->allow_missing_properties
             || $this->getHasDynamicProperties($code_base)
         ) {
