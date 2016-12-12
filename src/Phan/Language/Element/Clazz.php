@@ -219,7 +219,6 @@ class Clazz extends AddressableElement
             $clazz->getName()
         ) as $property_name => $property_type_string) {
 
-
             // An asterisk indicates that the class supports
             // dynamic properties
             if ($property_name === '*') {
