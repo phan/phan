@@ -53,7 +53,7 @@ class CLI
         // Parse command line args
         // still available: g,n,t,u,v,w
         $opts = getopt(
-            "f:m:o:c:k:aeqbr:pid:s:3:y:l:xj:zh::",
+            "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zh::",
             [
                 'backward-compatibility-checks',
                 'dead-code-detection',
@@ -73,7 +73,6 @@ class CLI
                 'progress-bar',
                 'project-root-directory:',
                 'quick',
-                'state-file:',
                 'processes:',
                 'config-file:',
                 'signature-compatibility',
@@ -209,11 +208,6 @@ class CLI
                         Config::get()->exclude_file_list,
                         is_array($value) ? $value : [$value]
                     );
-                    break;
-                case 's':
-                case 'state-file':
-                    // TODO: re-enable eventually
-                    // Config::get()->stored_state_file_path = $value;
                     break;
                 case 'j':
                 case 'processes':
@@ -357,9 +351,7 @@ Usage: {$argv[0]} [options] [files...]
 
  -r, --file-list-only
   A file containing a list of PHP files to be analyzed to the
-  exclusion of any other directories or files passed in. This
-  is useful when running Phan from a stored state file and
-  passing in a small subset of files to be re-analyzed.
+  exclusion of any other directories or files passed in.
 
  -l, --directory <directory>
   A directory that should be parsed for class and

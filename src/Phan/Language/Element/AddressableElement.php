@@ -2,7 +2,6 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
-use Phan\Database;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FileRef;
@@ -127,13 +126,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function addReference(FileRef $file_ref)
     {
         $this->reference_list[] = $file_ref;
-
-        if (Database::isEnabled()) {
-            (new CalledBy(
-                (string)$this->getFQSEN(),
-                $file_ref
-            ))->write(Database::get());
-        }
     }
 
     /**
@@ -144,20 +136,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     {
         if (!empty($this->reference_list)) {
             return $this->reference_list;
-        }
-
-        // If we have a database, see if we have some callers
-        // defined there and save those
-        if (Database::isEnabled()) {
-            $this->reference_list = array_map(
-                function (CalledBy $called_by) : FileRef {
-                    return $called_by->getFileRef();
-                },
-                CalledBy::findManyByFQSEN(
-                    Database::get(),
-                    $this->getFQSEN()
-                )
-            );
         }
 
         return $this->reference_list;

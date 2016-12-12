@@ -169,13 +169,6 @@ class Config
         // types expressed in code.
         'read_type_annotations' => true,
 
-        // If a file path is given, the code base will be
-        // read from and written to the given location in
-        // order to attempt to save some work from being
-        // done. Only changed files will get analyzed if
-        // the file is read
-        'stored_state_file_path' => null,
-
         // Set to true in order to ignore issue suppression.
         // This is useful for testing the state of your code, but
         // unlikely to be useful outside of that.
@@ -188,11 +181,6 @@ class Config
         // If set to a string, we'll dump the fully qualified lowercase
         // function and method signatures instead of analyzing files.
         'dump_signatures_file' => null,
-
-        // If true (and if stored_state_file_path is set) we'll
-        // look at the list of files passed in and expand the list
-        // to include files that depend on the given files
-        'expand_file_list' => false,
 
         // Include a progress bar in the output
         'progress_bar' => false,
