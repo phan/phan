@@ -985,7 +985,7 @@ class Type
         }
 
         if (strpos($s, '[]') !== false
-            && ($d == 'array' || $d == '\ArrayAccess')
+            && ($d == 'array' || $d == 'arrayaccess')
         ) {
             return true;
         }
