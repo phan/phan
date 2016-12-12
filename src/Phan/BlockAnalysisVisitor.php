@@ -90,6 +90,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $this->code_base, $context
         ))($node);
 
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base, $context, $node
+        );
+
         assert(!empty($context), 'Context cannot be null');
 
         // With a context that is inside of the node passed
@@ -123,7 +129,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $this->parent_node
         ))($node);
 
-        // Let any configured plugins analyze the node
+        // let any configured plugins analyze the node
         ConfigPluginSet::instance()->analyzeNode(
             $this->code_base, $context, $node, $this->parent_node
         );

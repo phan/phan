@@ -46,6 +46,34 @@ class ConfigPluginSet extends Plugin {
      * @param Node $node
      * The php-ast Node being analyzed.
      *
+     * @return void
+     */
+    public function preAnalyzeNode(
+        CodeBase $code_base,
+        Context $context,
+        Node $node
+    ) {
+        foreach ($this->getPlugins() as $plugin) {
+            $plugin->preAnalyzeNode(
+                $code_base,
+                $context,
+                $node
+            );
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the node exists
+     *
+     * @param Context $context
+     * The context in which the node exits. This is
+     * the context inside the given node rather than
+     * the context outside of the given node
+     *
+     * @param Node $node
+     * The php-ast Node being analyzed.
+     *
      * @param Node $node
      * The parent node of the given node (if one exists).
      *
