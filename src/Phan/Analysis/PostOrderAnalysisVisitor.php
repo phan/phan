@@ -1248,8 +1248,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $method->getDefiningClassFQSEN()->asType()
                     )
                 )
+                && $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
             )
         ) {
+
             $this->emitIssue(
                 Issue::AccessMethodProtected,
                 $node->lineno ?? 0,
