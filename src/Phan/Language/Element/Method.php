@@ -347,10 +347,6 @@ class Method extends ClassElement implements FunctionInterface
                                 (string)$default_type
                             );
                         }
-
-                        $parameter->getUnionType()->addUnionType(
-                            $default_type
-                        );
                     }
 
                     // If we have no other type info about a parameter,
