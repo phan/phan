@@ -80,6 +80,10 @@ class CLI
             ]
         );
 
+        if (array_key_exists('h', $opts ?? []) || array_key_exists('help', $opts ?? [])) {
+            $this->usage();  // --help prints help and calls exit(0)
+        }
+
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
         Config::get()->setProjectRootDirectory(
@@ -106,10 +110,6 @@ class CLI
 
         foreach ($opts ?? [] as $key => $value) {
             switch ($key) {
-                case 'h':
-                case 'help':
-                    $this->usage();
-                    break;
                 case 'r':
                 case 'file-list-only':
                     // Mark it so that we don't load files through
