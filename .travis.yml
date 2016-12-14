@@ -2,7 +2,7 @@ language: php
 
 php:
   - 7
-  - 7.1.0RC6
+  - 7.1
 
 env:
   - TEST_SUITE="AnalyzerTest"
@@ -16,7 +16,7 @@ sudo: false
 matrix:
   fast_finish: true
   allow_failures:
-    - php: "7.1.0RC6"
+    - php: "7.1"
 
 cache:
   directories:
