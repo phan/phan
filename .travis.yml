@@ -13,9 +13,6 @@ env:
 
 sudo: false
 
-matrix:
-  fast_finish: true
-
 cache:
   directories:
     - $HOME/.composer/cache
