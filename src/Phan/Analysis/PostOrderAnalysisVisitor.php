@@ -1076,6 +1076,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 && !$has_interface_class
                 && !$return_type->isEmpty()
                 && !$method->getHasReturn()
+                && !$this->declOnlyThrows($node)
                 && !$return_type->hasType(VoidType::instance())
                 && !$return_type->hasType(NullType::instance())
             ) {
@@ -1101,6 +1102,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($method instanceof Func) {
             if (!$return_type->isEmpty()
                 && !$method->getHasReturn()
+                && !$this->declOnlyThrows($node)
                 && !$return_type->hasType(VoidType::instance())
                 && !$return_type->hasType(NullType::instance())
             ) {
@@ -1149,6 +1151,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         if (!$return_type->isEmpty()
             && !$method->getHasReturn()
+            && !$this->declOnlyThrows($node)
             && !$return_type->hasType(VoidType::instance())
             && !$return_type->hasType(NullType::instance())
         ) {
@@ -1782,5 +1785,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $node->lineno ?? 0
             );
         }
+    }
+
+    /**
+     * @param Decl $node
+     * A decl to check to see if it's only effect
+     * is the throw an exception
+     *
+     * @return bool
+     * True when the decl can only throw an exception
+     */
+    private function declOnlyThrows(Decl $node) {
+        return isset( $node->children['stmts'] )
+            && $node->children['stmts']->kind === \ast\AST_STMT_LIST
+            && count($node->children['stmts']->children) === 1
+            && $node->children['stmts']->children[0]->kind === \ast\AST_THROW;
     }
 }
