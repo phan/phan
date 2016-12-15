@@ -430,7 +430,7 @@ Usage: {$argv[0]} [options] [files...]
 
  -z, --signature-compatibility
   Analyze signatures for methods that are overrides to ensure
-  compatiiblity with what they're overriding.
+  compatibility with what they're overriding.
 
  -h,--help
   This help information
