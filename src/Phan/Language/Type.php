@@ -57,7 +57,7 @@ class Type
     /**
      * @var string
      * A legal type identifier matching a type optionally with a []
-     * indicating that its a generic typed array (e.g. 'int[]',
+     * indicating that it's a generic typed array (e.g. 'int[]',
      * 'string' or 'Set<DateTime>')
      */
     const type_regex =
@@ -457,7 +457,7 @@ class Type
         ) {
             return self::fromInternalTypeName($type_name);
         } else {
-            // Check to see if its a builtin type
+            // Check to see if it's a builtin type
             switch (strtolower(self::canonicalNameFromName($type_name))) {
                 case 'array':
                     return \Phan\Language\Type\ArrayType::instance();

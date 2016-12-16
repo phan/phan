@@ -966,12 +966,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     constant($node->children['name']->children['name'])
                 )->asUnionType();
             } else {
-                // Figure out the name of the constant if its
+                // Figure out the name of the constant if it's
                 // a string.
+                // NOTE: It seems like this will always be '' because defined() would catch everything except absence?
                 $constant_name =
-                    isset($node->children['name']->children['name'])
-                    ? $node->children['name']->children['name']
-                    : '';
+                    $node->children['name']->children['name'] ?? '';
 
                 // If the constant is referring to the current
                 // class, return that as a type

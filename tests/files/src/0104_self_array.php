@@ -2,7 +2,7 @@
 class A {
     /** @return self[] */
     function f() {
-        return [self, self];
+        return [new self(), new self()];
     }
 
     function g() {
