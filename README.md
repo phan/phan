@@ -61,7 +61,7 @@ Once installed, you can make sure Phan is running correctly by running `phan -h`
 
 With Phan running, you'll want to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Take a look at [Incrementally Strengthening Analysis](https://github.com/etsy/phan/wiki/Incrementally-Strengthening-Analysis)
-for some tips on how to slowly ramp up the stricntess of the analysis as your code becomes better equipped to be analyzed.
+for some tips on how to slowly ramp up the strictness of the analysis as your code becomes better equipped to be analyzed.
 
 Take a look at [Installing Phan Dependencies](https://github.com/etsy/phan/wiki/Getting-Started#installing-phan-dependencies) for help
 getting Phan's dependencies installed on your system.
