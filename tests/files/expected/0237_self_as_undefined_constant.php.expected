@@ -1,0 +1,2 @@
+%s:5 PhanUndeclaredConstant Reference to undeclared constant \self
+%s:8 PhanUndeclaredConstant Reference to undeclared constant \A237

@@ -466,18 +466,35 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitConst(Node $node) : Context
     {
         try {
-            $constant = (new ContextNode(
+            $nameNode = $node->children['name'];
+            // Based on UnionTypeVisitor::visitConst
+            if ($nameNode->kind == \ast\AST_NAME) {
+                if (defined($nameNode->children['name'])) {
+                    // Do nothing, this is an internal type such as `true` or `\ast\AST_NAME`
+                } else {
+                    $constant = (new ContextNode(
+                        $this->code_base,
+                        $this->context,
+                        $node
+                    ))->getConst();
+
+                    // Mark that this constant has been referenced from
+                    // this context
+                    $constant->addReference($this->context);
+                }
+            }
+
+        } catch (IssueException $exception) {
+            // We need to do this in order to check keys and (after the first 5) values in AST arrays.
+            // Other parts of the AST may also not be covered.
+            // (This issue may be a duplicate)
+            Issue::maybeEmitInstance(
                 $this->code_base,
                 $this->context,
-                $node
-            ))->getConst();
-
-            // Mark that this constant has been referenced from
-            // this context
-            $constant->addReference($this->context);
-
+                $exception->getIssueInstance()
+            );
         } catch (\Exception $exception) {
-            // Swallow any exceptions. We'll log the errors
+            // Swallow any other types of exceptions. We'll log the errors
             // elsewhere.
         }
 
@@ -508,8 +525,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // Mark that this class constant has been referenced
             // from this context
             $constant->addReference($this->context);
+        } catch (IssueException $exception) {
+            // We need to do this in order to check keys and (after the first 5) values in AST arrays, possibly other types.
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
         } catch (\Exception $exception) {
-            // Swallow any exceptions. We'll log the errors
+            // Swallow any other types of exceptions. We'll log the errors
             // elsewhere.
         }
 
@@ -962,7 +986,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$method->isStatic()
 
                 // Allow static calls to parent if we're not in a static
-                // method or if its to the overridden method
+                // method or if it's to the overridden method
                 && !(
                     (
                         'parent' === $static_class
@@ -1765,10 +1789,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to check to see if its a no-op
+     * A node to check to see if it's a no-op
      *
      * @param string $message
-     * A message to emit if its a no-op
+     * A message to emit if it's a no-op
      *
      * @return null
      */
