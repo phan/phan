@@ -7,6 +7,10 @@ class A {
     public function g() : int {
         return 42;
     }
+
+    public function m() : int {
+        throw new \Exception();
+    }
 }
 
 abstract class B {
@@ -18,4 +22,7 @@ function h() : int {}
 function j() {}
 function k() : int {
     return 42;
+}
+function l() : int {
+    throw new \Exception();
 }
