@@ -939,6 +939,9 @@ class Type
         $s = strtolower((string)$this);
         $d = strtolower((string)$type);
 
+        $s_is_generic_array = $this->isGenericArray();
+        $d_is_generic_array = $type->isGenericArray();
+
         if ($s[0]=='\\') {
             $s = substr($s, 1);
         }
@@ -957,13 +960,18 @@ class Type
             }
         }
 
+        if ($s_is_generic_array && $d_is_generic_array) {
+            return $this->genericArrayElementType()
+                ->canCastToType($type->genericArrayElementType());
+        }
+
         if ($s==='int' && $d==='float') {
             return true; // int->float is ok
         }
 
         if (($s==='array'
             || $s==='string'
-            || (strpos($s, '[]')!==false)
+            || $s_is_generic_array
             || $s==='closure')
             && $d==='callable'
         ) {
@@ -984,13 +992,13 @@ class Type
             return true;
         }
 
-        if (strpos($s, '[]') !== false
+        if ($s_is_generic_array
             && ($d == 'array' || $d == 'arrayaccess')
         ) {
             return true;
         }
 
-        if (strpos($d, '[]') !== false
+        if ($d_is_generic_array
             && $s==='array'
         ) {
             return true;

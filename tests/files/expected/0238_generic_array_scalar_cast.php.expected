@@ -1,0 +1,1 @@
+%s:4 PhanTypeMismatchArgument Argument 1 (p) is int[] but \f() takes string[] defined at %s:3
