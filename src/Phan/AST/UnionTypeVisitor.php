@@ -353,6 +353,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * Visit a node with kind `\ast\AST_ASSIGN_REF`
+     * @see $this->visitAssign
      *
      * @param Node $node
      * A node of the type indicated by the method name that we'd
@@ -364,8 +365,9 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitAssignRef(Node $node) : UnionType
     {
-        // TODO
-        return new UnionType();
+        // TODO: Is there any way this should differ from analysis
+        // (e.g. should subsequent assignments affect the right hand Node?)
+        return $this->visitAssign($node);
     }
 
     /**
