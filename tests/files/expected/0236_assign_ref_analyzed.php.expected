@@ -1,0 +1,2 @@
+%s:10 PhanTypeMismatchProperty Assigning \A236 to property but \A236::badDoc is string
+%s:12 PhanTypeMismatchProperty Assigning \A236 to property but \A236::badDoc is string
