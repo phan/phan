@@ -1,0 +1,1 @@
+%s:7 PhanTypeMismatchArgument Argument 1 (p) is \B but \f() takes \A defined at %s:4

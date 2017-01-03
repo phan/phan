@@ -187,7 +187,8 @@ class ConditionVisitor extends KindVisitorImplementation
             $variable = clone($variable);
 
             // Add the type to the variable
-            $variable->getUnionType()->addUnionType($type);
+            // $variable->getUnionType()->addUnionType($type);
+            $variable->setUnionType($type);
 
             // Overwrite the variable with its new type
             $context = $context->withScopeVariable(
