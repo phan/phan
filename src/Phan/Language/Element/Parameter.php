@@ -73,11 +73,6 @@ class Parameter extends Variable
             : $this->default_value_type;
     }
 
-    public function setUnionType(UnionType $type)
-    {
-        parent::setUnionType($type);
-    }
-
     /**
      * @return bool
      * True if this parameter has a type for its
@@ -353,6 +348,19 @@ class Parameter extends Variable
         return $this->isVariadic()
             ? parent::getUnionType()->asGenericArrayTypes()
             : parent::getUnionType();
+    }
+
+    /**
+     * Add the given union type to this parameter's union type
+     *
+     * @param UnionType $union_type
+     * The type to add to this parameter's union type
+     *
+     * @return void
+     */
+    public function addUnionType(UnionType $union_type)
+    {
+        parent::getUnionType()->addUnionType($union_type);
     }
 
     /**

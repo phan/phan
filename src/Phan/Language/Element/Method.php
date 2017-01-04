@@ -318,9 +318,7 @@ class Method extends ClassElement implements FunctionInterface
                                 $parameter_offset
                             )->getUnionType();
 
-                        $parameter->getUnionType()->addUnionType(
-                            $comment_type
-                        );
+                        $parameter->addUnionType($comment_type);
                     }
                 }
 
@@ -356,8 +354,8 @@ class Method extends ClassElement implements FunctionInterface
                     if ((string)$default_type === 'null'
                         && !$parameter->getUnionType()->isEmpty()
                     ) {
-                        $parameter->getUnionType()->addType(
-                            NullType::instance()
+                        $parameter->addUnionType(
+                            NullType::instance()->asUnionType()
                         );
                     }
                 }

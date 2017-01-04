@@ -39,7 +39,7 @@ accept_int(test_misc(2, []));  // Wrong
 test_ints_phpdoc(3);
 
 /**
- * @param int[] $args - FIXME: `int[]` should probably take precedence over the explicit type `array` and make this fail.
+ * @param int $args
  * @return int[]
  */
 function test_ints_phpdoc(...$args) {

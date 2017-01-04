@@ -1,0 +1,4 @@
+%s:6 PhanTypeMismatchArgument Argument 1 (args) is int but \f461() takes array defined at %s:3
+%s:6 PhanTypeMismatchArgument Argument 2 (args) is string but \f461() takes array defined at %s:3
+%s:12 PhanTypeMismatchArgument Argument 1 (args) is int but \C461::f() takes array defined at %s:10
+%s:12 PhanTypeMismatchArgument Argument 2 (args) is string but \C461::f() takes array defined at %s:10

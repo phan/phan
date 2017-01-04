@@ -184,9 +184,7 @@ class Func extends AddressableElement implements FunctionInterface
                                 $parameter_offset
                             )->getUnionType();
 
-                        $parameter->getUnionType()->addUnionType(
-                            $comment_type
-                        );
+                        $parameter->addUnionType($comment_type);
                     }
                 }
 
