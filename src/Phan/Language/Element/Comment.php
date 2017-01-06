@@ -244,7 +244,7 @@ class Comment
             $type = $match[2];
 
             $variable_name =
-                empty($match[23]) ? '' : trim($match[23], '$');
+                empty($match[29]) ? '' : trim($match[29], '$');
 
             // If the type looks like a variable name, make it an
             // empty type so that other stuff can match it. We can't

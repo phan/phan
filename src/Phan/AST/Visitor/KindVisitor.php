@@ -206,11 +206,6 @@ interface KindVisitor
     public function visitInstanceof(Node $node);
 
     /**
-     * Visit a node with kind `\ast\AST_LIST`
-     */
-    public function visitList(Node $node);
-
-    /**
      * Visit a node with kind `\ast\AST_MAGIC_CONST`
      */
     public function visitMagicConst(Node $node);
@@ -319,6 +314,11 @@ interface KindVisitor
      * Visit a node with kind `\ast\AST_TYPE`
      */
     public function visitType(Node $node);
+
+    /**
+     * Visit a node with kind `\ast\AST_NULLABLE_TYPE`
+     */
+    public function visitNullableType(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_UNARY_MINUS`

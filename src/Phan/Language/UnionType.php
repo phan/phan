@@ -629,23 +629,23 @@ class UnionType implements \Serializable
 
         if (Config::get()->null_casts_as_any_type) {
             // null <-> null
-            if ($this->isType(NullType::instance())
-                || $target->isType(NullType::instance())
+            if ($this->isType(NullType::instance(false))
+                || $target->isType(NullType::instance(false))
             ) {
                 return true;
             }
         }
 
         // mixed <-> mixed
-        if ($target->hasType(MixedType::instance())
-            || $this->hasType(MixedType::instance())
+        if ($target->hasType(MixedType::instance(false))
+            || $this->hasType(MixedType::instance(false))
         ) {
             return true;
         }
 
         // int -> float
-        if ($this->isType(IntType::instance())
-            && $target->isType(FloatType::instance())
+        if ($this->isType(IntType::instance(false))
+            && $target->isType(FloatType::instance(false))
         ) {
             return true;
         }
@@ -815,7 +815,7 @@ class UnionType implements \Serializable
             $this->type_set->filter(
                 function (Type $type) : bool {
                     return !$type->isGenericArray()
-                        && $type !== ArrayType::instance();
+                        && $type !== ArrayType::instance(false);
                 }
             )
         );
@@ -873,17 +873,30 @@ class UnionType implements \Serializable
 
         // If array is in there, then it can be any type
         // Same for mixed
-        if ($this->hasType(ArrayType::instance())
-            || $this->hasType(MixedType::instance())
+        if ($this->hasType(ArrayType::instance(false))
+            || $this->hasType(MixedType::instance(false))
         ) {
-            $union_type->addType(MixedType::instance());
+            $union_type->addType(MixedType::instance(false));
         }
 
-        if ($this->hasType(ArrayType::instance())) {
-            $union_type->addType(NullType::instance());
+        if ($this->hasType(ArrayType::instance(false))) {
+            $union_type->addType(NullType::instance(false));
         }
 
         return $union_type;
+    }
+
+    /**
+     * @param Closure $closure
+     * A closure mapping `Type` to `Type`
+     *
+     * @return UnionType
+     * A new UnionType with each type mapped through the
+     * given closure
+     */
+    public function asMappedUnionType(\Closure $closure) : UnionType
+    {
+        return new UnionType($this->type_set->map($closure));
     }
 
     /**
@@ -894,10 +907,10 @@ class UnionType implements \Serializable
      */
     public function asGenericArrayTypes() : UnionType
     {
-        return new UnionType(
-            $this->type_set->map(function (Type $type) : Type {
+        return $this->asMappedUnionType(
+            function (Type $type) : Type {
                 return $type->asGenericArrayType();
-            })
+            }
         );
     }
 

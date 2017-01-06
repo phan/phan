@@ -297,7 +297,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitEmpty(Node $node) : UnionType
     {
-        return BoolType::instance()->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -313,7 +313,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitIsset(Node $node) : UnionType
     {
-        return BoolType::instance()->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -348,7 +348,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitMagicConst(Node $node) : UnionType
     {
         // This is for things like __METHOD__
-        return StringType::instance()->asUnionType();
+        return StringType::instance(false)->asUnionType();
     }
 
     /**
@@ -383,7 +383,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitShellExec(Node $node) : UnionType
     {
-        return StringType::instance()->asUnionType();
+        return StringType::instance(false)->asUnionType();
     }
 
     /**
@@ -452,21 +452,21 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         switch ($node->flags) {
             case \ast\flags\TYPE_ARRAY:
-                return ArrayType::instance()->asUnionType();
+                return ArrayType::instance(false)->asUnionType();
             case \ast\flags\TYPE_BOOL:
-                return BoolType::instance()->asUnionType();
+                return BoolType::instance(false)->asUnionType();
             case \ast\flags\TYPE_CALLABLE:
-                return CallableType::instance()->asUnionType();
+                return CallableType::instance(false)->asUnionType();
             case \ast\flags\TYPE_DOUBLE:
-                return FloatType::instance()->asUnionType();
+                return FloatType::instance(false)->asUnionType();
             case \ast\flags\TYPE_LONG:
-                return IntType::instance()->asUnionType();
+                return IntType::instance(false)->asUnionType();
             case \ast\flags\TYPE_NULL:
-                return NullType::instance()->asUnionType();
+                return NullType::instance(false)->asUnionType();
             case \ast\flags\TYPE_OBJECT:
-                return ObjectType::instance()->asUnionType();
+                return ObjectType::instance(false)->asUnionType();
             case \ast\flags\TYPE_STRING:
-                return StringType::instance()->asUnionType();
+                return StringType::instance(false)->asUnionType();
             default:
                 assert(
                     false,
@@ -475,6 +475,34 @@ class UnionTypeVisitor extends AnalysisVisitor
                 );
                 break;
         }
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_TYPE` representing
+     * a nullable type such as `?string`.
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitNullableType(Node $node) : UnionType
+    {
+        // Get the type
+        $union_type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['type'],
+            $this->should_catch_issue_exception
+        );
+
+        // Make each nullable
+        return $union_type->asMappedUnionType(function (Type $type) : Type {
+            return $type->withIsNullable(true);
+        });
     }
 
     /**
@@ -521,7 +549,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // See Issue #104
         if ($true_type->isEmpty() xor $false_type->isEmpty()) {
             $union_type->addUnionType(
-                MixedType::instance()->asUnionType()
+                MixedType::instance(false)->asUnionType()
             );
         }
 
@@ -577,7 +605,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
 
-        return ArrayType::instance()->asUnionType();
+        return ArrayType::instance(false)->asUnionType();
     }
 
     /**
@@ -648,19 +676,19 @@ class UnionTypeVisitor extends AnalysisVisitor
         UnionType::fromNode($this->context, $this->code_base, $node->children['expr']);
         switch ($node->flags) {
             case \ast\flags\TYPE_NULL:
-                return NullType::instance()->asUnionType();
+                return NullType::instance(false)->asUnionType();
             case \ast\flags\TYPE_BOOL:
-                return BoolType::instance()->asUnionType();
+                return BoolType::instance(false)->asUnionType();
             case \ast\flags\TYPE_LONG:
-                return IntType::instance()->asUnionType();
+                return IntType::instance(false)->asUnionType();
             case \ast\flags\TYPE_DOUBLE:
-                return FloatType::instance()->asUnionType();
+                return FloatType::instance(false)->asUnionType();
             case \ast\flags\TYPE_STRING:
-                return StringType::instance()->asUnionType();
+                return StringType::instance(false)->asUnionType();
             case \ast\flags\TYPE_ARRAY:
-                return ArrayType::instance()->asUnionType();
+                return ArrayType::instance(false)->asUnionType();
             case \ast\flags\TYPE_OBJECT:
-                return ObjectType::instance()->asUnionType();
+                return ObjectType::instance(false)->asUnionType();
             default:
                 throw new NodeException(
                     $node,
@@ -769,7 +797,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // TODO: log it?
         }
 
-        return BoolType::instance()->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -808,7 +836,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If the only type is null, we don't know what
         // accessed items will be
-        if ($union_type->isType(NullType::instance())) {
+        if ($union_type->isType(NullType::instance(false))) {
             return new UnionType();
         }
 
@@ -817,18 +845,17 @@ class UnionTypeVisitor extends AnalysisVisitor
         // You can access string characters via array index,
         // so we'll add the string type to the result if we're
         // indexing something that could be a string
-        if ($union_type->isType(StringType::instance())
-            || $union_type->canCastToUnionType(StringType::instance()->asUnionType())
+        if ($union_type->isType(StringType::instance(false))
+            || $union_type->canCastToUnionType(StringType::instance(false)->asUnionType())
         ) {
-            $element_types->addType(StringType::instance());
+            $element_types->addType(StringType::instance(false));
         }
 
         // array offsets work on strings, unfortunately
         // Double check that any classes in the type don't
         // have ArrayAccess
         $array_access_type =
-            Type::fromNamespaceAndName('\\', 'ArrayAccess');
-
+            Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
 
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess
@@ -896,7 +923,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             && ($node->children['name']->kind == \ast\AST_VAR
             || $node->children['name']->kind == \ast\AST_BINARY_OP)
         ) {
-            return MixedType::instance()->asUnionType();
+            return MixedType::instance(false)->asUnionType();
         }
 
         // This is nonsense. Give up.
@@ -946,7 +973,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitEncapsList(Node $node) : UnionType
     {
-        return StringType::instance()->asUnionType();
+        return StringType::instance(false)->asUnionType();
     }
 
     /**
@@ -1250,7 +1277,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // type outside of its class
                     if ($union_type->hasStaticType()) {
                         $union_type = clone($union_type);
-                        $union_type->removeType(\Phan\Language\Type\StaticType::instance());
+                        $union_type->removeType(\Phan\Language\Type\StaticType::instance(false));
                     }
 
                     if ($union_type->genericArrayElementTypes()->hasStaticType()) {
@@ -1324,7 +1351,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Shortcut some easy operators
         switch ($node->flags) {
             case \ast\flags\UNARY_BOOL_NOT:
-                return BoolType::instance()->asUnionType();
+                return BoolType::instance(false)->asUnionType();
         }
 
         return self::unionTypeFromNode(
@@ -1471,6 +1498,25 @@ class UnionTypeVisitor extends AnalysisVisitor
         Context $context,
         $node
     ) : UnionType {
+
+        // If this is a list, build a union type by
+        // recursively visiting the child nodes
+        if ($node instanceof Node
+            && $node->kind == \ast\AST_NAME_LIST
+        ) {
+            $union_type = new UnionType;
+            foreach ($node->children ?? [] as $child_node) {
+                $union_type->addUnionType(
+                    self::unionTypeFromClassNode(
+                        $code_base,
+                        $context,
+                        $child_node
+                    )
+                );
+            }
+            return $union_type;
+        }
+
         // For simple nodes or very complicated nodes,
         // recurse
         if (!($node instanceof \ast\Node)

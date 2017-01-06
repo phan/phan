@@ -115,6 +115,8 @@ class Issue
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
     const AccessStaticToNonStatic   = 'PhanAccessStaticToNonStatic';
     const AccessNonStaticToStatic   = 'PhanAccessNonStaticToStatic';
+    const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
+    const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
 
     // Issue::CATEGORY_COMPATIBLE
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
@@ -935,6 +937,22 @@ class Issue
                 "Cannot make non static method %s() static",
                 self::REMEDIATION_B,
                 1007
+            ),
+            new Issue(
+                self::AccessClassConstantPrivate,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access private class constant %s defined at %s:%d",
+                self::REMEDIATION_B,
+                1008
+            ),
+            new Issue(
+                self::AccessClassConstantProtected,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access protected class constant %s defined at %s:%d",
+                self::REMEDIATION_B,
+                1009
             ),
 
             // Issue::CATEGORY_COMPATIBLE

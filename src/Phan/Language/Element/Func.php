@@ -195,9 +195,9 @@ class Func extends AddressableElement implements FunctionInterface
                     $default_type = $parameter->getDefaultValueType();
 
                     if (!$default_type->isEqualTo(
-                        NullType::instance()->asUnionType()
+                        NullType::instance(false)->asUnionType()
                     )) {
-                        if (!$default_type->isEqualTo(NullType::instance()->asUnionType())
+                        if (!$default_type->isEqualTo(NullType::instance(false)->asUnionType())
                             && !$default_type->canCastToUnionType(
                                 $parameter->getUnionType()
                         )) {
@@ -221,7 +221,7 @@ class Func extends AddressableElement implements FunctionInterface
                         && !$parameter->getUnionType()->isEmpty()
                     ) {
                         $parameter->getUnionType()->addType(
-                            NullType::instance()
+                            NullType::instance(false)
                         );
                     }
                 }

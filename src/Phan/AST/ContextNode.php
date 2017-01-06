@@ -255,13 +255,13 @@ class ContextNode
             if (!$union_type->isEmpty()
                 && $union_type->isNativeType()
                 && !$union_type->hasAnyType([
-                    MixedType::instance(),
-                    ObjectType::instance(),
-                    StringType::instance()
+                    MixedType::instance(false),
+                    ObjectType::instance(false),
+                    StringType::instance(false)
                 ])
                 && !(
                     Config::get()->null_casts_as_any_type
-                    && $union_type->hasType(NullType::instance())
+                    && $union_type->hasType(NullType::instance(false))
                 )
             ) {
                 throw new IssueException(
@@ -788,9 +788,10 @@ class ContextNode
                 continue;
             }
 
-            return $class->getConstantWithName(
+            return $class->getConstantByNameInContext(
                 $this->code_base,
-                $constant_name
+                $constant_name,
+                $this->context
             );
         }
 
@@ -893,6 +894,11 @@ class ContextNode
         } else {
             $temp = $this->node->children['expr'];
             $lnode = $temp;
+        }
+
+        // Strings can have DIMs, it turns out.
+        if (!($temp instanceof Node)) {
+            return;
         }
 
         if (!($temp->kind == \ast\AST_PROP

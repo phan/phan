@@ -19,8 +19,35 @@ class GenericArrayType extends ArrayType
      */
     protected function __construct(Type $type)
     {
-        parent::__construct('\\', self::NAME, []);
+        parent::__construct('\\', self::NAME, [], false);
         $this->element_type = $type;
+    }
+
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableType(Type $type) : bool
+    {
+        if ($type instanceof GenericArrayType) {
+            return $this->genericArrayElementType()
+                ->canCastToType($type->genericArrayElementType());
+        }
+
+        if ($type->isArrayLike()) {
+            return true;
+        }
+
+        $d = strtolower((string)$type);
+        if ($d[0] == '\\') {
+            $d = substr($d, 1);
+        }
+        if ($d === 'callable') {
+            return true;
+        }
+
+        return parent::canCastToNonNullableType($type);
     }
 
     /**
@@ -68,6 +95,12 @@ class GenericArrayType extends ArrayType
 
     public function __toString() : string
     {
-        return "{$this->element_type}[]";
+        $string = "{$this->element_type}[]";
+
+        if ($this->getIsNullable()) {
+            $string = '?' . $string;
+        }
+
+        return $string;
     }
 }

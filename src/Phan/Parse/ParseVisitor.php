@@ -321,13 +321,13 @@ class ParseVisitor extends ScopeVisitor
 
         } elseif ('__invoke' === $method_name) {
             $class->getUnionType()->addType(
-                CallableType::instance()
+                CallableType::instance(false)
             );
         } elseif ('__toString' === $method_name
             && !$this->context->getIsStrictTypes()
         ) {
             $class->getUnionType()->addType(
-                StringType::instance()
+                StringType::instance(false)
             );
         }
 
@@ -391,7 +391,7 @@ class ParseVisitor extends ScopeVisitor
 
             // Don't set 'null' as the type if thats the default
             // given that its the default default.
-            if ($union_type->isType(NullType::instance())) {
+            if ($union_type->isType(NullType::instance(false))) {
                 $union_type = new UnionType();
             }
 
@@ -495,7 +495,7 @@ class ParseVisitor extends ScopeVisitor
                     ->withLineNumberEnd($child_node->endLineno ?? 0),
                 $name,
                 new UnionType(),
-                $child_node->flags ?? 0,
+                $node->flags ?? 0,
                 $fqsen
             );
 

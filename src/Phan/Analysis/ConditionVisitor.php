@@ -110,44 +110,6 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitIsset(Node $node) : Context
     {
         return $this->context;
-
-        /*
-        // Only look at things of the form
-        // `isset($variable)`
-        if ($node->children['var']->kind !== \ast\AST_VAR) {
-            return $this->context;
-        }
-
-        try {
-            // Get the variable we're operating on
-            $variable = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['var']
-            ))->getVariable();
-
-            $v0 = $variable;
-
-            // Make a copy of the variable
-            $variable = clone($variable);
-
-            // Remove null from the list of possible types
-            // given that we know that the variable is
-            // set
-            $variable->getUnionType()->removeType(
-                NullType::instance()
-            );
-
-            // Overwrite the variable with its new type
-            $this->context->addScopeVariable(
-                $variable
-            );
-        } catch (\Exception $exception) {
-            // Swallow it
-        }
-
-        return $this->context;
-        */
     }
 
     /**
@@ -268,7 +230,7 @@ class ConditionVisitor extends KindVisitorImplementation
 
             if ($variable->getUnionType()->isEmpty()) {
                 $variable->getUnionType()->addType(
-                    NullType::instance()
+                    NullType::instance(false)
                 );
             }
 
@@ -280,7 +242,7 @@ class ConditionVisitor extends KindVisitorImplementation
             );
 
             // Change the type to match the is_a relationship
-            if ($type->isType(ArrayType::instance())
+            if ($type->isType(ArrayType::instance(false))
                 && $variable->getUnionType()->hasGenericArray()
             ) {
                 // If the variable is already a generic array,

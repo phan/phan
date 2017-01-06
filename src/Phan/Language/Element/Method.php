@@ -329,9 +329,9 @@ class Method extends ClassElement implements FunctionInterface
                     $default_type = $parameter->getDefaultValueType();
 
                     if (!$default_type->isEqualTo(
-                        NullType::instance()->asUnionType()
+                        NullType::instance(false)->asUnionType()
                     )) {
-                        if (!$default_type->isEqualTo(NullType::instance()->asUnionType())
+                        if (!$default_type->isEqualTo(NullType::instance(false)->asUnionType())
                             && !$default_type->canCastToUnionType(
                                 $parameter->getUnionType()
                         )) {
@@ -355,7 +355,7 @@ class Method extends ClassElement implements FunctionInterface
                         && !$parameter->getUnionType()->isEmpty()
                     ) {
                         $parameter->addUnionType(
-                            NullType::instance()->asUnionType()
+                            NullType::instance(false)->asUnionType()
                         );
                     }
                 }

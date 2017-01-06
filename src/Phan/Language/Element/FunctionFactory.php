@@ -216,7 +216,7 @@ class FunctionFactory {
 
                 if ($is_optional) {
                     $parameter->setDefaultValueType(
-                        NullType::instance()->asUnionType()
+                        NullType::instance(false)->asUnionType()
                     );
                 }
 

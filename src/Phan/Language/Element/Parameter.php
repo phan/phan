@@ -229,7 +229,7 @@ class Parameter extends Variable
                         && $default_node->kind === \ast\AST_ARRAY
                     ) {
                         $union_type = new UnionType([
-                            ArrayType::instance(),
+                            ArrayType::instance(false),
                         ]);
                     } else {
                         // If we're in the parsing phase and we
@@ -238,10 +238,10 @@ class Parameter extends Variable
                         // bool|float|int|string to avoid having
                         // to handle a future type.
                         $union_type = new UnionType([
-                            BoolType::instance(),
-                            FloatType::instance(),
-                            IntType::instance(),
-                            StringType::instance(),
+                            BoolType::instance(false),
+                            FloatType::instance(false),
+                            IntType::instance(false),
+                            StringType::instance(false),
                         ]);
                     }
                 }

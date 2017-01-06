@@ -154,25 +154,12 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitArray(Node $node) : Context
     {
-        // TODO: I'm not sure how to figure this one out
-        return $this->context;
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitList(Node $node) : Context
-    {
         // Figure out the type of elements in the list
         $element_type =
             $this->right_type->genericArrayElementTypes();
 
         foreach ($node->children ?? [] as $child_node) {
+
             // Some times folks like to pass a null to
             // a list to throw the element away. I'm not
             // here to judge.
@@ -180,10 +167,15 @@ class AssignmentVisitor extends AnalysisVisitor
                 continue;
             }
 
-            if ($child_node->kind == \ast\AST_VAR) {
+            // Get the key and value nodes for each
+            // array element we're assigning to
+            $key_node = $child_node->children['key'];
+            $value_node = $child_node->children['value'];
+
+            if ($value_node->kind == \ast\AST_VAR) {
 
                 $variable = Variable::fromNodeInContext(
-                    $child_node,
+                    $value_node,
                     $this->context,
                     $this->code_base,
                     false
@@ -197,13 +189,13 @@ class AssignmentVisitor extends AnalysisVisitor
                 // adding variables to the existing scope
                 $this->context->addScopeVariable($variable);
 
-            } else if ($child_node->kind == \ast\AST_PROP) {
+            } else if ($value_node->kind == \ast\AST_PROP) {
                 try {
                     $property = (new ContextNode(
                         $this->code_base,
                         $this->context,
-                        $child_node
-                    ))->getProperty($child_node->children['prop']);
+                        $value_node
+                    ))->getProperty($value_node->children['prop']);
 
                     // Set the element type on each element of
                     // the list

@@ -631,6 +631,10 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param CodeBase $code_base
+     * A reference to the entire code base in which the
+     * property exists.
+     *
      * @param string $name
      * The name of the property
      *
@@ -829,19 +833,102 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param CodeBase $code_base
+     * A reference to the entire code base in which the
+     * property exists.
+     *
+     * @param string $name
+     * The name of the class constant
+     *
+     * @param Context $context
+     * The context of the caller requesting the property
+     *
      * @return ClassConstant
-     * The class constant with the given name.
+     * A constant with the given name
+     *
+     * @throws IssueException
+     * An exception may be thrown if the caller does not
+     * have access to the given property from the given
+     * context
      */
-    public function getConstantWithName(
+    public function getConstantByNameInContext(
         CodeBase $code_base,
-        string $name
+        string $name,
+        Context $context
     ) : ClassConstant {
-        return $code_base->getClassConstantByFQSEN(
-            FullyQualifiedClassConstantName::make(
-                $this->getFQSEN(),
-                $name
+
+        $constant_fqsen = FullyQualifiedClassConstantName::make(
+            $this->getFQSEN(),
+            $name
+        );
+
+        if (!$code_base->hasClassConstantWithFQSEN($constant_fqsen)) {
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredClassConstant)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [
+                        (string)$constant_fqsen,
+                        (string)$this->getFQSEN()
+                    ]
+                )
+            );
+        }
+
+        $constant = $code_base->getClassConstantByFQSEN(
+            $constant_fqsen
+        );
+
+        // Are we within a class referring to the class
+        // itself?
+        $is_local_access = (
+            $context->isInClassScope()
+            && $context->getClassInScope($code_base) === $constant->getClass($code_base)
+        );
+
+        // Are we within a class or an extending sub-class
+        // referring to the class?
+        $is_local_or_remote_access = (
+            $is_local_access
+            || (
+                $context->isInClassScope()
+                && $context->getClassInScope($code_base)
+                ->getUnionType()->canCastToExpandedUnionType(
+                    $this->getUnionType(),
+                    $code_base
+                )
             )
         );
+
+        // If we have the constant, but its inaccessible, emit
+        // an issue
+        if (!$is_local_access && $constant->isPrivate()) {
+            throw new IssueException(
+                Issue::fromType(Issue::AccessClassConstantPrivate)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [
+                        (string)$constant_fqsen,
+                        $constant->getContext()->getFile(),
+                        $constant->getContext()->getLineNumberStart()
+                    ]
+                )
+            );
+        } else if (!$is_local_or_remote_access && $constant->isProtected()) {
+            throw new IssueException(
+                Issue::fromType(Issue::AccessClassConstantProtected)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [
+                        (string)$constant_fqsen,
+                        $constant->getContext()->getFile(),
+                        $constant->getContext()->getLineNumberStart()
+                    ]
+                )
+            );
+        }
+
+        return $constant;
     }
 
     /**
@@ -1622,7 +1709,7 @@ class Clazz extends AddressableElement
             new ClassConstant(
                 $this->getContext(),
                 'class',
-                StringType::instance()->asUnionType(),
+                StringType::instance(false)->asUnionType(),
                 0,
                 FullyQualifiedClassConstantName::make(
                     $this->getFQSEN(),

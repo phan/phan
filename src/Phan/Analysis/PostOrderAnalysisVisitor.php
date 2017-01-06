@@ -95,7 +95,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             "Expected left side of assignment to be a var"
         );
 
-        if ($right_type->isType(VoidType::instance())) {
+        if ($right_type->isType(VoidType::instance(false))) {
             $this->emitIssue(
                 Issue::TypeVoidAssignment,
                 $node->lineno ?? 0
@@ -155,19 +155,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitAssignRef(Node $node) : Context
     {
         return $this->visitAssign($node);
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitList(Node $node) : Context
-    {
-        return $this->context;
     }
 
     /**
@@ -413,7 +400,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['expr']
         );
 
-        if ($type->isType(ArrayType::instance())
+        if ($type->isType(ArrayType::instance(false))
+            || $type->isType(ArrayType::instance(true))
             || $type->isGenericArray()
         ) {
             $this->emitIssue(
@@ -1101,8 +1089,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 && !$return_type->isEmpty()
                 && !$method->getHasReturn()
                 && !$this->declOnlyThrows($node)
-                && !$return_type->hasType(VoidType::instance())
-                && !$return_type->hasType(NullType::instance())
+                && !$return_type->hasType(VoidType::instance(false))
+                && !$return_type->hasType(NullType::instance(false))
             ) {
                 $this->emitIssue(
                     Issue::TypeMissingReturn,
@@ -1127,8 +1115,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$return_type->isEmpty()
                 && !$method->getHasReturn()
                 && !$this->declOnlyThrows($node)
-                && !$return_type->hasType(VoidType::instance())
-                && !$return_type->hasType(NullType::instance())
+                && !$return_type->hasType(VoidType::instance(false))
+                && !$return_type->hasType(NullType::instance(false))
             ) {
                 $this->emitIssue(
                     Issue::TypeMissingReturn,
@@ -1176,8 +1164,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$return_type->isEmpty()
             && !$method->getHasReturn()
             && !$this->declOnlyThrows($node)
-            && !$return_type->hasType(VoidType::instance())
-            && !$return_type->hasType(NullType::instance())
+            && !$return_type->hasType(VoidType::instance(false))
+            && !$return_type->hasType(NullType::instance(false))
         ) {
             $this->emitIssue(
                 Issue::TypeMissingReturn,

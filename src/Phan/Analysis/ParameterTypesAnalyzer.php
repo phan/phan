@@ -195,7 +195,7 @@ class ParameterTypesAnalyzer
 
                 // A stricter type on an overriding method is cool
                 if ($o_parameter->getUnionType()->isEmpty()
-                    || $o_parameter->getUnionType()->isType(MixedType::instance())
+                    || $o_parameter->getUnionType()->isType(MixedType::instance(false))
                 ) {
                     continue;
                 }

@@ -1,0 +1,1 @@
+%s:4 PhanTypeMismatchReturn Returning type string[] but f() is declared to return ?int[]
