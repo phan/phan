@@ -109,9 +109,6 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitIsset(Node $node) : Context
     {
-        return $this->context;
-
-        /*
         // Only look at things of the form
         // `isset($variable)`
         if ($node->children['var']->kind !== \ast\AST_VAR) {
@@ -119,12 +116,13 @@ class ConditionVisitor extends KindVisitorImplementation
         }
 
         try {
-            // Get the variable we're operating on
+            // Get the variable we're operating on. Create is ok
+            // because for isset to succeed it must exist.
             $variable = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node->children['var']
-            ))->getVariable();
+            ))->getOrCreateVariable();
 
             $v0 = $variable;
 
@@ -147,7 +145,6 @@ class ConditionVisitor extends KindVisitorImplementation
         }
 
         return $this->context;
-        */
     }
 
     /**
