@@ -120,19 +120,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             ))($child_node);
         }
 
-        // Now that we know all about our context (like what
-        // 'self' means), we can analyze statements like
-        // assignments and method calls.
-        $context = (new PostOrderAnalysisVisitor(
-            $this->code_base,
-            $context->withLineNumberStart($node->lineno ?? 0),
-            $this->parent_node
-        ))($node);
-
-        // let any configured plugins analyze the node
-        ConfigPluginSet::instance()->analyzeNode(
-            $this->code_base, $context, $node, $this->parent_node
-        );
+        $context = $this->postOrderAnalyze($context, $node);
 
         return $context;
     }
@@ -166,13 +154,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $node->lineno ?? 0
         );
 
-        // Visit the given node populating the code base
-        // with anything we learn and get a new context
-        // indicating the state of the world within the
-        // given node
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base, $context
-        ))($node);
+        $context = $this->preOrderAnalyze($context, $node);
 
         assert(!empty($context), 'Context cannot be null');
 
@@ -226,14 +208,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $child_context_list
         ))($node);
 
-        // Now that we know all about our context (like what
-        // 'self' means), we can analyze statements like
-        // assignments and method calls.
-        $context = (new PostOrderAnalysisVisitor(
-            $this->code_base,
-            $context->withLineNumberStart($node->lineno ?? 0),
-            $this->parent_node
-        ))($node);
+        $context = $this->postOrderAnalyze($context, $node);
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
@@ -255,13 +230,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $node->lineno ?? 0
         );
 
-        // Visit the given node populating the code base
-        // with anything we learn and get a new context
-        // indicating the state of the world within the
-        // given node
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base, $context
-        ))($node);
+        $context = $this->preOrderAnalyze($context, $node);
 
         assert(!empty($context), 'Context cannot be null');
 
@@ -291,12 +260,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
-        $context = (new PostOrderAnalysisVisitor(
-            $this->code_base,
-            $context->withLineNumberStart($node->lineno ?? 0),
-            $this->parent_node
-        ))($node);
-
+        $context = $this->postOrderAnalyze($context, $node);
 
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
@@ -336,13 +300,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $node->lineno ?? 0
         ));
 
-        // Visit the given node populating the code base
-        // with anything we learn and get a new context
-        // indicating the state of the world within the
-        // given node
-        $context = (new PreOrderAnalysisVisitor(
-            $this->code_base, $context
-        ))($node);
+        $context = $this->preOrderAnalyze($context, $node);
 
         assert(!empty($context), 'Context cannot be null');
 
@@ -387,14 +345,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $child_context_list
         ))($node);
 
-        // Now that we know all about our context (like what
-        // 'self' means), we can analyze statements like
-        // assignments and method calls.
-        $context = (new PostOrderAnalysisVisitor(
-            $this->code_base,
-            $context->withLineNumberStart($node->lineno ?? 0),
-            $this->parent_node
-        ))($node);
+        $context = $this->postOrderAnalyze($context, $node);
 
         // Return the initial context as we exit
         return $this->context;
@@ -453,7 +404,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * An AST node we'd like to determine the UnionType
      * for
      *
@@ -466,7 +417,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * An AST node we'd like to determine the UnionType
      * for
      *
@@ -479,7 +430,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * An AST node we'd like to determine the UnionType
      * for
      *
@@ -489,5 +440,67 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
     public function visitClosure(Decl $node) : Context
     {
         return $this->visitClosedContext($node);
+    }
+
+    /**
+     * Common options for pre-order analysis phase of a Node.
+     * Run pre-order analysis steps, then run plugins.
+     *
+     * @param Context $context - The context before pre-order analysis
+     *
+     * @param Node $node
+     * An AST node we'd like to determine the UnionType
+     * for
+     *
+     * @return Context
+     * The updated context after pre-order analysis of the node
+     */
+    private function preOrderAnalyze(Context $context, Node $node) : Context
+    {
+        // Visit the given node populating the code base
+        // with anything we learn and get a new context
+        // indicating the state of the world within the
+        // given node
+        $context = (new PreOrderAnalysisVisitor(
+            $this->code_base, $context
+        ))($node);
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base, $context, $node
+        );
+        return $context;
+    }
+
+    /**
+     * Common options for post-order analysis phase of a Node.
+     * Run analysis steps and run plugins.
+     *
+     * @param Context $context - The context before post-order analysis
+     *
+     * @param Node $node
+     * An AST node we'd like to determine the UnionType
+     * for
+     *
+     * @return Context
+     * The updated context after post-order analysis of the node
+     */
+    private function postOrderAnalyze(Context $context, Node $node) : Context
+    {
+        // Now that we know all about our context (like what
+        // 'self' means), we can analyze statements like
+        // assignments and method calls.
+        $context = (new PostOrderAnalysisVisitor(
+            $this->code_base,
+            $context->withLineNumberStart($node->lineno ?? 0),
+            $this->parent_node
+        ))($node);
+
+        // let any configured plugins analyze the node
+        ConfigPluginSet::instance()->analyzeNode(
+            $this->code_base, $context, $node, $this->parent_node
+        );
+        return $context;
     }
 }
