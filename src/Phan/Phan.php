@@ -286,6 +286,7 @@ class Phan implements IgnoredFilesFilterInterface {
     private static function isExcludedAnalysisFile(
         string $file_path
     ) : bool {
+        $file_path = str_replace('\\', '/', $file_path);
         foreach (Config::get()->exclude_analysis_directory_list
                  as $directory
         ) {
