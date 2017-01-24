@@ -472,7 +472,8 @@ class Issue
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
                 "Doc-block declares return type %s which is incompatible with the return type %s declared in the signature",
-                self::REMEDIATION_B
+                self::REMEDIATION_B,
+                10020
             ),
             new Issue(
                 self::TypeMissingReturn,
