@@ -2,3 +2,4 @@ vendor
 .phan/data
 composer.phar
 /build
+samples
