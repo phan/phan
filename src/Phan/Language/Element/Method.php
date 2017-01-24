@@ -9,6 +9,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -263,24 +264,18 @@ class Method extends ClassElement implements FunctionInterface
             $method->setNumberOfRequiredParameters(0);
         }
 
-        // Take a look at method return types
-        if($node->children['returnType'] !== null) {
-            // Get the type of the parameter
-            $union_type = UnionType::fromNode(
-                $context,
-                $code_base,
-                $node->children['returnType']
-            );
+        // Pull out the method return type
+        $return_type = UnionType::fromNode(
+            $context,
+            $code_base,
+            $node->children['returnType']
+        );
 
-            $method->getUnionType()->addUnionType($union_type);
-        }
-
+        // See if we have a return type specified in the comment
         if ($comment->hasReturnUnionType()) {
+            $comment_return_type = $comment->getReturnType();
 
-            // See if we have a return type specified in the comment
-            $union_type = $comment->getReturnType();
-
-            if ($union_type->hasSelfType()) {
+            if ($comment_return_type->hasSelfType()) {
                 // We can't actually figure out 'static' at this
                 // point, but fill it in regardless. It will be partially
                 // correct
@@ -289,13 +284,31 @@ class Method extends ClassElement implements FunctionInterface
                     //       or $this in the type because I'm guessing
                     //       it doesn't really matter. Apologies if it
                     //       ends up being an issue.
-                    $union_type->addUnionType(
+                    $comment_return_type->addUnionType(
                         $context->getClassFQSEN()->asUnionType()
                     );
                 }
             }
 
-            $method->getUnionType()->addUnionType($union_type);
+            // Check that the comment return type matches the method return type
+            // Note: A comment may specify a 'narrowed' array type and still
+            // match, e.g. @return SomeType[] matches fn() : array {}
+            if ($comment_return_type->isEquivalentToReturnType($return_type, $context)) {
+                $method->getUnionType()->addUnionType($comment_return_type);
+            } else {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::TypeMismatchReturn,
+                    $node->lineno ?? 0,
+                    (string)$return_type,
+                    $method->getName(),
+                    (string)$comment_return_type
+                );
+            }
+
+        } else {
+            $method->getUnionType()->addUnionType($return_type);
         }
 
         // Add params to local scope for user functions
@@ -407,7 +420,7 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @return Method[]|\Generator
+     * @return \Generator
      * The set of all alternates to this method
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator {
@@ -429,7 +442,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function getOverriddenMethod(
         CodeBase $code_base
-    ) : ClassElement {
+    ) : Method {
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 

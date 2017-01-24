@@ -36,7 +36,7 @@ abstract class ClassElement extends AddressableElement
     }
 
     /**
-     * @return FullyQualifiedClassElement
+     * @return FullyQualifiedClassName
      * The FQSEN of this class element from where it was
      * originally defined
      */

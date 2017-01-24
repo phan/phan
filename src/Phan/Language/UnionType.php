@@ -540,6 +540,39 @@ class UnionType implements \Serializable
     }
 
     /**
+     * Determine if this UnionType is equivalent to the specified return type.
+     *
+     * Given:
+     *
+     * $array_union = UnionType::fromString('SomeType[]');
+     * $static_union = UnionType::fromString('static');
+     * $context = new Context(); // inside of SomeType
+     *
+     * The following cases are considered equivalent:
+     *
+     * $array_union->isEquivalentToReturnType(UnionType::fromString(''), $context);
+     * $array_union->isEquivalentToReturnType(UnionType::fromString('SomeType[]'), $context);
+     * $array_union->isEquivalentToReturnType(UnionType::fromString('array'), $context);
+     * $static_union->isEquivalentToReturnType(UnionType::fromString('SomeType'), $context);
+     *
+     * @param UnionType $return_type
+     * @param Context $context
+     *
+     * @return bool True IFF this union type is equivalent to the specified
+     *              return type.
+     */
+    public function isEquivalentToReturnType(
+        UnionType $return_type,
+        Context $context
+    ) : bool {
+
+        return $return_type->isEmpty() ||
+               $this->isEqualTo($return_type) ||
+               ($this->isGenericArray() && $return_type->isType(ArrayType::instance())) ||
+               $this->withStaticResolvedInContext($context)->isEqualTo($return_type);
+    }
+
+    /**
      * @param Type[] $type_list
      * A list of types
      *

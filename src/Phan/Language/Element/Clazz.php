@@ -383,7 +383,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return FQSEN
+     * @return FullyQualifiedClassName
      * The parent class of this class if one exists
      *
      * @throws \Exception
