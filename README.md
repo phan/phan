@@ -1,4 +1,8 @@
-Phan is a static analyzer for PHP.
+Phan is a static analyzer for PHP that prefers to minimize false-positives. Phan attempts to proves incorrectness rather than correctness.
+
+Phan looks for common issues and will verify type compatibility on various operations when type
+information is available or can be deduced. Phan does not have a strong understanding of flow control
+and does not attempt to track values.
 
 [![Code Climate](https://codeclimate.com/github/etsy/phan/badges/gpa.svg)](https://codeclimate.com/github/etsy/phan) [![Build Status](https://travis-ci.org/etsy/phan.svg?branch=master)](https://travis-ci.org/etsy/phan) [![Gitter](https://badges.gitter.im/etsy/phan.svg)](https://gitter.im/etsy/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://poser.pugx.org/etsy/phan/v/stable)](https://packagist.org/packages/etsy/phan)
@@ -18,21 +22,15 @@ your project to tell Phan how to analyze your source code. Once configured, you 
 This branch of Phan depends on PHP 7.0.x and the [php-ast](https://github.com/nikic/php-ast) extension. Take a look
 at later versions of Phan for PHP 7.1+ support.
 
-* **Alternative Installation Methods**
+* **Alternative Installation Methods**<br />
   See [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for alternative methods of using
-Phan and details on how to configure Phan for your project.
-* **Incrementally Strengthening Analysis**
-  Take a look at [Incrementally Strengthening Analysis](https://github.com/etsy/phan/wiki/Incrementally-Strengthening-Analysis)
-for some tips on how to slowly ramp up the strictness of the analysis as your code becomes better equipped to be analyzed.
-* **Installing Dependencies**
-  Take a look at [Installing Phan Dependencies](https://github.com/etsy/phan/wiki/Getting-Started#installing-phan-dependencies) for help
-getting Phan's dependencies installed on your system.
+Phan and details on how to configure Phan for your project.<br />
+* **Incrementally Strengthening Analysis**<br />
+  Take a look at [Incrementally Strengthening Analysis](https://github.com/etsy/phan/wiki/Incrementally-Strengthening-Analysis) for some tips on how to slowly ramp up the strictness of the analysis as your code becomes better equipped to be analyzed. <br />
+* **Installing Dependencies**<br />
+  Take a look at [Installing Phan Dependencies](https://github.com/etsy/phan/wiki/Getting-Started#installing-phan-dependencies) for help getting Phan's dependencies installed on your system.
 
 # Features
-
-Phan is a static analyzer that looks for common issues and will verify type compatibility
-on various operations when type information is available or can be deduced. Phan does not
-make any serious attempt to understand flow control and narrow types based on conditionals.
 
 Phan is able to perform the following kinds of analysis.
 
