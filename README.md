@@ -4,6 +4,30 @@ Phan is a static analyzer for PHP.
 [![Latest Stable Version](https://poser.pugx.org/etsy/phan/v/stable)](https://packagist.org/packages/etsy/phan)
 [![License](https://poser.pugx.org/etsy/phan/license)](https://github.com/etsy/phan/blob/master/LICENSE)
 
+# Getting Started
+
+The easiest way to use Phan is via Composer.
+
+```
+composer require --dev etsy/phan
+```
+
+With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) in
+your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
+
+This branch of Phan depends on PHP 7.0.x and the [php-ast](https://github.com/nikic/php-ast) extension. Take a look
+at later versions of Phan for PHP 7.1+ support.
+
+* **Alternative Installation Methods**
+  See [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for alternative methods of using
+Phan and details on how to configure Phan for your project.
+* **Incrementally Strengthening Analysis**
+  Take a look at [Incrementally Strengthening Analysis](https://github.com/etsy/phan/wiki/Incrementally-Strengthening-Analysis)
+for some tips on how to slowly ramp up the strictness of the analysis as your code becomes better equipped to be analyzed.
+* **Installing Dependencies**
+  Take a look at [Installing Phan Dependencies](https://github.com/etsy/phan/wiki/Getting-Started#installing-phan-dependencies) for help
+getting Phan's dependencies installed on your system.
+
 # Features
 
 Phan is a static analyzer that looks for common issues and will verify type compatibility
@@ -42,29 +66,6 @@ Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://git
 See the [tests](https://github.com/etsy/phan/blob/master/tests/files) directory for some examples of the various checks.
 
 Phan is imperfect and shouldn't be used to prove that your PHP-based rocket guidance system is free of defects.
-
-# Getting Phan Running
-
-Take a look at [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for various methods of getting Phan running on your system.
-
-Phan depends on PHP 7+ and the [php-ast](https://github.com/nikic/php-ast) extension. With those [dependencies installed](https://github.com/etsy/phan/wiki/Getting-Started#installing-phan-dependencies),
-you can get Phan running via any of the following methods.
-
-* [Composer](https://github.com/etsy/phan/wiki/Getting-Started#composer)
-* [Source](https://github.com/etsy/phan/wiki/Getting-Started#from-source)
-* [Phan.phar](https://github.com/etsy/phan/wiki/Getting-Started#from-phanphar)
-* [Docker Image](https://github.com/etsy/phan/wiki/Getting-Started#from-a-docker-image)
-* [Code Climate](https://github.com/etsy/phan/wiki/Getting-Started#from-code-climate)
-* [Homebrew](https://github.com/etsy/phan/wiki/Getting-Started#from-homebrew)
-
-Once installed, you can make sure Phan is running correctly by running `phan -h` to see its command-line options.
-
-With Phan running, you'll want to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) in
-your project to tell Phan how to analyze your source code. Take a look at [Incrementally Strengthening Analysis](https://github.com/etsy/phan/wiki/Incrementally-Strengthening-Analysis)
-for some tips on how to slowly ramp up the strictness of the analysis as your code becomes better equipped to be analyzed.
-
-Take a look at [Installing Phan Dependencies](https://github.com/etsy/phan/wiki/Getting-Started#installing-phan-dependencies) for help
-getting Phan's dependencies installed on your system.
 
 # Usage
 
