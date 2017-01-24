@@ -291,7 +291,7 @@ class Method extends ClassElement implements FunctionInterface
                     //       or $this in the type because I'm guessing
                     //       it doesn't really matter. Apologies if it
                     //       ends up being an issue.
-                    $comment_return_union_union_type->addUnionType(
+                    $comment_return_union_type->addUnionType(
                         $context->getClassFQSEN()->asUnionType()
                     );
                 }
