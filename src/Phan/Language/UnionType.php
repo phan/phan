@@ -540,36 +540,59 @@ class UnionType implements \Serializable
     }
 
     /**
-     * Determine if this UnionType is equivalent to the specified return type.
+     * @param UnionType $union_type
+     * A union type to compare against
      *
-     * Given:
-     *
-     * $array_union = UnionType::fromString('SomeType[]');
-     * $static_union = UnionType::fromString('static');
-     * $context = new Context(); // inside of SomeType
-     *
-     * The following cases are considered equivalent:
-     *
-     * $array_union->isEquivalentToReturnType(UnionType::fromString(''), $context);
-     * $array_union->isEquivalentToReturnType(UnionType::fromString('SomeType[]'), $context);
-     * $array_union->isEquivalentToReturnType(UnionType::fromString('array'), $context);
-     * $static_union->isEquivalentToReturnType(UnionType::fromString('SomeType'), $context);
-     *
-     * @param UnionType $return_type
      * @param Context $context
+     * The context in which this type exists.
      *
-     * @return bool True IFF this union type is equivalent to the specified
-     *              return type.
+     * @param CodeBase $code_base
+     * The code base in which both this and the given union
+     * types exist.
+     *
+     * @return bool
+     * True if each type within this union type can cast
+     * to the given union type.
      */
-    public function isEquivalentToReturnType(
-        UnionType $return_type,
-        Context $context
+    public function isExclusivelyNarrowedFormOrEquivalentTo(
+        UnionType $union_type,
+        Context $context,
+        CodeBase $code_base
     ) : bool {
 
-        return $return_type->isEmpty() ||
-               $this->isEqualTo($return_type) ||
-               ($this->isGenericArray() && $return_type->isType(ArrayType::instance())) ||
-               $this->withStaticResolvedInContext($context)->isEqualTo($return_type);
+        // Special rule: anything can cast to nothing
+        if ($union_type->isEmpty()) {
+            return true;
+        }
+
+        // Check to see if the types are equivalent
+        if ($this->isEqualTo($union_type)) {
+            return true;
+        }
+
+        // Resolve 'static' for the given context to
+        // determine whats actually being referred
+        // to in concrete terms.
+        $union_type =
+            $union_type->withStaticResolvedInContext($context);
+
+        // Convert this type to an array of resolved
+        // types.
+        $type_set =
+            $this->withStaticResolvedInContext($context)
+            ->getTypeSet()->toArray();
+
+        // Test to see if every single type in this union
+        // type can cast to the given union type.
+        return array_reduce($type_set,
+            function (bool $can_cast, Type $type) use($union_type, $code_base) : bool {
+                return (
+                    $can_cast
+                    && $type->asUnionType()->asExpandedTypes($code_base)->canCastToUnionType(
+                        $union_type
+                    )
+                );
+            }, true);
     }
 
     /**

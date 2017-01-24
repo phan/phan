@@ -1,0 +1,2 @@
+%s:4 PhanTypeMismatchDeclaredReturn Doc-block declares return type string which is incompatible with the return type int declared in the signature
+%s:26 PhanTypeMismatchDeclaredReturn Doc-block declares return type \C253_1 which is incompatible with the return type \C253_2 declared in the signature

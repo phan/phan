@@ -50,6 +50,7 @@ class Issue
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
+    const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
     const TypeMissingReturn         = 'PhanTypeMissingReturn';
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
@@ -465,6 +466,13 @@ class Issue
                 "Returning type %s but %s() is declared to return %s",
                 self::REMEDIATION_B,
                 10005
+            ),
+            new Issue(
+                self::TypeMismatchDeclaredReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Doc-block declares return type %s which is incompatible with the return type %s declared in the signature",
+                self::REMEDIATION_B
             ),
             new Issue(
                 self::TypeMissingReturn,

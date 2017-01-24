@@ -2,6 +2,7 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -264,18 +265,24 @@ class Method extends ClassElement implements FunctionInterface
             $method->setNumberOfRequiredParameters(0);
         }
 
-        // Pull out the method return type
-        $return_type = UnionType::fromNode(
-            $context,
-            $code_base,
-            $node->children['returnType']
-        );
+        // Add the syntax-level return type to the method's union type
+        // if it exists
+        $return_union_type = new UnionType;
+        if($node->children['returnType'] !== null) {
+            $return_union_type = UnionType::fromNode(
+                $context,
+                $code_base,
+                $node->children['returnType']
+            );
+            $method->getUnionType()->addUnionType($return_union_type);
+        }
 
-        // See if we have a return type specified in the comment
+        // If avialable, add in the doc-block annotated return type
+        // for the method.
         if ($comment->hasReturnUnionType()) {
-            $comment_return_type = $comment->getReturnType();
 
-            if ($comment_return_type->hasSelfType()) {
+            $comment_return_union_type = $comment->getReturnType();
+            if ($comment_return_union_type->hasSelfType()) {
                 // We can't actually figure out 'static' at this
                 // point, but fill it in regardless. It will be partially
                 // correct
@@ -284,31 +291,34 @@ class Method extends ClassElement implements FunctionInterface
                     //       or $this in the type because I'm guessing
                     //       it doesn't really matter. Apologies if it
                     //       ends up being an issue.
-                    $comment_return_type->addUnionType(
+                    $comment_return_union_union_type->addUnionType(
                         $context->getClassFQSEN()->asUnionType()
                     );
                 }
             }
 
-            // Check that the comment return type matches the method return type
-            // Note: A comment may specify a 'narrowed' array type and still
-            // match, e.g. @return SomeType[] matches fn() : array {}
-            if ($comment_return_type->isEquivalentToReturnType($return_type, $context)) {
-                $method->getUnionType()->addUnionType($comment_return_type);
-            } else {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::TypeMismatchReturn,
-                    $node->lineno ?? 0,
-                    (string)$return_type,
-                    $method->getName(),
-                    (string)$comment_return_type
-                );
+            if (Config::get()->check_docblock_signature_return_type_match) {
+                // Make sure that the commented type is a narrowed
+                // or equivalent form of the syntax-level declared
+                // return type.
+                if (!$comment_return_union_type->isExclusivelyNarrowedFormOrEquivalentTo(
+                        $return_union_type,
+                        $context,
+                        $code_base
+                    )
+                ) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDeclaredReturn,
+                        $node->lineno ?? 0,
+                        $comment_return_union_type->__toString(),
+                        $return_union_type->__toString()
+                    );
+                }
             }
 
-        } else {
-            $method->getUnionType()->addUnionType($return_type);
+            $method->getUnionType()->addUnionType($comment_return_union_type);
         }
 
         // Add params to local scope for user functions

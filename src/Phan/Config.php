@@ -145,6 +145,12 @@ class Config
         // hope of fixing.
         'ignore_undeclared_variables_in_global_scope' => false,
 
+        // If true, check to make sure the return type declared
+        // in the doc-block (if any) matches the return type
+        // declared in the method signature. This process is
+        // slow.
+        'check_docblock_signature_return_type_match' => false,
+
         // Set to true in order to attempt to detect dead
         // (unreferenced) code. Keep in mind that the
         // results will only be a guess given that classes,
