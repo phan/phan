@@ -1,0 +1,4 @@
+%s:5 PhanTypeComparisonFromArray array to string comparison
+%s:6 PhanTypeComparisonToArray string to array comparison
+%s:12 PhanTypeComparisonFromArray array to string comparison
+%s:13 PhanTypeComparisonToArray string to array comparison

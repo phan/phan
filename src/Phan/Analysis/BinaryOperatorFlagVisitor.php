@@ -158,48 +158,41 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     private function visitBinaryOpCommon(Node $node)
     {
-            $left = UnionType::fromNode(
-                $this->context,
+        $left = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['left']
+        );
+
+        $right = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['right']
+        );
+
+        if ($left->isExclusivelyArrayLike()
+            && !$right->hasArrayLike()
+        ) {
+            Issue::maybeEmit(
                 $this->code_base,
-                $node->children['left']
-            );
-
-            $right = UnionType::fromNode(
                 $this->context,
-                $this->code_base,
-                $node->children['right']
+                Issue::TypeComparisonFromArray,
+                $node->lineno ?? 0,
+                (string)$right
             );
+        } elseif ($right->isExclusivelyArrayLike()
+            && !$left->hasArrayLike()
+        ) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::TypeComparisonToArray,
+                $node->lineno ?? 0,
+                (string)$left
+            );
+        }
 
-            if (!$left->genericArrayElementTypes()->isEmpty()
-            && $left->nonGenericArrayTypes()->isEmpty()
-            && !$right->canCastToUnionType(
-                ArrayType::instance(false)->asUnionType()
-            )
-            ) {
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
-                    Issue::TypeComparisonFromArray,
-                    $node->lineno ?? 0,
-                    (string)$right
-                );
-            } elseif (!$right->genericArrayElementTypes()->isEmpty()
-            && $right->nonGenericArrayTypes()->isEmpty()
-            && !$left->canCastToUnionType(
-                ArrayType::instance(false)->asUnionType()
-            )
-            ) {
-                // and the same for the left side
-                Issue::maybeEmit(
-                    $this->code_base,
-                    $this->context,
-                    Issue::TypeComparisonToArray,
-                    $node->lineno ?? 0,
-                    (string)$left
-                );
-            }
-
-            return BoolType::instance(false)->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -259,7 +252,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryIsSmaller(Node $node) : UnionType
     {
-        return $this->visitBinaryBool($node);
+        return $this->visitBinaryOpCommon($node);
     }
 
     /**
@@ -271,7 +264,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryIsSmallerOrEqual(Node $node) : UnionType
     {
-        return $this->visitBinaryBool($node);
+        return $this->visitBinaryOpCommon($node);
     }
 
     /**
@@ -283,7 +276,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryIsGreater(Node $node) : UnionType
     {
-        return $this->visitBinaryBool($node);
+        return $this->visitBinaryOpCommon($node);
     }
 
     /**
@@ -295,9 +288,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryIsGreaterOrEqual(Node $node) : UnionType
     {
-        return $this->visitBinaryBool($node);
+        return $this->visitBinaryOpCommon($node);
     }
-
 
     /**
      * @param Node $node
@@ -400,6 +392,18 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     private function visitBinaryBool(Node $node) : UnionType
     {
-        return $this->visitBinaryOpCommon($node);
+        $left = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['left']
+        );
+
+        $right = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['right']
+        );
+
+        return BoolType::instance()->asUnionType();
     }
 }
