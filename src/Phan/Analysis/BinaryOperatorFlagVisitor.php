@@ -174,11 +174,11 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $right_is_array_like = $right->isExclusivelyArrayLike();
 
         $left_can_cast_to_array = $left->canCastToUnionType(
-            ArrayType::instance()->asUnionType()
+            ArrayType::instance(false)->asUnionType()
         );
 
         $right_can_cast_to_array = $right->canCastToUnionType(
-            ArrayType::instance()->asUnionType()
+            ArrayType::instance(false)->asUnionType()
         );
 
         if ($left_is_array_like
