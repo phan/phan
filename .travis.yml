@@ -26,13 +26,3 @@ install:
 script:
   - ./vendor/bin/phpunit --colors --testsuite "$TEST_SUITE"
   - php package.php
-
-before_deploy:
-  - php package.php
-
-deploy:
-  provider: releases
-  file: build/phan.phar
-  skip_cleanup: true
-  on:
-    tags: true
