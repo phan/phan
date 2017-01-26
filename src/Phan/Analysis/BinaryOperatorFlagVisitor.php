@@ -404,6 +404,6 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['right']
         );
 
-        return BoolType::instance()->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 }

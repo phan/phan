@@ -804,7 +804,7 @@ class UnionType implements \Serializable
                 return (
                     $is_exclusively_array
                     && (
-                        $type === ArrayType::instance()
+                        $type === ArrayType::instance(false)
                         || $type->isGenericArray()
                     )
                 );
