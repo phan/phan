@@ -2,7 +2,6 @@ language: php
 
 php:
   - 7
-  - 7.1
 
 env:
   - TEST_SUITE="AnalyzerTest"
