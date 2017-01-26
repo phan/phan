@@ -170,8 +170,21 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['right']
         );
 
-        if ($left->isExclusivelyArrayLike()
+        $left_is_array_like = $left->isExclusivelyArrayLike();
+        $right_is_array_like = $right->isExclusivelyArrayLike();
+
+        $left_can_cast_to_array = $left->canCastToUnionType(
+            ArrayType::instance()->asUnionType()
+        );
+
+        $right_can_cast_to_array = $right->canCastToUnionType(
+            ArrayType::instance()->asUnionType()
+        );
+
+        if ($left_is_array_like
             && !$right->hasArrayLike()
+            && !$right_can_cast_to_array
+            && !$right->isEmpty()
         ) {
             Issue::maybeEmit(
                 $this->code_base,
@@ -180,8 +193,10 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $node->lineno ?? 0,
                 (string)$right
             );
-        } elseif ($right->isExclusivelyArrayLike()
+        } elseif ($right_is_array_like
             && !$left->hasArrayLike()
+            && !$left_can_cast_to_array
+            && !$left->isEmpty()
         ) {
             Issue::maybeEmit(
                 $this->code_base,
