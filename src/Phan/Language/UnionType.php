@@ -713,6 +713,49 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return bool
+     * True if this union type represents types that are
+     * array-like, and nothing else.
+     */
+    public function isExclusivelyArrayLike() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return array_reduce($this->getTypeSet()->toArray(),
+            function (bool $is_exclusively_array, Type $type) : bool {
+                return (
+                    $is_exclusively_array
+                    && $type->isArrayLike()
+                );
+            }, true);
+    }
+
+    /**
+     * @return bool
+     * True if this union type represents types that are arrays
+     * or generic arrays, but nothing else.
+     */
+    public function isExclusivelyArray() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return array_reduce($this->getTypeSet()->toArray(),
+            function (bool $is_exclusively_array, Type $type) : bool {
+                return (
+                    $is_exclusively_array
+                    && (
+                        $type === ArrayType::instance()
+                        || $type->isGenericArray()
+                    )
+                );
+            }, true);
+    }
+
+    /**
      * @return UnionType
      * Get the subset of types which are not native
      */
