@@ -8848,7 +8848,7 @@ return [
 'ssh2_sftp_unlink' => ['bool', 'sftp'=>'', 'filename'=>'string'],
 'ssh2_shell' => ['resource', 'session'=>'', 'term_type='=>'string', 'env='=>'array', 'width='=>'int', 'height='=>'int', 'width_height_type='=>'int'],
 'ssh2_tunnel' => ['resource', 'session'=>'', 'host'=>'string', 'port'=>'int'],
-'stat' => ['array', 'filename'=>'string'],
+'stat' => ['array|bool', 'filename'=>'string'],
 'stats_absolute_deviation' => ['float', 'a'=>'array'],
 'stats_cdf_beta' => ['float', 'par1'=>'float', 'par2'=>'float', 'par3'=>'float', 'which'=>'int'],
 'stats_cdf_binomial' => ['float', 'par1'=>'float', 'par2'=>'float', 'par3'=>'float', 'which'=>'int'],
