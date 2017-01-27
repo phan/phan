@@ -13,13 +13,13 @@ class Parameter
      * @var string
      * The name of the parameter
      */
-    private $name = null;
+    private $name;
 
     /**
      * @var UnionType
      * The type of the parameter
      */
-    private $type = null;
+    private $type;
 
     /**
      * @param string $name

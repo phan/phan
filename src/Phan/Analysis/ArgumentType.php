@@ -375,6 +375,18 @@ class ArgumentType
      * @param Node|null|string|int $node
      * A node or whatever php-ast feels like returning
      *
+     * @param Context $context
+     * The context in which the node was found
+     *
+     * @param CodeBase $code_base
+     * The code base in which the node was found
+     *
+     * @param UnionType $cast_type
+     * The type that is being casted to
+     *
+     * @param \Closure $issue_instance
+     * An issue to emit if the cast doesn't work.
+     *
      * @return bool
      * True if the cast is possible, else false
      */

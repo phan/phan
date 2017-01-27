@@ -533,7 +533,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -1054,7 +1054,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -1147,7 +1147,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -1467,7 +1467,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * to the given method or function
      *
      * @param CodeBase $code_base
-     * @param Method $method
+     * @param FunctionInterface $method
      * @param Node $node
      *
      * @return null
@@ -1782,7 +1782,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param Node $node
      * A node to check to see if it's a no-op
      *
-     * @param string $message
+     * @param string $issue_type
      * A message to emit if it's a no-op
      *
      * @return null

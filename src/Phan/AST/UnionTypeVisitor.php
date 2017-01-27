@@ -70,7 +70,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
-     * @param $context $context
+     * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
@@ -881,7 +881,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -1478,7 +1478,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
-     * @param $context $context
+     * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
      *

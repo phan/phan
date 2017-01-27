@@ -114,7 +114,7 @@ class ArgumentVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return void

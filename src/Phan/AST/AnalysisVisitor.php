@@ -44,7 +44,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param mixed parameters
+     * @param mixed $parameters
      * Template parameters for the issue's error message
      *
      * @return void

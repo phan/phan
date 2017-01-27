@@ -25,6 +25,9 @@ use ast\Node\Decl;
 class PreOrderAnalysisVisitor extends ScopeVisitor
 {
     /**
+     * @param CodeBase $code_base
+     * The code base in which we're analyzing code
+     *
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
@@ -44,7 +47,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLASS`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -100,7 +103,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_METHOD`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -182,7 +185,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -269,7 +272,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -434,9 +437,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      *
      * This must be called before visitReturn is called within a function.
      *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
+     * @return bool
+     * True if the node represents a yield, else false.
      */
     public static function analyzeFunctionLikeIsGenerator(Node $node) : bool
     {

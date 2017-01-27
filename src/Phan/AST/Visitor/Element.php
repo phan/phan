@@ -12,7 +12,7 @@ class Element
     /**
      * @var Node
      */
-    private $node = null;
+    private $node;
 
     /**
      * @param Node $node
