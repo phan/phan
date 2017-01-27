@@ -518,13 +518,23 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitConditional(Node $node) : UnionType
     {
-
-        $true_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
+        $true_node =
             $node->children['trueExpr'] ??
-                $node->children['true'] ?? ''
-        );
+                $node->children['true'] ?? '';
+
+        if ($true_node) {
+            $true_type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $true_node
+            );
+        } else {
+            $true_type = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $node->children['cond']
+            );
+        }
 
         $false_type = UnionType::fromNode(
             $this->context,
