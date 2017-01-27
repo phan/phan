@@ -1686,7 +1686,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$argument
                 && $parameter->hasDefaultValue()
             ) {
-                $parameter->setUnionType($parameter->getDefaultValueType());
+                $parameter_list = $method->getParameterList();
+                $parameter_list[$i] = clone($parameter);
+                $parameter_list[$i]->setUnionType($parameter->getDefaultValueType());
+                $method->setParameterList($parameter_list);
             }
 
             // If there's no parameter at that offset, we may be in
@@ -1814,7 +1817,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $variable
             );
 
-        // Substitute the
+        // Substitute the new type in for the parameter's type
         $parameter_list = $method->getParameterList();
         $parameter_list[$parameter_offset] =
             $pass_by_reference_variable;
