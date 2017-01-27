@@ -13,6 +13,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Parameter;
 use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -1619,7 +1620,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
                 if ($variable) {
                     $variable->getUnionType()->addUnionType(
-                        $parameter->getVariadicElementUnionType()
+                        $parameter->getNonVariadicUnionType()
                     );
                 }
             }
@@ -1631,163 +1632,199 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        // We're going to hunt to see if any of the arguments
-        // have a mismatch with the parameters. If so, we'll
-        // re-check the method to see how the parameters impact
-        // its return type
-        $has_argument_parameter_mismatch = false;
+        // Re-analyze the method with the types of the arguments
+        // being passed in.
+        $this->analyzeMethodWithArgumentTypes(
+            $code_base, $node->children['args'], $method
+        );
+    }
 
-        // Now that we've made sure the arguments are sufficient
-        // for definitions on the method, we iterate over the
-        // arguments again and add their types to the parameter
-        // types so we can test the method again
-        $argument_list = $node->children['args'];
+    /**
+     * Replace the method's parameter types with the argument
+     * types and re-analyze the method.
+     *
+     * @param CodeBase $code_base
+     * The code base in which the method call was found
+     *
+     * @param Node $argument_list_node
+     * An AST node listing the arguments
+     *
+     * @param FunctionInterface $method
+     * The method or function being called
+     *
+     * @return void
+     */
+    private function analyzeMethodWithArgumentTypes(
+        CodeBase $code_base,
+        Node $argument_list_node,
+        FunctionInterface $method
+    ) {
+        // Don't re-analyze recursive methods. That doesn't go
+        // well.
+        if ($this->context->isInFunctionLikeScope()
+            && $method->getFQSEN() === $this->context->getFunctionLikeFQSEN()
+        ) {
+            return;
+        }
 
-        // We create a copy of the parameter list so we can switch
-        // back to it after
-        $original_parameter_list = $method->getParameterList();
+        // Create a copy of the method's original parameter list
+        // and scope so that we can reset it after re-analyzing
+        // it.
+        $original_method_scope = clone($method->getInternalScope());
+        $original_parameter_list = array_map(function (Parameter $parameter) : Parameter {
+            return clone($parameter);
+        }, $method->getParameterList());
 
-        // Create a backup of the method's scope so that we can
-        // reset it after fucking with it below
-        $original_method_scope = $method->getInternalScope();
 
-        foreach ($argument_list->children as $i => $argument) {
-            // TODO(Issue #376): Support inference on the child in **the set of vargs**, not just the first vararg
-            // This is just testing the first vararg.
-            // The implementer will also need to restore the original parameter list.
-            $parameter = $original_parameter_list[$i] ?? null;
+        // Get the list of parameters on the method
+        $parameter_list = $method->getParameterList();
 
-            if (!$parameter) {
+        // Attempt to map each argument to each parameter
+        foreach ($argument_list_node->children ?? [] as $i => $argument) {
+
+            // TODO (Issue #376): Support inference on the child in
+            // **the set of vargs**, not just the first vararg.
+
+            // Get the ith parameter
+            $parameter = $parameter_list[$i] ?? null;
+
+            // If there's no parameter at that offset, we may be in
+            // a ParamTooMany situation. That is caught elsewhere.
+            if (!$parameter
+                || !$parameter->getNonVariadicUnionType()->isEmpty()
+            ) {
                 continue;
             }
 
-            // If the parameter has no type, pass the
-            // argument's type to it
-            if ($parameter->getVariadicElementUnionType()->isEmpty()) {
-                $has_argument_parameter_mismatch = true;
-                // If this isn't an internal function or method
-                // and it has no type, add the argument's type
-                // to it so we can compare it to subsequent
-                // calls
-                if (!$parameter->isInternal()) {
-                    $argument_type = UnionType::fromNode(
-                        $this->context,
-                        $this->code_base,
-                        $argument
-                    );
-
-                    // Clone the parameter in the original
-                    // parameter list so we can reset it
-                    // later
-                    // TODO: If there are varargs and this is beyond the end, ensure last arg is cloned.
-                    $original_parameter_list[$i] = clone($original_parameter_list[$i]);
-
-                    // Then set the new type on that parameter based
-                    // on the argument's type. We'll use this to
-                    // retest the method with the passed in types
-                    $parameter->getVariadicElementUnionType()->addUnionType(
-                        $argument_type
-                    );
-
-                    if (!is_object($argument)) {
-                        continue;
-                    }
-
-                    // If we're passing by reference, get the variable
-                    // we're dealing with wrapped up and shoved into
-                    // the scope of the method
-                    if ($parameter->isPassByReference()) {
-                        if ($original_parameter_list[$i]->isVariadic()) {
-                            // For now, give up and work on it later.
-                            // TODO(Issue #376): It's possible to have a parameter `&...$args`. Analysing that is going to be a problem.
-                            // Is it possible to create `PassByReferenceVariableCollection extends Variable` or something similar?
-                        } elseif ($argument->kind == \ast\AST_VAR) {
-                            // Get the variable
-                            $variable = (new ContextNode(
-                                $this->code_base,
-                                $this->context,
-                                $argument
-                            ))->getOrCreateVariable();
-
-                            $pass_by_reference_variable =
-                                new PassByReferenceVariable(
-                                    $parameter,
-                                    $variable
-                                );
-
-                            $parameter_list = $method->getParameterList();
-                            $parameter_list[$i] = $pass_by_reference_variable;
-                            $method->setParameterList($parameter_list);
-
-                            // Add it to the scope of the function wrapped
-                            // in a way that makes it addressable as the
-                            // parameter its mimicking
-                            $method->getInternalScope()->addVariable(
-                                $pass_by_reference_variable
-                            );
-
-                        } else if ($argument->kind == \ast\AST_STATIC_PROP) {
-
-                            // Get the variable
-                            $property = (new ContextNode(
-                                $this->code_base,
-                                $this->context,
-                                $argument
-                            ))->getOrCreateProperty(
-                                $argument->children['prop'] ?? ''
-                            );
-
-                            $pass_by_reference_variable =
-                                new PassByReferenceVariable(
-                                    $parameter,
-                                    $property
-                                );
-
-                            $parameter_list = $method->getParameterList();
-                            $parameter_list[$i] = $pass_by_reference_variable;
-                            $method->setParameterList($parameter_list);
-
-                            // Add it to the scope of the function wrapped
-                            // in a way that makes it addressable as the
-                            // parameter its mimicking
-                            $method->getInternalScope()->addVariable(
-                                $pass_by_reference_variable
-                            );
-
-                        }
-
-                    } else {
-                        // Overwrite the method's variable representation
-                        // of the parameter with the parameter with the
-                        // new type
-                        $method->getInternalScope()->addVariable(
-                            $parameter
-                        );
-                    }
-                }
-            }
+            $this->updateParameterTypeByArgument(
+                $method,
+                $parameter,
+                $argument,
+                $i
+            );
         }
 
         // Now that we know something about the parameters used
         // to call the method, we can reanalyze the method with
-        // the types of the parameter, making sure we don't get
-        // into an infinite loop of checking calls to the current
-        // method in scope
-        if ($has_argument_parameter_mismatch
-            && !$method->isInternal()
-            && (!$this->context->isInFunctionLikeScope()
-                || $method->getFQSEN() !== $this->context->getFunctionLikeFQSEN())
-        ) {
-            $method->analyze($method->getContext(), $code_base);
+        // the types of the parameter
+        $method->analyze($method->getContext(), $code_base);
+
+        // Reset to the original parameter list and scope after
+        // having tested the parameters with the types passed in
+        $method->setParameterList($original_parameter_list);
+        $method->setInternalScope($original_method_scope);
+    }
+
+    /**
+     * @param FunctionInterface $method
+     * The method that we're updating parameter types for
+     *
+     * @param Parameter $parameter
+     * The parameter that we're updating
+     *
+     * @param Node|mixed $argument
+     * The argument who's type we'd like to replace the
+     * parameter type with.
+     *
+     * @param int $parameter_offset
+     * The offset of the parameter on the method's
+     * signature.
+     *
+     * @return void
+     */
+    private function updateParameterTypeByArgument(
+        FunctionInterface $method,
+        Parameter $parameter,
+        $argument,
+        int $parameter_offset
+    ) {
+        // Determine the type of the argument
+        $argument_type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $argument
+        );
+
+        // Then set the new type on that parameter based
+        // on the argument's type. We'll use this to
+        // retest the method with the passed in types
+        $parameter->getNonVariadicUnionType()->addUnionType(
+            $argument_type
+        );
+
+
+        // If we're passing by reference, get the variable
+        // we're dealing with wrapped up and shoved into
+        // the scope of the method
+        if (!$parameter->isPassByReference()) {
+            // Overwrite the method's variable representation
+            // of the parameter with the parameter with the
+            // new type
+            $method->getInternalScope()->addVariable(
+                $parameter
+            );
+
+            return;
         }
 
-        // Reset to the original parameter list after having
-        // tested the parameters with the types passed in
-        $method->setParameterList($original_parameter_list);
+        // At this point we're dealing with a pass-by-reference
+        // parameter.
 
-        // Reset the scope to its original version before we
-        // put new parameters in it
-        $method->setInternalScope($original_method_scope);
+        // For now, give up and work on it later.
+        //
+        // TODO (Issue #376): It's possible to have a
+        // parameter `&...$args`. Analysing that is going to
+        // be a problem. Is it possible to create
+        // `PassByReferenceVariableCollection extends Variable`
+        // or something similar?
+        if ($parameter->isVariadic()) {
+            return;
+        }
+
+        if (!is_object($argument)) {
+            return;
+        }
+
+        $variable = null;
+        if ($argument->kind == \ast\AST_VAR) {
+            $variable = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $argument
+            ))->getOrCreateVariable();
+        } else if ($argument->kind == \ast\AST_STATIC_PROP) {
+            $variable = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $argument
+            ))->getOrCreateProperty(
+                $argument->children['prop'] ?? ''
+            );
+        }
+
+        // If we couldn't find a variable, give up
+        if (!$variable) {
+            return;
+        }
+
+        $pass_by_reference_variable =
+            new PassByReferenceVariable(
+                $parameter,
+                $variable
+            );
+
+        // Substitute the
+        $parameter_list = $method->getParameterList();
+        $parameter_list[$parameter_offset] =
+            $pass_by_reference_variable;
+        $method->setParameterList($parameter_list);
+
+        // Add it to the scope of the function wrapped
+        // in a way that makes it addressable as the
+        // parameter its mimicking
+        $method->getInternalScope()->addVariable(
+            $pass_by_reference_variable
+        );
     }
 
     /**

@@ -152,13 +152,17 @@ class Variable extends TypedElement
     public static function isHardcodedGlobalVariableWithName(
         string $name
     ) : bool {
-        return self::isSuperglobalVariableWithName($name) || array_key_exists($name, Config::get()->globals_type_map);
+        return (
+            self::isSuperglobalVariableWithName($name)
+            || array_key_exists($name, Config::get()->globals_type_map)
+        );
     }
 
     /**
      * @return UnionType|null
-     * Returns UnionType (Possible with empty set) if and only if isHardcodedGlobalVariableWithName is true.
-     * Returns null otherwise.
+     * Returns UnionType (Possible with empty set) if and only
+     * if isHardcodedGlobalVariableWithName is true. Returns null
+     * otherwise.
      */
     public static function getUnionTypeOfHardcodedGlobalVariableWithName(
         string $name,
@@ -166,21 +170,28 @@ class Variable extends TypedElement
     ) {
         if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             // More efficient than using context.
-            return UnionType::fromFullyQualifiedString(self::_BUILTIN_SUPERGLOBAL_TYPES[$name]);
+            return UnionType::fromFullyQualifiedString(
+                self::_BUILTIN_SUPERGLOBAL_TYPES[$name]
+            );
         }
-        if (array_key_exists($name, Config::get()->globals_type_map) || in_array($name, Config::get()->runkit_superglobals)) {
+
+        if (array_key_exists($name, Config::get()->globals_type_map)
+            || in_array($name, Config::get()->runkit_superglobals)
+        ) {
             $type_string = Config::get()->globals_type_map[$name] ?? '';
             return UnionType::fromStringInContext($type_string, $context);
         }
+
         return null;
     }
 
     /**
-     * Variables can't be variadic. This is the same as getUnionType for
-     * variables, but not necessarily for subclasses. Method will return
-     * the element type (such as `DateTime`) for variadic parameters.
+     * Variables can't be variadic. This is the same as
+     * getUnionType for variables, but not necessarily
+     * for subclasses. Method will return the element
+     * type (such as `DateTime`) for variadic parameters.
      */
-    public function getVariadicElementUnionType() : UnionType {
+    public function getNonVariadicUnionType() : UnionType {
         return parent::getUnionType();
     }
 
