@@ -1667,18 +1667,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the list of parameters on the method
         $parameter_list = $method->getParameterList();
 
-        // Attempt to map each argument to each parameter
-        foreach ($argument_list_node->children ?? [] as $i => $argument) {
+        foreach ($parameter_list as $i => $parameter) {
 
-            // TODO (Issue #376): Support inference on the child in
-            // **the set of vargs**, not just the first vararg.
+            $argument = $argument_list_node->children[$i] ?? null;
 
-            // Get the ith parameter
-            $parameter = $parameter_list[$i] ?? null;
+            if (!$argument
+                && $parameter->hasDefaultValue()
+            ) {
+                $parameter->setUnionType($parameter->getDefaultValueType());
+            }
 
             // If there's no parameter at that offset, we may be in
             // a ParamTooMany situation. That is caught elsewhere.
-            if (!$parameter
+            if (!$argument
                 || !$parameter->getNonVariadicUnionType()->isEmpty()
             ) {
                 continue;

@@ -1,0 +1,1 @@
+%s:4 PhanTypeMismatchArgument Argument 1 (arg) is int but \NS255\f1() takes string defined at %s:3
