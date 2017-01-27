@@ -163,23 +163,57 @@ class CodeBase
     }
 
     /**
-     * Clone dependent objects when cloning this object
+     * Clone dependent objects when cloning this object.
      */
-    public function __clone() {
+    public function __clone()
+    {
         $this->fqsen_class_map =
-            clone($this->fqsen_class_map);
+            $this->fqsen_class_map->deepCopy();
 
         $this->fqsen_global_constant_map =
-            clone($this->fqsen_global_constant_map);
+            $this->fqsen_global_constant_map->deepCopy();
 
         $this->fqsen_func_map =
-            clone($this->fqsen_func_map);
-
-        $this->class_fqsen_class_map_map =
-            clone($this->class_fqsen_class_map_map);
+            $this->fqsen_func_map->deepCopy();
 
         $this->func_and_method_set =
+            $this->func_and_method_set->deepCopy();
+
+        $this->class_fqsen_class_map_map =
+            $this->class_fqsen_class_map_map->deepCopy();
+
+        $name_method_map = $this->name_method_map;
+        $this->name_method_map = [];
+        foreach ($name_method_map as $name => $method_map) {
+            $this->name_method_map[$name] = $method_map->deepCopy();
+        }
+    }
+
+    /**
+     * @return CodeBase
+     * A new code base is returned which is a shallow clone
+     * of this one, which is to say that the sets and maps
+     * of elements themselves are cloned, but the keys and
+     * values within those sets and maps are not cloned.
+     *
+     * Updates to elements will bleed through code bases
+     * with only shallow clones. See
+     * https://github.com/etsy/phan/issues/257
+     */
+    public function shallowClone() : CodeBase
+    {
+        $code_base = new CodeBase([], [], [], []);
+        $code_base->fqsen_class_map =
+            clone($this->fqsen_class_map);
+        $code_base->fqsen_global_constant_map =
+            clone($this->fqsen_global_constant_map);
+        $code_base->fqsen_func_map =
+            clone($this->fqsen_func_map);
+        $code_base->class_fqsen_class_map_map =
+            clone($this->class_fqsen_class_map_map);
+        $code_base->func_and_method_set =
             clone($this->func_and_method_set);
+        return $code_base;
     }
 
     /**
@@ -188,7 +222,8 @@ class CodeBase
      *
      * @return void
      */
-    public function addClass(Clazz $class) {
+    public function addClass(Clazz $class)
+    {
         // Map the FQSEN to the class
         $this->fqsen_class_map[$class->getFQSEN()] = $class;
     }

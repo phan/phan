@@ -154,13 +154,24 @@ class Set extends \SplObjectStorage
      * @return Set
      * A new set containing the mapped values
      */
-    public function map(\Closure $closure)
+    public function map(\Closure $closure) : Set
     {
-        $set = new Set();
+        $set = new Set;
         foreach ($this as $element) {
             $set->attach($closure($element));
         }
         return $set;
+    }
+
+    /**
+     * @return Set
+     * A new set with each element cloned
+     */
+    public function deepCopy() : Set
+    {
+        return $this->map(function ($element) {
+            return clone($element);
+        });
     }
 
     /**
