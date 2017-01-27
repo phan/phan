@@ -7,6 +7,9 @@ abstract class NativeType extends Type
 {
     const NAME = '';
 
+    /**
+     * @return static
+     */
     public static function instance()
     {
         static $instance = null;
@@ -15,6 +18,7 @@ abstract class NativeType extends Type
             $instance = static::make('\\', static::NAME, []);
         }
 
+        assert($instance instanceof static);
         return $instance;
     }
 
