@@ -1,4 +1,4 @@
-Phan is a static analyzer for PHP that prefers to minimize false-positives. Phan attempts to proves incorrectness rather than correctness.
+Phan is a static analyzer for PHP that prefers to minimize false-positives. Phan attempts to prove incorrectness rather than correctness.
 
 Phan looks for common issues and will verify type compatibility on various operations when type
 information is available or can be deduced. Phan does not have a strong understanding of flow control
