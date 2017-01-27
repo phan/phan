@@ -11,6 +11,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -351,12 +352,14 @@ class Method extends ClassElement implements FunctionInterface
                 if ($parameter->hasDefaultValue()) {
                     $default_type = $parameter->getDefaultValueType();
 
+                    // If the default type isn't null and can't cast
+                    // to the parameter's declared type, emit an
+                    // issue.
                     if (!$default_type->isEqualTo(
                         NullType::instance(false)->asUnionType()
                     )) {
-                        if (!$default_type->isEqualTo(NullType::instance(false)->asUnionType())
-                            && !$default_type->canCastToUnionType(
-                                $parameter->getUnionType()
+                        if (!$default_type->canCastToUnionType(
+                            $parameter->getUnionType()
                         )) {
                             Issue::maybeEmit(
                                 $code_base,
@@ -370,17 +373,17 @@ class Method extends ClassElement implements FunctionInterface
                         }
                     }
 
-                    // If we have no other type info about a parameter,
-                    // just because it has a default value of null
-                    // doesn't mean that is its type. Any type can default
-                    // to null
-                    if ((string)$default_type === 'null'
-                        && !$parameter->getUnionType()->isEmpty()
-                    ) {
+                    // If there are no types on the parameter, the
+                    // default shouldn't be treated as the one
+                    // and only allowable type.
+                    if ($parameter->getUnionType()->isEmpty()) {
                         $parameter->addUnionType(
-                            NullType::instance(false)->asUnionType()
+                            MixedType::instance(false)->asUnionType()
                         );
                     }
+
+                    // Add the default type to the parameter type
+                    $parameter->addUnionType($default_type);
                 }
 
                 ++$parameter_offset;

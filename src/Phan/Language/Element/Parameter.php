@@ -154,7 +154,7 @@ class Parameter extends Variable
                 );
             } elseif ($parameter->isOptional()
                 && !$is_optional_seen
-                && $parameter->getVariadicElementUnionType()->isEmpty()
+                && $parameter->getNonVariadicUnionType()->isEmpty()
             ) {
                 $is_optional_seen = true;
             }
@@ -307,41 +307,51 @@ class Parameter extends Variable
         if (!$this->isVariadic()) {
             return $this;
         }
-        // TODO: Is it possible to cache this while maintaining correctness? PostOrderAnalysisVisitor clones the value to avoid it being reused.
+        // TODO: Is it possible to cache this while maintaining
+        //       correctness? PostOrderAnalysisVisitor clones the
+        //       value to avoid it being reused.
         //
-        // Also, figure out if the cloning still working correctly after this PR for fixing variadic args.
-        // create a single Parameter instance for analyzing callers
-        // of the corresponding method/function.
+        // Also, figure out if the cloning still working correctly
+        // after this PR for fixing variadic args. Create a single
+        // Parameter instance for analyzing callers of the
+        // corresponding method/function.
         // e.g. $this->getUnionType() is of type T[]
         //      $this->non_variadic->getUnionType() is of type T
         return new Parameter(
             $this->getContext(),
             $this->getName(),
-            $this->getVariadicElementUnionType(),
+            $this->getNonVariadicUnionType(),
             Flags::bitVectorWithState($this->getFlags(), \ast\flags\PARAM_VARIADIC, false)
         );
     }
 
     /**
-     * If this Parameter is variadic, calling `getUnionType` will return an array type such as `DateTime[]`. This
-     * method will return the element type (such as `DateTime`) for variadic parameters.
+     * If this Parameter is variadic, calling `getUnionType`
+     * will return an array type such as `DateTime[]`. This
+     * method will return the element type (such as `DateTime`)
+     * for variadic parameters.
      */
-    public function getVariadicElementUnionType() : UnionType {
+    public function getNonVariadicUnionType() : UnionType {
         return parent::getUnionType();
     }
 
     /**
      * If this parameter is variadic (e.g. `DateTime ...$args`),
-     * then this returns the corresponding array type(s) of $args. (e.g. `DateTime[]`)
+     * then this returns the corresponding array type(s) of $args.
+     * (e.g. `DateTime[]`)
+     *
      * NOTE: For variadic arguments, this is a temporary variable.
      * Modifying this won't result in persistent changes.
-     * (TODO(Issue #376) : We will probably want to be able to modify the underlying variable,
-     *  e.g. by creating `class UnionTypeGenericArrayView extends UnionType`.
-     *  Otherwise, type inference of `...$args` based on the function source
-     *  will be less effective without phpdoc types.)
+     *
+     * TODO(Issue #376) : We will probably want to be able to modify
+     * the underlying variable, e.g. by creating
+     * `class UnionTypeGenericArrayView extends UnionType`.
+     * Otherwise, type inference of `...$args` based on the function
+     * source will be less effective without phpdoc types.
      *
      * @override
-     * TODO: Should the return value be set up in the constructor instead?
+     * TODO: Should the return value be set up in the constructor
+     * instead?
      */
     public function getUnionType() : UnionType
     {
@@ -380,7 +390,7 @@ class Parameter extends Variable
     {
         $string = '';
 
-        $typeObj = $this->getVariadicElementUnionType();
+        $typeObj = $this->getNonVariadicUnionType();
         if (!$typeObj->isEmpty()) {
             $string .= (string)$typeObj . ' ';
         }

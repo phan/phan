@@ -137,7 +137,7 @@ abstract class TypedElement implements TypedElementInterface
      * variables, but not necessarily for subclasses. Method will return
      * the element type (such as `DateTime`) for variadic parameters.
      */
-    public function getVariadicElementUnionType() : UnionType {
+    public function getNonVariadicUnionType() : UnionType {
         return $this->getUnionType();
     }
 
