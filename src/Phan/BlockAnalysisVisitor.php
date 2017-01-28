@@ -17,7 +17,7 @@ use ast\Node\Decl;
 class BlockAnalysisVisitor extends AnalysisVisitor {
 
     /**
-     * @var Node
+     * @var Node|null
      * The parent of the current node
      */
     private $parent_node;
