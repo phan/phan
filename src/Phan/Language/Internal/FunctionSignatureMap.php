@@ -7971,7 +7971,7 @@ return [
 'SessionHandlerInterface::read' => ['string', 'session_id'=>'string'],
 'SessionHandlerInterface::write' => ['bool', 'session_id'=>'string', 'session_data'=>'string'],
 'SessionHandler::open' => ['bool', 'save_path'=>'string', 'session_name'=>'string'],
-'SessionHandler::read' => ['bool', 'id'=>'string'],
+'SessionHandler::read' => ['string', 'id'=>'string'],
 'SessionHandler::write' => ['bool', 'id'=>'string', 'data'=>'string'],
 'session_id' => ['string', 'newid='=>'string'],
 'session_is_registered' => ['bool', 'name'=>'string'],
