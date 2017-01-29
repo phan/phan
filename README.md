@@ -19,8 +19,7 @@ composer require --dev etsy/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This branch of Phan depends on PHP 7.0.x and the [php-ast](https://github.com/nikic/php-ast) extension. Take a look
-at later versions of Phan for PHP 7.1+ support.
+This branch of Phan depends on PHP 7.0.x with pcntl enabled and the [php-ast](https://github.com/nikic/php-ast) extension. Take a look at later versions of Phan for PHP 7.1+ support.
 
 * **Alternative Installation Methods**<br />
   See [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for alternative methods of using
