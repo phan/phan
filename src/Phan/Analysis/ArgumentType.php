@@ -9,6 +9,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
+use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\CallableType;
@@ -301,7 +302,7 @@ class ArgumentType
                 }
 
                 $alternate_parameter = $candidate_alternate_parameter;
-                assert($alternate_parameter instanceof Parameter);
+                assert($alternate_parameter instanceof Variable);
 
                 // See if the argument can be cast to the
                 // parameter
