@@ -1659,7 +1659,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // and scope so that we can reset it after re-analyzing
         // it.
         $original_method_scope = clone($method->getInternalScope());
-        $original_parameter_list = array_map(function (Parameter $parameter) : Parameter {
+        $original_parameter_list = array_map(function (Variable $parameter) : Variable {
             return clone($parameter);
         }, $method->getParameterList());
 
@@ -1726,7 +1726,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function updateParameterTypeByArgument(
         FunctionInterface $method,
-        Parameter $parameter,
+        Variable $parameter,
         $argument,
         int $parameter_offset
     ) {
