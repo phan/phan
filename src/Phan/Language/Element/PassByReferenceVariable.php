@@ -22,7 +22,7 @@ class PassByReferenceVariable extends Variable
     private $element;
 
     public function __construct(
-        Parameter $parameter,
+        Variable $parameter,
         TypedElement $element
     ) {
         $this->parameter = $parameter;
