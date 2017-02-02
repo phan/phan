@@ -101,6 +101,9 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
         $hasEntryWithoutKey = false;
         $keySet = [];
         foreach ($children as $entry) {
+            if ($entry === null) {
+                continue;  // Triggered by code such as `list(, $a) = $expr`. In php 7.1, the array and list() syntax was unified.
+            }
             $key = $entry->children['key'];
             // Skip array entries without literal keys.
             if ($key === null) {
