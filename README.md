@@ -275,7 +275,7 @@ various entry points, then all your library files containing your classes.
 
 # Development
 
-Take a look at [Developer's Guide to Phan](https://github.com/etsy/phan/wiki/Developer's-Guide-To-Phan) for help getting started hacking on Phan. And please check our [Code of Conduct](CODE_OF_CONDUCT.md).
+Take a look at [Developer's Guide to Phan](https://github.com/etsy/phan/wiki/Developer's-Guide-To-Phan) for help getting started hacking on Phan.
 
 When you find an issue, please take the time to create a tiny reproducing code snippet that illustrates
 the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to
@@ -283,3 +283,8 @@ the bug. And once you have done that, fix it. Then turn your code snippet into a
 details.
 
 To run Phan's tests, just run `./test`.
+
+# Code of Conduct
+
+We are committed to fostering a welcoming community. Any participant and
+contributor is required to adhere to our [Code of Conduct](http://etsy.github.io/codeofconduct.html).
