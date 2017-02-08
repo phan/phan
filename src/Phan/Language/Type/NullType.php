@@ -59,6 +59,11 @@ class NullType extends ScalarType
             return true;
         }
 
+        // NullType is a sub-type of ScalarType. So it's affected by scalar_implicit_cast.
+        if (Config::get()->scalar_implicit_cast && $type->isScalar()) {
+            return true;
+        }
+
         return false;
     }
 
