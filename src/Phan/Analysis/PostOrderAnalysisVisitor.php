@@ -1082,9 +1082,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } catch (\Exception $exception) {
 
             }
-        }
 
-        if ($method instanceof Method) {
             if (!$method->isAbstract()
                 && !$has_interface_class
                 && !$return_type->isEmpty()
@@ -1108,22 +1106,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     Issue::TemplateTypeStaticMethod,
                     $node->lineno ?? 0,
                     (string)$method->getFQSEN()
-                );
-            }
-        }
-
-        if ($method instanceof Func) {
-            if (!$return_type->isEmpty()
-                && !$method->getHasReturn()
-                && !$this->declOnlyThrows($node)
-                && !$return_type->hasType(VoidType::instance(false))
-                && !$return_type->hasType(NullType::instance(false))
-            ) {
-                $this->emitIssue(
-                    Issue::TypeMissingReturn,
-                    $node->lineno ?? 0,
-                    (string)$method->getFQSEN(),
-                    (string)$return_type
                 );
             }
         }
@@ -1484,7 +1466,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // parameters
         $argument_list = $node->children['args'];
         foreach ($argument_list->children as $i => $argument) {
-            if (!is_object($argument)) {
+            if (!$argument instanceof \ast\Node) {
                 continue;
             }
 
@@ -1548,7 +1530,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables
         foreach ($argument_list->children as $i => $argument) {
-            if (!is_object($argument)) {
+            if (!$argument instanceof \ast\Node) {
                 continue;
             }
             $parameter = $method->getParameterForCaller($i);
@@ -1773,7 +1755,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        if (!is_object($argument)) {
+        if (!$argument instanceof \ast\Node) {
             return;
         }
 
