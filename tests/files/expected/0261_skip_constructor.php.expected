@@ -1,0 +1,7 @@
+%s:21 PhanUndeclaredStaticMethod Static call to undeclared method D261B::__construct()
+%s:26 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Missing261
+%s:26 PhanUndeclaredStaticMethod Static call to undeclared method Missing261::__construct()
+%s:37 PhanUndeclaredStaticMethod Static call to undeclared method Other261::__construct()
+%s:49 PhanUndeclaredStaticMethod Static call to undeclared method self::__construct()
+%s:55 PhanUndeclaredStaticMethod Static call to undeclared method static::__construct()
+%s:61 PhanUndeclaredStaticMethod Static call to undeclared method Self261C::__construct()

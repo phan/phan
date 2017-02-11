@@ -89,11 +89,7 @@ class ContextNode
      */
     public function getQualifiedName() : string
     {
-        return (string)UnionTypeVisitor::unionTypeFromClassNode(
-            $this->code_base,
-            $this->context,
-            $this->node
-        );
+        return $this->getClassUnionType()->__toString();
     }
 
     /**
@@ -134,6 +130,18 @@ class ContextNode
     }
 
     /**
+     * @return UnionType the union type of the class for this class node. (Should have just one Type)
+     */
+    public function getClassUnionType() : UnionType
+    {
+        return UnionTypeVisitor::unionTypeFromClassNode(
+            $this->code_base,
+            $this->context,
+            $this->node
+        );
+    }
+
+    /**
      * @param bool $ignore_missing_classes
      * If set to true, missing classes will be ignored and
      * exceptions will be inhibited
@@ -148,11 +156,7 @@ class ContextNode
      */
     public function getClassList($ignore_missing_classes = false)
     {
-        $union_type = UnionTypeVisitor::unionTypeFromClassNode(
-            $this->code_base,
-            $this->context,
-            $this->node
-        );
+        $union_type = $this->getClassUnionType();
 
         $class_list = [];
 

@@ -939,26 +939,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $static_class = $node->children['class']->children['name'];
         }
 
-        // Short circuit on a constructor being called statically
-        // on something other than 'parent'
-        if ($method_name === '__construct') {
-            if ($static_class !== 'parent') {
-                $this->emitIssue(
-                    Issue::UndeclaredStaticMethod,
-                    $node->lineno ?? 0,
-                    "{$static_class}::{$method_name}()"
-                );
+        $method = $this->getStaticMethodOrEmitIssue($node);
+
+        if ($method === null) {
+            // Short circuit on a constructor being called statically
+            // on something other than 'parent'
+            if ($method_name === '__construct' && $static_class !== 'parent') {
+                $this->emitConstructorWarning($node, $static_class, $method_name);
             }
+            return $this->context;
         }
 
         try {
-            // Get a reference to the method being called
-            $method = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node
-            ))->getMethod($method_name, true);
-
+            if ($method_name === '__construct') {
+                $this->checkNonAncestorConstructCall($node, $static_class, $method_name);
+                // Even if it exists, continue on and type check the arguments passed.
+            }
             // Get the method thats calling the static method
             $calling_method = null;
             if ($this->context->isInMethodScope()) {
@@ -1050,8 +1046,106 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // this is, don't worry about it
             return $this->context;
         }
-
         return $this->context;
+    }
+
+    /**
+     * Check calling A::__construct (where A is not parent)
+     * @return void
+     */
+    private function checkNonAncestorConstructCall(
+        Node $node,
+        string $static_class,
+        string $method_name
+    ) {
+        if ($static_class === 'parent') {
+            return;
+        }
+        // TODO: what about unanalyzable?
+        if ($node->children['class']->kind != \ast\AST_NAME) {
+            return;
+        }
+        $class_context_node = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['class']
+        ));
+        // TODO: check for self/static/<class name of self> and warn about recursion?
+        // TODO: Only allow calls to __construct from other constructors?
+        $found_ancestor_constructor = false;
+        if ($this->context->isInMethodScope()) {
+            $possible_ancestor_type = $class_context_node->getClassUnionType();
+            // If we can determine the ancestor type, and it's an parent/ancestor class, allow the call without warning.
+            // (other code should check visibility and existence and args of __construct)
+
+            if (!$possible_ancestor_type->isEmpty()) {
+                // but forbid 'self::__construct', 'static::__construct'
+                $type = $this->context->getClassFQSEN()->asUnionType();
+                if ($type->asExpandedTypes($this->code_base)->canCastToUnionType($possible_ancestor_type)
+                        && !$type->canCastToUnionType($possible_ancestor_type)) {
+                    $found_ancestor_constructor = true;
+                }
+            }
+        }
+
+        if (!$found_ancestor_constructor) {
+            // TODO: new issue type?
+            $this->emitConstructorWarning($node, $static_class, $method_name);
+        }
+    }
+
+    /**
+     * TODO: change to a different issue type in a future phan release?
+     * @return void
+     */
+    private function emitConstructorWarning(Node $node, string $static_class, string $method_name)
+    {
+        $this->emitIssue(
+            Issue::UndeclaredStaticMethod,
+            $node->lineno ?? 0,
+            "{$static_class}::{$method_name}()"
+        );
+    }
+
+    /**
+     * gets the static method, or emits an issue.
+     * @return Method|null
+     */
+    private function getStaticMethodOrEmitIssue(Node $node)
+    {
+        $method_name = $node->children['method'];
+
+        try {
+            // Get a reference to the method being called
+            return (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getMethod($method_name, true);
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
+        } catch (\Exception $exception) {
+
+            // If we can't figure out the class for this method
+            // call, cry YOLO and mark every method with that
+            // name with a reference.
+            if (Config::get()->dead_code_detection
+                && Config::get()->dead_code_detection_prefer_false_negative
+            ) {
+                foreach ($this->code_base->getMethodSetByName(
+                    $method_name
+                ) as $method) {
+                    $method->addReference($this->context);
+                }
+            }
+
+            // If we can't figure out what kind of a call
+            // this is, don't worry about it
+        }
     }
 
     /**
