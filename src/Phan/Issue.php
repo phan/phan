@@ -1166,7 +1166,7 @@ class Issue
      * @param int $line
      * The line number (start) where the issue was found
      *
-     * @param mixed $template_parameters
+     * @param mixed ...$template_parameters
      * Any template parameters required for the issue
      * message
      *
@@ -1290,7 +1290,7 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param mixed parameters
+     * @param mixed ...$parameters
      * Template parameters for the issue's error message
      *
      * @return void
