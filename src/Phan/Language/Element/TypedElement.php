@@ -133,6 +133,15 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
+     * @return void
+     */
+    protected function convertToNonVariadic()
+    {
+        // Avoid a redundant clone of toGenericArray()
+        $this->type = $this->getUnionType();
+    }
+
+    /**
      * Variables can't be variadic. This is the same as getUnionType for
      * variables, but not necessarily for subclasses. Method will return
      * the element type (such as `DateTime`) for variadic parameters.

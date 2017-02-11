@@ -1,0 +1,3 @@
+%s:42 PhanTypeMismatchArgument Argument 3 (arguments) is int[] but \VariadicBug::foo() takes int|string defined at %s:16
+%s:44 PhanTypeMismatchArgument Argument 3 (arguments) is int[] but \variadic_bug_260() takes int|string defined at %s:31
+

@@ -171,7 +171,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // parameter definition
         foreach ($method->getParameterList() as $parameter) {
             $context->addScopeVariable(
-                clone($parameter)
+                $parameter->cloneAsNonVariadic()
             );
         }
 
@@ -258,7 +258,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // parameter definition
         foreach ($function->getParameterList() as $parameter) {
             $context->addScopeVariable(
-                clone($parameter)
+                $parameter->cloneAsNonVariadic()
             );
         }
 
