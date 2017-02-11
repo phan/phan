@@ -187,7 +187,7 @@ class Method extends ClassElement implements FunctionInterface
      *
      * @param CodeBase $code_base
      *
-     * @param Node $node
+     * @param Decl $node
      * An AST node representing a method
      *
      * @return Method
@@ -278,7 +278,7 @@ class Method extends ClassElement implements FunctionInterface
             $method->getUnionType()->addUnionType($return_union_type);
         }
 
-        // If avialable, add in the doc-block annotated return type
+        // If available, add in the doc-block annotated return type
         // for the method.
         if ($comment->hasReturnUnionType()) {
 
@@ -323,73 +323,7 @@ class Method extends ClassElement implements FunctionInterface
         }
 
         // Add params to local scope for user functions
-        if(!$method->isInternal()) {
-
-            $parameter_offset = 0;
-            foreach ($method->getParameterList() as $i => $parameter) {
-                if ($parameter->getUnionType()->isEmpty()) {
-                    // If there is no type specified in PHP, check
-                    // for a docComment with @param declarations. We
-                    // assume order in the docComment matches the
-                    // parameter order in the code
-                    if ($comment->hasParameterWithNameOrOffset(
-                        $parameter->getName(),
-                        $parameter_offset
-                    )) {
-                        $comment_type =
-                            $comment->getParameterWithNameOrOffset(
-                                $parameter->getName(),
-                                $parameter_offset
-                            )->getUnionType();
-
-                        $parameter->addUnionType($comment_type);
-                    }
-                }
-
-                // If there's a default value on the parameter, check to
-                // see if the type of the default is cool with the
-                // specified type.
-                if ($parameter->hasDefaultValue()) {
-                    $default_type = $parameter->getDefaultValueType();
-
-                    // If the default type isn't null and can't cast
-                    // to the parameter's declared type, emit an
-                    // issue.
-                    if (!$default_type->isEqualTo(
-                        NullType::instance(false)->asUnionType()
-                    )) {
-                        if (!$default_type->canCastToUnionType(
-                            $parameter->getUnionType()
-                        )) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $context,
-                                Issue::TypeMismatchDefault,
-                                $node->lineno ?? 0,
-                                (string)$parameter->getUnionType(),
-                                $parameter->getName(),
-                                (string)$default_type
-                            );
-                        }
-                    }
-
-                    // If there are no types on the parameter, the
-                    // default shouldn't be treated as the one
-                    // and only allowable type.
-                    if ($parameter->getUnionType()->isEmpty()) {
-                        $parameter->addUnionType(
-                            MixedType::instance(false)->asUnionType()
-                        );
-                    }
-
-                    // Add the default type to the parameter type
-                    $parameter->addUnionType($default_type);
-                }
-
-                ++$parameter_offset;
-            }
-
-        }
+        FunctionTrait::addParamsToScopeOfFunctionOrMethod($context, $code_base, $node, $method, $comment);
 
         return $method;
     }

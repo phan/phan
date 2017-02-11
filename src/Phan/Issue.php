@@ -47,6 +47,8 @@ class Issue
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
+    const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
+    const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
@@ -442,6 +444,22 @@ class Issue
                 "Default value for %s \$%s can't be %s",
                 self::REMEDIATION_B,
                 10002
+            ),
+            new Issue(
+                self::TypeMismatchVariadicComment,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "%s is variadic in comment, but not variadic in param (%s)",
+                self::REMEDIATION_B,
+                10021
+            ),
+            new Issue(
+                self::TypeMismatchVariadicParam,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "%s is not variadic in comment, but variadic in param (%s)",
+                self::REMEDIATION_B,
+                10022
             ),
             new Issue(
                 self::TypeMismatchArgument,

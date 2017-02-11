@@ -165,71 +165,7 @@ class Func extends AddressableElement implements FunctionInterface
         }
 
         // Add params to local scope for user functions
-        if(!$func->isInternal()) {
-
-            $parameter_offset = 0;
-            foreach ($func->getParameterList() as $i => $parameter) {
-                if ($parameter->getUnionType()->isEmpty()) {
-                    // If there is no type specified in PHP, check
-                    // for a docComment with @param declarations. We
-                    // assume order in the docComment matches the
-                    // parameter order in the code
-                    if ($comment->hasParameterWithNameOrOffset(
-                        $parameter->getName(),
-                        $parameter_offset
-                    )) {
-                        $comment_type =
-                            $comment->getParameterWithNameOrOffset(
-                                $parameter->getName(),
-                                $parameter_offset
-                            )->getUnionType();
-
-                        $parameter->addUnionType($comment_type);
-                    }
-                }
-
-                // If there's a default value on the parameter, check to
-                // see if the type of the default is cool with the
-                // specified type.
-                if ($parameter->hasDefaultValue()) {
-                    $default_type = $parameter->getDefaultValueType();
-
-                    if (!$default_type->isEqualTo(
-                        NullType::instance(false)->asUnionType()
-                    )) {
-                        if (!$default_type->isEqualTo(NullType::instance(false)->asUnionType())
-                            && !$default_type->canCastToUnionType(
-                                $parameter->getUnionType()
-                        )) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $context,
-                                Issue::TypeMismatchDefault,
-                                $node->lineno ?? 0,
-                                (string)$parameter->getUnionType(),
-                                $parameter->getName(),
-                                (string)$default_type
-                            );
-                        }
-                    }
-
-                    // If we have no other type info about a parameter,
-                    // just because it has a default value of null
-                    // doesn't mean that is its type. Any type can default
-                    // to null
-                    if ((string)$default_type === 'null'
-                        && !$parameter->getUnionType()->isEmpty()
-                    ) {
-                        $parameter->getUnionType()->addType(
-                            NullType::instance(false)
-                        );
-                    }
-                }
-
-                ++$parameter_offset;
-            }
-
-        }
+        FunctionTrait::addParamsToScopeOfFunctionOrMethod($context, $code_base, $node, $func, $comment);
 
         return $func;
     }
