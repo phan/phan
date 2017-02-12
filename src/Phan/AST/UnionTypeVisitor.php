@@ -74,7 +74,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
-     * @param Node|mixed $node
+     * @param Node|string|bool|int|float|null $node
      * The node for which we'd like to determine its type
      *
      * @param bool $should_catch_issue_exception
