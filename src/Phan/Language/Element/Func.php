@@ -6,9 +6,13 @@ use Phan\Issue;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
+use Phan\Library\None;
+use Phan\Library\Option;
 use ast\Node;
 use ast\Node\Decl;
 
@@ -18,6 +22,13 @@ class Func extends AddressableElement implements FunctionInterface
     use \Phan\Memoize;
     use FunctionTrait;
     use ClosedScopeElement;
+
+    /**
+     * @var Option<Type>
+     *
+     * If this Func was created by analyzing a closure, phpdoc may override the scope to use for analysis.
+     */
+    protected $closure_scope = null;
 
     /**
      * @param \phan\Context $context
@@ -55,6 +66,74 @@ class Func extends AddressableElement implements FunctionInterface
             $context->getScope(), $fqsen
         ));
     }
+
+    /**
+     * If a Closure overrides the scope(class) it will be executed in (via doc comment)
+     * then return a context with the new scope instead.
+     *
+     * @param CodeBase $code_base
+     * @param Context $context - The outer context in which the closure was declared.
+     *                           Either this (or a new context for the other class) will be returned.
+     *
+     * Postcondition: if return value !== $context, then $closure_scope is a class which exists in the codebase.
+     */
+    private static function getClosureOverrideContext(
+        CodeBase $code_base,
+        Context $context,
+        Type $closure_scope,
+        Decl $node
+    ) : Context {
+        if ($node->kind !== \ast\AST_CLOSURE) {
+            return $context;
+        }
+        if ($closure_scope->isNativeType()) {
+            // TODO: What about 'null' (for code planning to bindTo(null))
+            // Emit an error
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::TypeInvalidClosureScope,
+                $node->lineno ?? 0,
+                (string)$closure_scope
+            );
+            return $context;
+        } else {
+            // TODO: handle 'parent'?
+            // TODO: Check if isInClassScope
+            if ($closure_scope->isSelfType() || $closure_scope->isStaticType()) {
+                // nothing to do.
+                return $context;
+            }
+        }
+
+        $class_fqsen = $closure_scope->asFQSEN();
+        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+            // shouldn't happen
+            return $context;
+        }
+        assert($class_fqsen instanceof FullyQualifiedClassName);
+
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::UndeclaredClosureScope,
+                $node->lineno ?? 0,
+                (string)$closure_scope
+            );
+            return $context;
+        }
+
+        $clazz = $code_base->getClassByFQSEN(
+            $class_fqsen
+        );
+
+        // We still want the `use` imports?
+        return $context->withScope(
+            $clazz->getInternalScope()
+        );
+    }
+
 
     /**
      * @param Context $context
@@ -95,6 +174,22 @@ class Func extends AddressableElement implements FunctionInterface
             $node->docComment ?? '',
             $context
         );
+
+        // Redefine the function's internal scope to point to the new class before adding any variables to the scope.
+
+        $closure_scope_option = $comment->getClosureScopeOption();
+        $func->closure_scope = $closure_scope_option;
+        if ($closure_scope_option->isDefined()) {
+            $new_context = self::getClosureOverrideContext($code_base, $context, $closure_scope_option->get(), $node);
+            if ($new_context !== $context) {
+                $func->setInternalScope(new FunctionLikeScope(
+                    $new_context->getScope(), $func->getInternalScope()->getFQSEN()
+                ));
+            } else {
+                $func->closure_scope = new None();
+            }
+        }
+
 
         // @var Parameter[]
         // The list of parameters specified on the
@@ -168,6 +263,26 @@ class Func extends AddressableElement implements FunctionInterface
         FunctionTrait::addParamsToScopeOfFunctionOrMethod($context, $code_base, $node, $func, $comment);
 
         return $func;
+    }
+
+    /**
+     * @return Option<Type>
+     * An optional Type(Class name) defined by a (at)PhanClosureScope
+     * directive specifying a single type.
+     */
+    public function getClosureScopeOption()
+    {
+        return $this->closure_scope;
+    }
+
+    /**
+     * @return bool
+     * True if this Func's doc block contains a (at)return
+     * directive specifying a single type.
+     */
+    public function hasClosureScope() : bool
+    {
+        return isset($this->closure_scope);
     }
 
     /**

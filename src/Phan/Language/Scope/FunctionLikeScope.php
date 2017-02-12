@@ -4,6 +4,7 @@ namespace Phan\Language\Scope;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 
+// TODO: Wrap this with a ClosureLikeScope
 class FunctionLikeScope extends ClosedScope {
 
     /**
