@@ -80,7 +80,8 @@ class FunctionFactory {
 
         $return_type = UnionType::fromStringInContext(
             array_shift($signature),
-            $context
+            $context,
+            false
         );
 
         $func = new Func(

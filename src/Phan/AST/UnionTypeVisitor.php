@@ -428,7 +428,8 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             return Type::fromStringInContext(
                 $node->children['name'],
-                $this->context
+                $this->context,
+                false
             )->asUnionType();
         }
 
@@ -1608,7 +1609,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         } else {
             $type = Type::fromStringInContext(
                 $class_name,
-                $context
+                $context,
+                false
             );
         }
 

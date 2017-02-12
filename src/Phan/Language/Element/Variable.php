@@ -179,7 +179,7 @@ class Variable extends TypedElement
             || in_array($name, Config::get()->runkit_superglobals)
         ) {
             $type_string = Config::get()->globals_type_map[$name] ?? '';
-            return UnionType::fromStringInContext($type_string, $context);
+            return UnionType::fromStringInContext($type_string, $context, false);
         }
 
         return null;
