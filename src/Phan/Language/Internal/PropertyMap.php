@@ -64,8 +64,8 @@ return [
         'contiguous-space' => 'int'
     ],
     'mongocursor' => [
-        'slaveokay' => 'boolean',
-        'timeout' => 'integer'
+        'slaveokay' => 'bool',
+        'timeout' => 'int'
     ],
     'domxpath' => [
         'document' => 'DOMDocument'
@@ -92,7 +92,7 @@ return [
         'comment' => 'string'
     ],
     'solrexception' => [
-        'sourceline' => 'integer',
+        'sourceline' => 'int',
         'sourcefile' => 'string',
         'zif-name' => 'string'
     ],
@@ -103,13 +103,13 @@ return [
         'id' => 'string'
     ],
     'dateinterval' => [
-        'y' => 'integer',
-        'm' => 'integer',
-        'd' => 'integer',
-        'h' => 'integer',
-        'i' => 'integer',
-        's' => 'integer',
-        'invert' => 'integer',
+        'y' => 'int',
+        'm' => 'int',
+        'd' => 'int',
+        'h' => 'int',
+        'i' => 'int',
+        's' => 'int',
+        'invert' => 'int',
         'days' => 'mixed'
     ],
     'tokyotyrantexception' => [
@@ -181,14 +181,14 @@ return [
         'length' => 'int'
     ],
     'mongodb' => [
-        'w' => 'integer',
-        'wtimeout' => 'integer'
+        'w' => 'int',
+        'wtimeout' => 'int'
     ],
     'splpriorityqueue' => [
         'name' => 'string'
     ],
     'mongoclient' => [
-        'connected' => 'boolean',
+        'connected' => 'bool',
         'status' => 'string'
     ],
     'domdocument' => [
@@ -260,8 +260,8 @@ return [
     ],
     'mongocollection' => [
         'db' => 'MongoDB',
-        'w' => 'integer',
-        'wtimeout' => 'integer'
+        'w' => 'int',
+        'wtimeout' => 'int'
     ],
     'mongoint64' => [
         'value' => 'string'
@@ -294,8 +294,8 @@ return [
         'name' => 'string'
     ],
     'solrresponse' => [
-        'http-status' => 'integer',
-        'parser-mode' => 'integer',
+        'http-status' => 'int',
+        'parser-mode' => 'int',
         'success' => 'bool',
         'http-status-message' => 'string',
         'http-request-url' => 'string',
@@ -383,8 +383,8 @@ return [
         'xmllang' => 'string'
     ],
     'eventbufferevent' => [
-        'fd' => 'integer',
-        'priority' => 'integer',
+        'fd' => 'int',
+        'priority' => 'int',
         'input' => 'EventBuffer',
         'output' => 'EventBuffer'
     ],

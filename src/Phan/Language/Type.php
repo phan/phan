@@ -65,6 +65,25 @@ class Type
         self::simple_type_with_template_parameter_list_regex . '(\[\])*';
 
     /**
+     * @var bool[] - For checking if a string is an internal type.
+     */
+    const _internal_type_set = [
+        'array'     => true,
+        'bool'      => true,
+        'callable'  => true,
+        'float'     => true,
+        'int'       => true,
+        'iterable'  => true,
+        'mixed'     => true,
+        'null'      => true,
+        'object'    => true,
+        'resource'  => true,
+        'static'    => true,
+        'string'    => true,
+        'void'      => true,
+    ];
+
+    /**
      * @var string
      * The namespace of this type such as '\' or
      * '\Phan\Language'
@@ -133,6 +152,10 @@ class Type
      * True if this type can be null, false if it cannot
      * be null.
      *
+     * @param bool $from_phpdoc
+     * True if $type_name was extracted from a doc comment.
+     * (Outside of phpdoc, "integer" would be a class name)
+     *
      * @return Type
      * A single canonical instance of the given type.
      */
@@ -140,12 +163,13 @@ class Type
         string $namespace,
         string $type_name,
         $template_parameter_type_list,
-        bool $is_nullable
+        bool $is_nullable,
+        bool $from_phpdoc = false
     ) : Type {
 
         $namespace = trim($namespace);
 
-        if ('\\' === $namespace) {
+        if ('\\' === $namespace && $from_phpdoc) {
             $type_name = self::canonicalNameFromName($type_name);
         }
 
@@ -158,14 +182,10 @@ class Type
                 $namespace,
                 substr($type_name, 0, $pos),
                 $template_parameter_type_list,
-                $is_nullable
+                $is_nullable,
+                $from_phpdoc
             ));
         }
-
-        assert(
-            $namespace && 0 === strpos($namespace, '\\'),
-            "Namespace must be fully qualified"
-        );
 
         assert(
             !empty($namespace),
@@ -193,8 +213,7 @@ class Type
         // Create a canonical representation of the
         // namespace and name
         $namespace = $namespace ?: '\\';
-
-        if ('\\' === $namespace) {
+        if ('\\' === $namespace && $from_phpdoc) {
             $type_name = self::canonicalNameFromName($type_name);
         }
 
@@ -252,7 +271,7 @@ class Type
      */
     public static function fromObject($object) : Type
     {
-        return Type::fromInternalTypeName(gettype($object), false);
+        return Type::fromInternalTypeName(gettype($object), false, true);
     }
 
     /**
@@ -268,7 +287,8 @@ class Type
      */
     public static function fromInternalTypeName(
         string $type_name,
-        bool $is_nullable
+        bool $is_nullable,
+        bool $from_phpdoc = false
     ) : Type {
 
         // If this is a generic type (like int[]), return
@@ -277,7 +297,8 @@ class Type
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
                     substr($type_name, 0, $pos),
-                    $is_nullable
+                    $is_nullable,
+                    $from_phpdoc
                 )
             );
         }
@@ -373,7 +394,8 @@ class Type
         if (empty($namespace)) {
             return self::fromInternalTypeName(
                 $fully_qualified_string,
-                $is_nullable
+                $is_nullable,
+                false
             );
         }
 
@@ -408,12 +430,16 @@ class Type
      * The context in which the type string was
      * found
      *
+     * @param bool $from_phpdoc
+     * True if $string was extracted from a doc comment.
+     *
      * @return Type
      * Parse a type from the given string
      */
     public static function fromStringInContext(
         string $string,
-        Context $context
+        Context $context,
+        bool $from_phpdoc = false
     ) : Type {
 
         assert(
@@ -432,8 +458,8 @@ class Type
         // Map the names of the types to actual types in the
         // template parameter type list
         $template_parameter_type_list =
-            array_map(function (string $type_name) use ($context) {
-                return Type::fromStringInContext($type_name, $context)->asUnionType();
+            array_map(function (string $type_name) use ($context, $from_phpdoc) {
+                return Type::fromStringInContext($type_name, $context, $from_phpdoc)->asUnionType();
             }, $template_parameter_type_name_list);
 
         // @var bool
@@ -478,7 +504,8 @@ class Type
                     $fqsen->getNamespace(),
                     $fqsen->getName(),
                     $template_parameter_type_list,
-                    $is_nullable
+                    $is_nullable,
+                    $from_phpdoc
                 ));
             }
 
@@ -486,7 +513,8 @@ class Type
                 $fqsen->getNamespace(),
                 $fqsen->getName(),
                 $template_parameter_type_list,
-                $is_nullable
+                $is_nullable,
+                $from_phpdoc
             );
         }
 
@@ -497,12 +525,17 @@ class Type
                 $namespace,
                 $type_name,
                 $template_parameter_type_list,
-                $is_nullable
+                $is_nullable,
+                $from_phpdoc
             );
         }
 
-        if (self::isInternalTypeString($type_name)) {
-            return self::fromInternalTypeName($type_name, $is_nullable);
+        if (self::isInternalTypeString($type_name, $from_phpdoc)) {
+            return self::fromInternalTypeName($type_name, $is_nullable, $from_phpdoc);
+        }
+
+        if ($from_phpdoc && ($namespace ?: '\\') === '\\') {
+            $type_name = self::canonicalNameFromName($type_name);
         }
 
         // Things like `self[]` or `$this[]`
@@ -560,7 +593,8 @@ class Type
             $namespace,
             $type_name,
             $template_parameter_type_list,
-            $is_nullable
+            $is_nullable,
+            $from_phpdoc
         );
     }
 
@@ -649,31 +683,19 @@ class Type
 
     /**
      * @return bool
-     * True if this is a native type (like int, string, etc.)
+     * True if this is a native type or an array of native types
+     * (like int, string, bool[], etc.),
      *
      * @see \Phan\Deprecated\Util::is_native_type
      * Formerly `function is_native_type`
      */
-    private static function isInternalTypeString(string $type_name) : bool
+    private static function isInternalTypeString(string $type_name, bool $from_phpdoc) : bool
     {
-        return in_array(
-            self::canonicalNameFromName(str_replace('[]', '', strtolower($type_name))),
-            [
-                'array',
-                'bool',
-                'callable',
-                'float',
-                'int',
-                'iterable',
-                'mixed',
-                'null',
-                'object',
-                'resource',
-                'static',
-                'string',
-                'void',
-            ]
-        );
+        $type_name = str_replace('[]', '', strtolower($type_name));
+        if ($from_phpdoc) {
+            $type_name = self::canonicalNameFromName($type_name);  // Have to convert boolean[] to bool
+        }
+        return array_key_exists($type_name, self::_internal_type_set);
     }
 
     /**
@@ -784,10 +806,10 @@ class Type
      */
     private static function isGenericArrayString(string $type_name) : bool
     {
-        if (in_array($type_name, ['[]', 'array'])) {
-            return false;
+        if (strrpos($type_name, '[]') !== false) {
+            return $type_name !== '[]';
         }
-        return (strpos($type_name, '[]') !== false);
+        return false;
     }
 
     /**

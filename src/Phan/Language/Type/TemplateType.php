@@ -13,7 +13,7 @@ class TemplateType extends Type
      * An identifier for the template type
      */
     public function __construct(
-        $template_type_identifier
+        string $template_type_identifier
     ) {
         $this->template_type_identifier = $template_type_identifier;
     }

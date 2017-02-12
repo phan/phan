@@ -93,11 +93,15 @@ class UnionType implements \Serializable
      * The context in which the type string was
      * found
      *
+     * @param bool $from_phpdoc
+     * True if $type_string was extracted from a doc comment.
+     *
      * @return UnionType
      */
     public static function fromStringInContext(
         string $type_string,
-        Context $context
+        Context $context,
+        bool $from_phpdoc = false
     ) : UnionType {
         if (empty($type_string)) {
             return new UnionType();
@@ -112,11 +116,12 @@ class UnionType implements \Serializable
         }
 
         return new UnionType(
-            array_map(function (string $type_name) use ($context, $type_string) {
+            array_map(function (string $type_name) use ($context, $type_string, $from_phpdoc) {
                 assert($type_name !== '', "Type cannot be empty.");
                 return Type::fromStringInContext(
                     $type_name,
-                    $context
+                    $context,
+                    $from_phpdoc
                 );
             }, array_filter(array_map(function (string $type_name) {
                 return trim($type_name);
