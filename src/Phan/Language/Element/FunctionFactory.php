@@ -11,7 +11,7 @@ use Phan\Language\UnionType;
 class FunctionFactory {
 
     /**
-     * @return Func[]
+     * @return FunctionInterface[]
      * One or more (alternate) methods begotten from
      * reflection info and internal method data
      */
@@ -147,8 +147,8 @@ class FunctionFactory {
      * @param CodeBase $code_base
      * The global code base holding all state
      *
-     * @return Method[]
-     * A list of typed methods based on the given method
+     * @return FunctionInterface[]
+     * A list of typed functions/methods based on the given method
      */
     private static function functionListFromFunction(
         FunctionInterface $function,
