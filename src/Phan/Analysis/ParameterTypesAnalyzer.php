@@ -16,7 +16,7 @@ class ParameterTypesAnalyzer
     /**
      * Check method parameters to make sure they're valid
      *
-     * @return null
+     * @return void
      */
     public static function analyzeParameterTypes(
         CodeBase $code_base,

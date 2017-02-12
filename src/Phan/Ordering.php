@@ -7,7 +7,7 @@ use Phan\Library\Hasher\Sequential;
 
 class Ordering
 {
-    /** @param CodeBase */
+    /** @var CodeBase */
     private $code_base;
 
     /**

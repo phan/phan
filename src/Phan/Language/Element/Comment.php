@@ -50,14 +50,14 @@ class Comment
     private $template_type_list = [];
 
     /**
-     * @var Option<Type>
+     * @var Option<Type>|null
      * Classes may specify their inherited type explicitly
      * via `@inherits Type`.
      */
     private $inherited_type = null;
 
     /**
-     * @var UnionType
+     * @var UnionType|null
      * A UnionType defined by a @return directive
      */
     private $return_union_type = null;
@@ -76,7 +76,7 @@ class Comment
      * Set to true if the comment contains a 'deprecated'
      * directive.
      *
-     * @param Variable[] $variable_list
+     * @param CommentParameter[] $variable_list
      *
      * @param CommentParameter[] $parameter_list
      *

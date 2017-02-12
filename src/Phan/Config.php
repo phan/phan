@@ -10,7 +10,7 @@ class Config
 {
 
     /**
-     * @var string
+     * @var string|null
      * The root directory of the project. This is used to
      * store canonical path names and find project resources
      */

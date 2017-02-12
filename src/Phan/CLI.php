@@ -13,6 +13,9 @@ use Symfony\Component\Console\Output\StreamOutput;
 
 class CLI
 {
+    /**
+     * @var OutputInterface
+     */
     private $output;
 
     /**
@@ -504,7 +507,7 @@ EOB;
      * How frequently we should update the progress
      * bar, randomly sampled
      *
-     * @return null
+     * @return void
      */
     public static function progress(
         string $msg,

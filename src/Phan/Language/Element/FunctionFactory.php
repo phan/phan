@@ -11,7 +11,7 @@ use Phan\Language\UnionType;
 class FunctionFactory {
 
     /**
-     * @return FunctionInterface[]
+     * @return Func[]
      * One or more (alternate) methods begotten from
      * reflection info and internal method data
      */

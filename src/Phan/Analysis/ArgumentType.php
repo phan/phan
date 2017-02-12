@@ -33,7 +33,7 @@ class ArgumentType
      * @param CodeBase $code_base
      * The global code base
      *
-     * @return null
+     * @return void
      *
      * @see \Phan\Deprecated\Pass2::arg_check
      * Formerly `function arg_check`
@@ -204,7 +204,7 @@ class ArgumentType
      * @param Context $context
      * The context in which we see the call
      *
-     * @return null
+     * @return void
      *
      * @see \Phan\Deprecated\Pass2::arglist_type_check
      * Formerly `function arglist_type_check`
@@ -328,7 +328,7 @@ class ArgumentType
                 } elseif ($method->isInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if(!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance(false))) {
+                    if(!$context->getIsStrictTypes() && is_object($parameter_type) && $parameter_type->hasType(StringType::instance(false))) {
                         try {
                             foreach($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
                                 if($clazz->hasMethodWithName($code_base, "__toString")) {
@@ -373,7 +373,7 @@ class ArgumentType
      * Emit a log message if the type of the given
      * node cannot be cast to the given type
      *
-     * @param Node|null|string|int $node
+     * @param Node|null|string|int|float $node
      * A node or whatever php-ast feels like returning
      *
      * @param Context $context

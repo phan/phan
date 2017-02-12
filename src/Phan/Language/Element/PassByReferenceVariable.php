@@ -15,7 +15,7 @@ use Phan\Language\UnionType;
 class PassByReferenceVariable extends Variable
 {
 
-    /** @var Parameter */
+    /** @var Variable */
     private $parameter;
 
     /** @var TypedElement */

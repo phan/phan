@@ -27,7 +27,7 @@ class Debug
      *
      * Print an AST node
      *
-     * @return null
+     * @return void
      *
      * @suppress PhanUnreferencedMethod
      */
@@ -160,7 +160,7 @@ class Debug
     }
 
     /**
-     * @return string
+     * @return void
      * Pretty-printer for debug_backtrace
      *
      * @suppress PhanUnreferencedMethod
