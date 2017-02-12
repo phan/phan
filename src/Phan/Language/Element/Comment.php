@@ -218,7 +218,8 @@ class Comment
 
         $return_union_type = UnionType::fromStringInContext(
             $return_union_type_string,
-            $context
+            $context,
+            true
         );
 
         return $return_union_type;
@@ -254,7 +255,8 @@ class Comment
                 $union_type =
                     UnionType::fromStringInContext(
                         $type,
-                        $context
+                        $context,
+                        true
                     );
             } else {
                 $union_type = new UnionType();
@@ -313,7 +315,8 @@ class Comment
 
             $type = new Some(Type::fromStringInContext(
                 $type_string,
-                $context
+                $context,
+                true
             ));
 
             return $type;
