@@ -316,7 +316,7 @@ class UnionType implements \Serializable
     /**
      * Add the given types to this type
      *
-     * @return null
+     * @return void
      */
     public function addUnionType(UnionType $union_type)
     {
@@ -542,6 +542,36 @@ class UnionType implements \Serializable
     public function isEqualTo(UnionType $union_type) : bool
     {
         return ((string)$this === (string)$union_type);
+    }
+
+    /**
+     * @return bool - True if not empty and at least one type is NullType or nullable.
+     */
+    public function containsNullable() : bool
+    {
+        foreach ($this->getTypeSet() as $type) {
+            if ($type->getIsNullable()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function nonNullableClone() : UnionType
+    {
+        $result = new UnionType();
+        foreach ($this->getTypeSet() as $type) {
+            if (!$type->getIsNullable()) {
+                $result->addType($type);
+                continue;
+            }
+            if ($type === NullType::instance(false)) {
+                continue;
+            }
+
+            $result->addType($type->withIsNullable(false));
+        }
+        return $result;
     }
 
     /**

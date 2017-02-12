@@ -50,7 +50,7 @@ class NullType extends ScalarType
             return true;
         }
 
-        // A nullable type cannot cast to a non-nullable type
+        // Null can cast to a nullable type.
         if ($type->getIsNullable()) {
             return true;
         }
