@@ -47,6 +47,8 @@ class Issue
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
+    const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
+    const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
@@ -442,6 +444,22 @@ class Issue
                 "Default value for %s \$%s can't be %s",
                 self::REMEDIATION_B,
                 10002
+            ),
+            new Issue(
+                self::TypeMismatchVariadicComment,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "%s is variadic in comment, but not variadic in param (%s)",
+                self::REMEDIATION_B,
+                10021
+            ),
+            new Issue(
+                self::TypeMismatchVariadicParam,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "%s is not variadic in comment, but variadic in param (%s)",
+                self::REMEDIATION_B,
+                10022
             ),
             new Issue(
                 self::TypeMismatchArgument,
@@ -1148,7 +1166,7 @@ class Issue
      * @param int $line
      * The line number (start) where the issue was found
      *
-     * @param mixed $template_parameters
+     * @param mixed ...$template_parameters
      * Any template parameters required for the issue
      * message
      *
@@ -1272,7 +1290,7 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param mixed parameters
+     * @param mixed ...$parameters
      * Template parameters for the issue's error message
      *
      * @return void

@@ -150,10 +150,10 @@ class Comment
 
             if (strpos($line, '@param') !== false) {
                 $parameter_list[] =
-                    self::parameterFromCommentLine($context, $line);
+                    self::parameterFromCommentLine($context, $line, false);
             } elseif (stripos($line, '@var') !== false) {
                 $variable_list[] =
-                    self::parameterFromCommentLine($context, $line);
+                    self::parameterFromCommentLine($context, $line, true);
             } elseif (stripos($line, '@template') !== false) {
 
                 // Make sure support for generic types is enabled
@@ -231,20 +231,30 @@ class Comment
      * @param string $line
      * An individual line of a comment
      *
+     * @param bool $is_var
+     * True if this is parsing a variable, false if parsing a parameter.
+     *
      * @return CommentParameter
      * A CommentParameter associated with a line that has a var
      * or param reference.
      */
     private static function parameterFromCommentLine(
         Context $context,
-        string $line
+        string $line,
+        bool $is_var
     ) {
         $match = [];
-        if (preg_match('/@(param|var)\s+(' . UnionType::union_type_regex . ')(\s+(\\$\S+))?/', $line, $match)) {
+        if (preg_match('/@(param|var)\s+(' . UnionType::union_type_regex . ')(\s+(\.\.\.)?\s*(\\$\S+))?/', $line, $match)) {
             $type = $match[2];
 
-            $variable_name =
-                empty($match[29]) ? '' : trim($match[29], '$');
+            $is_variadic = ($match[29] ?? '') === '...';
+
+            if ($is_var && $is_variadic) {
+                $variable_name = '';  // "@var int ...$x" is nonsense and invalid phpdoc.
+            } else {
+                $variable_name =
+                    empty($match[30]) ? '' : trim($match[30], '$');
+            }
 
             // If the type looks like a variable name, make it an
             // empty type so that other stuff can match it. We can't
@@ -262,7 +272,8 @@ class Comment
 
             return new CommentParameter(
                 $variable_name,
-                $union_type
+                $union_type,
+                $is_variadic
             );
         }
 

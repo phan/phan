@@ -1,6 +1,12 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\CodeBase;
+use Phan\Issue;
+use Phan\Language\Context;
+use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NullType;
+use ast\Node\Decl;
 
 trait FunctionTrait {
 
@@ -223,4 +229,121 @@ trait FunctionTrait {
         $this->parameter_list[] = $parameter;
     }
 
+    /**
+     * Adds types from comments to the params of a user-defined function or method.
+     * Also adds the types from defaults, and emits warnings for certain violations.
+     *
+     * Conceptually, Func and Method should have defaults/comments analyzed in the same way.
+     *
+     * This does nothing if $function is for an internal method.
+     *
+     * @param Context $context
+     * The context in which the node appears
+     *
+     * @param CodeBase $code_base
+     *
+     * @param Decl $node
+     * An AST node representing a method
+     *
+     * @param FunctionInterface $function - A Func or Method to add params to the local scope of.
+     *
+     * @param Comment $comment - processed doc comment of $node, with params
+     *
+     * @return void
+     */
+    public static function addParamsToScopeOfFunctionOrMethod(
+        Context $context,
+        CodeBase $code_base,
+        Decl $node,
+        FunctionInterface $function,
+        Comment $comment
+    ) {
+        if ($function->isInternal()) {
+            return;
+        }
+        $parameter_offset = 0;
+        foreach ($function->getParameterList() as $i => $parameter) {
+            if ($parameter->getUnionType()->isEmpty()) {
+                // If there is no type specified in PHP, check
+                // for a docComment with @param declarations. We
+                // assume order in the docComment matches the
+                // parameter order in the code
+                if ($comment->hasParameterWithNameOrOffset(
+                    $parameter->getName(),
+                    $parameter_offset
+                )) {
+                    $comment_param = $comment->getParameterWithNameOrOffset(
+                        $parameter->getName(),
+                        $parameter_offset
+                    );
+                    $comment_param_type = $comment_param->getUnionType();
+                    if ($parameter->isVariadic() !== $comment_param->isVariadic()) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            $parameter->isVariadic() ? Issue::TypeMismatchVariadicParam : Issue::TypeMismatchVariadicComment,
+                            $node->lineno ?? 0,
+                            $comment_param->__toString(),
+                            $parameter->__toString()
+                        );
+                    }
+
+                    $parameter->addUnionType($comment_param_type);
+                }
+            }
+
+            // If there's a default value on the parameter, check to
+            // see if the type of the default is cool with the
+            // specified type.
+            if ($parameter->hasDefaultValue()) {
+                $default_type = $parameter->getDefaultValueType();
+                $defaultIsNull = $default_type->isEqualTo(
+                    NullType::instance(false)->asUnionType());
+                // If the default type isn't null and can't cast
+                // to the parameter's declared type, emit an
+                // issue.
+                if (!$defaultIsNull) {
+                    if (!$default_type->canCastToUnionType(
+                        $parameter->getUnionType()
+                    )) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchDefault,
+                            $node->lineno ?? 0,
+                            (string)$parameter->getUnionType(),
+                            $parameter->getName(),
+                            (string)$default_type
+                        );
+                    }
+                }
+
+                // If there are no types on the parameter, the
+                // default shouldn't be treated as the one
+                // and only allowable type.
+                if ($parameter->getUnionType()->isEmpty()) {
+                    $parameter->addUnionType(
+                        MixedType::instance(false)->asUnionType()
+                    );
+                }
+
+                // If we have no other type info about a parameter,
+                // just because it has a default value of null
+                // doesn't mean that is its type. Any type can default
+                // to null
+                if ($defaultIsNull) {
+                    if (!$parameter->getUnionType()->isEmpty()) {
+                        $parameter->getUnionType()->addType(
+                            NullType::instance(false)
+                        );
+                    }
+                } else {
+                    // If default type is not null, then add the default type to the parameter type
+                    $parameter->addUnionType($default_type);
+                }
+            }
+
+            ++$parameter_offset;
+        }
+    }
 }

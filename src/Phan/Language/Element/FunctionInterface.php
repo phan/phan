@@ -154,5 +154,4 @@ interface FunctionInterface extends AddressableElementInterface {
      * in the given context
      */
     public function analyze(Context $context, CodeBase $code_base) : Context;
-
 }

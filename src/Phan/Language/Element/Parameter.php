@@ -399,11 +399,11 @@ class Parameter extends Variable
             $string .= '&';
         }
 
-        $string .= "\${$this->getName()}";
-
         if ($this->isVariadic()) {
-            $string .= ' ...';
+            $string .= '...';
         }
+
+        $string .= "\${$this->getName()}";
 
         if ($this->hasDefaultValue()) {
             if ($this->getDefaultValue() instanceof \ast\Node) {
