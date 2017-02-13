@@ -74,8 +74,8 @@ class Clazz extends AddressableElement
      * A fully qualified name for this class
      *
      * @param Type|null $parent_type
-     * @param FullyQualifiedClassName[]|null $interface_fqsen_list
-     * @param FullyQualifiedClassName[]|null $trait_fqsen_list
+     * @param FullyQualifiedClassName[] $interface_fqsen_list
+     * @param FullyQualifiedClassName[] $trait_fqsen_list
      */
     public function __construct(
         Context $context,
@@ -520,7 +520,7 @@ class Clazz extends AddressableElement
      * Add the given FQSEN to the list of implemented
      * interfaces for this class
      *
-     * @return null
+     * @return void
      */
     public function addInterfaceClassFQSEN(FQSEN $fqsen)
     {
@@ -956,7 +956,7 @@ class Clazz extends AddressableElement
      * A possibly defined type used to define template
      * parameter types when importing the method
      *
-     * @return null
+     * @return void
      */
     public function addMethod(
         CodeBase $code_base,
@@ -1234,7 +1234,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return null
+     * @return void
      */
     public function addTraitFQSEN(FQSEN $fqsen)
     {
@@ -1478,7 +1478,7 @@ class Clazz extends AddressableElement
      * The entire code base from which we'll find ancestor
      * details
      *
-     * @return null
+     * @return void
      */
     public function importAncestorClasses(CodeBase $code_base)
     {

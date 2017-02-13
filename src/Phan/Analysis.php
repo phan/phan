@@ -160,7 +160,7 @@ class Analysis
      * Take a pass over all functions verifying various
      * states.
      *
-     * @return null
+     * @return void
      */
     public static function analyzeFunctions(CodeBase $code_base)
     {

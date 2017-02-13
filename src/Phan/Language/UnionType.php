@@ -137,7 +137,7 @@ class UnionType implements \Serializable
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
-     * @param Node|string|null $node
+     * @param Node|string|bool|int|float|null $node
      * The node for which we'd like to determine its type
      *
      * @param bool $should_catch_issue_exception

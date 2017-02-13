@@ -84,14 +84,14 @@ class Type
     ];
 
     /**
-     * @var string
+     * @var string|null
      * The namespace of this type such as '\' or
      * '\Phan\Language'
      */
     protected $namespace = null;
 
     /**
-     * @var string
+     * @var string|null
      * The name of this type such as 'int' or 'MyClass'
      */
     protected $name = null;
@@ -887,10 +887,11 @@ class Type
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
-     * @return Type[]
+     * @return UnionType[]
      * A map from template type identifier to a concrete type
      */
-    public function getTemplateParameterTypeMap(CodeBase $code_base) {
+    public function getTemplateParameterTypeMap(CodeBase $code_base)
+    {
         return $this->memoize(__METHOD__, function () use ($code_base) {
             $fqsen = $this->asFQSEN();
 

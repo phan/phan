@@ -20,7 +20,7 @@ abstract class TypedElement implements TypedElementInterface
     private $name;
 
     /**
-     * @var UnionType
+     * @var UnionType|null
      * A set of types satisfyped by this typed structural
      * element.
      */
@@ -43,7 +43,7 @@ abstract class TypedElement implements TypedElementInterface
     private $phan_flags = 0;
 
     /**
-     * @var Context
+     * @var Context|null
      * The context in which the structural element lives
      */
     private $context = null;

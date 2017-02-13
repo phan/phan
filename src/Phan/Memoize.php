@@ -82,7 +82,7 @@ trait Memoize
     /**
      * Delete all memoized data
      *
-     * @return null
+     * @return void
      */
     protected function memoizeFlushAll()
     {

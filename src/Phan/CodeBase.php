@@ -148,16 +148,13 @@ class CodeBase
      * @param string[] $function_name_list
      * A list of function names to load type information for
      */
-    private function addFunctionsByNames(array $function_name_list) {
+    private function addFunctionsByNames(array $function_name_list)
+    {
         foreach ($function_name_list as $i => $function_name) {
             foreach (FunctionFactory::functionListFromName($this, $function_name)
                 as $function_or_method
             ) {
-                if ($function_or_method instanceof Method) {
-                    $this->addMethod($function_or_method);
-                } else {
-                    $this->addFunction($function_or_method);
-                }
+                $this->addFunction($function_or_method);
             }
         }
     }

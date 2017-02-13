@@ -8,7 +8,7 @@ class GenericArrayType extends ArrayType
     const NAME = 'array';
 
     /**
-     * @var Type
+     * @var Type|null
      * The type of every element in this array
      */
     private $element_type = null;

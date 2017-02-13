@@ -17,7 +17,7 @@ class Parameter extends Variable
 {
 
     /**
-     * @var UnionType
+     * @var UnionType|null
      * The type of the default value if any
      */
     private $default_value_type = null;
