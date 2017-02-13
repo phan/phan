@@ -228,6 +228,11 @@ class ContextNode
             "Method name must be a string. Found non-string in context."
         );
 
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         try {
             $class_list = (new ContextNode(
                 $this->code_base,
@@ -369,6 +374,11 @@ class ContextNode
             }
         }
 
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         // Make sure the method we're calling actually exists
         if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
             throw new IssueException(
@@ -396,6 +406,11 @@ class ContextNode
      */
     public function getVariable() : Variable
     {
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         // Get the name of the variable
         $variable_name = $this->getVariableName();
 
@@ -437,6 +452,11 @@ class ContextNode
             // Swallow it
         }
 
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         // Create a new variable
         $variable = Variable::fromNodeInContext(
             $this->node,
@@ -476,6 +496,11 @@ class ContextNode
     public function getProperty(
         $property_name
     ) : Property {
+
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
 
         $property_name = $this->node->children['prop'];
 
@@ -631,6 +656,11 @@ class ContextNode
             // property
         }
 
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         try {
             $class_list = (new ContextNode(
                 $this->code_base,
@@ -695,6 +725,11 @@ class ContextNode
     public function getConst() : GlobalConstant
     {
         assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
+        assert(
             $this->node->kind === \ast\AST_CONST,
             "Node must be of type \ast\AST_CONST"
         );
@@ -756,6 +791,11 @@ class ContextNode
      */
     public function getClassConst() : ClassConstant
     {
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         assert(
             $this->node->kind === \ast\AST_CLASS_CONST,
             "Node must be of type \ast\AST_CLASS_CONST"
@@ -823,6 +863,11 @@ class ContextNode
     public function getUnqualifiedNameForAnonymousClass() : string
     {
         assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
+        assert(
             (bool)($this->node->flags & \ast\flags\CLASS_ANONYMOUS),
             "Node must be an anonymous class node"
         );
@@ -867,7 +912,7 @@ class ContextNode
             return;
         }
 
-        if (empty($this->node->children['expr'])) {
+        if (!($this->node instanceof \ast\Node) || empty($this->node->children['expr'])) {
             return;
         }
 
@@ -977,6 +1022,7 @@ class ContextNode
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($this->node->lineno-1);
             $line = $ftemp->current();
+            assert(is_string($line));
             unset($ftemp);
             if (strpos($line, '}[') === false
                 || strpos($line, ']}') === false

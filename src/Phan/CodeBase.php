@@ -53,31 +53,31 @@ use Phan\Library\Set;
 class CodeBase
 {
     /**
-     * @var Clazz[]|Map
+     * @var Map
      * A map from FQSEN to a class
      */
     private $fqsen_class_map;
 
     /**
-     * @var GlobalConstant[]|Map
+     * @var Map
      * A map from FQSEN to a global constant
      */
     private $fqsen_global_constant_map;
 
     /**
-     * @var Func[]|Map
+     * @var Map
      * A map from FQSEN to function
      */
     private $fqsen_func_map;
 
     /**
-     * @var Func[]|Method[]|Set
+     * @var Set
      * The set of all functions and methods
      */
     private $func_and_method_set;
 
     /**
-     * @var ClassMap[]|Map
+     * @var Map
      * A map from FullyQualifiedClassName to a ClassMap,
      * an object that holds properties, methods and class
      * constants.
@@ -135,7 +135,7 @@ class CodeBase
      * @param string[] $class_name_list
      * A list of class names to load type information for
      *
-     * @return null
+     * @return void
      */
     private function addClassesByNames(array $class_name_list)
     {

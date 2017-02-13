@@ -207,7 +207,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             // we already successfully parsed the code
             // base
             throw $exception;
-            return $this->context;
         }
 
         // Hunt for the alternate associated with the file we're
