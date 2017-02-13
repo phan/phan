@@ -60,6 +60,7 @@ class Type
      * A legal type identifier matching a type optionally with a []
      * indicating that it's a generic typed array (e.g. 'int[]',
      * 'string' or 'Set<DateTime>')
+     * TODO: change the regex so that '@return $this' will work (Currently not parsed, has empty regex)
      */
     const type_regex =
         self::simple_type_with_template_parameter_list_regex . '(\[\])*';
@@ -616,6 +617,7 @@ class Type
      */
     public function asFQSEN() : FQSEN
     {
+        // Note: some subclasses, such as CallableType, return different subtypes of FQSEN
         return FullyQualifiedClassName::fromType($this);
     }
 
@@ -719,7 +721,7 @@ class Type
      */
     public function isStaticType() : bool
     {
-        return ('static' === (string)$this || '\\static' === (string)$this);
+        return 'static' === strtolower(ltrim((string)$this, '\\'));
     }
 
     /**
@@ -733,10 +735,9 @@ class Type
     public static function isSelfTypeString(
         string $type_string
     ) : bool {
-        return in_array(strtolower($type_string), [
-            'self', '$this', 'parent',
-            '\self', '\$this', '\parent'
-        ]);
+        // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
+        // Not sure if that should extend to phpdoc.
+        return preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\\$this)$/', $type_string) > 0;
     }
 
     /**
@@ -748,14 +749,7 @@ class Type
      */
     public function isScalar() : bool
     {
-        return in_array((string)$this, [
-            'int',
-            'float',
-            'bool',
-            'true',
-            'string',
-            'null'
-        ]);
+        return false;  // Overridden in subclass ScalarType
     }
 
     /**
@@ -764,12 +758,7 @@ class Type
      */
     public function isIterable() : bool
     {
-        return (
-            $this === ArrayType::instance(false)
-            || $this === IterableType::instance(false)
-            || $this === ArrayType::instance(true)
-            || $this === IterableType::instance(true)
-        );
+        return false;  // Overridden in subclass IterableType (with subclass ArrayType)
     }
 
     /**
@@ -779,13 +768,11 @@ class Type
      */
     public function isArrayLike() : bool
     {
-        $array_access_type =
-            Type::make('\\', 'ArrayAccess', [], false, false);
-
+        // includes both nullable and non-nullable ArrayAccess/array/iterable
         return (
             $this->isIterable()
             || $this->isGenericArray()
-            || $this === $array_access_type
+            || $this->isArrayAccess()
         );
     }
 
@@ -796,7 +783,16 @@ class Type
      */
     public function isGenericArray() : bool
     {
-        return self::isGenericArrayString($this->getName());
+        return false;  // Overridden in GenericArrayType
+    }
+
+    /**
+     * @return bool - Returns true if this is \ArrayAccess (nullable or not)
+     */
+    public function isArrayAccess() : bool
+    {
+        return (strcasecmp($this->getName(), 'ArrayAccess') === 0
+            && $this->getNamespace() === '\\');
     }
 
     /**
@@ -1072,9 +1068,9 @@ class Type
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
+        // can't cast native types (includes iterable or array) to object. ObjectType overrides this function.
         if ($type instanceof ObjectType
             && !$this->isNativeType()
-            && !($this instanceof ArrayType)
         ) {
             return true;
         }
