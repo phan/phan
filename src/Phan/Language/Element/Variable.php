@@ -195,6 +195,15 @@ class Variable extends TypedElement
         return parent::getUnionType();
     }
 
+    /**
+     * @return static - A clone of this object, where isVariadic() is false
+     * Used for analyzing the context **inside** of this method
+     */
+    public function cloneAsNonVariadic()
+    {
+        return clone($this);
+    }
+
     public function __toString() : string
     {
         $string = '';

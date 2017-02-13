@@ -74,6 +74,21 @@ class Parameter extends Variable
     }
 
     /**
+     * @return static - non-variadic clone which can be modified.
+     */
+    public function cloneAsNonVariadic()
+    {
+        $result = clone($this);
+        if ($result->isVariadic() && !$result->isCloneOfVariadic()) {
+            $result->convertToNonVariadic();
+            $result->setPhanFlags(Flags::bitVectorWithState($result->getPhanFlags(),
+                                                           Flags::IS_CLONE_OF_VARIADIC,
+                                                           true));
+        }
+        return $result;
+    }
+
+    /**
      * @return bool
      * True if this parameter has a type for its
      * default value
@@ -331,8 +346,13 @@ class Parameter extends Variable
      * method will return the element type (such as `DateTime`)
      * for variadic parameters.
      */
-    public function getNonVariadicUnionType() : UnionType {
-        return parent::getUnionType();
+    public function getNonVariadicUnionType() : UnionType
+    {
+        $union_type = parent::getUnionType();
+        if ($this->isCloneOfVariadic()) {
+            return $union_type->nonArrayTypes();  // clones converted inner types to a generic array T[]. Convert it back to T.
+        }
+        return $union_type;
     }
 
     /**
@@ -340,8 +360,9 @@ class Parameter extends Variable
      * then this returns the corresponding array type(s) of $args.
      * (e.g. `DateTime[]`)
      *
-     * NOTE: For variadic arguments, this is a temporary variable.
-     * Modifying this won't result in persistent changes.
+     * NOTE: For analyzing the code within a function,
+     * code should pass $param->cloneAsNonVariadic() instead.
+     * Modifying/analyzing the clone should work without any bugs.
      *
      * TODO(Issue #376) : We will probably want to be able to modify
      * the underlying variable, e.g. by creating
@@ -350,14 +371,23 @@ class Parameter extends Variable
      * source will be less effective without phpdoc types.
      *
      * @override
-     * TODO: Should the return value be set up in the constructor
-     * instead?
      */
     public function getUnionType() : UnionType
     {
-        return $this->isVariadic()
-            ? parent::getUnionType()->asGenericArrayTypes()
-            : parent::getUnionType();
+        if ($this->isVariadic() && !$this->isCloneOfVariadic()) {
+            return parent::getUnionType()->asGenericArrayTypes();
+        }
+        return parent::getUnionType();
+    }
+
+    /**
+     * @return bool - True when this is a non-variadic clone of a variadic parameter.
+     * (We avoid bugs by adding new types to a variadic parameter if this is cloned.)
+     * However, error messages still need to convert variadic parameters to a string.
+     */
+    protected function isCloneOfVariadic() : bool
+    {
+        return Flags::bitVectorHasState($this->getPhanFlags(), Flags::IS_CLONE_OF_VARIADIC);
     }
 
     /**
