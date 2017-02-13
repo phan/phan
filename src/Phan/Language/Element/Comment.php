@@ -145,7 +145,7 @@ class Comment
 
         if (!Config::get()->read_type_annotations) {
             return new Comment(
-                false, [], [], [], new None, new UnionType(), [], null
+                false, [], [], [], new None, new UnionType(), [], new None()
             );
         }
 
