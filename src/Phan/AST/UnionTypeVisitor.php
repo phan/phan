@@ -2,6 +2,7 @@
 namespace Phan\AST;
 
 use Phan\Analysis\BinaryOperatorFlagVisitor;
+use Phan\Analysis\ConditionVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
@@ -251,6 +252,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * Visit a node with kind `\ast\AST_COALESCE`
+     * (Null coalescing operator)
      *
      * @param Node $node
      * A node of the type indicated by the method name that we'd
@@ -269,12 +271,21 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->context,
             $node->children['left']
         );
-        $union_type->addUnionType($left_type);
 
         $right_type = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
             $node->children['right']
+        );
+
+        // On the left side, remove null and replace '?T' with 'T'
+        // Don't bother if the right side contains null.
+        if (!$right_type->isEmpty() && $left_type->containsNullable() && !$right_type->containsNullable()) {
+            $left_type = $left_type->nonNullableClone();
+        }
+
+        $union_type->addUnionType(
+            $left_type
         );
 
         $union_type->addUnionType(
@@ -523,17 +534,24 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node->children['trueExpr'] ??
                 $node->children['true'] ?? '';
 
+        $cond_node = $node->children['cond'];
+        // TODO: false_context once there is a NegatedConditionVisitor
+        $true_context = (new ConditionVisitor(
+            $this->code_base,
+            $this->context
+        ))($cond_node);
+
         if ($true_node) {
             $true_type = UnionType::fromNode(
-                $this->context,
+                $true_context,
                 $this->code_base,
                 $true_node
             );
         } else {
             $true_type = UnionType::fromNode(
-                $this->context,
+                $true_context,
                 $this->code_base,
-                $node->children['cond']
+                $cond_node
             );
         }
 

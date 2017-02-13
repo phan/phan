@@ -2,6 +2,7 @@
 namespace Phan;
 
 use Phan\AST\AnalysisVisitor;
+use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\ContextMergeVisitor;
 use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
@@ -390,6 +391,86 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         return $this->visitBranchedContext($node);
     }
 
+    public function visitConditional(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        // Visit the given node populating the code base
+        // with anything we learn and get a new context
+        // indicating the state of the world within the
+        // given node
+        // NOTE: unused for AST_CONDITIONAL
+        // $context = (new PreOrderAnalysisVisitor(
+        //     $this->code_base, $context
+        // ))($node);
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base, $context, $node
+        );
+
+        assert(!empty($context), 'Context cannot be null');
+
+        $true_node =
+            $node->children['trueExpr'] ??
+                $node->children['true'] ?? null;
+        $false_node =
+            $node->children['falseExpr'] ??
+                $node->children['false'] ?? null;
+
+        $cond_node = $node->children['cond'];
+        if (($cond_node instanceof Node) && Analysis::shouldVisit($cond_node)) {
+            // Step into each child node and get an
+            // updated context for the node
+            // (e.g. there may be assignments such as '($x = foo()) ? $a : $b)
+            $context = (new BlockAnalysisVisitor(
+                $this->code_base, $context, $node, $this->depth + 1
+            ))($cond_node);
+
+            // TODO: false_context once there is a NegatedConditionVisitor
+            $true_context = (new ConditionVisitor(
+                $this->code_base,
+                $this->context
+            ))($cond_node);
+        } else {
+            $true_context = $context;
+        }
+
+        $child_context_list = [];
+        // In the long form, there's a $true_node, but in the short form (?:),
+        // $cond_node is the (already processed) value for truthy.
+        if ($true_node instanceof Node) {
+            if (Analysis::shouldVisit($true_node)) {
+                $child_context = (new BlockAnalysisVisitor(
+                    $this->code_base, $true_context, $node, $this->depth + 1
+                ))($true_node);
+                $child_context_list[] = $child_context;
+            }
+        }
+
+        if ($false_node instanceof Node) {
+            if (Analysis::shouldVisit($false_node)) {
+                $child_context = (new BlockAnalysisVisitor(
+                    $this->code_base, $context, $node, $this->depth + 1
+                ))($false_node);
+                $child_context_list[] = $child_context;
+            }
+        }
+        if (count($child_context_list) >= 1) {
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                $child_context_list
+            ))($node);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        return $context;
+    }
     /**
      * @param Node $node
      * An AST node we'd like to determine the UnionType
