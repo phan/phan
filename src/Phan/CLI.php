@@ -130,6 +130,7 @@ class CLI
                     foreach ($file_list as $file_name) {
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
+                            /** @var string[] */
                             $this->file_list = array_merge(
                                 $this->file_list,
                                 file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
@@ -288,6 +289,7 @@ class CLI
             );
 
             // Merge in any files given in the config
+            /** @var string[] */
             $this->file_list = array_merge(
                 $this->file_list,
                 Config::get()->file_list

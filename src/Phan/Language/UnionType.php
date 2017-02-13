@@ -316,7 +316,7 @@ class UnionType implements \Serializable
     /**
      * Add the given types to this type
      *
-     * @return null
+     * @return void
      */
     public function addUnionType(UnionType $union_type)
     {
@@ -336,20 +336,6 @@ class UnionType implements \Serializable
         return (false !==
             $this->type_set->find(function (Type $type) : bool {
                 return $type->isSelfType();
-            })
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this union type has any types that are generic
-     * types.
-     */
-    private function hasGenericType() : bool
-    {
-        return (false !==
-            $this->type_set->find(function (Type $type) : bool {
-                return $type->hasTemplateParameterTypes();
             })
         );
     }
@@ -837,7 +823,8 @@ class UnionType implements \Serializable
      * The context in which we're resolving this union
      * type.
      *
-     * @return \Generator|Clazz[]
+     * @return \Generator
+     *
      * A list of classes representing the non-native types
      * associated with this UnionType
      *
