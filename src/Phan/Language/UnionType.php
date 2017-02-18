@@ -531,6 +531,36 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return bool - True if not empty and at least one type is NullType or nullable.
+     */
+    public function containsNullable() : bool
+    {
+        foreach ($this->getTypeSet() as $type) {
+            if ($type->getIsNullable()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function nonNullableClone() : UnionType
+    {
+        $result = new UnionType();
+        foreach ($this->getTypeSet() as $type) {
+            if (!$type->getIsNullable()) {
+                $result->addType($type);
+                continue;
+            }
+            if ($type === NullType::instance(false)) {
+                continue;
+            }
+
+            $result->addType($type->withIsNullable(false));
+        }
+        return $result;
+    }
+
+    /**
      * @param UnionType $union_type
      * A union type to compare against
      *
