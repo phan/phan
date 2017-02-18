@@ -70,7 +70,26 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitBinaryOp(Node $node) : Context
     {
+        $flags = ($node->flags ?? 0);
+        if ($flags === \ast\flags\BINARY_BOOL_AND) {
+            $this->context = $this($node->children['left']);
+            return $this($node->children['right']);
+        }
         return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAnd(Node $node) : Context
+    {
+        $this->context = $this($node->children['left']);
+        return $this($node->children['right']);
     }
 
     /**
