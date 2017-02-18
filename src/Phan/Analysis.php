@@ -103,6 +103,23 @@ class Analysis
      */
     public static function parseNodeInContext(CodeBase $code_base, Context $context, Node $node) : Context
     {
+        return self::parseNodeInContextInner($code_base, $context, $node, self::shouldVisitEverything());
+    }
+
+    /**
+     * @return bool - Whether or not every AST should be visited, according to the current config.
+     */
+    public static function shouldVisitEverything() : bool {
+        $config = Config::get();
+        return $config->dead_code_detection || $config->should_visit_all_nodes;
+    }
+
+    /**
+     * @see self::parseNodeInContext
+     *
+     * @param $shouldVisitEverything - Whether or not all AST nodes should be parsed.
+     */
+    private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node, bool $should_visit_everything) {
         // Save a reference to the outer context
         $outer_context = $context;
 
@@ -126,7 +143,7 @@ class Analysis
                 continue;
             }
 
-            if (!self::shouldVisit($child_node)) {
+            if (!($should_visit_everything || self::shouldVisitNode($child_node))) {
                 $child_context->withLineNumberStart(
                     $child_node->lineno ?? 0
                 );
@@ -135,7 +152,7 @@ class Analysis
 
             // Step into each child node and get an
             // updated context for the node
-            $child_context = self::parseNodeInContext($code_base, $child_context, $child_node);
+            $child_context = self::parseNodeInContextInner($code_base, $child_context, $child_node, $should_visit_everything);
 
             assert(!empty($child_context), 'Context cannot be null');
         }
@@ -240,17 +257,25 @@ class Analysis
      * @return bool
      * True if the given node should be visited or false if
      * it should be skipped entirely
+     *
+     * @see self::shouldVisitNode (and self::shouldVisitEverything) for a faster way to check nodes.
      */
     public static function shouldVisit(Node $node)
     {
         // When doing dead code detection, we need to go
         // super deep
-        if (Config::get()->dead_code_detection
-            || Config::get()->should_visit_all_nodes
-        ) {
+        if (self::shouldVisitEverything()) {
             return true;
         }
+        return self::shouldVisitNode($node);
+    }
 
+    /**
+     * @return bool - true if a node should be visited unconditionally, no matter what the value of the Config is.
+     *                Assumes the caller already checked the value of self::shouldVisitEverything()
+     * @see self::shouldVisit
+     */
+    public static function shouldVisitNode(Node $node) : bool {
         switch ($node->kind) {
             case \ast\AST_ARRAY_ELEM:
             case \ast\AST_ASSIGN_OP:
