@@ -20,6 +20,7 @@ class Issue
     const UndeclaredClassInstanceof = 'PhanUndeclaredClassInstanceof';
     const UndeclaredClassMethod     = 'PhanUndeclaredClassMethod';
     const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
+    const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
     const UndeclaredConstant        = 'PhanUndeclaredConstant';
     const UndeclaredExtendedClass   = 'PhanUndeclaredExtendedClass';
     const UndeclaredFunction        = 'PhanUndeclaredFunction';
@@ -42,6 +43,7 @@ class Issue
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
     const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
     const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
+    const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
@@ -417,6 +419,14 @@ class Issue
                 self::REMEDIATION_B,
                 1020
             ),
+            new Issue(
+                self::UndeclaredClosureScope,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Reference to undeclared class %s in PhanClosureScope",
+                self::REMEDIATION_B,
+                1021
+            ),
 
             // Issue::CATEGORY_ANALYSIS
             new Issue(
@@ -564,6 +574,14 @@ class Issue
                 "Instantiation of interface %s",
                 self::REMEDIATION_B,
                 10014
+            ),
+            new Issue(
+                self::TypeInvalidClosureScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid PhanClosureScope: expected a class name, got %s",
+                self::REMEDIATION_B,
+                10023
             ),
             new Issue(
                 self::TypeInvalidRightOperand,
