@@ -1110,18 +1110,14 @@ class Type
     /**
      * @return string
      * A human readable representation of this type
+     * (This is frequently called, so prefer efficient operations)
      */
     public function __toString()
     {
         $string = $this->asFQSENString();
 
-        $template_parameter_string =
-            implode(',', array_map(function (UnionType $type) {
-                return (string)$type;
-            }, $this->template_parameter_type_list));
-
-        if (!empty($template_parameter_string)) {
-            $string .= '<' . $template_parameter_string . '>';
+        if (count($this->template_parameter_type_list) > 0) {
+            $string .= $this->templateParameterTypeListAsString();
         }
 
         if ($this->getIsNullable()) {
@@ -1129,6 +1125,17 @@ class Type
         }
 
         return $string;
+    }
+
+    /**
+     * Gets the part of the Type string for the template parameters.
+     * Precondition: $this->template_parameter_string is not null.
+     */
+    private function templateParameterTypeListAsString() : string {
+        return '<' .
+            implode(',', array_map(function (UnionType $type) {
+                return (string)$type;
+            }, $this->template_parameter_type_list)) . '>';
     }
 
     /**

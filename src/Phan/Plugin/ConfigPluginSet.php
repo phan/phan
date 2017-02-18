@@ -13,10 +13,13 @@ use ast\Node;
 /**
  * The root plugin that calls out each hook
  * on any plugins defined in the configuration.
+ *
+ * (Note: This is called almost once per each AST node being analyzed.
+ * Speed is preferred over using Phan\Memoize.)
  */
 class ConfigPluginSet extends Plugin {
-
-    use \Phan\Memoize;
+    /** @var Plugin[]|null - Cached plugin set for this instance. Lazily generated. */
+    private $pluginSet;
 
     /**
      * Call `ConfigPluginSet::instance()` instead.
@@ -29,9 +32,11 @@ class ConfigPluginSet extends Plugin {
      */
     public static function instance() : ConfigPluginSet
     {
-        return self::memoizeStatic(__METHOD__, function() {
-            return new self;
-        });
+        static $instance = null;
+        if ($instance === null) {
+            $instance = new self;
+        }
+        return $instance;
     }
 
     /**
@@ -162,8 +167,8 @@ class ConfigPluginSet extends Plugin {
      * @return Plugin[]
      */
     private function getPlugins() : array {
-        return $this->memoize(__METHOD__, function() {
-            return array_map(
+        if (is_null($this->pluginSet)) {
+            $this->pluginSet = array_map(
                 function(string $plugin_file_name) {
                     $plugin_instance =
                         require($plugin_file_name);
@@ -178,7 +183,8 @@ class ConfigPluginSet extends Plugin {
                 },
                 Config::get()->plugins
             );
-        });
+        }
+        return $this->pluginSet;
     }
 
 }
