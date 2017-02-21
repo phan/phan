@@ -354,10 +354,6 @@ Usage: {$argv[0]} [options] [files...]
  -f, --file-list <filename>
   A file containing a list of PHP files to be analyzed
 
- -r, --file-list-only
-  A file containing a list of PHP files to be analyzed to the
-  exclusion of any other directories or files passed in.
-
  -l, --directory <directory>
   A directory that should be parsed for class and
   method information. After excluding the directories
@@ -386,6 +382,11 @@ Usage: {$argv[0]} [options] [files...]
   Hunt for a directory named .phan in the current or parent
   directory and read configuration file config.php from that
   path.
+
+ -r, --file-list-only
+  A file containing a list of PHP files to be analyzed to the
+  exclusion of any other directories or files passed in. This
+  is unlikely to be useful.
 
  -k, --config-file
   A path to a config file to load (instead of the default of

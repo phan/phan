@@ -120,12 +120,6 @@ Usage: ./phan [options] [files...]
  -f, --file-list <filename>
   A file containing a list of PHP files to be analyzed
 
- -r, --file-list-only
-  A file containing a list of PHP files to be analyzed to the
-  exclusion of any other directories or files passed in. This
-  is useful when running Phan from a stored state file and
-  passing in a small subset of files to be re-analyzed.
-
  -l, --directory <directory>
   A directory that should be parsed for class and
   method information. After excluding the directories
@@ -155,8 +149,17 @@ Usage: ./phan [options] [files...]
   directory and read configuration file config.php from that
   path.
 
+ -r, --file-list-only
+  A file containing a list of PHP files to be analyzed to the
+  exclusion of any other directories or files passed in. This
+  is unlikely to be useful.
+
+ -k, --config-file
+  A path to a config file to load (instead of the default of
+  .phan/config.php).
+
  -m <mode>, --output-mode
-  Output mode from 'text', 'json', 'codeclimate', or 'checkstyle'
+  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
 
  -o, --output <filename>
   Output filename
@@ -166,6 +169,10 @@ Usage: ./phan [options] [files...]
 
  -a, --dump-ast
   Emit an AST for each file rather than analyze
+
+ --dump-signatures-file <filename>
+  Emit JSON serialized signatures to the given file.
+  This uses a method signature format similar to FunctionSignatureMap.php.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
