@@ -72,8 +72,7 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         $flags = ($node->flags ?? 0);
         if ($flags === \ast\flags\BINARY_BOOL_AND) {
-            $this->context = $this($node->children['left']);
-            return $this($node->children['right']);
+            return $this->visitShortCircuitingAnd($node->children['left'], $node->children['right']);
         }
         return $this->context;
     }
@@ -88,8 +87,32 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitAnd(Node $node) : Context
     {
-        $this->context = $this($node->children['left']);
-        return $this($node->children['right']);
+        return $this->visitShortCircuitingAnd($node->children['left'], $node->children['right']);
+    }
+
+    /**
+     * Helper method
+     * @param Node|mixed $left
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @param Node|mixed $right
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    private function visitShortCircuitingAnd($left, $right) : Context
+    {
+        // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
+        // Inside of this conditional may be dead or redundant code.
+        if ($left instanceof Node) {
+            $this->context = $this($left);
+        }
+        if ($right instanceof Node) {
+            return $this($right);
+        }
+        return $this->context;
     }
 
     /**
