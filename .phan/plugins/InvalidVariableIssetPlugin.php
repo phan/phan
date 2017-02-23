@@ -27,6 +27,21 @@ class InvalidVariableIssetVisitor extends AnalysisVisitor {
     /** @var Plugin */
     private $plugin;
 
+    /** define classes to parse */
+    const CLASSES = [
+        ast\AST_STATIC_CALL,
+        ast\AST_STATIC_PROP,
+    ];
+
+    /** define expression to parse */
+    const EXPRESSIONS = [
+        ast\AST_CALL,
+        ast\AST_DIM,
+        ast\AST_INSTANCEOF,
+        ast\AST_METHOD_CALL,
+        ast\AST_PROP,
+    ];
+
     public function __construct(
         CodeBase $code_base,
         Context $context,
@@ -42,9 +57,16 @@ class InvalidVariableIssetVisitor extends AnalysisVisitor {
 
     public function visitIsset(Node $node) : Context {
         $argument = $node->children['var'];
+        $variable = $argument;
+
         // get variable name from argument
-        $variable = ($argument->kind === ast\AST_DIM || $argument->kind === ast\AST_PROP) ?
-            $argument->children['expr'] : $argument;
+        while(!isset($variable->children['name'])){
+            if(in_array($variable->kind, self::EXPRESSIONS)){
+                $variable = $variable->children['expr'];
+            }elseif(in_array($variable->kind, self::CLASSES)){
+                    $variable = $variable->children['class'];
+            }
+        }
         $name = $variable->children['name'];
 
         // emit issue if name is not declared
