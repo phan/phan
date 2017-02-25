@@ -166,10 +166,11 @@ class ConfigPluginSet extends Plugin {
     /**
      * @return Plugin[]
      */
-    private function getPlugins() : array {
+    private function getPlugins() : array
+    {
         if (is_null($this->pluginSet)) {
             $this->pluginSet = array_map(
-                function(string $plugin_file_name) {
+                function (string $plugin_file_name) : Plugin {
                     $plugin_instance =
                         require($plugin_file_name);
 
