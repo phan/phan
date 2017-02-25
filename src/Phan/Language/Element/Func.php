@@ -24,7 +24,7 @@ class Func extends AddressableElement implements FunctionInterface
     use ClosedScopeElement;
 
     /**
-     * @var Option<Type>
+     * @var Option<Type>|null
      *
      * If this Func was created by analyzing a closure, phpdoc may override the scope to use for analysis.
      */
