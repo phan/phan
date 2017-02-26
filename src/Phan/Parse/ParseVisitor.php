@@ -5,6 +5,7 @@ use Phan\AST\ContextNode;
 use Phan\Analysis\ScopeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Daemon;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -37,6 +38,8 @@ use ast\Node\Decl;
  * visitor populates the $code_base with any
  * globally accessible structural elements and will return a
  * possibly new context as modified by the given node.
+ *
+ * @property-read CodeBase $code_base
  */
 class ParseVisitor extends ScopeVisitor
 {
@@ -100,6 +103,10 @@ class ParseVisitor extends ScopeVisitor
         $alternate_id = 0;
         while ($this->code_base->hasClassWithFQSEN($class_fqsen)) {
             $class_fqsen = $class_fqsen->withAlternateId(++$alternate_id);
+        }
+
+        if ($alternate_id > 0) {
+            Daemon::debugf("Using an alternate for %s: %d\n", $class_fqsen, $alternate_id);
         }
 
         // Build the class from what we know so far
@@ -406,6 +413,9 @@ class ParseVisitor extends ScopeVisitor
                     false
                 );
             } catch (IssueException $exception) {
+                // TODO: (enhancement/bugfix) In daemon mode, make any user-defined types or
+                // types from constants/other files a FutureUnionType, 100% of the time?
+                // This will make analysis slower.
                 $future_union_type = new FutureUnionType(
                     $this->code_base,
                     $this->context,

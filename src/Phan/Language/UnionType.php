@@ -381,6 +381,8 @@ class UnionType implements \Serializable
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
+     * TODO: Defer resolving the template parameters until parse ends. Low priority.
+     *
      * @return UnionType[]
      * A map from template type identifiers to the UnionType
      * to replace it with
@@ -700,6 +702,8 @@ class UnionType implements \Serializable
      * Test to see if this type can be cast to the
      * given type after expanding both union types
      * to include all ancestor types
+     *
+     * TODO: ensure that this is only called after the parse phase is over.
      */
     public function canCastToExpandedUnionType(
         UnionType $target,

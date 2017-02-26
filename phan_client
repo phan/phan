@@ -1,0 +1,320 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Usage: phan_client -l path/to/file.php
+ *
+ * See plugins/vim/snippet.vim for an example of a use of this program.
+ *
+ * Analyzes a single php file.
+ * - If it is syntactically valid, scans it with phan, and emits lines beginning with "phan error:"
+ * - If it is invalid, emits the output of the PHP syntax checker
+ *
+ * This is meant to be a self-contained script with no file dependencies.
+ *
+ * Not tested on windows, probably won't work, but should be easy to add.
+ * Enhanced substitute for php -l, when phan daemon is running in the background for that folder.
+ *
+ * Note: if the daemon is run inside of Docker, one would probably need to change the URL in src/Phan/Daemon/Request.php from 127.0.0.1 to 0.0.0.0,
+ * and docker run -p 127.0.0.1:4846:4846 path/to/phan --daemonize-tcp-port 4846 --quick (second port is the docker one)
+ *
+ * See one of the many dockerized phan instructions, such as https://github.com/cloudflare/docker-phan
+ * e.g. https://github.com/cloudflare/docker-phan/blob/master/builder/scripts/mkimage-phan.bash
+ * mentions how it installed php-ast, similar steps could be used for other modules.
+ * (Install phpVERSION-dev/pecl to install extensions from source/pecl (phpize, configure, make install/pecl install))
+ *
+ * TODO: tutorial or repo.
+ */
+class PhanPHPLinter {
+    // Wait at most 3 seconds to lint a file.
+    const TIMEOUT_MS = 3000;
+
+    /** @var bool - Whether or not this is verbose */
+    public static $verbose = false;
+
+    private static function debugError(string $msg) {
+        error_log($msg);
+    }
+
+    private static function debugInfo(string $msg) {
+        if (self::$verbose) {
+            self::debugError($msg);
+        }
+    }
+
+    public static function run() {
+        error_reporting(E_ALL);
+        // TODO: check for .phan/lock to see if daemon is running?
+
+        $opts = new PhanPHPLinterOpts();  // parse options, exit on failure.
+        self::$verbose = $opts->verbose;
+
+        $failure_code = 0;
+        foreach ($opts->file_list as $path) {
+            // TODO: use popen instead
+            // TODO: add option to capture output, suppress "No syntax error"?
+            // --no-php-ini is a faster way to parse since php doesn't need to load multiple extensions. Assumes none of the extensions change the way php is parsed.
+            system("php -l --no-php-ini " . escapeshellarg($path), $exit_code);
+            if ($exit_code !== 0) {
+                // The file is syntactically invalid. Or php somehow isn't able to be invoked from this script.
+                $failure_code = $exit_code;
+            }
+        }
+        // Exit if any of the requested files are syntactically invalid.
+        if ($failure_code !== 0) {
+			self::debugError("Files were syntactically invalid\n");
+            exit($failure_code);
+        }
+
+        $real = realpath($path);
+        if (!$real) {
+            self::debugError("Could not resolve $path\n");
+        }
+        $dirname = dirname($real);
+        $old_dirname = null;
+		unset($real);
+
+        // TODO: not tested on windows
+        $found_phan_config = false;
+        while ($dirname !== $old_dirname) {
+            if (file_exists($dirname . '/.phan/config.php')) {
+                $found_phan_config = true;
+                break;
+            }
+            $old_dirname = $dirname;
+            $dirname = dirname($dirname);
+        }
+        if (!$found_phan_config) {
+            self::debugInfo("Not in a Phan project, nothing to do.");
+            exit(0);
+        }
+
+        $file_mapping = [];
+        foreach ($opts->file_list as $path) {
+            $real = realpath($path);
+            if (!$real) {
+                self::debugInfo("could not find real path to '$path'");
+                continue;
+            }
+            // Convert this to a relative path
+            if (strncmp($dirname . '/', $real, strlen($dirname . '/')) === 0) {
+                $real = substr($real, strlen($dirname . '/'));
+                $file_mapping[$real] = $path;
+            }
+        }
+        if (count($file_mapping) == 0) {
+            self::debugInfo("Not in a real project");
+        }
+        // The file is syntactically valid. Run phan.
+
+        // TODO: Make TCP port configurable
+        // TODO: check if the folder is within a folder with subdirectory .phan/config.php
+        // TODO: Check if there is a lock before attempting to connect?
+        $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);
+        if (!is_resource($client)) {
+            // TODO: This should attempt to start up the phan daemon for the given folder?
+            self::debugError("Phan daemon not running on port 4846");
+            exit(0);
+        }
+        $request = [
+            'method' => 'analyze_files',
+            'files' => $real_files,
+            'format' => 'json',
+        ];
+
+        // This used to use the 'phplike' format, but it doesn't work well with filtering files.
+        fwrite($client, json_encode($request));
+        stream_set_timeout($client, (int)floor(self::TIMEOUT_MS / 1000), 1000 * (self::TIMEOUT_MS % 1000));
+        stream_socket_shutdown($client, STREAM_SHUT_WR);
+        $response_lines = [];
+        while (!feof($client)) {
+            $response_lines[] = fgets($client);
+        }
+        stream_socket_shutdown($client, STREAM_SHUT_RD);
+        fclose($client);
+        $client = null;
+        $response_bytes = implode('', $response_lines);
+        // This uses the 'phplike' format imitating php's error format. "%s in %s on line %d"
+        $response = json_decode($response_bytes, true);
+        $status = ($response['status'] ?? null);
+        if ($status === 'ok') {
+            self::dumpJSONIssues($response, $file_mapping);
+        } else {
+            self::debugError(sprintf("Invalid response from phan for %s: %s\n", $response_bytes));
+        }
+    }
+
+    /**
+     * @param array[] $response
+     * @param string[] $file_mapping
+     */
+    private static function dumpJSONIssues(array $response, array $file_mapping) {
+        $didDebug = false;
+        // if ($response['issue_count'] > 0)
+        foreach ($response['issues'] as $issue) {
+            if ($issue['type'] !== 'issue') {
+                continue;
+            }
+            $pathInProject = $issue['location']['path'];  // relative path
+            if (!isset($file_mapping[$pathInProject])) {
+                if (!$didDebug) {
+                    self::debugInfo(sprintf("Unexpected path for issue (expected %s): %s\n", json_encode($file_mapping), json_encode($issue)));
+                }
+                $didDebug = true;
+                continue;
+            }
+            $line = $issue['location']['lines']['begin'];
+            $description = $issue['description'];
+            $parts = explode(' ', $description, 3);
+            if (count($parts) === 3 && $parts[1] === $issue['check_name']) {
+                $description = implode(': ', $parts);
+            }
+            printf("Phan error: %s in %s on line %d\n", $description, $file_mapping[$pathInProject], $line);
+        }
+    }
+}
+
+class PhanPHPLinterOpts {
+    /** @var string tcp:// or unix:// socket URL of the daemon. */
+    public $url;
+
+    /** @var string[] - file list */
+    public $file_list = [];
+
+    /** @var bool - unused. */
+    public $verbose = false;
+
+    /**
+     * @param string $msg - optional message
+     * @param int $exit_code - process exit code.
+     * @return void - exits with $exit_code
+     */
+    public function usage(string $msg = '', int $exit_code = 0) {
+        global $argv;
+        if (!empty($msg)) {
+            echo "$msg\n";
+        }
+
+        // TODO: Add an option to autostart the daemon if user also has global configuration to allow it for a given project folder. ($HOME/.phanconfig)
+        // TODO: Allow changing (adding/removing) issue suppression types for the analysis phase (would not affect the parse phase)
+
+        echo <<<EOB
+Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
+ --daemonize-socket </path/to/file.sock>
+  Unix socket which a Phan daemon is listening for requests on.
+
+ --daemonize-tcp-port <1024-65535>
+  TCP port for Phan to listen for JSON requests on, in daemon mode. (E.g. 4846)
+
+ -l, --syntax-check <file.php>
+  Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working ditectory)
+  This will only analyze the file if a full phan check (with .phan/config.php) would analyze the file.
+
+ -v, --verbose
+  Whether to emit debugging output of this client.
+
+ -h,--help
+  This help information
+EOB;
+        exit($exit_code);
+    }
+
+    public function __construct()  {
+        global $argv;
+
+        // Parse command line args
+        $optind = 0;
+        $shortopts = "s:p:l:v";
+        $longopts = [
+			'daemonize-socket:',
+			'daemonize-tcp-port:',
+			'syntax-check:',
+			'verbose',
+        ];
+        if (PHP_VERSION_ID >= 70100) {
+            // optind support is only in php 7.1+.
+            $opts = getopt($shortopts, $longopts, $optind);
+        } else {
+            $opts = getopt($shortopts, $longopts);
+        }
+        if (PHP_VERSION_ID >= 70100 && $optind < count($argv)) {
+            $this->usage(sprintf("Unexpected parameter %s", json_encode($argv[$optind])));
+        }
+
+        // Check for this first, since the option parser may also emit debug output in the future.
+        if (in_array('-v', $argv) || in_array('--verbose', $argv)) {
+            PhanPHPLinter::$verbose = true;
+            $this->verbose = true;
+        }
+
+        $url = null;
+        foreach ($opts ?? [] as $key => $value) {
+            switch($key) {
+            case 's':
+            case 'daemonize-socket':
+                $this->checkCanConnectToDaemon('unix');
+                if ($this->url !== null) {
+                    $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
+                }
+                // Check if the socket is valid after parsing the file list.
+                $socketPath = $value;
+                $socket_dirname = realpath(dirname($value));
+                if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
+                    // The client doesn't require that the file exists if the daemon isn't running, but we do require that the folder exists.
+                    $msg = sprintf('Configured to connect to unix socket server at socket %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
+                    $this->usage($msg, 1);
+                } else {
+                    $this->url = sprintf('unix://%s/%s', $socket_dirname, basename($value));
+                }
+                break;
+            case 'p':
+            case 'daemonize-tcp-port':
+                $this->checkCanConnectToDaemon('tcp');
+                $port = filter_var($value, FILTER_VALIDATE_INT);
+                if ($port >= 1024 && $port <= 65535) {
+                    $this->url = sprintf('tcp://127.0.0.1:%d', $port);
+                } else {
+                    $this->usage("daemonize-tcp-port must be between 1024 and 65535, got '$value'", 1);
+                }
+                break;
+            case 'l':
+            case 'syntax-check':
+                $path = $value;
+                if (!file_exists($path)) {
+                    $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path)), 1);
+                    exit(1);
+                }
+                $this->file_list[] = $path;
+                break;
+            case 'h':
+            case 'help':
+                $this->usage();
+                break;
+            default:
+                $this->usage("Unknown option '-$key'", 1);
+                break;
+            }
+
+        }
+        if (count($this->file_list) === 0) {
+            $this->usage("This requires at least one file to analyze (with -l path/to/file", 1);
+        }
+        if ($this->url === null) {
+            $this->url = 'tcp://127.0.0.1:4846';
+        }
+    }
+
+    /**
+     * prints error message if php doesn't support connecting to a daemon with a given protocol.
+     * @return void
+     */
+    private function checkCanConnectToDaemon(string $protocol) {
+        $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
+        if (!in_array($protocol, stream_get_transports())) {
+            $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot connect to a daemon with $opt", 1);
+        }
+        if ($this->url !== null) {
+            $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
+        }
+    }
+}
+PhanPHPLinter::run();

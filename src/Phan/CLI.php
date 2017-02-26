@@ -87,6 +87,8 @@ class CLI
                 'config-file:',
                 'signature-compatibility',
                 'markdown-issue-messages',
+                'daemonize-socket:',
+                'daemonize-tcp-port:',
                 'extended-help',
             ]
         );
@@ -144,15 +146,10 @@ class CLI
                     $file_list = is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
                         $file_path = Config::projectPath($file_name);
-                        if (is_file($file_path) && is_readable($file_path)) {
-                            /** @var string[] */
-                            $this->file_list = array_merge(
-                                $this->file_list,
-                                file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
-                            );
-                        } else {
-                            error_log("Unable to read file $file_path");
-                        }
+                        $this->file_list = array_merge(
+                            $this->file_list,
+                            file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
+                        );
                     }
                     break;
                 case 'l':
@@ -246,6 +243,27 @@ class CLI
                     // We handle this flag before parsing options so
                     // that we can get the project root directory to
                     // base other config flags values on
+                    break;
+                case 's':
+                case 'daemonize-socket':
+                    $this->checkCanDaemonize('unix');
+                    $socket_dirname = realpath(dirname($value));
+                    if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
+                        $msg = sprintf('Requested to create unix socket server in %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
+                        $this->usage($msg, 1);
+                    } else {
+                        Config::get()->daemonize_socket = $value;  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
+                    }
+                    break;
+                    // TODO: HTTP server binding to 127.0.0.1, daemonize-port.
+                case 'daemonize-tcp-port':
+                    $this->checkCanDaemonize('tcp');
+                    $port = filter_var($value, FILTER_VALIDATE_INT);
+                    if ($port >= 1024 && $port <= 65535) {
+                        Config::get()->daemonize_tcp_port = $port;
+                    } else {
+                        $this->usage("daemonize-tcp-port must be between 1024 and 65535, got '$value'", 1);
+                    }
                     break;
                 case 'x':
                 case 'dead-code-detection':
@@ -351,6 +369,20 @@ class CLI
             "We cannot run dead code detection on more than one core.");
     }
 
+    /** @return void - exits on usage error */
+    private function checkCanDaemonize(string $protocol) {
+        $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
+        if (!in_array($protocol, stream_get_transports())) {
+            $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
+        }
+        if (!function_exists('pcntl_fork')) {
+            $this->usage("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
+        }
+        if (Config::get()->daemonize_socket || Config::get()->daemonize_tcp_port) {
+            $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
+        }
+    }
+
     /**
      * @return string[]
      * Get the set of files to analyze
@@ -453,6 +485,12 @@ Usage: {$argv[0]} [options] [files...]
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
 
+ --daemonize-socket </path/to/file.sock>
+  Unix socket for Phan to listen for requests on, in daemon mode.
+
+ --daemonize-tcp-port <1024-65535>
+  TCP port for Phan to listen for JSON requests on, in daemon mode. (e.g. 4846)
+
  -v, --version
   Print phan's version number
 
@@ -480,13 +518,6 @@ Extended help:
 EOB;
         }
         exit($exit_code);
-    }
-
-    public static function shouldShowProgress() : bool
-    {
-        $config = Config::get();
-        return $config->progress_bar
-            && !$config->dump_ast;
     }
 
     /**
@@ -545,6 +576,12 @@ EOB;
         return $file_list;
     }
 
+    public static function shouldShowProgress() : bool
+    {
+        $config = Config::get();
+        return $config->progress_bar && !$config->dump_ast && !$config->daemonize_tcp_port && !$config->daemonize_socket;
+    }
+
     /**
      * Update a progress bar on the screen
      *
@@ -572,9 +609,6 @@ EOB;
         // Bound the percentage to [0, 1]
         $p = min(max($p, 0.0), 1.0);
 
-        if (!Config::get()->progress_bar || Config::get()->dump_ast) {
-            return;
-        }
 
         // Don't update every time when we're moving
         // super fast

@@ -370,6 +370,12 @@ class Config
         // (use when the number of files is much larger than the process count)
         'consistent_hashing_file_order' => false,
 
+        // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
+        'daemonize_socket' => false,
+
+        // TCP port(from 1024 to 65535) for a daemon to listen to files to analyze. Use command line option instead.
+        'daemonize_tcp_port' => false,
+
         // A list of plugin files to execute
         'plugins' => [
         ],

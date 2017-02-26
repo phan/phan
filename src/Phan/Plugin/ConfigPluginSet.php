@@ -163,6 +163,11 @@ class ConfigPluginSet extends Plugin {
         }
     }
 
+    // Micro-optimization in tight loops: check for plugins before calling config plugin set
+    public function hasPlugins() : bool {
+        return count($this->getPlugins()) > 0;
+    }
+
     /**
      * @return Plugin[]
      */

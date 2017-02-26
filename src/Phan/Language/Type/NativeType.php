@@ -10,8 +10,7 @@ abstract class NativeType extends Type
 
     /**
      * @param bool $is_nullable
-     * An optional parameter, which if true returns a
-     * nullable instance of this native type
+     * If true, returns a nullable instance of this native type
      *
      * @return static
      */
@@ -263,5 +262,10 @@ abstract class NativeType extends Type
         }
 
         return $string;
+    }
+
+    public function asFQSENString() : string
+    {
+        return $this->name;
     }
 }

@@ -78,7 +78,7 @@ abstract class AbstractPhanFileTest
         Phan::setPrinter($printer);
         Phan::setIssueCollector(new BufferingCollector());
 
-        Phan::analyzeFileList($this->code_base, $test_file_list);
+        Phan::analyzeFileList($this->code_base, function() use($test_file_list) { return $test_file_list; });
 
         $output = $stream->fetch();
 
