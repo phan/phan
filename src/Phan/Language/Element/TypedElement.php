@@ -49,7 +49,7 @@ abstract class TypedElement implements TypedElementInterface
     private $context = null;
 
     /**
-     * @var string[]
+     * @var int[]
      * A set of issues types to be suppressed
      */
     private $suppress_issue_list = [];
@@ -240,13 +240,13 @@ abstract class TypedElement implements TypedElementInterface
     public function setSuppressIssueList(array $suppress_issue_list)
     {
         $this->suppress_issue_list = [];
-        foreach ($suppress_issue_list as $i => $issue_name) {
+        foreach ($suppress_issue_list as $issue_name) {
             $this->suppress_issue_list[$issue_name] = 0;
         }
     }
 
     /**
-     * @return string[]
+     * @return int[]
      */
     public function getSuppressIssueList() : array
     {
