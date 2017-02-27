@@ -183,7 +183,7 @@ final class GenericArrayType extends ArrayType
             "Recursion has gotten out of hand"
         );
 
-        $union_type = $this->memoize(__METHOD__, function() use ($code_base, $recursion_depth) {
+        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->genericArrayElementType()->asFQSEN();
@@ -201,7 +201,7 @@ final class GenericArrayType extends ArrayType
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
             $union_type->addUnionType(
-                 $clazz->getUnionType()->asGenericArrayTypes()
+                $clazz->getUnionType()->asGenericArrayTypes()
             );
 
             // Recurse up the tree to include all types
@@ -226,7 +226,7 @@ final class GenericArrayType extends ArrayType
             foreach ($fqsen_aliases as $alias_fqsen_record) {
                 $alias_fqsen = $alias_fqsen_record->alias_fqsen;
                 $recursive_union_type->addUnionType(
-                     $alias_fqsen->asUnionType()->asGenericArrayTypes()
+                    $alias_fqsen->asUnionType()->asGenericArrayTypes()
                 );
             }
             return $recursive_union_type;

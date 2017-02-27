@@ -1602,8 +1602,7 @@ class UnionType implements \Serializable
                 return $type->genericArrayElementType();
             }, \array_filter($this->type_set, function (Type $type) : bool {
                 return $type->isGenericArray();
-            })
-            )
+            }))
         );
 
         // If array is in there, then it can be any type
@@ -1869,7 +1868,8 @@ class UnionType implements \Serializable
      * @param UnionType[] $union_types
      * @return UnionType union of these UnionTypes
      */
-    public static function merge(array $union_types) : UnionType {
+    public static function merge(array $union_types) : UnionType
+    {
         $new_type_set = [];
         foreach ($union_types as $type) {
             $type_set = $type->type_set;

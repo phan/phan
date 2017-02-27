@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? ??? 2017, Phan 0.10.3 (dev)
+------------------------
+
+Maintenance
++ Make `phan_client` and the vim snippet in `plugins/vim/phansnippet.vim` more compatible with neovim
+
 17 Nov 2017, Phan 0.10.2
 ------------------------
 
