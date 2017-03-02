@@ -6808,7 +6808,7 @@ return [
 'PDOStatement::errorCode' => ['string'],
 'PDOStatement::errorInfo' => ['array'],
 'PDOStatement::execute' => ['bool', 'bound_input_params='=>'array'],
-'PDOStatement::fetchAll' => ['array', 'how='=>'int', 'fetch_argument='=>'', 'ctor_args='=>'null|array'],
+'PDOStatement::fetchAll' => ['array', 'how='=>'int', 'fetch_argument='=>'int|string|callable', 'ctor_args='=>'null|array'],
 'PDOStatement::fetchColumn' => ['string', 'column_number='=>'int'],
 'PDOStatement::fetch' => ['', 'how='=>'int', 'orientation='=>'int', 'offset='=>'int'],
 'PDOStatement::fetchObject' => ['', 'class_name='=>'string', 'ctor_args='=>'null|array'],
