@@ -100,7 +100,8 @@ abstract class ScopeVisitor extends AnalysisVisitor {
 
         foreach ($this->aliasTargetMapFromUseNode(
                 $children['uses'],
-                $prefix
+                $prefix,
+                $node->flags
             ) as $alias => $map
         ) {
             list($flags, $target) = $map;
@@ -139,18 +140,27 @@ abstract class ScopeVisitor extends AnalysisVisitor {
     }
 
     /**
+     * @param Node $node
+     * The node with the use statement
+     *
+     * @param int $flags
+     * An optional node flag specifying the type
+     * of the use clause.
+     *
      * @return array
      * A map from alias to target
      */
     private function aliasTargetMapFromUseNode(
         Node $node,
-        string $prefix = ''
+        string $prefix = '',
+        int $flags = 0
     ) : array {
         assert($node->kind == \ast\AST_USE,
             'Method takes AST_USE nodes');
 
         $map = [];
         foreach($node->children ?? [] as $child_node) {
+
             $target = $child_node->children['name'];
 
             if(empty($child_node->children['alias'])) {
@@ -165,35 +175,42 @@ abstract class ScopeVisitor extends AnalysisVisitor {
 
             // if AST_USE does not have any flags set, then its AST_USE_ELEM
             // children will (this will be for AST_GROUP_USE)
-            if ($node->flags !== 0) {
-                $target_node = $node;
-            } else {
-                $target_node = $child_node;
-            }
 
-            if ($target_node->flags == \ast\flags\USE_FUNCTION) {
+            // The 'use' type can be defined on the `AST_GROUP_USE` node, the
+            // `AST_USE_ELEM` or on the child element.
+            $use_flag = $flags ?: ($node->flags !== 0)
+                ? $node->flags
+                : $child_node->flags;
+
+            if ($use_flag === \ast\flags\USE_FUNCTION) {
                 $parts = explode('\\', $target);
                 $function_name = array_pop($parts);
                 $target = FullyQualifiedFunctionName::make(
                     $prefix . '\\' . implode('\\', $parts),
                     $function_name
                 );
-            } else if ($target_node->flags == \ast\flags\USE_CONST) {
+            } else if ($use_flag === \ast\flags\USE_CONST) {
                 $parts = explode('\\', $target);
                 $name = array_pop($parts);
                 $target = FullyQualifiedGlobalConstantName::make(
                     $prefix . '\\' . implode('\\', $parts),
                     $name
                 );
-            } else {
-                assert($target_node->flags == \ast\flags\USE_NORMAL,
-                    'Unknown type for a use statement');
+            } else if ($use_flag === \ast\flags\USE_NORMAL) {
                 $target = FullyQualifiedClassName::fromFullyQualifiedString(
                     $prefix . '\\' . $target
                 );
+            } else {
+                // If we get to this spot and don't know what
+                // kind of a use clause we're dealing with, its
+                // likely that this is a `USE` node which is
+                // a child of a `GROUP_USE` and we already
+                // handled it when analyzing the parent
+                // node.
+                continue;
             }
 
-            $map[$alias] = [$target_node->flags, $target];
+            $map[$alias] = [$use_flag, $target];
         }
 
         return $map;
