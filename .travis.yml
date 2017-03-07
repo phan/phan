@@ -22,7 +22,7 @@ before_install:
   - composer validate
 
 install:
-  - composer --prefer-source install
+  - composer --prefer-dist install
 
 # We have a fake TEST_SUITE which runs phan, and check if the exit code is non-zero and the standard output is non-empty.
 # This is used instead of a unit test because Phan currently caches too much state for this to be run with other unit tests, and the configuration might end up different within a unit test.
