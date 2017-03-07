@@ -397,4 +397,19 @@ return [
         'file' => 'string',
         'line' => 'int'
     ],
+    'ast\node' => [
+        'kind' => 'int',
+        'flags' => 'int',
+        'lineno' => 'int',
+        'children' => 'array|null',
+    ],
+    'ast\node\decl' => [
+        'kind' => 'int',
+        'flags' => 'int',
+        'lineno' => 'int',
+        'children' => 'array|null',
+        'endLineno' => 'int',
+        'name' => 'string',
+        'docComment' => 'string|null',
+    ],
 ];

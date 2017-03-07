@@ -188,33 +188,11 @@ class Clazz extends AddressableElement
             $clazz->setParentType($parent_type);
         }
 
-        // n.b.: public properties on internal classes don't get
-        //       listed via reflection until they're set unless
-        //       they have a default value. Therefore, we don't
-        //       bother iterating over `$class->getProperties()`
-        //       `$class->getStaticProperties()`.
-
-        foreach ($class->getDefaultProperties() as $name => $value) {
-            $property_context = $context->withScope(
-                new ClassScope(new GlobalScope, $clazz->getFQSEN())
-            );
-
-            $property_fqsen = FullyQualifiedPropertyName::make(
-                $clazz->getFQSEN(),
-                $name
-            );
-
-            $property = new Property(
-                $property_context,
-                $name,
-                Type::fromObject($value)->asUnionType(),
-                0,
-                $property_fqsen
-            );
-
-            $clazz->addProperty($code_base, $property, new None);
-        }
-
+        // Note: If there are multiple calls to Clazz->addProperty(),
+        // the UnionType from the first one will be used, subsequent calls to addProperty()
+        // will have no effect.
+        // As a result, we set the types from phan's documented internal property types first,
+        // preferring them over the default values (which may be null, etc.).
         foreach (UnionType::internalPropertyMapForClassName(
             $clazz->getName()
         ) as $property_name => $property_type_string) {
@@ -246,6 +224,33 @@ class Clazz extends AddressableElement
                 $property_context,
                 $property_name,
                 $property_type,
+                0,
+                $property_fqsen
+            );
+
+            $clazz->addProperty($code_base, $property, new None);
+        }
+
+        // n.b.: public properties on internal classes don't get
+        //       listed via reflection until they're set unless
+        //       they have a default value. Therefore, we don't
+        //       bother iterating over `$class->getProperties()`
+        //       `$class->getStaticProperties()`.
+
+        foreach ($class->getDefaultProperties() as $name => $value) {
+            $property_context = $context->withScope(
+                new ClassScope(new GlobalScope, $clazz->getFQSEN())
+            );
+
+            $property_fqsen = FullyQualifiedPropertyName::make(
+                $clazz->getFQSEN(),
+                $name
+            );
+
+            $property = new Property(
+                $property_context,
+                $name,
+                Type::fromObject($value)->asUnionType(),
                 0,
                 $property_fqsen
             );
