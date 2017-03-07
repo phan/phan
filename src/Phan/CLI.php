@@ -165,7 +165,8 @@ class CLI
                                 'Unknown output mode "%s". Known values are [%s]',
                                 $value,
                                 implode(',', $factory->getTypes())
-                            )
+                            ),
+                            EXIT_FAILURE
                         );
                     }
 
@@ -239,7 +240,7 @@ class CLI
                     Config::get()->markdown_issue_messages = true;
                     break;
                 default:
-                    $this->usage("Unknown option '-$key'");
+                    $this->usage("Unknown option '-$key'", EXIT_FAILURE);
                     break;
             }
         }
@@ -277,7 +278,7 @@ class CLI
 
         foreach ($argv as $arg) {
             if ($arg[0]=='-') {
-                $this->usage("Unknown option '{$arg}'");
+                $this->usage("Unknown option '{$arg}'", EXIT_FAILURE);
             }
         }
 
@@ -341,7 +342,7 @@ class CLI
         return $this->file_list;
     }
 
-    private function usage(string $msg = '')
+    private function usage(string $msg = '', int $exit_code = EXIT_SUCCESS)
     {
         global $argv;
 
@@ -442,7 +443,7 @@ Usage: {$argv[0]} [options] [files...]
   This help information
 
 EOB;
-        exit(EXIT_SUCCESS);
+        exit($exit_code);
     }
 
     public static function shouldShowProgress() : bool
