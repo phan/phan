@@ -10,3 +10,5 @@ As a maintainer of Phan, I agree to the [Developer Certificate of Origin](https:
 **Rasmus Lerdorf**<br />
 As a maintainer of Phan, I agree to the [Developer Certificate of Origin](https://github.com/etsy/phan/blob/38bf1fd15e39bc668084accb8caab21f09ff75ba/DCO.txt).
 
+**Tyson Andre**<br />
+As a maintainer of Phan, I agree to the [Developer Certificate of Origin](https://github.com/etsy/phan/blob/38bf1fd15e39bc668084accb8caab21f09ff75ba/DCO.txt).
