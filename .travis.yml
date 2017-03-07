@@ -9,6 +9,7 @@ env:
   - TEST_SUITE="RasmusTest"
   - TEST_SUITE="LanguageTest"
   - TEST_SUITE="OutputPrinterTest"
+  - TEST_SUITE="__FakeSelfTest"
 
 sudo: false
 
@@ -23,6 +24,8 @@ before_install:
 install:
   - composer --prefer-source install
 
+# We have a fake TEST_SUITE which runs phan, and check if the exit code is non-zero and the standard output is non-empty.
+# This is used instead of a unit test because Phan currently caches too much state for this to be run with other unit tests, and the configuration might end up different within a unit test.
 script:
-  - ./vendor/bin/phpunit --colors --testsuite "$TEST_SUITE"
+  - if [ "$TEST_SUITE" != "__FakeSelfTest" ]; then ./vendor/bin/phpunit --colors --testsuite "$TEST_SUITE"; else ./phan ; fi
   - php package.php
