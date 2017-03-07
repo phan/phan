@@ -234,6 +234,7 @@ class Config
             // 'PhanContextNotObject',
             // 'PhanDeprecatedClass',
             // 'PhanDeprecatedInterface',
+            // 'PhanDeprecatedTrait',
             // 'PhanDeprecatedFunction',
             // 'PhanDeprecatedProperty',
             // 'PhanEmptyFile',

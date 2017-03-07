@@ -851,6 +851,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         );
                     }
                 }
+                foreach($class->getTraitFQSENList() as $trait) {
+                    $clazz = $this->code_base->getClassByFQSEN($trait);
+                    if ($clazz->isDeprecated()) {
+                        $this->emitIssue(
+                            Issue::DeprecatedTrait,
+                            $node->lineno ?? 0,
+                            (string)$clazz->getFQSEN(),
+                            $clazz->getContext()->getFile(),
+                            (string)$clazz->getContext()->getLineNumberStart()
+                        );
+                    }
+                }
             }
 
             $this->analyzeCallToMethod(
