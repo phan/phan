@@ -1036,11 +1036,20 @@ class UnionTypeVisitor extends AnalysisVisitor
                     return $this->visitClassNode($node);
                 }
 
+                try {
                 $constant = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $node
                 ))->getConst();
+                } catch (IssueException $exception) {
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $exception->getIssueInstance()
+                    );
+                    return new UnionType;
+                }
 
                 return $constant->getUnionType();
             }
