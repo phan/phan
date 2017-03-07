@@ -21,7 +21,7 @@ before_install:
   - composer validate
 
 install:
-  - composer --prefer-source install
+  - composer --prefer-dist install
 
 script:
   - ./vendor/bin/phpunit --colors --testsuite "$TEST_SUITE"
