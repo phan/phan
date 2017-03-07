@@ -445,6 +445,13 @@ EOB;
         exit(EXIT_SUCCESS);
     }
 
+    public static function shouldShowProgress() : bool
+    {
+        $config = Config::get();
+        return $config->progress_bar
+            && !$config->dump_ast;
+    }
+
     /**
      * @param string $directory_name
      * The name of a directory to scan for files ending in `.php`.
@@ -516,6 +523,9 @@ EOB;
         string $msg,
         float $p
     ) {
+        if (!self::shouldShowProgress()) {
+            return;
+        }
 
         // Bound the percentage to [0, 1]
         $p = min(max($p, 0.0), 1.0);
@@ -526,7 +536,8 @@ EOB;
 
         // Don't update every time when we're moving
         // super fast
-        if ($p < 1.0
+        if ($p > 0.0
+            && $p < 1.0
             && rand(0, 1000) > (1000 * Config::get()->progress_bar_sample_rate
             )) {
             return;
@@ -538,19 +549,20 @@ EOB;
             fwrite(STDERR, '.');
             return;
         }
-
         $memory = memory_get_usage()/1024/1024;
         $peak = memory_get_peak_usage()/1024/1024;
 
-        $padded_message = str_pad($msg, 10, ' ', STR_PAD_LEFT);
-
-        fwrite(STDERR, "$padded_message ");
         $current = (int)($p * 60);
         $rest = max(60 - $current, 0);
-        fwrite(STDERR, str_repeat("\u{2588}", $current));
-        fwrite(STDERR, str_repeat("\u{2591}", $rest));
-        fwrite(STDERR, " " . sprintf("% 3d", (int)(100*$p)) . "%");
-        fwrite(STDERR, sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r");
+
+        // Build up a string, then make a single call to fwrite(). Should be slightly faster and smoother to render to the console.
+        $msg = str_pad($msg, 10, ' ', STR_PAD_LEFT) .
+               ' ' .
+               str_repeat("\u{2588}", $current) .
+               str_repeat("\u{2591}", $rest) .
+               " " . sprintf("% 3d", (int)(100*$p)) . "%" .
+               sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r";
+        fwrite(STDERR, $msg);
     }
 
     /**

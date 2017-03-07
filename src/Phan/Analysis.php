@@ -182,11 +182,14 @@ class Analysis
     public static function analyzeFunctions(CodeBase $code_base)
     {
         $function_count = count($code_base->getFunctionAndMethodSet());
+        $show_progress = CLI::shouldShowProgress();
         $i = 0;
+
+        if ($show_progress) { CLI::progress('method', 0.0); }
 
         foreach ($code_base->getFunctionAndMethodSet() as $function_or_method)
         {
-            CLI::progress('method', (++$i)/$function_count);
+            if ($show_progress) { CLI::progress('method', (++$i)/$function_count); }
 
             if ($function_or_method->isInternal()) {
                 continue;
