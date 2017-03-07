@@ -101,7 +101,7 @@ abstract class ScopeVisitor extends AnalysisVisitor {
         foreach ($this->aliasTargetMapFromUseNode(
                 $children['uses'],
                 $prefix,
-                $node->flags
+                $node->flags ?? 0
             ) as $alias => $map
         ) {
             list($flags, $target) = $map;
