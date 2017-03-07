@@ -1,2 +1,2 @@
 #!/usr/bin/env php
-<?php require_once 'src/phan.php';
+<?php require_once __DIR__ . '/src/phan.php';
