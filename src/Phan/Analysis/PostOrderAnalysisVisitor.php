@@ -830,7 +830,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // could be called on
             foreach ($context_node->getClassList() as $class) {
                 $class->addReference($this->context);
-
                 if ($class->isDeprecated()) {
                     $this->emitIssue(
                         Issue::DeprecatedClass,
@@ -839,6 +838,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $class->getContext()->getFile(),
                         (string)$class->getContext()->getLineNumberStart()
                     );
+                }
+                foreach($class->getInterfaceFQSENList() as $interface) {
+                    $clazz = $this->code_base->getClassByFQSEN($interface);
+                    if ($clazz->isDeprecated()) {
+                        $this->emitIssue(
+                            Issue::DeprecatedInterface,
+                            $node->lineno ?? 0,
+                            (string)$clazz->getFQSEN(),
+                            $clazz->getContext()->getFile(),
+                            (string)$clazz->getContext()->getLineNumberStart()
+                        );
+                    }
                 }
             }
 

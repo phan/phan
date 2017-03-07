@@ -233,6 +233,7 @@ class Config
             // 'PhanCompatiblePHP7',
             // 'PhanContextNotObject',
             // 'PhanDeprecatedClass',
+            // 'PhanDeprecatedInterface',
             // 'PhanDeprecatedFunction',
             // 'PhanDeprecatedProperty',
             // 'PhanEmptyFile',

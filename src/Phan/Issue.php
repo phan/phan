@@ -74,6 +74,7 @@ class Issue
 
     // Issue::CATEGORY_DEPRECATED
     const DeprecatedClass           = 'PhanDeprecatedClass';
+    const DeprecatedInterface       = 'PhanDeprecatedInterface';
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
     const DeprecatedProperty        = 'PhanDeprecatedProperty';
 
@@ -676,6 +677,14 @@ class Issue
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
                 "Call to deprecated class %s defined at %s:%d",
+                self::REMEDIATION_B,
+                5001
+            ),
+            new Issue(
+                self::DeprecatedInterface,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Using a deprecated interface %s defined at %s:%d",
                 self::REMEDIATION_B,
                 5001
             ),
