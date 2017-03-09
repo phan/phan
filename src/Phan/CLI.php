@@ -13,6 +13,11 @@ use Symfony\Component\Console\Output\StreamOutput;
 
 class CLI
 {
+    const PHAN_VERSION = '0.8.4-dev';
+
+    /**
+     * @var OutputInterface
+     */
     private $output;
 
     /**
@@ -51,9 +56,9 @@ class CLI
         global $argv;
 
         // Parse command line args
-        // still available: g,n,t,u,v,w
+        // still available: g,n,t,u,w
         $opts = getopt(
-            "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zh::",
+            "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zh:v",
             [
                 'backward-compatibility-checks',
                 'dead-code-detection',
@@ -73,6 +78,7 @@ class CLI
                 'progress-bar',
                 'project-root-directory:',
                 'quick',
+                'version',
                 'processes:',
                 'config-file:',
                 'signature-compatibility',
@@ -82,6 +88,10 @@ class CLI
 
         if (array_key_exists('h', $opts ?? []) || array_key_exists('help', $opts ?? [])) {
             $this->usage();  // --help prints help and calls exit(0)
+        }
+        if (array_key_exists('v', $opts ?? []) || array_key_exists('version', $opts ?? [])) {
+            printf("Phan %s\n", self::PHAN_VERSION);
+            exit(EXIT_SUCCESS);
         }
 
         // Determine the root directory of the project from which
@@ -432,7 +442,10 @@ Usage: {$argv[0]} [options] [files...]
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
 
- -h,--help
+ -v, --version
+  Print Phan's version number
+
+ -h, --help
   This help information
 
 EOB;
