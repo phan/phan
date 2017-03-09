@@ -138,6 +138,9 @@ class Phan implements IgnoredFilesFilterInterface {
         // lets us only need to do hydrate a subset of classes.
         $code_base->setShouldHydrateRequestedElements(true);
 
+        // Find any class aliases and tie them together to the source class
+        Analysis::analyzeAliases($code_base, $analyze_file_path_list);
+
         // Take a pass over all functions verifying
         // various states now that we have the whole
         // state in memory

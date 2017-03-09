@@ -60,6 +60,12 @@ class CodeBase
 
     /**
      * @var Map
+     * A map from FQSEN to list of aliases
+     */
+    private $fqsen_alias_map;
+
+    /**
+     * @var Map
      * A map from FQSEN to a global constant
      */
     private $fqsen_global_constant_map;
@@ -108,6 +114,7 @@ class CodeBase
         array $internal_function_name_list
     ) {
         $this->fqsen_class_map = new Map;
+        $this->fqsen_alias_map = new Map;
         $this->fqsen_global_constant_map = new Map;
         $this->fqsen_func_map = new Map;
         $this->class_fqsen_class_map_map = new Map;
@@ -167,6 +174,9 @@ class CodeBase
         $this->fqsen_class_map =
             $this->fqsen_class_map->deepCopy();
 
+        $this->fqsen_alias_map =
+            $this->fqsen_alias_map->deepCopy();
+
         $this->fqsen_global_constant_map =
             $this->fqsen_global_constant_map->deepCopy();
 
@@ -202,6 +212,8 @@ class CodeBase
         $code_base = new CodeBase([], [], [], []);
         $code_base->fqsen_class_map =
             clone($this->fqsen_class_map);
+        $code_base->fqsen_alias_map =
+            clone($this->fqsen_alias_map);
         $code_base->fqsen_global_constant_map =
             clone($this->fqsen_global_constant_map);
         $code_base->fqsen_func_map =
@@ -223,6 +235,28 @@ class CodeBase
     {
         // Map the FQSEN to the class
         $this->fqsen_class_map[$class->getFQSEN()] = $class;
+    }
+
+    /**
+     * @param FullyQualifiedClassName $original
+     *  an existing class to alias to
+     *
+     * @param FullyQualifiedClassName $alias
+     *  a name to alias $original to
+     *
+     * @return void
+     */
+    public function addClassAlias(
+        FullyQualifiedClassName $original,
+        FullyQualifiedClassName $alias
+    ) {
+        $class = $this->getClassByFQSEN($original);
+        $this->fqsen_class_map[$alias] = $class;
+
+        if (!isset($this->fqsen_alias_map[$original])) {
+            $this->fqsen_alias_map[$original] = new Set();
+        }
+        $this->fqsen_alias_map[$original]->attach($alias);
     }
 
     /**
@@ -262,6 +296,24 @@ class CodeBase
 
         return $clazz;
     }
+
+    /**
+     * @param FullyQualifiedClassName $original
+     * The FQSEN of class to get aliases of
+     *
+     * @return FullyQualifiedClassName[]
+     * A list of all aliases of $original
+     */
+    public function getClassAliasesByFQSEN(
+        FullyQualifiedClassName $original
+    ) : array {
+        if (isset($this->fqsen_alias_map[$original])) {
+            return $this->fqsen_alias_map[$original]->toArray();
+        }
+
+        return [];
+    }
+
 
     /**
      * @return Map
