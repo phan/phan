@@ -1764,6 +1764,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return clone($parameter);
         }, $method->getParameterList());
 
+        // always resolve all arguments outside of quick mode to detect undefined variables, other problems in call arguments.
+        // Fixes https://github.com/etsy/phan/issues/583
+        $argument_types = [];
+        foreach ($argument_list_node->children as $i => $argument) {
+            if (!$argument) {
+                continue;
+            }
+            // Determine the type of the argument at position $i
+            $argument_types[$i] = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $argument
+            );
+        }
 
         // Get the list of parameters on the method
         $parameter_list = $method->getParameterList();
@@ -1777,7 +1791,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ) {
                 $parameter_list = $method->getParameterList();
                 $parameter_list[$i] = clone($parameter);
-                $parameter_list[$i]->setUnionType($parameter->getDefaultValueType());
+                $parameter_type = $parameter->getDefaultValueType();
+                if ($parameter_type->isType(NullType::instance(false))) {
+                    // Treat a parameter default of null the same way as passing null to that parameter
+                    // (Add null to the list of possibilities)
+                    $parameter_list[$i]->addUnionType($parameter_type);
+                } else {
+                    // For other types (E.g. string), just replace the union type.
+                    $parameter_list[$i]->setUnionType($parameter_type);
+                }
                 $method->setParameterList($parameter_list);
             }
 
@@ -1793,6 +1815,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $method,
                 $parameter,
                 $argument,
+                $argument_types[$i],
                 $i
             );
         }
@@ -1816,8 +1839,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * The parameter that we're updating
      *
      * @param Node|mixed $argument
-     * The argument who's type we'd like to replace the
+     * The argument whose type we'd like to replace the
      * parameter type with.
+     *
+     * @param Node|mixed $argument_type
+     * The type of $argument
      *
      * @param int $parameter_offset
      * The offset of the parameter on the method's
@@ -1829,18 +1855,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         FunctionInterface $method,
         Variable $parameter,
         $argument,
+        UnionType $argument_type,
         int $parameter_offset
     ) {
-        // Determine the type of the argument
-        $argument_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $argument
-        );
-
         // Then set the new type on that parameter based
         // on the argument's type. We'll use this to
         // retest the method with the passed in types
+        // TODO: if $argument_type is non-empty and !isType(NullType), instead use setUnionType?
         $parameter->getNonVariadicUnionType()->addUnionType(
             $argument_type
         );
