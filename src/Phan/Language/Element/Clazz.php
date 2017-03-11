@@ -610,6 +610,42 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param Property[] $magic_property_map mapping from property name to this
+     * @param CodeBase $code_base
+     * @return bool whether or not we defined it.
+     */
+    public function setMagicPropertyMap(
+        array $magic_property_map,
+        CodeBase $code_base,
+        Context $context
+    ) : bool {
+        if (count($magic_property_map) === 0) {
+            return true;  // Vacuously true.
+        }
+        $class_fqsen = $this->getFQSEN();
+        foreach ($magic_property_map as $comment_parameter) {
+            // $flags is the same as the flags for `public` and non-internal?
+            // Or \ast\flags\MODIFIER_PUBLIC.
+            $flags = 0;
+            $property_name = $comment_parameter->getName();
+            $property_fqsen = FullyQualifiedPropertyName::make(
+                $class_fqsen,
+                $property_name
+            );
+            $property = new Property(
+                $context,
+                $property_name,
+                $comment_parameter->getUnionType(),
+                $flags,
+                $property_fqsen
+            );
+
+            $this->addProperty($code_base, $property, new None);
+        }
+        return true;
+    }
+
+    /**
      * @return bool
      */
     public function hasPropertyWithName(
@@ -1286,8 +1322,44 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * Forbid undeclared magic properties
+     * @param bool $forbid - set to true to forbid.
+     * @return void
+     */
+    public function getForbidUndeclaredMagicProperties(CodeBase $code_base) : bool {
+        return (
+            Flags::bitVectorHasState(
+                $this->getPhanFlags(),
+                Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
+            )
+            ||
+            (
+                $this->hasParentType()
+                && $code_base->hasClassWithFQSEN($this->getParentClassFQSEN())
+                && $this->getParentClass($code_base)->getForbidUndeclaredMagicProperties($code_base)
+            )
+        );
+    }
+
+    /**
+     * Set whether undeclared magic properties are forbidden
+     * (properties accessed through __get or __set, with no (at)property annotation on parent class)
+     * @param bool $forbid - set to true to forbid.
+     * @return void
+     */
+    public function setForbidUndeclaredMagicProperties(
+        bool $forbid_undeclared_dynamic_properties
+    ) {
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES,
+            $forbid_undeclared_dynamic_properties
+        ));
+    }
+
+    /**
      * @return bool
-     * True if this class calls its parent constructor
+     * True if this class has dynamic properties. (e.g. stdClass)
      */
     public function getHasDynamicProperties(CodeBase $code_base) : bool
     {

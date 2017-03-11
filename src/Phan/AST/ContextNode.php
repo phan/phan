@@ -541,8 +541,9 @@ class ContextNode
                 $property_name
             )) {
                 // If there's a getter on properties then all
-                // bets are off.
-                if ($class->hasGetMethod($this->code_base)) {
+                // bets are off. However, @phan-forbid-undeclared-magic-properties
+                // will make this method analyze the code as if all properties were declared or had @property annotations.
+                if ($class->hasGetMethod($this->code_base) && !$class->getForbidUndeclaredMagicProperties($this->code_base)) {
                     throw new UnanalyzableException(
                         $this->node,
                         "Can't determine if property {$property_name} exists in class {$class->getFQSEN()} with __get defined"

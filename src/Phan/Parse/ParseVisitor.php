@@ -142,6 +142,18 @@ class ParseVisitor extends ScopeVisitor
         // accessible object
         $this->code_base->addClass($class);
 
+        // Depends on code_base for checking existence of __get and __set.
+        // TODO: Add a check in analyzeClasses phase that magic @property declarations
+        // are limited to classes with either __get or __set declared.
+        $class->setMagicPropertyMap(
+            $comment->getMagicPropertyMap(),
+            $this->code_base,
+            $this->context
+        );
+
+        // usually used together with magic @property annotations
+        $class->setForbidUndeclaredMagicProperties($comment->getForbidUndeclaredMagicProperties());
+
         // Look to see if we have a parent class
         if (!empty($node->children['extends'])) {
             $parent_class_name =
