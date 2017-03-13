@@ -1,0 +1,3 @@
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \stdClass but \intdiv() takes int
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \stdClass but \intdiv() takes int
+%s:18 PhanUndeclaredProperty Reference to undeclared property \A272->y

@@ -5,6 +5,7 @@ namespace Phan\Language\Element;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
+use Phan\Language\Element\Flags;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
@@ -18,11 +19,11 @@ class Comment
 {
 
     /**
-     * @var bool
-     * Set to true if the comment contains a 'deprecated'
-     * directive.
+     * @var int - contains a subset of flags to set on elements
+     * Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
+     * Flags::IS_DEPRECATED
      */
-    private $is_deprecated = false;
+    private $comment_flags = 0;
 
     /**
      * @var CommentParameter[]
@@ -69,6 +70,12 @@ class Comment
     private $suppress_issue_list = [];
 
     /**
+     * @var CommentParameter[]
+     * A mapping from magic property parameters to types.
+     */
+    private $magic_property_map = [];
+
+    /**
      * @var Option<Type>
      * An optional class name defined by a @PhanClosureScope directive.
      * (overrides the class in which it is analyzed)
@@ -76,10 +83,18 @@ class Comment
     private $closure_scope;
 
     /**
+     * @var bool
+     * Set to true if the comment forbids classes from having
+     * undeclared magic properties.
+     */
+    private $forbid_undeclared_dynamic_properties = false;
+
+    /**
      * A private constructor meant to ingest a parsed comment
      * docblock.
      *
-     * @param bool $is_deprecated
+     * @param int $comment_flags
+     * uses Flags::IS_DEPRECATED and Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
      * Set to true if the comment contains a 'deprecated'
      * directive.
      *
@@ -103,16 +118,17 @@ class Comment
      * to which a closure will be bound.
      */
     private function __construct(
-        bool $is_deprecated,
+        int $comment_flags,
         array $variable_list,
         array $parameter_list,
         array $template_type_list,
         Option $inherited_type,
         UnionType $return_union_type,
         array $suppress_issue_list,
+        array $magic_property_list,
         Option $closure_scope
     ) {
-        $this->is_deprecated = $is_deprecated;
+        $this->comment_flags = $comment_flags;
         $this->variable_list = $variable_list;
         $this->parameter_list = $parameter_list;
         $this->template_type_list = $template_type_list;
@@ -131,6 +147,16 @@ class Comment
                 unset($this->parameter_list[$i]);
             }
         }
+        foreach ($magic_property_list as $property) {
+            $name = $property->getName();
+            if (!empty($name)) {
+                // Add it to the named map
+                // TODO: Detect duplicates, emit warning for duplicates.
+                // TODO(optional): Emit Issues when a property with only property-read is written to
+                // or vice versa.
+                $this->magic_property_map[$name] = $property;
+            }
+        }
     }
 
     /**
@@ -145,18 +171,19 @@ class Comment
 
         if (!Config::get()->read_type_annotations) {
             return new Comment(
-                false, [], [], [], new None, new UnionType(), [], new None()
+                0, [], [], [], new None, new UnionType(), [], [], new None
             );
         }
 
-        $is_deprecated = false;
         $variable_list = [];
         $parameter_list = [];
         $template_type_list = [];
         $inherited_type = new None;
         $return_union_type = new UnionType();
         $suppress_issue_list = [];
+        $magic_property_list = [];
         $closure_scope = new None;
+        $comment_flags = 0;
 
         $lines = explode("\n", $comment);
 
@@ -190,25 +217,36 @@ class Comment
             } elseif (stripos($line, '@suppress') !== false) {
                 $suppress_issue_list[] =
                     self::suppressIssueFromCommentLine($line);
+            } elseif (strpos($line, '@property') !== false) {
+                // Make sure support for magic properties is enabled.
+                if (Config::get()->read_magic_property_annotations) {
+                    $magic_property = self::magicPropertyFromCommentLine($context, $line);
+                    if ($magic_property !== null) {
+                        $magic_property_list[] = $magic_property;
+                    }
+                }
             } elseif (stripos($line, '@PhanClosureScope') !== false) {
                 $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
+            } elseif (stripos($line, '@phan-forbid-undeclared-magic-properties') !== false) {
+                $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
             }
 
             if (stripos($line, '@deprecated') !== false) {
                 if (preg_match('/@deprecated\b/', $line, $match)) {
-                    $is_deprecated = true;
+                    $comment_flags |= Flags::IS_DEPRECATED;
                 }
             }
         }
 
         return new Comment(
-            $is_deprecated,
+            $comment_flags,
             $variable_list,
             $parameter_list,
             $template_type_list,
             $inherited_type,
             $return_union_type,
             $suppress_issue_list,
+            $magic_property_list,
             $closure_scope
         );
     }
@@ -232,7 +270,6 @@ class Comment
         if (preg_match('/@return\s+(' . UnionType::union_type_regex . '+)/', $line, $match)) {
             $return_union_type_string = $match[1];
         }
-
         $return_union_type = UnionType::fromStringInContext(
             $return_union_type_string,
             $context,
@@ -372,6 +409,54 @@ class Comment
 
     /**
      * @param Context $context
+     * @param string $line
+     * An individual line of a comment
+     * Currently treats property-read and property-write the same way
+     * because of the rewrites required for read-only properties.
+     *
+     * @return CommentParameter|null
+     * magic property with the union type.
+     */
+    private static function magicPropertyFromCommentLine(
+        Context $context,
+        string $line
+    ) {
+        // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
+        // TODO: properly handle duplicates...
+        // TODO: support read-only/write-only checks elsewhere in the codebase?
+        if (preg_match('/@(property|property-read|property-write)(\s+' . UnionType::union_type_regex . ')?(\s+(\\$\S+))/', $line, $match)) {
+            $type = ltrim($match[2] ?? '');
+
+            $property_name =
+                empty($match[29]) ? '' : trim($match[29], '$');
+            if ($property_name === '') {
+                return null;
+            }
+
+            // If the type looks like a property name, make it an
+            // empty type so that other stuff can match it.
+            $union_type = null;
+            if (0 !== strpos($type, '$')) {
+                $union_type =
+                    UnionType::fromStringInContext(
+                        $type,
+                        $context,
+                        true
+                    );
+            } else {
+                $union_type = new UnionType();
+            }
+
+            return new CommentParameter(
+                $property_name,
+                $union_type
+            );
+        }
+
+        return null;
+    }
+
+    /**
      * The context in which the comment line appears
      *
      * @param string $line
@@ -412,7 +497,17 @@ class Comment
      */
     public function isDeprecated() : bool
     {
-        return $this->is_deprecated;
+        return ($this->comment_flags & Flags::IS_DEPRECATED) != 0;
+    }
+
+    /**
+     * @return bool
+     * Set to true if the comment contains a 'phan-forbid-undeclared-magic-properties'
+     * directive.
+     */
+    public function getForbidUndeclaredMagicProperties() : bool
+    {
+        return ($this->comment_flags & Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES) != 0;
     }
 
     /**
@@ -512,6 +607,35 @@ class Comment
     }
 
     /**
+     * @unused
+     * @return bool
+     * True if we have a magic property with the given name
+     */
+    public function hasMagicPropertyWithName(
+        string $name
+    ) : bool {
+        return isset($this->magic_property_map[$name]);
+    }
+
+    /**
+     * @unused
+     * @return CommentParameter
+     * The magic property with the given name. May or may not have a type.
+     */
+    public function getMagicPropertyWithName(
+        string $name
+    ) : CommentParameter {
+        return $this->magic_property_map[$name];
+    }
+
+    /**
+     * @return CommentParameter[] map from parameter name to parameter
+     */
+    public function getMagicPropertyMap() : array {
+        return $this->magic_property_map;
+    }
+
+    /**
      * @return CommentParameter[]
      */
     public function getVariableList() : array
@@ -521,9 +645,10 @@ class Comment
 
     public function __toString() : string
     {
+        // TODO: add new properties of Comment to this method
         $string = "/**\n";
 
-        if ($this->is_deprecated) {
+        if (($this->comment_flags & Flags::IS_DEPRECATED) != 0) {
             $string  .= " * @deprecated\n";
         }
 
@@ -532,7 +657,7 @@ class Comment
         }
 
         foreach ($this->parameter_list as $parameter) {
-            $string  .= " * @var $parameter\n";
+            $string  .= " * @param $parameter\n";
         }
 
         if ($this->return_union_type) {

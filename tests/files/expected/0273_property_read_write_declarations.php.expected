@@ -1,0 +1,2 @@
+%s:21 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \stdClass but \intdiv() takes int
+%s:22 PhanTypeMismatchProperty Assigning int to property but \A273::y is \stdClass
