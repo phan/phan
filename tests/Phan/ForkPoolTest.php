@@ -8,51 +8,51 @@ use Phan\ForkPool;
  */
 class ForkPoolTest extends \PHPUnit_Framework_TestCase
 {
-	/**
-	 * Test that workers are able to send their data back
-	 * to the parent process.
-	 */
+    /**
+     * Test that workers are able to send their data back
+     * to the parent process.
+     */
     public function testBasicForkJoin()
     {
-		$data = [
-			[1, 2, 3, 4],
-			[5, 6, 7, 8],
-			[9, 10, 11, 12],
-			[13, 14, 15, 16],
-		];
+        $data = [
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
+            [13, 14, 15, 16],
+        ];
 
-		$worker_data = [];
-		$pool = new ForkPool($data,
-			function() { },
-			function($i, $data) use(&$worker_data) {
-				$worker_data[] = $data;
-			},
-			function() use(&$worker_data) {
-				return $worker_data;
-			});
+        $worker_data = [];
+        $pool = new ForkPool($data,
+            function() { },
+            function($i, $data) use(&$worker_data) {
+                $worker_data[] = $data;
+            },
+            function() use(&$worker_data) {
+                return $worker_data;
+            });
 
-		$this->assertEquals($data, $pool->wait());
-	}
+        $this->assertEquals($data, $pool->wait());
+    }
 
-	/**
-	 * Test that the startup function works.
-	 */
+    /**
+     * Test that the startup function works.
+     */
     public function testStartupFunction()
     {
-		$did_startup = false;
-		$pool = new ForkPool(
-			[[1], [2], [3], [4]],
-			function() use(&$did_startup) {
-				$did_startup = true;
-			},
-			function($i, $data) {
-			},
-			function() use(&$did_startup){
-				return $did_startup;
-			});
+        $did_startup = false;
+        $pool = new ForkPool(
+            [[1], [2], [3], [4]],
+            function() use(&$did_startup) {
+                $did_startup = true;
+            },
+            function($i, $data) {
+            },
+            function() use(&$did_startup){
+                return $did_startup;
+            });
 
-		$this->assertEquals(
-			[true, true, true, true],
-			$pool->wait());
-	}
+        $this->assertEquals(
+            [true, true, true, true],
+            $pool->wait());
+    }
 }

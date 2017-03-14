@@ -509,7 +509,7 @@ class ArgumentType
                                 'array'
                             );
                         }
-						return true;
+                        return true;
                     } elseif ((string)$arg1_type == 'string') {
                         if (!$arg2_type->canCastToUnionType(
                             ArrayType::instance(false)->asUnionType()
