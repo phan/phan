@@ -667,7 +667,10 @@ class Type
      */
     public function withIsNullable(bool $is_nullable) : Type
     {
-        return self::make(
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
+        return static::make(
             $this->getNamespace(),
             $this->getName(),
             $this->getTemplateParameterTypeList(),
