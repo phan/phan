@@ -83,9 +83,13 @@ class CLI
                 'config-file:',
                 'signature-compatibility',
                 'markdown-issue-messages',
+                'extended-help',
             ]
         );
 
+        if (array_key_exists('extended-help', $opts ?? [])) {
+            $this->usage('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
+        }
         if (array_key_exists('h', $opts ?? []) || array_key_exists('help', $opts ?? [])) {
             $this->usage();  // --help prints help and calls exit(0)
         }
@@ -349,7 +353,7 @@ class CLI
         return $this->file_list;
     }
 
-    private function usage(string $msg = '', int $exit_code = EXIT_SUCCESS)
+    private function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
     {
         global $argv;
 
@@ -409,13 +413,6 @@ Usage: {$argv[0]} [options] [files...]
  -p, --progress-bar
   Show progress bar
 
- -a, --dump-ast
-  Emit an AST for each file rather than analyze
-
- --dump-signatures-file <filename>
-  Emit JSON serialized signatures to the given file.
-  This uses a method signature format similar to FunctionSignatureMap.php.
-
  -q, --quick
   Quick mode - doesn't recurse into all function calls
 
@@ -452,7 +449,26 @@ Usage: {$argv[0]} [options] [files...]
  -h, --help
   This help information
 
+ --extended-help
+  This help information, plus less commonly used flags
+
 EOB;
+        if ($print_extended_help) {
+            echo <<<EOB
+
+Extended help:
+ -a, --dump-ast
+  Emit an AST for each file rather than analyze.
+
+ --dump-signatures-file <filename>
+  Emit JSON serialized signatures to the given file.
+  This uses a method signature format similar to FunctionSignatureMap.php.
+
+ --markdown-issue-messages
+  Emit issue messages with markdown formatting.
+
+EOB;
+        }
         exit($exit_code);
     }
 
