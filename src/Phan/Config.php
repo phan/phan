@@ -83,7 +83,7 @@ class Config
         // ```php
         // <?php
         // function test($arg):int {
-        // 	return $arg;
+        //     return $arg;
         // }
         // test("abc");
         // ```
