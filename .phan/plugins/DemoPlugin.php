@@ -64,7 +64,7 @@ class DemoPlugin extends PluginImplementation {
         Node $node,
         Node $parent_node = null
     ) {
-        // Invoke the `DemoPluginVisitor` (defined later in
+        // Invoke the `DemoNodeVisitor` (defined later in
         // this file) on the given node, allowing it to run
         // a method based on the kind of the given node.
         (new DemoNodeVisitor($code_base, $context, $this))(
