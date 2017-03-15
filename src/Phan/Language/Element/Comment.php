@@ -113,6 +113,8 @@ class Comment
      * @param string[] $suppress_issue_list
      * A list of tags for error type to be suppressed
      *
+     * @param CommentParameter[] $magic_property_list
+     *
      * @param Option<Type> $closure_scope
      * For closures: Allows us to document the class of the object
      * to which a closure will be bound.
