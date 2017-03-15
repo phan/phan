@@ -13,7 +13,10 @@ use Symfony\Component\Console\Output\StreamOutput;
 
 class CLI
 {
-    const PHAN_VERSION = '0.9.1-dev';
+    /**
+     * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
+     */
+    const PHAN_VERSION = '0.9.2-dev';
 
     /**
      * @var OutputInterface
