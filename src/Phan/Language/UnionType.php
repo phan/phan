@@ -792,7 +792,8 @@ class UnionType implements \Serializable
     /**
      * @return bool
      * True if this union type represents types that are
-     * array-like, and nothing else.
+     * array-like, and nothing else (e.g. can't be null).
+     * If any of the array-like types are nullable, this returns false.
      */
     public function isExclusivelyArrayLike() : bool
     {
@@ -805,6 +806,7 @@ class UnionType implements \Serializable
                 return (
                     $is_exclusively_array
                     && $type->isArrayLike()
+                    && !$type->getIsNullable()
                 );
             }, true);
     }
