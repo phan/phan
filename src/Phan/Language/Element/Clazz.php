@@ -610,7 +610,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @param Property[] $magic_property_map mapping from property name to this
+     * @param \Phan\Language\Element\Comment\Parameter[] $magic_property_map mapping from property name to this
      * @param CodeBase $code_base
      * @return bool whether or not we defined it.
      */
