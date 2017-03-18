@@ -483,7 +483,8 @@ class ContextNode
      * @throws IssueException
      * An exception is thrown if we can't find the given
      * class or if we don't have access to the property (its
-     * private or protected).
+     * private or protected)
+     * or if the property is static and missing.
      *
      * @throws TypeException
      * An exception may be thrown if the only viable candidate
@@ -494,7 +495,8 @@ class ContextNode
      * we can't determine if the property exists or not
      */
     public function getProperty(
-        $property_name
+        $property_name,
+        bool $is_static
     ) : Property {
 
         assert(
@@ -522,13 +524,23 @@ class ContextNode
                     $this->node->children['class']
             ))->getClassList(true);
         } catch (CodeBaseException $exception) {
-            throw new IssueException(
-                Issue::fromType(Issue::UndeclaredProperty)(
-                    $this->context->getFile(),
-                    $this->node->lineno ?? 0,
-                    [ "{$exception->getFQSEN()}->$property_name" ]
-                )
-            );
+            if ($is_static) {
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredStaticProperty)(
+                        $this->context->getFile(),
+                        $this->node->lineno ?? 0,
+                        [ $property_name, (string)$exception->getFQSEN() ]
+                    )
+                );
+            } else {
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredProperty)(
+                        $this->context->getFile(),
+                        $this->node->lineno ?? 0,
+                        [ "{$exception->getFQSEN()}->$property_name" ]
+                    )
+                );
+            }
         }
 
         foreach ($class_list as $i => $class) {
@@ -540,10 +552,11 @@ class ContextNode
                 $this->code_base,
                 $property_name
             )) {
+                // (if fetching an instance property)
                 // If there's a getter on properties then all
                 // bets are off. However, @phan-forbid-undeclared-magic-properties
                 // will make this method analyze the code as if all properties were declared or had @property annotations.
-                if ($class->hasGetMethod($this->code_base) && !$class->getForbidUndeclaredMagicProperties($this->code_base)) {
+                if (!$is_static && $class->hasGetMethod($this->code_base) && !$class->getForbidUndeclaredMagicProperties($this->code_base)) {
                     throw new UnanalyzableException(
                         $this->node,
                         "Can't determine if property {$property_name} exists in class {$class->getFQSEN()} with __get defined"
@@ -556,7 +569,8 @@ class ContextNode
             $property = $class->getPropertyByNameInContext(
                 $this->code_base,
                 $property_name,
-                $this->context
+                $this->context,
+                $is_static
             );
 
             if ($property->isDeprecated()) {
@@ -579,15 +593,18 @@ class ContextNode
         // Since we didn't find the property on any of the
         // possible classes, check for classes with dynamic
         // properties
-        foreach ($class_list as $i => $class) {
-            if (Config::get()->allow_missing_properties
-                || $class->getHasDynamicProperties($this->code_base)
-            ) {
-                return $class->getPropertyByNameInContext(
-                    $this->code_base,
-                    $property_name,
-                    $this->context
-                );
+        if (!$is_static) {
+            foreach ($class_list as $i => $class) {
+                if (Config::get()->allow_missing_properties
+                    || $class->getHasDynamicProperties($this->code_base)
+                ) {
+                    return $class->getPropertyByNameInContext(
+                        $this->code_base,
+                        $property_name,
+                        $this->context,
+                        $is_static
+                    );
+                }
             }
         }
 
@@ -597,7 +614,7 @@ class ContextNode
 
         // If missing properties are cool, create it on
         // the first class we found
-        if (($class_fqsen && ($class_fqsen === $std_class_fqsen))
+        if (!$is_static && ($class_fqsen && ($class_fqsen === $std_class_fqsen))
             || Config::get()->allow_missing_properties
         ) {
             if (count($class_list) > 0) {
@@ -605,7 +622,8 @@ class ContextNode
                 return $class->getPropertyByNameInContext(
                     $this->code_base,
                     $property_name,
-                    $this->context
+                    $this->context,
+                    $is_static
                 );
             }
         }
@@ -613,13 +631,23 @@ class ContextNode
 
         // If the class isn't found, we'll get the message elsewhere
         if ($class_fqsen) {
-            throw new IssueException(
-                Issue::fromType(Issue::UndeclaredProperty)(
-                    $this->context->getFile(),
-                    $this->node->lineno ?? 0,
-                    [ "$class_fqsen->$property_name" ]
-                )
-            );
+            if ($is_static) {
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredStaticProperty)(
+                        $this->context->getFile(),
+                        $this->node->lineno ?? 0,
+                        [ $property_name, (string)$class_fqsen ]
+                    )
+                );
+            } else {
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredProperty)(
+                        $this->context->getFile(),
+                        $this->node->lineno ?? 0,
+                        [ "$class_fqsen->$property_name" ]
+                    )
+                );
+            }
         }
 
         throw new NodeException(
@@ -644,14 +672,18 @@ class ContextNode
      * is a non-class type.
      */
     public function getOrCreateProperty(
-        string $property_name
+        string $property_name,
+        bool $is_static
     ) : Property {
 
         try {
-            return $this->getProperty($property_name);
+            return $this->getProperty($property_name, $is_static);
         } catch (IssueException $exception) {
-            // Ignore it, because we'll create our own
-            // property
+            // Ignore it, because we'll create our own property
+            // (for instance properties)
+            if ($is_static) {
+                throw $exception;
+            }
         } catch (UnanalyzableException $exception) {
             // Ignore it, because we'll create our own
             // property

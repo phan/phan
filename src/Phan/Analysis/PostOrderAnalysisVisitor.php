@@ -1479,21 +1479,29 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     public function visitStaticProp(Node $node) : Context
     {
-        return $this->visitProp($node);
+        return $this->analyzeProp($node, true);
+    }
+
+    public function visitProp(Node $node) : Context
+    {
+        return $this->analyzeProp($node, false);
     }
 
     /**
-     * Visit a node with kind `\ast\AST_PROP`
+     * Analyze a node with kind `\ast\AST_PROP` or `\ast\AST_STATIC_PROP`
      *
      * @param Node $node
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
+     * @param bool $is_static
+     * True if fetching a static property.
+     *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitProp(Node $node) : Context
+    public function analyzeProp(Node $node, bool $is_static) : Context
     {
         $exception_or_null = null;
 
@@ -1502,7 +1510,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getProperty($node->children['prop']);
+            ))->getProperty($node->children['prop'], $is_static);
 
             // Mark that this property has been referenced from
             // this context
@@ -1539,25 +1547,28 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
 
-            // Find out of any of them have a __get magic method
-            $has_getter =
-                array_reduce($class_list, function($carry, $class) {
-                    return (
-                        $carry ||
-                        $class->hasGetMethod($this->code_base)
-                    );
-                }, false);
+            if (!$is_static) {
+                // Find out of any of them have a __get magic method
+                // (Only check if looking for instance properties)
+                $has_getter =
+                    array_reduce($class_list, function($carry, $class) {
+                        return (
+                            $carry ||
+                            $class->hasGetMethod($this->code_base)
+                        );
+                    }, false);
 
-            // If they don't, then analyze for Noops.
-            if (!$has_getter) {
-                $this->analyzeNoOp($node, Issue::NoopProperty);
+                // If they don't, then analyze for Noops.
+                if (!$has_getter) {
+                    $this->analyzeNoOp($node, Issue::NoopProperty);
 
-                if ($exception_or_null instanceof IssueException) {
-                    Issue::maybeEmitInstance(
-                        $this->code_base,
-                        $this->context,
-                        $exception_or_null->getIssueInstance()
-                    );
+                    if ($exception_or_null instanceof IssueException) {
+                        Issue::maybeEmitInstance(
+                            $this->code_base,
+                            $this->context,
+                            $exception_or_null->getIssueInstance()
+                        );
+                    }
                 }
             }
         }
@@ -1620,7 +1631,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 $this->code_base,
                                 $this->context,
                                 $argument
-                            ))->getOrCreateProperty($argument->children['prop']);
+                            ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
                         } catch (IssueException $exception) {
                             Issue::maybeEmitInstance(
                                 $this->code_base,
@@ -1690,7 +1701,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 $this->code_base,
                                 $this->context,
                                 $argument
-                            ))->getOrCreateProperty($argument->children['prop']);
+                            ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
 
                         } catch (IssueException $exception) {
                             Issue::maybeEmitInstance(
@@ -1909,6 +1920,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ))->getOrCreateVariable();
         } else if ($argument->kind == \ast\AST_STATIC_PROP) {
             try {
+                // TODO: shouldn't call getOrCreateProperty for a static property. You can't create a static property.
                 $variable = (new ContextNode(
                     $this->code_base,
                     $this->context,

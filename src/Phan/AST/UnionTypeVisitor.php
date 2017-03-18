@@ -1169,12 +1169,17 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitProp(Node $node) : UnionType
     {
+        return $this->analyzeProp($node, false);
+    }
+
+    private function analyzeProp(Node $node, bool $is_static) : UnionType
+    {
         try {
             $property = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getProperty($node->children['prop']);
+            ))->getProperty($node->children['prop'], $is_static);
 
             // Map template types to concrete types
             if ($property->getUnionType()->hasTemplateType()) {
@@ -1231,7 +1236,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitStaticProp(Node $node) : UnionType
     {
-        return $this->visitProp($node);
+        return $this->analyzeProp($node, true);
     }
 
 

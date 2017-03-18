@@ -124,6 +124,7 @@ class Issue
     const AccessNonStaticToStatic   = 'PhanAccessNonStaticToStatic';
     const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
     const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
+    const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
 
     // Issue::CATEGORY_COMPATIBLE
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
@@ -425,7 +426,7 @@ class Issue
             new Issue(
                 self::UndeclaredStaticProperty,
                 self::CATEGORY_UNDEFINED,
-                self::SEVERITY_NORMAL,
+                self::SEVERITY_CRITICAL,
                 "Static property '{PROPERTY}' on {CLASS} is undeclared",
                 self::REMEDIATION_B,
                 1016
@@ -1058,6 +1059,15 @@ class Issue
                 self::REMEDIATION_B,
                 1009
             ),
+            new Issue(
+                self::AccessPropertyStaticAsNonStatic,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Accessing static property %s as non static",
+                self::REMEDIATION_B,
+                1010
+            ),
+
 
             // Issue::CATEGORY_COMPATIBLE
             new Issue(

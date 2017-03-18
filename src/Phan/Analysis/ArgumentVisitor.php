@@ -4,6 +4,8 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
+use Phan\Exception\IssueException;
+use Phan\Issue;
 use Phan\Language\Context;
 use ast\Node;
 use ast\Node\Decl;
@@ -82,7 +84,7 @@ class ArgumentVisitor extends KindVisitorImplementation
      */
     public function visitStaticProp(Node $node)
     {
-        $this->visitProp($node);
+        $this->analyzeProp($node, true);
     }
 
     /**
@@ -92,6 +94,20 @@ class ArgumentVisitor extends KindVisitorImplementation
      * @return void
      */
     public function visitProp(Node $node)
+    {
+        $this->analyzeProp($node, true);
+    }
+
+    /**
+     * @param Node $node
+     * A static/non-static node (for property fetch) to parse
+     *
+     * @param bool $is_static
+     * True if $node is a static property fetch
+     *
+     * @return void
+     */
+    public function analyzeProp(Node $node, bool $is_static)
     {
         try {
 
@@ -105,9 +121,16 @@ class ArgumentVisitor extends KindVisitorImplementation
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getOrCreateProperty($node->children['prop']);
+            ))->getOrCreateProperty($node->children['prop'], $is_static);
 
             $property->addReference($this->context);
+        } catch (IssueException $exception) {
+            // This is different from the previous behaviour.
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
         } catch (\Exception $exception) {
             // Swallow it
         }

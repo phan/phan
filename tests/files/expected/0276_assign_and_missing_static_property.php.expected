@@ -1,0 +1,5 @@
+%s:7 PhanUndeclaredStaticProperty Static property 'prop' on \ClassMissingStaticProps is undeclared
+%s:8 PhanUndeclaredStaticProperty Static property 'prop' on \ClassMissingStaticProps is undeclared
+%s:11 PhanUndeclaredStaticProperty Static property 'firstProp' on \stdClass is undeclared
+%s:12 PhanUndeclaredStaticProperty Static property 'secondProp' on \stdClass is undeclared
+%s:13 PhanUndeclaredStaticProperty Static property 'thirdProp' on \stdClass is undeclared

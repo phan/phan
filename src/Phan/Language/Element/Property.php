@@ -55,6 +55,10 @@ class Property extends ClassElement
             $string .= 'private ';
         }
 
+        if ($this->isStatic()) {
+            $string .= 'static ';
+        }
+
         // Since the UnionType can be a future, and that
         // can throw an exception, we catch it and ignore it
         try {
