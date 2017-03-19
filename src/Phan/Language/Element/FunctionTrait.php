@@ -6,6 +6,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\UnionType;
 use ast\Node\Decl;
 
 trait FunctionTrait {
@@ -40,6 +41,18 @@ trait FunctionTrait {
      * The list of parameters for this method
      */
     private $parameter_list = [];
+
+    /**
+     * @var Parameter[]
+     * The list of *real* (not from phpdoc) parameters for this method.
+     */
+    private $real_parameter_list = [];
+
+    /**
+     * @var UnionType
+     * The *real* (not from phpdoc) return type from this method
+     */
+    private $real_return_type;
 
     /**
      * @return int
@@ -217,6 +230,61 @@ trait FunctionTrait {
      */
     public function setParameterList(array $parameter_list) {
         $this->parameter_list = $parameter_list;
+    }
+
+    /**
+     * @return Parameter[] $parameter_list
+     * A list of parameters (not from phpdoc) that were set on this method. The parameters will be cloned.
+     */
+    public function getRealParameterList()
+    {
+        // Excessive cloning, to ensure that this stays immutable.
+        return array_map(function(Parameter $param) {
+            return clone($param);
+        }, $this->real_parameter_list);
+    }
+
+    /**
+     * @param Parameter[] $parameter_list
+     * A list of parameters (not from phpdoc) to set on this method. The parameters will be cloned.
+     *
+     * @return void
+     */
+    public function setRealParameterList(array $parameter_list)
+    {
+        $this->real_parameter_list = array_map(function(Parameter $param) {
+            return clone($param);
+        }, $parameter_list);
+    }
+
+    /**
+     * @param UnionType
+     * The real (non-phpdoc) return type of this method in its given context.
+     *
+     * @return void
+     */
+    public function setRealReturnType(UnionType $union_type)
+    {
+        // TODO: was `self` properly resolved already? What about in subclasses?
+        // Clone it, since caller has a mutable version of this.
+        $this->real_return_type = clone($union_type);
+    }
+
+    /**
+     * @param Context $context
+     *
+     * @return UnionType
+     * The type of this method in its given context.
+     */
+    public function getRealReturnType() : UnionType
+    {
+        if (!$this->real_return_type && $this instanceof \Phan\Language\Element\Method) {
+            throw new \Error(sprintf("Failed to get real return type in %s method %s", (string)$this->getClassFQSEN(), (string)$this));
+        }
+        // Clone the union type, to be certain it will remain immutable.
+        $union_type = clone($this->real_return_type);
+        // TODO: is `static` ever going to be valid? if not, remove below code and warn about reserved keyword.
+        return $union_type;
     }
 
     /**

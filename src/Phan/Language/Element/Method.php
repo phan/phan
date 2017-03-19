@@ -173,7 +173,9 @@ class Method extends ClassElement implements FunctionInterface
 
         if ($clazz->hasMethodWithName($code_base, $clazz->getName())) {
             $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
-            $method->setParameterList($old_style_constructor->getParameterList());
+            $parameter_list = $old_style_constructor->getParameterList();
+            $method->setParameterList($parameter_list);
+            $method->setRealParameterList($parameter_list);
             $method->setNumberOfRequiredParameters($old_style_constructor->getNumberOfRequiredParameters());
             $method->setNumberOfOptionalParameters($old_style_constructor->getNumberOfOptionalParameters());
         }
@@ -242,6 +244,8 @@ class Method extends ClassElement implements FunctionInterface
 
         // Set the parameter list on the method
         $method->setParameterList($parameter_list);
+        // Keep an copy of the original parameter list, to check for fatal errors later on.
+        $method->setRealParameterList($parameter_list);
 
         $method->setNumberOfRequiredParameters(array_reduce(
             $parameter_list,
@@ -277,6 +281,7 @@ class Method extends ClassElement implements FunctionInterface
             );
             $method->getUnionType()->addUnionType($return_union_type);
         }
+        $method->setRealReturnType($return_union_type);
 
         // If available, add in the doc-block annotated return type
         // for the method.
@@ -439,4 +444,26 @@ class Method extends ClassElement implements FunctionInterface
         return $string;
     }
 
+    /**
+     * @return string
+     * A string representation of this method signature
+     * (Based on real types only, instead of phpdoc+real types)
+     */
+    public function toRealSignatureString() : string {
+        $string = '';
+
+        $string .= 'function ';
+        if ($this->returnsRef()) {
+            $string .= '&';
+        }
+        $string .= $this->getName();
+
+        $string .= '(' . implode(', ', $this->getRealParameterList()) . ')';
+
+        if (!$this->getRealReturnType()->isEmpty()) {
+            $string .= ' : ' . (string)$this->getRealReturnType();
+        }
+
+        return $string;
+    }
 }

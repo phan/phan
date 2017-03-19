@@ -136,6 +136,9 @@ class FunctionFactory {
             $method->setNumberOfOptionalParameters(999);
             $method->setNumberOfRequiredParameters(0);
         }
+        // FIXME: make this from ReflectionMethod->getReturnType
+        $method->setRealReturnType(UnionType::fromReflectionType($reflection_method->getReturnType()));
+        $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
 
         return self::functionListFromFunction($method, $code_base);
     }
@@ -184,6 +187,7 @@ class FunctionFactory {
             }
 
             // Load properties if defined
+            // TODO: should be 'parameter_name_type_map'?
             foreach ($map['property_name_type_map'] ?? []
                 as $parameter_name => $parameter_type
             ) {
@@ -216,6 +220,8 @@ class FunctionFactory {
                 );
 
                 if ($is_optional) {
+                    // TODO: could check isDefaultValueAvailable and getDefaultValue, for a better idea.
+                    // I don't see any cases where this will be used for internal types, though.
                     $parameter->setDefaultValueType(
                         NullType::instance(false)->asUnionType()
                     );
@@ -225,6 +231,7 @@ class FunctionFactory {
                 $alternate_function->appendParameter($parameter);
             }
 
+            // TODO: What do I do if this is out of sync with the extension's ReflectionMethod->getParameterList()?
             $alternate_function->setNumberOfRequiredParameters(
                 array_reduce($alternate_function->getParameterList(),
                     function(int $carry, Parameter $parameter) : int {

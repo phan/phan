@@ -165,6 +165,20 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @param ?\ReflectionType $reflection_type
+     *
+     * @return UnionType
+     * A UnionType with 0 or 1 nullable/non-nullable Types
+     */
+    public static function fromReflectionType($reflection_type) : UnionType
+    {
+        if ($reflection_type !== null) {
+            return Type::fromReflectionType($reflection_type)->asUnionType();
+        }
+        return new UnionType();
+    }
+
+    /**
      * @return string[]
      * Get a map from property name to its type for the given
      * class name.
@@ -627,6 +641,19 @@ class UnionType implements \Serializable
     public function hasAnyType(array $type_list) : bool
     {
         return $this->type_set->containsAny($type_list);
+    }
+
+    /**
+     * @return bool
+     * True if this type has any subtype of `iterable` type (e.g. Traversable, Array).
+     */
+    public function hasIterable() : bool
+    {
+        return (false !==
+            $this->type_set->find(function (Type $type) : bool {
+                return $type->isIterable();
+            })
+        );
     }
 
     /**

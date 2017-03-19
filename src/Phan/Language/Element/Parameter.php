@@ -9,6 +9,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -178,6 +179,47 @@ class Parameter extends Variable
         }
 
         return $parameter_list;
+    }
+
+    /**
+     * @param \ReflectionParameter[] $reflection_parameters
+     * @return Parameter[]
+     */
+    public static function listFromReflectionParameterList(
+        array $reflection_parameters
+    ) : array {
+        return array_map(function(\ReflectionParameter $reflection_parameter) {
+            return self::fromReflectionParameter($reflection_parameter);
+        }, $reflection_parameters);
+    }
+
+    public static function fromReflectionParameter(
+        \ReflectionParameter $reflection_parameter
+    ) : Parameter {
+        $flags = 0;
+        // Check to see if its a pass-by-reference parameter
+        if ($reflection_parameter->isPassedByReference()) {
+            $flags |= \ast\flags\PARAM_REF;
+        }
+
+        // Check to see if its variadic
+        if ($reflection_parameter->isVariadic()) {
+            $flags |= \ast\flags\PARAM_VARIADIC;
+        }
+
+        $parameter = new Parameter(
+            new Context(),
+            $reflection_parameter->getName(),
+            UnionType::fromReflectionType($reflection_parameter->getType()),
+            $flags
+        );
+        if ($reflection_parameter->isOptional()) {
+            // TODO: check if ($reflection_parameter->isDefaultValueAvailable())
+            $parameter->setDefaultValueType(
+                NullType::instance(false)->asUnionType()
+            );
+        }
+        return $parameter;
     }
 
     /**
