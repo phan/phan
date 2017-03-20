@@ -1,10 +1,22 @@
 %s:6 PhanParamSignatureMismatch Declaration of function f() should be compatible with function f(int $a) defined in %s:3
+%s:6 PhanParamSignatureRealMismatch Declaration of function f() should be compatible with function f(int $a) defined in %s:3
 %s:12 PhanParamSignatureMismatch Declaration of function f(int $a, int $b) should be compatible with function f(int $a) defined in %s:3
+%s:12 PhanParamSignatureRealMismatch Declaration of function f(int $a, int $b) should be compatible with function f(int $a) defined in %s:3
 %s:15 PhanParamSignatureMismatch Declaration of function f(string $a) should be compatible with function f(int $a) defined in %s:3
+%s:15 PhanParamSignatureRealMismatch Declaration of function f(string $a) should be compatible with function f(int $a) defined in %s:3
 %s:18 PhanParamSignatureMismatch Declaration of function f($a) should be compatible with function f(int $a) defined in %s:3
+%s:18 PhanParamSignatureRealMismatch Declaration of function f($a) should be compatible with function f(int $a) defined in %s:3
 %s:25 PhanParamSignatureMismatch Declaration of function g() : int should be compatible with function g() : string defined in %s:22
+%s:25 PhanParamSignatureRealMismatch Declaration of function g() : int should be compatible with function g() : string defined in %s:22
+%s:28 PhanParamSignatureRealMismatch Declaration of function g() should be compatible with function g() : string defined in %s:22
+%s:35 PhanParamSignatureRealMismatch Declaration of function h(int $a) should be compatible with function h($a) defined in %s:32
 %s:50 PhanParamSignatureMismatch Declaration of function i($a) should be compatible with function i($a, mixed|string $b = default) defined in %s:46
+%s:50 PhanParamSignatureRealMismatch Declaration of function i($a) should be compatible with function i($a, $b = default) defined in %s:46
 %s:58 PhanParamSignatureMismatch Declaration of function j() should be compatible with function &j() defined in %s:54
+%s:58 PhanParamSignatureRealMismatch Declaration of function j() should be compatible with function &j() defined in %s:54
 %s:67 PhanParamSignatureMismatch Declaration of function k(&$a) should be compatible with function k($a) defined in %s:62
+%s:67 PhanParamSignatureRealMismatch Declaration of function k(&$a) should be compatible with function k($a) defined in %s:62
 %s:68 PhanParamSignatureMismatch Declaration of function l($b) should be compatible with function l(&$b) defined in %s:63
+%s:68 PhanParamSignatureRealMismatch Declaration of function l($b) should be compatible with function l(&$b) defined in %s:63
 %s:76 PhanParamSignatureMismatch Declaration of function m($a) should be compatible with function m(mixed|null $a = null) defined in %s:72
+%s:76 PhanParamSignatureRealMismatch Declaration of function m($a) should be compatible with function m($a = null) defined in %s:72

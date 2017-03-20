@@ -1,1 +1,2 @@
 %s:13 PhanParamSignatureMismatch Declaration of function f(array $a) should be compatible with function f(array $a, array $b) defined in %s:4
+%s:13 PhanParamSignatureRealMismatch Declaration of function f(array $a) should be compatible with function f(array $a, array $b) defined in %s:4
