@@ -518,6 +518,38 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param int|float|string|Node $cond
+     * @return ?bool
+     */
+    private function checkCondUnconditionalTruthiness($cond) {
+        if ($cond instanceof Node) {
+            if ($cond->kind === \ast\AST_CONST) {
+                $name = $cond->children['name'];
+                if ($name->kind === \ast\AST_NAME) {
+                    switch(strtolower($name->children['name'])) {
+                    case 'true':
+                        return true;
+                    case 'false':
+                        return false;
+                    case 'null':
+                        return false;
+                    default:
+                        // Could add heuristics based on internal/user-defined constant values, but that is unreliable.
+                        // (E.g. feature flags for an extension may be true or false, depending on the environment)
+                        // (and Phan doesn't store constant values for user-defined constants, only the types)
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }
+        // Otherwise, this is an int/float/string.
+        // Use the exact same truthiness rules as PHP to check if the conditional is truthy.
+        // (e.g. "0" and 0.0 and '' are false)
+        assert(is_scalar($cond), 'cond must be Node or scalar');
+        return (bool)$cond;
+    }
+    /**
      * Visit a node with kind `\ast\AST_CONDITIONAL`
      *
      * @param Node $node
@@ -530,30 +562,58 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitConditional(Node $node) : UnionType
     {
+        $cond_node = $node->children['cond'];
+        $cond_truthiness = $this->checkCondUnconditionalTruthiness($cond_node);
+        // For the shorthand $a ?: $b, the cond node will be the truthy value.
+        // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
         $true_node =
             $node->children['trueExpr'] ??
-                $node->children['true'] ?? '';
+                $node->children['true'] ??
+                    $cond_node;
 
-        $cond_node = $node->children['cond'];
-        // TODO: false_context once there is a NegatedConditionVisitor
-        $true_context = (new ConditionVisitor(
-            $this->code_base,
-            $this->context
-        ))($cond_node);
+        // Rarely, an
+        if ($cond_truthiness !== null) {
+            // TODO: Add no-op checks in another PR, if they don't already exist for conditional.
+            if ($cond_truthiness === true) {
+                // The condition is unconditionally true
+                return UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $node->children['trueExpr'] ??
+                        $node->children['true'] ??
+                            $cond_node
+                );
+            } else {
+                // The condition is unconditionally false
 
-        if ($true_node) {
-            $true_type = UnionType::fromNode(
-                $true_context,
-                $this->code_base,
-                $true_node
-            );
-        } else {
-            $true_type = UnionType::fromNode(
-                $true_context,
-                $this->code_base,
-                $cond_node
-            );
+                // Add the type for the 'false' side
+                return UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $node->children['falseExpr'] ??
+                        $node->children['false'] ?? ''
+                );
+            }
         }
+
+        // TODO: false_context once there is a NegatedConditionVisitor
+        // TODO: emit no-op if $cond_node is a literal, such as `if (2)`
+        // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
+
+        if ($cond_node instanceof Node) {
+            $true_context = (new ConditionVisitor(
+                $this->code_base,
+                $this->context
+            ))($cond_node);
+        } else {
+            $true_context = $this->context;
+        }
+
+        $true_type = UnionType::fromNode(
+            $true_context,
+            $this->code_base,
+            $true_node
+        );
 
         $false_type = UnionType::fromNode(
             $this->context,
