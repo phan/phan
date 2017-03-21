@@ -283,7 +283,6 @@ trait FunctionTrait {
         }
         // Clone the union type, to be certain it will remain immutable.
         $union_type = clone($this->real_return_type);
-        // TODO: is `static` ever going to be valid? if not, remove below code and warn about reserved keyword.
         return $union_type;
     }
 

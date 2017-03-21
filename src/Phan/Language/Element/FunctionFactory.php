@@ -186,9 +186,8 @@ class FunctionFactory {
                 $alternate_function->setUnionType($map['return_type']);
             }
 
-            // Load properties if defined
-            // TODO: should be 'parameter_name_type_map'?
-            foreach ($map['property_name_type_map'] ?? []
+            // Load parameter types if defined
+            foreach ($map['parameter_name_type_map'] ?? []
                 as $parameter_name => $parameter_type
             ) {
                 $flags = 0;
@@ -231,7 +230,9 @@ class FunctionFactory {
                 $alternate_function->appendParameter($parameter);
             }
 
-            // TODO: What do I do if this is out of sync with the extension's ReflectionMethod->getParameterList()?
+            // TODO: Store the "real" number of required parameters,
+            // if this is out of sync with the extension's ReflectionMethod->getParameterList()?
+            // (e.g. third party extensions may add more required parameters?)
             $alternate_function->setNumberOfRequiredParameters(
                 array_reduce($alternate_function->getParameterList(),
                     function(int $carry, Parameter $parameter) : int {

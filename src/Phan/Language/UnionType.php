@@ -267,17 +267,17 @@ class UnionType implements \Serializable
                 : null;
 
             $name_type_name_map = $type_name_struct;
-            $property_name_type_map = [];
+            $parameter_name_type_map = [];
 
             foreach ($name_type_name_map as $name => $type_name) {
-                $property_name_type_map[$name] = empty($type_name)
+                $parameter_name_type_map[$name] = empty($type_name)
                     ? new UnionType()
                     : UnionType::fromStringInContext($type_name, $context, false);
             }
 
             $configurations[] = [
                 'return_type' => $return_type,
-                'property_name_type_map' => $property_name_type_map,
+                'parameter_name_type_map' => $parameter_name_type_map,
             ];
 
             $function_name =

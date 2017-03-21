@@ -94,7 +94,7 @@ class ParameterTypesAnalyzer
         // $method->analyzeOverride($code_base);
 
         // Make sure we're actually overriding something
-        // TODO: check that signatures of magic methods are valid, if not done already (e.g. __get expects one param, most can't define return types, etc.)?
+        // TODO(in another PR): check that signatures of magic methods are valid, if not done already (e.g. __get expects one param, most can't define return types, etc.)?
         if (!$method->getIsOverride()) {
             return;
         }
@@ -385,6 +385,12 @@ class ParameterTypesAnalyzer
                     break;
                 }
 
+                // Changing variadic to/from non-variadic is not ok?
+                if ($parameter->isVariadic() != $o_parameter->isVariadic()) {
+                    $signatures_match = false;
+                    break;
+                }
+
                 // Either 0 or both of the params must have types for the signatures to be compatible.
                 $o_parameter_union_type = $o_parameter->getUnionType();
                 $parameter_union_type = $parameter->getUnionType();
@@ -447,7 +453,7 @@ class ParameterTypesAnalyzer
                     Issue::ParamSignatureRealMismatch,
                     $method->getFileRef()->getLineNumberStart(),
                     $method->toRealSignatureString(),
-                    $o_method->toRealSignatureString(),  // TODO: instead of __toString(), a version for the real signature.
+                    $o_method->toRealSignatureString(),
                     $o_method->getFileRef()->getFile(),
                     $o_method->getFileRef()->getLineNumberStart()
                 );

@@ -19,7 +19,8 @@ class IterableType extends NativeType
      */
     public function isArrayLike() : bool
     {
-        // TODO: the base `iterable` isn't always array-like (no array access on Traversable)
+        // TODO: the base `iterable` isn't always array-like (no array access on Traversable).
+        // In another PR, change `iterable` behavior?
         return true;
     }
 

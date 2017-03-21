@@ -813,7 +813,7 @@ class Issue
                 self::REMEDIATION_B,
                 7012
             ),
-            // TODO: change the other message to say that it's based off of phpdoc and LSP?
+            // TODO: Optionally, change the other message to say that it's based off of phpdoc and LSP in a future PR.
             new Issue(
                 self::ParamSignatureRealMismatch,
                 self::CATEGORY_PARAMETER,
