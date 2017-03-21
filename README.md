@@ -48,6 +48,7 @@ Phan is able to perform the following kinds of analysis.
 * Supports phpdoc [type annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
 * Supports `@deprecated` annotation for deprecating classes, methods and functions
 * Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#suppress).
+* Supports [magic property annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#property) as of Phan 0.9.1 (partial) (`@property <union_type> <variable_name>`)
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores.
 * Output is emitted in text, checkstyle, json or codeclimate formats.
