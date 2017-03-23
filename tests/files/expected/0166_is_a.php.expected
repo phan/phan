@@ -14,3 +14,4 @@
 %s:35 PhanTypeMismatchArgument Argument 1 (var) is resource but \emitResourceType() takes string defined at %s:5
 %s:37 PhanTypeMismatchArgument Argument 1 (var) is bool|float|int|null|string but \emitType() takes resource defined at %s:3
 %s:39 PhanTypeMismatchArgument Argument 1 (var) is string but \emitType() takes resource defined at %s:3
+%s:41 PhanTypeMismatchArgument Argument 1 (var) is iterable but \emitType() takes resource defined at %s:3
