@@ -1,0 +1,3 @@
+%s:27 PhanTypeMismatchArgument Argument 1 (arg) is \A276|\I276|static but \A276::baz() takes \B276 defined at %s:19
+%s:28 PhanTypeMismatchArgument Argument 1 (arg) is \A276|\I276|static but \A276::baz() takes \B276 defined at %s:19
+%s:32 PhanTypeMismatchArgument Argument 1 (arg) is \B276|\I276 but \A276::foo() takes \A276 defined at %s:15

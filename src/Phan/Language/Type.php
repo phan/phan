@@ -733,7 +733,7 @@ class Type
      *
      * @return bool
      * True if the given type references the class context
-     * in which it exists such as 'static' or 'self'.
+     * in which it exists such as 'self' or 'parent'
      */
     public static function isSelfTypeString(
         string $type_string
@@ -741,6 +741,22 @@ class Type
         // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
         // Not sure if that should extend to phpdoc.
         return preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\\$this)$/', $type_string) > 0;
+    }
+
+    /**
+     * @param string $type_string
+     * A string defining a type such as 'static' or 'int'.
+     *
+     * @return bool
+     * True if the given type references the class context
+     * in which it exists is '$this' or 'static'
+     */
+    public static function isStaticTypeString(
+        string $type_string
+    ) : bool {
+        // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
+        // Not sure if that should extend to phpdoc.
+        return preg_match('/^\\\\?([sS][tT][aA][tT][iI][cC]|\\$this)$/', $type_string) > 0;
     }
 
     /**
