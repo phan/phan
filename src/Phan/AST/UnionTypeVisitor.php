@@ -27,6 +27,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\StaticType;
 use Phan\Language\UnionType;
 use ast\Node;
 use ast\Node\Decl;
@@ -1092,7 +1093,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
                 // If the constant is referring to the current
                 // class, return that as a type
-                if (Type::isSelfTypeString($constant_name)) {
+                if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
                     return $this->visitClassNode($node);
                 }
 
@@ -1526,7 +1527,8 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If this is a straight-forward class name, recurse into the
         // class node and get its type
-        if (!Type::isSelfTypeString($class_name)) {
+        $is_static_type_string = Type::isStaticTypeString($class_name);
+        if (!($is_static_type_string || Type::isSelfTypeString($class_name))) {
             // TODO: does anyone else call this method?
             return self::unionTypeFromClassNode(
                 $this->code_base,
@@ -1567,9 +1569,14 @@ class UnionTypeVisitor extends AnalysisVisitor
             )->asUnionType();
         }
 
-        return Type::fromFullyQualifiedString(
+        $result = Type::fromFullyQualifiedString(
             (string)$this->context->getClassFQSEN()
         )->asUnionType();
+
+        if ($is_static_type_string) {
+            $result->addType(StaticType::instance(false));
+        }
+        return $result;
     }
 
     /**
