@@ -497,25 +497,22 @@ EOB;
         try {
             $file_extensions = Config::get()->analyzed_file_extensions;
 
-            if (!is_array($file_extensions) || count($file_extensions) == 0) {
+            if (!is_array($file_extensions) || count($file_extensions) === 0) {
                 throw new \InvalidArgumentException(
                     'Empty list in config analyzed_file_extensions. Nothing to analyze.'
                 );
             }
 
-            $extension_regex = implode('|', array_map(function ($extension) {
-                return preg_quote($extension, '/');
-            }, $file_extensions));
-
-            $iterator = new \RegexIterator(
+            $iterator = new \CallbackFilterIterator(
                 new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
                         $directory_name,
                         \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                     )
                 ),
-                '/^.+\.(' . $extension_regex . ')$/i',
-                \RecursiveRegexIterator::GET_MATCH
+                function(\SplFileInfo $file_info) use ($file_extensions) {
+                    return in_array($file_info->getExtension(), $file_extensions, true);
+                }
             );
 
             foreach (array_keys(iterator_to_array($iterator)) as $file_name) {
