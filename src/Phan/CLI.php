@@ -511,18 +511,20 @@ EOB;
                     )
                 ),
                 function(\SplFileInfo $file_info) use ($file_extensions) {
-                    return in_array($file_info->getExtension(), $file_extensions, true);
+                    if (!in_array($file_info->getExtension(), $file_extensions, true)) {
+                        return false;
+                    }
+
+                    if (!$file_info->isFile() || !$file_info->isReadable()) {
+                        error_log("Unable to read file {$file_info->getRealPath()}");
+                        return false;
+                    }
+
+                    return true;
                 }
             );
 
-            foreach (array_keys(iterator_to_array($iterator)) as $file_name) {
-                $file_path = Config::projectPath($file_name);
-                if (is_file($file_path) && is_readable($file_path)) {
-                    $file_list[] = $file_name;
-                } else {
-                    error_log("Unable to read file $file_path");
-                }
-            }
+            $file_list = array_keys(iterator_to_array($iterator));
         } catch (\Exception $exception) {
             error_log($exception->getMessage());
         }
