@@ -334,6 +334,10 @@ class ParameterTypesAnalyzer
      * Keeping that around(e.g. to check that string[] is compatible with string[])
      * and also checking the **real**(non-phpdoc) types.
      *
+     * @param $code_base
+     * @param $method - The overriding method
+     * @param $o_method - The overridden method. E.g. if a subclass overrid a base class implementation, then $o_method would be from the base class.
+     * @param $o_class the overridden class
      * @return void
      */
     private static function analyzeOverrideRealSignature(
@@ -401,9 +405,10 @@ class ParameterTypesAnalyzer
 
                 // If both have types, make sure they are identical.
                 // Non-nullable param types can be substituted with the nullable equivalents.
+                // E.g. A::foo(?int $x) can override BaseClass::foo(int $x)
                 if (!$parameter_union_type->isEmpty()) {
                     if (!$o_parameter_union_type->isEqualTo($parameter_union_type) &&
-                        !($parameter_union_type->containsNullable() && !$o_parameter_union_type->isEqualTo($parameter_union_type->nonNullableClone()))
+                        !($parameter_union_type->containsNullable() && $o_parameter_union_type->isEqualTo($parameter_union_type->nonNullableClone()))
                     ) {
                         // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
                         // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?

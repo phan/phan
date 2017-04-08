@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
@@ -129,6 +130,21 @@ class Parameter extends Variable
     public function setDefaultValue($value)
     {
         $this->default_value = $value;
+    }
+
+    /**
+     * @param string $value
+     * If the value's default is null, or a constant evaluating to null,
+     * then the parameter type should be converted to nullable
+     * (E.g. `int $x = null` and `?int $x = null` are equivalent.
+     *  We pretend `int $x = SOME_NULL_CONST` is equivalent as well.)
+     */
+    public function handleDefaultValueOfNull()
+    {
+        if ($this->default_value_type->isType(NullType::instance(false))) {
+            // If it isn't already nullable, convert the parameter type to nullable.
+            $this->convertToNullable();
+        }
     }
 
     /**
@@ -309,6 +325,7 @@ class Parameter extends Variable
                 // Set the actual value of the default
                 $parameter->setDefaultValue($default_node);
             }
+            $parameter->handleDefaultValueOfNull();
         }
 
         return $parameter;
@@ -443,6 +460,19 @@ class Parameter extends Variable
     public function addUnionType(UnionType $union_type)
     {
         parent::getUnionType()->addUnionType($union_type);
+    }
+
+    /**
+     * Add the given type to this parameter's union type
+     *
+     * @param Type $type
+     * The type to add to this parameter's union type
+     *
+     * @return void
+     */
+    public function addType(Type $type)
+    {
+        parent::getUnionType()->addType($type);
     }
 
     /**

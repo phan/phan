@@ -364,8 +364,7 @@ trait FunctionTrait {
             // specified type.
             if ($parameter->hasDefaultValue()) {
                 $default_type = $parameter->getDefaultValueType();
-                $defaultIsNull = $default_type->isEqualTo(
-                    NullType::instance(false)->asUnionType());
+                $defaultIsNull = $default_type->isType(NullType::instance(false));
                 // If the default type isn't null and can't cast
                 // to the parameter's declared type, emit an
                 // issue.
@@ -388,9 +387,10 @@ trait FunctionTrait {
                 // If there are no types on the parameter, the
                 // default shouldn't be treated as the one
                 // and only allowable type.
-                if ($parameter->getUnionType()->isEmpty()) {
+                $wasEmpty = $parameter->getUnionType()->isEmpty();
+                if ($wasEmpty) {
                     $parameter->addUnionType(
-                        MixedType::instance(false)->asUnionType()
+                        MixedType::instance($defaultIsNull)->asUnionType()
                     );
                 }
 
@@ -399,14 +399,18 @@ trait FunctionTrait {
                 // doesn't mean that is its type. Any type can default
                 // to null
                 if ($defaultIsNull) {
-                    if (!$parameter->getUnionType()->isEmpty()) {
-                        $parameter->getUnionType()->addType(
-                            NullType::instance(false)
-                        );
-                    }
+					// The parameter constructor or above check for wasEmpty already took care of null default case
                 } else {
-                    // If default type is not null, then add the default type to the parameter type
-                    $parameter->addUnionType($default_type);
+                    if ($wasEmpty) {
+                        $parameter->addUnionType($default_type);
+                    } else {
+                        // Don't add both `int` and `?int` to the same set.
+                        foreach ($default_type->getTypeSet() as $default_type_part) {
+                            if (!$parameter->getNonvariadicUnionType()->hasType($default_type_part->withIsNullable(true))) {
+                                $parameter->addType($default_type_part);
+                            }
+                        }
+                    }
                 }
             }
 

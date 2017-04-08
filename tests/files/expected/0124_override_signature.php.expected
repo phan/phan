@@ -18,5 +18,5 @@
 %s:67 PhanParamSignatureRealMismatch Declaration of function k(&$a) should be compatible with function k($a) defined in %s:62
 %s:68 PhanParamSignatureMismatch Declaration of function l($b) should be compatible with function l(&$b) defined in %s:63
 %s:68 PhanParamSignatureRealMismatch Declaration of function l($b) should be compatible with function l(&$b) defined in %s:63
-%s:76 PhanParamSignatureMismatch Declaration of function m($a) should be compatible with function m(mixed|null $a = null) defined in %s:72
+%s:76 PhanParamSignatureMismatch Declaration of function m($a) should be compatible with function m(?mixed $a = null) defined in %s:72
 %s:76 PhanParamSignatureRealMismatch Declaration of function m($a) should be compatible with function m($a = null) defined in %s:72

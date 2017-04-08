@@ -574,6 +574,20 @@ class UnionType implements \Serializable
         return $result;
     }
 
+    public function nullableClone() : UnionType
+    {
+        $result = new UnionType();
+        foreach ($this->getTypeSet() as $type) {
+            if ($type->getIsNullable()) {
+                $result->addType($type);
+                continue;
+            }
+
+            $result->addType($type->withIsNullable(true));
+        }
+        return $result;
+    }
+
     /**
      * @param UnionType $union_type
      * A union type to compare against
