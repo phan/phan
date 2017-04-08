@@ -1221,9 +1221,24 @@ class Clazz extends AddressableElement
      * @return bool
      * True if this class has a magic '__call' method
      */
-    public function hasCallMethod(CodeBase $code_base)
+    public function hasCallMethod(CodeBase $code_base) : bool
     {
         return $this->hasMethodWithName($code_base, '__call');
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return bool
+     * True if this class has a magic '__call' method,
+     * and (at)phan-forbid-undeclared-magic-methods doesn't exist on this class or ancestors
+     */
+    public function allowsCallingUndeclaredInstanceMethod(CodeBase $code_base)
+    {
+        return $this->hasCallMethod($code_base) &&
+            !$this->getForbidUndeclaredMagicMethods($code_base);
     }
 
     /**
@@ -1246,9 +1261,24 @@ class Clazz extends AddressableElement
      * @return bool
      * True if this class has a magic '__callStatic' method
      */
-    public function hasCallStaticMethod(CodeBase $code_base)
+    public function hasCallStaticMethod(CodeBase $code_base) : bool
     {
         return $this->hasMethodWithName($code_base, '__callStatic');
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The entire code base from which we'll find ancestor
+     * details
+     *
+     * @return bool
+     * True if this class has a magic '__callStatic' method,
+     * and (at)phan-forbid-undeclared-magic-methods doesn't exist on this class or ancestors.
+     */
+    public function allowsCallingUndeclaredStaticMethod(CodeBase $code_base)
+    {
+        return $this->hasCallStaticMethod($code_base) &&
+            !$this->getForbidUndeclaredMagicMethods($code_base);
     }
 
     /**
@@ -1288,7 +1318,7 @@ class Clazz extends AddressableElement
      * @return bool
      * True if this class has a magic '__get' method
      */
-    public function hasGetMethod(CodeBase $code_base)
+    public function hasGetMethod(CodeBase $code_base) : bool
     {
         return $this->hasMethodWithName($code_base, '__get');
     }
@@ -1301,7 +1331,7 @@ class Clazz extends AddressableElement
      * @return bool
      * True if this class has a magic '__set' method
      */
-    public function hasSetMethod(CodeBase $code_base)
+    public function hasSetMethod(CodeBase $code_base) : bool
     {
         return $this->hasMethodWithName($code_base, '__set');
     }

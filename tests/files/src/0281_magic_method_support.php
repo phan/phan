@@ -42,6 +42,7 @@ function testA281(A281 $a) {
     $a->fooWithOptionalSecondParam(42, 1); // valid
     $a->fooWithOptionalSecondParam(42, null); // invalid
     $a->fooWithOptionalSecondParam(); // invalid, expects 1 to 2 params.
+    $a::fooWithOptionalSecondParam(42); // invalid, calling an instance method statically.
 
     $a->fooWithOptionalNullableParam('string'); // expects optional string
     $a->fooWithOptionalNullableParam(null); // expects optional, nullable string
@@ -52,6 +53,7 @@ function testA281(A281 $a) {
 
     expects_a281(A281::static_foo_with_return_type_of_static());  // valid, return types match
     expects_int281(A281::static_foo_with_return_type_of_static());  // invalid, expects int but got object
+    $a->static_foo_with_return_type_of_static(42); // warn, calling a magic static method on an instance.
 
     expects_int281($a->myMethodWithParams(22));
     $a->myMethodWithParams();  // invalid, not enough params
