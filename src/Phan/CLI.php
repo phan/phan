@@ -516,7 +516,8 @@ EOB;
                     }
 
                     if (!$file_info->isFile() || !$file_info->isReadable()) {
-                        error_log("Unable to read file {$file_info->getRealPath()}");
+                        $file_path = $file_info->getRealPath();
+                        error_log("Unable to read file {$file_path}");
                         return false;
                     }
 
