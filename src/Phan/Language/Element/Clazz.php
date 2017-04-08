@@ -646,6 +646,55 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param \Phan\Language\Element\Comment\Method[] $magic_method_map mapping from method name to this.
+     * @param CodeBase $code_base
+     * @return bool whether or not we defined it.
+     */
+    public function setMagicMethodMap(
+        array $magic_method_map,
+        CodeBase $code_base,
+        Context $context
+    ) : bool {
+        if (count($magic_method_map) === 0) {
+            return true;  // Vacuously true.
+        }
+        $class_fqsen = $this->getFQSEN();
+        foreach ($magic_method_map as $comment_method) {
+            // $flags is the same as the flags for `public` and non-internal?
+            // Or \ast\flags\MODIFIER_PUBLIC.
+            $flags = \ast\flags\MODIFIER_PUBLIC;
+            if ($comment_method->isStatic()) {
+                $flags |= \ast\flags\MODIFIER_STATIC;
+            }
+            $method_name = $comment_method->getName();
+            if ($this->hasMethodWithName($code_base, $method_name)) {
+                // No point, and this would hurt inference accuracy.
+                continue;
+            }
+            $method_fqsen = FullyQualifiedMethodName::make(
+                $class_fqsen,
+                $method_name
+            );
+            $method = new Method(
+                $context,
+                $method_name,
+                $comment_method->getUnionType(),
+                $flags,
+                $method_fqsen
+            );
+            $real_parameter_list = array_map(function(\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
+                return $parameter->asRealParameter($context);
+            }, $comment_method->getParameterList());
+            $method->setParameterList($real_parameter_list);
+            $method->setNumberOfRequiredParameters($comment_method->getNumberOfRequiredParameters());
+            $method->setNumberOfOptionalParameters($comment_method->getNumberOfOptionalParameters());
+
+            $this->addMethod($code_base, $method, new None);
+        }
+        return true;
+    }
+
+    /**
      * @return bool
      */
     public function hasPropertyWithName(
@@ -1354,6 +1403,42 @@ class Clazz extends AddressableElement
             $this->getPhanFlags(),
             Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES,
             $forbid_undeclared_dynamic_properties
+        ));
+    }
+
+    /**
+     * Forbid undeclared magic methods
+     * @param bool $forbid - set to true to forbid.
+     * @return void
+     */
+    public function getForbidUndeclaredMagicMethods(CodeBase $code_base) : bool {
+        return (
+            Flags::bitVectorHasState(
+                $this->getPhanFlags(),
+                Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
+            )
+            ||
+            (
+                $this->hasParentType()
+                && $code_base->hasClassWithFQSEN($this->getParentClassFQSEN())
+                && $this->getParentClass($code_base)->getForbidUndeclaredMagicMethods($code_base)
+            )
+        );
+    }
+
+    /**
+     * Set whether undeclared magic methods are forbidden
+     * (methods accessed through __call or __callStatic, with no (at)method annotation on class)
+     * @param bool $forbid - set to true to forbid.
+     * @return void
+     */
+    public function setForbidUndeclaredMagicMethods(
+        bool $forbid_undeclared_magic_methods
+    ) {
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS,
+            $forbid_undeclared_magic_methods
         ));
     }
 
