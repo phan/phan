@@ -497,35 +497,35 @@ EOB;
         try {
             $file_extensions = Config::get()->analyzed_file_extensions;
 
-            if (!is_array($file_extensions) || count($file_extensions) == 0) {
+            if (!is_array($file_extensions) || count($file_extensions) === 0) {
                 throw new \InvalidArgumentException(
                     'Empty list in config analyzed_file_extensions. Nothing to analyze.'
                 );
             }
 
-            $extension_regex = implode('|', array_map(function ($extension) {
-                return preg_quote($extension, '/');
-            }, $file_extensions));
-
-            $iterator = new \RegexIterator(
+            $iterator = new \CallbackFilterIterator(
                 new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
                         $directory_name,
                         \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                     )
                 ),
-                '/^.+\.(' . $extension_regex . ')$/i',
-                \RecursiveRegexIterator::GET_MATCH
+                function(\SplFileInfo $file_info) use ($file_extensions) {
+                    if (!in_array($file_info->getExtension(), $file_extensions, true)) {
+                        return false;
+                    }
+
+                    if (!$file_info->isFile() || !$file_info->isReadable()) {
+                        $file_path = $file_info->getRealPath();
+                        error_log("Unable to read file {$file_path}");
+                        return false;
+                    }
+
+                    return true;
+                }
             );
 
-            foreach (array_keys(iterator_to_array($iterator)) as $file_name) {
-                $file_path = Config::projectPath($file_name);
-                if (is_file($file_path) && is_readable($file_path)) {
-                    $file_list[] = $file_name;
-                } else {
-                    error_log("Unable to read file $file_path");
-                }
-            }
+            $file_list = array_keys(iterator_to_array($iterator));
         } catch (\Exception $exception) {
             error_log($exception->getMessage());
         }
