@@ -38,7 +38,7 @@ class UnionType implements \Serializable
     private $type_set;
 
     /**
-     * @param Type[]|\Iterator $type_list
+     * @param Type[]|\Iterator|null $type_list
      * An optional list of types represented by this union
      */
     public function __construct($type_list = null)
