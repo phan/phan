@@ -332,6 +332,18 @@ class Config
         // Emit issue messages with markdown formatting
         'markdown_issue_messages' => false,
 
+        // Emit colorized issue messages.
+        // NOTE: it is strongly recommended to enable this via the --color CLI flag instead,
+        // since this is incompatible with most output formatters.
+        'color_issue_messages' => false,
+
+        // Allow overriding color scheme in .phan/config.php for printing issues, for individual types.
+        // See the keys of Phan\Output\Colorizing::styles for valid color names,
+        // and the keys of Phan\Output\Colorizing::default_color_for_template for valid color names.
+        // E.g. to change the color for the file(of an issue instance) to red, set this to ['FILE' => 'red']
+        // E.g. to use the terminal's default color for the line(of an issue instance), set this to ['LINE' => 'none']
+        'color_scheme' => [],
+
         // Enable or disable support for generic templated
         // class types.
         'generic_types_enabled' => true,

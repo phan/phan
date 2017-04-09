@@ -64,6 +64,7 @@ class CLI
             "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zh:v",
             [
                 'backward-compatibility-checks',
+                'color',
                 'dead-code-detection',
                 'directory:',
                 'dump-ast',
@@ -253,6 +254,9 @@ class CLI
                 case 'markdown-issue-messages':
                     Config::get()->markdown_issue_messages = true;
                     break;
+                case 'color':
+                    Config::get()->color_issue_messages = true;
+                    break;
                 default:
                     $this->usage("Unknown option '-$key'", EXIT_FAILURE);
                     break;
@@ -412,6 +416,9 @@ Usage: {$argv[0]} [options] [files...]
 
  -o, --output <filename>
   Output filename
+
+ --color
+  Add colors to the outputted issues. Tested for Unix, recommended for only the default --output-mode ('text')
 
  -p, --progress-bar
   Show progress bar
