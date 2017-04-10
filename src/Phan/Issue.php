@@ -183,6 +183,28 @@ class Issue
     // type id constants.
     const TYPE_ID_UNKNOWN = 999;
 
+    // Keep sorted and in sync with Colorizing::default_color_for_template
+    const uncolored_format_string_for_template = [
+        'CLASS'         => '%s',
+        'CONST'         => '%s',
+        'COUNT'         => '%d',
+        'FILE'          => '%s',
+        'FUNCTIONLIKE'  => '%s',
+        'FUNCTION'      => '%s',
+        'INDEX'         => '%d',
+        'INTERFACE'     => '%s',
+        'ISSUETYPE'     => '%s',  // used by Phan\Output\Printer, for minor issues.
+        'ISSUETYPE_CRITICAL' => '%s',  // for critical issues
+        'ISSUETYPE_NORMAL' => '%s',  // for normal issues
+        'LINE'          => '%d',
+        'METHOD'        => '%s',
+        'PARAMETER'     => '%s',
+        'PROPERTY'      => '%s',
+        'TYPE'          => '%s',
+        'TRAIT'         => '%s',
+        'VARIABLE'      => '%s',
+    ];
+
     /** @var string */
     private $type;
 
@@ -195,6 +217,9 @@ class Issue
     /** @var int */
     private $severity;
 
+    /** @var string - Used for colorizing option. */
+    private $template_raw;
+
     /** @var string */
     private $template;
 
@@ -205,7 +230,7 @@ class Issue
      * @param string $type
      * @param int $category
      * @param int $severity
-     * @param string $template
+     * @param string $template_raw - Contains a mix of {CLASS} and %s/%d annotations.
      * @param int $remediation_difficulty
      * @param int $type_id (unique integer id for $type)
      */
@@ -213,16 +238,32 @@ class Issue
         string $type,
         int $category,
         int $severity,
-        string $template,
+        string $template_raw,
         int $remediation_difficulty,
         int $type_id
     ) {
         $this->type = $type;
         $this->category = $category;
         $this->severity = $severity;
-        $this->template = $template;
+        $this->template_raw = $template_raw;
+        $this->template = self::templateToFormatString($template_raw);
         $this->remediation_difficulty = $remediation_difficulty;
         $this->type_id = $type_id;
+    }
+
+    private static function templateToFormatString(
+        string $template
+    ) : string {
+        /** @param string[] $matches */
+        return preg_replace_callback('/{([A-Z_]+)}/', function(array $matches) use($template): string {
+            $key = $matches[1];
+            $replacement_exists = array_key_exists($key, self::uncolored_format_string_for_template);
+            if (!$replacement_exists) {
+                error_log(sprintf("No coloring info for issue message (%s), key {%s}", $template, $key));
+                return '%s';
+            }
+            return self::uncolored_format_string_for_template[$key];
+        }, $template);
     }
 
     /**
@@ -257,7 +298,7 @@ class Issue
                 self::EmptyFile,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_LOW,
-                "Empty file %s",
+                "Empty file {FILE}",
                 self::REMEDIATION_B,
                 1000
             ),
@@ -265,7 +306,7 @@ class Issue
                 self::ParentlessClass,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Reference to parent of class %s that does not extend anything",
+                "Reference to parent of class {CLASS} that does not extend anything",
                 self::REMEDIATION_B,
                 1001
             ),
@@ -273,7 +314,7 @@ class Issue
                 self::UndeclaredClass,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Reference to undeclared class %s",
+                "Reference to undeclared class {CLASS}",
                 self::REMEDIATION_B,
                 1002
             ),
@@ -281,7 +322,7 @@ class Issue
                 self::UndeclaredExtendedClass,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Class extends undeclared class %s",
+                "Class extends undeclared class {CLASS}",
                 self::REMEDIATION_B,
                 1003
             ),
@@ -289,7 +330,7 @@ class Issue
                 self::UndeclaredInterface,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Class implements undeclared interface %s",
+                "Class implements undeclared interface {CLASS}",
                 self::REMEDIATION_B,
                 1004
             ),
@@ -297,7 +338,7 @@ class Issue
                 self::UndeclaredTrait,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Class uses undeclared trait %s",
+                "Class uses undeclared trait {TRAIT}",
                 self::REMEDIATION_B,
                 1005
             ),
@@ -305,7 +346,7 @@ class Issue
                 self::UndeclaredClassCatch,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Catching undeclared class %s",
+                "Catching undeclared class {CLASS}",
                 self::REMEDIATION_B,
                 1006
             ),
@@ -313,7 +354,7 @@ class Issue
                 self::UndeclaredClassConstant,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Reference to constant %s from undeclared class %s",
+                "Reference to constant {CONST} from undeclared class {CLASS}",
                 self::REMEDIATION_B,
                 1007
             ),
@@ -321,7 +362,7 @@ class Issue
                 self::UndeclaredClassInstanceof,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Checking instanceof against undeclared class %s",
+                "Checking instanceof against undeclared class {CLASS}",
                 self::REMEDIATION_B,
                 1008
             ),
@@ -329,7 +370,7 @@ class Issue
                 self::UndeclaredClassMethod,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Call to method %s from undeclared class %s",
+                "Call to method {METHOD} from undeclared class {CLASS}",
                 self::REMEDIATION_B,
                 1009
             ),
@@ -337,7 +378,7 @@ class Issue
                 self::UndeclaredClassReference,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Reference to undeclared class %s",
+                "Reference to undeclared class {CLASS}",
                 self::REMEDIATION_B,
                 1010
             ),
@@ -345,7 +386,7 @@ class Issue
                 self::UndeclaredConstant,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Reference to undeclared constant %s",
+                "Reference to undeclared constant {CONST}",
                 self::REMEDIATION_B,
                 1011
             ),
@@ -353,7 +394,7 @@ class Issue
                 self::UndeclaredFunction,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Call to undeclared function %s",
+                "Call to undeclared function {FUNCTION}",
                 self::REMEDIATION_B,
                 1012
             ),
@@ -361,7 +402,7 @@ class Issue
                 self::UndeclaredMethod,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Call to undeclared method %s",
+                "Call to undeclared method {METHOD}",
                 self::REMEDIATION_B,
                 1013
             ),
@@ -369,7 +410,7 @@ class Issue
                 self::UndeclaredStaticMethod,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Static call to undeclared method %s",
+                "Static call to undeclared method {METHOD}",
                 self::REMEDIATION_B,
                 1014
             ),
@@ -377,7 +418,7 @@ class Issue
                 self::UndeclaredProperty,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Reference to undeclared property %s",
+                "Reference to undeclared property {PROPERTY}",
                 self::REMEDIATION_B,
                 1015
             ),
@@ -385,7 +426,7 @@ class Issue
                 self::UndeclaredStaticProperty,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Static property '%s' on %s is undeclared",
+                "Static property '{PROPERTY}' on {CLASS} is undeclared",
                 self::REMEDIATION_B,
                 1016
             ),
@@ -393,7 +434,7 @@ class Issue
                 self::TraitParentReference,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_LOW,
-                "Reference to parent from trait %s",
+                "Reference to parent from trait {TRAIT}",
                 self::REMEDIATION_B,
                 1017
             ),
@@ -401,7 +442,7 @@ class Issue
                 self::UndeclaredVariable,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Variable \$%s is undeclared",
+                "Variable \${VARIABLE} is undeclared",
                 self::REMEDIATION_B,
                 1018
             ),
@@ -409,7 +450,7 @@ class Issue
                 self::UndeclaredTypeParameter,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Parameter of undeclared type %s",
+                "Parameter of undeclared type {TYPE}",
                 self::REMEDIATION_B,
                 1019
             ),
@@ -417,7 +458,7 @@ class Issue
                 self::UndeclaredTypeProperty,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Property %s has undeclared type %s",
+                "Property {PROPERTY} has undeclared type {TYPE}",
                 self::REMEDIATION_B,
                 1020
             ),
@@ -425,7 +466,7 @@ class Issue
                 self::UndeclaredClosureScope,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Reference to undeclared class %s in PhanClosureScope",
+                "Reference to undeclared class {CLASS} in PhanClosureScope",
                 self::REMEDIATION_B,
                 1021
             ),
@@ -445,7 +486,7 @@ class Issue
                 self::TypeMismatchProperty,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Assigning %s to property but %s is %s",
+                "Assigning {TYPE} to property but {PROPERTY} is {TYPE}",
                 self::REMEDIATION_B,
                 10001
             ),
@@ -453,7 +494,7 @@ class Issue
                 self::TypeMismatchDefault,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Default value for %s \$%s can't be %s",
+                "Default value for {TYPE} \${VARIABLE} can't be {TYPE}",
                 self::REMEDIATION_B,
                 10002
             ),
@@ -461,7 +502,7 @@ class Issue
                 self::TypeMismatchVariadicComment,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "%s is variadic in comment, but not variadic in param (%s)",
+                "{PARAMETER} is variadic in comment, but not variadic in param ({PARAMETER})",
                 self::REMEDIATION_B,
                 10021
             ),
@@ -469,7 +510,7 @@ class Issue
                 self::TypeMismatchVariadicParam,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "%s is not variadic in comment, but variadic in param (%s)",
+                "{PARAMETER} is not variadic in comment, but variadic in param ({PARAMETER})",
                 self::REMEDIATION_B,
                 10022
             ),
@@ -477,7 +518,7 @@ class Issue
                 self::TypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument %d (%s) is %s but %s() takes %s defined at %s:%d",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 10003
             ),
@@ -485,7 +526,7 @@ class Issue
                 self::TypeMismatchArgumentInternal,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Argument %d (%s) is %s but %s() takes %s",
+                "Argument {INDEX} ({VARIABLE}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE}",
                 self::REMEDIATION_B,
                 10004
             ),
@@ -493,7 +534,7 @@ class Issue
                 self::TypeMismatchReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Returning type %s but %s() is declared to return %s",
+                "Returning type {TYPE} but {FUNCTIONLIKE}() is declared to return {TYPE}",
                 self::REMEDIATION_B,
                 10005
             ),
@@ -501,7 +542,7 @@ class Issue
                 self::TypeMismatchDeclaredReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Doc-block declares return type %s which is incompatible with the return type %s declared in the signature",
+                "Doc-block declares return type {TYPE} which is incompatible with the return type {TYPE} declared in the signature",
                 self::REMEDIATION_B,
                 10020
             ),
@@ -509,7 +550,7 @@ class Issue
                 self::TypeMissingReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Method %s is declared to return %s but has no return value",
+                "Method {METHOD} is declared to return {TYPE} but has no return value",
                 self::REMEDIATION_B,
                 10006
             ),
@@ -517,7 +558,7 @@ class Issue
                 self::TypeMismatchForeach,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "%s passed to foreach instead of array",
+                "{TYPE} passed to foreach instead of array",
                 self::REMEDIATION_B,
                 10007
             ),
@@ -525,7 +566,7 @@ class Issue
                 self::TypeArrayOperator,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid array operator between types %s and %s",
+                "Invalid array operator between types {TYPE} and {TYPE}",
                 self::REMEDIATION_B,
                 10008
             ),
@@ -533,7 +574,7 @@ class Issue
                 self::TypeArraySuspicious,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Suspicious array access to %s",
+                "Suspicious array access to {TYPE}",
                 self::REMEDIATION_B,
                 10009
             ),
@@ -541,7 +582,7 @@ class Issue
                 self::TypeComparisonToArray,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "%s to array comparison",
+                "{TYPE} to array comparison",
                 self::REMEDIATION_B,
                 10010
             ),
@@ -549,7 +590,7 @@ class Issue
                 self::TypeComparisonFromArray,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "array to %s comparison",
+                "array to {TYPE} comparison",
                 self::REMEDIATION_B,
                 10011
             ),
@@ -557,7 +598,7 @@ class Issue
                 self::TypeConversionFromArray,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_LOW,
-                "array to %s conversion",
+                "array to {TYPE} conversion",
                 self::REMEDIATION_B,
                 10012
             ),
@@ -565,7 +606,7 @@ class Issue
                 self::TypeInstantiateAbstract,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Instantiation of abstract class %s",
+                "Instantiation of abstract class {TYPE}",
                 self::REMEDIATION_B,
                 10013
             ),
@@ -573,7 +614,7 @@ class Issue
                 self::TypeInstantiateInterface,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Instantiation of interface %s",
+                "Instantiation of interface {INTERFACE}",
                 self::REMEDIATION_B,
                 10014
             ),
@@ -581,7 +622,7 @@ class Issue
                 self::TypeInvalidClosureScope,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid PhanClosureScope: expected a class name, got %s",
+                "Invalid PhanClosureScope: expected a class name, got {TYPE}",
                 self::REMEDIATION_B,
                 10023
             ),
@@ -605,7 +646,7 @@ class Issue
                 self::TypeParentConstructorCalled,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Must call parent::__construct() from %s which extends %s",
+                "Must call parent::__construct() from {CLASS} which extends {CLASS}",
                 self::REMEDIATION_B,
                 10017
             ),
@@ -613,7 +654,7 @@ class Issue
                 self::TypeNonVarPassByRef,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Only variables can be passed by reference at argument %d of %s()",
+                "Only variables can be passed by reference at argument {INDEX} of {FUNCTIONLIKE}()",
                 self::REMEDIATION_B,
                 10018
             ),
@@ -621,7 +662,7 @@ class Issue
                 self::NonClassMethodCall,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_CRITICAL,
-                "Call to method %s on non-class type %s",
+                "Call to method {METHOD} on non-class type {TYPE}",
                 self::REMEDIATION_B,
                 10019
             ),
@@ -649,7 +690,7 @@ class Issue
                 self::StaticCallToNonStatic,
                 self::CATEGORY_STATIC,
                 self::SEVERITY_NORMAL,
-                "Static call to non-static method %s defined at %s:%d",
+                "Static call to non-static method {METHOD} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 9000
             ),
@@ -659,7 +700,7 @@ class Issue
                 self::ContextNotObject,
                 self::CATEGORY_CONTEXT,
                 self::SEVERITY_CRITICAL,
-                "Cannot access %s when not in object context",
+                "Cannot access {CLASS} when not in object context",
                 self::REMEDIATION_B,
                 4000
             ),
@@ -669,7 +710,7 @@ class Issue
                 self::DeprecatedFunction,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Call to deprecated function %s() defined at %s:%d",
+                "Call to deprecated function {FUNCTIONLIKE}() defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5000
             ),
@@ -677,7 +718,7 @@ class Issue
                 self::DeprecatedClass,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Call to deprecated class %s defined at %s:%d",
+                "Call to deprecated class {CLASS} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5001
             ),
@@ -685,7 +726,7 @@ class Issue
                 self::DeprecatedProperty,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Reference to deprecated property %s defined at %s:%d",
+                "Reference to deprecated property {PROPERTY} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5002
             ),
@@ -693,7 +734,7 @@ class Issue
                 self::DeprecatedInterface,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Using a deprecated interface %s defined at %s:%d",
+                "Using a deprecated interface {INTERFACE} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5003
             ),
@@ -701,7 +742,7 @@ class Issue
                 self::DeprecatedTrait,
                 self::CATEGORY_DEPRECATED,
                 self::SEVERITY_NORMAL,
-                "Using a deprecated trait %s defined at %s:%d",
+                "Using a deprecated trait {TRAIT} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5004
             ),
@@ -719,7 +760,7 @@ class Issue
                 self::ParamTooMany,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
-                "Call with %d arg(s) to %s() which only takes %d arg(s) defined at %s:%d",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which only takes {COUNT} arg(s) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7001
             ),
@@ -727,7 +768,7 @@ class Issue
                 self::ParamTooManyInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_LOW,
-                "Call with %d arg(s) to %s() which only takes %d arg(s)",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which only takes {COUNT} arg(s)",
                 self::REMEDIATION_B,
                 7002
             ),
@@ -735,7 +776,7 @@ class Issue
                 self::ParamTooFew,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Call with %d arg(s) to %s() which requires %d arg(s) defined at %s:%d",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which requires {COUNT} arg(s) defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7003
             ),
@@ -743,7 +784,7 @@ class Issue
                 self::ParamTooFewInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Call with %d arg(s) to %s() which requires %d arg(s)",
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which requires {COUNT} arg(s)",
                 self::REMEDIATION_B,
                 7004
             ),
@@ -751,7 +792,7 @@ class Issue
                 self::ParamSpecial1,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument %d (%s) is %s but %s() takes %s when argument %d is %s",
+                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} when argument {INDEX} is {TYPE}",
                 self::REMEDIATION_B,
                 7005
             ),
@@ -759,7 +800,7 @@ class Issue
                 self::ParamSpecial2,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument %d (%s) is %s but %s() takes %s when passed only one argument",
+                "Argument {INDEX} ({PARAMETER}) is {TYPE} but {FUNCTIONLIKE}() takes {TYPE} when passed only one argument",
                 self::REMEDIATION_B,
                 7006
             ),
@@ -767,7 +808,7 @@ class Issue
                 self::ParamSpecial3,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "The last argument to %s must be of type %s",
+                "The last argument to {FUNCTIONLIKE} must be of type {TYPE}",
                 self::REMEDIATION_B,
                 7007
             ),
@@ -775,7 +816,7 @@ class Issue
                 self::ParamSpecial4,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "The second to last argument to %s must be of type %s",
+                "The second to last argument to {FUNCTIONLIKE} must be of type {TYPE}",
                 self::REMEDIATION_B,
                 7008
             ),
@@ -783,7 +824,7 @@ class Issue
                 self::ParamTypeMismatch,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Argument %d is %s but %s() takes %s",
+                "Argument {INDEX} is {TYPE} but {FUNCTIONLIKE}() takes {TYPE}",
                 self::REMEDIATION_B,
                 7009
             ),
@@ -791,7 +832,7 @@ class Issue
                 self::ParamSignatureMismatch,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of %s should be compatible with %s defined in %s:%d",
+                "Declaration of {METHOD} should be compatible with {METHOD} defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7010
             ),
@@ -799,7 +840,7 @@ class Issue
                 self::ParamSignatureMismatchInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of %s should be compatible with internal %s",
+                "Declaration of {METHOD} should be compatible with internal {METHOD}",
                 self::REMEDIATION_B,
                 7011
             ),
@@ -807,7 +848,7 @@ class Issue
                 self::ParamRedefined,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Redefinition of parameter %s",
+                "Redefinition of parameter {PARAMETER}",
                 self::REMEDIATION_B,
                 7012
             ),
@@ -857,7 +898,7 @@ class Issue
                 self::UnreferencedClass,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to class %s",
+                "Possibly zero references to class {CLASS}",
                 self::REMEDIATION_B,
                 6005
             ),
@@ -865,7 +906,7 @@ class Issue
                 self::UnreferencedMethod,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to method %s",
+                "Possibly zero references to method {METHOD}",
                 self::REMEDIATION_B,
                 6006
             ),
@@ -873,7 +914,7 @@ class Issue
                 self::UnreferencedProperty,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to property %s",
+                "Possibly zero references to property {PROPERTY}",
                 self::REMEDIATION_B,
                 6007
             ),
@@ -881,7 +922,7 @@ class Issue
                 self::UnreferencedConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to constant %s",
+                "Possibly zero references to constant {CONST}",
                 self::REMEDIATION_B,
                 6008
             ),
@@ -891,7 +932,7 @@ class Issue
                 self::RedefineClass,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
-                "%s defined at %s:%d was previously defined as %s at %s:%d",
+                "{CLASS} defined at {FILE}:{LINE} was previously defined as {CLASS} at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 8000
             ),
@@ -899,7 +940,7 @@ class Issue
                 self::RedefineClassInternal,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
-                "%s defined at %s:%d was previously defined as %s internally",
+                "{CLASS} defined at {FILE}:{LINE} was previously defined as {CLASS} internally",
                 self::REMEDIATION_B,
                 8001
             ),
@@ -907,7 +948,7 @@ class Issue
                 self::RedefineFunction,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
-                "Function %s defined at %s:%d was previously defined at %s:%d",
+                "Function {FUNCTION} defined at {FILE}:{LINE} was previously defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 8002
             ),
@@ -915,7 +956,7 @@ class Issue
                 self::RedefineFunctionInternal,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
-                "Function %s defined at %s:%d was previously defined internally",
+                "Function {FUNCTION} defined at {FILE}:{LINE} was previously defined internally",
                 self::REMEDIATION_B,
                 8003
             ),
@@ -923,7 +964,7 @@ class Issue
                 self::IncompatibleCompositionProp,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
-                "%s and %s define the same property (%s) in the composition of %s. However, the definition differs and is considered incompatible. Class was composed in %s on line %d",
+                "{TRAIT} and {TRAIT} define the same property ({PROPERTY}) in the composition of {CLASS}. However, the definition differs and is considered incompatible. Class was composed in {FILE} on line {LINE}",
                 self::REMEDIATION_B,
                 8004
             ),
@@ -931,7 +972,7 @@ class Issue
                 self::IncompatibleCompositionMethod,
                 self::CATEGORY_REDEFINE,
                 self::SEVERITY_NORMAL,
-                "Declaration of %s must be compatible with %s in %s on line %d",
+                "Declaration of {METHOD} must be compatible with {METHOD} in {FILE} on line {LINE}",
                 self::REMEDIATION_B,
                 8005
             ),
@@ -941,7 +982,7 @@ class Issue
                 self::AccessPropertyProtected,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot access protected property %s",
+                "Cannot access protected property {PROPERTY}",
                 self::REMEDIATION_B,
                 1000
             ),
@@ -949,7 +990,7 @@ class Issue
                 self::AccessPropertyPrivate,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot access private property %s",
+                "Cannot access private property {PROPERTY}",
                 self::REMEDIATION_B,
                 1001
             ),
@@ -957,7 +998,7 @@ class Issue
                 self::AccessMethodProtected,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot access protected method %s defined at %s:%d",
+                "Cannot access protected method {METHOD} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1002
             ),
@@ -965,7 +1006,7 @@ class Issue
                 self::AccessMethodPrivate,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot access private method %s defined at %s:%d",
+                "Cannot access private method {METHOD} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1003
             ),
@@ -973,7 +1014,7 @@ class Issue
                 self::AccessSignatureMismatch,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_NORMAL,
-                "Access level to %s must be compatible with %s defined in %s:%d",
+                "Access level to {METHOD} must be compatible with {METHOD} defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1004
             ),
@@ -981,7 +1022,7 @@ class Issue
                 self::AccessSignatureMismatchInternal,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_NORMAL,
-                "Access level to %s must be compatible with internal %s",
+                "Access level to {METHOD} must be compatible with internal {METHOD}",
                 self::REMEDIATION_B,
                 1005
             ),
@@ -989,7 +1030,7 @@ class Issue
                 self::AccessStaticToNonStatic,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot make static method %s() non static",
+                "Cannot make static method {METHOD}() non static",
                 self::REMEDIATION_B,
                 1006
             ),
@@ -997,7 +1038,7 @@ class Issue
                 self::AccessNonStaticToStatic,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot make non static method %s() static",
+                "Cannot make non static method {METHOD}() static",
                 self::REMEDIATION_B,
                 1007
             ),
@@ -1005,7 +1046,7 @@ class Issue
                 self::AccessClassConstantPrivate,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot access private class constant %s defined at %s:%d",
+                "Cannot access private class constant {CONST} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1008
             ),
@@ -1013,7 +1054,7 @@ class Issue
                 self::AccessClassConstantProtected,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Cannot access protected class constant %s defined at %s:%d",
+                "Cannot access protected class constant {CONST} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1009
             ),
@@ -1031,7 +1072,7 @@ class Issue
                 self::CompatibleExpressionPHP7,
                 self::CATEGORY_COMPATIBLE,
                 self::SEVERITY_NORMAL,
-                "%s expression may not be PHP 7 compatible",
+                "{CLASS} expression may not be PHP 7 compatible",
                 self::REMEDIATION_B,
                 3001
             ),
@@ -1041,7 +1082,7 @@ class Issue
                 self::TemplateTypeConstant,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
-                "constant %s may not have a template type",
+                "constant {CONST} may not have a template type",
                 self::REMEDIATION_B,
                 14000
             ),
@@ -1049,7 +1090,7 @@ class Issue
                 self::TemplateTypeStaticMethod,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
-                "static method %s may not use template types",
+                "static method {METHOD} may not use template types",
                 self::REMEDIATION_B,
                 14001
             ),
@@ -1057,7 +1098,7 @@ class Issue
                 self::TemplateTypeStaticProperty,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
-                "static property %s may not have a template type",
+                "static property {PROPERTY} may not have a template type",
                 self::REMEDIATION_B,
                 14002
             ),
@@ -1065,7 +1106,7 @@ class Issue
                 self::GenericGlobalVariable,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
-                "Global variable %s may not be assigned an instance of a generic class",
+                "Global variable {VARIABLE} may not be assigned an instance of a generic class",
                 self::REMEDIATION_B,
                 14003
             ),
@@ -1073,7 +1114,7 @@ class Issue
                 self::GenericConstructorTypes,
                 self::CATEGORY_GENERIC,
                 self::SEVERITY_NORMAL,
-                "Missing template parameters %s on constructor for generic class %s",
+                "Missing template parameters {PARAMETER} on constructor for generic class {CLASS}",
                 self::REMEDIATION_B,
                 14004
             ),
@@ -1159,6 +1200,14 @@ class Issue
     public function getTemplate() : string
     {
         return $this->template;
+    }
+
+    /**
+     * @return string - template with the information needed to colorize this.
+     */
+    public function getTemplateRaw() : string
+    {
+        return $this->template_raw;
     }
 
     /**

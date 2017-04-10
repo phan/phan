@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Output\Colorizing;
+
 class IssueInstance
 {
     /** @var Issue */
@@ -31,19 +33,41 @@ class IssueInstance
         $this->file = $file;
         $this->line = $line;
 
+        // color_issue_message will interfere with some formatters, such as xml.
+        if (Config::get()->color_issue_messages) {
+            $this->message = self::generateColorizedMessage($issue, $template_parameters);
+        } else {
+            $this->message = self::generatePlainMessage($issue, $template_parameters);
+        }
+    }
+
+    private static function generatePlainMessage(
+        Issue $issue,
+        array $template_parameters
+    ) : string {
         $template = $issue->getTemplate();
 
+        // markdown_issue_messages doesn't make sense with color, unless you add <span style="color:red">msg</span>
+        // Not sure if codeclimate supports that.
         if (Config::get()->markdown_issue_messages) {
             $template = preg_replace(
                 '/([^ ]*%s[^ ]*)/', '`\1`',
                 $template
             );
         }
-
-        $this->message = vsprintf(
+        return vsprintf(
             $template,
             $template_parameters
         );
+    }
+
+    private static function generateColorizedMessage(
+        Issue $issue,
+        array $template_parameters
+    ) : string {
+        $template = $issue->getTemplateRaw();
+
+        return Colorizing::colorizeTemplate($template, $template_parameters);
     }
 
     /**
