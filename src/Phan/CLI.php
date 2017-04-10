@@ -503,6 +503,7 @@ EOB;
                 );
             }
 
+            $exclude_file_regex = Config::get()->exclude_file_regex;
             $iterator = new \CallbackFilterIterator(
                 new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
@@ -510,7 +511,7 @@ EOB;
                         \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                     )
                 ),
-                function(\SplFileInfo $file_info) use ($file_extensions) {
+                function(\SplFileInfo $file_info) use ($file_extensions, $exclude_file_regex) {
                     if (!in_array($file_info->getExtension(), $file_extensions, true)) {
                         return false;
                     }
@@ -518,6 +519,10 @@ EOB;
                     if (!$file_info->isFile() || !$file_info->isReadable()) {
                         $file_path = $file_info->getRealPath();
                         error_log("Unable to read file {$file_path}");
+                        return false;
+                    }
+
+                    if ($exclude_file_regex && preg_match($exclude_file_regex,$file_info->getBasename())) {
                         return false;
                     }
 
