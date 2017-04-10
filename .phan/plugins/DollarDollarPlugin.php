@@ -35,6 +35,9 @@ use ast\Node;
  *
  * It is assumed without being checked that plugins aren't
  * mangling state within the passed code base or context.
+ *
+ * Note: When adding new plugins,
+ * add them to the corresponding section of README.md
  */
 class DollarDollarPlugin extends PluginImplementation {
 
