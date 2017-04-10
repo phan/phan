@@ -1926,7 +1926,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context,
                     $argument
                 ))->getOrCreateProperty(
-                    $argument->children['prop'] ?? ''
+                    $argument->children['prop'] ?? '',
+                    true
                 );
             } catch (UnanalyzableException $exception) {
                 // Ignore it. There's nothing we can do. (E.g. the class name for the static property fetch couldn't be determined.

@@ -474,6 +474,10 @@ class ContextNode
      * @param string|Node $property_name
      * The name of the property we're looking up
      *
+     * @param bool $is_static
+     * True if we're looking for a static property,
+     * false if we're looking for an instance property.
+     *
      * @return Property
      * A variable in scope or a new variable
      *
@@ -663,6 +667,10 @@ class ContextNode
      * @throws NodeException
      * An exception is thrown if we can't understand the node
      *
+     * @throws UnanalyzableException
+     * An exception is thrown if we can't find the given
+     * class
+     *
      * @throws CodeBaseExtension
      * An exception is thrown if we can't find the given
      * class
@@ -670,6 +678,9 @@ class ContextNode
      * @throws TypeException
      * An exception may be thrown if the only viable candidate
      * is a non-class type.
+     *
+     * @throws IssueException
+     * An exception is thrown if $is_static, but the property doesn't exist.
      */
     public function getOrCreateProperty(
         string $property_name,
@@ -679,14 +690,20 @@ class ContextNode
         try {
             return $this->getProperty($property_name, $is_static);
         } catch (IssueException $exception) {
-            // Ignore it, because we'll create our own property
-            // (for instance properties)
             if ($is_static) {
                 throw $exception;
             }
+            // TODO: log types of IssueException that aren't for undeclared properties?
+            // (in another PR)
+
+            // For instance properties, ignore it,
+            // because we'll create our own property
         } catch (UnanalyzableException $exception) {
-            // Ignore it, because we'll create our own
-            // property
+            if ($is_static) {
+                throw $exception;
+            }
+            // For instance properties, ignore it,
+            // because we'll create our own property
         }
 
         assert(

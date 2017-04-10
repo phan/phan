@@ -1172,6 +1172,20 @@ class UnionTypeVisitor extends AnalysisVisitor
         return $this->analyzeProp($node, false);
     }
 
+    /**
+     * Analyzes a node with kind `\ast\AST_PROP` or `\ast\AST_STATIC_PROP`
+     *
+     * @param Node $node
+     * The instance/static property access node.
+     *
+     * @param bool $is_static
+     * True if this is a static property fetch,
+     * false if this is an instance property fetch.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
     private function analyzeProp(Node $node, bool $is_static) : UnionType
     {
         try {
