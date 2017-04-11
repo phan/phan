@@ -1,0 +1,12 @@
+%s:92 PhanAccessMethodInternal Cannot access internal method \NS278\A\f defined at %s:33
+%s:94 PhanAccessConstantInternal Cannot access internal constant \NS278\A\CONST_INTERNAL defined at %s:8
+%s:96 PhanAccessMethodInternal Cannot access internal method \NS278\A\C1::__construct defined at %s:39
+%s:97 PhanAccessPropertyInternal Cannot access internal property \NS278\A\C1::p defined at %s:13
+%s:98 PhanAccessMethodInternal Cannot access internal method \NS278\A\C1::f defined at %s:14
+%s:99 PhanAccessClassConstantInternal Cannot access internal class constant \NS278\A\C1::CONST_INTERNAL defined at %s:12
+%s:102 PhanAccessPropertyInternal Cannot access internal property \NS278\A\C2::p defined at %s:24
+%s:103 PhanAccessMethodInternal Cannot access internal method \NS278\A\C2::f defined at %s:27
+%s:106 PhanAccessClassConstantInternal Cannot access internal class constant \NS278\A\C2::CONST_INTERNAL defined at %s:21
+%s:108 PhanAccessClassInternal Cannot access internal Class \NS278\A\C1 defined at %s:11
+%s:108 PhanAccessClassInternal Cannot access internal Interface \NS278\A\I2 defined at %s:53
+%s:108 PhanAccessClassInternal Cannot access internal Trait \NS278\A\T2 defined at %s:56

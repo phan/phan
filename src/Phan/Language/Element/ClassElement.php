@@ -3,6 +3,7 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
+use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -158,6 +159,46 @@ abstract class ClassElement extends AddressableElement
             $this->getFlags(),
             \ast\flags\MODIFIER_STATIC
         );
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which this element exists.
+     *
+     * @return bool
+     * True if this is an internal element
+     */
+    public function isNSInternal(CodeBase $code_base) : bool
+    {
+        return (
+            parent::isNSInternal($code_base)
+            || $this->getClass($code_base)->isNSInternal($code_base)
+        );
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which this element exists.
+     *
+     * @return bool
+     * True if this element is intern
+     */
+    public function isNSInternalAccessFromContext(
+        CodeBase $code_base,
+        Context $context
+    ) : bool {
+        // Get the class that this element is defined on
+        $class = $this->getClass($code_base);
+
+        // Get the namespace that the class is within
+        $element_namespace = $class->getFQSEN()->getNamespace();
+
+        // Get our current namespace
+        $context_namespace = $context->getNamespace();
+
+        // Test to see if the context is within the same
+        // namespace as where the element is defined
+        return (0 === strcasecmp($context_namespace, $element_namespace));
     }
 
 }
