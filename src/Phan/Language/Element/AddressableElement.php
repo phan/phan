@@ -124,7 +124,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * The code base in which this element exists.
      *
      * @return bool
-     * True if this is marked as an internal element
+     * True if this is marked as an `(at)internal` element
      */
     public function isInternal(CodeBase $code_base) : bool
     {
@@ -169,7 +169,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
         // Test to see if the context is within the same
         // namespace as where the element is defined
-        return ($context_namespace === $element_namespace);
+        return (0 === strcasecmp($context_namespace, $element_namespace));
     }
 
     /**
