@@ -173,6 +173,7 @@ class Issue
         self::CATEGORY_VARIABLE          => 'VarError',
         self::CATEGORY_PLUGIN            => 'Plugin',
         self::CATEGORY_GENERIC           => 'Generic',
+        self::CATEGORY_INTERNAL          => 'Internal',
     ];
 
     const SEVERITY_LOW      = 0;
