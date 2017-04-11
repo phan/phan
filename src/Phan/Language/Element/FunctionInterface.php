@@ -153,7 +153,8 @@ interface FunctionInterface extends AddressableElementInterface {
      * The code base in which this element exists.
      *
      * @return bool
-     * True if this is marked as an internal element
+     * True if this is marked as an element internal to
+     * its namespace
      */
     public function isNSInternal(CodeBase $code_base) : bool;
 
@@ -162,7 +163,7 @@ interface FunctionInterface extends AddressableElementInterface {
      * The code base in which this element exists.
      *
      * @return bool
-     * True if this element is intern
+     * True if this element is internal to the namespace
      */
     public function isNSInternalAccessFromContext(
         CodeBase $code_base,
