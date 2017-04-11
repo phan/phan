@@ -168,11 +168,11 @@ abstract class ClassElement extends AddressableElement
      * @return bool
      * True if this is an internal element
      */
-    public function isInternal(CodeBase $code_base) : bool
+    public function isNSInternal(CodeBase $code_base) : bool
     {
         return (
-            parent::isInternal($code_base)
-            || $this->getClass($code_base)->isInternal($code_base)
+            parent::isNSInternal($code_base)
+            || $this->getClass($code_base)->isNSInternal($code_base)
         );
     }
 
@@ -183,7 +183,7 @@ abstract class ClassElement extends AddressableElement
      * @return bool
      * True if this element is intern
      */
-    public function isInternalAccessFromContext(
+    public function isNSInternalAccessFromContext(
         CodeBase $code_base,
         Context $context
     ) {

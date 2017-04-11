@@ -155,7 +155,7 @@ interface FunctionInterface extends AddressableElementInterface {
      * @return bool
      * True if this is marked as an internal element
      */
-    public function isInternal(CodeBase $code_base) : bool;
+    public function isNSInternal(CodeBase $code_base) : bool;
 
     /**
      * @param CodeBase $code_base
@@ -164,7 +164,7 @@ interface FunctionInterface extends AddressableElementInterface {
      * @return bool
      * True if this element is intern
      */
-    public function isInternalAccessFromContext(
+    public function isNSInternalAccessFromContext(
         CodeBase $code_base,
         Context $context
     );

@@ -573,8 +573,8 @@ class ContextNode
                 );
             }
 
-            if ($property->isInternal($this->code_base)
-                && !$property->isInternalAccessFromContext(
+            if ($property->isNSInternal($this->code_base)
+                && !$property->isNSInternalAccessFromContext(
                     $this->code_base,
                     $this->context
                 )
@@ -788,8 +788,8 @@ class ContextNode
 
         $constant = $this->code_base->getGlobalConstantByFQSEN($fqsen);
 
-        if ($constant->isInternal($this->code_base)
-            && !$constant->isInternalAccessFromContext(
+        if ($constant->isNSInternal($this->code_base)
+            && !$constant->isNSInternalAccessFromContext(
                 $this->code_base,
                 $this->context
             )
@@ -879,8 +879,8 @@ class ContextNode
                 $this->context
             );
 
-            if ($constant->isInternal($this->code_base)
-                && !$constant->isInternalAccessFromContext(
+            if ($constant->isNSInternal($this->code_base)
+                && !$constant->isNSInternalAccessFromContext(
                     $this->code_base,
                     $this->context
                 )

@@ -126,11 +126,11 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return bool
      * True if this is marked as an `(at)internal` element
      */
-    public function isInternal(CodeBase $code_base) : bool
+    public function isNSInternal(CodeBase $code_base) : bool
     {
         return Flags::bitVectorHasState(
             $this->getPhanFlags(),
-            Flags::IS_INTERNAL
+            Flags::IS_NS_INTERNAL
         );
     }
 
@@ -138,11 +138,11 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * Set this element as being `internal`.
      * @return void
      */
-    public function setIsInternal(bool $is_internal)
+    public function setIsNSInternal(bool $is_internal)
     {
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
-            Flags::IS_INTERNAL,
+            Flags::IS_NS_INTERNAL,
             $is_internal
         ));
     }
@@ -154,7 +154,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return bool
      * True if this element is intern
      */
-    public function isInternalAccessFromContext(
+    public function isNSInternalAccessFromContext(
         CodeBase $code_base,
         Context $context
     ) {

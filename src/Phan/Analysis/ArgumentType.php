@@ -72,8 +72,8 @@ class ArgumentType
         }
 
         // Emit an issue if this is an externally accessed internal method
-        if ($method->isInternal($code_base)
-            && !$method->isInternalAccessFromContext(
+        if ($method->isNSInternal($code_base)
+            && !$method->isNSInternalAccessFromContext(
                 $code_base,
                 $context
             )

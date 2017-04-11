@@ -133,7 +133,7 @@ class ParseVisitor extends ScopeVisitor
         }
 
         $class->setIsDeprecated($comment->isDeprecated());
-        $class->setIsInternal($comment->isInternal());
+        $class->setIsNSInternal($comment->isNSInternal());
 
         $class->setSuppressIssueList(
             $comment->getSuppressIssueList()
@@ -466,7 +466,7 @@ class ParseVisitor extends ScopeVisitor
             }
 
             $property->setIsDeprecated($comment->isDeprecated());
-            $property->setIsInternal($comment->isInternal());
+            $property->setIsNSInternal($comment->isNSInternal());
 
             // Wait until after we've added the (at)var type
             // before setting the future so that calling
@@ -520,7 +520,7 @@ class ParseVisitor extends ScopeVisitor
             );
 
             $constant->setIsDeprecated($comment->isDeprecated());
-            $constant->setIsInternal($comment->isInternal());
+            $constant->setIsNSInternal($comment->isNSInternal());
 
             $constant->setFutureUnionType(
                 new FutureUnionType(
@@ -848,7 +848,7 @@ class ParseVisitor extends ScopeVisitor
         );
 
         $constant->setIsDeprecated($comment->isDeprecated());
-        $constant->setIsInternal($comment->isInternal());
+        $constant->setIsNSInternal($comment->isNSInternal());
 
         $this->code_base->addGlobalConstant(
             $constant

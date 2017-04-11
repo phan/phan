@@ -241,7 +241,7 @@ class Comment
 
             if (stripos($line, '@internal') !== false) {
                 if (preg_match('/@internal\b/', $line, $match)) {
-                    $comment_flags |= Flags::IS_INTERNAL;
+                    $comment_flags |= Flags::IS_NS_INTERNAL;
                 }
             }
         }
@@ -513,9 +513,9 @@ class Comment
      * Set to true if the comment contains an 'internal'
      * directive.
      */
-    public function isInternal() : bool
+    public function isNSInternal() : bool
     {
-        return ($this->comment_flags & Flags::IS_INTERNAL) != 0;
+        return ($this->comment_flags & Flags::IS_NS_INTERNAL) != 0;
     }
 
     /**
