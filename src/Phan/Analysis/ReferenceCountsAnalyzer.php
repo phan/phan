@@ -143,7 +143,7 @@ class ReferenceCountsAnalyzer
      *
      * @return void
      */
-    public static function analyzeElementReferenceCounts(
+    private static function analyzeElementReferenceCounts(
         CodeBase $code_base,
         AddressableElement $element,
         string $issue_type
