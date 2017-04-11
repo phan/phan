@@ -1273,7 +1273,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // TODO: I don't believe we need this any more
         // If this is an internal function, see if we can get
         // its types from the static dataset.
-        if ($function->isInternal()
+        if ($function->isPHPInternal()
             && $function->getUnionType()->isEmpty()
         ) {
             $map = UnionType::internalFunctionSignatureMapForFQSEN(

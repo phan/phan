@@ -80,7 +80,7 @@ class FileRef implements \Serializable
      * @return bool
      * True if this object is internal to PHP
      */
-    public function isInternal() : bool
+    public function isPHPInternal() : bool
     {
         return ('internal' === $this->getFile());
     }

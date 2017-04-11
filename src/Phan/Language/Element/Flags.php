@@ -4,7 +4,7 @@ namespace Phan\Language\Element;
 class Flags
 {
     const IS_DEPRECATED                = (1 << 1);
-    const IS_INTERNAL                  = (1 << 2);
+    const IS_PHP_INTERNAL              = (1 << 2);
 
     const IS_PARENT_CONSTRUCTOR_CALLED = (1 << 3);
 

@@ -29,7 +29,7 @@ class ParentConstructorCalledAnalyzer
         }
 
         // Don't worry about internal classes
-        if ($clazz->isInternal()) {
+        if ($clazz->isPHPInternal()) {
             return;
         }
 
