@@ -198,7 +198,7 @@ abstract class ClassElement extends AddressableElement
 
         // Test to see if the context is within the same
         // namespace as where the element is defined
-        return ($context_namespace === $element_namespace);
+        return (0 === strcasecmp($context_namespace, $element_namespace));
     }
 
 }
