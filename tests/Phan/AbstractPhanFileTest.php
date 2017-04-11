@@ -35,7 +35,8 @@ abstract class AbstractPhanFileTest
             array_filter(
                 scandir($sourceDir),
                 function ($filename) {
-                    return !in_array($filename, ['.', '..'], true);
+                    // Ignore directories and hidden files.
+                    return !in_array($filename, ['.', '..'], true) && substr($filename, 0, 1) !== '.';
                 }
             )
         );

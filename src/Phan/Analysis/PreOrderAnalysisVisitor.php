@@ -17,6 +17,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Scope\ClassScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -25,6 +26,9 @@ use ast\Node\Decl;
 class PreOrderAnalysisVisitor extends ScopeVisitor
 {
     /**
+     * @param CodeBase $code_base
+     * The code base in which we're analyzing code
+     *
      * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
@@ -44,7 +48,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLASS`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -100,7 +104,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_METHOD`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -168,7 +172,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // parameter definition
         foreach ($method->getParameterList() as $parameter) {
             $context->addScopeVariable(
-                clone($parameter)
+                $parameter->cloneAsNonVariadic()
             );
         }
 
@@ -182,7 +186,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -204,7 +208,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             // we already successfully parsed the code
             // base
             throw $exception;
-            return $this->context;
         }
 
         // Hunt for the alternate associated with the file we're
@@ -228,6 +231,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 "Can't find function {$function_name} in context {$this->context} - aborting"
             );
         }
+
+        assert($function instanceof Func);
 
         $context = $this->context->withScope(
             $function->getInternalScope()
@@ -253,7 +258,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // parameter definition
         foreach ($function->getParameterList() as $parameter) {
             $context->addScopeVariable(
-                clone($parameter)
+                $parameter->cloneAsNonVariadic()
             );
         }
 
@@ -265,9 +270,42 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
+     * If a Closure overrides the scope(class) it will be executed in (via doc comment)
+     * then return a context with the new scope instead.
+     */
+    private function withOptionalClosureScope(
+        Context $context,
+        Func $func,
+        Decl $node
+    ) : Context {
+        $closure_scope_option = $func->getClosureScopeOption();
+        if (!$closure_scope_option->isDefined()) {
+            return $context;
+        }
+        // The Func already checked that the $closure_scope is a class
+        // which exists in the codebase
+        $closure_scope = $closure_scope_option->get();
+
+        $class_fqsen = $closure_scope->asFQSEN();
+        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+            // shouldn't happen
+            return $context;
+        }
+        assert($class_fqsen instanceof FullyQualifiedClassName);
+
+        $clazz = $this->code_base->getClassByFQSEN(
+            $class_fqsen
+        );
+
+        return $clazz->getContext()->withScope(
+            $clazz->getInternalScope()
+        );
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -287,12 +325,15 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $closure_fqsen
         );
 
+        // usually the same as $this->context, unless this Closure uses @PhanClosureScope
+        // Also need to override $this if bindTo is called?
+        $context = $this->withOptionalClosureScope($this->context, $func, $node);
+
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
-        if ($this->context->getScope()->hasVariableWithName('this')) {
-            $func->getInternalScope()->addVariable(
-                $this->context->getScope()->getVariableByName('this')
-            );
+        if ($context->getScope()->hasVariableWithName('this')) {
+            $thisVarFromScope = $context->getScope()->getVariableByName('this');
+            $func->getInternalScope()->addVariable($thisVarFromScope);
         }
 
         // Make the closure reachable by FQSEN from anywhere
@@ -313,7 +354,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
                 $variable_name = (new ContextNode(
                     $this->code_base,
-                    $this->context,
+                    $context,
                     $use->children['name']
                 ))->getVariableName();
 
@@ -324,7 +365,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $variable = null;
 
                 // Check to see if the variable exists in this scope
-                if (!$this->context->getScope()->hasVariableWithName(
+                if (!$context->getScope()->hasVariableWithName(
                     $variable_name
                 )) {
                     // If this is not pass-by-reference variable we
@@ -342,13 +383,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                         // just create it
                         $variable = Variable::fromNodeInContext(
                             $use,
-                            $this->context,
+                            $context,
                             $this->code_base,
                             false
                         );
                     }
                 } else {
-                    $variable = $this->context->getScope()->getVariableByName(
+                    $variable = $context->getScope()->getVariableByName(
                         $variable_name
                     );
 
@@ -373,7 +414,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             foreach ($params->children as $param) {
                 // Read the parameter
                 $parameter = Parameter::fromNode(
-                    $this->context,
+                    $context,
                     $this->code_base,
                     $param
                 );
@@ -387,7 +428,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $this->setReturnTypeOfGenerator($func, $node);
         }
 
-        return $this->context->withScope($func->getInternalScope());
+        return $context->withScope($func->getInternalScope());
     }
 
     /**
@@ -404,12 +445,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $func->setHasYield(true);
         if ($func->getUnionType()->isEmpty()) {
             $func->setIsReturnTypeUndefined(true);
-            $func->getUnionType()->addUnionType(Type::fromNamespaceAndName('\\', 'Generator')->asUnionType());
+            $func->getUnionType()->addUnionType(Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType());
         }
         if (!$func->isReturnTypeUndefined()) {
             $func_return_type = $func->getUnionType();
             if (!$func_return_type->canCastToExpandedUnionType(
-                    Type::fromNamespaceAndName('\\', 'Generator')->asUnionType(),
+                    Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
                     $this->code_base)) {
                 // At least one of the documented return types must
                 // be Generator, Iterable, or Traversable.
@@ -432,9 +473,8 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      *
      * This must be called before visitReturn is called within a function.
      *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
+     * @return bool
+     * True if the node represents a yield, else false.
      */
     public static function analyzeFunctionLikeIsGenerator(Node $node) : bool
     {
@@ -488,19 +528,50 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitForeach(Node $node) : Context
     {
-        if ($node->children['value']->kind == \ast\AST_LIST) {
+        $expression_union_type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['expr']
+        );
+
+        // Filter out the non-generic types of the
+        // expression
+        $non_generic_expression_union_type =
+            $expression_union_type->genericArrayElementTypes();
+
+        if ($node->children['value']->kind == \ast\AST_ARRAY) {
             foreach ($node->children['value']->children ?? [] as $child_node) {
+
+                $key_node = $child_node->children['key'] ?? null;
+                $value_node = $child_node->children['value'] ?? null;
+
                 // for syntax like: foreach ([] as list(, $a));
-                if ($child_node === null) {
+                if ($value_node === null) {
                     continue;
                 }
+                assert($value_node instanceof Node);
 
                 $variable = Variable::fromNodeInContext(
-                    $child_node,
+                    $value_node,
                     $this->context,
                     $this->code_base,
                     false
                 );
+
+                // If we were able to figure out the type and its
+                // a generic type, then set its element types as
+                // the type of the variable
+                if (!$non_generic_expression_union_type->isEmpty()) {
+                    $second_order_non_generic_expression_union_type =
+                        $non_generic_expression_union_type->genericArrayElementTypes();
+
+                    if (!$second_order_non_generic_expression_union_type->isEmpty()) {
+                        $variable->setUnionType(
+                            $second_order_non_generic_expression_union_type
+                        );
+                    }
+
+                }
 
                 $this->context->addScopeVariable($variable);
             }
@@ -516,22 +587,12 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 false
             );
 
-            // Get the type of the node from the left side
-            $type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['expr']
-            );
-
-            // Filter out the non-generic types of the
-            // expression
-            $non_generic_type = $type->genericArrayElementTypes();
 
             // If we were able to figure out the type and its
             // a generic type, then set its element types as
             // the type of the variable
-            if (!$non_generic_type->isEmpty()) {
-                $variable->setUnionType($non_generic_type);
+            if (!$non_generic_expression_union_type->isEmpty()) {
+                $variable->setUnionType($non_generic_expression_union_type);
             }
 
             // Add the variable to the scope

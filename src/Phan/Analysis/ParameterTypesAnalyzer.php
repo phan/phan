@@ -16,7 +16,7 @@ class ParameterTypesAnalyzer
     /**
      * Check method parameters to make sure they're valid
      *
-     * @return null
+     * @return void
      */
     public static function analyzeParameterTypes(
         CodeBase $code_base,
@@ -195,7 +195,7 @@ class ParameterTypesAnalyzer
 
                 // A stricter type on an overriding method is cool
                 if ($o_parameter->getUnionType()->isEmpty()
-                    || $o_parameter->getUnionType()->isType(MixedType::instance())
+                    || $o_parameter->getUnionType()->isType(MixedType::instance(false))
                 ) {
                     continue;
                 }

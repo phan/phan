@@ -1,0 +1,4 @@
+%s:3 PhanTypeMismatchReturn Returning type int but f2() is declared to return void
+%s:4 PhanTypeMissingReturn Method \f3 is declared to return int but has no return value
+%s:5 PhanRedefineFunction Function f3 defined at %s:5 was previously defined at %s:4
+%s:5 PhanTypeMissingReturn Method \f3 is declared to return int but has no return value

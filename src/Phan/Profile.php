@@ -3,7 +3,9 @@ namespace Phan;
 
 trait Profile
 {
-
+    /**
+     * @var int[][]
+     */
     private static $label_delta_map = [];
 
     /**

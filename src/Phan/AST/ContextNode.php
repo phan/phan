@@ -89,11 +89,7 @@ class ContextNode
      */
     public function getQualifiedName() : string
     {
-        return (string)UnionTypeVisitor::unionTypeFromClassNode(
-            $this->code_base,
-            $this->context,
-            $this->node
-        );
+        return $this->getClassUnionType()->__toString();
     }
 
     /**
@@ -134,6 +130,18 @@ class ContextNode
     }
 
     /**
+     * @return UnionType the union type of the class for this class node. (Should have just one Type)
+     */
+    public function getClassUnionType() : UnionType
+    {
+        return UnionTypeVisitor::unionTypeFromClassNode(
+            $this->code_base,
+            $this->context,
+            $this->node
+        );
+    }
+
+    /**
      * @param bool $ignore_missing_classes
      * If set to true, missing classes will be ignored and
      * exceptions will be inhibited
@@ -148,11 +156,7 @@ class ContextNode
      */
     public function getClassList($ignore_missing_classes = false)
     {
-        $union_type = UnionTypeVisitor::unionTypeFromClassNode(
-            $this->code_base,
-            $this->context,
-            $this->node
-        );
+        $union_type = $this->getClassUnionType();
 
         $class_list = [];
 
@@ -224,6 +228,11 @@ class ContextNode
             "Method name must be a string. Found non-string in context."
         );
 
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         try {
             $class_list = (new ContextNode(
                 $this->code_base,
@@ -255,13 +264,13 @@ class ContextNode
             if (!$union_type->isEmpty()
                 && $union_type->isNativeType()
                 && !$union_type->hasAnyType([
-                    MixedType::instance(),
-                    ObjectType::instance(),
-                    StringType::instance()
+                    MixedType::instance(false),
+                    ObjectType::instance(false),
+                    StringType::instance(false)
                 ])
                 && !(
                     Config::get()->null_casts_as_any_type
-                    && $union_type->hasType(NullType::instance())
+                    && $union_type->hasType(NullType::instance(false))
                 )
             ) {
                 throw new IssueException(
@@ -365,6 +374,11 @@ class ContextNode
             }
         }
 
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         // Make sure the method we're calling actually exists
         if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
             throw new IssueException(
@@ -392,6 +406,11 @@ class ContextNode
      */
     public function getVariable() : Variable
     {
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         // Get the name of the variable
         $variable_name = $this->getVariableName();
 
@@ -433,6 +452,11 @@ class ContextNode
             // Swallow it
         }
 
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         // Create a new variable
         $variable = Variable::fromNodeInContext(
             $this->node,
@@ -473,6 +497,11 @@ class ContextNode
         $property_name
     ) : Property {
 
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         $property_name = $this->node->children['prop'];
 
         // Give up for things like C::$prop_name
@@ -512,8 +541,9 @@ class ContextNode
                 $property_name
             )) {
                 // If there's a getter on properties then all
-                // bets are off.
-                if ($class->hasGetMethod($this->code_base)) {
+                // bets are off. However, @phan-forbid-undeclared-magic-properties
+                // will make this method analyze the code as if all properties were declared or had @property annotations.
+                if ($class->hasGetMethod($this->code_base) && !$class->getForbidUndeclaredMagicProperties($this->code_base)) {
                     throw new UnanalyzableException(
                         $this->node,
                         "Can't determine if property {$property_name} exists in class {$class->getFQSEN()} with __get defined"
@@ -627,6 +657,11 @@ class ContextNode
             // property
         }
 
+        assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
         try {
             $class_list = (new ContextNode(
                 $this->code_base,
@@ -691,6 +726,11 @@ class ContextNode
     public function getConst() : GlobalConstant
     {
         assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
+        assert(
             $this->node->kind === \ast\AST_CONST,
             "Node must be of type \ast\AST_CONST"
         );
@@ -753,6 +793,11 @@ class ContextNode
     public function getClassConst() : ClassConstant
     {
         assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
+        assert(
             $this->node->kind === \ast\AST_CLASS_CONST,
             "Node must be of type \ast\AST_CLASS_CONST"
         );
@@ -788,9 +833,10 @@ class ContextNode
                 continue;
             }
 
-            return $class->getConstantWithName(
+            return $class->getConstantByNameInContext(
                 $this->code_base,
-                $constant_name
+                $constant_name,
+                $this->context
             );
         }
 
@@ -818,6 +864,11 @@ class ContextNode
     public function getUnqualifiedNameForAnonymousClass() : string
     {
         assert(
+            $this->node instanceof \ast\Node,
+            '$this->node must be a node'
+        );
+
+        assert(
             (bool)($this->node->flags & \ast\flags\CLASS_ANONYMOUS),
             "Node must be an anonymous class node"
         );
@@ -832,7 +883,7 @@ class ContextNode
     }
 
     /**
-     * @return Method
+     * @return Func
      */
     public function getClosure() : Func
     {
@@ -862,7 +913,7 @@ class ContextNode
             return;
         }
 
-        if (empty($this->node->children['expr'])) {
+        if (!($this->node instanceof \ast\Node) || empty($this->node->children['expr'])) {
             return;
         }
 
@@ -893,6 +944,11 @@ class ContextNode
         } else {
             $temp = $this->node->children['expr'];
             $lnode = $temp;
+        }
+
+        // Strings can have DIMs, it turns out.
+        if (!($temp instanceof Node)) {
+            return;
         }
 
         if (!($temp->kind == \ast\AST_PROP
@@ -967,6 +1023,7 @@ class ContextNode
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($this->node->lineno-1);
             $line = $ftemp->current();
+            assert(is_string($line));
             unset($ftemp);
             if (strpos($line, '}[') === false
                 || strpos($line, ']}') === false

@@ -70,6 +70,48 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitBinaryOp(Node $node) : Context
     {
+        $flags = ($node->flags ?? 0);
+        if ($flags === \ast\flags\BINARY_BOOL_AND) {
+            return $this->visitShortCircuitingAnd($node->children['left'], $node->children['right']);
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAnd(Node $node) : Context
+    {
+        return $this->visitShortCircuitingAnd($node->children['left'], $node->children['right']);
+    }
+
+    /**
+     * Helper method
+     * @param Node|mixed $left
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @param Node|mixed $right
+     * a Node or non-node to parse (possibly an AST literal)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    private function visitShortCircuitingAnd($left, $right) : Context
+    {
+        // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
+        // Inside of this conditional may be dead or redundant code.
+        if ($left instanceof Node) {
+            $this->context = $this($left);
+        }
+        if ($right instanceof Node) {
+            return $this($right);
+        }
         return $this->context;
     }
 
@@ -83,7 +125,29 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitUnaryOp(Node $node) : Context
     {
-        return $this->context;
+        if (($node->flags ?? 0) !== \ast\flags\UNARY_BOOL_NOT) {
+            return $this->context;
+        }
+        return $this->updateContextWithNegation($node->children['expr'], $this->context);
+    }
+
+    private function updateContextWithNegation(Node $negatedNode, Context $context) : Context
+    {
+        // Negation
+        // TODO: negate instanceof, other checks
+        // TODO: negation would also go in the else statement
+        if (($negatedNode->kind ?? 0) === \ast\AST_CALL) {
+            if (self::isCallStringWithSingleVariableArgument($negatedNode)) {
+                // TODO: Make this generic to all type assertions? E.g. if (!is_string($x)) removes 'string' from type, makes '?string' (nullable) into 'null'.
+                // This may be redundant in some places if AST canonicalization is used, but still useful in some places
+                // TODO: Make this generic so that it can be used in the 'else' branches?
+                $function_name = $negatedNode->children['expr']->children['name'];
+                if (in_array($function_name, ['empty', 'is_null', 'is_scalar'], true)) {
+                    return $this->removeNullFromVariable($negatedNode->children['args']->children[0], $context);
+                }
+            }
+        }
+        return $context;
     }
 
     /**
@@ -109,45 +173,56 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitIsset(Node $node) : Context
     {
-        return $this->context;
-
-        /*
-        // Only look at things of the form
-        // `isset($variable)`
         if ($node->children['var']->kind !== \ast\AST_VAR) {
             return $this->context;
         }
 
+        return $this->removeNullFromVariable($node->children['var'], $this->context);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse, with kind \ast\AST_VAR
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitVar(Node $node) : Context
+    {
+        return $this->removeNullFromVariable($node, $this->context);
+    }
+
+    private function removeNullFromVariable(Node $varNode, Context $context) : Context
+    {
         try {
             // Get the variable we're operating on
             $variable = (new ContextNode(
                 $this->code_base,
-                $this->context,
-                $node->children['var']
+                $context,
+                $varNode
             ))->getVariable();
 
-            $v0 = $variable;
+            if (!$variable->getUnionType()->containsNullable()) {
+                return $context;
+            }
 
             // Make a copy of the variable
             $variable = clone($variable);
 
-            // Remove null from the list of possible types
-            // given that we know that the variable is
-            // set
-            $variable->getUnionType()->removeType(
-                NullType::instance()
+            $variable->setUnionType(
+                $variable->getUnionType()->nonNullableClone()
             );
 
-            // Overwrite the variable with its new type
-            $this->context->addScopeVariable(
+            // Overwrite the variable with its new type in this
+            // scope without overwriting other scopes
+            $context = $context->withScopeVariable(
                 $variable
             );
         } catch (\Exception $exception) {
             // Swallow it
         }
-
-        return $this->context;
-        */
+        return $context;
     }
 
     /**
@@ -202,6 +277,17 @@ class ConditionVisitor extends KindVisitorImplementation
         return $context;
     }
 
+    private static function isCallStringWithSingleVariableArgument(Node $node) : bool
+    {
+        $args = $node->children['args']->children;
+        return count($args) === 1
+            && $args[0] instanceof Node
+            && $args[0]->kind === \ast\AST_VAR
+            && $node->children['expr'] instanceof Node
+            && !empty($node->children['expr']->children['name'] ?? null)
+            && is_string($node->children['expr']->children['name']);
+    }
+
     /**
      * Look at elements of the form `is_array($v)` and modify
      * the type of the variable.
@@ -217,13 +303,7 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         // Only look at things of the form
         // `is_string($variable)`
-        if (count($node->children['args']->children) !== 1
-            || !$node->children['args']->children[0] instanceof Node
-            || $node->children['args']->children[0]->kind !== \ast\AST_VAR
-            || !($node->children['expr'] instanceof Node)
-            || empty($node->children['expr']->children['name'] ?? null)
-            || !is_string($node->children['expr']->children['name'])
-        ) {
+        if (!self::isCallStringWithSingleVariableArgument($node)) {
             return $this->context;
         }
 
@@ -236,6 +316,7 @@ class ConditionVisitor extends KindVisitorImplementation
             'is_float' => 'float',
             'is_int' => 'int',
             'is_integer' => 'int',
+            'is_iterable' => 'iterable',
             'is_long' => 'int',
             'is_null' => 'null',
             'is_numeric' => 'string|int|float',
@@ -268,7 +349,7 @@ class ConditionVisitor extends KindVisitorImplementation
 
             if ($variable->getUnionType()->isEmpty()) {
                 $variable->getUnionType()->addType(
-                    NullType::instance()
+                    NullType::instance(false)
                 );
             }
 
@@ -280,7 +361,7 @@ class ConditionVisitor extends KindVisitorImplementation
             );
 
             // Change the type to match the is_a relationship
-            if ($type->isType(ArrayType::instance())
+            if ($type->isType(ArrayType::instance(false))
                 && $variable->getUnionType()->hasGenericArray()
             ) {
                 // If the variable is already a generic array,

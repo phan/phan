@@ -179,7 +179,7 @@ class Variable extends TypedElement
             || in_array($name, Config::get()->runkit_superglobals)
         ) {
             $type_string = Config::get()->globals_type_map[$name] ?? '';
-            return UnionType::fromStringInContext($type_string, $context);
+            return UnionType::fromStringInContext($type_string, $context, false);
         }
 
         return null;
@@ -193,6 +193,15 @@ class Variable extends TypedElement
      */
     public function getNonVariadicUnionType() : UnionType {
         return parent::getUnionType();
+    }
+
+    /**
+     * @return static - A clone of this object, where isVariadic() is false
+     * Used for analyzing the context **inside** of this method
+     */
+    public function cloneAsNonVariadic()
+    {
+        return clone($this);
     }
 
     public function __toString() : string

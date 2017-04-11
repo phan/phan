@@ -1,0 +1,14 @@
+%s:6 PhanTypeMismatchArgument Argument 1 (p1) is string but \f248_1() takes bool defined at %s:2
+%s:6 PhanTypeMismatchArgument Argument 2 (p2) is string but \f248_1() takes bool defined at %s:2
+%s:9 PhanTypeMismatchArgument Argument 1 (p1) is string but \f248_1() takes bool defined at %s:2
+%s:9 PhanTypeMismatchArgument Argument 2 (p2) is string but \f248_1() takes bool defined at %s:2
+%s:10 PhanTypeMismatchArgument Argument 1 (p1) is string but \f248_1() takes bool defined at %s:2
+%s:10 PhanTypeMismatchArgument Argument 2 (p2) is string but \f248_1() takes bool defined at %s:2
+%s:14 PhanTypeMismatchArgument Argument 1 (p1) is int but \f248_1() takes bool defined at %s:2
+%s:14 PhanTypeMismatchArgument Argument 2 (p2) is int but \f248_1() takes bool defined at %s:2
+%s:16 PhanTypeMismatchArgument Argument 1 (p1) is int but \f248_1() takes bool defined at %s:2
+%s:16 PhanTypeMismatchArgument Argument 2 (p2) is int but \f248_1() takes bool defined at %s:2
+%s:19 PhanTypeMismatchArgument Argument 1 (p1) is int but \f248_1() takes bool defined at %s:2
+%s:19 PhanTypeMismatchArgument Argument 2 (p2) is int but \f248_1() takes bool defined at %s:2
+%s:20 PhanTypeMismatchArgument Argument 1 (p1) is int but \f248_1() takes bool defined at %s:2
+%s:20 PhanTypeMismatchArgument Argument 2 (p2) is int but \f248_1() takes bool defined at %s:2

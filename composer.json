@@ -16,14 +16,12 @@
         "sort-packages": true
     },
     "require": {
-        "php": "~7.0.0",
-        "ext-ast": "*",
+        "php": "~7.1.0",
+        "ext-ast": "^0.1.4",
         "symfony/console": "~2.3|~3.0"
     },
     "require-dev": {
-        "phpdocumentor/phpdocumentor": "^2.9.0",
-        "phpunit/phpunit": "^5.7.2",
-        "squizlabs/php_codesniffer": "^2.7.1"
+        "phpunit/phpunit": "^5.7.2"
     },
     "autoload": {
         "psr-4": {"Phan\\": "src/Phan"}

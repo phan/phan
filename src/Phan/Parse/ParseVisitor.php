@@ -142,6 +142,18 @@ class ParseVisitor extends ScopeVisitor
         // accessible object
         $this->code_base->addClass($class);
 
+        // Depends on code_base for checking existence of __get and __set.
+        // TODO: Add a check in analyzeClasses phase that magic @property declarations
+        // are limited to classes with either __get or __set declared.
+        $class->setMagicPropertyMap(
+            $comment->getMagicPropertyMap(),
+            $this->code_base,
+            $this->context
+        );
+
+        // usually used together with magic @property annotations
+        $class->setForbidUndeclaredMagicProperties($comment->getForbidUndeclaredMagicProperties());
+
         // Look to see if we have a parent class
         if (!empty($node->children['extends'])) {
             $parent_class_name =
@@ -321,13 +333,13 @@ class ParseVisitor extends ScopeVisitor
 
         } elseif ('__invoke' === $method_name) {
             $class->getUnionType()->addType(
-                CallableType::instance()
+                CallableType::instance(false)
             );
         } elseif ('__toString' === $method_name
             && !$this->context->getIsStrictTypes()
         ) {
             $class->getUnionType()->addType(
-                StringType::instance()
+                StringType::instance(false)
             );
         }
 
@@ -391,7 +403,7 @@ class ParseVisitor extends ScopeVisitor
 
             // Don't set 'null' as the type if thats the default
             // given that its the default default.
-            if ($union_type->isType(NullType::instance())) {
+            if ($union_type->isType(NullType::instance(false))) {
                 $union_type = new UnionType();
             }
 
@@ -495,7 +507,7 @@ class ParseVisitor extends ScopeVisitor
                     ->withLineNumberEnd($child_node->endLineno ?? 0),
                 $name,
                 new UnionType(),
-                $child_node->flags ?? 0,
+                $node->flags ?? 0,
                 $fqsen
             );
 

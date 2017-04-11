@@ -144,4 +144,10 @@ class ParallelParentCollector implements IssueCollectorInterface
         return $this->base_collector->getCollectedIssues();
     }
 
+    /**
+     * This method has not effect on a ParallelParentCollector.
+     */
+     public function reset()
+     {
+     }
 }

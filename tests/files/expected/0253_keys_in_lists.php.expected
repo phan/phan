@@ -1,0 +1,4 @@
+%s:26 PhanTypeMismatchArgument Argument 1 (p1) is int but \f253_1() takes bool defined at %s:2
+%s:27 PhanTypeMismatchArgument Argument 1 (p1) is int but \f253_1() takes bool defined at %s:2
+%s:30 PhanTypeMismatchArgument Argument 1 (p1) is int but \f253_1() takes bool defined at %s:2
+%s:31 PhanTypeMismatchArgument Argument 1 (p1) is int but \f253_1() takes bool defined at %s:2

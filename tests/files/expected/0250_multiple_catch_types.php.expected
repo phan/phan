@@ -1,0 +1,2 @@
+%s:7 PhanUndeclaredClassCatch Catching undeclared class \Undef
+%s:8 PhanUndeclaredClassMethod Call to method getMessage from undeclared class \Undef

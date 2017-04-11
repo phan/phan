@@ -34,4 +34,20 @@ class ClassConstant extends ClassElement implements ConstantInterface
         assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
+
+    public function __toString() : string
+    {
+        $string = '';
+
+        if ($this->isPublic()) {
+            $string .= 'public ';
+        } elseif ($this->isProtected()) {
+            $string .= 'protected ';
+        } elseif ($this->isPrivate()) {
+            $string .= 'private ';
+        }
+
+        return $string . 'const ' . $this->getName();
+    }
+
 }

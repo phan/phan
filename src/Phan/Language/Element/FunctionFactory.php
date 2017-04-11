@@ -80,7 +80,8 @@ class FunctionFactory {
 
         $return_type = UnionType::fromStringInContext(
             array_shift($signature),
-            $context
+            $context,
+            false
         );
 
         $func = new Func(
@@ -147,8 +148,8 @@ class FunctionFactory {
      * @param CodeBase $code_base
      * The global code base holding all state
      *
-     * @return Method[]
-     * A list of typed methods based on the given method
+     * @return FunctionInterface[]
+     * A list of typed functions/methods based on the given method
      */
     private static function functionListFromFunction(
         FunctionInterface $function,
@@ -216,7 +217,7 @@ class FunctionFactory {
 
                 if ($is_optional) {
                     $parameter->setDefaultValueType(
-                        NullType::instance()->asUnionType()
+                        NullType::instance(false)->asUnionType()
                     );
                 }
 

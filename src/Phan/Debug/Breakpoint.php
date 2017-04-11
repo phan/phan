@@ -13,6 +13,7 @@ readline_completion_function(function($input) {
 
 print "\n";
 do {
+    /** @var string|null */
     $input = readline("breakpoint> ");
 
     if (is_string($input)) {

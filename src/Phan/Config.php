@@ -10,7 +10,7 @@ class Config
 {
 
     /**
-     * @var string
+     * @var string|null
      * The root directory of the project. This is used to
      * store canonical path names and find project resources
      */
@@ -83,7 +83,7 @@ class Config
         // ```php
         // <?php
         // function test($arg):int {
-        // 	return $arg;
+        //     return $arg;
         // }
         // test("abc");
         // ```
@@ -145,6 +145,12 @@ class Config
         // hope of fixing.
         'ignore_undeclared_variables_in_global_scope' => false,
 
+        // If true, check to make sure the return type declared
+        // in the doc-block (if any) matches the return type
+        // declared in the method signature. This process is
+        // slow.
+        'check_docblock_signature_return_type_match' => false,
+
         // Set to true in order to attempt to detect dead
         // (unreferenced) code. Keep in mind that the
         // results will only be a guess given that classes,
@@ -162,6 +168,13 @@ class Config
         // too few edges when guesses have to be made about
         // what references what.
         'dead_code_detection_prefer_false_negative' => true,
+
+        // If disabled, Phan will not read docblock type
+        // annotation comments for @property.
+        // @property-read and @property-write are treated exactly the
+        // same as @property for now.
+        // Note: read_type_annotations must also be enabled.
+        'read_magic_property_annotations' => true,
 
         // If disabled, Phan will not read docblock type
         // annotation comments (such as for @return, @param,
@@ -198,7 +211,7 @@ class Config
 
         // The vesion of the AST (defined in php-ast)
         // we're using
-        'ast_version' => 30,
+        'ast_version' => 35,
 
         // Set to true to emit profiling data on how long various
         // parts of Phan took to run. You likely don't care to do
@@ -227,6 +240,8 @@ class Config
             // 'PhanCompatiblePHP7',
             // 'PhanContextNotObject',
             // 'PhanDeprecatedClass',
+            // 'PhanDeprecatedInterface',
+            // 'PhanDeprecatedTrait',
             // 'PhanDeprecatedFunction',
             // 'PhanDeprecatedProperty',
             // 'PhanEmptyFile',

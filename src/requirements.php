@@ -14,5 +14,3 @@ assert(
     file_exists(__DIR__ . '/../vendor/autoload.php') || file_exists(__DIR__ . '/../../../autoload.php'),
     'Autoloader not found. Make sure you run `composer install` before running Phan. See https://github.com/etsy/phan#getting-it-running for more details.'
 );
-
-

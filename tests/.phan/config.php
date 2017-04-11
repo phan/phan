@@ -25,4 +25,11 @@ use Phan\Issue;
  * '-d' flag.
  */
 return [
+
+    // If true, check to make sure the return type declared
+    // in the doc-block (if any) matches the return type
+    // declared in the method signature. This process is
+    // slow.
+    'check_docblock_signature_return_type_match' => true,
+
 ];

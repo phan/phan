@@ -1,0 +1,5 @@
+%s:17 PhanAccessClassConstantPrivate Cannot access private class constant \C252_1::D defined at %s:6
+%s:25 PhanAccessClassConstantPrivate Cannot access private class constant \C252_1::D defined at %s:6
+%s:25 PhanAccessClassConstantProtected Cannot access protected class constant \C252_1::C defined at %s:5
+%s:32 PhanAccessClassConstantPrivate Cannot access private class constant \C252_1::D defined at %s:6
+%s:32 PhanAccessClassConstantProtected Cannot access protected class constant \C252_1::C defined at %s:5

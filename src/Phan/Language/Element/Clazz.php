@@ -74,8 +74,8 @@ class Clazz extends AddressableElement
      * A fully qualified name for this class
      *
      * @param Type|null $parent_type
-     * @param FullyQualifiedClassName[]|null $interface_fqsen_list
-     * @param FullyQualifiedClassName[]|null $trait_fqsen_list
+     * @param FullyQualifiedClassName[] $interface_fqsen_list
+     * @param FullyQualifiedClassName[] $trait_fqsen_list
      */
     public function __construct(
         Context $context,
@@ -169,7 +169,7 @@ class Clazz extends AddressableElement
         $clazz = new Clazz(
             $context,
             $class->getName(),
-            UnionType::fromStringInContext($class->getName(), $context),
+            UnionType::fromStringInContext($class->getName(), $context, false),
             $flags,
             $class_fqsen
         );
@@ -186,6 +186,49 @@ class Clazz extends AddressableElement
             $parent_type = $parent_class_fqsen->asType();
 
             $clazz->setParentType($parent_type);
+        }
+
+        // Note: If there are multiple calls to Clazz->addProperty(),
+        // the UnionType from the first one will be used, subsequent calls to addProperty()
+        // will have no effect.
+        // As a result, we set the types from phan's documented internal property types first,
+        // preferring them over the default values (which may be null, etc.).
+        foreach (UnionType::internalPropertyMapForClassName(
+            $clazz->getName()
+        ) as $property_name => $property_type_string) {
+
+            // An asterisk indicates that the class supports
+            // dynamic properties
+            if ($property_name === '*') {
+                $clazz->setHasDynamicProperties(true);
+                continue;
+            }
+
+            $property_context = $context->withScope(
+                new ClassScope(new GlobalScope, $clazz->getFQSEN())
+            );
+
+            $property_type =
+                UnionType::fromStringInContext(
+                    $property_type_string,
+                    new Context,
+                    false
+                );
+
+            $property_fqsen = FullyQualifiedPropertyName::make(
+                $clazz->getFQSEN(),
+                $property_name
+            );
+
+            $property = new Property(
+                $property_context,
+                $property_name,
+                $property_type,
+                0,
+                $property_fqsen
+            );
+
+            $clazz->addProperty($code_base, $property, new None);
         }
 
         // n.b.: public properties on internal classes don't get
@@ -208,43 +251,6 @@ class Clazz extends AddressableElement
                 $property_context,
                 $name,
                 Type::fromObject($value)->asUnionType(),
-                0,
-                $property_fqsen
-            );
-
-            $clazz->addProperty($code_base, $property, new None);
-        }
-
-        foreach (UnionType::internalPropertyMapForClassName(
-            $clazz->getName()
-        ) as $property_name => $property_type_string) {
-
-            // An asterisk indicates that the class supports
-            // dynamic properties
-            if ($property_name === '*') {
-                $clazz->setHasDynamicProperties(true);
-                continue;
-            }
-
-            $property_context = $context->withScope(
-                new ClassScope(new GlobalScope, $clazz->getFQSEN())
-            );
-
-            $property_type =
-                UnionType::fromStringInContext(
-                    $property_type_string,
-                    new Context
-                );
-
-            $property_fqsen = FullyQualifiedPropertyName::make(
-                $clazz->getFQSEN(),
-                $property_name
-            );
-
-            $property = new Property(
-                $property_context,
-                $property_name,
-                $property_type,
                 0,
                 $property_fqsen
             );
@@ -383,7 +389,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return FQSEN
+     * @return FullyQualifiedClassName
      * The parent class of this class if one exists
      *
      * @throws \Exception
@@ -519,7 +525,7 @@ class Clazz extends AddressableElement
      * Add the given FQSEN to the list of implemented
      * interfaces for this class
      *
-     * @return null
+     * @return void
      */
     public function addInterfaceClassFQSEN(FQSEN $fqsen)
     {
@@ -604,6 +610,42 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param \Phan\Language\Element\Comment\Parameter[] $magic_property_map mapping from property name to this
+     * @param CodeBase $code_base
+     * @return bool whether or not we defined it.
+     */
+    public function setMagicPropertyMap(
+        array $magic_property_map,
+        CodeBase $code_base,
+        Context $context
+    ) : bool {
+        if (count($magic_property_map) === 0) {
+            return true;  // Vacuously true.
+        }
+        $class_fqsen = $this->getFQSEN();
+        foreach ($magic_property_map as $comment_parameter) {
+            // $flags is the same as the flags for `public` and non-internal?
+            // Or \ast\flags\MODIFIER_PUBLIC.
+            $flags = 0;
+            $property_name = $comment_parameter->getName();
+            $property_fqsen = FullyQualifiedPropertyName::make(
+                $class_fqsen,
+                $property_name
+            );
+            $property = new Property(
+                $context,
+                $property_name,
+                $comment_parameter->getUnionType(),
+                $flags,
+                $property_fqsen
+            );
+
+            $this->addProperty($code_base, $property, new None);
+        }
+        return true;
+    }
+
+    /**
      * @return bool
      */
     public function hasPropertyWithName(
@@ -631,6 +673,10 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param CodeBase $code_base
+     * A reference to the entire code base in which the
+     * property exists.
+     *
      * @param string $name
      * The name of the property
      *
@@ -829,19 +875,102 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @param CodeBase $code_base
+     * A reference to the entire code base in which the
+     * property exists.
+     *
+     * @param string $name
+     * The name of the class constant
+     *
+     * @param Context $context
+     * The context of the caller requesting the property
+     *
      * @return ClassConstant
-     * The class constant with the given name.
+     * A constant with the given name
+     *
+     * @throws IssueException
+     * An exception may be thrown if the caller does not
+     * have access to the given property from the given
+     * context
      */
-    public function getConstantWithName(
+    public function getConstantByNameInContext(
         CodeBase $code_base,
-        string $name
+        string $name,
+        Context $context
     ) : ClassConstant {
-        return $code_base->getClassConstantByFQSEN(
-            FullyQualifiedClassConstantName::make(
-                $this->getFQSEN(),
-                $name
+
+        $constant_fqsen = FullyQualifiedClassConstantName::make(
+            $this->getFQSEN(),
+            $name
+        );
+
+        if (!$code_base->hasClassConstantWithFQSEN($constant_fqsen)) {
+            throw new IssueException(
+                Issue::fromType(Issue::UndeclaredClassConstant)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [
+                        (string)$constant_fqsen,
+                        (string)$this->getFQSEN()
+                    ]
+                )
+            );
+        }
+
+        $constant = $code_base->getClassConstantByFQSEN(
+            $constant_fqsen
+        );
+
+        // Are we within a class referring to the class
+        // itself?
+        $is_local_access = (
+            $context->isInClassScope()
+            && $context->getClassInScope($code_base) === $constant->getClass($code_base)
+        );
+
+        // Are we within a class or an extending sub-class
+        // referring to the class?
+        $is_local_or_remote_access = (
+            $is_local_access
+            || (
+                $context->isInClassScope()
+                && $context->getClassInScope($code_base)
+                ->getUnionType()->canCastToExpandedUnionType(
+                    $this->getUnionType(),
+                    $code_base
+                )
             )
         );
+
+        // If we have the constant, but its inaccessible, emit
+        // an issue
+        if (!$is_local_access && $constant->isPrivate()) {
+            throw new IssueException(
+                Issue::fromType(Issue::AccessClassConstantPrivate)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [
+                        (string)$constant_fqsen,
+                        $constant->getContext()->getFile(),
+                        $constant->getContext()->getLineNumberStart()
+                    ]
+                )
+            );
+        } else if (!$is_local_or_remote_access && $constant->isProtected()) {
+            throw new IssueException(
+                Issue::fromType(Issue::AccessClassConstantProtected)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [
+                        (string)$constant_fqsen,
+                        $constant->getContext()->getFile(),
+                        $constant->getContext()->getLineNumberStart()
+                    ]
+                )
+            );
+        }
+
+        return $constant;
     }
 
     /**
@@ -868,7 +997,7 @@ class Clazz extends AddressableElement
      * A possibly defined type used to define template
      * parameter types when importing the method
      *
-     * @return null
+     * @return void
      */
     public function addMethod(
         CodeBase $code_base,
@@ -1146,7 +1275,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return null
+     * @return void
      */
     public function addTraitFQSEN(FQSEN $fqsen)
     {
@@ -1193,8 +1322,44 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * Forbid undeclared magic properties
+     * @param bool $forbid - set to true to forbid.
+     * @return void
+     */
+    public function getForbidUndeclaredMagicProperties(CodeBase $code_base) : bool {
+        return (
+            Flags::bitVectorHasState(
+                $this->getPhanFlags(),
+                Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
+            )
+            ||
+            (
+                $this->hasParentType()
+                && $code_base->hasClassWithFQSEN($this->getParentClassFQSEN())
+                && $this->getParentClass($code_base)->getForbidUndeclaredMagicProperties($code_base)
+            )
+        );
+    }
+
+    /**
+     * Set whether undeclared magic properties are forbidden
+     * (properties accessed through __get or __set, with no (at)property annotation on parent class)
+     * @param bool $forbid - set to true to forbid.
+     * @return void
+     */
+    public function setForbidUndeclaredMagicProperties(
+        bool $forbid_undeclared_dynamic_properties
+    ) {
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES,
+            $forbid_undeclared_dynamic_properties
+        ));
+    }
+
+    /**
      * @return bool
-     * True if this class calls its parent constructor
+     * True if this class has dynamic properties. (e.g. stdClass)
      */
     public function getHasDynamicProperties(CodeBase $code_base) : bool
     {
@@ -1390,7 +1555,7 @@ class Clazz extends AddressableElement
      * The entire code base from which we'll find ancestor
      * details
      *
-     * @return null
+     * @return void
      */
     public function importAncestorClasses(CodeBase $code_base)
     {
@@ -1622,7 +1787,7 @@ class Clazz extends AddressableElement
             new ClassConstant(
                 $this->getContext(),
                 'class',
-                StringType::instance()->asUnionType(),
+                StringType::instance(false)->asUnionType(),
                 0,
                 FullyQualifiedClassConstantName::make(
                     $this->getFQSEN(),

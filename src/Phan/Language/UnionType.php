@@ -93,11 +93,15 @@ class UnionType implements \Serializable
      * The context in which the type string was
      * found
      *
+     * @param bool $is_phpdoc_type
+     * True if $type_string was extracted from a doc comment.
+     *
      * @return UnionType
      */
     public static function fromStringInContext(
         string $type_string,
-        Context $context
+        Context $context,
+        bool $is_phpdoc_type
     ) : UnionType {
         if (empty($type_string)) {
             return new UnionType();
@@ -112,11 +116,12 @@ class UnionType implements \Serializable
         }
 
         return new UnionType(
-            array_map(function (string $type_name) use ($context, $type_string) {
+            array_map(function (string $type_name) use ($context, $type_string, $is_phpdoc_type) {
                 assert($type_name !== '', "Type cannot be empty.");
                 return Type::fromStringInContext(
                     $type_name,
-                    $context
+                    $context,
+                    $is_phpdoc_type
                 );
             }, array_filter(array_map(function (string $type_name) {
                 return trim($type_name);
@@ -132,7 +137,7 @@ class UnionType implements \Serializable
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
-     * @param Node|string|null $node
+     * @param Node|string|bool|int|float|null $node
      * The node for which we'd like to determine its type
      *
      * @param bool $should_catch_issue_exception
@@ -244,7 +249,7 @@ class UnionType implements \Serializable
             // Figure out the return type
             $return_type_name = array_shift($type_name_struct);
             $return_type = $return_type_name
-                ? UnionType::fromStringInContext($return_type_name, $context)
+                ? UnionType::fromStringInContext($return_type_name, $context, false)
                 : null;
 
             $name_type_name_map = $type_name_struct;
@@ -253,7 +258,7 @@ class UnionType implements \Serializable
             foreach ($name_type_name_map as $name => $type_name) {
                 $property_name_type_map[$name] = empty($type_name)
                     ? new UnionType()
-                    : UnionType::fromStringInContext($type_name, $context);
+                    : UnionType::fromStringInContext($type_name, $context, false);
             }
 
             $configurations[] = [
@@ -311,7 +316,7 @@ class UnionType implements \Serializable
     /**
      * Add the given types to this type
      *
-     * @return null
+     * @return void
      */
     public function addUnionType(UnionType $union_type)
     {
@@ -331,20 +336,6 @@ class UnionType implements \Serializable
         return (false !==
             $this->type_set->find(function (Type $type) : bool {
                 return $type->isSelfType();
-            })
-        );
-    }
-
-    /**
-     * @return bool
-     * True if this union type has any types that are generic
-     * types.
-     */
-    private function hasGenericType() : bool
-    {
-        return (false !==
-            $this->type_set->find(function (Type $type) : bool {
-                return $type->hasTemplateParameterTypes();
             })
         );
     }
@@ -540,6 +531,92 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return bool - True if not empty and at least one type is NullType or nullable.
+     */
+    public function containsNullable() : bool
+    {
+        foreach ($this->getTypeSet() as $type) {
+            if ($type->getIsNullable()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function nonNullableClone() : UnionType
+    {
+        $result = new UnionType();
+        foreach ($this->getTypeSet() as $type) {
+            if (!$type->getIsNullable()) {
+                $result->addType($type);
+                continue;
+            }
+            if ($type === NullType::instance(false)) {
+                continue;
+            }
+
+            $result->addType($type->withIsNullable(false));
+        }
+        return $result;
+    }
+
+    /**
+     * @param UnionType $union_type
+     * A union type to compare against
+     *
+     * @param Context $context
+     * The context in which this type exists.
+     *
+     * @param CodeBase $code_base
+     * The code base in which both this and the given union
+     * types exist.
+     *
+     * @return bool
+     * True if each type within this union type can cast
+     * to the given union type.
+     */
+    public function isExclusivelyNarrowedFormOrEquivalentTo(
+        UnionType $union_type,
+        Context $context,
+        CodeBase $code_base
+    ) : bool {
+
+        // Special rule: anything can cast to nothing
+        if ($union_type->isEmpty()) {
+            return true;
+        }
+
+        // Check to see if the types are equivalent
+        if ($this->isEqualTo($union_type)) {
+            return true;
+        }
+
+        // Resolve 'static' for the given context to
+        // determine whats actually being referred
+        // to in concrete terms.
+        $union_type =
+            $union_type->withStaticResolvedInContext($context);
+
+        // Convert this type to an array of resolved
+        // types.
+        $type_set =
+            $this->withStaticResolvedInContext($context)
+            ->getTypeSet()->toArray();
+
+        // Test to see if every single type in this union
+        // type can cast to the given union type.
+        return array_reduce($type_set,
+            function (bool $can_cast, Type $type) use($union_type, $code_base) : bool {
+                return (
+                    $can_cast
+                    && $type->asUnionType()->asExpandedTypes($code_base)->canCastToUnionType(
+                        $union_type
+                    )
+                );
+            }, true);
+    }
+
+    /**
      * @param Type[] $type_list
      * A list of types
      *
@@ -629,23 +706,23 @@ class UnionType implements \Serializable
 
         if (Config::get()->null_casts_as_any_type) {
             // null <-> null
-            if ($this->isType(NullType::instance())
-                || $target->isType(NullType::instance())
+            if ($this->isType(NullType::instance(false))
+                || $target->isType(NullType::instance(false))
             ) {
                 return true;
             }
         }
 
         // mixed <-> mixed
-        if ($target->hasType(MixedType::instance())
-            || $this->hasType(MixedType::instance())
+        if ($target->hasType(MixedType::instance(false))
+            || $this->hasType(MixedType::instance(false))
         ) {
             return true;
         }
 
         // int -> float
-        if ($this->isType(IntType::instance())
-            && $target->isType(FloatType::instance())
+        if ($this->isType(IntType::instance(false))
+            && $target->isType(FloatType::instance(false))
         ) {
             return true;
         }
@@ -715,7 +792,8 @@ class UnionType implements \Serializable
     /**
      * @return bool
      * True if this union type represents types that are
-     * array-like, and nothing else.
+     * array-like, and nothing else (e.g. can't be null).
+     * If any of the array-like types are nullable, this returns false.
      */
     public function isExclusivelyArrayLike() : bool
     {
@@ -728,6 +806,7 @@ class UnionType implements \Serializable
                 return (
                     $is_exclusively_array
                     && $type->isArrayLike()
+                    && !$type->getIsNullable()
                 );
             }, true);
     }
@@ -748,7 +827,7 @@ class UnionType implements \Serializable
                 return (
                     $is_exclusively_array
                     && (
-                        $type === ArrayType::instance()
+                        $type === ArrayType::instance(false)
                         || $type->isGenericArray()
                     )
                 );
@@ -776,7 +855,8 @@ class UnionType implements \Serializable
      * The context in which we're resolving this union
      * type.
      *
-     * @return \Generator|Clazz[]
+     * @return \Generator
+     *
      * A list of classes representing the non-native types
      * associated with this UnionType
      *
@@ -858,7 +938,7 @@ class UnionType implements \Serializable
             $this->type_set->filter(
                 function (Type $type) : bool {
                     return !$type->isGenericArray()
-                        && $type !== ArrayType::instance();
+                        && $type !== ArrayType::instance(false);
                 }
             )
         );
@@ -916,17 +996,30 @@ class UnionType implements \Serializable
 
         // If array is in there, then it can be any type
         // Same for mixed
-        if ($this->hasType(ArrayType::instance())
-            || $this->hasType(MixedType::instance())
+        if ($this->hasType(ArrayType::instance(false))
+            || $this->hasType(MixedType::instance(false))
         ) {
-            $union_type->addType(MixedType::instance());
+            $union_type->addType(MixedType::instance(false));
         }
 
-        if ($this->hasType(ArrayType::instance())) {
-            $union_type->addType(NullType::instance());
+        if ($this->hasType(ArrayType::instance(false))) {
+            $union_type->addType(NullType::instance(false));
         }
 
         return $union_type;
+    }
+
+    /**
+     * @param Closure $closure
+     * A closure mapping `Type` to `Type`
+     *
+     * @return UnionType
+     * A new UnionType with each type mapped through the
+     * given closure
+     */
+    public function asMappedUnionType(\Closure $closure) : UnionType
+    {
+        return new UnionType($this->type_set->map($closure));
     }
 
     /**
@@ -937,10 +1030,10 @@ class UnionType implements \Serializable
      */
     public function asGenericArrayTypes() : UnionType
     {
-        return new UnionType(
-            $this->type_set->map(function (Type $type) : Type {
+        return $this->asMappedUnionType(
+            function (Type $type) : Type {
                 return $type->asGenericArrayType();
-            })
+            }
         );
     }
 

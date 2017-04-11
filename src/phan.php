@@ -20,6 +20,23 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Phan;
 
+
+try {
+    $node = \ast\parse_code(
+        '<?php 42;',
+        Config::get()->ast_version
+    );
+} catch (LogicException $throwable) {
+    assert(false,
+        'Unknown AST version ('
+        . Config::get()->ast_version
+        . ') in configuration. '
+        . 'You may need to rebuild the latest '
+        . 'version of the php-ast extension.'
+    );
+}
+
+
 // Create our CLI interface and load arguments
 $cli = new CLI();
 

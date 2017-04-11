@@ -2,6 +2,7 @@
 namespace Phan\AST;
 
 use Phan\Analysis\BinaryOperatorFlagVisitor;
+use Phan\Analysis\ConditionVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
@@ -26,6 +27,7 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\StaticType;
 use Phan\Language\UnionType;
 use ast\Node;
 use ast\Node\Decl;
@@ -70,11 +72,11 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
-     * @param $context $context
+     * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
-     * @param Node|mixed $node
+     * @param Node|string|bool|int|float|null $node
      * The node for which we'd like to determine its type
      *
      * @param bool $should_catch_issue_exception
@@ -251,6 +253,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
     /**
      * Visit a node with kind `\ast\AST_COALESCE`
+     * (Null coalescing operator)
      *
      * @param Node $node
      * A node of the type indicated by the method name that we'd
@@ -269,12 +272,21 @@ class UnionTypeVisitor extends AnalysisVisitor
             $this->context,
             $node->children['left']
         );
-        $union_type->addUnionType($left_type);
 
         $right_type = self::unionTypeFromNode(
             $this->code_base,
             $this->context,
             $node->children['right']
+        );
+
+        // On the left side, remove null and replace '?T' with 'T'
+        // Don't bother if the right side contains null.
+        if (!$right_type->isEmpty() && $left_type->containsNullable() && !$right_type->containsNullable()) {
+            $left_type = $left_type->nonNullableClone();
+        }
+
+        $union_type->addUnionType(
+            $left_type
         );
 
         $union_type->addUnionType(
@@ -297,7 +309,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitEmpty(Node $node) : UnionType
     {
-        return BoolType::instance()->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -313,7 +325,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitIsset(Node $node) : UnionType
     {
-        return BoolType::instance()->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -348,7 +360,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitMagicConst(Node $node) : UnionType
     {
         // This is for things like __METHOD__
-        return StringType::instance()->asUnionType();
+        return StringType::instance(false)->asUnionType();
     }
 
     /**
@@ -383,7 +395,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitShellExec(Node $node) : UnionType
     {
-        return StringType::instance()->asUnionType();
+        return StringType::instance(false)->asUnionType();
     }
 
     /**
@@ -428,7 +440,8 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             return Type::fromStringInContext(
                 $node->children['name'],
-                $this->context
+                $this->context,
+                false
             )->asUnionType();
         }
 
@@ -452,21 +465,21 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         switch ($node->flags) {
             case \ast\flags\TYPE_ARRAY:
-                return ArrayType::instance()->asUnionType();
+                return ArrayType::instance(false)->asUnionType();
             case \ast\flags\TYPE_BOOL:
-                return BoolType::instance()->asUnionType();
+                return BoolType::instance(false)->asUnionType();
             case \ast\flags\TYPE_CALLABLE:
-                return CallableType::instance()->asUnionType();
+                return CallableType::instance(false)->asUnionType();
             case \ast\flags\TYPE_DOUBLE:
-                return FloatType::instance()->asUnionType();
+                return FloatType::instance(false)->asUnionType();
             case \ast\flags\TYPE_LONG:
-                return IntType::instance()->asUnionType();
+                return IntType::instance(false)->asUnionType();
             case \ast\flags\TYPE_NULL:
-                return NullType::instance()->asUnionType();
+                return NullType::instance(false)->asUnionType();
             case \ast\flags\TYPE_OBJECT:
-                return ObjectType::instance()->asUnionType();
+                return ObjectType::instance(false)->asUnionType();
             case \ast\flags\TYPE_STRING:
-                return StringType::instance()->asUnionType();
+                return StringType::instance(false)->asUnionType();
             default:
                 assert(
                     false,
@@ -477,6 +490,66 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
     }
 
+    /**
+     * Visit a node with kind `\ast\AST_TYPE` representing
+     * a nullable type such as `?string`.
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitNullableType(Node $node) : UnionType
+    {
+        // Get the type
+        $union_type = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['type'],
+            $this->should_catch_issue_exception
+        );
+
+        // Make each nullable
+        return $union_type->asMappedUnionType(function (Type $type) : Type {
+            return $type->withIsNullable(true);
+        });
+    }
+
+    /**
+     * @param int|float|string|Node $cond
+     * @return ?bool
+     */
+    private function checkCondUnconditionalTruthiness($cond) {
+        if ($cond instanceof Node) {
+            if ($cond->kind === \ast\AST_CONST) {
+                $name = $cond->children['name'];
+                if ($name->kind === \ast\AST_NAME) {
+                    switch(strtolower($name->children['name'])) {
+                    case 'true':
+                        return true;
+                    case 'false':
+                        return false;
+                    case 'null':
+                        return false;
+                    default:
+                        // Could add heuristics based on internal/user-defined constant values, but that is unreliable.
+                        // (E.g. feature flags for an extension may be true or false, depending on the environment)
+                        // (and Phan doesn't store constant values for user-defined constants, only the types)
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }
+        // Otherwise, this is an int/float/string.
+        // Use the exact same truthiness rules as PHP to check if the conditional is truthy.
+        // (e.g. "0" and 0.0 and '' are false)
+        assert(is_scalar($cond), 'cond must be Node or scalar');
+        return (bool)$cond;
+    }
     /**
      * Visit a node with kind `\ast\AST_CONDITIONAL`
      *
@@ -490,23 +563,58 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitConditional(Node $node) : UnionType
     {
+        $cond_node = $node->children['cond'];
+        $cond_truthiness = $this->checkCondUnconditionalTruthiness($cond_node);
+        // For the shorthand $a ?: $b, the cond node will be the truthy value.
+        // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
         $true_node =
             $node->children['trueExpr'] ??
-                $node->children['true'] ?? '';
+                $node->children['true'] ??
+                    $cond_node;
 
-        if ($true_node) {
-            $true_type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $true_node
-            );
-        } else {
-            $true_type = UnionType::fromNode(
-                $this->context,
-                $this->code_base,
-                $node->children['cond']
-            );
+        // Rarely, an
+        if ($cond_truthiness !== null) {
+            // TODO: Add no-op checks in another PR, if they don't already exist for conditional.
+            if ($cond_truthiness === true) {
+                // The condition is unconditionally true
+                return UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $node->children['trueExpr'] ??
+                        $node->children['true'] ??
+                            $cond_node
+                );
+            } else {
+                // The condition is unconditionally false
+
+                // Add the type for the 'false' side
+                return UnionType::fromNode(
+                    $this->context,
+                    $this->code_base,
+                    $node->children['falseExpr'] ??
+                        $node->children['false'] ?? ''
+                );
+            }
         }
+
+        // TODO: false_context once there is a NegatedConditionVisitor
+        // TODO: emit no-op if $cond_node is a literal, such as `if (2)`
+        // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
+
+        if ($cond_node instanceof Node) {
+            $true_context = (new ConditionVisitor(
+                $this->code_base,
+                $this->context
+            ))($cond_node);
+        } else {
+            $true_context = $this->context;
+        }
+
+        $true_type = UnionType::fromNode(
+            $true_context,
+            $this->code_base,
+            $true_node
+        );
 
         $false_type = UnionType::fromNode(
             $this->context,
@@ -531,7 +639,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // See Issue #104
         if ($true_type->isEmpty() xor $false_type->isEmpty()) {
             $union_type->addUnionType(
-                MixedType::instance()->asUnionType()
+                MixedType::instance(false)->asUnionType()
             );
         }
 
@@ -587,7 +695,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
 
-        return ArrayType::instance()->asUnionType();
+        return ArrayType::instance(false)->asUnionType();
     }
 
     /**
@@ -658,19 +766,19 @@ class UnionTypeVisitor extends AnalysisVisitor
         UnionType::fromNode($this->context, $this->code_base, $node->children['expr']);
         switch ($node->flags) {
             case \ast\flags\TYPE_NULL:
-                return NullType::instance()->asUnionType();
+                return NullType::instance(false)->asUnionType();
             case \ast\flags\TYPE_BOOL:
-                return BoolType::instance()->asUnionType();
+                return BoolType::instance(false)->asUnionType();
             case \ast\flags\TYPE_LONG:
-                return IntType::instance()->asUnionType();
+                return IntType::instance(false)->asUnionType();
             case \ast\flags\TYPE_DOUBLE:
-                return FloatType::instance()->asUnionType();
+                return FloatType::instance(false)->asUnionType();
             case \ast\flags\TYPE_STRING:
-                return StringType::instance()->asUnionType();
+                return StringType::instance(false)->asUnionType();
             case \ast\flags\TYPE_ARRAY:
-                return ArrayType::instance()->asUnionType();
+                return ArrayType::instance(false)->asUnionType();
             case \ast\flags\TYPE_OBJECT:
-                return ObjectType::instance()->asUnionType();
+                return ObjectType::instance(false)->asUnionType();
             default:
                 throw new NodeException(
                     $node,
@@ -779,7 +887,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // TODO: log it?
         }
 
-        return BoolType::instance()->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -818,7 +926,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If the only type is null, we don't know what
         // accessed items will be
-        if ($union_type->isType(NullType::instance())) {
+        if ($union_type->isType(NullType::instance(false))) {
             return new UnionType();
         }
 
@@ -827,18 +935,17 @@ class UnionTypeVisitor extends AnalysisVisitor
         // You can access string characters via array index,
         // so we'll add the string type to the result if we're
         // indexing something that could be a string
-        if ($union_type->isType(StringType::instance())
-            || $union_type->canCastToUnionType(StringType::instance()->asUnionType())
+        if ($union_type->isType(StringType::instance(false))
+            || $union_type->canCastToUnionType(StringType::instance(false)->asUnionType())
         ) {
-            $element_types->addType(StringType::instance());
+            $element_types->addType(StringType::instance(false));
         }
 
         // array offsets work on strings, unfortunately
         // Double check that any classes in the type don't
         // have ArrayAccess
         $array_access_type =
-            Type::fromNamespaceAndName('\\', 'ArrayAccess');
-
+            Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
 
         // Hunt for any types that are viable class names and
         // see if they inherit from ArrayAccess
@@ -864,7 +971,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -906,7 +1013,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             && ($node->children['name']->kind == \ast\AST_VAR
             || $node->children['name']->kind == \ast\AST_BINARY_OP)
         ) {
-            return MixedType::instance()->asUnionType();
+            return MixedType::instance(false)->asUnionType();
         }
 
         // This is nonsense. Give up.
@@ -956,7 +1063,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitEncapsList(Node $node) : UnionType
     {
-        return StringType::instance()->asUnionType();
+        return StringType::instance(false)->asUnionType();
     }
 
     /**
@@ -986,15 +1093,24 @@ class UnionTypeVisitor extends AnalysisVisitor
 
                 // If the constant is referring to the current
                 // class, return that as a type
-                if (Type::isSelfTypeString($constant_name)) {
+                if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
                     return $this->visitClassNode($node);
                 }
 
+                try {
                 $constant = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $node
                 ))->getConst();
+                } catch (IssueException $exception) {
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $exception->getIssueInstance()
+                    );
+                    return new UnionType;
+                }
 
                 return $constant->getUnionType();
             }
@@ -1260,7 +1376,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // type outside of its class
                     if ($union_type->hasStaticType()) {
                         $union_type = clone($union_type);
-                        $union_type->removeType(\Phan\Language\Type\StaticType::instance());
+                        $union_type->removeType(\Phan\Language\Type\StaticType::instance(false));
                     }
 
                     if ($union_type->genericArrayElementTypes()->hasStaticType()) {
@@ -1334,7 +1450,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Shortcut some easy operators
         switch ($node->flags) {
             case \ast\flags\UNARY_BOOL_NOT:
-                return BoolType::instance()->asUnionType();
+                return BoolType::instance(false)->asUnionType();
         }
 
         return self::unionTypeFromNode(
@@ -1411,7 +1527,8 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If this is a straight-forward class name, recurse into the
         // class node and get its type
-        if (!Type::isSelfTypeString($class_name)) {
+        $is_static_type_string = Type::isStaticTypeString($class_name);
+        if (!($is_static_type_string || Type::isSelfTypeString($class_name))) {
             // TODO: does anyone else call this method?
             return self::unionTypeFromClassNode(
                 $this->code_base,
@@ -1452,16 +1569,21 @@ class UnionTypeVisitor extends AnalysisVisitor
             )->asUnionType();
         }
 
-        return Type::fromFullyQualifiedString(
+        $result = Type::fromFullyQualifiedString(
             (string)$this->context->getClassFQSEN()
         )->asUnionType();
+
+        if ($is_static_type_string) {
+            $result->addType(StaticType::instance(false));
+        }
+        return $result;
     }
 
     /**
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
-     * @param $context $context
+     * @param Context $context
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
@@ -1481,6 +1603,25 @@ class UnionTypeVisitor extends AnalysisVisitor
         Context $context,
         $node
     ) : UnionType {
+
+        // If this is a list, build a union type by
+        // recursively visiting the child nodes
+        if ($node instanceof Node
+            && $node->kind == \ast\AST_NAME_LIST
+        ) {
+            $union_type = new UnionType;
+            foreach ($node->children ?? [] as $child_node) {
+                $union_type->addUnionType(
+                    self::unionTypeFromClassNode(
+                        $code_base,
+                        $context,
+                        $child_node
+                    )
+                );
+            }
+            return $union_type;
+        }
+
         // For simple nodes or very complicated nodes,
         // recurse
         if (!($node instanceof \ast\Node)
@@ -1562,7 +1703,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         } else {
             $type = Type::fromStringInContext(
                 $class_name,
-                $context
+                $context,
+                false
             );
         }
 

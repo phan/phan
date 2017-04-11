@@ -13,13 +13,19 @@ class Parameter
      * @var string
      * The name of the parameter
      */
-    private $name = null;
+    private $name;
 
     /**
      * @var UnionType
      * The type of the parameter
      */
-    private $type = null;
+    private $type;
+
+    /**
+     * @var bool
+     * Whether or not the parameter is variadic (in the comment)
+     */
+    private $is_variadic;
 
     /**
      * @param string $name
@@ -30,10 +36,12 @@ class Parameter
      */
     public function __construct(
         string $name,
-        UnionType $type
+        UnionType $type,
+        bool $is_variadic = false
     ) {
         $this->name = $name;
         $this->type = $type;
+        $this->is_variadic = $is_variadic;
     }
 
     /**
@@ -70,12 +78,24 @@ class Parameter
         return $this->type;
     }
 
+    /**
+     * @return bool
+     * Whether or not the parameter is variadic
+     */
+    public function isVariadic() : bool
+    {
+        return $this->is_variadic;
+    }
+
     public function __toString() : string
     {
         $string = '';
 
         if (!$this->type->isEmpty()) {
             $string .= "{$this->type} ";
+        }
+        if ($this->is_variadic) {
+            $string .= '...';
         }
 
         $string .= $this->name;

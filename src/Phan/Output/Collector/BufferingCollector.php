@@ -12,7 +12,7 @@ final class BufferingCollector implements IssueCollectorInterface
     /** @var  IssueInstance[] */
     private $issues = [];
 
-    /** @var IssueFilterInterface */
+    /** @var IssueFilterInterface|null */
     private $filter;
 
     /**
