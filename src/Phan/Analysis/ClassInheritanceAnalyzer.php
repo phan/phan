@@ -127,7 +127,7 @@ class ClassInheritanceAnalyzer
                 $source_class->getContext(),
                 Issue::AccessClassInternal,
                 $source_class->getFileRef()->getLineNumberStart(),
-                (string)$target_class->getFQSEN(),
+                (string)$target_class,
                 $target_class->getFileRef()->getFile(),
                 (string)$target_class->getFileRef()->getLineNumberStart()
             );

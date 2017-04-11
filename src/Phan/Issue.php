@@ -156,6 +156,7 @@ class Issue
     const CATEGORY_VARIABLE          = 1 << 12;
     const CATEGORY_PLUGIN            = 1 << 13;
     const CATEGORY_GENERIC           = 1 << 14;
+    const CATEGORY_INTERNAL          = 1 << 15;
 
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
@@ -1064,46 +1065,6 @@ class Issue
                 self::REMEDIATION_B,
                 1009
             ),
-            new Issue(
-                self::AccessConstantInternal,
-                self::CATEGORY_ACCESS,
-                self::SEVERITY_NORMAL,
-                "Cannot access internal constant {CONST} defined at {FILE}:{LINE}",
-                self::REMEDIATION_B,
-                1010
-            ),
-            new Issue(
-                self::AccessClassInternal,
-                self::CATEGORY_ACCESS,
-                self::SEVERITY_NORMAL,
-                "Cannot access internal class {CLASS} defined at {FILE}:{LINE}",
-                self::REMEDIATION_B,
-                1011
-            ),
-            new Issue(
-                self::AccessClassConstantInternal,
-                self::CATEGORY_ACCESS,
-                self::SEVERITY_NORMAL,
-                "Cannot access internal class constant {CONST} defined at {FILE}:{LINE}",
-                self::REMEDIATION_B,
-                1012
-            ),
-            new Issue(
-                self::AccessPropertyInternal,
-                self::CATEGORY_ACCESS,
-                self::SEVERITY_NORMAL,
-                "Cannot access internal property {PROPERTY} defined at {FILE}:{LINE}",
-                self::REMEDIATION_B,
-                1013
-            ),
-            new Issue(
-                self::AccessMethodInternal,
-                self::CATEGORY_ACCESS,
-                self::SEVERITY_NORMAL,
-                "Cannot access internal method {METHOD} defined at {FILE}:{LINE}",
-                self::REMEDIATION_B,
-                1014
-            ),
 
             // Issue::CATEGORY_COMPATIBLE
             new Issue(
@@ -1164,6 +1125,50 @@ class Issue
                 self::REMEDIATION_B,
                 14004
             ),
+
+            // Issue::CATEGORY_INTERNAL
+            new Issue(
+                self::AccessConstantInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal constant {CONST} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15000
+            ),
+            new Issue(
+                self::AccessClassInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal {CLASS} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15001
+            ),
+            new Issue(
+                self::AccessClassConstantInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal class constant {CONST} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15002
+            ),
+            new Issue(
+                self::AccessPropertyInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15003
+            ),
+            new Issue(
+                self::AccessMethodInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal method {METHOD} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15004
+            ),
+
+
         ];
 
         $error_map = [];
