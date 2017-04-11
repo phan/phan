@@ -149,6 +149,27 @@ interface FunctionInterface extends AddressableElementInterface {
     public function alternateGenerator(CodeBase $code_base) : \Generator;
 
     /**
+     * @param CodeBase $code_base
+     * The code base in which this element exists.
+     *
+     * @return bool
+     * True if this is marked as an internal element
+     */
+    public function isInternal(CodeBase $code_base) : bool;
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which this element exists.
+     *
+     * @return bool
+     * True if this element is intern
+     */
+    public function isInternalAccessFromContext(
+        CodeBase $code_base,
+        Context $context
+    );
+
+    /**
      * @return Context
      * Analyze the node associated with this object
      * in the given context

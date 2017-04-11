@@ -503,6 +503,12 @@ class ParseVisitor extends ScopeVisitor
                 $this->context
             );
 
+            // Get a comment on the declaration
+            $comment = Comment::fromStringInContext(
+                $child_node->docComment ?? '',
+                $this->context
+            );
+
             $constant = new ClassConstant(
                 $this->context
                     ->withLineNumberStart($child_node->lineno ?? 0)
@@ -512,6 +518,9 @@ class ParseVisitor extends ScopeVisitor
                 $node->flags ?? 0,
                 $fqsen
             );
+
+            $constant->setIsDeprecated($comment->isDeprecated());
+            $constant->setIsInternal($comment->isInternal());
 
             $constant->setFutureUnionType(
                 new FutureUnionType(
@@ -824,6 +833,12 @@ class ParseVisitor extends ScopeVisitor
             $fqsen
         );
 
+        // Get a comment on the declaration
+        $comment = Comment::fromStringInContext(
+            $node->docComment ?? '',
+            $this->context
+        );
+
         $constant->setFutureUnionType(
             new FutureUnionType(
                 $this->code_base,
@@ -831,6 +846,9 @@ class ParseVisitor extends ScopeVisitor
                 $value
             )
         );
+
+        $constant->setIsDeprecated($comment->isDeprecated());
+        $constant->setIsInternal($comment->isInternal());
 
         $this->code_base->addGlobalConstant(
             $constant

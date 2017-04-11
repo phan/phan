@@ -786,7 +786,28 @@ class ContextNode
             }
         }
 
-        return $this->code_base->getGlobalConstantByFQSEN($fqsen);
+        $constant = $this->code_base->getGlobalConstantByFQSEN($fqsen);
+
+        if ($constant->isInternal($this->code_base)
+            && !$constant->isInternalAccessFromContext(
+                $this->code_base,
+                $this->context
+            )
+        ) {
+            throw new IssueException(
+                Issue::fromType(Issue::AccessConstantInternal)(
+                    $this->context->getFile(),
+                    $this->node->lineno ?? 0,
+                    [
+                        (string)$constant->getFQSEN(),
+                        $constant->getFileRef()->getFile(),
+                        $constant->getFileRef()->getLineNumberStart(),
+                    ]
+                )
+            );
+        }
+
+        return $constant;
     }
 
     /**
@@ -852,11 +873,32 @@ class ContextNode
                 continue;
             }
 
-            return $class->getConstantByNameInContext(
+            $constant = $class->getConstantByNameInContext(
                 $this->code_base,
                 $constant_name,
                 $this->context
             );
+
+            if ($constant->isInternal($this->code_base)
+                && !$constant->isInternalAccessFromContext(
+                    $this->code_base,
+                    $this->context
+                )
+            ) {
+                throw new IssueException(
+                    Issue::fromType(Issue::AccessClassConstantInternal)(
+                        $this->context->getFile(),
+                        $this->node->lineno ?? 0,
+                        [
+                            (string)$constant->getFQSEN(),
+                            $constant->getFileRef()->getFile(),
+                            $constant->getFileRef()->getLineNumberStart(),
+                        ]
+                    )
+                );
+            }
+
+            return $constant;
         }
 
         // If no class is found, we'll emit the error elsewhere
