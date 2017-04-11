@@ -81,7 +81,7 @@ abstract class TypedElement implements TypedElementInterface
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
-        $this->setIsInternal($context->isPHPInternal());
+        $this->setIsPHPInternal($context->isPHPInternal());
     }
 
     /**
@@ -271,19 +271,19 @@ abstract class TypedElement implements TypedElementInterface
     {
         return Flags::bitVectorHasState(
             $this->getPhanFlags(),
-            Flags::IS_INTERNAL
+            Flags::IS_PHP_INTERNAL
         );
     }
 
     /**
      * @return void
      */
-    private function setIsInternal(bool $is_internal)
+    private function setIsPHPInternal(bool $is_internal)
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
                 $this->getPhanFlags(),
-                Flags::IS_INTERNAL,
+                Flags::IS_PHP_INTERNAL,
                 $is_internal
             )
         );
