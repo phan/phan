@@ -126,6 +126,7 @@ class Issue
     const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
 
     const AccessConstantInternal    = 'PhanAccessConstantInternal';
+    const AccessClassInternal       = 'PhanAccessClassInternal';
     const AccessClassConstantInternal = 'PhanAccessClassConstantInternal';
     const AccessPropertyInternal    = 'PhanAccessPropertyInternal';
     const AccessMethodInternal      = 'PhanAccessMethodInternal';
@@ -1072,12 +1073,20 @@ class Issue
                 1010
             ),
             new Issue(
+                self::AccessClassInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal class {CLASS} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1011
+            ),
+            new Issue(
                 self::AccessClassConstantInternal,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_NORMAL,
                 "Cannot access internal class constant {CONST} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                1010
+                1012
             ),
             new Issue(
                 self::AccessPropertyInternal,
@@ -1085,7 +1094,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Cannot access internal property {PROPERTY} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                1012
+                1013
             ),
             new Issue(
                 self::AccessMethodInternal,
@@ -1093,7 +1102,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Cannot access internal method {METHOD} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                1013
+                1014
             ),
 
             // Issue::CATEGORY_COMPATIBLE

@@ -3,7 +3,7 @@ namespace Phan\Language\Element;
 
 use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
-use Phan\Analysis\ParentClassExistsAnalyzer;
+use Phan\Analysis\ClassInheritanceAnalyzer;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
 use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\CodeBase;
@@ -1822,7 +1822,7 @@ class Clazz extends AddressableElement
         }
 
         // Make sure the parent classes exist
-        ParentClassExistsAnalyzer::analyzeParentClassExists(
+        ClassInheritanceAnalyzer::analyzeClassInheritance(
             $code_base, $this
         );
 
