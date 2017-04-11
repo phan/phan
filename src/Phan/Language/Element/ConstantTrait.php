@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
-
 trait ConstantTrait {
     use ElementFutureUnionType;
 

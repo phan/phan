@@ -125,6 +125,12 @@ class Issue
     const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
     const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
 
+    const AccessConstantInternal    = 'PhanAccessConstantInternal';
+    const AccessClassInternal       = 'PhanAccessClassInternal';
+    const AccessClassConstantInternal = 'PhanAccessClassConstantInternal';
+    const AccessPropertyInternal    = 'PhanAccessPropertyInternal';
+    const AccessMethodInternal      = 'PhanAccessMethodInternal';
+
     // Issue::CATEGORY_COMPATIBLE
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
     const CompatiblePHP7            = 'PhanCompatiblePHP7';
@@ -150,6 +156,7 @@ class Issue
     const CATEGORY_VARIABLE          = 1 << 12;
     const CATEGORY_PLUGIN            = 1 << 13;
     const CATEGORY_GENERIC           = 1 << 14;
+    const CATEGORY_INTERNAL          = 1 << 15;
 
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
@@ -166,6 +173,7 @@ class Issue
         self::CATEGORY_VARIABLE          => 'VarError',
         self::CATEGORY_PLUGIN            => 'Plugin',
         self::CATEGORY_GENERIC           => 'Generic',
+        self::CATEGORY_INTERNAL          => 'Internal',
     ];
 
     const SEVERITY_LOW      = 0;
@@ -1118,6 +1126,50 @@ class Issue
                 self::REMEDIATION_B,
                 14004
             ),
+
+            // Issue::CATEGORY_INTERNAL
+            new Issue(
+                self::AccessConstantInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal constant {CONST} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15000
+            ),
+            new Issue(
+                self::AccessClassInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal {CLASS} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15001
+            ),
+            new Issue(
+                self::AccessClassConstantInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal class constant {CONST} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15002
+            ),
+            new Issue(
+                self::AccessPropertyInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15003
+            ),
+            new Issue(
+                self::AccessMethodInternal,
+                self::CATEGORY_INTERNAL,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal method {METHOD} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                15004
+            ),
+
+
         ];
 
         $error_map = [];
