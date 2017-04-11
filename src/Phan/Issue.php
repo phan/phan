@@ -125,6 +125,11 @@ class Issue
     const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
     const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
 
+    const AccessClassInternal       = 'PhanAccessClassInternal';
+    const AccessClassConstantInternal = 'PhanAccessClassConstantInternal';
+    const AccessPropertyInternal    = 'PhanAccessPropertyInternal';
+    const AccessMethodInternal      = 'PhanAccessMethodInternal';
+
     // Issue::CATEGORY_COMPATIBLE
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
     const CompatiblePHP7            = 'PhanCompatiblePHP7';
@@ -1057,6 +1062,38 @@ class Issue
                 "Cannot access protected class constant {CONST} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1009
+            ),
+            new Issue(
+                self::AccessClassInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal class {CLASS} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1010
+            ),
+            new Issue(
+                self::AccessClassConstantInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal class constant {CONST} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1011
+            ),
+            new Issue(
+                self::AccessPropertyInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal property {PROPERTY} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1012
+            ),
+            new Issue(
+                self::AccessMethodInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Cannot access internal method {METHOD} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1013
             ),
 
             // Issue::CATEGORY_COMPATIBLE

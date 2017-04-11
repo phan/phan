@@ -1,0 +1,6 @@
+%s:50 PhanAccessMethodInternal Cannot access internal method \NS278\A\C1::__construct defined at %s:21
+%s:51 PhanAccessPropertyInternal Cannot access internal property \NS278\A\C1::p defined at %s:6
+%s:52 PhanAccessMethodInternal Cannot access internal method \NS278\A\C1::f defined at %s:7
+%s:53 PhanAccessMethodInternal Cannot access internal method \NS278\A\C1::g defined at %s:8
+%s:56 PhanAccessPropertyInternal Cannot access internal property \NS278\A\C2::p defined at %s:13
+%s:57 PhanAccessMethodInternal Cannot access internal method \NS278\A\C2::f defined at %s:16

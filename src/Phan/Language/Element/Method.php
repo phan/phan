@@ -259,6 +259,10 @@ class Method extends ClassElement implements FunctionInterface
         // Check to see if the comment specifies that the
         // method is deprecated
         $method->setIsDeprecated($comment->isDeprecated());
+
+        // Set whether or not the element is internal
+        $method->setIsInternal($comment->isInternal());
+
         $method->setSuppressIssueList($comment->getSuppressIssueList());
 
         if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {

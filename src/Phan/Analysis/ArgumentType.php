@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
@@ -63,6 +64,24 @@ class ArgumentType
                 $code_base,
                 $context,
                 Issue::DeprecatedFunction,
+                $context->getLineNumberStart(),
+                (string)$method->getFQSEN(),
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
+            );
+        }
+
+        // Emit an issue if this is an externally accessed internal method
+        if ($method->isInternal($code_base)
+            && !$method->isInternalAccessFromContext(
+                $code_base,
+                $context
+            )
+        ) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::AccessMethodInternal,
                 $context->getLineNumberStart(),
                 (string)$method->getFQSEN(),
                 $method->getFileRef()->getFile(),

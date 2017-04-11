@@ -17,6 +17,8 @@ class Flags
     const IS_CLONE_OF_VARIADIC         = (1 << 9);
     const CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES = (1 << 10);
 
+    const IS_INTERNAL                  = (1 << 11);
+
     /**
      * Either enable or disable the given flag on
      * the given bit vector.

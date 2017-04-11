@@ -573,6 +573,25 @@ class ContextNode
                 );
             }
 
+            if ($property->isInternal($this->code_base)
+                && !$property->isInternalAccessFromContext(
+                    $this->code_base,
+                    $this->context
+                )
+            ) {
+                throw new IssueException(
+                    Issue::fromType(Issue::AccessPropertyInternal)(
+                        $this->context->getFile(),
+                        $this->node->lineno ?? 0,
+                        [
+                            (string)$property->getFQSEN(),
+                            $property->getFileRef()->getFile(),
+                            $property->getFileRef()->getLineNumberStart(),
+                        ]
+                    )
+                );
+            }
+
             return $property;
         }
 

@@ -133,6 +133,7 @@ class ParseVisitor extends ScopeVisitor
         }
 
         $class->setIsDeprecated($comment->isDeprecated());
+        $class->setIsInternal($comment->isInternal());
 
         $class->setSuppressIssueList(
             $comment->getSuppressIssueList()
@@ -465,6 +466,7 @@ class ParseVisitor extends ScopeVisitor
             }
 
             $property->setIsDeprecated($comment->isDeprecated());
+            $property->setIsInternal($comment->isInternal());
 
             // Wait until after we've added the (at)var type
             // before setting the future so that calling

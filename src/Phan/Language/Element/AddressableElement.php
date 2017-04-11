@@ -96,7 +96,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * @return bool
-     * True if this is a protected property
+     * True if this is a protected element
      */
     public function isProtected() : bool
     {
@@ -108,7 +108,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
 
     /**
      * @return bool
-     * True if this is a private property
+     * True if this is a private element
      */
     public function isPrivate() : bool
     {
@@ -116,6 +116,59 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
             $this->getFlags(),
             \ast\flags\MODIFIER_PRIVATE
         );
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which this element exists.
+     *
+     * @return bool
+     * True if this is marked as an internal element
+     */
+    public function isInternal(CodeBase $code_base) : bool
+    {
+        return Flags::bitVectorHasState(
+            $this->getPhanFlags(),
+            Flags::IS_INTERNAL
+        );
+    }
+
+    /**
+     * Set this element as being `internal`.
+     * @return void
+     */
+    public function setIsInternal(bool $is_internal)
+    {
+        $this->setPhanFlags(Flags::bitVectorWithState(
+            $this->getPhanFlags(),
+            Flags::IS_INTERNAL,
+            $is_internal
+        ));
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which this element exists.
+     *
+     * @return bool
+     * True if this element is intern
+     */
+    public function isInternalAccessFromContext(
+        CodeBase $code_base,
+        Context $context
+    ) {
+        $element_fqsen = $this->getFQSEN();
+        assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);
+
+        // Figure out which namespace this element is within
+        $element_namespace = $element_fqsen->getNamespace();
+
+        // Get our current namespace from the context
+        $context_namespace = $context->getNamespace();
+
+        // Test to see if the context is within the same
+        // namespace as where the element is defined
+        return ($context_namespace === $element_namespace);
     }
 
     /**
