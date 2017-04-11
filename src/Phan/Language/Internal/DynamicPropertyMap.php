@@ -8,4 +8,6 @@ namespace Phan\Language\Internal;
 return [
     'stdclass',
     'simplexmlelement',
+    'solrobject',
+    'v8js',
 ];

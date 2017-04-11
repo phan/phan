@@ -10,6 +10,8 @@ use Phan\Model\CalledBy;
 
 abstract class AddressableElement extends TypedElement implements AddressableElementInterface
 {
+    use \Phan\Memoize;
+
     /**
      * @var FQSEN
      */
@@ -155,4 +157,24 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         return count($this->reference_list);
     }
 
+    /**
+     * This method must be called before analysis
+     * begins.
+     *
+     * @return void
+     * @override
+     */
+    public final function hydrate(CodeBase $code_base)
+    {
+        if (!$this->isFirstExecution(__METHOD__)) {
+            return;
+        }
+
+        $this->hydrateOnce($code_base);
+    }
+
+    protected function hydrateOnce(CodeBase $code_base)
+    {
+        // Do nothing unless overridden
+    }
 }

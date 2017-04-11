@@ -73,8 +73,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['right']
         );
 
-        if ($left->isType(ArrayType::instance())
-            || $right->isType(ArrayType::instance())
+        if ($left->isType(ArrayType::instance(false))
+            || $right->isType(ArrayType::instance(false))
         ) {
             Issue::maybeEmit(
                 $this->code_base,
@@ -85,19 +85,19 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             );
 
             return new UnionType();
-        } elseif ($left->hasType(IntType::instance())
-            && $right->hasType(IntType::instance())
+        } elseif ($left->hasType(IntType::instance(false))
+            && $right->hasType(IntType::instance(false))
         ) {
-            return IntType::instance()->asUnionType();
-        } elseif ($left->hasType(FloatType::instance())
-            && $right->hasType(FloatType::instance())
+            return IntType::instance(false)->asUnionType();
+        } elseif ($left->hasType(FloatType::instance(false))
+            && $right->hasType(FloatType::instance(false))
         ) {
-            return FloatType::instance()->asUnionType();
+            return FloatType::instance(false)->asUnionType();
         }
 
         return new UnionType([
-            IntType::instance(),
-            FloatType::instance()
+            IntType::instance(false),
+            FloatType::instance(false)
         ]);
     }
 
@@ -146,7 +146,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryConcat(Node $node) : UnionType
     {
-        return StringType::instance()->asUnionType();
+        return StringType::instance(false)->asUnionType();
     }
 
     /**
@@ -174,11 +174,11 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         $right_is_array_like = $right->isExclusivelyArrayLike();
 
         $left_can_cast_to_array = $left->canCastToUnionType(
-            ArrayType::instance()->asUnionType()
+            ArrayType::instance(false)->asUnionType()
         );
 
         $right_can_cast_to_array = $right->canCastToUnionType(
-            ArrayType::instance()->asUnionType()
+            ArrayType::instance(false)->asUnionType()
         );
 
         if ($left_is_array_like
@@ -207,7 +207,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             );
         }
 
-        return BoolType::instance()->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 
     /**
@@ -328,10 +328,10 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         );
 
         // fast-track common cases
-        if ($left->isType(IntType::instance())
-            && $right->isType(IntType::instance())
+        if ($left->isType(IntType::instance(false))
+            && $right->isType(IntType::instance(false))
         ) {
-            return IntType::instance()->asUnionType();
+            return IntType::instance(false)->asUnionType();
         }
 
         // If both left and right are arrays, then this is array
@@ -341,30 +341,30 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 return $left;
             }
 
-            return ArrayType::instance()->asUnionType();
+            return ArrayType::instance(false)->asUnionType();
         }
 
-        if (($left->isType(IntType::instance())
-            || $left->isType(FloatType::instance()))
-            && ($right->isType(IntType::instance())
-            || $right->isType(FloatType::instance()))
+        if (($left->isType(IntType::instance(false))
+            || $left->isType(FloatType::instance(false)))
+            && ($right->isType(IntType::instance(false))
+            || $right->isType(FloatType::instance(false)))
         ) {
-            return FloatType::instance()->asUnionType();
+            return FloatType::instance(false)->asUnionType();
         }
 
         $left_is_array = (
             !$left->genericArrayElementTypes()->isEmpty()
             && $left->nonArrayTypes()->isEmpty()
-        ) || $left->isType(ArrayType::instance());
+        ) || $left->isType(ArrayType::instance(false));
 
         $right_is_array = (
             !$right->genericArrayElementTypes()->isEmpty()
             && $right->nonArrayTypes()->isEmpty()
-        ) || $right->isType(ArrayType::instance());
+        ) || $right->isType(ArrayType::instance(false));
 
         if ($left_is_array
             && !$right->canCastToUnionType(
-                ArrayType::instance()->asUnionType()
+                ArrayType::instance(false)->asUnionType()
             )
         ) {
             Issue::maybeEmit(
@@ -375,7 +375,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             );
             return new UnionType();
         } elseif ($right_is_array
-            && !$left->canCastToUnionType(ArrayType::instance()->asUnionType())
+            && !$left->canCastToUnionType(ArrayType::instance(false)->asUnionType())
         ) {
             Issue::maybeEmit(
                 $this->code_base,
@@ -387,12 +387,12 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         } elseif ($left_is_array || $right_is_array) {
             // If it is a '+' and we know one side is an array
             // and the other is unknown, assume array
-            return ArrayType::instance()->asUnionType();
+            return ArrayType::instance(false)->asUnionType();
         }
 
         return new UnionType([
-            IntType::instance(),
-            FloatType::instance()
+            IntType::instance(false),
+            FloatType::instance(false)
         ]);
     }
 
@@ -419,6 +419,6 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $node->children['right']
         );
 
-        return BoolType::instance()->asUnionType();
+        return BoolType::instance(false)->asUnionType();
     }
 }

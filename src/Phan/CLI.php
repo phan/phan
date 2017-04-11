@@ -13,6 +13,9 @@ use Symfony\Component\Console\Output\StreamOutput;
 
 class CLI
 {
+    /**
+     * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
+     */
     const PHAN_VERSION = '0.8.4-dev';
 
     /**
@@ -83,9 +86,13 @@ class CLI
                 'config-file:',
                 'signature-compatibility',
                 'markdown-issue-messages',
+                'extended-help',
             ]
         );
 
+        if (array_key_exists('extended-help', $opts ?? [])) {
+            $this->usage('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
+        }
         if (array_key_exists('h', $opts ?? []) || array_key_exists('help', $opts ?? [])) {
             $this->usage();  // --help prints help and calls exit(0)
         }
@@ -137,6 +144,7 @@ class CLI
                     foreach ($file_list as $file_name) {
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
+                            /** @var string[] */
                             $this->file_list = array_merge(
                                 $this->file_list,
                                 file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
@@ -171,7 +179,8 @@ class CLI
                                 'Unknown output mode "%s". Known values are [%s]',
                                 $value,
                                 implode(',', $factory->getTypes())
-                            )
+                            ),
+                            EXIT_FAILURE
                         );
                     }
 
@@ -245,7 +254,7 @@ class CLI
                     Config::get()->markdown_issue_messages = true;
                     break;
                 default:
-                    $this->usage("Unknown option '-$key'");
+                    $this->usage("Unknown option '-$key'", EXIT_FAILURE);
                     break;
             }
         }
@@ -283,7 +292,7 @@ class CLI
 
         foreach ($argv as $arg) {
             if ($arg[0]=='-') {
-                $this->usage("Unknown option '{$arg}'");
+                $this->usage("Unknown option '{$arg}'", EXIT_FAILURE);
             }
         }
 
@@ -295,6 +304,7 @@ class CLI
             );
 
             // Merge in any files given in the config
+            /** @var string[] */
             $this->file_list = array_merge(
                 $this->file_list,
                 Config::get()->file_list
@@ -346,7 +356,7 @@ class CLI
         return $this->file_list;
     }
 
-    private function usage(string $msg = '')
+    private function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
     {
         global $argv;
 
@@ -358,10 +368,6 @@ class CLI
 Usage: {$argv[0]} [options] [files...]
  -f, --file-list <filename>
   A file containing a list of PHP files to be analyzed
-
- -r, --file-list-only
-  A file containing a list of PHP files to be analyzed to the
-  exclusion of any other directories or files passed in.
 
  -l, --directory <directory>
   A directory that should be parsed for class and
@@ -392,6 +398,11 @@ Usage: {$argv[0]} [options] [files...]
   directory and read configuration file config.php from that
   path.
 
+ -r, --file-list-only
+  A file containing a list of PHP files to be analyzed to the
+  exclusion of any other directories or files passed in. This
+  is unlikely to be useful.
+
  -k, --config-file
   A path to a config file to load (instead of the default of
   .phan/config.php).
@@ -404,13 +415,6 @@ Usage: {$argv[0]} [options] [files...]
 
  -p, --progress-bar
   Show progress bar
-
- -a, --dump-ast
-  Emit an AST for each file rather than analyze
-
- --dump-signatures-file <filename>
-  Emit JSON serialized signatures to the given file.
-  This uses a method signature format similar to FunctionSignatureMap.php.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
@@ -443,13 +447,39 @@ Usage: {$argv[0]} [options] [files...]
   compatibility with what they're overriding.
 
  -v, --version
-  Print Phan's version number
+  Print phan's version number
 
  -h, --help
   This help information
 
+ --extended-help
+  This help information, plus less commonly used flags
+
 EOB;
-        exit(EXIT_SUCCESS);
+        if ($print_extended_help) {
+            echo <<<EOB
+
+Extended help:
+ -a, --dump-ast
+  Emit an AST for each file rather than analyze.
+
+ --dump-signatures-file <filename>
+  Emit JSON serialized signatures to the given file.
+  This uses a method signature format similar to FunctionSignatureMap.php.
+
+ --markdown-issue-messages
+  Emit issue messages with markdown formatting.
+
+EOB;
+        }
+        exit($exit_code);
+    }
+
+    public static function shouldShowProgress() : bool
+    {
+        $config = Config::get();
+        return $config->progress_bar
+            && !$config->dump_ast;
     }
 
     /**
@@ -467,35 +497,35 @@ EOB;
         try {
             $file_extensions = Config::get()->analyzed_file_extensions;
 
-            if (!is_array($file_extensions) || count($file_extensions) == 0) {
+            if (!is_array($file_extensions) || count($file_extensions) === 0) {
                 throw new \InvalidArgumentException(
                     'Empty list in config analyzed_file_extensions. Nothing to analyze.'
                 );
             }
 
-            $extension_regex = implode('|', array_map(function ($extension) {
-                return preg_quote($extension, '/');
-            }, $file_extensions));
-
-            $iterator = new \RegexIterator(
+            $iterator = new \CallbackFilterIterator(
                 new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
                         $directory_name,
                         \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                     )
                 ),
-                '/^.+\.(' . $extension_regex . ')$/i',
-                \RecursiveRegexIterator::GET_MATCH
+                function(\SplFileInfo $file_info) use ($file_extensions) {
+                    if (!in_array($file_info->getExtension(), $file_extensions, true)) {
+                        return false;
+                    }
+
+                    if (!$file_info->isFile() || !$file_info->isReadable()) {
+                        $file_path = $file_info->getRealPath();
+                        error_log("Unable to read file {$file_path}");
+                        return false;
+                    }
+
+                    return true;
+                }
             );
 
-            foreach (array_keys(iterator_to_array($iterator)) as $file_name) {
-                $file_path = Config::projectPath($file_name);
-                if (is_file($file_path) && is_readable($file_path)) {
-                    $file_list[] = $file_name;
-                } else {
-                    error_log("Unable to read file $file_path");
-                }
-            }
+            $file_list = array_keys(iterator_to_array($iterator));
         } catch (\Exception $exception) {
             error_log($exception->getMessage());
         }
@@ -517,12 +547,15 @@ EOB;
      * How frequently we should update the progress
      * bar, randomly sampled
      *
-     * @return null
+     * @return void
      */
     public static function progress(
         string $msg,
         float $p
     ) {
+        if (!self::shouldShowProgress()) {
+            return;
+        }
 
         // Bound the percentage to [0, 1]
         $p = min(max($p, 0.0), 1.0);
@@ -533,7 +566,8 @@ EOB;
 
         // Don't update every time when we're moving
         // super fast
-        if ($p < 1.0
+        if ($p > 0.0
+            && $p < 1.0
             && rand(0, 1000) > (1000 * Config::get()->progress_bar_sample_rate
             )) {
             return;
@@ -545,19 +579,20 @@ EOB;
             fwrite(STDERR, '.');
             return;
         }
-
         $memory = memory_get_usage()/1024/1024;
         $peak = memory_get_peak_usage()/1024/1024;
 
-        $padded_message = str_pad($msg, 10, ' ', STR_PAD_LEFT);
-
-        fwrite(STDERR, "$padded_message ");
         $current = (int)($p * 60);
         $rest = max(60 - $current, 0);
-        fwrite(STDERR, str_repeat("\u{2588}", $current));
-        fwrite(STDERR, str_repeat("\u{2591}", $rest));
-        fwrite(STDERR, " " . sprintf("% 3d", (int)(100*$p)) . "%");
-        fwrite(STDERR, sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r");
+
+        // Build up a string, then make a single call to fwrite(). Should be slightly faster and smoother to render to the console.
+        $msg = str_pad($msg, 10, ' ', STR_PAD_LEFT) .
+               ' ' .
+               str_repeat("\u{2588}", $current) .
+               str_repeat("\u{2591}", $rest) .
+               " " . sprintf("% 3d", (int)(100*$p)) . "%" .
+               sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r";
+        fwrite(STDERR, $msg);
     }
 
     /**

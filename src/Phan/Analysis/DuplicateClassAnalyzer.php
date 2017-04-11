@@ -11,7 +11,7 @@ class DuplicateClassAnalyzer
     /**
      * Check to see if the given Clazz is a duplicate
      *
-     * @return null
+     * @return void
      */
     public static function analyzeDuplicateClass(
         CodeBase $code_base,

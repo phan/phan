@@ -13,7 +13,7 @@ class ParentClassExistsAnalyzer
     /**
      * Check to see if the given Clazz is a duplicate
      *
-     * @return null
+     * @return void
      */
     public static function analyzeParentClassExists(
         CodeBase $code_base,

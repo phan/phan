@@ -217,11 +217,6 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitList(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitMagicConst(Node $node)
     {
         return $this->visit($node);
@@ -328,6 +323,11 @@ abstract class KindVisitorImplementation implements KindVisitor
     }
 
     public function visitType(Node $node)
+    {
+        return $this->visit($node);
+    }
+
+    public function visitNullableType(Node $node)
     {
         return $this->visit($node);
     }

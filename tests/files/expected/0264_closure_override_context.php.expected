@@ -1,0 +1,4 @@
+%s:44 PhanUndeclaredProperty Reference to undeclared property \closure264\BoundClass264->d
+%s:50 PhanTypeInvalidClosureScope Invalid PhanClosureScope: expected a class name, got string
+%s:51 PhanUndeclaredProperty Reference to undeclared property \closure264\TestFramework->b
+%s:51 PhanUndeclaredProperty Reference to undeclared property \closure264\TestFramework->d

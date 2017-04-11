@@ -118,7 +118,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
                     // Note that it can be null
                     $variable->getUnionType()->addType(
-                        NullType::instance()
+                        NullType::instance(false)
                     );
 
                     // Add it to the try scope
@@ -270,7 +270,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     continue;
                 } else {
                     $variable->getUnionType()->addType(
-                        NullType::instance()
+                        NullType::instance(false)
                     );
                 }
             }

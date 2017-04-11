@@ -53,31 +53,31 @@ use Phan\Library\Set;
 class CodeBase
 {
     /**
-     * @var Clazz[]|Map
+     * @var Map
      * A map from FQSEN to a class
      */
     private $fqsen_class_map;
 
     /**
-     * @var GlobalConstant[]|Map
+     * @var Map
      * A map from FQSEN to a global constant
      */
     private $fqsen_global_constant_map;
 
     /**
-     * @var Func[]|Map
+     * @var Map
      * A map from FQSEN to function
      */
     private $fqsen_func_map;
 
     /**
-     * @var Func[]|Method[]|Set
+     * @var Set
      * The set of all functions and methods
      */
     private $func_and_method_set;
 
     /**
-     * @var ClassMap[]|Map
+     * @var Map
      * A map from FullyQualifiedClassName to a ClassMap,
      * an object that holds properties, methods and class
      * constants.
@@ -135,7 +135,7 @@ class CodeBase
      * @param string[] $class_name_list
      * A list of class names to load type information for
      *
-     * @return null
+     * @return void
      */
     private function addClassesByNames(array $class_name_list)
     {
@@ -148,38 +148,69 @@ class CodeBase
      * @param string[] $function_name_list
      * A list of function names to load type information for
      */
-    private function addFunctionsByNames(array $function_name_list) {
+    private function addFunctionsByNames(array $function_name_list)
+    {
         foreach ($function_name_list as $i => $function_name) {
             foreach (FunctionFactory::functionListFromName($this, $function_name)
                 as $function_or_method
             ) {
-                if ($function_or_method instanceof Method) {
-                    $this->addMethod($function_or_method);
-                } else {
-                    $this->addFunction($function_or_method);
-                }
+                $this->addFunction($function_or_method);
             }
         }
     }
 
     /**
-     * Clone dependent objects when cloning this object
+     * Clone dependent objects when cloning this object.
      */
-    public function __clone() {
+    public function __clone()
+    {
         $this->fqsen_class_map =
-            clone($this->fqsen_class_map);
+            $this->fqsen_class_map->deepCopy();
 
         $this->fqsen_global_constant_map =
-            clone($this->fqsen_global_constant_map);
+            $this->fqsen_global_constant_map->deepCopy();
 
         $this->fqsen_func_map =
-            clone($this->fqsen_func_map);
-
-        $this->class_fqsen_class_map_map =
-            clone($this->class_fqsen_class_map_map);
+            $this->fqsen_func_map->deepCopy();
 
         $this->func_and_method_set =
+            $this->func_and_method_set->deepCopy();
+
+        $this->class_fqsen_class_map_map =
+            $this->class_fqsen_class_map_map->deepCopy();
+
+        $name_method_map = $this->name_method_map;
+        $this->name_method_map = [];
+        foreach ($name_method_map as $name => $method_map) {
+            $this->name_method_map[$name] = $method_map->deepCopy();
+        }
+    }
+
+    /**
+     * @return CodeBase
+     * A new code base is returned which is a shallow clone
+     * of this one, which is to say that the sets and maps
+     * of elements themselves are cloned, but the keys and
+     * values within those sets and maps are not cloned.
+     *
+     * Updates to elements will bleed through code bases
+     * with only shallow clones. See
+     * https://github.com/etsy/phan/issues/257
+     */
+    public function shallowClone() : CodeBase
+    {
+        $code_base = new CodeBase([], [], [], []);
+        $code_base->fqsen_class_map =
+            clone($this->fqsen_class_map);
+        $code_base->fqsen_global_constant_map =
+            clone($this->fqsen_global_constant_map);
+        $code_base->fqsen_func_map =
+            clone($this->fqsen_func_map);
+        $code_base->class_fqsen_class_map_map =
+            clone($this->class_fqsen_class_map_map);
+        $code_base->func_and_method_set =
             clone($this->func_and_method_set);
+        return $code_base;
     }
 
     /**
@@ -188,7 +219,8 @@ class CodeBase
      *
      * @return void
      */
-    public function addClass(Clazz $class) {
+    public function addClass(Clazz $class)
+    {
         // Map the FQSEN to the class
         $this->fqsen_class_map[$class->getFQSEN()] = $class;
     }
@@ -232,7 +264,7 @@ class CodeBase
     }
 
     /**
-     * @return Clazz[]|Map
+     * @return Map
      * A list of all classes
      */
     public function getClassMap() : Map
@@ -306,7 +338,7 @@ class CodeBase
     }
 
     /**
-     * @return Method[]|Set
+     * @return Set
      * A set of all known methods with the given name
      */
     public function getMethodSetByName(string $name) : Set
@@ -320,7 +352,7 @@ class CodeBase
     }
 
     /**
-     * @return Method[]|Func[]|Set
+     * @return Set
      * The set of all methods and functions
      */
     public function getFunctionAndMethodSet() : Set
@@ -414,7 +446,7 @@ class CodeBase
     }
 
     /**
-     * @return Map|Func[]
+     * @return Map
      */
     public function getFunctionMap() : Map
     {
@@ -509,7 +541,7 @@ class CodeBase
     }
 
     /**
-     * @return Map|GlobalConstant[]
+     * @return Map
      */
     public function getGlobalConstantMap() : Map
     {
@@ -603,7 +635,7 @@ class CodeBase
     }
 
     /**
-     * @return Map|ClassMap[]
+     * @return Map
      */
     public function getClassMapMap() : Map
     {

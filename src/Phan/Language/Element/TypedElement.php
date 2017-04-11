@@ -13,8 +13,6 @@ use Phan\Language\UnionType;
  */
 abstract class TypedElement implements TypedElementInterface
 {
-    use \Phan\Memoize;
-
     /**
      * @var string
      * The name of the typed structural element
@@ -22,7 +20,7 @@ abstract class TypedElement implements TypedElementInterface
     private $name;
 
     /**
-     * @var UnionType
+     * @var UnionType|null
      * A set of types satisfyped by this typed structural
      * element.
      */
@@ -45,13 +43,13 @@ abstract class TypedElement implements TypedElementInterface
     private $phan_flags = 0;
 
     /**
-     * @var Context
+     * @var Context|null
      * The context in which the structural element lives
      */
     private $context = null;
 
     /**
-     * @var string[]
+     * @var int[]
      * A set of issues types to be suppressed
      */
     private $suppress_issue_list = [];
@@ -130,6 +128,15 @@ abstract class TypedElement implements TypedElementInterface
     public function setUnionType(UnionType $type)
     {
         $this->type = clone($type);
+    }
+
+    /**
+     * @return void
+     */
+    protected function convertToNonVariadic()
+    {
+        // Avoid a redundant clone of toGenericArray()
+        $this->type = $this->getUnionType();
     }
 
     /**
@@ -233,13 +240,13 @@ abstract class TypedElement implements TypedElementInterface
     public function setSuppressIssueList(array $suppress_issue_list)
     {
         $this->suppress_issue_list = [];
-        foreach ($suppress_issue_list as $i => $issue_name) {
+        foreach ($suppress_issue_list as $issue_name) {
             $this->suppress_issue_list[$issue_name] = 0;
         }
     }
 
     /**
-     * @return string[]
+     * @return int[]
      */
     public function getSuppressIssueList() : array
     {
@@ -288,22 +295,8 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public final function hydrate(CodeBase $code_base)
+    public function hydrate(CodeBase $code_base)
     {
-        if (!$this->isFirstExecution(__METHOD__)) {
-            return;
-        }
-
-        $this->hydrateOnce($code_base );
-    }
-
-    /**
-     * This method must be called before analysis
-     * begins.
-     *
-     * @return void
-     */
-    protected function hydrateOnce(CodeBase $code_base) {
         // Do nothing unless overridden
     }
 }

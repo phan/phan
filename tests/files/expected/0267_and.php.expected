@@ -1,0 +1,4 @@
+%s:11 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string267() takes string defined at %s:6
+%s:14 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int267() takes int defined at %s:3
+%s:18 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int267() takes int defined at %s:3
+%s:21 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string267() takes string defined at %s:6

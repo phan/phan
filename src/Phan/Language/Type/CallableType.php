@@ -2,6 +2,7 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\FQSEN;
+use Phan\Language\Type;
 
 class CallableType extends NativeType
 {
@@ -16,7 +17,7 @@ class CallableType extends NativeType
     private static function callableInstance() : CallableType {
         static $instance = null;
         if (empty($instance)) {
-            $instance = self::make('\\', static::NAME, []);
+            $instance = self::make('\\', static::NAME, [], false, false);
         }
         return $instance;
     }
@@ -24,7 +25,7 @@ class CallableType extends NativeType
     public static function instanceWithClosureFQSEN(FQSEN $fqsen)
     {
         // Use an instance with no memoized or lazily initialized results.
-        // Avoids picking up changes to CallableType::instance() in the case that a result depends on asFQSEN()
+        // Avoids picking up changes to CallableType::instance(false) in the case that a result depends on asFQSEN()
         $instance = clone(self::callableInstance());
         $instance->fqsen = $fqsen;
         return $instance;
@@ -41,4 +42,26 @@ class CallableType extends NativeType
 
         return parent::asFQSEN();
     }
+
+    /**
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableType(Type $type) : bool
+    {
+        $d = strtolower((string)$type);
+        if ($d[0] == '\\') {
+            $d = substr($d, 1);
+        }
+
+        // TODO: you can have a callable that isn't a closure
+        //       This is wrong
+        if ($d === 'closure') {
+            return true;
+        }
+
+        return parent::canCastToNonNullableType($type);
+    }
+
 }

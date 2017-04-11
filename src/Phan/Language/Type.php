@@ -10,6 +10,7 @@ use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
@@ -17,7 +18,7 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\VoidType;
-use Phan\Library\Tuple3;
+use Phan\Library\Tuple4;
 
 class Type
 {
@@ -28,7 +29,7 @@ class Type
      * A legal type identifier (e.g. 'int' or 'DateTime')
      */
     const simple_type_regex =
-        '[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*';
+        '(\??)[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*';
 
     /**
      * @var string
@@ -59,19 +60,39 @@ class Type
      * A legal type identifier matching a type optionally with a []
      * indicating that it's a generic typed array (e.g. 'int[]',
      * 'string' or 'Set<DateTime>')
+     * TODO: change the regex so that '@return $this' will work (Currently not parsed, has empty regex)
      */
     const type_regex =
         self::simple_type_with_template_parameter_list_regex . '(\[\])*';
 
     /**
-     * @var string
+     * @var bool[] - For checking if a string is an internal type.
+     */
+    const _internal_type_set = [
+        'array'     => true,
+        'bool'      => true,
+        'callable'  => true,
+        'float'     => true,
+        'int'       => true,
+        'iterable'  => true,
+        'mixed'     => true,
+        'null'      => true,
+        'object'    => true,
+        'resource'  => true,
+        'static'    => true,
+        'string'    => true,
+        'void'      => true,
+    ];
+
+    /**
+     * @var string|null
      * The namespace of this type such as '\' or
      * '\Phan\Language'
      */
     protected $namespace = null;
 
     /**
-     * @var string
+     * @var string|null
      * The name of this type such as 'int' or 'MyClass'
      */
     protected $name = null;
@@ -85,6 +106,12 @@ class Type
     protected $template_parameter_type_list = [];
 
     /**
+     * @var bool
+     * True if this type is nullable, else false
+     */
+    protected $is_nullable = false;
+
+    /**
      * @param string $name
      * The name of the type such as 'int' or 'MyClass'
      *
@@ -94,15 +121,21 @@ class Type
      *
      * @param UnionType[] $template_parameter_type_list
      * A (possibly empty) list of template parameter types
+     *
+     * @param bool $is_nullable
+     * True if this type can be null, false if it cannot
+     * be null.
      */
     protected function __construct(
         string $namespace,
         string $name,
-        $template_parameter_type_list
+        $template_parameter_type_list,
+        bool $is_nullable
     ) {
         $this->namespace = $namespace;
         $this->name = $name;
         $this->template_parameter_type_list = $template_parameter_type_list;
+        $this->is_nullable = $is_nullable;
     }
 
     /**
@@ -116,18 +149,28 @@ class Type
      * @param UnionType[] $template_parameter_type_list
      * A (possibly empty) list of template parameter types
      *
+     * @param bool $is_nullable
+     * True if this type can be null, false if it cannot
+     * be null.
+     *
+     * @param bool $is_phpdoc_type
+     * True if $type_name was extracted from a doc comment.
+     * (Outside of phpdoc, "integer" would be a class name)
+     *
      * @return Type
      * A single canonical instance of the given type.
      */
     protected static function make(
         string $namespace,
         string $type_name,
-        $template_parameter_type_list
+        $template_parameter_type_list,
+        bool $is_nullable,
+        bool $is_phpdoc_type
     ) : Type {
 
         $namespace = trim($namespace);
 
-        if ('\\' === $namespace) {
+        if ('\\' === $namespace && $is_phpdoc_type) {
             $type_name = self::canonicalNameFromName($type_name);
         }
 
@@ -139,14 +182,11 @@ class Type
             return GenericArrayType::fromElementType(Type::make(
                 $namespace,
                 substr($type_name, 0, $pos),
-                $template_parameter_type_list
+                $template_parameter_type_list,
+                $is_nullable,
+                $is_phpdoc_type
             ));
         }
-
-        assert(
-            $namespace && 0 === strpos($namespace, '\\'),
-            "Namespace must be fully qualified"
-        );
 
         assert(
             !empty($namespace),
@@ -174,8 +214,7 @@ class Type
         // Create a canonical representation of the
         // namespace and name
         $namespace = $namespace ?: '\\';
-
-        if ('\\' === $namespace) {
+        if ('\\' === $namespace && $is_phpdoc_type) {
             $type_name = self::canonicalNameFromName($type_name);
         }
 
@@ -183,7 +222,7 @@ class Type
         // object for any unique type
         static $canonical_object_map = [];
 
-        $key = $namespace . '\\' . $type_name;
+        $key = ($is_nullable ? '?' : '') . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
             $key .= '<' . implode(',', array_map(function (UnionType $union_type) {
@@ -195,7 +234,12 @@ class Type
 
         if (empty($canonical_object_map[$key])) {
             $canonical_object_map[$key] =
-                new static($namespace, $type_name, $template_parameter_type_list);
+                new static(
+                    $namespace,
+                    $type_name,
+                    $template_parameter_type_list,
+                    $is_nullable
+                );
         }
 
         return $canonical_object_map[$key];
@@ -217,7 +261,9 @@ class Type
         return self::make(
             $type->getNamespace(),
             $type->getName(),
-            $template_parameter_type_list
+            $template_parameter_type_list,
+            $type->getIsNullable(),
+            false
         );
     }
 
@@ -227,18 +273,24 @@ class Type
      */
     public static function fromObject($object) : Type
     {
-        return Type::fromInternalTypeName(gettype($object));
+        return Type::fromInternalTypeName(gettype($object), false, true);
     }
 
     /**
      * @param string $type_name
      * The name of the internal type such as 'int'
      *
+     * @param bool $is_nullable
+     * Set to true if the type should be nullable, else pass
+     * false
+     *
      * @return Type
      * Get a type for the given type name
      */
     public static function fromInternalTypeName(
-        string $type_name
+        string $type_name,
+        bool $is_nullable,
+        bool $is_phpdoc_type = false
     ) : Type {
 
         // If this is a generic type (like int[]), return
@@ -246,7 +298,9 @@ class Type
         if (false !== ($pos = strrpos($type_name, '[]'))) {
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
-                    substr($type_name, 0, $pos)
+                    substr($type_name, 0, $pos),
+                    $is_nullable,
+                    $is_phpdoc_type
                 )
             );
         }
@@ -256,29 +310,32 @@ class Type
 
         switch (strtolower($type_name)) {
             case 'array':
-                return ArrayType::instance();
+                return ArrayType::instance($is_nullable);
             case 'bool':
-                return BoolType::instance();
+                return BoolType::instance($is_nullable);
             case 'callable':
-                return CallableType::instance();
+                return CallableType::instance($is_nullable);
             case 'float':
-                return FloatType::instance();
+                return FloatType::instance($is_nullable);
             case 'int':
-                return IntType::instance();
+                return IntType::instance($is_nullable);
             case 'mixed':
-                return MixedType::instance();
+                return MixedType::instance($is_nullable);
             case 'null':
-                return NullType::instance();
+                return NullType::instance($is_nullable);
             case 'object':
-                return ObjectType::instance();
+                return ObjectType::instance($is_nullable);
             case 'resource':
-                return ResourceType::instance();
+                return ResourceType::instance($is_nullable);
             case 'string':
-                return StringType::instance();
+                return StringType::instance($is_nullable);
             case 'void':
-                return VoidType::instance();
+                // TODO: This can't be nullable, right?
+                return VoidType::instance($is_nullable);
+            case 'iterable':
+                return IterableType::instance($is_nullable);
             case 'static':
-                return StaticType::instance();
+                return StaticType::instance($is_nullable);
         }
 
         assert(
@@ -297,12 +354,17 @@ class Type
      * @return Type
      * A type representing the given namespace and type
      * name.
+     *
+     * @param bool $is_nullable
+     * True if this type can be null, false if it cannot
+     * be null.
      */
     public static function fromNamespaceAndName(
         string $namespace,
-        string $type_name
+        string $type_name,
+        bool  $is_nullable
     ) : Type {
-        return self::make($namespace, $type_name, []);
+        return self::make($namespace, $type_name, [], $is_nullable, false);
     }
 
     /**
@@ -313,25 +375,31 @@ class Type
      * The context in which the type string was
      * found
      *
-     * @return UnionType
+     * @return Type
      */
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) : Type {
+
         assert(
             !empty($fully_qualified_string),
             "Type cannot be empty"
         );
-
-        if (0 !== strpos($fully_qualified_string, '\\')) {
-            return self::fromInternalTypeName($fully_qualified_string);
-        }
 
         $tuple = self::typeStringComponents($fully_qualified_string);
 
         $namespace = $tuple->_0;
         $type_name = $tuple->_1;
         $template_parameter_type_name_list = $tuple->_2;
+        $is_nullable = $tuple->_3;
+
+        if (empty($namespace)) {
+            return self::fromInternalTypeName(
+                $fully_qualified_string,
+                $is_nullable,
+                false
+            );
+        }
 
         // Map the names of the types to actual types in the
         // template parameter type list
@@ -351,7 +419,9 @@ class Type
         return self::make(
             $namespace,
             $type_name,
-            $template_parameter_type_list
+            $template_parameter_type_list,
+            $is_nullable,
+            false
         );
     }
 
@@ -363,12 +433,16 @@ class Type
      * The context in which the type string was
      * found
      *
+     * @param bool $is_phpdoc_type
+     * True if $string was extracted from a doc comment.
+     *
      * @return Type
      * Parse a type from the given string
      */
     public static function fromStringInContext(
         string $string,
-        Context $context
+        Context $context,
+        bool $is_phpdoc_type = false
     ) : Type {
 
         assert(
@@ -382,12 +456,13 @@ class Type
         $namespace = $tuple->_0;
         $type_name = $tuple->_1;
         $template_parameter_type_name_list = $tuple->_2;
+        $is_nullable = $tuple->_3;
 
         // Map the names of the types to actual types in the
         // template parameter type list
         $template_parameter_type_list =
-            array_map(function (string $type_name) use ($context) {
-                return Type::fromStringInContext($type_name, $context)->asUnionType();
+            array_map(function (string $type_name) use ($context, $is_phpdoc_type) {
+                return Type::fromStringInContext($type_name, $context, $is_phpdoc_type)->asUnionType();
             }, $template_parameter_type_name_list);
 
         // @var bool
@@ -431,14 +506,18 @@ class Type
                 return GenericArrayType::fromElementType(Type::make(
                     $fqsen->getNamespace(),
                     $fqsen->getName(),
-                    $template_parameter_type_list
+                    $template_parameter_type_list,
+                    $is_nullable,
+                    $is_phpdoc_type
                 ));
             }
 
             return Type::make(
                 $fqsen->getNamespace(),
                 $fqsen->getName(),
-                $template_parameter_type_list
+                $template_parameter_type_list,
+                $is_nullable,
+                $is_phpdoc_type
             );
         }
 
@@ -448,43 +527,18 @@ class Type
             return self::make(
                 $namespace,
                 $type_name,
-                $template_parameter_type_list
+                $template_parameter_type_list,
+                $is_nullable,
+                $is_phpdoc_type
             );
         }
 
-        if ($is_generic_array_type
-           && self::isNativeTypeString($type_name)
-        ) {
-            return self::fromInternalTypeName($type_name);
-        } else {
-            // Check to see if it's a builtin type
-            switch (strtolower(self::canonicalNameFromName($type_name))) {
-                case 'array':
-                    return \Phan\Language\Type\ArrayType::instance();
-                case 'bool':
-                    return \Phan\Language\Type\BoolType::instance();
-                case 'callable':
-                    return \Phan\Language\Type\CallableType::instance();
-                case 'float':
-                    return \Phan\Language\Type\FloatType::instance();
-                case 'int':
-                    return \Phan\Language\Type\IntType::instance();
-                case 'mixed':
-                    return \Phan\Language\Type\MixedType::instance();
-                case 'null':
-                    return \Phan\Language\Type\NullType::instance();
-                case 'object':
-                    return \Phan\Language\Type\ObjectType::instance();
-                case 'resource':
-                    return \Phan\Language\Type\ResourceType::instance();
-                case 'string':
-                    return \Phan\Language\Type\StringType::instance();
-                case 'void':
-                    return \Phan\Language\Type\VoidType::instance();
-                case 'static':
-                    return \Phan\Language\Type\StaticType::instance();
+        if (self::isInternalTypeString($type_name, $is_phpdoc_type)) {
+            return self::fromInternalTypeName($type_name, $is_nullable, $is_phpdoc_type);
+        }
 
-            }
+        if ($is_phpdoc_type && ($namespace ?: '\\') === '\\') {
+            $type_name = self::canonicalNameFromName($type_name);
         }
 
         // Things like `self[]` or `$this[]`
@@ -538,7 +592,13 @@ class Type
         }
 
         // Attach the context's namespace to the type name
-        return self::make($namespace, $type_name, $template_parameter_type_list);
+        return self::make(
+            $namespace,
+            $type_name,
+            $template_parameter_type_list,
+            $is_nullable,
+            $is_phpdoc_type
+        );
     }
 
     /**
@@ -557,6 +617,7 @@ class Type
      */
     public function asFQSEN() : FQSEN
     {
+        // Note: some subclasses, such as CallableType, return different subtypes of FQSEN
         return FullyQualifiedClassName::fromType($this);
     }
 
@@ -588,6 +649,37 @@ class Type
     }
 
     /**
+     *
+     */
+    public function getIsNullable() : bool
+    {
+        return $this->is_nullable;
+    }
+
+    /**
+     * @param bool $is_nullable
+     * Set to true if the type should be nullable, else pass
+     * false
+     *
+     * @return Type
+     * A new type that is a copy of this type but with the
+     * given nullability value.
+     */
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        if ($is_nullable === $this->is_nullable) {
+            return $this;
+        }
+        return static::make(
+            $this->getNamespace(),
+            $this->getName(),
+            $this->getTemplateParameterTypeList(),
+            $is_nullable,
+            false
+        );
+    }
+
+    /**
      * @return bool
      * True if this is a native type (like int, string, etc.)
      *
@@ -599,31 +691,19 @@ class Type
 
     /**
      * @return bool
-     * True if this is a native type (like int, string, etc.)
+     * True if this is a native type or an array of native types
+     * (like int, string, bool[], etc.),
      *
      * @see \Phan\Deprecated\Util::is_native_type
      * Formerly `function is_native_type`
      */
-    private static function isNativeTypeString(string $type_name) : bool
+    private static function isInternalTypeString(string $type_name, bool $is_phpdoc_type) : bool
     {
-        return in_array(
-            str_replace('[]', '', strtolower($type_name)),
-            [
-                'int',
-                'float',
-                'bool',
-                'true',
-                'string',
-                'closure',
-                'callable',
-                'array',
-                'null',
-                'object',
-                'resource',
-                'mixed',
-                'void'
-            ]
-        );
+        $type_name = str_replace('[]', '', strtolower($type_name));
+        if ($is_phpdoc_type) {
+            $type_name = self::canonicalNameFromName($type_name);  // Have to convert boolean[] to bool
+        }
+        return array_key_exists($type_name, self::_internal_type_set);
     }
 
     /**
@@ -644,7 +724,7 @@ class Type
      */
     public function isStaticType() : bool
     {
-        return ('static' === (string)$this || '\\static' === (string)$this);
+        return 'static' === strtolower(ltrim((string)$this, '\\'));
     }
 
     /**
@@ -653,15 +733,30 @@ class Type
      *
      * @return bool
      * True if the given type references the class context
-     * in which it exists such as 'static' or 'self'.
+     * in which it exists such as 'self' or 'parent'
      */
     public static function isSelfTypeString(
         string $type_string
     ) : bool {
-        return in_array(strtolower($type_string), [
-            'self', '$this', 'parent',
-            '\self', '\$this', '\parent'
-        ]);
+        // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
+        // Not sure if that should extend to phpdoc.
+        return preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\\$this)$/', $type_string) > 0;
+    }
+
+    /**
+     * @param string $type_string
+     * A string defining a type such as 'static' or 'int'.
+     *
+     * @return bool
+     * True if the given type references the class context
+     * in which it exists is '$this' or 'static'
+     */
+    public static function isStaticTypeString(
+        string $type_string
+    ) : bool {
+        // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
+        // Not sure if that should extend to phpdoc.
+        return preg_match('/^\\\\?([sS][tT][aA][tT][iI][cC]|\\$this)$/', $type_string) > 0;
     }
 
     /**
@@ -673,14 +768,16 @@ class Type
      */
     public function isScalar() : bool
     {
-        return in_array((string)$this, [
-            'int',
-            'float',
-            'bool',
-            'true',
-            'string',
-            'null'
-        ]);
+        return false;  // Overridden in subclass ScalarType
+    }
+
+    /**
+     * @return bool
+     * True if this type is iterable.
+     */
+    public function isIterable() : bool
+    {
+        return false;  // Overridden in subclass IterableType (with subclass ArrayType)
     }
 
     /**
@@ -690,13 +787,11 @@ class Type
      */
     public function isArrayLike() : bool
     {
-        $array_access_type =
-            Type::make('\\', 'ArrayAccess', []);
-
+        // includes both nullable and non-nullable ArrayAccess/array/iterable
         return (
-            $this === ArrayType::instance()
+            $this->isIterable()
             || $this->isGenericArray()
-            || $this === $array_access_type
+            || $this->isArrayAccess()
         );
     }
 
@@ -707,7 +802,16 @@ class Type
      */
     public function isGenericArray() : bool
     {
-        return self::isGenericArrayString($this->getName());
+        return false;  // Overridden in GenericArrayType
+    }
+
+    /**
+     * @return bool - Returns true if this is \ArrayAccess (nullable or not)
+     */
+    public function isArrayAccess() : bool
+    {
+        return (strcasecmp($this->getName(), 'ArrayAccess') === 0
+            && $this->getNamespace() === '\\');
     }
 
     /**
@@ -720,10 +824,10 @@ class Type
      */
     private static function isGenericArrayString(string $type_name) : bool
     {
-        if (in_array($type_name, ['[]', 'array'])) {
-            return false;
+        if (strrpos($type_name, '[]') !== false) {
+            return $type_name !== '[]';
         }
-        return (strpos($type_name, '[]') !== false);
+        return false;
     }
 
     /**
@@ -747,7 +851,9 @@ class Type
             return Type::make(
                 $this->getNamespace(),
                 substr($this->getName(), 0, $pos),
-                $this->template_parameter_type_list
+                $this->template_parameter_type_list,
+                $this->getIsNullable(),
+                false
             );
         }
 
@@ -761,11 +867,13 @@ class Type
      */
     public function asGenericArrayType() : Type
     {
-        if ($this->getName() == 'array'
-            || $this->getName() == 'mixed'
-            || strpos($this->getName(), '[]') !== false
+        if (!($this instanceof GenericArrayType)
+            && (
+                $this->getName() == 'array'
+                || $this->getName() == 'mixed'
+            )
         ) {
-            return ArrayType::instance();
+            return ArrayType::instance(false);
         }
 
         return GenericArrayType::fromElementType($this);
@@ -794,10 +902,11 @@ class Type
      * @param CodeBase $code_base
      * The code base to look up classes against
      *
-     * @return Type[]
+     * @return UnionType[]
      * A map from template type identifier to a concrete type
      */
-    public function getTemplateParameterTypeMap(CodeBase $code_base) {
+    public function getTemplateParameterTypeMap(CodeBase $code_base)
+    {
         return $this->memoize(__METHOD__, function () use ($code_base) {
             $fqsen = $this->asFQSEN();
 
@@ -906,7 +1015,16 @@ class Type
         });
     }
 
-    public function isSubclassOf(CodeBase $code_base, Type $parent)
+    /**
+     * @param CodeBase $code_base
+     *
+     * @param Type $parent
+     *
+     * @return bool
+     * True if this type represents a class which is a sub-type of
+     * the class represented by the passed type.
+     */
+    public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
     {
         $fqsen = $this->asFQSEN();
         assert($fqsen instanceof FullyQualifiedClassName);
@@ -932,115 +1050,61 @@ class Type
      */
     public function canCastToType(Type $type) : bool
     {
+        // Check to see if we have an exact object match
         if ($this === $type) {
             return true;
         }
 
-        $s = strtolower((string)$this);
-        $d = strtolower((string)$type);
-
-        $s_is_generic_array = $this->isGenericArray();
-        $d_is_generic_array = $type->isGenericArray();
-
-        if ($s[0]=='\\') {
-            $s = substr($s, 1);
+        // A nullable type cannot cast to a non-nullable type
+        if ($this->getIsNullable() && !$type->getIsNullable()) {
+            return false;
         }
 
-        if ($d[0]=='\\') {
-            $d = substr($d, 1);
-        }
+        // Get a non-null version of the type we're comparing
+        // against.
+        if ($type->getIsNullable()) {
+            $type = $type->withIsNullable(false);
 
-        if ($s===$d) {
-            return true;
-        }
-
-        if (Config::get()->scalar_implicit_cast) {
-            if ($type->isScalar() && $this->isScalar()) {
+            // Check one more time to see if the types are equal
+            if ($this === $type) {
                 return true;
             }
         }
 
-        if ($s_is_generic_array && $d_is_generic_array) {
-            return $this->genericArrayElementType()
-                ->canCastToType($type->genericArrayElementType());
-        }
+        // Test to see if we can cast to the non-nullable version
+        // of the target type.
+        return $this->canCastToNonNullableType($type);
+    }
 
-        if ($s==='int' && $d==='float') {
-            return true; // int->float is ok
-        }
-
-        if (($s==='array'
-            || $s==='string'
-            || $s_is_generic_array
-            || $s==='closure')
-            && $d==='callable'
+    /**
+     * @param Type $type
+     * A Type which is not nullable. This constraint is not
+     * enforced, so be careful.
+     *
+     * @return bool
+     * True if this Type can be cast to the given Type
+     * cleanly
+     */
+    protected function canCastToNonNullableType(Type $type) : bool
+    {
+        // can't cast native types (includes iterable or array) to object. ObjectType overrides this function.
+        if ($type instanceof ObjectType
+            && !$this->isNativeType()
         ) {
             return true;
         }
 
-        if ($s === 'object'
-            && !$type->isScalar()
-            && $d!=='array'
-        ) {
-            return true;
-        }
+        // A matrix of allowable type conversions
+        static $matrix = [
+            '\Traversable' => [
+                'iterable' => true,
+            ],
+            '\Closure' => [
+                'callable' => true,
+            ],
+        ];
 
-        if ($d === 'object' &&
-            !$this->isScalar()
-            && $s!=='array'
-        ) {
-            return true;
-        }
-
-        if ($s_is_generic_array
-            && ($d == 'array' || $d == 'arrayaccess')
-        ) {
-            return true;
-        }
-
-        if ($d_is_generic_array
-            && $s==='array'
-        ) {
-            return true;
-        }
-
-        if ($s === 'callable' && $d === 'closure') {
-            return true;
-        }
-
-        if (($pos = strrpos($d, '\\')) !== false) {
-            if ('\\' !== $this->getNamespace()) {
-                if (trim(
-                    $this->getNamespace().'\\'.$s,
-                    '\\'
-                ) == $d
-                ) {
-                    return true;
-                }
-            } else {
-                if (substr($d, $pos+1) === $s) {
-                    return true; // Lazy hack, but...
-                }
-            }
-        }
-
-        if (($pos = strrpos($s, '\\')) !== false) {
-            if ('\\' !== $type->getNamespace()) {
-                if (trim(
-                    $type->getNamespace().'\\'.$d,
-                    '\\'
-                ) == $s
-                ) {
-                    return true;
-                }
-            } else {
-                if (substr($s, $pos+1) === $d) {
-                    return true; // Lazy hack, but...
-                }
-            }
-        }
-
-        return false;
+        return $matrix[(string)$this][(string)$type] ?? false;
     }
 
     /**
@@ -1065,21 +1129,32 @@ class Type
     /**
      * @return string
      * A human readable representation of this type
+     * (This is frequently called, so prefer efficient operations)
      */
     public function __toString()
     {
         $string = $this->asFQSENString();
 
-        $template_parameter_string =
-            implode(',', array_map(function (UnionType $type) {
-                return (string)$type;
-            }, $this->template_parameter_type_list));
+        if (count($this->template_parameter_type_list) > 0) {
+            $string .= $this->templateParameterTypeListAsString();
+        }
 
-        if (!empty($template_parameter_string)) {
-            $string .= '<' . $template_parameter_string . '>';
+        if ($this->getIsNullable()) {
+            $string = '?' . $string;
         }
 
         return $string;
+    }
+
+    /**
+     * Gets the part of the Type string for the template parameters.
+     * Precondition: $this->template_parameter_string is not null.
+     */
+    private function templateParameterTypeListAsString() : string {
+        return '<' .
+            implode(',', array_map(function (UnionType $type) {
+                return (string)$type;
+            }, $this->template_parameter_type_list)) . '>';
     }
 
     /**
@@ -1093,7 +1168,6 @@ class Type
         string $name
     ) : string {
         static $map = [
-            'NULL'     => 'null',
             'boolean'  => 'bool',
             'callback' => 'callable',
             'double'   => 'float',
@@ -1109,7 +1183,7 @@ class Type
      * @param string $type_string
      * Any type string such as 'int' or 'Set<int>'
      *
-     * @return Tuple3<string,string,array>
+     * @return Tuple4<string,string,array,bool>
      * A pair with the 0th element being the namespace and the first
      * element being the type name.
      */
@@ -1120,13 +1194,20 @@ class Type
         $template_parameter_type_name_list = [];
 
         $match = [];
+        $is_nullable = false;
         if (preg_match('/' . self::type_regex. '/', $type_string, $match)) {
             $type_string = $match[1];
 
+            // Rip out the nullability indicator if it
+            // exists and note its nullability
+            $is_nullable = ($match[2] ?? '') == '?';
+            if ($is_nullable) {
+                $type_string = substr($type_string, 1);
+            }
+
             // If we have a generic array symbol '[]', append that back
             // on to the type string
-            if (isset($match[7])) {
-
+            if (isset($match[12])) {
                 // Figure out the dimensionality of the type array
                 $gmatch = [];
                 if (preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
@@ -1134,8 +1215,8 @@ class Type
                 }
             }
 
-            $template_parameter_type_name_list = !empty($match[3])
-                ?  preg_split('/\s*,\s*/', $match[3])
+            $template_parameter_type_name_list = !empty($match[4])
+                ?  preg_split('/\s*,\s*/', $match[4])
                 : [];
         }
 
@@ -1154,10 +1235,11 @@ class Type
                 $fq_class_name_elements
             ));
 
-        return new Tuple3(
+        return new Tuple4(
             $namespace,
             $class_name,
-            $template_parameter_type_name_list
+            $template_parameter_type_name_list,
+            $is_nullable
         );
     }
 }

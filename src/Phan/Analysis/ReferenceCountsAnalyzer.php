@@ -141,7 +141,7 @@ class ReferenceCountsAnalyzer
     /**
      * Check to see if the given Clazz is a duplicate
      *
-     * @return null
+     * @return void
      */
     public static function analyzeElementReferenceCounts(
         CodeBase $code_base,

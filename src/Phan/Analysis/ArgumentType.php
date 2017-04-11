@@ -8,6 +8,8 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Parameter;
+use Phan\Language\Element\Variable;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\CallableType;
@@ -31,7 +33,7 @@ class ArgumentType
      * @param CodeBase $code_base
      * The global code base
      *
-     * @return null
+     * @return void
      *
      * @see \Phan\Deprecated\Pass2::arg_check
      * Formerly `function arg_check`
@@ -202,7 +204,7 @@ class ArgumentType
      * @param Context $context
      * The context in which we see the call
      *
-     * @return null
+     * @return void
      *
      * @see \Phan\Deprecated\Pass2::arglist_type_check
      * Formerly `function arglist_type_check`
@@ -298,7 +300,9 @@ class ArgumentType
                 if (is_null($candidate_alternate_parameter)) {
                     continue;
                 }
+
                 $alternate_parameter = $candidate_alternate_parameter;
+                assert($alternate_parameter instanceof Variable);
 
                 // See if the argument can be cast to the
                 // parameter
@@ -324,7 +328,7 @@ class ArgumentType
                 } elseif ($method->isInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
-                    if(!$context->getIsStrictTypes() && $parameter_type->hasType(StringType::instance())) {
+                    if(!$context->getIsStrictTypes() && is_object($parameter_type) && $parameter_type->hasType(StringType::instance(false))) {
                         try {
                             foreach($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
                                 if($clazz->hasMethodWithName($code_base, "__toString")) {
@@ -362,7 +366,6 @@ class ArgumentType
                     );
                 }
             }
-
         }
     }
 
@@ -370,8 +373,20 @@ class ArgumentType
      * Emit a log message if the type of the given
      * node cannot be cast to the given type
      *
-     * @param Node|null|string|int $node
+     * @param Node|null|string|int|float $node
      * A node or whatever php-ast feels like returning
+     *
+     * @param Context $context
+     * The context in which the node was found
+     *
+     * @param CodeBase $code_base
+     * The code base in which the node was found
+     *
+     * @param UnionType $cast_type
+     * The type that is being casted to
+     *
+     * @param \Closure $issue_instance
+     * An issue to emit if the cast doesn't work.
      *
      * @return bool
      * True if the cast is possible, else false
@@ -447,7 +462,7 @@ class ArgumentType
                         $arglist->children[0],
                         $context,
                         $code_base,
-                        ArrayType::instance()->asUnionType(),
+                        ArrayType::instance(false)->asUnionType(),
                         function (UnionType $node_type) use ($context, $method) {
                         // "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
                             return Issue::fromType(Issue::ParamSpecial2)(
@@ -478,7 +493,7 @@ class ArgumentType
 
                     if ((string)$arg1_type == 'array') {
                         if (!$arg2_type->canCastToUnionType(
-                            StringType::instance()->asUnionType()
+                            StringType::instance(false)->asUnionType()
                         )) {
                             Issue::maybeEmit(
                                 $code_base,
@@ -494,10 +509,10 @@ class ArgumentType
                                 'array'
                             );
                         }
-						return true;
+                        return true;
                     } elseif ((string)$arg1_type == 'string') {
                         if (!$arg2_type->canCastToUnionType(
-                            ArrayType::instance()->asUnionType()
+                            ArrayType::instance(false)->asUnionType()
                         )) {
                             Issue::maybeEmit(
                                 $code_base,
@@ -543,7 +558,7 @@ class ArgumentType
                     $arglist->children[$argcount - 1],
                     $context,
                     $code_base,
-                    CallableType::instance()->asUnionType(),
+                    CallableType::instance(false)->asUnionType(),
                     function (UnionType $node_type) use ($context, $method) {
                     // "The last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial3)(
@@ -561,7 +576,7 @@ class ArgumentType
                         $arglist->children[$i],
                         $context,
                         $code_base,
-                        CallableType::instance()->asUnionType(),
+                        CallableType::instance(false)->asUnionType(),
                         function (UnionType $node_type) use ($context, $method, $i) {
                         // "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                             return Issue::fromType(Issue::ParamTypeMismatch)(
@@ -600,7 +615,7 @@ class ArgumentType
                     $arglist->children[$argcount - 1],
                     $context,
                     $code_base,
-                    CallableType::instance()->asUnionType(),
+                    CallableType::instance(false)->asUnionType(),
                     function (UnionType $node_type) use ($context, $method) {
                     // "The last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial3)(
@@ -617,7 +632,7 @@ class ArgumentType
                     $arglist->children[$argcount - 2],
                     $context,
                     $code_base,
-                    CallableType::instance()->asUnionType(),
+                    CallableType::instance(false)->asUnionType(),
                     function (UnionType $node_type) use ($context, $method) {
                     // "The second last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial4)(
@@ -635,7 +650,7 @@ class ArgumentType
                         $arglist->children[$i],
                         $context,
                         $code_base,
-                        ArrayType::instance()->asUnionType(),
+                        ArrayType::instance(false)->asUnionType(),
                         function (UnionType $node_type) use ($context, $method, $i) {
                         // "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                             return Issue::fromType(Issue::ParamTypeMismatch)(
@@ -660,7 +675,7 @@ class ArgumentType
                         $arglist->children[0],
                         $context,
                         $code_base,
-                        StringType::instance()->asUnionType(),
+                        StringType::instance(false)->asUnionType(),
                         function (UnionType $node_type) use ($context, $method) {
                             return Issue::fromType(Issue::ParamSpecial2)(
                                 $context->getFile(),
@@ -687,7 +702,7 @@ class ArgumentType
                         $arglist->children[0],
                         $context,
                         $code_base,
-                        ArrayType::instance()->asUnionType(),
+                        ArrayType::instance(false)->asUnionType(),
                         function (UnionType $node_type) use ($context, $method) {
                         // "arg#1(values) is %s but {$method->getFQSEN()}() takes array when passed only one arg"
                             return Issue::fromType(Issue::ParamSpecial2)(

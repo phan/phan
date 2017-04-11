@@ -1,0 +1,1 @@
+%s:26 PhanTypeMismatchReturn Returning type object but returns_array() is declared to return array

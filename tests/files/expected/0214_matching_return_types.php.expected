@@ -1,0 +1,3 @@
+%s:8 PhanTypeMismatchReturn Returning type int but returnInt() is declared to return string
+%s:40 PhanTypeMismatchReturn Returning type \A but returnA() is declared to return \B
+%s:47 PhanTypeMismatchReturn Returning type \B but returnB() is declared to return \A

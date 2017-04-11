@@ -8,6 +8,7 @@ use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Exception\NodeException;
+use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
@@ -96,7 +97,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             "Expected left side of assignment to be a var"
         );
 
-        if ($right_type->isType(VoidType::instance())) {
+        if ($right_type->isType(VoidType::instance(false))) {
             $this->emitIssue(
                 Issue::TypeVoidAssignment,
                 $node->lineno ?? 0
@@ -156,19 +157,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitAssignRef(Node $node) : Context
     {
         return $this->visitAssign($node);
-    }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * @return Context
-     * A new or an unchanged context resulting from
-     * parsing the node
-     */
-    public function visitList(Node $node) : Context
-    {
-        return $this->context;
     }
 
     /**
@@ -414,7 +402,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['expr']
         );
 
-        if ($type->isType(ArrayType::instance())
+        if ($type->isType(ArrayType::instance(false))
+            || $type->isType(ArrayType::instance(true))
             || $type->isGenericArray()
         ) {
             $this->emitIssue(
@@ -546,7 +535,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -842,7 +831,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // could be called on
             foreach ($context_node->getClassList() as $class) {
                 $class->addReference($this->context);
-
                 if ($class->isDeprecated()) {
                     $this->emitIssue(
                         Issue::DeprecatedClass,
@@ -851,6 +839,30 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         $class->getContext()->getFile(),
                         (string)$class->getContext()->getLineNumberStart()
                     );
+                }
+                foreach($class->getInterfaceFQSENList() as $interface) {
+                    $clazz = $this->code_base->getClassByFQSEN($interface);
+                    if ($clazz->isDeprecated()) {
+                        $this->emitIssue(
+                            Issue::DeprecatedInterface,
+                            $node->lineno ?? 0,
+                            (string)$clazz->getFQSEN(),
+                            $clazz->getContext()->getFile(),
+                            (string)$clazz->getContext()->getLineNumberStart()
+                        );
+                    }
+                }
+                foreach($class->getTraitFQSENList() as $trait) {
+                    $clazz = $this->code_base->getClassByFQSEN($trait);
+                    if ($clazz->isDeprecated()) {
+                        $this->emitIssue(
+                            Issue::DeprecatedTrait,
+                            $node->lineno ?? 0,
+                            (string)$clazz->getFQSEN(),
+                            $clazz->getContext()->getFile(),
+                            (string)$clazz->getContext()->getLineNumberStart()
+                        );
+                    }
                 }
             }
 
@@ -951,26 +963,22 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $static_class = $node->children['class']->children['name'];
         }
 
-        // Short circuit on a constructor being called statically
-        // on something other than 'parent'
-        if ($method_name === '__construct') {
-            if ($static_class !== 'parent') {
-                $this->emitIssue(
-                    Issue::UndeclaredStaticMethod,
-                    $node->lineno ?? 0,
-                    "{$static_class}::{$method_name}()"
-                );
+        $method = $this->getStaticMethodOrEmitIssue($node);
+
+        if ($method === null) {
+            // Short circuit on a constructor being called statically
+            // on something other than 'parent'
+            if ($method_name === '__construct' && $static_class !== 'parent') {
+                $this->emitConstructorWarning($node, $static_class, $method_name);
             }
+            return $this->context;
         }
 
         try {
-            // Get a reference to the method being called
-            $method = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node
-            ))->getMethod($method_name, true);
-
+            if ($method_name === '__construct') {
+                $this->checkNonAncestorConstructCall($node, $static_class, $method_name);
+                // Even if it exists, continue on and type check the arguments passed.
+            }
             // Get the method thats calling the static method
             $calling_method = null;
             if ($this->context->isInMethodScope()) {
@@ -1062,12 +1070,110 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // this is, don't worry about it
             return $this->context;
         }
-
         return $this->context;
     }
 
     /**
-     * @param Node $node
+     * Check calling A::__construct (where A is not parent)
+     * @return void
+     */
+    private function checkNonAncestorConstructCall(
+        Node $node,
+        string $static_class,
+        string $method_name
+    ) {
+        if ($static_class === 'parent') {
+            return;
+        }
+        // TODO: what about unanalyzable?
+        if ($node->children['class']->kind != \ast\AST_NAME) {
+            return;
+        }
+        $class_context_node = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['class']
+        ));
+        // TODO: check for self/static/<class name of self> and warn about recursion?
+        // TODO: Only allow calls to __construct from other constructors?
+        $found_ancestor_constructor = false;
+        if ($this->context->isInMethodScope()) {
+            $possible_ancestor_type = $class_context_node->getClassUnionType();
+            // If we can determine the ancestor type, and it's an parent/ancestor class, allow the call without warning.
+            // (other code should check visibility and existence and args of __construct)
+
+            if (!$possible_ancestor_type->isEmpty()) {
+                // but forbid 'self::__construct', 'static::__construct'
+                $type = $this->context->getClassFQSEN()->asUnionType();
+                if ($type->asExpandedTypes($this->code_base)->canCastToUnionType($possible_ancestor_type)
+                        && !$type->canCastToUnionType($possible_ancestor_type)) {
+                    $found_ancestor_constructor = true;
+                }
+            }
+        }
+
+        if (!$found_ancestor_constructor) {
+            // TODO: new issue type?
+            $this->emitConstructorWarning($node, $static_class, $method_name);
+        }
+    }
+
+    /**
+     * TODO: change to a different issue type in a future phan release?
+     * @return void
+     */
+    private function emitConstructorWarning(Node $node, string $static_class, string $method_name)
+    {
+        $this->emitIssue(
+            Issue::UndeclaredStaticMethod,
+            $node->lineno ?? 0,
+            "{$static_class}::{$method_name}()"
+        );
+    }
+
+    /**
+     * gets the static method, or emits an issue.
+     * @return Method|null
+     */
+    private function getStaticMethodOrEmitIssue(Node $node)
+    {
+        $method_name = $node->children['method'];
+
+        try {
+            // Get a reference to the method being called
+            return (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getMethod($method_name, true);
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
+        } catch (\Exception $exception) {
+
+            // If we can't figure out the class for this method
+            // call, cry YOLO and mark every method with that
+            // name with a reference.
+            if (Config::get()->dead_code_detection
+                && Config::get()->dead_code_detection_prefer_false_negative
+            ) {
+                foreach ($this->code_base->getMethodSetByName(
+                    $method_name
+                ) as $method) {
+                    $method->addReference($this->context);
+                }
+            }
+
+            // If we can't figure out what kind of a call
+            // this is, don't worry about it
+        }
+    }
+
+    /**
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -1094,16 +1200,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             } catch (\Exception $exception) {
 
             }
-        }
 
-        if ($method instanceof Method) {
             if (!$method->isAbstract()
                 && !$has_interface_class
                 && !$return_type->isEmpty()
                 && !$method->getHasReturn()
                 && !$this->declOnlyThrows($node)
-                && !$return_type->hasType(VoidType::instance())
-                && !$return_type->hasType(NullType::instance())
+                && !$return_type->hasType(VoidType::instance(false))
+                && !$return_type->hasType(NullType::instance(false))
             ) {
                 $this->emitIssue(
                     Issue::TypeMissingReturn,
@@ -1120,22 +1224,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     Issue::TemplateTypeStaticMethod,
                     $node->lineno ?? 0,
                     (string)$method->getFQSEN()
-                );
-            }
-        }
-
-        if ($method instanceof Func) {
-            if (!$return_type->isEmpty()
-                && !$method->getHasReturn()
-                && !$this->declOnlyThrows($node)
-                && !$return_type->hasType(VoidType::instance())
-                && !$return_type->hasType(NullType::instance())
-            ) {
-                $this->emitIssue(
-                    Issue::TypeMissingReturn,
-                    $node->lineno ?? 0,
-                    (string)$method->getFQSEN(),
-                    (string)$return_type
                 );
             }
         }
@@ -1160,7 +1248,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -1177,8 +1265,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if (!$return_type->isEmpty()
             && !$method->getHasReturn()
             && !$this->declOnlyThrows($node)
-            && !$return_type->hasType(VoidType::instance())
-            && !$return_type->hasType(NullType::instance())
+            && !$return_type->hasType(VoidType::instance(false))
+            && !$return_type->hasType(NullType::instance(false))
         ) {
             $this->emitIssue(
                 Issue::TypeMissingReturn,
@@ -1352,6 +1440,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
+            assert(is_string($line));
             unset($ftemp);
             if (strpos($line, '{') === false
                 || strpos($line, '}') === false
@@ -1373,6 +1462,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
+            assert(is_string($line));
             unset($ftemp);
             if (strpos($line, '{') === false
                 || strpos($line, '}') === false
@@ -1480,10 +1570,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * to the given method or function
      *
      * @param CodeBase $code_base
-     * @param Method $method
+     * @param FunctionInterface $method
      * @param Node $node
      *
-     * @return null
+     * @return void
      */
     private function analyzeCallToMethod(
         CodeBase $code_base,
@@ -1496,7 +1586,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // parameters
         $argument_list = $node->children['args'];
         foreach ($argument_list->children as $i => $argument) {
-            if (!is_object($argument)) {
+            if (!$argument instanceof \ast\Node) {
                 continue;
             }
 
@@ -1560,7 +1650,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Take another pass over pass-by-reference parameters
         // and assign types to passed in variables
         foreach ($argument_list->children as $i => $argument) {
-            if (!is_object($argument)) {
+            if (!$argument instanceof \ast\Node) {
                 continue;
             }
             $parameter = $method->getParameterForCaller($i);
@@ -1671,10 +1761,24 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // and scope so that we can reset it after re-analyzing
         // it.
         $original_method_scope = clone($method->getInternalScope());
-        $original_parameter_list = array_map(function (Parameter $parameter) : Parameter {
+        $original_parameter_list = array_map(function (Variable $parameter) : Variable {
             return clone($parameter);
         }, $method->getParameterList());
 
+        // always resolve all arguments outside of quick mode to detect undefined variables, other problems in call arguments.
+        // Fixes https://github.com/etsy/phan/issues/583
+        $argument_types = [];
+        foreach ($argument_list_node->children as $i => $argument) {
+            if (!$argument) {
+                continue;
+            }
+            // Determine the type of the argument at position $i
+            $argument_types[$i] = UnionType::fromNode(
+                $this->context,
+                $this->code_base,
+                $argument
+            );
+        }
 
         // Get the list of parameters on the method
         $parameter_list = $method->getParameterList();
@@ -1688,7 +1792,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ) {
                 $parameter_list = $method->getParameterList();
                 $parameter_list[$i] = clone($parameter);
-                $parameter_list[$i]->setUnionType($parameter->getDefaultValueType());
+                $parameter_type = $parameter->getDefaultValueType();
+                if ($parameter_type->isType(NullType::instance(false))) {
+                    // Treat a parameter default of null the same way as passing null to that parameter
+                    // (Add null to the list of possibilities)
+                    $parameter_list[$i]->addUnionType($parameter_type);
+                } else {
+                    // For other types (E.g. string), just replace the union type.
+                    $parameter_list[$i]->setUnionType($parameter_type);
+                }
                 $method->setParameterList($parameter_list);
             }
 
@@ -1704,6 +1816,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $method,
                 $parameter,
                 $argument,
+                $argument_types[$i],
                 $i
             );
         }
@@ -1727,8 +1840,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * The parameter that we're updating
      *
      * @param Node|mixed $argument
-     * The argument who's type we'd like to replace the
+     * The argument whose type we'd like to replace the
      * parameter type with.
+     *
+     * @param Node|mixed $argument_type
+     * The type of $argument
      *
      * @param int $parameter_offset
      * The offset of the parameter on the method's
@@ -1738,20 +1854,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     private function updateParameterTypeByArgument(
         FunctionInterface $method,
-        Parameter $parameter,
+        Variable $parameter,
         $argument,
+        UnionType $argument_type,
         int $parameter_offset
     ) {
-        // Determine the type of the argument
-        $argument_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $argument
-        );
-
         // Then set the new type on that parameter based
         // on the argument's type. We'll use this to
         // retest the method with the passed in types
+        // TODO: if $argument_type is non-empty and !isType(NullType), instead use setUnionType?
         $parameter->getNonVariadicUnionType()->addUnionType(
             $argument_type
         );
@@ -1785,7 +1896,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        if (!is_object($argument)) {
+        if (!$argument instanceof \ast\Node) {
             return;
         }
 
@@ -1797,13 +1908,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $argument
             ))->getOrCreateVariable();
         } else if ($argument->kind == \ast\AST_STATIC_PROP) {
-            $variable = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $argument
-            ))->getOrCreateProperty(
-                $argument->children['prop'] ?? ''
-            );
+            try {
+                $variable = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $argument
+                ))->getOrCreateProperty(
+                    $argument->children['prop'] ?? ''
+                );
+            } catch (UnanalyzableException $exception) {
+                // Ignore it. There's nothing we can do. (E.g. the class name for the static property fetch couldn't be determined.
+            }
         }
 
         // If we couldn't find a variable, give up
@@ -1835,10 +1950,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * @param Node $node
      * A node to check to see if it's a no-op
      *
-     * @param string $message
+     * @param string $issue_type
      * A message to emit if it's a no-op
      *
-     * @return null
+     * @return void
      */
     private function analyzeNoOp(Node $node, string $issue_type)
     {

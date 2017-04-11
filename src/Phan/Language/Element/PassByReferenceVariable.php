@@ -15,14 +15,14 @@ use Phan\Language\UnionType;
 class PassByReferenceVariable extends Variable
 {
 
-    /** @var Parameter */
+    /** @var Variable */
     private $parameter;
 
     /** @var TypedElement */
     private $element;
 
     public function __construct(
-        Parameter $parameter,
+        Variable $parameter,
         TypedElement $element
     ) {
         $this->parameter = $parameter;

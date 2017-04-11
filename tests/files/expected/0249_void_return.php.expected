@@ -1,0 +1,4 @@
+%s:3 PhanTypeMismatchReturn Returning type int but f249_2() is declared to return void
+%s:4 PhanTypeMissingReturn Method \f249_3 is declared to return int but has no return value
+%s:6 PhanTypeVoidAssignment Cannot assign void return value
+%s:7 PhanTypeVoidAssignment Cannot assign void return value

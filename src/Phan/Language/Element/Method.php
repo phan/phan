@@ -2,6 +2,7 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\CodeBaseException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -9,6 +10,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -185,7 +187,7 @@ class Method extends ClassElement implements FunctionInterface
      *
      * @param CodeBase $code_base
      *
-     * @param Node $node
+     * @param Decl $node
      * An AST node representing a method
      *
      * @return Method
@@ -264,24 +266,24 @@ class Method extends ClassElement implements FunctionInterface
             $method->setNumberOfRequiredParameters(0);
         }
 
-        // Take a look at method return types
+        // Add the syntax-level return type to the method's union type
+        // if it exists
+        $return_union_type = new UnionType;
         if($node->children['returnType'] !== null) {
-            // Get the type of the parameter
-            $union_type = UnionType::fromNode(
+            $return_union_type = UnionType::fromNode(
                 $context,
                 $code_base,
                 $node->children['returnType']
             );
-
-            $method->getUnionType()->addUnionType($union_type);
+            $method->getUnionType()->addUnionType($return_union_type);
         }
 
+        // If available, add in the doc-block annotated return type
+        // for the method.
         if ($comment->hasReturnUnionType()) {
 
-            // See if we have a return type specified in the comment
-            $union_type = $comment->getReturnType();
-
-            if ($union_type->hasSelfType()) {
+            $comment_return_union_type = $comment->getReturnType();
+            if ($comment_return_union_type->hasSelfType()) {
                 // We can't actually figure out 'static' at this
                 // point, but fill it in regardless. It will be partially
                 // correct
@@ -290,83 +292,38 @@ class Method extends ClassElement implements FunctionInterface
                     //       or $this in the type because I'm guessing
                     //       it doesn't really matter. Apologies if it
                     //       ends up being an issue.
-                    $union_type->addUnionType(
+                    $comment_return_union_type->addUnionType(
                         $context->getClassFQSEN()->asUnionType()
                     );
                 }
             }
 
-            $method->getUnionType()->addUnionType($union_type);
+            if (Config::get()->check_docblock_signature_return_type_match) {
+                // Make sure that the commented type is a narrowed
+                // or equivalent form of the syntax-level declared
+                // return type.
+                if (!$comment_return_union_type->isExclusivelyNarrowedFormOrEquivalentTo(
+                        $return_union_type,
+                        $context,
+                        $code_base
+                    )
+                ) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDeclaredReturn,
+                        $node->lineno ?? 0,
+                        $comment_return_union_type->__toString(),
+                        $return_union_type->__toString()
+                    );
+                }
+            }
+
+            $method->getUnionType()->addUnionType($comment_return_union_type);
         }
 
         // Add params to local scope for user functions
-        if(!$method->isInternal()) {
-
-            $parameter_offset = 0;
-            foreach ($method->getParameterList() as $i => $parameter) {
-                if ($parameter->getUnionType()->isEmpty()) {
-                    // If there is no type specified in PHP, check
-                    // for a docComment with @param declarations. We
-                    // assume order in the docComment matches the
-                    // parameter order in the code
-                    if ($comment->hasParameterWithNameOrOffset(
-                        $parameter->getName(),
-                        $parameter_offset
-                    )) {
-                        $comment_type =
-                            $comment->getParameterWithNameOrOffset(
-                                $parameter->getName(),
-                                $parameter_offset
-                            )->getUnionType();
-
-                        $parameter->addUnionType($comment_type);
-                    }
-                }
-
-                // If there's a default value on the parameter, check to
-                // see if the type of the default is cool with the
-                // specified type.
-                if ($parameter->hasDefaultValue()) {
-                    $default_type = $parameter->getDefaultValueType();
-
-                    // If the default type isn't null and can't cast
-                    // to the parameter's declared type, emit an
-                    // issue.
-                    if (!$default_type->isEqualTo(
-                        NullType::instance()->asUnionType()
-                    )) {
-                        if (!$default_type->canCastToUnionType(
-                            $parameter->getUnionType()
-                        )) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $context,
-                                Issue::TypeMismatchDefault,
-                                $node->lineno ?? 0,
-                                (string)$parameter->getUnionType(),
-                                $parameter->getName(),
-                                (string)$default_type
-                            );
-                        }
-                    }
-
-                    // If there are no types on the parameter, the
-                    // default shouldn't be treated as the one
-                    // and only allowable type.
-                    if ($parameter->getUnionType()->isEmpty()) {
-                        $parameter->addUnionType(
-                            MixedType::instance()->asUnionType()
-                        );
-                    }
-
-                    // Add the default type to the parameter type
-                    $parameter->addUnionType($default_type);
-                }
-
-                ++$parameter_offset;
-            }
-
-        }
+        FunctionTrait::addParamsToScopeOfFunctionOrMethod($context, $code_base, $node, $method, $comment);
 
         return $method;
     }
@@ -410,7 +367,7 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @return Method[]|\Generator
+     * @return \Generator
      * The set of all alternates to this method
      */
     public function alternateGenerator(CodeBase $code_base) : \Generator {
@@ -432,7 +389,7 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function getOverriddenMethod(
         CodeBase $code_base
-    ) : ClassElement {
+    ) : Method {
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 

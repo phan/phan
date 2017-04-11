@@ -14,6 +14,8 @@ class Flags
     const HAS_YIELD                    = (1 << 7);
 
     const CLASS_HAS_DYNAMIC_PROPERTIES = (1 << 8);
+    const IS_CLONE_OF_VARIADIC         = (1 << 9);
+    const CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES = (1 << 10);
 
     /**
      * Either enable or disable the given flag on

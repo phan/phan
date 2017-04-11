@@ -12,7 +12,7 @@ class Element
     /**
      * @var Node
      */
-    private $node = null;
+    private $node;
 
     /**
      * @param Node $node
@@ -114,8 +114,6 @@ class Element
                 return $visitor->visitIfElem($this->node);
             case \ast\AST_INSTANCEOF:
                 return $visitor->visitInstanceof($this->node);
-            case \ast\AST_LIST:
-                return $visitor->visitList($this->node);
             case \ast\AST_MAGIC_CONST:
                 return $visitor->visitMagicConst($this->node);
             case \ast\AST_METHOD:
@@ -162,6 +160,8 @@ class Element
                 return $visitor->visitSwitchList($this->node);
             case \ast\AST_TYPE:
                 return $visitor->visitType($this->node);
+            case \ast\AST_NULLABLE_TYPE:
+                return $visitor->visitNullableType($this->node);
             case \ast\AST_UNARY_MINUS:
                 return $visitor->visitUnaryMinus($this->node);
             case \ast\AST_UNARY_OP:

@@ -20,6 +20,7 @@ class Issue
     const UndeclaredClassInstanceof = 'PhanUndeclaredClassInstanceof';
     const UndeclaredClassMethod     = 'PhanUndeclaredClassMethod';
     const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
+    const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
     const UndeclaredConstant        = 'PhanUndeclaredConstant';
     const UndeclaredExtendedClass   = 'PhanUndeclaredExtendedClass';
     const UndeclaredFunction        = 'PhanUndeclaredFunction';
@@ -42,14 +43,18 @@ class Issue
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
     const TypeInstantiateAbstract   = 'PhanTypeInstantiateAbstract';
     const TypeInstantiateInterface  = 'PhanTypeInstantiateInterface';
+    const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
+    const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
+    const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
+    const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
     const TypeMissingReturn         = 'PhanTypeMissingReturn';
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
@@ -69,6 +74,8 @@ class Issue
 
     // Issue::CATEGORY_DEPRECATED
     const DeprecatedClass           = 'PhanDeprecatedClass';
+    const DeprecatedInterface       = 'PhanDeprecatedInterface';
+    const DeprecatedTrait           = 'PhanDeprecatedTrait';
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
     const DeprecatedProperty        = 'PhanDeprecatedProperty';
 
@@ -115,6 +122,8 @@ class Issue
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
     const AccessStaticToNonStatic   = 'PhanAccessStaticToNonStatic';
     const AccessNonStaticToStatic   = 'PhanAccessNonStaticToStatic';
+    const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
+    const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
 
     // Issue::CATEGORY_COMPATIBLE
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
@@ -412,6 +421,14 @@ class Issue
                 self::REMEDIATION_B,
                 1020
             ),
+            new Issue(
+                self::UndeclaredClosureScope,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Reference to undeclared class %s in PhanClosureScope",
+                self::REMEDIATION_B,
+                1021
+            ),
 
             // Issue::CATEGORY_ANALYSIS
             new Issue(
@@ -441,6 +458,22 @@ class Issue
                 10002
             ),
             new Issue(
+                self::TypeMismatchVariadicComment,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "%s is variadic in comment, but not variadic in param (%s)",
+                self::REMEDIATION_B,
+                10021
+            ),
+            new Issue(
+                self::TypeMismatchVariadicParam,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                "%s is not variadic in comment, but variadic in param (%s)",
+                self::REMEDIATION_B,
+                10022
+            ),
+            new Issue(
                 self::TypeMismatchArgument,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
@@ -463,6 +496,14 @@ class Issue
                 "Returning type %s but %s() is declared to return %s",
                 self::REMEDIATION_B,
                 10005
+            ),
+            new Issue(
+                self::TypeMismatchDeclaredReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Doc-block declares return type %s which is incompatible with the return type %s declared in the signature",
+                self::REMEDIATION_B,
+                10020
             ),
             new Issue(
                 self::TypeMissingReturn,
@@ -535,6 +576,14 @@ class Issue
                 "Instantiation of interface %s",
                 self::REMEDIATION_B,
                 10014
+            ),
+            new Issue(
+                self::TypeInvalidClosureScope,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Invalid PhanClosureScope: expected a class name, got %s",
+                self::REMEDIATION_B,
+                10023
             ),
             new Issue(
                 self::TypeInvalidRightOperand,
@@ -639,6 +688,22 @@ class Issue
                 "Reference to deprecated property %s defined at %s:%d",
                 self::REMEDIATION_B,
                 5002
+            ),
+            new Issue(
+                self::DeprecatedInterface,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Using a deprecated interface %s defined at %s:%d",
+                self::REMEDIATION_B,
+                5003
+            ),
+            new Issue(
+                self::DeprecatedTrait,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Using a deprecated trait %s defined at %s:%d",
+                self::REMEDIATION_B,
+                5004
             ),
 
             // Issue::CATEGORY_PARAMETER
@@ -936,6 +1001,22 @@ class Issue
                 self::REMEDIATION_B,
                 1007
             ),
+            new Issue(
+                self::AccessClassConstantPrivate,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access private class constant %s defined at %s:%d",
+                self::REMEDIATION_B,
+                1008
+            ),
+            new Issue(
+                self::AccessClassConstantProtected,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access protected class constant %s defined at %s:%d",
+                self::REMEDIATION_B,
+                1009
+            ),
 
             // Issue::CATEGORY_COMPATIBLE
             new Issue(
@@ -1121,7 +1202,7 @@ class Issue
      * @param int $line
      * The line number (start) where the issue was found
      *
-     * @param mixed $template_parameters
+     * @param mixed ...$template_parameters
      * Any template parameters required for the issue
      * message
      *
@@ -1245,7 +1326,7 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param mixed parameters
+     * @param mixed ...$parameters
      * Template parameters for the issue's error message
      *
      * @return void

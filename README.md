@@ -1,4 +1,4 @@
-Phan is a static analyzer for PHP that prefers to minimize false-positives. Phan attempts to proves incorrectness rather than correctness.
+Phan is a static analyzer for PHP that prefers to minimize false-positives. Phan attempts to prove incorrectness rather than correctness.
 
 Phan looks for common issues and will verify type compatibility on various operations when type
 information is available or can be deduced. Phan does not have a strong understanding of flow control
@@ -20,6 +20,7 @@ With Phan installed, you'll want to [create a `.phan/config.php` file](https://g
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
 This branch of Phan depends on PHP 7.0.x with pcntl enabled and the [php-ast](https://github.com/nikic/php-ast) extension. Take a look at later versions of Phan for PHP 7.1+ support.
+It is unable to analyze code from PHP 7.1.x+.
 
 * **Alternative Installation Methods**<br />
   See [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for alternative methods of using
@@ -48,6 +49,7 @@ Phan is able to perform the following kinds of analysis.
 * Supports phpdoc [type annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
 * Supports `@deprecated` annotation for deprecating classes, methods and functions
 * Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#suppress).
+* Supports [magic property annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#property) as of Phan 0.9.1 (partial) (`@property <union_type> <variable_name>`)
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores.
 * Output is emitted in text, checkstyle, json or codeclimate formats.
@@ -120,12 +122,6 @@ Usage: ./phan [options] [files...]
  -f, --file-list <filename>
   A file containing a list of PHP files to be analyzed
 
- -r, --file-list-only
-  A file containing a list of PHP files to be analyzed to the
-  exclusion of any other directories or files passed in. This
-  is useful when running Phan from a stored state file and
-  passing in a small subset of files to be re-analyzed.
-
  -l, --directory <directory>
   A directory that should be parsed for class and
   method information. After excluding the directories
@@ -155,8 +151,17 @@ Usage: ./phan [options] [files...]
   directory and read configuration file config.php from that
   path.
 
+ -r, --file-list-only
+  A file containing a list of PHP files to be analyzed to the
+  exclusion of any other directories or files passed in. This
+  is unlikely to be useful.
+
+ -k, --config-file
+  A path to a config file to load (instead of the default of
+  .phan/config.php).
+
  -m <mode>, --output-mode
-  Output mode from 'text', 'json', 'codeclimate', or 'checkstyle'
+  Output mode from 'text', 'json', 'csv', 'codeclimate', 'checkstyle', or 'pylint'
 
  -o, --output <filename>
   Output filename
@@ -166,6 +171,10 @@ Usage: ./phan [options] [files...]
 
  -a, --dump-ast
   Emit an AST for each file rather than analyze
+
+ --dump-signatures-file <filename>
+  Emit JSON serialized signatures to the given file.
+  This uses a method signature format similar to FunctionSignatureMap.php.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
@@ -283,3 +292,8 @@ the bug. And once you have done that, fix it. Then turn your code snippet into a
 details.
 
 To run Phan's tests, just run `./test`.
+
+# Code of Conduct
+
+We are committed to fostering a welcoming community. Any participant and
+contributor is required to adhere to our [Code of Conduct](http://etsy.github.io/codeofconduct.html).

@@ -88,7 +88,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
     public function testGenericArrayType() {
         $type = GenericArrayType::fromElementType(
             GenericArrayType::fromElementType(
-                IntType::instance()
+                IntType::instance(false)
             )
         );
 

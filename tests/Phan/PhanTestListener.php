@@ -22,8 +22,6 @@ class PhanTestListener
     extends \PHPUnit_Framework_BaseTestListener
 {
     public function startTest(PHPUnit_Framework_Test $test) {
-
-
         if ($test instanceof CodeBaseAwareTestInterface) {
 
             // We're holding a static reference to the
@@ -46,7 +44,7 @@ class PhanTestListener
                 );
             }
 
-            $test->setCodeBase(clone($code_base));
+            $test->setCodeBase($code_base->shallowClone());
         }
     }
 

@@ -246,7 +246,7 @@ class Context extends FileRef
      * @param Variable $variable
      * A variable to inject into this context
      *
-     * @return null
+     * @return void
      */
     public function addScopeVariable(
         Variable $variable

@@ -218,6 +218,7 @@ return [
         'tests/Phan',
         'vendor/phpunit/phpunit/src',
         'vendor/symfony/console',
+        '.phan/stubs',
     ],
 
     // List of case-insensitive file extensions supported by Phan.
