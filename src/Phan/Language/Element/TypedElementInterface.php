@@ -78,7 +78,7 @@ interface TypedElementInterface
      * @return bool
      * True if this was an internal PHP object
      */
-    public function isInternal() : bool;
+    public function isPHPInternal() : bool;
 
     /**
      * This method must be called before analysis

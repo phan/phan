@@ -93,8 +93,8 @@ class PassByReferenceVariable extends Variable
         $this->element->setIsDeprecated($is_deprecated);
     }
 
-    public function isInternal() : bool
+    public function isPHPInternal() : bool
     {
-        return $this->element->isInternal();
+        return $this->element->isPHPInternal();
     }
 }

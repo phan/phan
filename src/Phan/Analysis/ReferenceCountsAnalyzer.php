@@ -150,7 +150,7 @@ class ReferenceCountsAnalyzer
     ) {
 
         // Don't worry about internal elements
-        if ($element->isInternal()) {
+        if ($element->isPHPInternal()) {
             return;
         }
 

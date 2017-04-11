@@ -46,7 +46,7 @@ class ArgumentType
     ) {
         // Special common cases where we want slightly
         // better multi-signature error messages
-        if ($method->isInternal()) {
+        if ($method->isPHPInternal()) {
             if(self::analyzeInternalArgumentType(
                 $method,
                 $node,
@@ -116,7 +116,7 @@ class ArgumentType
             }
 
             if (!$alternate_found) {
-                if ($method->isInternal()) {
+                if ($method->isPHPInternal()) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -156,7 +156,7 @@ class ArgumentType
 
             if (!$alternate_found) {
                 $max = $method->getNumberOfParameters();
-                if ($method->isInternal()) {
+                if ($method->isPHPInternal()) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -325,7 +325,7 @@ class ArgumentType
 
                 if (is_object($parameter_type) && $parameter_type->hasTemplateType()) {
                     // Don't worry about template types
-                } elseif ($method->isInternal()) {
+                } elseif ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
                     if(!$context->getIsStrictTypes() && is_object($parameter_type) && $parameter_type->hasType(StringType::instance(false))) {

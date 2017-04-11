@@ -191,7 +191,7 @@ class Analysis
         {
             if ($show_progress) { CLI::progress('method', (++$i)/$function_count); }
 
-            if ($function_or_method->isInternal()) {
+            if ($function_or_method->isPHPInternal()) {
                 continue;
             }
 

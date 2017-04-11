@@ -81,7 +81,7 @@ abstract class TypedElement implements TypedElementInterface
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
-        $this->setIsInternal($context->isInternal());
+        $this->setIsInternal($context->isPHPInternal());
     }
 
     /**
@@ -267,7 +267,7 @@ abstract class TypedElement implements TypedElementInterface
      * @return bool
      * True if this was an internal PHP object
      */
-    public function isInternal() : bool
+    public function isPHPInternal() : bool
     {
         return Flags::bitVectorHasState(
             $this->getPhanFlags(),

@@ -1817,7 +1817,7 @@ class Clazz extends AddressableElement
      */
     public final function analyze(CodeBase $code_base)
     {
-        if ($this->isInternal()) {
+        if ($this->isPHPInternal()) {
             return;
         }
 

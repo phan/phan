@@ -258,7 +258,7 @@ trait FunctionTrait {
         FunctionInterface $function,
         Comment $comment
     ) {
-        if ($function->isInternal()) {
+        if ($function->isPHPInternal()) {
             return;
         }
         $parameter_offset = 0;

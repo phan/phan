@@ -368,7 +368,7 @@ class CodeBase
     public function exportFunctionAndMethodSet() : array {
         $result = [];
         foreach ($this->func_and_method_set as $function_or_method) {
-            if ($function_or_method->isInternal()) {
+            if ($function_or_method->isPHPInternal()) {
                 continue;
             }
             $fqsen = $function_or_method->getFQSEN();
