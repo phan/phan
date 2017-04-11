@@ -178,7 +178,7 @@ class ConfigPluginSet extends Plugin {
                         "Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
 
                     assert($plugin_instance instanceof Plugin,
-                        "Plugins must extends \Phan\Plugin. The plugin at $plugin_file_name does not.");
+                        "Plugins must extend \Phan\Plugin. The plugin at $plugin_file_name does not.");
 
                     return $plugin_instance;
                 },
