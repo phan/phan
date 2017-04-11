@@ -1,6 +1,7 @@
 <?php
 
-function foo() : ?array
+/** @return ?array */
+function foo()
 {
     return ['a'];
 }

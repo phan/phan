@@ -1,18 +1,4 @@
 <?php
-function f241_0(): string {}
-function f241_1(): ?string {
-    return 42;
-}
-$v = f241_1();
-function f241_2(): ?string {
-    return null;
-}
-$v = f241_1();
-function f241_3(?string $name) {}
-f241_3(null);
-f241_3(42);
-f241_3('string');
-
 /**
  * @param ?int $p
  * @return ?string
