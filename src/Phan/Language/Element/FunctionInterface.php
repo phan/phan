@@ -168,7 +168,7 @@ interface FunctionInterface extends AddressableElementInterface {
     public function isNSInternalAccessFromContext(
         CodeBase $code_base,
         Context $context
-    );
+    ) : bool;
 
     /**
      * @return Context

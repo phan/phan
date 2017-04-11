@@ -157,7 +157,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function isNSInternalAccessFromContext(
         CodeBase $code_base,
         Context $context
-    ) {
+    ) : bool {
         $element_fqsen = $this->getFQSEN();
         assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);
 

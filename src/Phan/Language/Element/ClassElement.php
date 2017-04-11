@@ -186,7 +186,7 @@ abstract class ClassElement extends AddressableElement
     public function isNSInternalAccessFromContext(
         CodeBase $code_base,
         Context $context
-    ) {
+    ) : bool {
         // Get the class that this element is defined on
         $class = $this->getClass($code_base);
 
