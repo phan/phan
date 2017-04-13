@@ -195,7 +195,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         $this->code_base,
                         $this->context,
                         $value_node
-                    ))->getProperty($value_node->children['prop']);
+                    ))->getProperty($value_node->children['prop'], false);
 
                     // Set the element type on each element of
                     // the list
@@ -296,7 +296,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to parse
+     * A node to parse, for an instance property.
      *
      * @return Context
      * A new or an unchanged context resulting from
@@ -346,7 +346,8 @@ class AssignmentVisitor extends AnalysisVisitor
                 $property = $clazz->getPropertyByNameInContext(
                     $this->code_base,
                     $property_name,
-                    $this->context
+                    $this->context,
+                    false
                 );
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
@@ -361,6 +362,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $property->getUnionType(),
                 $this->code_base
             )) {
+                // TODO: optionally, change the message from "::" to "->"?
                 $this->emitIssue(
                     Issue::TypeMismatchProperty,
                     $node->lineno ?? 0,
@@ -403,7 +405,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $this->code_base,
                     $this->context,
                     $node
-                ))->getOrCreateProperty($property_name);
+                ))->getOrCreateProperty($property_name, false);
 
                 $property->getUnionType()->addUnionType(
                     $this->right_type
@@ -432,10 +434,107 @@ class AssignmentVisitor extends AnalysisVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @see $this->visitProp
      */
     public function visitStaticProp(Node $node) : Context
     {
-        return $this->visitVar($node);
+        $property_name = $node->children['prop'];
+
+        // Things like self::${$x}
+        if (!is_string($property_name)) {
+            return $this->context;
+        }
+
+        assert(is_string($property_name), "Static property must be string");
+
+        try {
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node->children['class']
+            ))->getClassList();
+        } catch (CodeBaseException $exception) {
+            // This really shouldn't happen since the code
+            // parsed cleanly. This should fatal.
+            // throw $exception;
+            return $this->context;
+        } catch (\Exception $exception) {
+            // If we can't figure out what kind of a class
+            // this is, don't worry about it
+            return $this->context;
+        }
+
+        foreach ($class_list as $clazz) {
+            // Check to see if this class has the property
+            if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
+                continue;
+            }
+
+            try {
+                // Look for static properties with that $property_name
+                $property = $clazz->getPropertyByNameInContext(
+                    $this->code_base,
+                    $property_name,
+                    $this->context,
+                    true
+                );
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
+                return $this->context;
+            }
+
+            if (!$this->right_type->canCastToExpandedUnionType(
+                $property->getUnionType(),
+                $this->code_base
+            )) {
+                // Currently, same warning type for static and non-static property type mismatches.
+                $this->emitIssue(
+                    Issue::TypeMismatchProperty,
+                    $node->lineno ?? 0,
+                    (string)$this->right_type,
+                    "{$clazz->getFQSEN()}::{$property->getName()}",
+                    (string)$property->getUnionType()
+                );
+
+                return $this->context;
+            } else {
+                // If we're assigning to an array element then we don't
+                // know what the constitutation of the parameter is
+                // outside of the scope of this assignment, so we add to
+                // its union type rather than replace it.
+                if ($this->is_dim_assignment) {
+                    $property->getUnionType()->addUnionType(
+                        $this->right_type
+                    );
+                }
+            }
+
+            // After having checked it, add this type to it
+            $property->getUnionType()->addUnionType(
+                $this->right_type
+            );
+
+            return $this->context;
+        }
+
+        if (!empty($class_list)) {
+            $this->emitIssue(
+                Issue::UndeclaredStaticProperty,
+                $node->lineno ?? 0,
+                $property_name,
+                (string)$class_list[0]->getFQSEN()
+            );
+        } else {
+            // If we hit this part, we couldn't figure out
+            // the class, so we ignore the issue
+        }
+
+        return $this->context;
     }
 
     /**

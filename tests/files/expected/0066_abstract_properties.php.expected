@@ -1,2 +1,1 @@
-%s:7 PhanUndeclaredProperty Reference to undeclared property \AbstractProperties->things2
-
+%s:7 PhanUndeclaredStaticProperty Static property 'things2' on \AbstractProperties is undeclared
