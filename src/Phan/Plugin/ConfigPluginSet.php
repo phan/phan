@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin;
 
+use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -184,6 +185,9 @@ class ConfigPluginSet extends Plugin {
                 },
                 Config::get()->plugins
             );
+
+            // add internal analyzers that are structured as plugins, that should be included with all runs
+            array_unshift($this->pluginSet, new DuplicateFunctionAnalyzer);
         }
         return $this->pluginSet;
     }

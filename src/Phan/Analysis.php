@@ -195,10 +195,6 @@ class Analysis
                 continue;
             }
 
-            DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
-                $code_base, $function_or_method
-            );
-
             ParameterTypesAnalyzer::analyzeParameterTypes(
                 $code_base, $function_or_method
             );
