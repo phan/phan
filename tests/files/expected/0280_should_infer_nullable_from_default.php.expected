@@ -1,0 +1,4 @@
+%s:23 PhanParamSignatureMismatch Declaration of function foo(int $arg = 20) should be compatible with function foo(?int $arg = null) defined in %s:10
+%s:23 PhanParamSignatureRealMismatch Declaration of function foo(int $arg = 20) should be compatible with function foo(?int $arg = null) defined in %s:10
+%s:27 PhanTypeMismatchDefault Default value for ?int $x can't be float
+%s:34 PhanTypeMismatchArgument Argument 1 (arg) is null but \C280::foo() takes int defined at %s:23

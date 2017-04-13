@@ -367,6 +367,17 @@ class Type
         return self::make($namespace, $type_name, [], $is_nullable, false);
     }
 
+    public static function fromReflectionType(
+        \ReflectionType $reflection_type
+    ) : Type {
+
+        return self::fromStringInContext(
+            (string)$reflection_type,
+            new Context(),
+            false
+        );
+    }
+
     /**
      * @param string $fully_qualified_string
      * A fully qualified type name

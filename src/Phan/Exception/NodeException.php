@@ -20,7 +20,7 @@ class NodeException extends \Exception
      */
     public function __construct(
         Node $node,
-        string $message = null
+        string $message = ''
     ) {
         parent::__construct($message);
         $this->node = $node;

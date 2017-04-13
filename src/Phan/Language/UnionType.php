@@ -38,7 +38,7 @@ class UnionType implements \Serializable
     private $type_set;
 
     /**
-     * @param Type[]|\Iterator $type_list
+     * @param Type[]|\Iterator|null $type_list
      * An optional list of types represented by this union
      */
     public function __construct($type_list = null)
@@ -165,6 +165,20 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @param ?\ReflectionType $reflection_type
+     *
+     * @return UnionType
+     * A UnionType with 0 or 1 nullable/non-nullable Types
+     */
+    public static function fromReflectionType($reflection_type) : UnionType
+    {
+        if ($reflection_type !== null) {
+            return Type::fromReflectionType($reflection_type)->asUnionType();
+        }
+        return new UnionType();
+    }
+
+    /**
      * @return string[]
      * Get a map from property name to its type for the given
      * class name.
@@ -253,17 +267,17 @@ class UnionType implements \Serializable
                 : null;
 
             $name_type_name_map = $type_name_struct;
-            $property_name_type_map = [];
+            $parameter_name_type_map = [];
 
             foreach ($name_type_name_map as $name => $type_name) {
-                $property_name_type_map[$name] = empty($type_name)
+                $parameter_name_type_map[$name] = empty($type_name)
                     ? new UnionType()
                     : UnionType::fromStringInContext($type_name, $context, false);
             }
 
             $configurations[] = [
                 'return_type' => $return_type,
-                'property_name_type_map' => $property_name_type_map,
+                'parameter_name_type_map' => $parameter_name_type_map,
             ];
 
             $function_name =
@@ -641,6 +655,19 @@ class UnionType implements \Serializable
     public function hasAnyType(array $type_list) : bool
     {
         return $this->type_set->containsAny($type_list);
+    }
+
+    /**
+     * @return bool
+     * True if this type has any subtype of `iterable` type (e.g. Traversable, Array).
+     */
+    public function hasIterable() : bool
+    {
+        return (false !==
+            $this->type_set->find(function (Type $type) : bool {
+                return $type->isIterable();
+            })
+        );
     }
 
     /**

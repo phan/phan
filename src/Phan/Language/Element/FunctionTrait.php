@@ -6,6 +6,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\UnionType;
 use ast\Node\Decl;
 
 trait FunctionTrait {
@@ -40,6 +41,18 @@ trait FunctionTrait {
      * The list of parameters for this method
      */
     private $parameter_list = [];
+
+    /**
+     * @var Parameter[]
+     * The list of *real* (not from phpdoc) parameters for this method.
+     */
+    private $real_parameter_list = [];
+
+    /**
+     * @var UnionType
+     * The *real* (not from phpdoc) return type from this method
+     */
+    private $real_return_type;
 
     /**
      * @return int
@@ -220,6 +233,60 @@ trait FunctionTrait {
     }
 
     /**
+     * @return Parameter[] $parameter_list
+     * A list of parameters (not from phpdoc) that were set on this method. The parameters will be cloned.
+     */
+    public function getRealParameterList()
+    {
+        // Excessive cloning, to ensure that this stays immutable.
+        return array_map(function(Parameter $param) {
+            return clone($param);
+        }, $this->real_parameter_list);
+    }
+
+    /**
+     * @param Parameter[] $parameter_list
+     * A list of parameters (not from phpdoc) to set on this method. The parameters will be cloned.
+     *
+     * @return void
+     */
+    public function setRealParameterList(array $parameter_list)
+    {
+        $this->real_parameter_list = array_map(function(Parameter $param) {
+            return clone($param);
+        }, $parameter_list);
+    }
+
+    /**
+     * @param UnionType
+     * The real (non-phpdoc) return type of this method in its given context.
+     *
+     * @return void
+     */
+    public function setRealReturnType(UnionType $union_type)
+    {
+        // TODO: was `self` properly resolved already? What about in subclasses?
+        // Clone it, since caller has a mutable version of this.
+        $this->real_return_type = clone($union_type);
+    }
+
+    /**
+     * @param Context $context
+     *
+     * @return UnionType
+     * The type of this method in its given context.
+     */
+    public function getRealReturnType() : UnionType
+    {
+        if (!$this->real_return_type && $this instanceof \Phan\Language\Element\Method) {
+            throw new \Error(sprintf("Failed to get real return type in %s method %s", (string)$this->getClassFQSEN(), (string)$this));
+        }
+        // Clone the union type, to be certain it will remain immutable.
+        $union_type = clone($this->real_return_type);
+        return $union_type;
+    }
+
+    /**
      * @param Parameter $parameter
      * A parameter to append to the parameter list
      *
@@ -297,8 +364,7 @@ trait FunctionTrait {
             // specified type.
             if ($parameter->hasDefaultValue()) {
                 $default_type = $parameter->getDefaultValueType();
-                $defaultIsNull = $default_type->isEqualTo(
-                    NullType::instance(false)->asUnionType());
+                $defaultIsNull = $default_type->isType(NullType::instance(false));
                 // If the default type isn't null and can't cast
                 // to the parameter's declared type, emit an
                 // issue.
@@ -321,9 +387,10 @@ trait FunctionTrait {
                 // If there are no types on the parameter, the
                 // default shouldn't be treated as the one
                 // and only allowable type.
-                if ($parameter->getUnionType()->isEmpty()) {
+                $wasEmpty = $parameter->getUnionType()->isEmpty();
+                if ($wasEmpty) {
                     $parameter->addUnionType(
-                        MixedType::instance(false)->asUnionType()
+                        MixedType::instance($defaultIsNull)->asUnionType()
                     );
                 }
 
@@ -332,14 +399,18 @@ trait FunctionTrait {
                 // doesn't mean that is its type. Any type can default
                 // to null
                 if ($defaultIsNull) {
-                    if (!$parameter->getUnionType()->isEmpty()) {
-                        $parameter->getUnionType()->addType(
-                            NullType::instance(false)
-                        );
-                    }
+					// The parameter constructor or above check for wasEmpty already took care of null default case
                 } else {
-                    // If default type is not null, then add the default type to the parameter type
-                    $parameter->addUnionType($default_type);
+                    if ($wasEmpty) {
+                        $parameter->addUnionType($default_type);
+                    } else {
+                        // Don't add both `int` and `?int` to the same set.
+                        foreach ($default_type->getTypeSet() as $default_type_part) {
+                            if (!$parameter->getNonvariadicUnionType()->hasType($default_type_part->withIsNullable(true))) {
+                                $parameter->addType($default_type_part);
+                            }
+                        }
+                    }
                 }
             }
 

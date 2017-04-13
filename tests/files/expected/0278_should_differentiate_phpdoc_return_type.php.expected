@@ -1,0 +1,1 @@
+%s:10 PhanParamSignatureRealMismatch Declaration of function foo() should be compatible with function foo() : void defined in %s:5

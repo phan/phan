@@ -92,6 +92,8 @@ class Issue
     const ParamTypeMismatch         = 'PhanParamTypeMismatch';
     const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
     const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
+    const ParamSignatureRealMismatch    = 'PhanParamSignatureRealMismatch';
+    const ParamSignatureRealMismatchInternal = 'PhanParamSignatureRealMismatchInternal';
     const ParamRedefined            = 'PhanParamRedefined';
 
     // Issue::CATEGORY_NOOP
@@ -860,6 +862,24 @@ class Issue
                 "Redefinition of parameter {PARAMETER}",
                 self::REMEDIATION_B,
                 7012
+            ),
+            // TODO: Optionally, change the other message to say that it's based off of phpdoc and LSP in a future PR.
+            new Issue(
+                self::ParamSignatureRealMismatch,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                "Declaration of %s should be compatible with %s defined in %s:%d",
+                self::REMEDIATION_B,
+                7013
+            ),
+            // NOTE: some extensions don't define arg info
+            new Issue(
+                self::ParamSignatureRealMismatchInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                "Declaration of %s should be compatible with internal %s",
+                self::REMEDIATION_B,
+                7014
             ),
 
             // Issue::CATEGORY_NOOP

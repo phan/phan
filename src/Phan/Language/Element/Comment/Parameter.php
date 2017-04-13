@@ -4,6 +4,7 @@ namespace Phan\Language\Element\Comment;
 
 use Phan\Language\Context;
 use Phan\Language\Element\Variable;
+use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
 class Parameter
