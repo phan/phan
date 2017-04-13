@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
-function f246_0(iterable $p) {
+/** @param iterable $p - TODO https://github.com/etsy/phan/issues/559 */
+function f246_0($p) {
     foreach ($p as $v) {}
 }
 function f246_1(array $p) {
@@ -11,7 +12,8 @@ function f246_2(\ArrayAccess $p) {
 function f246_3(\Traversable $p) {
     foreach ($p as $v) {}
 }
-function f246_4(iterable $p) {
+/** @param iterable $p - TODO https://github.com/etsy/phan/issues/559 */
+function f246_4($p) {
     f246_0($p);
     f246_1($p); // iterable -/-> array
     f246_2($p); // iterable -/-> ArrayAccess

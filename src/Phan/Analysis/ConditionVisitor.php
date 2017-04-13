@@ -316,7 +316,6 @@ class ConditionVisitor extends KindVisitorImplementation
             'is_float' => 'float',
             'is_int' => 'int',
             'is_integer' => 'int',
-            'is_iterable' => 'iterable',
             'is_long' => 'int',
             'is_null' => 'null',
             'is_numeric' => 'string|int|float',
