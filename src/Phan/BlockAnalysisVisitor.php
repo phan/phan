@@ -159,7 +159,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
      * for
      *
      * @return Context
-     * The u$this->should_visit_everything || pdated context after visiting the node
+     * The updated context after visiting the node
      */
     public function visitBranchedContext(Node $node) : Context
     {
