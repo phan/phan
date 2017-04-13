@@ -18,7 +18,7 @@ class Flags
     const CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES = (1 << 10);
     const CLASS_FORBID_UNDECLARED_MAGIC_METHODS    = (1 << 11);
 
-    const IS_NS_INTERNAL               = (1 << 11);
+    const IS_NS_INTERNAL               = (1 << 12);
 
     /**
      * Either enable or disable the given flag on

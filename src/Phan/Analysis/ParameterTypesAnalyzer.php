@@ -442,7 +442,7 @@ class ParameterTypesAnalyzer
         }
 
         if (!$signatures_match) {
-            if ($o_method->isInternal()) {
+            if ($o_method->isPHPInternal()) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),
