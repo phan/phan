@@ -1972,10 +1972,6 @@ class Clazz extends AddressableElement
             return;
         }
 
-        DuplicateClassAnalyzer::analyzeDuplicateClass(
-            $code_base, $this
-        );
-
         ParentConstructorCalledAnalyzer::analyzeParentConstructorCalled(
             $code_base, $this
         );

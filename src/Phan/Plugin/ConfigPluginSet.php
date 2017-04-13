@@ -2,6 +2,7 @@
 namespace Phan\Plugin;
 
 use Phan\Analysis\ClassInheritanceAnalyzer;
+use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\OverrideSignatureAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
@@ -190,8 +191,11 @@ class ConfigPluginSet extends Plugin {
             );
 
             // add internal analyzers that are structured as plugins, that should be included with all runs
+            // class tests
             array_unshift($this->pluginSet, new ClassInheritanceAnalyzer);
+            array_unshift($this->pluginSet, new DuplicateClassAnalyzer);
 
+            // function/method tests
             array_unshift($this->pluginSet, new DuplicateFunctionAnalyzer);
             array_unshift($this->pluginSet, new ParameterTypesAnalyzer);
             if (Config::get()->analyze_signature_compatibility) {

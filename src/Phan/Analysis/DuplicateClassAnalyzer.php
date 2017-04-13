@@ -5,15 +5,16 @@ use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
+use Phan\Plugin\PluginImplementation;
 
-class DuplicateClassAnalyzer
+class DuplicateClassAnalyzer extends PluginImplementation
 {
     /**
      * Check to see if the given Clazz is a duplicate
      *
      * @return void
      */
-    public static function analyzeDuplicateClass(
+    public function analyzeClass(
         CodeBase $code_base,
         Clazz $clazz
     ) {
@@ -65,7 +66,5 @@ class DuplicateClassAnalyzer
                 $original_class->getFileRef()->getLineNumberStart()
             );
         }
-
-        return;
     }
 }
