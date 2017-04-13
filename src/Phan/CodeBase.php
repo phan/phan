@@ -52,6 +52,23 @@ use Phan\Library\Set;
  */
 class CodeBase
 {
+    // Hack to allow running the phan 0.8 backport on php 7.1.
+    // These are only checked for internal functions - Users can add their own stubs.
+    const unsupported_php71_and_newer_functions = [
+        'curl_multi_errno'          => true,
+        'curl_share_errno'          => true,
+        'curl_share_strerror'       => true,
+        'is_iterable'               => true,  // This is the only one affecting unit tests.
+        'pcntl_async_signals'       => true,
+        'pcntl_signal_get_handler'  => true,
+        'sapi_windows_cp_conv'      => true,
+        'sapi_windows_cp_get'       => true,
+        'sapi_windows_cp_is_utf8'   => true,
+        'sapi_windows_cp_set'       => true,
+        'session_create_id'         => true,
+        'session_gc'                => true,
+    ];
+
     /**
      * @var Map
      * A map from FQSEN to a class
@@ -151,6 +168,9 @@ class CodeBase
     private function addFunctionsByNames(array $function_name_list)
     {
         foreach ($function_name_list as $i => $function_name) {
+            if (array_key_exists($function_name, self::unsupported_php71_and_newer_functions)) {
+                continue;
+            }
             foreach (FunctionFactory::functionListFromName($this, $function_name)
                 as $function_or_method
             ) {
