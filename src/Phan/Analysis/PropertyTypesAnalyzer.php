@@ -6,8 +6,9 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Type\TemplateType;
+use Phan\Plugin\PluginImplementation;
 
-class PropertyTypesAnalyzer
+class PropertyTypesAnalyzer extends PluginImplementation
 {
 
     /**
@@ -15,7 +16,7 @@ class PropertyTypesAnalyzer
      *
      * @return void
      */
-    public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz)
+    public function analyzeClass(CodeBase $code_base, Clazz $clazz)
     {
         foreach ($clazz->getPropertyList($code_base) as $property) {
             try {

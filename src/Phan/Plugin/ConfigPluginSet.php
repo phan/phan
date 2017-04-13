@@ -7,6 +7,7 @@ use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\OverrideSignatureAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
+use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
@@ -196,6 +197,7 @@ class ConfigPluginSet extends Plugin {
             array_unshift($this->pluginSet, new ClassInheritanceAnalyzer);
             array_unshift($this->pluginSet, new DuplicateClassAnalyzer);
             array_unshift($this->pluginSet, new ParentConstructorCalledAnalyzer);
+            array_unshift($this->pluginSet, new PropertyTypesAnalyzer);
 
             // function/method tests
             array_unshift($this->pluginSet, new DuplicateFunctionAnalyzer);
