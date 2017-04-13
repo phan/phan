@@ -1,0 +1,118 @@
+Phan NEWS
+
+?? ??? 2017, Phan 0.9.2 (dev)
+-----------------------
+
+New Features (Analysis)
++ Add `PhanParamSignatureRealMismatch`, which ignores phpdoc types and imitates PHP's inheritance warning/error checks as closely as possible. (Issue #374)
+  This has a much lower rate of false positives than `PhanParamSignatureMismatch`, which is based on Liskov Substitution Principle and also accounts for phpdoc types.
+  (`PhanParamSignatureMismatch` continues to exist)
++ Create `PhanUndeclaredStaticProperty` (Issue #610)
+  This is of higher severity than PhanUndeclaredProperty, because PHP 7 throws an Error.
+  Also add `PhanAccessPropertyStaticAsNonStatic`
++ Supports magic instance/static `@method` annotations. (Issue #467)
+  This is enabled by default.
++ Support for checking for misuses of "@internal" annotations. Phan assumes this means it is internal to a namespace. (Issue #353)
+  This checks properties, methods, class constants, and classes.
+  (Adds `PhanAccessConstantInternal`, `PhanAccessClassInternal`, `PhanAccessClassConstantInternal`, `PhanAccessPropertyInternal`, `PhanAccessMethodInternal`)
+  (The implementation may change)
++ Make conditionals such as `is_string` start applying to the condition in ternary operators (`$a ? $b : $c`)
+
+New Features (CLI, Configs)
++ Add `--color` CLI flag, with rudimentary unix terminal coloring for the plain text output formatter. (Issue #363)
+  Color schemes are customizable with `color_scheme`, in the config file.
++ Add a config to excludes file paths from a regular expression (e.g. tests or example files mixed with the codebase) (#635)
+
+Maintenance
++ Update function signature map to analyze `iterable` and `is_iterable` from php 7.1
++ Improve type inferences on functions with nullable default values.
++ Update miscellaneous new functions in php 7.1 standard library (e.g. `getenv`)
+
+Bug Fixes
+- Fix PhanTypeMismatchArgument, etc. for uses of `new static()`, static::CONST, etc in a method. (Issue #632)
+- Fix uncaught exception when conditional node is a scalar (Issue #613)
+- Existence of __get() no longer affects analyzing static properties. (Issue #610)
+
+0.9.1 Mar 15, 2017
+------------------
+
+New Features (Analysis)
++ Conditions in `if(cond(A) && expr(A))` (e.g. `instanceof`, `is_string`, etc) now affect analysis of right hand side of `&&` (PR #540)
++ Add `PhanDeprecatedInterface` and `PhanDeprecatedTrait`, similar to `PhanDeprecatedClass`
++ Supports magic `@property` annotations, with aliases `@property-read` and @property-write`. (Issue #386)
+  This is enabled by default.
+  Also adds `@phan-forbid-undeclared-magic-properties` annotation,
+  which will make Phan warn about undeclared properties if no real property or `@property` annotation exists.
+
+New Features (CLI, Configs)
++ Add `--version` CLI flag
++ Move some rare CLI options from `--help` into `--extended-help`
+
+Maintenance
++ Improved stability of analyzing phpdoc and real nullable types (Issue #567)
++ Fix type signatures Phan has for some internal methods.
++ Improve CLI `--progress-bar` tracking by printing 0% immediately.
++ Add Developer Certificate of Origin
+
+Bug Fixes
++ Fix uncaught issue exception analyzing class constants (Issue #551)
++ Fix group use in ASTs
++ Fix false positives checking if native types can cast to/from nullable native types (Issue #567, #582)
++ Exit with non-zero exit code if an invalid CLI argument is passed to Phan
+
+Backwards Incompatible Changes
++ Change the way that parameter's default values affect type inferences.
+  (May now add to the union type or ignore default values. Used to always add the default value types)
+  Add `@param` types if you encounter new issues.
+  This was done to avoid false positives in cases such as `function foo($maybeArray = false)`
++ Increase minimum `ext-ast` version constraint to 0.1.4
+
+0.9.0 Feb 21, 2017
+------------------
+
+The 0.9.x versions will be tracking syntax from PHP versions 7.1.x and is runnable on PHP 7.1+.
+Please use version 0.8.x if you're using a version of PHP < 7.1.
+
+New Features (Analysis)
++ Support php 7.1 class constant visibility
++ Support variadic phpdoc in `@param`, e.g. `@param string ...$args`
+  Avoid ambiguity by emitting `PhanTypeMismatchVariadicComment` and `PhanTypeMismatchVariadicParam`.
++ Initial support for php 7.1 nullable types and void, both in phpdoc and real parameters.
++ Initial support for php 7.1 `iterable` type
++ Both conditions from `if(cond(A) && cond(B))` (e.g. `instanceof`, `is_string`, etc.) now affect analysis of the if element's block (PR #540)
++ Apply conditionals such as `is_string` to type guards in ternary operators (Issue #465)
++ Allow certain checks for removing null from Phan's inferred types, reducing false positives (E.g. `if(!is_null($x) && $x->method())`) (#518)
++ Incomplete support for specifying the class scope in which a closure will be used/bound  (#309)
++ Support `@return self` in class context
+
+New Features (CLI, Configs)
++ Introduce `check_docblock_signature_return_type_match` config (slow, disabled by default)
+  (Checks if the phpdoc types match up with declared return types)
+
+Maintenance
++ Add Code of Conduct
++ Fix type signatures for some internal methods and internal class properties.
+
+Bug Fixes
++ Allow asserting `object` is a specific object type without warning (Issue #516)
++ Fix bugs in analysis of varargs within a function(Issue #516)
++ Treat null defaults in functions and methods the same way (Issue #508)
+  In both, add null defaults to the UnionType only if there's already another type.
+  In both, add non-null defaults to the UnionType (Contains `mixed` if there weren't any explicit types)
++ Specially handle phpdoc type aliases such as `boolean` only in phpdoc (Issue #471)
+  (Outside of phpdoc, it refers to a class with the name `boolean`)
++ Add some internal classes other than `stdClass` which are allowed to have dynamic, undeclared properties (Issue #433)
++ Fix assertion errors when passing references by reference (Issue #500)
+
+Backwards Incompatible Changes
++ Requires newer `ext-ast` version (Must support version 35).
+
+0.8.3 Jan 26, 2017
+------------------
+
+The 0.8.x versions will be tracking syntax from PHP versions 7.0.x and is runnable on PHP 7.0+.
+Please use version 0.8.x if you're using a version of PHP < 7.1.
+For best results, run version 0.8.x with PHP 7.0 if you are analyzing a codebase which normally runs on php <= 7.0 
+(If php 7.1 is used, Phan will think that some new classes, methods, and functions exist or have different parameter lists because it gets this info from `Reflection`)
+
+???

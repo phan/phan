@@ -399,7 +399,7 @@ trait FunctionTrait {
                 // doesn't mean that is its type. Any type can default
                 // to null
                 if ($defaultIsNull) {
-					// The parameter constructor or above check for wasEmpty already took care of null default case
+                    // The parameter constructor or above check for wasEmpty already took care of null default case
                 } else {
                     if ($wasEmpty) {
                         $parameter->addUnionType($default_type);
