@@ -5,8 +5,9 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Plugin\PluginImplementation;
 
-class ParentConstructorCalledAnalyzer
+class ParentConstructorCalledAnalyzer extends PluginImplementation
 {
 
     /**
@@ -14,7 +15,7 @@ class ParentConstructorCalledAnalyzer
      *
      * @return void
      */
-    public static function analyzeParentConstructorCalled(
+    public function analyzeClass(
         CodeBase $code_base,
         Clazz $clazz
     ) {
