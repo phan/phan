@@ -5,22 +5,28 @@ namespace Phan\Language\Element;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Comment\Parameter as CommentParameter;
+use Phan\Language\Element\Comment\Method as CommentMethod;
 use Phan\Language\Element\Flags;
 use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
 
 /**
+ * Handles extracting information(param types, return types, magic methods/properties, etc.) from phpdoc comments.
+ * Instances of Comment contain the extracted information.
  */
 class Comment
 {
+    const word_regex = '([a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*)';
 
     /**
      * @var int - contains a subset of flags to set on elements
      * Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
+     * Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
      * Flags::IS_DEPRECATED
      */
     private $comment_flags = 0;
@@ -76,6 +82,12 @@ class Comment
     private $magic_property_map = [];
 
     /**
+     * @var CommentMethod[]
+     * A mapping from magic methods to parsed parameters, name, and return types.
+     */
+    private $magic_method_map = [];
+
+    /**
      * @var Option<Type>
      * An optional class name defined by a @PhanClosureScope directive.
      * (overrides the class in which it is analyzed)
@@ -83,20 +95,15 @@ class Comment
     private $closure_scope;
 
     /**
-     * @var bool
-     * Set to true if the comment forbids classes from having
-     * undeclared magic properties.
-     */
-    private $forbid_undeclared_dynamic_properties = false;
-
-    /**
      * A private constructor meant to ingest a parsed comment
      * docblock.
      *
-     * @param int $comment_flags
-     * uses Flags::IS_DEPRECATED and Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
-     * Set to true if the comment contains a 'deprecated'
-     * directive.
+     * @param int $comment_flags uses the following flags
+     * - Flags::IS_DEPRECATED
+     *   Set to true if the comment contains a 'deprecated'
+     *   directive.
+     * - Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
+     * - Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
      *
      * @param CommentParameter[] $variable_list
      *
@@ -115,6 +122,8 @@ class Comment
      *
      * @param CommentParameter[] $magic_property_list
      *
+     * @param CommentMethod[] $magic_method_list
+     *
      * @param Option<Type> $closure_scope
      * For closures: Allows us to document the class of the object
      * to which a closure will be bound.
@@ -128,6 +137,7 @@ class Comment
         UnionType $return_union_type,
         array $suppress_issue_list,
         array $magic_property_list,
+        array $magic_method_list,
         Option $closure_scope
     ) {
         $this->comment_flags = $comment_flags;
@@ -159,6 +169,14 @@ class Comment
                 $this->magic_property_map[$name] = $property;
             }
         }
+        foreach ($magic_method_list as $method) {
+            $name = $method->getName();
+            if (!empty($name)) {
+                // Add it to the named map
+                // TODO: Detect duplicates, emit warning for duplicates.
+                $this->magic_method_map[$name] = $method;
+            }
+        }
     }
 
     /**
@@ -173,7 +191,7 @@ class Comment
 
         if (!Config::get()->read_type_annotations) {
             return new Comment(
-                0, [], [], [], new None, new UnionType(), [], [], new None
+                0, [], [], [], new None, new UnionType(), [], [], [], new None
             );
         }
 
@@ -184,6 +202,7 @@ class Comment
         $return_union_type = new UnionType();
         $suppress_issue_list = [];
         $magic_property_list = [];
+        $magic_method_list = [];
         $closure_scope = new None;
         $comment_flags = 0;
 
@@ -227,10 +246,20 @@ class Comment
                         $magic_property_list[] = $magic_property;
                     }
                 }
+            } elseif (strpos($line, '@method') !== false) {
+                // Make sure support for magic methods is enabled.
+                if (Config::get()->read_magic_method_annotations) {
+                    $magic_method = self::magicMethodFromCommentLine($context, $line);
+                    if ($magic_method !== null) {
+                        $magic_method_list[] = $magic_method;
+                    }
+                }
             } elseif (stripos($line, '@PhanClosureScope') !== false) {
                 $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
             } elseif (stripos($line, '@phan-forbid-undeclared-magic-properties') !== false) {
                 $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+            } elseif (stripos($line, '@phan-forbid-undeclared-magic-methods') !== false) {
+                $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
             }
 
             if (stripos($line, '@deprecated') !== false) {
@@ -255,6 +284,7 @@ class Comment
             $return_union_type,
             $suppress_issue_list,
             $magic_property_list,
+            $magic_method_list,
             $closure_scope
         );
     }
@@ -416,6 +446,110 @@ class Comment
     }
 
     /**
+     * Parses a magic method based on https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
+     * @return ?CommentParameter - if null, the phpdoc magic method was invalid.
+     */
+    private static function magicParamFromMagicMethodParamString(
+        Context $context,
+        string $param_string,
+        int $param_index
+    ) {
+        $param_string = trim($param_string);
+        // Don't support trailing commas, or omitted params. Provide at least one of [type] or [parameter]
+        if ($param_string === '') {
+            return null;
+        }
+        // Parse an entry for [type] [parameter] - Assume both of those are optional.
+        // https://github.com/phpDocumentor/phpDocumentor2/pull/1271/files - phpdoc allows passing an default value.
+        // Phan allows `=.*`, to indicate that a parameter is optional
+        // TODO: in another PR, check that optional parameters aren't before required parameters.
+        if (preg_match('/^(' . UnionType::union_type_regex . ')?\s*((\.\.\.)\s*)?(\$' . self::word_regex . ')?((\s*=.*)?)$/', $param_string, $param_match)) {
+            // Note: a magic method parameter can be variadic, but it can't be pass-by-reference? (No support in __call)
+            $union_type_string = $param_match[1];
+            $union_type = UnionType::fromStringInContext(
+                $union_type_string,
+                $context,
+                true
+            );
+            $is_variadic = $param_match[28] === '...';
+            $default_str = $param_match[31];
+            $has_default_value = $default_str !== '';
+            if ($has_default_value) {
+                $default_value_repr = trim(explode('=', $default_str, 2)[1]);
+                if (strcasecmp($default_value_repr, 'null') === 0) {
+                    $union_type = $union_type->nullableClone();
+                }
+            }
+            $var_name = $param_match[30];
+            if ($var_name === '') {
+                // placeholder names are p1, p2, ...
+                $var_name = 'p' . ($param_index + 1);
+            }
+            return new CommentParameter($var_name, $union_type, $is_variadic, $has_default_value);
+        }
+        return null;
+    }
+
+    /**
+     * @param Context $context
+     * @param string $line
+     * An individual line of a comment
+     *
+     * @return ?CommentMethod
+     * magic method with the parameter types, return types, and name.
+     */
+    private static function magicMethodFromCommentLine(
+        Context $context,
+        string $line
+    ) {
+        // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
+        // TODO: properly handle duplicates...
+        // https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
+        // > Going to assume "static" is a magic keyword, based on https://github.com/phpDocumentor/phpDocumentor2/issues/822
+        // > TODO: forbid in trait?
+        // TODO: finish writing the regex.
+        // Syntax:
+        //    @method [return type] [name]([[type] [parameter]<, ...>]) [<description>]
+        //    Assumes the parameters end at the first ")" after "("
+        if (preg_match('/@method(\s+(static))?((\s+(' . UnionType::union_type_regex . '))?)\s+' . self::word_regex . '\s*\(([^()]*)\)\s*(.*)/', $line, $match)) {
+            $is_static = $match[2] === 'static';
+            $return_union_type_string = $match[4];
+            if ($return_union_type_string !== '') {
+                $return_union_type =
+                    UnionType::fromStringInContext(
+                        $return_union_type_string,
+                        $context,
+                        true
+                    );
+            } else {
+                // From https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
+                // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
+                $return_union_type = VoidType::instance(false)->asUnionType();
+            }
+            $method_name = $match[31];
+
+            $arg_list = trim($match[32]);
+            $comment_params = [];
+            // Special check if param list has 0 params.
+            if ($arg_list !== '') {
+                // TODO: Would need to use a different approach if templates were ever supported
+                $params_strings = explode(',', $arg_list);
+                foreach ($params_strings as $i => $param_string) {
+                    $param = self::magicParamFromMagicMethodParamString($context, $param_string, $i);
+                    if ($param === null) {
+                        return null;
+                    }
+                    $comment_params[] = $param;
+                }
+            }
+
+            return new CommentMethod($method_name, $return_union_type, $comment_params, $is_static);
+        }
+
+        return null;
+    }
+
+    /**
      * @param Context $context
      * @param string $line
      * An individual line of a comment
@@ -526,6 +660,16 @@ class Comment
     public function getForbidUndeclaredMagicProperties() : bool
     {
         return ($this->comment_flags & Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES) != 0;
+    }
+
+    /**
+     * @return bool
+     * Set to true if the comment contains a 'phan-forbid-undeclared-magic-methods'
+     * directive.
+     */
+    public function getForbidUndeclaredMagicMethods() : bool
+    {
+        return ($this->comment_flags & Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS) != 0;
     }
 
     /**
@@ -654,6 +798,13 @@ class Comment
     }
 
     /**
+     * @return CommentMethod[] map from method name to method info
+     */
+    public function getMagicMethodMap() : array {
+        return $this->magic_method_map;
+    }
+
+    /**
      * @return CommentParameter[]
      */
     public function getVariableList() : array
@@ -664,6 +815,7 @@ class Comment
     public function __toString() : string
     {
         // TODO: add new properties of Comment to this method
+        // (magic methods, magic properties, custom @phan directives, etc.))
         $string = "/**\n";
 
         if (($this->comment_flags & Flags::IS_DEPRECATED) != 0) {

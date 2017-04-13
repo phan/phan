@@ -16,6 +16,7 @@ class Flags
     const CLASS_HAS_DYNAMIC_PROPERTIES = (1 << 8);
     const IS_CLONE_OF_VARIADIC         = (1 << 9);
     const CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES = (1 << 10);
+    const CLASS_FORBID_UNDECLARED_MAGIC_METHODS    = (1 << 11);
 
     const IS_NS_INTERNAL               = (1 << 11);
 

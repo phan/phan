@@ -297,9 +297,9 @@ class ContextNode
                     $method_name,
                     $this->context
                 );
-            } else if (!$is_static && $class->hasCallMethod($this->code_base)) {
+            } else if (!$is_static && $class->allowsCallingUndeclaredInstanceMethod($this->code_base)) {
                 return $class->getCallMethod($this->code_base);
-            } else if ($is_static && $class->hasCallStaticMethod($this->code_base)) {
+            } else if ($is_static && $class->allowsCallingUndeclaredStaticMethod($this->code_base)) {
                 return $class->getCallStaticMethod($this->code_base);
             }
         }

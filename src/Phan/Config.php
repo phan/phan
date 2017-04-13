@@ -181,6 +181,11 @@ class Config
         'read_magic_property_annotations' => true,
 
         // If disabled, Phan will not read docblock type
+        // annotation comments for @method.
+        // Note: read_type_annotations must also be enabled.
+        'read_magic_method_annotations' => true,
+
+        // If disabled, Phan will not read docblock type
         // annotation comments (such as for @return, @param,
         // @var, @suppress, @deprecated) and only rely on
         // types expressed in code.

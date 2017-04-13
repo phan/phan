@@ -145,15 +145,27 @@ class ParseVisitor extends ScopeVisitor
 
         // Depends on code_base for checking existence of __get and __set.
         // TODO: Add a check in analyzeClasses phase that magic @property declarations
-        // are limited to classes with either __get or __set declared.
+        // are limited to classes with either __get or __set declared (or interface/abstract
         $class->setMagicPropertyMap(
             $comment->getMagicPropertyMap(),
             $this->code_base,
             $this->context
         );
 
+        // Depends on code_base for checking existence of __call or __callStatic.
+        // TODO: Add a check in analyzeClasses phase that magic @method declarations
+        // are limited to classes with either __get or __set declared (or interface/abstract)
+        $class->setMagicMethodMap(
+            $comment->getMagicMethodMap(),
+            $this->code_base,
+            $this->context
+        );
+
         // usually used together with magic @property annotations
         $class->setForbidUndeclaredMagicProperties($comment->getForbidUndeclaredMagicProperties());
+
+        // usually used together with magic @method annotations
+        $class->setForbidUndeclaredMagicMethods($comment->getForbidUndeclaredMagicMethods());
 
         // Look to see if we have a parent class
         if (!empty($node->children['extends'])) {
