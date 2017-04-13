@@ -5,22 +5,57 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\TemplateType;
+use Phan\Plugin\PluginImplementation;
 
-class ParameterTypesAnalyzer
+class ParameterTypesAnalyzer extends PluginImplementation
 {
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the function exists
+     *
+     * @param Func $function
+     * A function being analyzed
+     *
+     * @return void
+     */
+    public function analyzeFunction(
+        CodeBase $code_base,
+        Func $function
+    ) {
+        $this->analyzeParameterTypes($code_base, $function);
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the method exists
+     *
+     * @param Method $method
+     * A method being analyzed
+     *
+     * @return void
+     */
+    public function analyzeMethod(
+        CodeBase $code_base,
+        Method $method
+    ) {
+        $this->analyzeParameterTypes($code_base, $method);
+        $this->analyzeOverrideSignature($code_base, $method);
+    }
 
     /**
      * Check method parameters to make sure they're valid
      *
      * @return void
      */
-    public static function analyzeParameterTypes(
+    private function analyzeParameterTypes(
         CodeBase $code_base,
         FunctionInterface $method
     ) {
@@ -65,10 +100,6 @@ class ParameterTypesAnalyzer
                 }
             }
         }
-
-        if ($method instanceof Method) {
-            self::analyzeOverrideSignature($code_base, $method);
-        }
     }
 
     /**
@@ -77,7 +108,7 @@ class ParameterTypesAnalyzer
      *
      * @see https://en.wikipedia.org/wiki/Liskov_substitution_principle
      */
-    private static function analyzeOverrideSignature(
+    private function analyzeOverrideSignature(
         CodeBase $code_base,
         Method $method
     ) {
@@ -118,7 +149,7 @@ class ParameterTypesAnalyzer
 
         // A lot of analyzeOverrideRealSignature is redundant.
         // However, phan should consistently emit both issue types if one of them is suppressed.
-        self::analyzeOverrideRealSignature($code_base, $method, $o_method, $o_class);
+        $this->analyzeOverrideRealSignature($code_base, $method, $o_method, $o_class);
 
         // PHP doesn't complain about signature mismatches
         // with traits, so neither shall we
@@ -340,7 +371,7 @@ class ParameterTypesAnalyzer
      * @param $o_class the overridden class
      * @return void
      */
-    private static function analyzeOverrideRealSignature(
+    private function analyzeOverrideRealSignature(
         CodeBase $code_base,
         Method $method,
         Method $o_method,

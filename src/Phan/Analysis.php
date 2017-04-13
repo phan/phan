@@ -195,10 +195,6 @@ class Analysis
                 continue;
             }
 
-            ParameterTypesAnalyzer::analyzeParameterTypes(
-                $code_base, $function_or_method
-            );
-
             // Let any plugins analyze the methods or functions
             if ($function_or_method instanceof Func) {
                 ConfigPluginSet::instance()->analyzeFunction(
