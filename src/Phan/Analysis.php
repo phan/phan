@@ -201,32 +201,33 @@ class Analysis
                 continue;
             }
 
-            // 0.03
-            if (is_null($file_filter) || isset($file_filter[$function_or_method->getContext()->getFile()])) {
-                DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
-                    $code_base, $function_or_method
-                );
+            // If there is an array limiting the set of files, skip this file if it's not in the list,
+            if (is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
+                continue;
+            }
+            DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
+                $code_base, $function_or_method
+            );
 
-                // This is the most time consuming step.
-                // Can probably apply this to other functions, but this was the slowest.
-                ParameterTypesAnalyzer::analyzeParameterTypes(
-                    $code_base, $function_or_method
-                );
-                // Let any plugins analyze the methods or functions
-                // XXX: Add a way to run plugins on all functions/methods, this was limited for speed.
-                // Assumes that the given plugins will emit an issue in the same file as the function/method,
-                // which isn't necessarily the case.
-                // 0.06
-                if ($hasPlugins) {
-                    if ($function_or_method instanceof Func) {
-                        $pluginSet->analyzeFunction(
-                            $code_base, $function_or_method
-                        );
-                    } else if ($function_or_method instanceof Method) {
-                        $pluginSet->analyzeMethod(
-                            $code_base, $function_or_method
-                        );
-                    }
+            // This is the most time consuming step.
+            // Can probably apply this to other functions, but this was the slowest.
+            ParameterTypesAnalyzer::analyzeParameterTypes(
+                $code_base, $function_or_method
+            );
+            // Let any plugins analyze the methods or functions
+            // XXX: Add a way to run plugins on all functions/methods, this was limited for speed.
+            // Assumes that the given plugins will emit an issue in the same file as the function/method,
+            // which isn't necessarily the case.
+            // 0.06
+            if ($hasPlugins) {
+                if ($function_or_method instanceof Func) {
+                    $pluginSet->analyzeFunction(
+                        $code_base, $function_or_method
+                    );
+                } else if ($function_or_method instanceof Method) {
+                    $pluginSet->analyzeMethod(
+                        $code_base, $function_or_method
+                    );
                 }
             }
         }
