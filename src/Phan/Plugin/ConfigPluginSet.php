@@ -2,6 +2,7 @@
 namespace Phan\Plugin;
 
 use Phan\Analysis\ClassInheritanceAnalyzer;
+use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\OverrideSignatureAnalyzer;
@@ -195,6 +196,7 @@ class ConfigPluginSet extends Plugin {
             // add internal analyzers that are structured as plugins, that should be included with all runs
             // class tests
             array_unshift($this->pluginSet, new ClassInheritanceAnalyzer);
+            array_unshift($this->pluginSet, new CompositionAnalyzer);
             array_unshift($this->pluginSet, new DuplicateClassAnalyzer);
             array_unshift($this->pluginSet, new ParentConstructorCalledAnalyzer);
             array_unshift($this->pluginSet, new PropertyTypesAnalyzer);

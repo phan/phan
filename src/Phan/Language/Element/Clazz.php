@@ -1972,12 +1972,6 @@ class Clazz extends AddressableElement
             return;
         }
 
-        // Analyze this class to make sure that we don't have conflicting
-        // types between similar inherited methods.
-        CompositionAnalyzer::analyzeComposition(
-            $code_base, $this
-        );
-
         // Let any configured plugins analyze the class
         ConfigPluginSet::instance()->analyzeClass(
             $code_base, $this

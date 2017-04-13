@@ -8,8 +8,9 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
 use Phan\Language\UnionType;
+use Phan\Plugin\PluginImplementation;
 
-class CompositionAnalyzer
+class CompositionAnalyzer extends PluginImplementation
 {
 
     /**
@@ -17,7 +18,7 @@ class CompositionAnalyzer
      *
      * @return void
      */
-    public static function analyzeComposition(
+    public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
     ) {
