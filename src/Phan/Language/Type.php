@@ -1065,6 +1065,9 @@ class Type
         if ($this === $type) {
             return true;
         }
+        if ($type instanceof MixedType) {
+            return true;
+        }
 
         // A nullable type cannot cast to a non-nullable type
         if ($this->getIsNullable() && !$type->getIsNullable()) {
@@ -1105,6 +1108,9 @@ class Type
             return true;
         }
 
+        if ($type instanceof MixedType) {
+            return true;
+        }
         // A matrix of allowable type conversions
         static $matrix = [
             '\Traversable' => [

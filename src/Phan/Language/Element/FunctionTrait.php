@@ -389,8 +389,10 @@ trait FunctionTrait {
                 // and only allowable type.
                 $wasEmpty = $parameter->getUnionType()->isEmpty();
                 if ($wasEmpty) {
+                    // TODO: Errors on usage of ?mixed are poorly defined and greatly differ from phan's old behavior.
+                    // Consider passing $defaultIsNull once this is fixed.
                     $parameter->addUnionType(
-                        MixedType::instance($defaultIsNull)->asUnionType()
+                        MixedType::instance(false)->asUnionType()
                     );
                 }
 
