@@ -61,7 +61,7 @@ class PhanPHPLinter {
         }
         // Exit if any of the requested files are syntactically invalid.
         if ($failure_code !== 0) {
-			self::debugError("Files were syntactically invalid\n");
+            self::debugError("Files were syntactically invalid\n");
             exit($failure_code);
         }
 
@@ -71,7 +71,7 @@ class PhanPHPLinter {
         }
         $dirname = dirname($real);
         $old_dirname = null;
-		unset($real);
+        unset($real);
 
         // TODO: not tested on windows
         $found_phan_config = false;
@@ -225,10 +225,10 @@ EOB;
         $optind = 0;
         $shortopts = "s:p:l:v";
         $longopts = [
-			'daemonize-socket:',
-			'daemonize-tcp-port:',
-			'syntax-check:',
-			'verbose',
+            'daemonize-socket:',
+            'daemonize-tcp-port:',
+            'syntax-check:',
+            'verbose',
         ];
         if (PHP_VERSION_ID >= 70100) {
             // optind support is only in php 7.1+.
