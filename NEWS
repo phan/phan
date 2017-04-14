@@ -19,6 +19,10 @@ New Features (Analysis)
 + Make conditionals such as `is_string` start applying to the condition in ternary operators (`$a ? $b : $c`)
 
 New Features (CLI, Configs)
++ (Linux/Unix only) Add Experimental Phan Daemon mode (PR #563 for Issue #22), which allows phan to run in the background, and accept TCP requests to analyze single files.
+  (The implementation currently requires the `pcntl` extension, which does not in Windows)
+  Server usage: `path/to/phan --daemonize-tcp-port 4846` (In the root directory of the project being analyzed)
+  Client usage: `path/to/phan_client --daemonize-tcp-port 4846 -l src/file1.php [ -l src/file2.php ]`
 + Add `--color` CLI flag, with rudimentary unix terminal coloring for the plain text output formatter. (Issue #363)
   Color schemes are customizable with `color_scheme`, in the config file.
 + Add a config to excludes file paths from a regular expression (e.g. tests or example files mixed with the codebase) (#635)
