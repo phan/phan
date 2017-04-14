@@ -279,7 +279,9 @@ trait FunctionTrait {
     public function getRealReturnType() : UnionType
     {
         if (!$this->real_return_type && $this instanceof \Phan\Language\Element\Method) {
-            throw new \Error(sprintf("Failed to get real return type in %s method %s", (string)$this->getClassFQSEN(), (string)$this));
+            // Incomplete patch for https://github.com/etsy/phan/issues/670
+            return new UnionType();
+            // throw new \Error(sprintf("Failed to get real return type in %s method %s", (string)$this->getClassFQSEN(), (string)$this));
         }
         // Clone the union type, to be certain it will remain immutable.
         $union_type = clone($this->real_return_type);
