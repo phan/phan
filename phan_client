@@ -73,7 +73,8 @@ class PhanPHPLinter {
         $old_dirname = null;
         unset($real);
 
-        // TODO: not tested on windows
+        // TODO: In another PR, have an alternative way to run the daemon/server on Windows (Serialize and unserialize global state?
+        // The server side is unsupported on Windows, due to the `pcntl` extension not being supported.
         $found_phan_config = false;
         while ($dirname !== $old_dirname) {
             if (file_exists($dirname . '/.phan/config.php')) {
