@@ -6,15 +6,16 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Plugin\PluginImplementation;
 
-class ClassInheritanceAnalyzer
+class ClassInheritanceAnalyzer extends PluginImplementation
 {
     /**
      * Check to see if the given Clazz is a duplicate
      *
      * @return void
      */
-    public static function analyzeClassInheritance(
+    public function analyzeClass(
         CodeBase $code_base,
         Clazz $clazz
     ) {
@@ -25,7 +26,7 @@ class ClassInheritanceAnalyzer
         }
 
         if ($clazz->hasParentType()) {
-            $class_exists = self::fqsenExistsForClass(
+            $class_exists = $this->fqsenExistsForClass(
                 $clazz->getParentClassFQSEN(),
                 $code_base,
                 $clazz,
@@ -42,7 +43,7 @@ class ClassInheritanceAnalyzer
         }
 
         foreach ($clazz->getInterfaceFQSENList() as $fqsen) {
-            $class_exists = self::fqsenExistsForClass(
+            $class_exists = $this->fqsenExistsForClass(
                 $fqsen,
                 $code_base,
                 $clazz,
@@ -50,7 +51,7 @@ class ClassInheritanceAnalyzer
             );
 
             if ($class_exists) {
-                self::testClassAccess(
+                $this->testClassAccess(
                     $clazz,
                     $code_base->getClassByFQSEN($fqsen),
                     $code_base
@@ -59,14 +60,14 @@ class ClassInheritanceAnalyzer
         }
 
         foreach ($clazz->getTraitFQSENList() as $fqsen) {
-            $class_exists = self::fqsenExistsForClass(
+            $class_exists = $this->fqsenExistsForClass(
                 $fqsen,
                 $code_base,
                 $clazz,
                 Issue::UndeclaredTrait
             );
             if ($class_exists) {
-                self::testClassAccess(
+                $this->testClassAccess(
                     $clazz,
                     $code_base->getClassByFQSEN($fqsen),
                     $code_base
@@ -79,7 +80,7 @@ class ClassInheritanceAnalyzer
      * @return bool
      * True if the FQSEN exists. If not, a log line is emitted
      */
-    private static function fqsenExistsForClass(
+    private function fqsenExistsForClass(
         FullyQualifiedClassName $fqsen,
         CodeBase $code_base,
         Clazz $clazz,
@@ -111,7 +112,7 @@ class ClassInheritanceAnalyzer
      * @param CodeBase $code_base
      * The code base in which both classes exist
      */
-    private static function testClassAccess(
+    private function testClassAccess(
         Clazz $source_class,
         Clazz $target_class,
         CodeBase $code_base

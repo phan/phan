@@ -1972,11 +1972,6 @@ class Clazz extends AddressableElement
             return;
         }
 
-        // Make sure the parent classes exist
-        ClassInheritanceAnalyzer::analyzeClassInheritance(
-            $code_base, $this
-        );
-
         DuplicateClassAnalyzer::analyzeDuplicateClass(
             $code_base, $this
         );
