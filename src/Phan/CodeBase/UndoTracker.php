@@ -5,6 +5,13 @@ use Phan\CodeBase;
 use Phan\Daemon;
 
 /**
+ * UndoTracker maps a file path to a list of operations(e.g. Closures) that must be executed to
+ * remove all traces of a file from the CodeBase, etc. if a file was removed or edited.
+ * This is done to support running phan in daemon mode.
+ * - Files will have to be re-parsed to get the new function signatures, check for new parse/analysis errors,
+ *   and to update the class/function/method/property/constant/etc. definitions that would have to be created.
+ *
+ * If a file is edited, its contributions are undone, then it is parsed yet again.
  *
  * (We don't garbage collect reference cycles, so this attempts to work in a way that avoids cycles.
  *  Haven't verified that it does that as expected, yet)

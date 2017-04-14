@@ -149,7 +149,7 @@ class PhanPHPLinter {
      * @param string[] $file_mapping
      */
     private static function dumpJSONIssues(array $response, array $file_mapping) {
-        $didDebug = false;
+        $did_debug = false;
         // if ($response['issue_count'] > 0)
         foreach ($response['issues'] as $issue) {
             if ($issue['type'] !== 'issue') {
@@ -157,10 +157,10 @@ class PhanPHPLinter {
             }
             $pathInProject = $issue['location']['path'];  // relative path
             if (!isset($file_mapping[$pathInProject])) {
-                if (!$didDebug) {
+                if (!$did_debug) {
                     self::debugInfo(sprintf("Unexpected path for issue (expected %s): %s\n", json_encode($file_mapping), json_encode($issue)));
                 }
-                $didDebug = true;
+                $did_debug = true;
                 continue;
             }
             $line = $issue['location']['lines']['begin'];
@@ -257,7 +257,6 @@ EOB;
                     $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
                 }
                 // Check if the socket is valid after parsing the file list.
-                $socketPath = $value;
                 $socket_dirname = realpath(dirname($value));
                 if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
                     // The client doesn't require that the file exists if the daemon isn't running, but we do require that the folder exists.

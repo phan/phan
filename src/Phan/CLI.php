@@ -61,7 +61,7 @@ class CLI
         // Parse command line args
         // still available: g,n,t,u,w
         $opts = getopt(
-            "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhv",
+            "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:",
             [
                 'backward-compatibility-checks',
                 'color',
@@ -146,10 +146,15 @@ class CLI
                     $file_list = is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
                         $file_path = Config::projectPath($file_name);
-                        $this->file_list = array_merge(
-                            $this->file_list,
-                            file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
-                        );
+                        if (is_file($file_path) && is_readable($file_path)) {
+                            /** @var string[] */
+                            $this->file_list = array_merge(
+                                $this->file_list,
+                                file(Config::projectPath($file_name), FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)
+                            );
+                        } else {
+                            error_log("Unable to read file $file_path");
+                        }
                     }
                     break;
                 case 'l':
@@ -485,7 +490,7 @@ Usage: {$argv[0]} [options] [files...]
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
 
- --daemonize-socket </path/to/file.sock>
+ -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
  --daemonize-tcp-port <1024-65535>
@@ -608,7 +613,6 @@ EOB;
 
         // Bound the percentage to [0, 1]
         $p = min(max($p, 0.0), 1.0);
-
 
         // Don't update every time when we're moving
         // super fast
