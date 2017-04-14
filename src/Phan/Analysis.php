@@ -247,7 +247,7 @@ class Analysis
             $old_classes = $classes;
             $classes = [];
             foreach ($old_classes as $class) {
-                if (!$class->isInternal() && isset($path_filter[$class->getContext()->getFile()])) {
+                if (!$class->isPHPInternal() && isset($path_filter[$class->getContext()->getFile()])) {
                     $classes[] = $class;
                 }
             }

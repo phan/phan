@@ -98,10 +98,10 @@ class Daemon {
         }
         // Unless debugging Phan itself, these two configurations are unnecessarily adding slowness.
         if (PHP_DEBUG) {
-            echo "Warning: This daemon is slower when php is compiled with --enable-debug\n";
+            fwrite(STDERR, "Warning: This daemon is slower when php is compiled with --enable-debug\n");
         }
         if (extension_loaded('xdebug')) {
-            echo "Warning: This daemon is slower when xdebug is installed\n";
+            fwrite(STDERR, "Warning: This daemon is slower when xdebug is installed");
         }
         echo "Listening for Phan analysis requests at $listen_url\n";
         $socket_server = stream_socket_server($listen_url, $errno, $errstr);

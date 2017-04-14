@@ -118,7 +118,7 @@ class PhanPHPLinter {
         }
         $request = [
             'method' => 'analyze_files',
-            'files' => $real_files,
+            'files' => $file_mapping,
             'format' => 'json',
         ];
 
@@ -140,7 +140,7 @@ class PhanPHPLinter {
         if ($status === 'ok') {
             self::dumpJSONIssues($response, $file_mapping);
         } else {
-            self::debugError(sprintf("Invalid response from phan for %s: %s\n", $response_bytes));
+            self::debugError(sprintf("Invalid response from phan for %s: %s\n", json_encode($file_mapping), $response_bytes));
         }
     }
 
