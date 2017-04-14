@@ -60,6 +60,13 @@ abstract class NativeType extends Type
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
+        // Anything can cast to mixed or ?mixed
+        // Not much of a distinction in nullable mixed, except to emphasize in comments that it definitely can be null.
+        // MixedType overrides the canCastTo*Type methods to always return true.
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
         if (!($type instanceof NativeType)
             || $this instanceof GenericArrayType
             || $type instanceof GenericArrayType
