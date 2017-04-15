@@ -58,7 +58,8 @@ class NonBoolBranchVisitor extends AnalysisVisitor {
                 $this->code_base,
                 $this->context,
                 'PhanPluginNonBoolBranch',
-                'Non bool value evaluated in if clause'
+                'Non bool value evaluated in if clause',
+                []
             );
         }
         return $this->context;

@@ -75,7 +75,8 @@ class NonBoolInLogicalArithVisitor extends AnalysisVisitor {
                     $this->code_base,
                     $this->context,
                     'PhanPluginNonBoolInLogicalArith',
-                    'Non bool value in logical arithmetic'
+                    'Non bool value in logical arithmetic',
+                    []
                 );
             }
         }
