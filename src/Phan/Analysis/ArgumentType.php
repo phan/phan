@@ -457,6 +457,7 @@ class ArgumentType
      * @param CodeBase $code_base
      *
      * @return bool
+     * Return true if an issue was found, else false.
      *
      * @see \Phan\Deprecated\Pass2::arg_check
      * Formerly `function arg_check`
@@ -477,7 +478,7 @@ class ArgumentType
                 // (array pieces, string glue) or
                 // (array pieces)
                 if ($argcount == 1) {
-                    self::analyzeNodeUnionTypeCast(
+                    return !self::analyzeNodeUnionTypeCast(
                         $arglist->children[0],
                         $context,
                         $code_base,
@@ -485,18 +486,17 @@ class ArgumentType
                         function (UnionType $node_type) use ($context, $method) {
                         // "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
                             return Issue::fromType(Issue::ParamSpecial2)(
-                            $context->getFile(),
-                            $context->getLineNumberStart(), [
-                                1,
-                                'pieces',
-                                (string)$method->getFQSEN(),
-                                'string',
-                                'array'
-                            ]
+                                $context->getFile(),
+                                $context->getLineNumberStart(), [
+                                    1,
+                                    'pieces',
+                                    (string)$method->getFQSEN(),
+                                    'string',
+                                    'array'
+                                ]
                             );
                         }
                     );
-                    return;
                 } elseif ($argcount == 2) {
                     $arg1_type = UnionType::fromNode(
                         $context,
