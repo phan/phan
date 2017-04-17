@@ -39,8 +39,13 @@ class Config
         // (e.g. php, html, htm)
         'analyzed_file_extensions' => ['php'],
 
-        // A regular expression to filter out files with matching filenames.
-        // (e.g. '/Test\.php$/')
+        // A regular expression to match files to be excluded
+        // from parsing and analysis and will not be read at all.
+        //
+        // This is useful for excluding groups of test or example
+        // directories/files, unanalyzable files, or files that
+        // can't be removed for whatever reason.
+        // (e.g. '@Test\.php$@', or '@vendor/.*/(tests|Tests)/@')
         'exclude_file_regex' => '',
 
         // A file list that defines files that will be excluded
