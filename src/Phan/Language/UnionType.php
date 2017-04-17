@@ -125,7 +125,11 @@ class UnionType implements \Serializable
                 );
             }, array_filter(array_map(function (string $type_name) {
                 return trim($type_name);
-            }, explode('|', $type_string))))
+            }, explode('|', $type_string)), function(string $type_name) {
+                // Exclude empty type names
+                // Exclude namespaces without type names (e.g. `\`, `\NS\`)
+                return $type_name !== '' && preg_match('@\\\\[\[\]]*$@', $type_name) === 0;
+            }))
         );
     }
 
