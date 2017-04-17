@@ -529,7 +529,9 @@ EOB;
                         return false;
                     }
 
-                    if ($exclude_file_regex && preg_match($exclude_file_regex,$file_info->getBasename())) {
+                    // Compare exclude_file_regex against the relative path within the project
+                    // (E.g. src/foo.php)
+                    if ($exclude_file_regex && self::isPathExcludedByRegex($exclude_file_regex, $file_info->getPathname())) {
                         return false;
                     }
 
@@ -543,6 +545,27 @@ EOB;
         }
 
         return $file_list;
+    }
+
+    /**
+     * Check if a path name is excluded by regex, in a platform independent way.
+     * Normalizes $path_name on Windows so that '/' is always the directory separator.
+     *
+     * @param string $exclude_file_regex - PHP regex
+     * @param string $path_name - path name within project, beginning with user-provided directory name.
+     *                            On windows, may contain '\'.
+     *
+     * @return bool - True if the user's configured regex is meant to exclude $path_name
+     */
+    private static function isPathExcludedByRegex(
+        string $exclude_file_regex,
+        string $path_name
+    ) : bool {
+        // Make this behave the same way on linux/unix and on Windows.
+        if (DIRECTORY_SEPARATOR === '\\') {
+            $path_name = str_replace(DIRECTORY_SEPARATOR, '/', $path_name);
+        }
+        return preg_match($exclude_file_regex, $path_name) > 0;
     }
 
     /**
