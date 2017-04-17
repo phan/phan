@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\ClassAnalyzer;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Type\TemplateType;
-use Phan\Plugin\PluginImplementation;
 
-class PropertyTypesAnalyzer extends PluginImplementation
+class PropertyTypesAnalyzer implements ClassAnalyzer
 {
 
     /**

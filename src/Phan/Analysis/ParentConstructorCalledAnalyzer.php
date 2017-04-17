@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\ClassAnalyzer;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
-use Phan\Plugin\PluginImplementation;
 
-class ParentConstructorCalledAnalyzer extends PluginImplementation
+class ParentConstructorCalledAnalyzer implements ClassAnalyzer
 {
 
     /**

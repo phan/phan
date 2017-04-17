@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\ClassAnalyzer;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
@@ -8,9 +9,8 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN;
 use Phan\Language\UnionType;
-use Phan\Plugin\PluginImplementation;
 
-class CompositionAnalyzer extends PluginImplementation
+class CompositionAnalyzer implements ClassAnalyzer
 {
 
     /**

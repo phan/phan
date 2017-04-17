@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin;
 
+use Phan\Analysis\ClassAnalyzer;
 use Phan\Analysis\ClassInheritanceAnalyzer;
 use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
@@ -128,7 +129,7 @@ class ConfigPluginSet extends Plugin {
         Clazz $class
     ) {
         foreach ($this->getPlugins() as $plugin) {
-            if ($plugin instanceof Plugin) {
+            if ($plugin instanceof ClassAnalyzer) {
                 $plugin->analyzeClass(
                     $code_base,
                     $class

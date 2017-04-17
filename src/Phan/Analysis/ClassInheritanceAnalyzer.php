@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\ClassAnalyzer;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
-use Phan\Plugin\PluginImplementation;
 
-class ClassInheritanceAnalyzer extends PluginImplementation
+class ClassInheritanceAnalyzer implements ClassAnalyzer
 {
     /**
      * Check to see if the given Clazz is a duplicate
