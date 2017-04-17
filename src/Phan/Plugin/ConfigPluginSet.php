@@ -11,6 +11,8 @@ use Phan\Analysis\MethodAnalyzer;
 use Phan\Analysis\OverrideSignatureAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
+use Phan\Analysis\PostOrderAnalyzer;
+use Phan\Analysis\PreOrderAnalyzer;
 use Phan\Analysis\PropertyTypesAnalyzer;
 use Phan\CodeBase;
 use Phan\Config;
@@ -20,6 +22,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Plugin;
 use ast\Node;
+use ReflectionClass;
 
 /**
  * The root plugin that calls out each hook
@@ -29,13 +32,82 @@ use ast\Node;
  * Speed is preferred over using Phan\Memoize.)
  */
 class ConfigPluginSet extends Plugin {
-    /** @var Plugin[]|null - Cached plugin set for this instance. Lazily generated. */
-    private $pluginSet;
+    /** @var ClassAnalyzer[] - Cached analyzer set for this instance. */
+    private $classAnalyzerSet = [];
+
+    /** @var FunctionAnalyzer[] - Cached analyzer set for this instance. */
+    private $functionAnalyzerSet = [];
+
+    /** @var MethodAnalyzer[] - Cached analyzer set for this instance. */
+    private $methodAnalyzerSet = [];
+
+    /** @var Plugin[] - Cached plugin set for this instance. */
+    private $pluginSet = [];
+
+    /** @var PostOrderAnalyzer[] - Cached analyzer set for this instance. */
+    private $postOrderAnalyzerSet = [];
+
+    /** @var PreOrderAnalyzer[] - Cached analyzer set for this instance. */
+    private $preOrderAnalyzerSet = [];
 
     /**
      * Call `ConfigPluginSet::instance()` instead.
      */
-    private function __construct() {}
+    private function __construct() {
+        foreach (Config::get()->plugins as $plugin_file_name) {
+            $plugin_instance = require($plugin_file_name);
+
+            assert(!empty($plugin_instance),
+                "Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
+
+            if (is_string($plugin_instance)) {
+                $reflection_class = new ReflectionClass($plugin_instance);
+
+                if ($reflection_class->implementsInterface(PostOrderAnalyzer::class)) {
+                    // could assert AnalysisVisitor parent or whatever else
+                    $this->postOrderAnalyzerSet[] = $reflection_class;
+                }
+
+                if ($reflection_class->implementsInterface(PreOrderAnalyzer::class)) {
+                    $this->preOrderAnalyzerSet[] = $reflection_class;
+                }
+            } else if ($plugin_instance instanceof Plugin) {
+                // append onto these arrays so there's a single iteration below
+                $this->classAnalyzerSet[] = $plugin_instance;
+                $this->functionAnalyzerSet[] = $plugin_instance;
+                $this->methodAnalyzerSet[] = $plugin_instance;
+
+                // but keep a secondary list for node analysis
+                // the newer visitor impl style is invoked differently
+                $this->pluginSet[] = $plugin_instance;
+            } else {
+                if ($plugin_instance instanceof ClassAnalyzer) {
+                    $this->classAnalyzerSet[] = $plugin_instance;
+                }
+
+                if ($plugin_instance instanceof FunctionAnalyzer) {
+                    $this->functionAnalyzerSet[] = $plugin_instance;
+                }
+
+                if ($plugin_instance instanceof MethodAnalyzer) {
+                    $this->methodAnalyzerSet[] = $plugin_instance;
+                }
+            }
+        }
+
+        // add internal analyzers that are structured as plugins, that should be included with all runs
+        $this->classAnalyzerSet[] = new ClassInheritanceAnalyzer;
+        $this->classAnalyzerSet[] = new CompositionAnalyzer;
+        $this->classAnalyzerSet[] = new DuplicateClassAnalyzer;
+        $this->classAnalyzerSet[] = new ParentConstructorCalledAnalyzer;
+        $this->classAnalyzerSet[] = new PropertyTypesAnalyzer;
+
+        $this->functionAnalyzerSet[] = $this->methodAnalyzerSet[] = new DuplicateFunctionAnalyzer;
+        $this->functionAnalyzerSet[] = $this->methodAnalyzerSet[] = new ParameterTypesAnalyzer;
+        if (Config::get()->analyze_signature_compatibility) {
+            $this->methodAnalyzerSet[] = new OverrideSignatureAnalyzer;
+        }
+    }
 
     /**
      * @return ConfigPluginSet
@@ -69,14 +141,17 @@ class ConfigPluginSet extends Plugin {
         Context $context,
         Node $node
     ) {
-        foreach ($this->getPlugins() as $plugin) {
-            if ($plugin instanceof Plugin) {
-                $plugin->preAnalyzeNode(
-                    $code_base,
-                    $context,
-                    $node
-                );
-            }
+        foreach ($this->pluginSet as $plugin) {
+            $plugin->preAnalyzeNode(
+                $code_base,
+                $context,
+                $node
+            );
+        }
+
+        foreach ($this->preOrderAnalyzerSet as $analyzer) {
+            $visitor = $analyzer->newInstance($code_base, $context);
+            $visitor($node);
         }
     }
 
@@ -103,15 +178,18 @@ class ConfigPluginSet extends Plugin {
         Node $node,
         Node $parent_node = null
     ) {
-        foreach ($this->getPlugins() as $plugin) {
-            if ($plugin instanceof Plugin) {
-                $plugin->analyzeNode(
-                    $code_base,
-                    $context,
-                    $node,
-                    $parent_node
-                );
-            }
+        foreach ($this->pluginSet as $plugin) {
+            $plugin->analyzeNode(
+                $code_base,
+                $context,
+                $node,
+                $parent_node
+            );
+        }
+
+        foreach ($this->postOrderAnalyzerSet as $analyzer) {
+            $visitor = $analyzer->newInstance($code_base, $context);
+            $visitor($node);
         }
     }
 
@@ -128,13 +206,11 @@ class ConfigPluginSet extends Plugin {
         CodeBase $code_base,
         Clazz $class
     ) {
-        foreach ($this->getPlugins() as $plugin) {
-            if ($plugin instanceof ClassAnalyzer) {
-                $plugin->analyzeClass(
-                    $code_base,
-                    $class
-                );
-            }
+        foreach ($this->classAnalyzerSet as $plugin) {
+            $plugin->analyzeClass(
+                $code_base,
+                $class
+            );
         }
     }
 
@@ -151,13 +227,11 @@ class ConfigPluginSet extends Plugin {
         CodeBase $code_base,
         Method $method
     ) {
-        foreach ($this->getPlugins() as $plugin) {
-            if ($plugin instanceof MethodAnalyzer) {
-                $plugin->analyzeMethod(
-                    $code_base,
-                    $method
+        foreach ($this->methodAnalyzerSet as $plugin) {
+            $plugin->analyzeMethod(
+                $code_base,
+                $method
             );
-            }
         }
     }
 
@@ -174,54 +248,12 @@ class ConfigPluginSet extends Plugin {
         CodeBase $code_base,
         Func $function
     ) {
-        foreach ($this->getPlugins() as $plugin) {
-            if ($plugin instanceof FunctionAnalyzer) {
-                $plugin->analyzeFunction(
-                    $code_base,
-                    $function
-                );
-            }
-        }
-    }
-
-    /**
-     * @return array
-     */
-    private function getPlugins() : array
-    {
-        if (is_null($this->pluginSet)) {
-            $this->pluginSet = array_map(
-                function (string $plugin_file_name) : Plugin {
-                    $plugin_instance =
-                        require($plugin_file_name);
-
-                    assert(!empty($plugin_instance),
-                        "Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
-
-                    assert($plugin_instance instanceof Plugin,
-                        "Plugins must extend \Phan\Plugin. The plugin at $plugin_file_name does not.");
-
-                    return $plugin_instance;
-                },
-                Config::get()->plugins
+        foreach ($this->functionAnalyzerSet as $plugin) {
+            $plugin->analyzeFunction(
+                $code_base,
+                $function
             );
-
-            // add internal analyzers that are structured as plugins, that should be included with all runs
-            // class tests
-            array_unshift($this->pluginSet, new ClassInheritanceAnalyzer);
-            array_unshift($this->pluginSet, new CompositionAnalyzer);
-            array_unshift($this->pluginSet, new DuplicateClassAnalyzer);
-            array_unshift($this->pluginSet, new ParentConstructorCalledAnalyzer);
-            array_unshift($this->pluginSet, new PropertyTypesAnalyzer);
-
-            // function/method tests
-            array_unshift($this->pluginSet, new DuplicateFunctionAnalyzer);
-            array_unshift($this->pluginSet, new ParameterTypesAnalyzer);
-            if (Config::get()->analyze_signature_compatibility) {
-                array_unshift($this->pluginSet, new OverrideSignatureAnalyzer);
-            }
         }
-        return $this->pluginSet;
     }
 
 }

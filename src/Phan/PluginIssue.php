@@ -32,7 +32,7 @@ trait PluginIssue {
      * set {Issue:REMEDIATION_A, Issue:REMEDIATION_B, ...
      * Issue::REMEDIATION_F} with F being the hardest.
      */
-    public function emitIssue(
+    public function emitPluginIssue(
         CodeBase $code_base,
         Context $context,
         string $issue_type,

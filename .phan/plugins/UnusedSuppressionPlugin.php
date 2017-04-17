@@ -44,7 +44,7 @@ class UnusedSuppressionPlugin implements ClassAnalyzer, FunctionAnalyzer, Method
         // Check to see if any are unused
         foreach ($suppress_issue_list as $issue_type => $use_count) {
             if (0 === $use_count) {
-                $this->emitIssue(
+                $this->emitPluginIssue(
                     $code_base,
                     $element->getContext(),
                     'UnusedSuppression',
@@ -112,4 +112,4 @@ class UnusedSuppressionPlugin implements ClassAnalyzer, FunctionAnalyzer, Method
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
-return new UnusedSuppressionPlugin;
+return UnusedSuppressionPlugin::class;

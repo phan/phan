@@ -1,33 +1,18 @@
 <?php declare(strict_types=1);
 # .phan/plugins/NumericalComparisonPlugin.php
 
+use Phan\Analysis\PostOrderAnalyzer;
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\Plugin;
+use Phan\PluginIssue;
 use Phan\Plugin\PluginImplementation;
 use ast\Node;
 
-class NumericalComparisonPlugin extends PluginImplementation {
-
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        (new NumericalComparisonVisitor($code_base, $context, $this))(
-            $node
-        );
-    }
-
-}
-
-class NumericalComparisonVisitor extends AnalysisVisitor {
-
-    /** @var Plugin */
-    private $plugin;
+class NumericalComparisonPlugin extends AnalysisVisitor implements PostOrderAnalyzer {
+    use PluginIssue;
 
     /** define equal operator list */
     const BINARY_EQUAL_OPERATORS = [
@@ -40,16 +25,6 @@ class NumericalComparisonVisitor extends AnalysisVisitor {
         ast\flags\BINARY_IS_IDENTICAL,
         ast\flags\BINARY_IS_NOT_IDENTICAL,
     ];
-
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        Plugin $plugin
-    ) {
-        parent::__construct($code_base, $context);
-
-        $this->plugin = $plugin;
-    }
 
     public function visit(Node $node){
     }
@@ -67,7 +42,7 @@ class NumericalComparisonVisitor extends AnalysisVisitor {
                 !($this->isNumericalType($left_type->serialize())) &
                 !($this->isNumericalType($right_type->serialize()))
             ){
-                $this->plugin->emitIssue(
+                $this->emitPluginIssue(
                     $this->code_base,
                     $this->context,
                     'PhanPluginNumericalComparison',
@@ -80,7 +55,7 @@ class NumericalComparisonVisitor extends AnalysisVisitor {
                 $this->isNumericalType($left_type->serialize()) |
                 $this->isNumericalType($right_type->serialize())
             ){
-                $this->plugin->emitIssue(
+                $this->emitPluginIssue(
                     $this->code_base,
                     $this->context,
                     'PhanPluginNumericalComparison',
@@ -103,4 +78,4 @@ class NumericalComparisonVisitor extends AnalysisVisitor {
 
 }
 
-return new NumericalComparisonPlugin;
+return NumericalComparisonPlugin::class;

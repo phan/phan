@@ -1,43 +1,17 @@
 <?php declare(strict_types=1);
 # .phan/plugins/NonBoolBranchPlugin.php
 
+use Phan\Analysis\PostOrderAnalyzer;
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginIssue;
 use ast\Node;
 
-class NonBoolBranchPlugin extends PluginImplementation {
-
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        (new NonBoolBranchVisitor($code_base, $context, $this))(
-            $node
-        );
-    }
-
-}
-
-class NonBoolBranchVisitor extends AnalysisVisitor {
-
-    /** @var Plugin */
-    private $plugin;
-
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        Plugin $plugin
-    ) {
-        parent::__construct($code_base, $context);
-
-        $this->plugin = $plugin;
-    }
+class NonBoolBranchPlugin extends AnalysisVisitor implements PostOrderAnalyzer {
+    use PluginIssue;
 
     public function visit(Node $node){
     }
@@ -54,7 +28,7 @@ class NonBoolBranchVisitor extends AnalysisVisitor {
         $union_type = UnionType::fromNode($this->context, $this->code_base, $condition);
         // $condition === null will be appeared in else-clause, then avoid them
         if(($union_type->serialize() !== "bool") && $condition !== null){
-            $this->plugin->emitIssue(
+            $this->emitPluginIssue(
                 $this->code_base,
                 $this->context,
                 'PhanPluginNonBoolBranch',
@@ -66,4 +40,4 @@ class NonBoolBranchVisitor extends AnalysisVisitor {
 
 }
 
-return new NonBoolBranchPlugin;
+return NonBoolBranchPlugin::class;

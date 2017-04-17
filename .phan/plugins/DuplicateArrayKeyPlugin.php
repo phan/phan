@@ -4,48 +4,11 @@ use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginIssue;
 use ast\Node;
 
 /**
  * Checks for duplicate/equivalent array keys, as well as arrays mixing `key => value, with `value,`.
- *
- * @see DollarDollarPlugin for generic plugin documentation.
- */
-class DuplicateArrayKeyPlugin extends PluginImplementation {
-
-    /**
-     * @param CodeBase $code_base
-     * The code base in which the node exists
-     *
-     * @param Context $context
-     * The context in which the node exits. This is
-     * the context inside the given node rather than
-     * the context outside of the given node
-     *
-     * @param Node $node
-     * The php-ast Node being analyzed.
-     *
-     * @param Node $node
-     * The parent node of the given node (if one exists).
-     *
-     * @return void
-     */
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        (new DuplicateArrayKeyVisitor($code_base, $context, $this))(
-            $node
-        );
-    }
-}
-
-/**
- * This class has visitArray called on all array literals in files to check for potential problems with keys.
  *
  * When __invoke on this class is called with a node, a method
  * will be dispatched based on the `kind` of the given node.
@@ -53,26 +16,8 @@ class DuplicateArrayKeyPlugin extends PluginImplementation {
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DuplicateArrayKeyVisitor extends AnalysisVisitor {
-
-    /** @var Plugin */
-    private $plugin;
-
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        Plugin $plugin
-    ) {
-        // After constructing on parent, `$code_base` and
-        // `$context` will be available as protected properties
-        // `$this->code_base` and `$this->context`.
-        parent::__construct($code_base, $context);
-
-        // We take the plugin so that we can call
-        // `$this->plugin->emitIssue(...)` on it to emit issues
-        // to the user.
-        $this->plugin = $plugin;
-    }
+class DuplicateArrayKeyPlugin extends AnalysisVisitor implements PostOrderAnalyzer {
+    use PluginIssue;
 
     /**
      * Default visitor that does nothing
@@ -116,7 +61,7 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
             }
             if (isset($keySet[$key])) {
                 $normalizedKey = self::normalizeKey($key);
-                $this->plugin->emitIssue(
+                $this->emitPluginIssue(
                     $this->code_base,
                     $this->context,
                     'PhanPluginDuplicateArrayKey',
@@ -131,7 +76,7 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
         if ($hasEntryWithoutKey && count($keySet) > 0) {
             // This is probably a typo in most codebases. (e.g. ['foo' => 'bar', 'baz'])
             // In phan, InternalFunctionSignatureMap.php does this deliberately with the first parameter being the return type.
-            $this->plugin->emitIssue(
+            $this->emitPluginIssue(
                 $this->code_base,
                 $this->context,
                 'PhanPluginMixedKeyNoKey',
@@ -158,4 +103,4 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
 
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
-return new DuplicateArrayKeyPlugin();
+return DuplicateArrayKeyPlugin::class;

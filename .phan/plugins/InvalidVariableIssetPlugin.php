@@ -1,31 +1,15 @@
 <?php declare(strict_types=1);
 # .phan/plugins/InvalidVariableIssetPlugin.php
 
+use Phan\Analysis\PostOrderAnalyzer;
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginIssue;
 use ast\Node;
 
-class InvalidVariableIssetPlugin extends PluginImplementation {
-
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        (new InvalidVariableIssetVisitor($code_base, $context, $this))(
-            $node
-        );
-    }
-}
-
-class InvalidVariableIssetVisitor extends AnalysisVisitor {
-
-    /** @var Plugin */
-    private $plugin;
+class InvalidVariableIssetPlugin extends AnalysisVisitor implements PostOrderAnalyzer {
+    use PluginIssue;
 
     /** define classes to parse */
     const CLASSES = [
@@ -41,16 +25,6 @@ class InvalidVariableIssetVisitor extends AnalysisVisitor {
         ast\AST_METHOD_CALL,
         ast\AST_PROP,
     ];
-
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        Plugin $plugin
-    ) {
-        parent::__construct($code_base, $context);
-
-        $this->plugin = $plugin;
-    }
 
     public function visit(Node $node){
     }
@@ -71,7 +45,7 @@ class InvalidVariableIssetVisitor extends AnalysisVisitor {
 
         // emit issue if name is not declared
         if(!$this->context->getScope()->hasVariableWithName($name)){
-            $this->plugin->emitIssue(
+            $this->emitPluginIssue(
                 $this->code_base,
                 $this->context,
                 'PhanUndeclaredVariable',
@@ -80,7 +54,7 @@ class InvalidVariableIssetVisitor extends AnalysisVisitor {
         }
         // emit issue if argument is not array access
         elseif($argument->kind !== ast\AST_DIM){
-            $this->plugin->emitIssue(
+            $this->emitPluginIssue(
                 $this->code_base,
                 $this->context,
                 'PhanPluginInvalidVariableIsset',
@@ -92,4 +66,4 @@ class InvalidVariableIssetVisitor extends AnalysisVisitor {
 
 }
 
-return new InvalidVariableIssetPlugin;
+return InvalidVariableIssetPlugin::class;

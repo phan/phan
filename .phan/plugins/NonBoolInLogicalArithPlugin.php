@@ -1,33 +1,18 @@
 <?php declare(strict_types=1);
 # .phan/plugins/NonBoolInLogicalArithPlugin.php
 
+use Phan\Analysis\PostOrderAnalyzer;
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\Plugin;
+use Phan\PluginIssue;
 use Phan\Plugin\PluginImplementation;
 use ast\Node;
 
-class NonBoolInLogicalArithPlugin extends PluginImplementation {
-
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        (new NonBoolInLogicalArithVisitor($code_base, $context, $this))(
-            $node
-        );
-    }
-
-}
-
-class NonBoolInLogicalArithVisitor extends AnalysisVisitor {
-
-    /** @var Plugin */
-    private $plugin;
+class NonBoolInLogicalArithPlugin extends AnalysisVisitor implements PostOrderAnalyzer {
+    use PluginIssue;
 
     /** define boolean operator list */
     const BINARY_BOOL_OPERATORS = [
@@ -71,7 +56,7 @@ class NonBoolInLogicalArithVisitor extends AnalysisVisitor {
 
             // if left or right type is NOT boolean, emit issue
             if($left_type->serialize() !== "bool" || $right_type->serialize() !== "bool"){
-                $this->plugin->emitIssue(
+                $this->emitPluginIssue(
                     $this->code_base,
                     $this->context,
                     'PhanPluginNonBoolInLogicalArith',
@@ -84,4 +69,4 @@ class NonBoolInLogicalArithVisitor extends AnalysisVisitor {
 
 }
 
-return new NonBoolInLogicalArithPlugin;
+return NonBoolInLogicalArithPlugin::plugin;
