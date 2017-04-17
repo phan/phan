@@ -32,4 +32,8 @@ return [
     // slow.
     'check_docblock_signature_return_type_match' => true,
 
+    // A set of fully qualified class-names for which
+    // a call to parent::__construct() is required.
+    'parent_constructor_required' => ['Child283'],
+
 ];
