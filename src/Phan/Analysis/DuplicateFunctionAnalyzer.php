@@ -1,15 +1,16 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\FunctionAnalyzer;
+use Phan\Analysis\MethodAnalyzer;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
-use Phan\Plugin\PluginImplementation;
 
-class DuplicateFunctionAnalyzer extends PluginImplementation
+class DuplicateFunctionAnalyzer implements FunctionAnalyzer, MethodAnalyzer
 {
 
     /**

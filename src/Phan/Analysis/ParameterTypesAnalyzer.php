@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\FunctionAnalyzer;
+use Phan\Analysis\MethodAnalyzer;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Func;
@@ -9,7 +11,7 @@ use Phan\Language\Element\Method;
 use Phan\Language\Type\TemplateType;
 use Phan\Plugin\PluginImplementation;
 
-class ParameterTypesAnalyzer extends PluginImplementation
+class ParameterTypesAnalyzer implements FunctionAnalyzer, MethodAnalyzer
 {
 
     /**

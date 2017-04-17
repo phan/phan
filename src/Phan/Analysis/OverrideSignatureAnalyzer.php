@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\MethodAnalyzer;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
@@ -8,9 +9,8 @@ use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
-use Phan\Plugin\PluginImplementation;
 
-class OverrideSignatureAnalyzer extends PluginImplementation
+class OverrideSignatureAnalyzer implements MethodAnalyzer
 {
     /**
      * Make sure signatures line up between methods and the

@@ -5,6 +5,8 @@ use Phan\Analysis\ClassInheritanceAnalyzer;
 use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
+use Phan\Analysis\FunctionAnalyzer;
+use Phan\Analysis\MethodAnalyzer;
 use Phan\Analysis\OverrideSignatureAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ParentConstructorCalledAnalyzer;
@@ -67,11 +69,13 @@ class ConfigPluginSet extends Plugin {
         Node $node
     ) {
         foreach ($this->getPlugins() as $plugin) {
-            $plugin->preAnalyzeNode(
-                $code_base,
-                $context,
-                $node
-            );
+            if ($plugin instanceof Plugin) {
+                $plugin->preAnalyzeNode(
+                    $code_base,
+                    $context,
+                    $node
+                );
+            }
         }
     }
 
@@ -99,12 +103,14 @@ class ConfigPluginSet extends Plugin {
         Node $parent_node = null
     ) {
         foreach ($this->getPlugins() as $plugin) {
-            $plugin->analyzeNode(
-                $code_base,
-                $context,
-                $node,
-                $parent_node
-            );
+            if ($plugin instanceof Plugin) {
+                $plugin->analyzeNode(
+                    $code_base,
+                    $context,
+                    $node,
+                    $parent_node
+                );
+            }
         }
     }
 
@@ -122,10 +128,12 @@ class ConfigPluginSet extends Plugin {
         Clazz $class
     ) {
         foreach ($this->getPlugins() as $plugin) {
-            $plugin->analyzeClass(
-                $code_base,
-                $class
-            );
+            if ($plugin instanceof Plugin) {
+                $plugin->analyzeClass(
+                    $code_base,
+                    $class
+                );
+            }
         }
     }
 
@@ -143,10 +151,12 @@ class ConfigPluginSet extends Plugin {
         Method $method
     ) {
         foreach ($this->getPlugins() as $plugin) {
-            $plugin->analyzeMethod(
-                $code_base,
-                $method
+            if ($plugin instanceof MethodAnalyzer) {
+                $plugin->analyzeMethod(
+                    $code_base,
+                    $method
             );
+            }
         }
     }
 
@@ -164,10 +174,12 @@ class ConfigPluginSet extends Plugin {
         Func $function
     ) {
         foreach ($this->getPlugins() as $plugin) {
-            $plugin->analyzeFunction(
-                $code_base,
-                $function
-            );
+            if ($plugin instanceof FunctionAnalyzer) {
+                $plugin->analyzeFunction(
+                    $code_base,
+                    $function
+                );
+            }
         }
     }
 

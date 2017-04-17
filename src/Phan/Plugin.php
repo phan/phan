@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Analysis\FunctionAnalyzer;
+use Phan\Analysis\MethodAnalyzer;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
@@ -15,7 +17,7 @@ use ast\Node;
  * Plugins must extends this class and return an instance
  * of themselves.
  */
-abstract class Plugin {
+abstract class Plugin implements FunctionAnalyzer, MethodAnalyzer {
     /**
      * Do a first-pass analysis of a node before Phan
      * does its full analysis. This hook allows you to
@@ -81,34 +83,6 @@ abstract class Plugin {
     abstract public function analyzeClass(
         CodeBase $code_base,
         Clazz $class
-    );
-
-    /**
-     * @param CodeBase $code_base
-     * The code base in which the method exists
-     *
-     * @param Method $method
-     * A method being analyzed
-     *
-     * @return void
-     */
-    abstract public function analyzeMethod(
-        CodeBase $code_base,
-        Method $method
-    );
-
-    /**
-     * @param CodeBase $code_base
-     * The code base in which the function exists
-     *
-     * @param Func $function
-     * A function being analyzed
-     *
-     * @return void
-     */
-    abstract public function analyzeFunction(
-        CodeBase $code_base,
-        Func $function
     );
 
     /**
