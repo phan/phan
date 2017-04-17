@@ -68,6 +68,7 @@ class CLI
                 'dead-code-detection',
                 'directory:',
                 'dump-ast',
+                'dump-parsed-file-list',
                 'dump-signatures-file:',
                 'exclude-directory-list:',
                 'exclude-file:',
@@ -207,6 +208,9 @@ class CLI
                 case 'a':
                 case 'dump-ast':
                     Config::get()->dump_ast = true;
+                    break;
+                case 'dump-parsed-file-list':
+                    Config::get()->dump_parsed_file_list = true;
                     break;
                 case 'dump-signatures-file':
                     Config::get()->dump_signatures_file = $value;
@@ -469,6 +473,11 @@ EOB;
 Extended help:
  -a, --dump-ast
   Emit an AST for each file rather than analyze.
+
+ --dump-parsed-file-list
+  Emit a newline-separated list of files Phan would parse to stdout.
+  This is useful to verify that options such as exclude_file_regex are
+  properly set up, or to run other checks on the files Phan would parse.
 
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.

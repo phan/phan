@@ -209,6 +209,10 @@ class Config
         // function and method signatures instead of analyzing files.
         'dump_signatures_file' => null,
 
+        // If set to true, we'll dump the list of files to parse
+        // to stdout instead of parsing and analyzing files.
+        'dump_parsed_file_list' => false,
+
         // Include a progress bar in the output
         'progress_bar' => false,
 
