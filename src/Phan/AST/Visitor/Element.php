@@ -23,221 +23,123 @@ class Element
         $this->node = $node;
     }
 
+    // TODO: Revert this change back to the switch statement
+    // when php 7.2 is released and phan supports php 7.2.
+    // See https://github.com/php/php-src/pull/2427/files
+    // This decreased the duration of running phan by about 4%
+    const VISIT_LOOKUP_TABLE = [
+        \ast\AST_ARG_LIST           => 'visitArgList',
+        \ast\AST_ARRAY              => 'visitArray',
+        \ast\AST_ARRAY_ELEM         => 'visitArrayElem',
+        \ast\AST_ASSIGN             => 'visitAssign',
+        \ast\AST_ASSIGN_OP          => 'visitAssignOp',
+        \ast\AST_ASSIGN_REF         => 'visitAssignRef',
+        \ast\AST_BINARY_OP          => 'visitBinaryOp',
+        \ast\AST_BREAK              => 'visitBreak',
+        \ast\AST_CALL               => 'visitCall',
+        \ast\AST_CAST               => 'visitCast',
+        \ast\AST_CATCH              => 'visitCatch',
+        \ast\AST_CLASS              => 'visitClass',
+        \ast\AST_CLASS_CONST        => 'visitClassConst',
+        \ast\AST_CLASS_CONST_DECL   => 'visitClassConstDecl',
+        \ast\AST_CLOSURE            => 'visitClosure',
+        \ast\AST_CLOSURE_USES       => 'visitClosureUses',
+        \ast\AST_CLOSURE_VAR        => 'visitClosureVar',
+        \ast\AST_COALESCE           => 'visitCoalesce',
+        \ast\AST_CONST              => 'visitConst',
+        \ast\AST_CONST_DECL         => 'visitConstDecl',
+        \ast\AST_CONST_ELEM         => 'visitConstElem',
+        \ast\AST_DECLARE            => 'visitDeclare',
+        \ast\AST_DIM                => 'visitDim',
+        \ast\AST_DO_WHILE           => 'visitDoWhile',
+        \ast\AST_ECHO               => 'visitEcho',
+        \ast\AST_EMPTY              => 'visitEmpty',
+        \ast\AST_ENCAPS_LIST        => 'visitEncapsList',
+        \ast\AST_EXIT               => 'visitExit',
+        \ast\AST_EXPR_LIST          => 'visitExprList',
+        \ast\AST_FOREACH            => 'visitForeach',
+        \ast\AST_FUNC_DECL          => 'visitFuncDecl',
+        \ast\AST_ISSET              => 'visitIsset',
+        \ast\AST_GLOBAL             => 'visitGlobal',
+        \ast\AST_GREATER            => 'visitGreater',
+        \ast\AST_GREATER_EQUAL      => 'visitGreaterEqual',
+        \ast\AST_GROUP_USE          => 'visitGroupUse',
+        \ast\AST_IF                 => 'visitIf',
+        \ast\AST_IF_ELEM            => 'visitIfElem',
+        \ast\AST_INSTANCEOF         => 'visitInstanceof',
+        \ast\AST_MAGIC_CONST        => 'visitMagicConst',
+        \ast\AST_METHOD             => 'visitMethod',
+        \ast\AST_METHOD_CALL        => 'visitMethodCall',
+        \ast\AST_NAME               => 'visitName',
+        \ast\AST_NAMESPACE          => 'visitNamespace',
+        \ast\AST_NEW                => 'visitNew',
+        \ast\AST_PARAM              => 'visitParam',
+        \ast\AST_PARAM_LIST         => 'visitParamList',
+        \ast\AST_PRE_INC            => 'visitPreInc',
+        \ast\AST_PRINT              => 'visitPrint',
+        \ast\AST_PROP               => 'visitProp',
+        \ast\AST_PROP_DECL          => 'visitPropDecl',
+        \ast\AST_PROP_ELEM          => 'visitPropElem',
+        \ast\AST_RETURN             => 'visitReturn',
+        \ast\AST_STATIC             => 'visitStatic',
+        \ast\AST_STATIC_CALL        => 'visitStaticCall',
+        \ast\AST_STATIC_PROP        => 'visitStaticProp',
+        \ast\AST_STMT_LIST          => 'visitStmtList',
+        \ast\AST_SWITCH             => 'visitSwitch',
+        \ast\AST_SWITCH_CASE        => 'visitSwitchCase',
+        \ast\AST_SWITCH_LIST        => 'visitSwitchList',
+        \ast\AST_TYPE               => 'visitType',
+        \ast\AST_NULLABLE_TYPE      => 'visitNullableType',
+        \ast\AST_UNARY_MINUS        => 'visitUnaryMinus',
+        \ast\AST_UNARY_OP           => 'visitUnaryOp',
+        \ast\AST_USE                => 'visitUse',
+        \ast\AST_USE_ELEM           => 'visitUseElem',
+        \ast\AST_USE_TRAIT          => 'visitUseTrait',
+        \ast\AST_VAR                => 'visitVar',
+        \ast\AST_WHILE              => 'visitWhile',
+        \ast\AST_AND                => 'visitAnd',
+        \ast\AST_CATCH_LIST         => 'visitCatchList',
+        \ast\AST_CLONE              => 'visitClone',
+        \ast\AST_CONDITIONAL        => 'visitConditional',
+        \ast\AST_CONTINUE           => 'visitContinue',
+        \ast\AST_FOR                => 'visitFor',
+        \ast\AST_GOTO               => 'visitGoto',
+        \ast\AST_HALT_COMPILER      => 'visitHaltCompiler',
+        \ast\AST_INCLUDE_OR_EVAL    => 'visitIncludeOrEval',
+        \ast\AST_LABEL              => 'visitLabel',
+        \ast\AST_METHOD_REFERENCE   => 'visitMethodReference',
+        \ast\AST_NAME_LIST          => 'visitNameList',
+        \ast\AST_OR                 => 'visitOr',
+        \ast\AST_POST_DEC           => 'visitPostDec',
+        \ast\AST_POST_INC           => 'visitPostInc',
+        \ast\AST_PRE_DEC            => 'visitPreDec',
+        \ast\AST_REF                => 'visitRef',
+        \ast\AST_SHELL_EXEC         => 'visitShellExec',
+        \ast\AST_SILENCE            => 'visitSilence',
+        \ast\AST_THROW              => 'visitThrow',
+        \ast\AST_TRAIT_ADAPTATIONS  => 'visitTraitAdaptations',
+        \ast\AST_TRAIT_ALIAS        => 'visitTraitAlias',
+        \ast\AST_TRAIT_PRECEDENCE   => 'visitTraitPrecedence',
+        \ast\AST_TRY                => 'visitTry',
+        \ast\AST_UNARY_PLUS         => 'visitUnaryPlus',
+        \ast\AST_UNPACK             => 'visitUnpack',
+        \ast\AST_UNSET              => 'visitUnset',
+        \ast\AST_YIELD              => 'visitYield',
+        \ast\AST_YIELD_FROM         => 'visitYieldFrom',
+    ];
+
     /**
      * Accepts a visitor that differentiates on the kind value
      * of the AST node.
      */
     public function acceptKindVisitor(KindVisitor $visitor)
     {
-        switch ($this->node->kind) {
-            case \ast\AST_ARG_LIST:
-                return $visitor->visitArgList($this->node);
-            case \ast\AST_ARRAY:
-                return $visitor->visitArray($this->node);
-            case \ast\AST_ARRAY_ELEM:
-                return $visitor->visitArrayElem($this->node);
-            case \ast\AST_ASSIGN:
-                return $visitor->visitAssign($this->node);
-            case \ast\AST_ASSIGN_OP:
-                return $visitor->visitAssignOp($this->node);
-            case \ast\AST_ASSIGN_REF:
-                return $visitor->visitAssignRef($this->node);
-            case \ast\AST_BINARY_OP:
-                return $visitor->visitBinaryOp($this->node);
-            case \ast\AST_BREAK:
-                return $visitor->visitBreak($this->node);
-            case \ast\AST_CALL:
-                return $visitor->visitCall($this->node);
-            case \ast\AST_CAST:
-                return $visitor->visitCast($this->node);
-            case \ast\AST_CATCH:
-                return $visitor->visitCatch($this->node);
-            case \ast\AST_CLASS:
-                $decl = $this->node;
-                assert($decl instanceof Decl);
-                return $visitor->visitClass($decl);
-            case \ast\AST_CLASS_CONST:
-                return $visitor->visitClassConst($this->node);
-            case \ast\AST_CLASS_CONST_DECL:
-                return $visitor->visitClassConstDecl($this->node);
-            case \ast\AST_CLOSURE:
-                $decl = $this->node;
-                assert($decl instanceof Decl);
-                return $visitor->visitClosure($decl);
-            case \ast\AST_CLOSURE_USES:
-                return $visitor->visitClosureUses($this->node);
-            case \ast\AST_CLOSURE_VAR:
-                return $visitor->visitClosureVar($this->node);
-            case \ast\AST_COALESCE:
-                return $visitor->visitCoalesce($this->node);
-            case \ast\AST_CONST:
-                return $visitor->visitConst($this->node);
-            case \ast\AST_CONST_DECL:
-                return $visitor->visitConstDecl($this->node);
-            case \ast\AST_CONST_ELEM:
-                return $visitor->visitConstElem($this->node);
-            case \ast\AST_DECLARE:
-                return $visitor->visitDeclare($this->node);
-            case \ast\AST_DIM:
-                return $visitor->visitDim($this->node);
-            case \ast\AST_DO_WHILE:
-                return $visitor->visitDoWhile($this->node);
-            case \ast\AST_ECHO:
-                return $visitor->visitEcho($this->node);
-            case \ast\AST_EMPTY:
-                return $visitor->visitEmpty($this->node);
-            case \ast\AST_ENCAPS_LIST:
-                return $visitor->visitEncapsList($this->node);
-            case \ast\AST_EXIT:
-                return $visitor->visitExit($this->node);
-            case \ast\AST_EXPR_LIST:
-                return $visitor->visitExprList($this->node);
-            case \ast\AST_FOREACH:
-                return $visitor->visitForeach($this->node);
-            case \ast\AST_FUNC_DECL:
-                $decl = $this->node;
-                assert($decl instanceof Decl);
-                return $visitor->visitFuncDecl($decl);
-            case \ast\AST_ISSET:
-                return $visitor->visitIsset($this->node);
-            case \ast\AST_GLOBAL:
-                return $visitor->visitGlobal($this->node);
-            case \ast\AST_GREATER:
-                return $visitor->visitGreater($this->node);
-            case \ast\AST_GREATER_EQUAL:
-                return $visitor->visitGreaterEqual($this->node);
-            case \ast\AST_GROUP_USE:
-                return $visitor->visitGroupUse($this->node);
-            case \ast\AST_IF:
-                return $visitor->visitIf($this->node);
-            case \ast\AST_IF_ELEM:
-                return $visitor->visitIfElem($this->node);
-            case \ast\AST_INSTANCEOF:
-                return $visitor->visitInstanceof($this->node);
-            case \ast\AST_MAGIC_CONST:
-                return $visitor->visitMagicConst($this->node);
-            case \ast\AST_METHOD:
-                $decl = $this->node;
-                assert($decl instanceof Decl);
-                return $visitor->visitMethod($decl);
-            case \ast\AST_METHOD_CALL:
-                return $visitor->visitMethodCall($this->node);
-            case \ast\AST_NAME:
-                return $visitor->visitName($this->node);
-            case \ast\AST_NAMESPACE:
-                return $visitor->visitNamespace($this->node);
-            case \ast\AST_NEW:
-                return $visitor->visitNew($this->node);
-            case \ast\AST_PARAM:
-                return $visitor->visitParam($this->node);
-            case \ast\AST_PARAM_LIST:
-                return $visitor->visitParamList($this->node);
-            case \ast\AST_PRE_INC:
-                return $visitor->visitPreInc($this->node);
-            case \ast\AST_PRINT:
-                return $visitor->visitPrint($this->node);
-            case \ast\AST_PROP:
-                return $visitor->visitProp($this->node);
-            case \ast\AST_PROP_DECL:
-                return $visitor->visitPropDecl($this->node);
-            case \ast\AST_PROP_ELEM:
-                return $visitor->visitPropElem($this->node);
-            case \ast\AST_RETURN:
-                return $visitor->visitReturn($this->node);
-            case \ast\AST_STATIC:
-                return $visitor->visitStatic($this->node);
-            case \ast\AST_STATIC_CALL:
-                return $visitor->visitStaticCall($this->node);
-            case \ast\AST_STATIC_PROP:
-                return $visitor->visitStaticProp($this->node);
-            case \ast\AST_STMT_LIST:
-                return $visitor->visitStmtList($this->node);
-            case \ast\AST_SWITCH:
-                return $visitor->visitSwitch($this->node);
-            case \ast\AST_SWITCH_CASE:
-                return $visitor->visitSwitchCase($this->node);
-            case \ast\AST_SWITCH_LIST:
-                return $visitor->visitSwitchList($this->node);
-            case \ast\AST_TYPE:
-                return $visitor->visitType($this->node);
-            case \ast\AST_NULLABLE_TYPE:
-                return $visitor->visitNullableType($this->node);
-            case \ast\AST_UNARY_MINUS:
-                return $visitor->visitUnaryMinus($this->node);
-            case \ast\AST_UNARY_OP:
-                return $visitor->visitUnaryOp($this->node);
-            case \ast\AST_USE:
-                return $visitor->visitUse($this->node);
-            case \ast\AST_USE_ELEM:
-                return $visitor->visitUseElem($this->node);
-            case \ast\AST_USE_TRAIT:
-                return $visitor->visitUseTrait($this->node);
-            case \ast\AST_VAR:
-                return $visitor->visitVar($this->node);
-            case \ast\AST_WHILE:
-                return $visitor->visitWhile($this->node);
-            case \ast\AST_AND:
-                return $visitor->visitAnd($this->node);
-            case \ast\AST_CATCH_LIST:
-                return $visitor->visitCatchList($this->node);
-            case \ast\AST_CLONE:
-                return $visitor->visitClone($this->node);
-            case \ast\AST_CONDITIONAL:
-                return $visitor->visitConditional($this->node);
-            case \ast\AST_CONTINUE:
-                return $visitor->visitContinue($this->node);
-            case \ast\AST_FOR:
-                return $visitor->visitFor($this->node);
-            case \ast\AST_GOTO:
-                return $visitor->visitGoto($this->node);
-            case \ast\AST_HALT_COMPILER:
-                return $visitor->visitHaltCompiler($this->node);
-            case \ast\AST_INCLUDE_OR_EVAL:
-                return $visitor->visitIncludeOrEval($this->node);
-            case \ast\AST_LABEL:
-                return $visitor->visitLabel($this->node);
-            case \ast\AST_METHOD_REFERENCE:
-                return $visitor->visitMethodReference($this->node);
-            case \ast\AST_NAME_LIST:
-                return $visitor->visitNameList($this->node);
-            case \ast\AST_OR:
-                return $visitor->visitOr($this->node);
-            case \ast\AST_POST_DEC:
-                return $visitor->visitPostDec($this->node);
-            case \ast\AST_POST_INC:
-                return $visitor->visitPostInc($this->node);
-            case \ast\AST_PRE_DEC:
-                return $visitor->visitPreDec($this->node);
-            case \ast\AST_REF:
-                return $visitor->visitRef($this->node);
-            case \ast\AST_SHELL_EXEC:
-                return $visitor->visitShellExec($this->node);
-            case \ast\AST_SILENCE:
-                return $visitor->visitSilence($this->node);
-            case \ast\AST_THROW:
-                return $visitor->visitThrow($this->node);
-            case \ast\AST_TRAIT_ADAPTATIONS:
-                return $visitor->visitTraitAdaptations($this->node);
-            case \ast\AST_TRAIT_ALIAS:
-                return $visitor->visitTraitAlias($this->node);
-            case \ast\AST_TRAIT_PRECEDENCE:
-                return $visitor->visitTraitPrecedence($this->node);
-            case \ast\AST_TRY:
-                return $visitor->visitTry($this->node);
-            case \ast\AST_UNARY_PLUS:
-                return $visitor->visitUnaryPlus($this->node);
-            case \ast\AST_UNPACK:
-                return $visitor->visitUnpack($this->node);
-            case \ast\AST_UNSET:
-                return $visitor->visitUnset($this->node);
-            case \ast\AST_YIELD:
-                return $visitor->visitYield($this->node);
-            case \ast\AST_YIELD_FROM:
-                return $visitor->visitYieldFrom($this->node);
-            default:
-                Debug::printNode($this->node);
-                assert(false, 'All node kinds must match');
-                break;
+        $fn_name = self::VISIT_LOOKUP_TABLE[$this->node->kind] ?? null;
+        if (is_string($fn_name)) {
+            return $visitor->{$fn_name}($this->node);
+        } else {
+            Debug::printNode($this->node);
+            assert(false, 'All node kinds must match');
         }
     }
 
