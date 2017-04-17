@@ -21,16 +21,6 @@ class NonBoolInLogicalArithPlugin extends AnalysisVisitor implements PostOrderAn
         ast\flags\BINARY_BOOL_XOR,
     ];
 
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        Plugin $plugin
-    ) {
-        parent::__construct($code_base, $context);
-
-        $this->plugin = $plugin;
-    }
-
     public function visit(Node $node){
     }
 
