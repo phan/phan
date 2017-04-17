@@ -185,7 +185,7 @@ class ConfigPluginSet extends Plugin {
     }
 
     /**
-     * @return Plugin[]
+     * @return array
      */
     private function getPlugins() : array
     {
