@@ -587,6 +587,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['expr']
         );
 
+        if ($expression_type->isEmpty()) {
+            $expression_type = VoidType::instance(false)->asUnionType();
+        }
+
         if ($expression_type->hasStaticType()) {
             $expression_type =
                 $expression_type->withStaticResolvedInContext(
