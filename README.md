@@ -46,7 +46,8 @@ Phan is able to perform the following kinds of analysis.
 * Supports [Union Types](https://github.com/etsy/phan/wiki/About-Union-Types)
 * Supports generic arrays such as `int[]`, `UserObject[]`, etc..
 * Supports phpdoc [type annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
-* Supports `@deprecated` annotation for deprecating classes, methods and functions
+* Supports [`@deprecated` annotation](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#deprecated) for deprecating classes, methods and functions
+* Supports [`@internal` annotation](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#internal) for elements (such as a constant, function, class, class constant, property or method) as internal to the package in which its defined.
 * Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#suppress).
 * Supports [magic property annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#property) as of Phan 0.9.1 (partial) (`@property <union_type> <variable_name>`)
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
