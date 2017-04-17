@@ -1,0 +1,1 @@
+%s:6 PhanTypeParentConstructorCalled Must call parent::__construct() from \Child283 which extends \Parent283
