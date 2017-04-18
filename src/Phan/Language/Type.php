@@ -183,7 +183,7 @@ class Type
                 $namespace,
                 substr($type_name, 0, $pos),
                 $template_parameter_type_list,
-                $is_nullable,
+                false,
                 $is_phpdoc_type
             ), $is_nullable);
         }
@@ -523,7 +523,7 @@ class Type
                     $fqsen->getNamespace(),
                     $fqsen->getName(),
                     $template_parameter_type_list,
-                    $is_nullable,
+                    false,
                     $is_phpdoc_type
                 ), $is_nullable);
             }
