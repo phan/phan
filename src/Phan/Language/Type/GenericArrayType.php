@@ -17,9 +17,9 @@ class GenericArrayType extends ArrayType
      * @param Type $type
      * The type of every element in this array
      */
-    protected function __construct(Type $type)
+    protected function __construct(Type $type, bool $is_nullable)
     {
-        parent::__construct('\\', self::NAME, [], false);
+        parent::__construct('\\', self::NAME, [], $is_nullable);
         $this->element_type = $type;
     }
 
@@ -71,7 +71,7 @@ class GenericArrayType extends ArrayType
         if (!$canonical_object_map->contains($type)) {
             $canonical_object_map->attach(
                 $type,
-                new GenericArrayType($type)
+                new GenericArrayType($type, false)
             );
         }
 
@@ -102,5 +102,24 @@ class GenericArrayType extends ArrayType
         }
 
         return $string;
+    }
+
+    /**
+     * @param bool $is_nullable
+     * Set to true if the type should be nullable, else pass
+     * false
+     *
+     * @return Type
+     * A new type that is a copy of this type but with the
+     * given nullability value.
+     */
+    public function withIsNullable(bool $is_nullable) : Type
+    {
+        if ($this->is_nullable === $is_nullable) {
+            return $this;
+        }
+        // FIXME: fully implement follow up for https://github.com/etsy/phan/issues/665
+        // Resolve the ambiguity of (?string)[] vs ?(string[]) in __toString()
+        return new static($this->element_type, $is_nullable);
     }
 }
