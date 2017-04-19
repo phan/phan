@@ -971,64 +971,58 @@ class Type
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        return $this->memoize(__METHOD__, function () use (
-            $code_base,
-            $recursion_depth
-        ) : UnionType {
+        // We're going to assume that if the type hierarchy
+        // is taller than some value we probably messed up
+        // and should bail out.
+        assert(
+            $recursion_depth < 20,
+            "Recursion has gotten out of hand"
+        );
 
-            // We're going to assume that if the type hierarchy
-            // is taller than some value we probably messed up
-            // and should bail out.
-            assert(
-                $recursion_depth < 20,
-                "Recursion has gotten out of hand"
-            );
+        if ($this->isNativeType() && !$this->isGenericArray()) {
+            return $this->asUnionType();
+        }
 
-            if ($this->isNativeType() && !$this->isGenericArray()) {
-                return $this->asUnionType();
+        $union_type = $this->asUnionType();
+
+        $class_fqsen = $this->isGenericArray()
+            ? $this->genericArrayElementType()->asFQSEN()
+            : $this->asFQSEN();
+
+        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+            return $union_type;
+        }
+
+        assert($class_fqsen instanceof FullyQualifiedClassName);
+
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return $union_type;
+        }
+
+        $clazz = $code_base->getClassByFQSEN($class_fqsen);
+
+        $union_type->addUnionType(
+            $this->isGenericArray()
+                ?  $clazz->getUnionType()->asGenericArrayTypes()
+                : $clazz->getUnionType()
+        );
+
+        // Resurse up the tree to include all types
+        $recursive_union_type = new UnionType();
+        foreach ($union_type->getTypeSet() as $clazz_type) {
+            if ((string)$clazz_type != (string)$this) {
+                $recursive_union_type->addUnionType(
+                    $clazz_type->asExpandedTypes(
+                        $code_base,
+                        $recursion_depth + 1
+                    )
+                );
+            } else {
+                $recursive_union_type->addType($clazz_type);
             }
+        }
 
-            $union_type = $this->asUnionType();
-
-            $class_fqsen = $this->isGenericArray()
-                ? $this->genericArrayElementType()->asFQSEN()
-                : $this->asFQSEN();
-
-            if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-                return $union_type;
-            }
-
-            assert($class_fqsen instanceof FullyQualifiedClassName);
-
-            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-                return $union_type;
-            }
-
-            $clazz = $code_base->getClassByFQSEN($class_fqsen);
-
-            $union_type->addUnionType(
-                $this->isGenericArray()
-                    ?  $clazz->getUnionType()->asGenericArrayTypes()
-                    : $clazz->getUnionType()
-            );
-
-            // Resurse up the tree to include all types
-            $recursive_union_type = new UnionType();
-            foreach ($union_type->getTypeSet() as $clazz_type) {
-                if ((string)$clazz_type != (string)$this) {
-                    $recursive_union_type->addUnionType(
-                        $clazz_type->asExpandedTypes(
-                            $code_base,
-                            $recursion_depth + 1
-                        )
-                    );
-                } else {
-                    $recursive_union_type->addType($clazz_type);
-                }
-            }
-
-            return $recursive_union_type;
-        });
+        return $recursive_union_type;
     }
 
     /**
