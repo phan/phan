@@ -183,9 +183,9 @@ class Type
                 $namespace,
                 substr($type_name, 0, $pos),
                 $template_parameter_type_list,
-                $is_nullable,
+                false,
                 $is_phpdoc_type
-            ));
+            ), $is_nullable);
         }
 
         assert(
@@ -295,13 +295,18 @@ class Type
 
         // If this is a generic type (like int[]), return
         // a generic of internal types.
+        //
+        // When there's a nullability operator such as in
+        // `?int[]`, it applies to the array rather than
+        // the int
         if (false !== ($pos = strrpos($type_name, '[]'))) {
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
                     substr($type_name, 0, $pos),
-                    $is_nullable,
+                    false,
                     $is_phpdoc_type
-                )
+                ),
+                $is_nullable
             );
         }
 
@@ -518,9 +523,9 @@ class Type
                     $fqsen->getNamespace(),
                     $fqsen->getName(),
                     $template_parameter_type_list,
-                    $is_nullable,
+                    false,
                     $is_phpdoc_type
-                ));
+                ), $is_nullable);
             }
 
             return Type::make(
@@ -569,7 +574,7 @@ class Type
             return GenericArrayType::fromElementType(
                 static::fromFullyQualifiedString(
                     (string)$context->getClassFQSEN()
-                )
+                ), $is_nullable
             );
         }
 
@@ -887,7 +892,7 @@ class Type
             return ArrayType::instance(false);
         }
 
-        return GenericArrayType::fromElementType($this);
+        return GenericArrayType::fromElementType($this, false);
     }
 
     /**
