@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Analysis\AliasAnalyzer;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
@@ -171,6 +172,33 @@ class Analysis
 
         // Pass the context back up to our parent
         return $context;
+    }
+
+    /**
+     * Take a pass over all provided files to find top-level
+     * class_alias calls and add them to $code_base.
+     *
+     * @param CodeBase $code_base
+     * The global code base in which we store all
+     * state
+     *
+     * @param string[] $file_path_list
+     * A list of file paths to look for class_alias calls in.
+     *
+     * @return void
+     */
+    public static function analyzeAliases(
+        CodeBase $code_base,
+        array $file_path_list
+    ) {
+        foreach ($file_path_list as $i => $file_path) {
+            try {
+                AliasAnalyzer::parseFile($code_base, $file_path);
+
+            } catch (\Throwable $throwable) {
+                error_log($file_path . ' ' . $throwable->getMessage() . "\n");
+            }
+        }
     }
 
     /**
