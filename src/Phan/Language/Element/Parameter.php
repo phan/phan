@@ -225,7 +225,7 @@ class Parameter extends Variable
 
         $parameter = new Parameter(
             new Context(),
-            $reflection_parameter->getName(),
+            $reflection_parameter->getName() ?? "arg",
             UnionType::fromReflectionType($reflection_parameter->getType()),
             $flags
         );
