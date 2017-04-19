@@ -1,0 +1,2 @@
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is int[] but \intdiv() takes int
+%s:9 PhanTypeMismatchArgument Argument 1 (test) is null but \test() takes int[] defined at %s:6
