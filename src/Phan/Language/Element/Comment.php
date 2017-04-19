@@ -269,7 +269,7 @@ class Comment
             }
 
             if (stripos($line, '@internal') !== false) {
-                if (preg_match('/@internal\b/', $line, $match)) {
+                if (preg_match('/@internal\s/', $line, $match)) {
                     $comment_flags |= Flags::IS_NS_INTERNAL;
                 }
             }
