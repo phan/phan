@@ -108,7 +108,7 @@ class Config
         // By default, Phan will analyze all node types.
         // If this config is set to false, Phan will do a
         // shallower pass of the AST tree which will save
-        // time but may find less issues.
+        // time but may find fewer issues.
         //
         // See \Phan\Analysis::shouldVisit for the set of skipped
         // nodes.
