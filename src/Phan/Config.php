@@ -105,10 +105,10 @@ class Config
         // `string` instead of an `int` as declared.
         'quick_mode' => false,
 
-        // By default, Phan will not analyze all node types
-        // in order to save time. If this config is set to true,
-        // Phan will dig deeper into the AST tree and do an
-        // analysis on all nodes, possibly finding more issues.
+        // By default, Phan will analyze all node types.
+        // If this config is set to false, Phan will do a
+        // shallower pass of the AST tree which will save
+        // time but may find fewer issues.
         //
         // See \Phan\Analysis::shouldVisit for the set of skipped
         // nodes.
