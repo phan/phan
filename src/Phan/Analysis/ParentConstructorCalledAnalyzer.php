@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\ClassAnalyzer;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 
-class ParentConstructorCalledAnalyzer
+class ParentConstructorCalledAnalyzer implements ClassAnalyzer
 {
 
     /**
@@ -14,7 +15,7 @@ class ParentConstructorCalledAnalyzer
      *
      * @return void
      */
-    public static function analyzeParentConstructorCalled(
+    public function analyzeClass(
         CodeBase $code_base,
         Clazz $clazz
     ) {

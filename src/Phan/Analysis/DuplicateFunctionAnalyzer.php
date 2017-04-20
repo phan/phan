@@ -1,12 +1,16 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\FunctionAnalyzer;
+use Phan\Analysis\MethodAnalyzer;
 use Phan\CodeBase;
 use Phan\Issue;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 
-class DuplicateFunctionAnalyzer
+class DuplicateFunctionAnalyzer implements FunctionAnalyzer, MethodAnalyzer
 {
 
     /**
@@ -14,7 +18,7 @@ class DuplicateFunctionAnalyzer
      *
      * @return void
      */
-    public static function analyzeDuplicateFunction(
+    private function analyzeDuplicateFunction(
         CodeBase $code_base,
         FunctionInterface $method
     ) {
@@ -71,5 +75,37 @@ class DuplicateFunctionAnalyzer
                 );
             }
         }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the function exists
+     *
+     * @param Func $function
+     * A function being analyzed
+     *
+     * @return void
+     */
+    public function analyzeFunction(
+        CodeBase $code_base,
+        Func $function
+    ) {
+        $this->analyzeDuplicateFunction($code_base, $function);
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the method exists
+     *
+     * @param Method $method
+     * A method being analyzed
+     *
+     * @return void
+     */
+    public function analyzeMethod(
+        CodeBase $code_base,
+        Method $method
+    ) {
+        $this->analyzeDuplicateFunction($code_base, $method);
     }
 }

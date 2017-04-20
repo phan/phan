@@ -1972,29 +1972,6 @@ class Clazz extends AddressableElement
             return;
         }
 
-        // Make sure the parent classes exist
-        ClassInheritanceAnalyzer::analyzeClassInheritance(
-            $code_base, $this
-        );
-
-        DuplicateClassAnalyzer::analyzeDuplicateClass(
-            $code_base, $this
-        );
-
-        ParentConstructorCalledAnalyzer::analyzeParentConstructorCalled(
-            $code_base, $this
-        );
-
-        PropertyTypesAnalyzer::analyzePropertyTypes(
-            $code_base, $this
-        );
-
-        // Analyze this class to make sure that we don't have conflicting
-        // types between similar inherited methods.
-        CompositionAnalyzer::analyzeComposition(
-            $code_base, $this
-        );
-
         // Let any configured plugins analyze the class
         ConfigPluginSet::instance()->analyzeClass(
             $code_base, $this

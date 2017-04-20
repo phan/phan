@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Analysis\ClassAnalyzer;
+use Phan\Analysis\FunctionAnalyzer;
+use Phan\Analysis\MethodAnalyzer;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Method;
@@ -15,7 +18,9 @@ use ast\Node;
  * Plugins must extends this class and return an instance
  * of themselves.
  */
-abstract class Plugin {
+abstract class Plugin implements ClassAnalyzer, FunctionAnalyzer, MethodAnalyzer {
+    use PluginIssue;
+
     /**
      * Do a first-pass analysis of a node before Phan
      * does its full analysis. This hook allows you to
@@ -70,48 +75,6 @@ abstract class Plugin {
     );
 
     /**
-     * @param CodeBase $code_base
-     * The code base in which the class exists
-     *
-     * @param Clazz $class
-     * A class being analyzed
-     *
-     * @return void
-     */
-    abstract public function analyzeClass(
-        CodeBase $code_base,
-        Clazz $class
-    );
-
-    /**
-     * @param CodeBase $code_base
-     * The code base in which the method exists
-     *
-     * @param Method $method
-     * A method being analyzed
-     *
-     * @return void
-     */
-    abstract public function analyzeMethod(
-        CodeBase $code_base,
-        Method $method
-    );
-
-    /**
-     * @param CodeBase $code_base
-     * The code base in which the function exists
-     *
-     * @param Func $function
-     * A function being analyzed
-     *
-     * @return void
-     */
-    abstract public function analyzeFunction(
-        CodeBase $code_base,
-        Func $function
-    );
-
-    /**
      * Emit an issue if it is not suppressed
      *
      * @param CodeBase $code_base
@@ -136,7 +99,7 @@ abstract class Plugin {
      * set {Issue:REMEDIATION_A, Issue:REMEDIATION_B, ...
      * Issue::REMEDIATION_F} with F being the hardest.
      */
-    public function emitIssue(
+    public function emitPluginIssue(
         CodeBase $code_base,
         Context $context,
         string $issue_type,
@@ -145,26 +108,14 @@ abstract class Plugin {
         int $remediation_difficulty = Issue::REMEDIATION_B,
         int $issue_type_id = Issue::TYPE_ID_UNKNOWN
     ) {
-        $issue = new Issue(
-            $issue_type,
-            Issue::CATEGORY_PLUGIN,
-            $severity,
-            $issue_message,
-            $remediation_difficulty,
-            $issue_type_id
-        );
-
-        $issue_instance = new IssueInstance(
-            $issue,
-            $context->getFile(),
-            $context->getLineNumberStart(),
-            []
-        );
-
-        Issue::maybeEmitInstance(
+        $this->emitPluginIssue(
             $code_base,
             $context,
-            $issue_instance
+            $issue_type,
+            $issue_message,
+            $severity,
+            $remediation_difficulty,
+            $issue_type_id
         );
     }
 

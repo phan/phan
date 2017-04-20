@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\Analysis\ClassAnalyzer;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Type\TemplateType;
 
-class PropertyTypesAnalyzer
+class PropertyTypesAnalyzer implements ClassAnalyzer
 {
 
     /**
@@ -15,7 +16,7 @@ class PropertyTypesAnalyzer
      *
      * @return void
      */
-    public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz)
+    public function analyzeClass(CodeBase $code_base, Clazz $clazz)
     {
         foreach ($clazz->getPropertyList($code_base) as $property) {
             try {
