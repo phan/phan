@@ -15,6 +15,7 @@ abstract class AbstractPhanFileTest
     const EXPECTED_SUFFIX = '.expected';
 
     private $code_base;
+    private $original_config = [];
 
     public function setCodeBase(CodeBase $code_base = null) {
         $this->code_base = $code_base;
@@ -24,6 +25,23 @@ abstract class AbstractPhanFileTest
      * @return string[][] Array of <filename => [filename]>
      */
     abstract public function getTestFiles();
+
+    public function setUp() {
+        parent::setUp();
+
+
+        // Backup the config file
+        foreach (Config::get()->toArray() as $key => $value) {
+            $this->original_config[$key] = $value;
+        }
+    }
+
+    public function tearDown() {
+        // Reinstate the original config
+        foreach ($this->original_config as $key => $value) {
+            Config::get()->__set($key, $value);
+        }
+    }
 
     /**
      * Placeholder for getTestFiles dataProvider
@@ -74,9 +92,7 @@ abstract class AbstractPhanFileTest
 
         // Overlay any test-specific config modifiers
         if ($config_file_path) {
-            $original_config_value = [];
             foreach (require($config_file_path) as $key => $value) {
-                $original_config_value[$key] = Config::get()->__get($key);
                 Config::get()->__set($key, $value);
             }
         }
@@ -157,12 +173,5 @@ abstract class AbstractPhanFileTest
 
         $this->assertRegExp("/^$wanted_re\$/", $output,
             "Unexpected output in {$test_file_list[0]}");
-
-        // Reset any test-specific config modifiers
-        if ($config_file_path) {
-            foreach ($original_config_value ?? [] as $key => $value) {
-                Config::get()->__set($key, $value);
-            }
-        }
     }
 }
