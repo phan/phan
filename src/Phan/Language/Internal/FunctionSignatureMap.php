@@ -7772,7 +7772,7 @@ return [
 'RegexIterator::setMode' => ['bool', 'new_mode'=>'int'],
 'RegexIterator::setPregFlags' => ['bool', 'new_flags'=>'int'],
 'register_shutdown_function' => ['', 'function'=>'callable', '...parameter='=>''],
-'register_tick_function' => ['bool', 'function_name'=>'string', 'arg='=>'', '...='=>''],
+'register_tick_function' => ['bool', 'function'=>'callable', '...args='=>''],
 'rename' => ['bool', 'old_name'=>'string', 'new_name'=>'string', 'context='=>''],
 'rename_function' => ['bool', 'original_name'=>'string', 'new_name'=>'string'],
 'reset' => ['', 'array_arg'=>'array'],
