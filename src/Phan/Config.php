@@ -427,6 +427,15 @@ class Config
         return $instance;
     }
 
+    /**
+     * @return array
+     * A map of configuration keys and their values
+     */
+    public function toArray() : array
+    {
+        return $this->configuration;
+    }
+
     /** @return mixed */
     public function __get(string $name)
     {

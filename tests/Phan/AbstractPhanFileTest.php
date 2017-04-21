@@ -2,6 +2,7 @@
 namespace Phan\Tests;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Phan;
@@ -14,6 +15,7 @@ abstract class AbstractPhanFileTest
     const EXPECTED_SUFFIX = '.expected';
 
     private $code_base;
+    private $original_config = [];
 
     public function setCodeBase(CodeBase $code_base = null) {
         $this->code_base = $code_base;
@@ -23,6 +25,32 @@ abstract class AbstractPhanFileTest
      * @return string[][] Array of <filename => [filename]>
      */
     abstract public function getTestFiles();
+
+    /**
+     * Setup our state before running reach test
+     *
+     * @return void
+     */
+    public function setUp() {
+        parent::setUp();
+
+        // Backup the config file
+        foreach (Config::get()->toArray() as $key => $value) {
+            $this->original_config[$key] = $value;
+        }
+    }
+
+    /**
+     * Reset any changes we made to our global state
+     */
+    public function tearDown() {
+        parent::tearDown();
+
+        // Reinstate the original config
+        foreach ($this->original_config as $key => $value) {
+            Config::get()->__set($key, $value);
+        }
+    }
 
     /**
      * Placeholder for getTestFiles dataProvider
@@ -63,12 +91,19 @@ abstract class AbstractPhanFileTest
      * @param string $expected_file_path
      * @dataProvider getTestFiles
      */
-    public function testFiles($test_file_list, $expected_file_path) {
+    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null) {
         $expected_output = '';
         if (is_file($expected_file_path)) {
             // Read the expected output
             $expected_output =
                 trim(file_get_contents($expected_file_path));
+        }
+
+        // Overlay any test-specific config modifiers
+        if ($config_file_path) {
+            foreach (require($config_file_path) as $key => $value) {
+                Config::get()->__set($key, $value);
+            }
         }
 
         $stream = new BufferedOutput();
