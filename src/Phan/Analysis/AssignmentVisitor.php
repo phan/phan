@@ -304,7 +304,6 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitProp(Node $node) : Context
     {
-
         $property_name = $node->children['prop'];
 
         // Things like $foo->$bar
@@ -339,7 +338,6 @@ class AssignmentVisitor extends AnalysisVisitor
                 if (!$clazz->hasMethodWithName($this->code_base, '__set')) {
                     continue;
                 }
-
             }
 
             try {
@@ -359,9 +357,11 @@ class AssignmentVisitor extends AnalysisVisitor
             }
 
             if (!$this->right_type->canCastToExpandedUnionType(
-                $property->getUnionType(),
-                $this->code_base
-            )) {
+                    $property->getUnionType(),
+                    $this->code_base
+                )
+                && !$clazz->getHasDynamicProperties($this->code_base)
+            ) {
                 // TODO: optionally, change the message from "::" to "->"?
                 $this->emitIssue(
                     Issue::TypeMismatchProperty,
