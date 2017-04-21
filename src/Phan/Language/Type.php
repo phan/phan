@@ -17,6 +17,7 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Library\Tuple4;
 
@@ -220,8 +221,6 @@ class Type
 
         // Make sure we only ever create exactly one
         // object for any unique type
-        static $canonical_object_map = [];
-
         $key = ($is_nullable ? '?' : '') . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
@@ -232,18 +231,59 @@ class Type
 
         $key = strtolower($key);
 
-        if (empty($canonical_object_map[$key])) {
-            $canonical_object_map[$key] =
+        return static::cachedGetInstanceHelper($namespace, $type_name, $template_parameter_type_list, $is_nullable, $key, false);
+    }
+
+    /**
+     * @return static
+     * @see static::__construct
+     */
+    protected static final function cachedGetInstanceHelper(
+        string $namespace,
+        string $name,
+        $template_parameter_type_list,
+        bool $is_nullable,
+        string $key,
+        bool $clear_all_memoize
+    ) : Type {
+        // TODO: Figure out why putting this into a static variable results in test failures.
+        static $canonical_object_map = [];
+        if ($clear_all_memoize) {
+            foreach ($canonical_object_map as $type) {
+                $type->memoizeFlushAll();
+            }
+            return NullType::instance(false);  // dummy
+        }
+        $value = $canonical_object_map[$key] ?? null;
+        if (!$value) {
+            $value =
                 new static(
                     $namespace,
-                    $type_name,
+                    $name,
                     $template_parameter_type_list,
                     $is_nullable
                 );
+            $canonical_object_map[$key] = $value;
         }
-
-        return $canonical_object_map[$key];
+        return $value;
     }
+
+    /**
+     * Call this before forking and analysis phase, when in daemon mode.
+     * This may hurt performance.
+     *
+     * It's important to clear asExpandedTypes(),
+     * as the parent classes may have changed since the last parse attempt.
+     *
+     * @return void
+     */
+    public static function clearAllMemoizations() {
+        // Clear anything that has memoized state
+        Type::cachedGetInstanceHelper('', '', [], false, '', true);
+        TemplateType::cachedGetInstanceHelper('', '', [], false, '', true);
+        GenericArrayType::cachedGetInstanceHelper('', '', [], false, '', true);
+    }
+
 
     /**
      * @param Type $type

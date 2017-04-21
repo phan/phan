@@ -1411,6 +1411,9 @@ class Issue
         Context $context,
         IssueInstance $issue_instance
     ) {
+        // TODO: In daemonize mode, associate the issue with the file's modification date/contents, and clear issues when the file is modified.
+        // Some issues are emitted while still in parse(ParseVisitor) phase.
+
         // If this issue type has been suppressed in
         // the config, ignore it
         if (!Config::get()->disable_suppression

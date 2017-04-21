@@ -31,8 +31,9 @@ class Analysis
      *
      * @return Context
      */
-    public static function parseFile(CodeBase $code_base, string $file_path) : Context
+    public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false) : Context
     {
+        $code_base->setCurrentParsedFile($file_path);
         $context = (new Context)->withFile($file_path);
 
         // Convert the file to an Abstract Syntax Tree
@@ -44,6 +45,9 @@ class Analysis
                 Config::get()->ast_version
             );
         } catch (\ParseError $parse_error) {
+            if ($suppress_parse_errors) {
+                return $context;
+            }
             Issue::maybeEmit(
                 $code_base,
                 $context,
@@ -117,7 +121,7 @@ class Analysis
     /**
      * @see self::parseNodeInContext
      *
-     * @param $shouldVisitEverything - Whether or not all AST nodes should be parsed.
+     * @param bool $shouldVisitEverything - Whether or not all AST nodes should be parsed.
      */
     private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node, bool $should_visit_everything) {
         // Save a reference to the outer context
@@ -179,8 +183,10 @@ class Analysis
      *
      * @return void
      */
-    public static function analyzeFunctions(CodeBase $code_base)
+    public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null)
     {
+        $plugin_set = ConfigPluginSet::instance();
+        $has_plugins = $plugin_set->hasPlugins();
         $function_count = count($code_base->getFunctionAndMethodSet());
         $show_progress = CLI::shouldShowProgress();
         $i = 0;
@@ -195,25 +201,35 @@ class Analysis
                 continue;
             }
 
+            // If there is an array limiting the set of files, skip this file if it's not in the list,
+            if (is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
+                continue;
+            }
             DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
                 $code_base, $function_or_method
             );
 
+            // This is the most time consuming step.
+            // Can probably apply this to other functions, but this was the slowest.
             ParameterTypesAnalyzer::analyzeParameterTypes(
                 $code_base, $function_or_method
             );
-
             // Let any plugins analyze the methods or functions
-            if ($function_or_method instanceof Func) {
-                ConfigPluginSet::instance()->analyzeFunction(
-                    $code_base, $function_or_method
-                );
-            } else if ($function_or_method instanceof Method) {
-                ConfigPluginSet::instance()->analyzeMethod(
-                    $code_base, $function_or_method
-                );
+            // XXX: Add a way to run plugins on all functions/methods, this was limited for speed.
+            // Assumes that the given plugins will emit an issue in the same file as the function/method,
+            // which isn't necessarily the case.
+            // 0.06
+            if ($has_plugins) {
+                if ($function_or_method instanceof Func) {
+                    $plugin_set->analyzeFunction(
+                        $code_base, $function_or_method
+                    );
+                } else if ($function_or_method instanceof Method) {
+                    $plugin_set->analyzeMethod(
+                        $code_base, $function_or_method
+                    );
+                }
             }
-
         }
     }
 
@@ -223,9 +239,20 @@ class Analysis
      *
      * @return void
      */
-    public static function analyzeClasses($code_base)
+    public static function analyzeClasses($code_base, array $path_filter = null)
     {
-        foreach ($code_base->getClassMap() as $class) {
+        $classes = $code_base->getClassMap();
+        if (is_array($path_filter)) {
+            // Convert Map to array. Both are iterable.
+            $old_classes = $classes;
+            $classes = [];
+            foreach ($old_classes as $class) {
+                if (!$class->isPHPInternal() && isset($path_filter[$class->getContext()->getFile()])) {
+                    $classes[] = $class;
+                }
+            }
+        }
+        foreach ($classes as $class) {
             $class->analyze($code_base);
         }
     }
