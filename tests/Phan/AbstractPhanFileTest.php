@@ -26,9 +26,13 @@ abstract class AbstractPhanFileTest
      */
     abstract public function getTestFiles();
 
+    /**
+     * Setup our state before running reach test
+     *
+     * @return void
+     */
     public function setUp() {
         parent::setUp();
-
 
         // Backup the config file
         foreach (Config::get()->toArray() as $key => $value) {
@@ -36,7 +40,12 @@ abstract class AbstractPhanFileTest
         }
     }
 
+    /**
+     * Reset any changes we made to our global state
+     */
     public function tearDown() {
+        parent::tearDown();
+
         // Reinstate the original config
         foreach ($this->original_config as $key => $value) {
             Config::get()->__set($key, $value);
