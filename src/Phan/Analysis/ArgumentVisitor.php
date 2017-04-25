@@ -95,7 +95,7 @@ class ArgumentVisitor extends KindVisitorImplementation
      */
     public function visitProp(Node $node)
     {
-        $this->analyzeProp($node, true);
+        $this->analyzeProp($node, false);
     }
 
     /**
