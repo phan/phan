@@ -121,6 +121,10 @@ class Phan implements IgnoredFilesFilterInterface {
                 $analyze_file_path_list[] = $file_path;
 
 
+            } catch (\AssertionError $assertion_error) {
+                print "While parsing $file_path...\n";
+                print "$assertion_error\n";
+                exit(EXIT_FAILURE);
             } catch (\Throwable $throwable) {
                 error_log($file_path . ' ' . $throwable->getMessage() . "\n");
                 $code_base->recordUnparseableFile($file_path);

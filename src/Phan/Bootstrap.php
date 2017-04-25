@@ -25,18 +25,9 @@ define('EXIT_SUCCESS', 0);
 define('EXIT_FAILURE', 1);
 define('EXIT_ISSUES_FOUND', EXIT_FAILURE);
 
-// Customize assertions
-assert_options(ASSERT_ACTIVE, true);
-assert_options(ASSERT_BAIL, true);
+// Throw exceptions so asserts can be linked to the code being analyzed
+ini_set('assert.exception', '1');
 assert_options(ASSERT_WARNING, false);
-assert_options(
-    ASSERT_CALLBACK,
-    function (string $script, int $line, $expression, $message) {
-        print "$script:$line ($expression) $message\n";
-        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        exit(EXIT_FAILURE);
-    }
-);
 
 // Print more of the backtrace than is done by default
 set_exception_handler(function (Throwable $throwable) {
