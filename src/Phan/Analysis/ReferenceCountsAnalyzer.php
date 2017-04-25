@@ -5,6 +5,7 @@ use Phan\CLI;
 use Phan\CodeBase;
 use Phan\CodeBase\ClassMap;
 use Phan\Config;
+use Phan\Exception\CodeBaseException;
 use Phan\Issue;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassConstant;
@@ -163,7 +164,6 @@ class ReferenceCountsAnalyzer
                     return;
                 }
             }
-
             if ($element->getIsOverride()) {
                 return;
             }
@@ -172,8 +172,12 @@ class ReferenceCountsAnalyzer
 
             // Don't analyze elements defined in a parent
             // class
-            if ($class_fqsen != $element->getDefiningClassFQSEN()) {
-                return;
+            try {
+                if ($class_fqsen != $element->getDefiningClassFQSEN()) {
+                    return;
+                }
+            } catch (CodeBaseException $e) {
+                // No defining class for property/constant/etc.
             }
 
             $defining_class =
