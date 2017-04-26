@@ -27,7 +27,13 @@ define('EXIT_ISSUES_FOUND', EXIT_FAILURE);
 
 // Throw exceptions so asserts can be linked to the code being analyzed
 ini_set('assert.exception', '1');
+
+// Explicitly set each option in case INI is set otherwise
+assert_options(ASSERT_ACTIVE, true);
 assert_options(ASSERT_WARNING, false);
+assert_options(ASSERT_BAIL, false);
+assert_options(ASSERT_QUIET_EVAL, false);
+assert_options(ASSERT_CALLBACK, null);
 
 // Print more of the backtrace than is done by default
 set_exception_handler(function (Throwable $throwable) {
