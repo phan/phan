@@ -163,6 +163,11 @@ class ConfigPluginSet extends Plugin {
         }
     }
 
+    // Micro-optimization in tight loops: check for plugins before calling config plugin set
+    public function hasPlugins() : bool {
+        return count($this->getPlugins()) > 0;
+    }
+
     /**
      * @return Plugin[]
      */
@@ -178,7 +183,7 @@ class ConfigPluginSet extends Plugin {
                         "Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
 
                     assert($plugin_instance instanceof Plugin,
-                        "Plugins must extends \Phan\Plugin. The plugin at $plugin_file_name does not.");
+                        "Plugins must extend \Phan\Plugin. The plugin at $plugin_file_name does not.");
 
                     return $plugin_instance;
                 },

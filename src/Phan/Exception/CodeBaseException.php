@@ -18,7 +18,7 @@ class CodeBaseException extends \Exception
      */
     public function __construct(
         FQSEN $missing_fqsen = null,
-        string $message = null
+        string $message = ""
     ) {
         parent::__construct($message);
         $this->missing_fqsen = $missing_fqsen;

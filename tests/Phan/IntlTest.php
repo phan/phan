@@ -18,8 +18,8 @@ class IntlTest extends AbstractPhanFileTest {
      *
      * @dataProvider getTestFiles
      */
-    public function testFiles($test_file_list, $expected_file_path) {
-        parent::testFiles($test_file_list, $expected_file_path);
+    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null) {
+        parent::testFiles($test_file_list, $expected_file_path, $config_file_path);
     }
 
     /**

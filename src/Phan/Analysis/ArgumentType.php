@@ -4,6 +4,7 @@ namespace Phan\Analysis;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
+use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\FunctionInterface;
@@ -46,7 +47,7 @@ class ArgumentType
     ) {
         // Special common cases where we want slightly
         // better multi-signature error messages
-        if ($method->isInternal()) {
+        if ($method->isPHPInternal()) {
             if(self::analyzeInternalArgumentType(
                 $method,
                 $node,
@@ -63,6 +64,24 @@ class ArgumentType
                 $code_base,
                 $context,
                 Issue::DeprecatedFunction,
+                $context->getLineNumberStart(),
+                (string)$method->getFQSEN(),
+                $method->getFileRef()->getFile(),
+                $method->getFileRef()->getLineNumberStart()
+            );
+        }
+
+        // Emit an issue if this is an externally accessed internal method
+        if ($method->isNSInternal($code_base)
+            && !$method->isNSInternalAccessFromContext(
+                $code_base,
+                $context
+            )
+        ) {
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::AccessMethodInternal,
                 $context->getLineNumberStart(),
                 (string)$method->getFQSEN(),
                 $method->getFileRef()->getFile(),
@@ -116,7 +135,7 @@ class ArgumentType
             }
 
             if (!$alternate_found) {
-                if ($method->isInternal()) {
+                if ($method->isPHPInternal()) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -156,7 +175,7 @@ class ArgumentType
 
             if (!$alternate_found) {
                 $max = $method->getNumberOfParameters();
-                if ($method->isInternal()) {
+                if ($method->isPHPInternal()) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -325,7 +344,7 @@ class ArgumentType
 
                 if (is_object($parameter_type) && $parameter_type->hasTemplateType()) {
                     // Don't worry about template types
-                } elseif ($method->isInternal()) {
+                } elseif ($method->isPHPInternal()) {
                     // If we are not in strict mode and we accept a string parameter
                     // and the argument we are passing has a __toString method then it is ok
                     if(!$context->getIsStrictTypes() && is_object($parameter_type) && $parameter_type->hasType(StringType::instance(false))) {
@@ -438,6 +457,7 @@ class ArgumentType
      * @param CodeBase $code_base
      *
      * @return bool
+     * Return true if an issue was found, else false.
      *
      * @see \Phan\Deprecated\Pass2::arg_check
      * Formerly `function arg_check`
@@ -458,7 +478,7 @@ class ArgumentType
                 // (array pieces, string glue) or
                 // (array pieces)
                 if ($argcount == 1) {
-                    self::analyzeNodeUnionTypeCast(
+                    return !self::analyzeNodeUnionTypeCast(
                         $arglist->children[0],
                         $context,
                         $code_base,
@@ -466,18 +486,17 @@ class ArgumentType
                         function (UnionType $node_type) use ($context, $method) {
                         // "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
                             return Issue::fromType(Issue::ParamSpecial2)(
-                            $context->getFile(),
-                            $context->getLineNumberStart(), [
-                                1,
-                                'pieces',
-                                (string)$method->getFQSEN(),
-                                'string',
-                                'array'
-                            ]
+                                $context->getFile(),
+                                $context->getLineNumberStart(), [
+                                    1,
+                                    'pieces',
+                                    (string)$method->getFQSEN(),
+                                    'string',
+                                    'array'
+                                ]
                             );
                         }
                     );
-                    return;
                 } elseif ($argcount == 2) {
                     $arg1_type = UnionType::fromNode(
                         $context,

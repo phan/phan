@@ -1,2 +1,2 @@
-%s:21 PhanTypeMismatchArgument Argument 1 (p) is \D but \g() takes \E defined at %s:19
+%s:21 PhanTypeMismatchArgument Argument 1 (p) is \C|\D but \g() takes \E defined at %s:19
 %s:22 PhanTypeMismatchArgument Argument 1 (p) is \C but \g() takes \E defined at %s:19

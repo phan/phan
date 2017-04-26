@@ -76,7 +76,7 @@ class Ordering
         foreach ($this->code_base->getClassMap() as $fqsen => $class) {
 
             // We won't be analyzing internal stuff
-            if ($class->isInternal()) {
+            if ($class->isPHPInternal()) {
                 continue;
             }
 

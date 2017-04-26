@@ -37,7 +37,7 @@ class DuplicateClassAnalyzer
 
         // Check to see if the original definition was from
         // an internal class
-        if ($original_class->isInternal()) {
+        if ($original_class->isPHPInternal()) {
             Issue::maybeEmit(
                 $code_base,
                 $clazz->getContext(),

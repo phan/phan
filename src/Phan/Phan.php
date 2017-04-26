@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+use Phan\Daemon\Request;
 use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\IgnoredFilesFilterInterface;
@@ -62,8 +63,8 @@ class Phan implements IgnoredFilesFilterInterface {
      * it to be initialized before any classes or files are
      * loaded.
      *
-     * @param string[] $file_path_list
-     * A list of files to scan
+     * @param \Closure string[] $file_path_lister
+     * Returns a list of files to scan (string[])
      *
      * @return bool
      * We emit messages to the configured printer and return
@@ -73,8 +74,15 @@ class Phan implements IgnoredFilesFilterInterface {
      */
     public static function analyzeFileList(
         CodeBase $code_base,
-        array $file_path_list
+        \Closure $file_path_lister
     ) : bool {
+        $is_daemon_request = Config::get()->daemonize_socket || Config::get()->daemonize_tcp_port;
+        if ($is_daemon_request) {
+            $code_base->enableUndoTracking();
+        }
+
+        $file_path_list = $file_path_lister();
+
         $file_count = count($file_path_list);
 
         // We'll construct a set of files that we'll
@@ -92,7 +100,9 @@ class Phan implements IgnoredFilesFilterInterface {
         // global state we'll need for doing a second
         // analysis after.
         CLI::progress('parse', 0.0);
+        $code_base->setCurrentParsedFile(null);
         foreach ($file_path_list as $i => $file_path) {
+            $code_base->setCurrentParsedFile($file_path);
             CLI::progress('parse', ($i + 1) / $file_count);
 
             // Kick out anything we read from the former version
@@ -113,8 +123,10 @@ class Phan implements IgnoredFilesFilterInterface {
 
             } catch (\Throwable $throwable) {
                 error_log($file_path . ' ' . $throwable->getMessage() . "\n");
+                $code_base->recordUnparseableFile($file_path);
             }
         }
+        $code_base->setCurrentParsedFile(null);
 
         // Don't continue on to analysis if the user has
         // chosen to just dump the AST
@@ -125,6 +137,34 @@ class Phan implements IgnoredFilesFilterInterface {
         if (is_string(Config::get()->dump_signatures_file)) {
             exit(self::dumpSignaturesToFile($code_base, Config::get()->dump_signatures_file));
         }
+
+        $request = null;
+        if ($is_daemon_request) {
+            assert($code_base->isUndoTrackingEnabled());
+            // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
+            // TODO: check for conflicts with other config options - incompatible with dump_ast, dump_signatures_file, output-file, etc.
+            // incompatible with dead_code_detection
+            $request = Daemon::run($code_base, $file_path_lister);  // This will fork and fall through every time a request to re-analyze the file set comes in. The daemon should be periodically restarted?
+            if (!$request) {
+                // TODO: Add a way to cleanly shut down.
+                error_log("Finished serving requests, exiting");
+                exit(2);
+            }
+            assert($request instanceof Request);
+            self::$printer = $request->getPrinter();
+
+            // This is the list of all of the parsed files
+            // (Also includes files which don't declare classes/functions/constants)
+            $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
+            if (count($analyze_file_path_list) === 0)  {
+                $request->respondWithNoFilesToAnalyze();  // respond and exit.
+            }
+            // Stop tracking undo operations, now that the parse phase is done.
+            $code_base->disableUndoTracking();
+        }
+
+        global $start_time;
+        $start_time = microtime(true);
 
         // With parsing complete, we need to tell the code base to
         // start hydrating any requested elements on their way out.
@@ -138,15 +178,17 @@ class Phan implements IgnoredFilesFilterInterface {
         // lets us only need to do hydrate a subset of classes.
         $code_base->setShouldHydrateRequestedElements(true);
 
+
+        $path_filter = isset($request) ? array_flip($analyze_file_path_list) : null;
         // Take a pass over all functions verifying
         // various states now that we have the whole
         // state in memory
-        Analysis::analyzeClasses($code_base);
+        Analysis::analyzeClasses($code_base, $path_filter);
 
         // Take a pass over all functions verifying
         // various states now that we have the whole
         // state in memory
-        Analysis::analyzeFunctions($code_base);
+        Analysis::analyzeFunctions($code_base, $path_filter);
 
         // Filter out any files that are to be excluded from
         // analysis
@@ -156,6 +198,10 @@ class Phan implements IgnoredFilesFilterInterface {
                 return !self::isExcludedAnalysisFile($file_path);
             }
         );
+        if ($request instanceof Request && count($analyze_file_path_list) === 0)  {
+            $request->respondWithNoFilesToAnalyze();
+            exit(0);
+        }
 
         // Get the count of all files we're going to analyze
         $file_count = count($analyze_file_path_list);
@@ -230,11 +276,16 @@ class Phan implements IgnoredFilesFilterInterface {
         }
 
         // Get a count of the number of issues that were found
+        $issue_count = count((self::$issueCollector)->getCollectedIssues());
         $is_issue_found =
-            0 !== count((self::$issueCollector)->getCollectedIssues());
+            0 !== $issue_count;
 
         // Collect all issues, blocking
         self::display();
+        if ($request instanceof Request) {
+            $request->respondWithIssues($issue_count);
+            exit(0);
+        }
 
         return $is_issue_found;
     }
@@ -252,6 +303,9 @@ class Phan implements IgnoredFilesFilterInterface {
      * @return string[]
      * Get an expanded list of files and dependencies for
      * the given file list
+     *
+     * TODO: This is no longer referenced, was removed while sqlite3 was temporarily removed.
+     *       It would help in daemon mode if this was re-enabled
      */
     public static function expandedFileList(
         CodeBase $code_base,
@@ -264,7 +318,7 @@ class Phan implements IgnoredFilesFilterInterface {
         // want to run an analysis on
         $dependency_file_path_list = [];
 
-        CLI::progress('dependencies', 0.0);
+        CLI::progress('dependencies', 0.0);  // trigger UI update of 0%
         foreach ($file_path_list as $i => $file_path) {
             CLI::progress('dependencies', ($i + 1) / $file_count);
 
@@ -289,6 +343,8 @@ class Phan implements IgnoredFilesFilterInterface {
     private static function isExcludedAnalysisFile(
         string $file_path
     ) : bool {
+        // TODO: add an alternative of a whitelist of files.
+        // Incompatible with exclude_analysis_directory_list
         $file_path = str_replace('\\', '/', $file_path);
         foreach (Config::get()->exclude_analysis_directory_list
                  as $directory

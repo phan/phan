@@ -1169,12 +1169,31 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitProp(Node $node) : UnionType
     {
+        return $this->analyzeProp($node, false);
+    }
+
+    /**
+     * Analyzes a node with kind `\ast\AST_PROP` or `\ast\AST_STATIC_PROP`
+     *
+     * @param Node $node
+     * The instance/static property access node.
+     *
+     * @param bool $is_static
+     * True if this is a static property fetch,
+     * false if this is an instance property fetch.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    private function analyzeProp(Node $node, bool $is_static) : UnionType
+    {
         try {
             $property = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getProperty($node->children['prop']);
+            ))->getProperty($node->children['prop'], $is_static);
 
             // Map template types to concrete types
             if ($property->getUnionType()->hasTemplateType()) {
@@ -1231,7 +1250,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitStaticProp(Node $node) : UnionType
     {
-        return $this->visitProp($node);
+        return $this->analyzeProp($node, true);
     }
 
 
@@ -1273,7 +1292,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // TODO: I don't believe we need this any more
         // If this is an internal function, see if we can get
         // its types from the static dataset.
-        if ($function->isInternal()
+        if ($function->isPHPInternal()
             && $function->getUnionType()->isEmpty()
         ) {
             $map = UnionType::internalFunctionSignatureMapForFQSEN(

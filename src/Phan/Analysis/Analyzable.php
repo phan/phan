@@ -28,7 +28,7 @@ trait Analyzable
      * The depth of recursion on this analyzable
      * object
      */
-    private $recursion_depth = 0;
+    private static $recursion_depth = 0;
 
     /**
      * @param Node $node
@@ -92,14 +92,28 @@ trait Analyzable
         }
 
         // Don't go deeper than one level in
-        if ($this->recursion_depth++ > 2) {
+        // TODO: Due to optimizations in checking for duplicate parameter lists, it should now be possible to increase this depth limit.
+        if (self::$recursion_depth >= 2) {
             return $context;
         }
 
-        // Analyze the node in a cloned context so that we
-        // don't overwrite anything
-        return (new BlockAnalysisVisitor($code_base, clone($context)))(
-            $this->getNode()
-        );
+        self::$recursion_depth++;
+
+        try {
+            // Analyze the node in a cloned context so that we
+            // don't overwrite anything
+            return (new BlockAnalysisVisitor($code_base, clone($context)))(
+                $this->getNode()
+            );
+        } finally {
+            self::$recursion_depth--;
+        }
+    }
+
+    /**
+     * Gets the recursion depth. Starts at 0, increases the deeper the recursion goes
+     */
+    public function getRecursionDepth() : int {
+        return self::$recursion_depth;
     }
 }

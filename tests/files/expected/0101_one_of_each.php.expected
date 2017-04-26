@@ -45,7 +45,6 @@
 %s:198 PhanUndeclaredInterface Class implements undeclared interface \C18
 %s:206 PhanUndeclaredProperty Reference to undeclared property \C14->undef
 %s:210 PhanUndeclaredStaticMethod Static call to undeclared method \C21::f
-%s:214 PhanUndeclaredProperty Reference to undeclared property \C22->p
+%s:214 PhanUndeclaredStaticProperty Static property 'p' on \C22 is undeclared
 %s:217 PhanUndeclaredTrait Class uses undeclared trait \T2
 %s:220 PhanUndeclaredVariable Variable $v10 is undeclared
-

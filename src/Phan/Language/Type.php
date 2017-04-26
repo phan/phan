@@ -17,6 +17,7 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Library\Tuple4;
 
@@ -183,9 +184,9 @@ class Type
                 $namespace,
                 substr($type_name, 0, $pos),
                 $template_parameter_type_list,
-                $is_nullable,
+                false,
                 $is_phpdoc_type
-            ));
+            ), $is_nullable);
         }
 
         assert(
@@ -220,8 +221,6 @@ class Type
 
         // Make sure we only ever create exactly one
         // object for any unique type
-        static $canonical_object_map = [];
-
         $key = ($is_nullable ? '?' : '') . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
@@ -232,18 +231,59 @@ class Type
 
         $key = strtolower($key);
 
-        if (empty($canonical_object_map[$key])) {
-            $canonical_object_map[$key] =
+        return static::cachedGetInstanceHelper($namespace, $type_name, $template_parameter_type_list, $is_nullable, $key, false);
+    }
+
+    /**
+     * @return static
+     * @see static::__construct
+     */
+    protected static final function cachedGetInstanceHelper(
+        string $namespace,
+        string $name,
+        $template_parameter_type_list,
+        bool $is_nullable,
+        string $key,
+        bool $clear_all_memoize
+    ) : Type {
+        // TODO: Figure out why putting this into a static variable results in test failures.
+        static $canonical_object_map = [];
+        if ($clear_all_memoize) {
+            foreach ($canonical_object_map as $type) {
+                $type->memoizeFlushAll();
+            }
+            return NullType::instance(false);  // dummy
+        }
+        $value = $canonical_object_map[$key] ?? null;
+        if (!$value) {
+            $value =
                 new static(
                     $namespace,
-                    $type_name,
+                    $name,
                     $template_parameter_type_list,
                     $is_nullable
                 );
+            $canonical_object_map[$key] = $value;
         }
-
-        return $canonical_object_map[$key];
+        return $value;
     }
+
+    /**
+     * Call this before forking and analysis phase, when in daemon mode.
+     * This may hurt performance.
+     *
+     * It's important to clear asExpandedTypes(),
+     * as the parent classes may have changed since the last parse attempt.
+     *
+     * @return void
+     */
+    public static function clearAllMemoizations() {
+        // Clear anything that has memoized state
+        Type::cachedGetInstanceHelper('', '', [], false, '', true);
+        TemplateType::cachedGetInstanceHelper('', '', [], false, '', true);
+        GenericArrayType::cachedGetInstanceHelper('', '', [], false, '', true);
+    }
+
 
     /**
      * @param Type $type
@@ -295,13 +335,18 @@ class Type
 
         // If this is a generic type (like int[]), return
         // a generic of internal types.
+        //
+        // When there's a nullability operator such as in
+        // `?int[]`, it applies to the array rather than
+        // the int
         if (false !== ($pos = strrpos($type_name, '[]'))) {
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
                     substr($type_name, 0, $pos),
-                    $is_nullable,
+                    false,
                     $is_phpdoc_type
-                )
+                ),
+                $is_nullable
             );
         }
 
@@ -365,6 +410,17 @@ class Type
         bool  $is_nullable
     ) : Type {
         return self::make($namespace, $type_name, [], $is_nullable, false);
+    }
+
+    public static function fromReflectionType(
+        \ReflectionType $reflection_type
+    ) : Type {
+
+        return self::fromStringInContext(
+            (string)$reflection_type,
+            new Context(),
+            false
+        );
     }
 
     /**
@@ -507,9 +563,9 @@ class Type
                     $fqsen->getNamespace(),
                     $fqsen->getName(),
                     $template_parameter_type_list,
-                    $is_nullable,
+                    false,
                     $is_phpdoc_type
-                ));
+                ), $is_nullable);
             }
 
             return Type::make(
@@ -558,7 +614,7 @@ class Type
             return GenericArrayType::fromElementType(
                 static::fromFullyQualifiedString(
                     (string)$context->getClassFQSEN()
-                )
+                ), $is_nullable
             );
         }
 
@@ -876,7 +932,7 @@ class Type
             return ArrayType::instance(false);
         }
 
-        return GenericArrayType::fromElementType($this);
+        return GenericArrayType::fromElementType($this, false);
     }
 
     /**
@@ -955,64 +1011,58 @@ class Type
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        return $this->memoize(__METHOD__, function () use (
-            $code_base,
-            $recursion_depth
-        ) : UnionType {
+        // We're going to assume that if the type hierarchy
+        // is taller than some value we probably messed up
+        // and should bail out.
+        assert(
+            $recursion_depth < 20,
+            "Recursion has gotten out of hand"
+        );
 
-            // We're going to assume that if the type hierarchy
-            // is taller than some value we probably messed up
-            // and should bail out.
-            assert(
-                $recursion_depth < 20,
-                "Recursion has gotten out of hand"
-            );
+        if ($this->isNativeType() && !$this->isGenericArray()) {
+            return $this->asUnionType();
+        }
 
-            if ($this->isNativeType() && !$this->isGenericArray()) {
-                return $this->asUnionType();
+        $union_type = $this->asUnionType();
+
+        $class_fqsen = $this->isGenericArray()
+            ? $this->genericArrayElementType()->asFQSEN()
+            : $this->asFQSEN();
+
+        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+            return $union_type;
+        }
+
+        assert($class_fqsen instanceof FullyQualifiedClassName);
+
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return $union_type;
+        }
+
+        $clazz = $code_base->getClassByFQSEN($class_fqsen);
+
+        $union_type->addUnionType(
+            $this->isGenericArray()
+                ?  $clazz->getUnionType()->asGenericArrayTypes()
+                : $clazz->getUnionType()
+        );
+
+        // Resurse up the tree to include all types
+        $recursive_union_type = new UnionType();
+        foreach ($union_type->getTypeSet() as $clazz_type) {
+            if ((string)$clazz_type != (string)$this) {
+                $recursive_union_type->addUnionType(
+                    $clazz_type->asExpandedTypes(
+                        $code_base,
+                        $recursion_depth + 1
+                    )
+                );
+            } else {
+                $recursive_union_type->addType($clazz_type);
             }
+        }
 
-            $union_type = $this->asUnionType();
-
-            $class_fqsen = $this->isGenericArray()
-                ? $this->genericArrayElementType()->asFQSEN()
-                : $this->asFQSEN();
-
-            if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-                return $union_type;
-            }
-
-            assert($class_fqsen instanceof FullyQualifiedClassName);
-
-            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-                return $union_type;
-            }
-
-            $clazz = $code_base->getClassByFQSEN($class_fqsen);
-
-            $union_type->addUnionType(
-                $this->isGenericArray()
-                    ?  $clazz->getUnionType()->asGenericArrayTypes()
-                    : $clazz->getUnionType()
-            );
-
-            // Resurse up the tree to include all types
-            $recursive_union_type = new UnionType();
-            foreach ($union_type->getTypeSet() as $clazz_type) {
-                if ((string)$clazz_type != (string)$this) {
-                    $recursive_union_type->addUnionType(
-                        $clazz_type->asExpandedTypes(
-                            $code_base,
-                            $recursion_depth + 1
-                        )
-                    );
-                } else {
-                    $recursive_union_type->addType($clazz_type);
-                }
-            }
-
-            return $recursive_union_type;
-        });
+        return $recursive_union_type;
     }
 
     /**
@@ -1055,8 +1105,20 @@ class Type
             return true;
         }
 
+        if ($type instanceof MixedType) {
+            return true;
+        }
+
         // A nullable type cannot cast to a non-nullable type
         if ($this->getIsNullable() && !$type->getIsNullable()) {
+
+            // If this is nullable, but that isn't, and we've
+            // configured nulls to cast as anything, ignore
+            // the nullable part.
+            if (Config::get()->null_casts_as_any_type) {
+                return $this->withIsNullable(false)->canCastToType($type);
+            }
+
             return false;
         }
 
@@ -1094,6 +1156,9 @@ class Type
             return true;
         }
 
+        if ($type instanceof MixedType) {
+            return true;
+        }
         // A matrix of allowable type conversions
         static $matrix = [
             '\Traversable' => [
