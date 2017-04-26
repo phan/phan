@@ -6,17 +6,17 @@ function f285_0() {
 }
 
 /** @return ?int[] */
-function f285_1() : ?array {
+function f285_1() {
     return null;
 }
 
 /** @return ?int[] */
-function f285_3() : ?array {
+function f285_3() {
     return [];
 }
 
 /** @return ?int[] */
-function f285_4() : ?array {
+function f285_4() {
     return [42];
 }
 

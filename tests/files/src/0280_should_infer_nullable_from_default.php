@@ -3,9 +3,9 @@
 class A280 {
     const NULLCONST = null;
 
-    public function bar(?int $arg = null) { }
+    public function bar(int $arg = null) { }
     public function bat(int $arg = 20) { }
-    public function baz(?int $arg = 20) { }
+    public function baz(int $arg = 20) { }
     public function fee(int $arg = self::NULLCONST) { }
     public function foo(int $arg = null) { }
 }
@@ -13,18 +13,19 @@ class A280 {
 // No issues
 class B280 extends A280{
     public function bar(int $arg = null) { }
-    public function foo(?int $arg = null) { }
+    public function foo(int $arg = null) { }
 }
 
 // No issues, but foo()
 class C280 extends A280 {
     public function bat(int $arg = null) { } // fine
     public function fee(int $arg = 2) { }
+    // Note that the override for foo is invalid in php 7.1 (non-nullable overriding null) but would execute in php 7.0, but might as well catch it.
     public function foo(int $arg = 20) {}  // invalid, it used to be nullable.
 }
 
 class D280 {
-    public function mismatch(?int $x = 2.0) {}
+    public function mismatch(int $x = 2.0) {}
 }
 function test280() {
     $a = new A280();
