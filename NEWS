@@ -12,6 +12,10 @@ New Features (Analysis)
   Also add `PhanAccessPropertyStaticAsNonStatic`
 + Supports magic instance/static `@method` annotations. (Issue #467)
   This is enabled by default.
++ Change the behavior of non-quick recursion (Affects emitted issues in large projects).
+  Improve perfomance of non-quick analysis by checking for redundant analysis steps
+  (E.g. calls from two different places passing the same union types for each parameter),
+  continuing to recurse when passing by reference.
 + Support for checking for misuses of "@internal" annotations. Phan assumes this means it is internal to a namespace. (Issue #353)
   This checks properties, methods, class constants, and classes.
   (Adds `PhanAccessConstantInternal`, `PhanAccessClassInternal`, `PhanAccessClassConstantInternal`, `PhanAccessPropertyInternal`, `PhanAccessMethodInternal`)

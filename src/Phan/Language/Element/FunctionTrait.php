@@ -2,6 +2,7 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Type\MixedType;
@@ -39,18 +40,40 @@ trait FunctionTrait {
     /**
      * @var Parameter[]
      * The list of parameters for this method
+     * This will change while the method is being analyzed when the config quick_mode is false.
      */
     private $parameter_list = [];
 
     /**
+     * @var ?int
+     * The hash of the types for the list of parameters for this function/method.
+     */
+    private $parameter_list_hash = null;
+
+    /**
+     * @var ?bool
+     * Whether or not this function/method has any pass by reference parameters.
+     */
+    private $has_pass_by_reference_parameters = null;
+
+    /**
+     * @var int[]
+     * If the types for a parameter list were checked,
+     * this contains the recursion depth (smaller is earlier in recursion)
+     */
+    private $checked_parameter_list_hashes = [];
+
+    /**
      * @var Parameter[]
      * The list of *real* (not from phpdoc) parameters for this method.
+     * This does not change after initialization.
      */
     private $real_parameter_list = [];
 
     /**
      * @var UnionType
-     * The *real* (not from phpdoc) return type from this method
+     * The *real* (not from phpdoc) return type from this method.
+     * This does not change after initialization.
      */
     private $real_return_type;
 
@@ -225,11 +248,53 @@ trait FunctionTrait {
     /**
      * @param Parameter[] $parameter_list
      * A list of parameters to set on this method
+     * (When quick_mode is false, this is also called to temporarily
+     * override parameter types, etc.)
      *
      * @return void
      */
     public function setParameterList(array $parameter_list) {
         $this->parameter_list = $parameter_list;
+        if ($this->parameter_list_hash === null) {
+            $this->initParameterListInfo();
+        }
+    }
+
+    /**
+     * Called to lazily initialize properties of $this derived from $this->parameter_list
+     */
+    private function initParameterListInfo() {
+        $parameter_list = $this->parameter_list;
+        $this->parameter_list_hash = self::computeParameterListHash($parameter_list);
+        $has_pass_by_reference_parameters = false;
+        foreach ($parameter_list as $param) {
+            if ($param->isPassByReference()) {
+                $has_pass_by_reference_parameters = true;
+                break;
+            }
+        }
+        $this->has_pass_by_reference_parameters = $has_pass_by_reference_parameters;
+    }
+
+    /**
+     * Called to generate a hash of a given parameter list, to avoid calling this on the same parameter list twice.
+     *
+     * @return int 32-bit or 64-bit hash. Not likely to collide unless there are around 2^16 possible union types on 32-bit, or around 2^32 on 64-bit.
+     *    (Collisions aren't a concern; The memory/runtime would probably be a bigger issue than collisions in non-quick mode.)
+     */
+    private static function computeParameterListHash(array $parameter_list) : int {
+        // Choosing a small value to fit inside of a packed array.
+        if (count($parameter_list) === 0) {
+            return 0;
+        }
+        if (Config::get()->quick_mode) {
+            return 0;
+        }
+        $param_repr = implode(',', array_map(function(Variable $param) {
+            return (string)($param->getNonVariadicUnionType());
+        }, $parameter_list));
+        $raw_bytes = md5($param_repr, true);
+        return unpack(PHP_INT_SIZE === 8 ? 'q' : 'l', $raw_bytes)[1];
     }
 
     /**
@@ -421,4 +486,65 @@ trait FunctionTrait {
             ++$parameter_offset;
         }
     }
+
+    /**
+     * Returns true if the param list has an instance of PassByReferenceVariable
+     * If it does, the method has to be analyzed even if the same parameter types were analyzed already
+     */
+    private function hasPassByReferenceVariable() : bool
+    {
+        // Common case: function doesn't have any references in parameter list
+        if ($this->has_pass_by_reference_parameters === false) {
+            return false;
+        }
+        foreach ($this->parameter_list as $param) {
+            if ($param instanceof PassByReferenceVariable) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * analyzeWithNewParams is called only when the quick_mode config is false.
+     * The new types are inferred based on the caller's types.
+     * As an optimization, this refrains from re-analyzing the method/function it has already been analyzed for those param types
+     * (With an equal or larger remaining recursion depth)
+     *
+     */
+    public function analyzeWithNewParams(Context $context, CodeBase $code_base) : Context
+    {
+        $hash = $this->computeParameterListHash($this->parameter_list);
+        $has_pass_by_reference_variable = null;
+        // Nothing to do, except if PassByReferenceVariable was used
+        if ($hash === $this->parameter_list_hash) {
+            if (!$this->hasPassByReferenceVariable()) {
+                // Have to analyze pass by reference variables anyway
+                return $context;
+            }
+            $has_pass_by_reference_variable = true;
+        }
+        // Check if we've already analyzed this method with those given types,
+        // with as much or even more depth left in the recursion.
+        // (getRecursionDepth() increases as the program recurses downward)
+        $old_recursion_depth_for_hash = $this->checked_parameter_list_hashes[$hash] ?? null;
+        $new_recursion_depth_for_hash = $this->getRecursionDepth();
+        if ($old_recursion_depth_for_hash !== null) {
+            if ($new_recursion_depth_for_hash >= $old_recursion_depth_for_hash) {
+                if (!($has_pass_by_reference_variable ?? $this->hasPassByReferenceVariable())) {
+                    return $context;
+                }
+                // Have to analyze pass by reference variables anyway
+                $new_recursion_depth_for_hash = $old_recursion_depth_for_hash;
+            }
+        }
+        // Record the fact that it has already been analyzed,
+        // along with the depth of recursion so far.
+        $this->checked_parameter_list_hashes[$hash] = $new_recursion_depth_for_hash;
+        return $this->analyze($context, $code_base);
+    }
+
+    public abstract function analyze(Context $context, CodeBase $code_base) : Context;
+
+    public abstract function getRecursionDepth() : int;
 }

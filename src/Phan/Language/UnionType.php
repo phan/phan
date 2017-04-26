@@ -547,7 +547,17 @@ class UnionType implements \Serializable
      */
     public function isEqualTo(UnionType $union_type) : bool
     {
-        return ((string)$this === (string)$union_type);
+        $type_set = $this->getTypeSet();
+        $other_type_set = $union_type->getTypeSet();
+        if (count($type_set) !== count($other_type_set)) {
+            return false;
+        }
+        foreach ($type_set as $type) {
+            if (!$other_type_set->contains($type)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

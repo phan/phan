@@ -176,4 +176,12 @@ interface FunctionInterface extends AddressableElementInterface {
      * in the given context
      */
     public function analyze(Context $context, CodeBase $code_base) : Context;
+
+    /**
+     * @return Context
+     * Analyze the node associated with this object
+     * in the given context.
+     * This function's parameter list may or may not have been modified.
+     */
+    public function analyzeWithNewParams(Context $context, CodeBase $code_base) : Context;
 }
