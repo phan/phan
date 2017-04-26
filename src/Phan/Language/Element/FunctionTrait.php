@@ -40,11 +40,12 @@ trait FunctionTrait {
     /**
      * @var Parameter[]
      * The list of parameters for this method
+     * This will change while the method is being analyzed when the config quick_mode is false.
      */
     private $parameter_list = [];
 
     /**
-     * @var ?string
+     * @var ?int
      * The hash of the types for the list of parameters for this function/method.
      */
     private $parameter_list_hash = null;
@@ -65,12 +66,14 @@ trait FunctionTrait {
     /**
      * @var Parameter[]
      * The list of *real* (not from phpdoc) parameters for this method.
+     * This does not change after initialization.
      */
     private $real_parameter_list = [];
 
     /**
      * @var UnionType
-     * The *real* (not from phpdoc) return type from this method
+     * The *real* (not from phpdoc) return type from this method.
+     * This does not change after initialization.
      */
     private $real_return_type;
 
@@ -502,6 +505,13 @@ trait FunctionTrait {
         return false;
     }
 
+    /**
+     * analyzeWithNewParams is called only when the quick_mode config is false.
+     * The new types are inferred based on the caller's types.
+     * As an optimization, this refrains from re-analyzing the method/function it has already been analyzed for those param types
+     * (With an equal or larger remaining recursion depth)
+     *
+     */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base) : Context
     {
         $hash = $this->computeParameterListHash($this->parameter_list);
@@ -514,6 +524,9 @@ trait FunctionTrait {
             }
             $has_pass_by_reference_variable = true;
         }
+        // Check if we've already analyzed this method with those given types,
+        // with as much or even more depth left in the recursion.
+        // (getRecursionDepth() increases as the program recurses downward)
         $old_recursion_depth_for_hash = $this->checked_parameter_list_hashes[$hash] ?? null;
         $new_recursion_depth_for_hash = $this->getRecursionDepth();
         if ($old_recursion_depth_for_hash !== null) {
@@ -525,6 +538,8 @@ trait FunctionTrait {
                 $new_recursion_depth_for_hash = $old_recursion_depth_for_hash;
             }
         }
+        // Record the fact that it has already been analyzed,
+        // along with the depth of recursion so far.
         $this->checked_parameter_list_hashes[$hash] = $new_recursion_depth_for_hash;
         return $this->analyze($context, $code_base);
     }
