@@ -37,7 +37,7 @@ assert_options(ASSERT_CALLBACK, null);
 
 // Print more of the backtrace than is done by default
 set_exception_handler(function (Throwable $throwable) {
-    print "$throwable\n";
+    error_log("$throwable\n");
     exit(EXIT_FAILURE);
 });
 
@@ -46,8 +46,12 @@ set_exception_handler(function (Throwable $throwable) {
  */
 function phan_error_handler($errno, $errstr, $errfile, $errline)
 {
-    print "$errfile:$errline [$errno] $errstr\n";
+    error_log("$errfile:$errline [$errno] $errstr\n");
+
+    ob_start();
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+    error_log(ob_get_clean());
+
     exit(EXIT_FAILURE);
 }
 set_error_handler('phan_error_handler');
