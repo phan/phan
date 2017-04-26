@@ -273,17 +273,25 @@ trait FunctionTrait {
         $this->has_pass_by_reference_parameters = $has_pass_by_reference_parameters;
     }
 
-    private static function computeParameterListHash(array $parameter_list) : string {
+    /**
+     * Called to generate a hash of a given parameter list, to avoid calling this on the same parameter list twice.
+     *
+     * @return int 32-bit or 64-bit hash. Not likely to collide unless there are around 2^16 possible union types on 32-bit, or around 2^32 on 64-bit.
+     *    (Collisions aren't a concern; The memory/runtime would probably be a bigger issue than collisions in non-quick mode.)
+     */
+    private static function computeParameterListHash(array $parameter_list) : int {
+        // Choosing a small value to fit inside of a packed array.
         if (count($parameter_list) === 0) {
-            return '';
+            return 0;
         }
         if (Config::get()->quick_mode) {
-            return '';
+            return 0;
         }
-        $param_repr = implode(', ', array_map(function(Variable $param) {
+        $param_repr = implode(',', array_map(function(Variable $param) {
             return (string)($param->getNonVariadicUnionType());
         }, $parameter_list));
-        return base64_encode(md5($param_repr, true));
+        $raw_bytes = md5($param_repr, true);
+        return unpack(PHP_INT_SIZE === 8 ? 'q' : 'l', $raw_bytes)[1];
     }
 
     /**
