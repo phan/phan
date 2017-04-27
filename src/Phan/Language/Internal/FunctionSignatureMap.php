@@ -6246,7 +6246,7 @@ return [
 'OAuth::enableSSLChecks' => ['bool'],
 'OAuth::fetch' => ['', 'protected_resource_url'=>'string', 'extra_parameters='=>'array', 'http_method='=>'string', 'http_headers='=>'array'],
 'OAuth::generateSignature' => ['string', 'http_method'=>'string', 'url'=>'string', 'extra_parameters='=>'mixed'],
-'OAuth::getAccessToken' => ['array', 'access_token_url'=>'string', 'auth_session_handle='=>'string', 'verifier_token='=>'string'],
+'OAuth::getAccessToken' => ['array|bool', 'access_token_url'=>'string', 'auth_session_handle='=>'string', 'verifier_token='=>'string'],
 'OAuth::getCAPath' => ['array'],
 'OAuth::getLastResponseHeaders' => ['string|bool'],
 'OAuth::getLastResponseInfo' => ['array'],
