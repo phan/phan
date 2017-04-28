@@ -7460,7 +7460,7 @@ return [
 'RecursiveIteratorIterator::rewind' => [''],
 'RecursiveIteratorIterator::setMaxDepth' => ['', 'max_depth='=>''],
 'RecursiveIteratorIterator::valid' => ['bool'],
-'RecursiveRegexIterator::__construct' => ['RecursiveRegexIterator', 'it'=>'recursiveiterator', 'regex'=>'string', 'mode'=>'int', 'flags'=>'int', 'preg_flags'=>'int'],
+'RecursiveRegexIterator::__construct' => ['RecursiveRegexIterator', 'it'=>'recursiveiterator', 'regex='=>'string', 'mode='=>'int', 'flags='=>'int', 'preg_flags='=>'int'],
 'RecursiveRegexIterator::getChildren' => ['RecursiveRegexIterator'],
 'RecursiveRegexIterator::hasChildren' => ['bool'],
 'RecursiveTreeIterator::beginChildren' => [''],
