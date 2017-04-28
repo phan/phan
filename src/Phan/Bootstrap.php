@@ -25,22 +25,19 @@ define('EXIT_SUCCESS', 0);
 define('EXIT_FAILURE', 1);
 define('EXIT_ISSUES_FOUND', EXIT_FAILURE);
 
-// Customize assertions
+// Throw exceptions so asserts can be linked to the code being analyzed
+ini_set('assert.exception', '1');
+
+// Explicitly set each option in case INI is set otherwise
 assert_options(ASSERT_ACTIVE, true);
-assert_options(ASSERT_BAIL, true);
 assert_options(ASSERT_WARNING, false);
-assert_options(
-    ASSERT_CALLBACK,
-    function (string $script, int $line, $expression, $message) {
-        print "$script:$line ($expression) $message\n";
-        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        exit(EXIT_FAILURE);
-    }
-);
+assert_options(ASSERT_BAIL, false);
+assert_options(ASSERT_QUIET_EVAL, false);
+assert_options(ASSERT_CALLBACK, null);
 
 // Print more of the backtrace than is done by default
 set_exception_handler(function (Throwable $throwable) {
-    print "$throwable\n";
+    error_log("$throwable\n");
     exit(EXIT_FAILURE);
 });
 
@@ -49,8 +46,12 @@ set_exception_handler(function (Throwable $throwable) {
  */
 function phan_error_handler($errno, $errstr, $errfile, $errline)
 {
-    print "$errfile:$errline [$errno] $errstr\n";
+    error_log("$errfile:$errline [$errno] $errstr\n");
+
+    ob_start();
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+    error_log(ob_get_clean());
+
     exit(EXIT_FAILURE);
 }
 set_error_handler('phan_error_handler');
