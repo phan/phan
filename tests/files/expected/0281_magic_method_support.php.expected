@@ -1,0 +1,20 @@
+%s:35 PhanUndeclaredMethod Call to undeclared method \A281::undeclaredMagicMethod
+%s:36 PhanTypeVoidAssignment Cannot assign void return value
+%s:38 PhanParamTooMany Call with 1 arg(s) to \A281::fooWithReturnType() which only takes 0 arg(s) defined at %s:17
+%s:39 PhanTypeMismatchArgument Argument 1 (x) is int but \expects_a281() takes \A281 defined at %s:28
+%s:43 PhanTypeMismatchArgument Argument 2 (b) is null but \A281::fooWithOptionalSecondParam() takes int defined at %s:17
+%s:44 PhanParamTooFew Call with 0 arg(s) to \A281::fooWithOptionalSecondParam() which requires 1 arg(s) defined at %s:17
+%s:45 PhanStaticCallToNonStatic Static call to non-static method \A281::fooWithOptionalSecondParam() defined at %s:17
+%s:50 PhanTypeMismatchArgument Argument 1 (x) is int but \A281::fooWithOptionalNullableParam() takes ?string defined at %s:17
+%s:52 PhanTypeMismatchArgument Argument 1 (x) is int but \expects_a281() takes \A281 defined at %s:28
+%s:55 PhanTypeMismatchArgument Argument 1 (x) is \A281 but \expects_int281() takes int defined at %s:31
+%s:56 PhanParamTooMany Call with 1 arg(s) to \A281::static_foo_with_return_type_of_static() which only takes 0 arg(s) defined at %s:17
+%s:59 PhanParamTooFew Call with 0 arg(s) to \A281::myMethodWithParams() which requires 1 arg(s) defined at %s:17
+%s:60 PhanTypeMismatchArgument Argument 1 (x) is string but \A281::myMethodWithParams() takes int defined at %s:17
+%s:63 PhanParamTooFew Call with 0 arg(s) to \A281::myMethodWithUntypedParams() which requires 1 arg(s) defined at %s:17
+%s:66 PhanTypeMismatchArgument Argument 1 (x) is string but \A281::myMethodWithPHPDocParams() takes float defined at %s:17
+%s:66 PhanTypeMismatchArgument Argument 2 (y) is null but \A281::myMethodWithPHPDocParams() takes object defined at %s:17
+%s:68 PhanTypeMismatchArgument Argument 4 (x) is float but \A281::myMethodWithVariadicParams() takes int|string defined at %s:17
+%s:70 PhanTypeMismatchArgument Argument 1 (x) is int|string but \expects_a281() takes \A281 defined at %s:28
+%s:75 PhanUndeclaredMethod Call to undeclared method \C281::undeclaredMagicMethod
+%s:76 PhanTypeVoidAssignment Cannot assign void return value

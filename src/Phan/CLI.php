@@ -61,9 +61,10 @@ class CLI
         // Parse command line args
         // still available: g,n,t,u,w
         $opts = getopt(
-            "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zh:v",
+            "f:m:o:c:k:aeqbr:pid:3:y:l:xj:zhvs:",
             [
                 'backward-compatibility-checks',
+                'color',
                 'dead-code-detection',
                 'directory:',
                 'dump-ast',
@@ -86,6 +87,8 @@ class CLI
                 'config-file:',
                 'signature-compatibility',
                 'markdown-issue-messages',
+                'daemonize-socket:',
+                'daemonize-tcp-port:',
                 'extended-help',
             ]
         );
@@ -246,12 +249,36 @@ class CLI
                     // that we can get the project root directory to
                     // base other config flags values on
                     break;
+                case 's':
+                case 'daemonize-socket':
+                    $this->checkCanDaemonize('unix');
+                    $socket_dirname = realpath(dirname($value));
+                    if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
+                        $msg = sprintf('Requested to create unix socket server in %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
+                        $this->usage($msg, 1);
+                    } else {
+                        Config::get()->daemonize_socket = $value;  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
+                    }
+                    break;
+                    // TODO: HTTP server binding to 127.0.0.1, daemonize-port.
+                case 'daemonize-tcp-port':
+                    $this->checkCanDaemonize('tcp');
+                    $port = filter_var($value, FILTER_VALIDATE_INT);
+                    if ($port >= 1024 && $port <= 65535) {
+                        Config::get()->daemonize_tcp_port = $port;
+                    } else {
+                        $this->usage("daemonize-tcp-port must be between 1024 and 65535, got '$value'", 1);
+                    }
+                    break;
                 case 'x':
                 case 'dead-code-detection':
                     Config::get()->dead_code_detection = true;
                     break;
                 case 'markdown-issue-messages':
                     Config::get()->markdown_issue_messages = true;
+                    break;
+                case 'color':
+                    Config::get()->color_issue_messages = true;
                     break;
                 default:
                     $this->usage("Unknown option '-$key'", EXIT_FAILURE);
@@ -347,6 +374,20 @@ class CLI
             "We cannot run dead code detection on more than one core.");
     }
 
+    /** @return void - exits on usage error */
+    private function checkCanDaemonize(string $protocol) {
+        $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
+        if (!in_array($protocol, stream_get_transports())) {
+            $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);
+        }
+        if (!function_exists('pcntl_fork')) {
+            $this->usage("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
+        }
+        if (Config::get()->daemonize_socket || Config::get()->daemonize_tcp_port) {
+            $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
+        }
+    }
+
     /**
      * @return string[]
      * Get the set of files to analyze
@@ -413,6 +454,9 @@ Usage: {$argv[0]} [options] [files...]
  -o, --output <filename>
   Output filename
 
+ --color
+  Add colors to the outputted issues. Tested for Unix, recommended for only the default --output-mode ('text')
+
  -p, --progress-bar
   Show progress bar
 
@@ -446,6 +490,12 @@ Usage: {$argv[0]} [options] [files...]
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
 
+ -s, --daemonize-socket </path/to/file.sock>
+  Unix socket for Phan to listen for requests on, in daemon mode.
+
+ --daemonize-tcp-port <1024-65535>
+  TCP port for Phan to listen for JSON requests on, in daemon mode. (e.g. 4846)
+
  -v, --version
   Print phan's version number
 
@@ -475,13 +525,6 @@ EOB;
         exit($exit_code);
     }
 
-    public static function shouldShowProgress() : bool
-    {
-        $config = Config::get();
-        return $config->progress_bar
-            && !$config->dump_ast;
-    }
-
     /**
      * @param string $directory_name
      * The name of a directory to scan for files ending in `.php`.
@@ -503,6 +546,7 @@ EOB;
                 );
             }
 
+            $exclude_file_regex = Config::get()->exclude_file_regex;
             $iterator = new \CallbackFilterIterator(
                 new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
@@ -510,7 +554,7 @@ EOB;
                         \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                     )
                 ),
-                function(\SplFileInfo $file_info) use ($file_extensions) {
+                function(\SplFileInfo $file_info) use ($file_extensions, $exclude_file_regex) {
                     if (!in_array($file_info->getExtension(), $file_extensions, true)) {
                         return false;
                     }
@@ -518,6 +562,10 @@ EOB;
                     if (!$file_info->isFile() || !$file_info->isReadable()) {
                         $file_path = $file_info->getRealPath();
                         error_log("Unable to read file {$file_path}");
+                        return false;
+                    }
+
+                    if ($exclude_file_regex && preg_match($exclude_file_regex,$file_info->getBasename())) {
                         return false;
                     }
 
@@ -531,6 +579,12 @@ EOB;
         }
 
         return $file_list;
+    }
+
+    public static function shouldShowProgress() : bool
+    {
+        $config = Config::get();
+        return $config->progress_bar && !$config->dump_ast && !$config->daemonize_tcp_port && !$config->daemonize_socket;
     }
 
     /**
@@ -559,10 +613,6 @@ EOB;
 
         // Bound the percentage to [0, 1]
         $p = min(max($p, 0.0), 1.0);
-
-        if (!Config::get()->progress_bar || Config::get()->dump_ast) {
-            return;
-        }
 
         // Don't update every time when we're moving
         // super fast

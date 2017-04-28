@@ -38,7 +38,7 @@ class UnionType implements \Serializable
     private $type_set;
 
     /**
-     * @param Type[]|\Iterator $type_list
+     * @param Type[]|\Iterator|null $type_list
      * An optional list of types represented by this union
      */
     public function __construct($type_list = null)
@@ -125,7 +125,11 @@ class UnionType implements \Serializable
                 );
             }, array_filter(array_map(function (string $type_name) {
                 return trim($type_name);
-            }, explode('|', $type_string))))
+            }, explode('|', $type_string)), function(string $type_name) {
+                // Exclude empty type names
+                // Exclude namespaces without type names (e.g. `\`, `\NS\`)
+                return $type_name !== '' && preg_match('@\\\\[\[\]]*$@', $type_name) === 0;
+            }))
         );
     }
 
@@ -162,6 +166,20 @@ class UnionType implements \Serializable
             $node,
             $should_catch_issue_exception
         );
+    }
+
+    /**
+     * @param ?\ReflectionType $reflection_type
+     *
+     * @return UnionType
+     * A UnionType with 0 or 1 nullable/non-nullable Types
+     */
+    public static function fromReflectionType($reflection_type) : UnionType
+    {
+        if ($reflection_type !== null) {
+            return Type::fromReflectionType($reflection_type)->asUnionType();
+        }
+        return new UnionType();
     }
 
     /**
@@ -253,17 +271,17 @@ class UnionType implements \Serializable
                 : null;
 
             $name_type_name_map = $type_name_struct;
-            $property_name_type_map = [];
+            $parameter_name_type_map = [];
 
             foreach ($name_type_name_map as $name => $type_name) {
-                $property_name_type_map[$name] = empty($type_name)
+                $parameter_name_type_map[$name] = empty($type_name)
                     ? new UnionType()
                     : UnionType::fromStringInContext($type_name, $context, false);
             }
 
             $configurations[] = [
                 'return_type' => $return_type,
-                'property_name_type_map' => $property_name_type_map,
+                'parameter_name_type_map' => $parameter_name_type_map,
             ];
 
             $function_name =
@@ -366,6 +384,8 @@ class UnionType implements \Serializable
     /**
      * @param CodeBase $code_base
      * The code base to look up classes against
+     *
+     * TODO: Defer resolving the template parameters until parse ends. Low priority.
      *
      * @return UnionType[]
      * A map from template type identifiers to the UnionType
@@ -527,7 +547,17 @@ class UnionType implements \Serializable
      */
     public function isEqualTo(UnionType $union_type) : bool
     {
-        return ((string)$this === (string)$union_type);
+        $type_set = $this->getTypeSet();
+        $other_type_set = $union_type->getTypeSet();
+        if (count($type_set) !== count($other_type_set)) {
+            return false;
+        }
+        foreach ($type_set as $type) {
+            if (!$other_type_set->contains($type)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -556,6 +586,20 @@ class UnionType implements \Serializable
             }
 
             $result->addType($type->withIsNullable(false));
+        }
+        return $result;
+    }
+
+    public function nullableClone() : UnionType
+    {
+        $result = new UnionType();
+        foreach ($this->getTypeSet() as $type) {
+            if ($type->getIsNullable()) {
+                $result->addType($type);
+                continue;
+            }
+
+            $result->addType($type->withIsNullable(true));
         }
         return $result;
     }
@@ -630,6 +674,19 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return bool
+     * True if this type has any subtype of `iterable` type (e.g. Traversable, Array).
+     */
+    public function hasIterable() : bool
+    {
+        return (false !==
+            $this->type_set->find(function (Type $type) : bool {
+                return $type->isIterable();
+            })
+        );
+    }
+
+    /**
      * @return int
      * The number of types in this union type
      */
@@ -659,6 +716,8 @@ class UnionType implements \Serializable
      * Test to see if this type can be cast to the
      * given type after expanding both union types
      * to include all ancestor types
+     *
+     * TODO: ensure that this is only called after the parse phase is over.
      */
     public function canCastToExpandedUnionType(
         UnionType $target,
@@ -863,6 +922,10 @@ class UnionType implements \Serializable
      * @throws CodeBaseException
      * An exception is thrown if a non-native type does not have
      * an associated class
+     *
+     * @throws IssueException
+     * An exception is thrown if static is used as a type outside of an object
+     * context
      */
     public function asClassList(
         CodeBase $code_base,
@@ -998,6 +1061,10 @@ class UnionType implements \Serializable
         // Same for mixed
         if ($this->hasType(ArrayType::instance(false))
             || $this->hasType(MixedType::instance(false))
+            || (
+                Config::get()->null_casts_as_any_type
+                && $this->hasType(ArrayType::instance(true))
+            )
         ) {
             $union_type->addType(MixedType::instance(false));
         }

@@ -2,13 +2,16 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -131,6 +134,21 @@ class Parameter extends Variable
     }
 
     /**
+     * @param string $value
+     * If the value's default is null, or a constant evaluating to null,
+     * then the parameter type should be converted to nullable
+     * (E.g. `int $x = null` and `?int $x = null` are equivalent.
+     *  We pretend `int $x = SOME_NULL_CONST` is equivalent as well.)
+     */
+    public function handleDefaultValueOfNull()
+    {
+        if ($this->default_value_type->isType(NullType::instance(false))) {
+            // If it isn't already nullable, convert the parameter type to nullable.
+            $this->convertToNullable();
+        }
+    }
+
+    /**
      * @return mixed
      * The value of the default for this parameter if one
      * is defined, otherwise null.
@@ -178,6 +196,47 @@ class Parameter extends Variable
         }
 
         return $parameter_list;
+    }
+
+    /**
+     * @param \ReflectionParameter[] $reflection_parameters
+     * @return Parameter[]
+     */
+    public static function listFromReflectionParameterList(
+        array $reflection_parameters
+    ) : array {
+        return array_map(function(\ReflectionParameter $reflection_parameter) {
+            return self::fromReflectionParameter($reflection_parameter);
+        }, $reflection_parameters);
+    }
+
+    public static function fromReflectionParameter(
+        \ReflectionParameter $reflection_parameter
+    ) : Parameter {
+        $flags = 0;
+        // Check to see if its a pass-by-reference parameter
+        if ($reflection_parameter->isPassedByReference()) {
+            $flags |= \ast\flags\PARAM_REF;
+        }
+
+        // Check to see if its variadic
+        if ($reflection_parameter->isVariadic()) {
+            $flags |= \ast\flags\PARAM_VARIADIC;
+        }
+
+        $parameter = new Parameter(
+            new Context(),
+            $reflection_parameter->getName() ?? "arg",
+            UnionType::fromReflectionType($reflection_parameter->getType()),
+            $flags
+        );
+        if ($reflection_parameter->isOptional()) {
+            // TODO: check if ($reflection_parameter->isDefaultValueAvailable())
+            $parameter->setDefaultValueType(
+                NullType::instance(false)->asUnionType()
+            );
+        }
+        return $parameter;
     }
 
     /**
@@ -267,6 +326,7 @@ class Parameter extends Variable
                 // Set the actual value of the default
                 $parameter->setDefaultValue($default_node);
             }
+            $parameter->handleDefaultValueOfNull();
         }
 
         return $parameter;
@@ -401,6 +461,19 @@ class Parameter extends Variable
     public function addUnionType(UnionType $union_type)
     {
         parent::getUnionType()->addUnionType($union_type);
+    }
+
+    /**
+     * Add the given type to this parameter's union type
+     *
+     * @param Type $type
+     * The type to add to this parameter's union type
+     *
+     * @return void
+     */
+    public function addType(Type $type)
+    {
+        parent::getUnionType()->addType($type);
     }
 
     /**

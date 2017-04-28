@@ -39,6 +39,10 @@ class Config
         // (e.g. php, html, htm)
         'analyzed_file_extensions' => ['php'],
 
+        // A regular expression to filter out files with matching filenames.
+        // (e.g. '/Test\.php$/')
+        'exclude_file_regex' => '',
+
         // A file list that defines files that will be excluded
         // from parsing and analysis and will not be read at all.
         //
@@ -101,10 +105,10 @@ class Config
         // `string` instead of an `int` as declared.
         'quick_mode' => false,
 
-        // By default, Phan will not analyze all node types
-        // in order to save time. If this config is set to true,
-        // Phan will dig deeper into the AST tree and do an
-        // analysis on all nodes, possibly finding more issues.
+        // By default, Phan will analyze all node types.
+        // If this config is set to false, Phan will do a
+        // shallower pass of the AST tree which will save
+        // time but may find fewer issues.
         //
         // See \Phan\Analysis::shouldVisit for the set of skipped
         // nodes.
@@ -175,6 +179,11 @@ class Config
         // same as @property for now.
         // Note: read_type_annotations must also be enabled.
         'read_magic_property_annotations' => true,
+
+        // If disabled, Phan will not read docblock type
+        // annotation comments for @method.
+        // Note: read_type_annotations must also be enabled.
+        'read_magic_method_annotations' => true,
 
         // If disabled, Phan will not read docblock type
         // annotation comments (such as for @return, @param,
@@ -332,6 +341,18 @@ class Config
         // Emit issue messages with markdown formatting
         'markdown_issue_messages' => false,
 
+        // Emit colorized issue messages.
+        // NOTE: it is strongly recommended to enable this via the --color CLI flag instead,
+        // since this is incompatible with most output formatters.
+        'color_issue_messages' => false,
+
+        // Allow overriding color scheme in .phan/config.php for printing issues, for individual types.
+        // See the keys of Phan\Output\Colorizing::styles for valid color names,
+        // and the keys of Phan\Output\Colorizing::default_color_for_template for valid color names.
+        // E.g. to change the color for the file(of an issue instance) to red, set this to ['FILE' => 'red']
+        // E.g. to use the terminal's default color for the line(of an issue instance), set this to ['LINE' => 'none']
+        'color_scheme' => [],
+
         // Enable or disable support for generic templated
         // class types.
         'generic_types_enabled' => true,
@@ -348,6 +369,12 @@ class Config
         // relatively few files will move to a different group.
         // (use when the number of files is much larger than the process count)
         'consistent_hashing_file_order' => false,
+
+        // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
+        'daemonize_socket' => false,
+
+        // TCP port(from 1024 to 65535) for a daemon to listen to files to analyze. Use command line option instead.
+        'daemonize_tcp_port' => false,
 
         // A list of plugin files to execute
         'plugins' => [
@@ -398,6 +425,15 @@ class Config
 
         $instance = new Config();
         return $instance;
+    }
+
+    /**
+     * @return array
+     * A map of configuration keys and their values
+     */
+    public function toArray() : array
+    {
+        return $this->configuration;
     }
 
     /** @return mixed */

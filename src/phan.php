@@ -40,13 +40,11 @@ try {
 // Create our CLI interface and load arguments
 $cli = new CLI();
 
-$file_list = $cli->getFileList();
-
 // Analyze the file list provided via the CLI
 $is_issue_found =
     Phan::analyzeFileList(
         $code_base,
-        $file_list
+        function() use($cli) { return $cli->getFileList(); }  // Daemon mode will reload the file list.
     );
 
 // Provide an exit status code based on if

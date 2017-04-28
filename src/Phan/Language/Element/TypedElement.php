@@ -81,7 +81,7 @@ abstract class TypedElement implements TypedElementInterface
         $this->name = $name;
         $this->type = $type;
         $this->flags = $flags;
-        $this->setIsInternal($context->isInternal());
+        $this->setIsPHPInternal($context->isPHPInternal());
     }
 
     /**
@@ -137,6 +137,19 @@ abstract class TypedElement implements TypedElementInterface
     {
         // Avoid a redundant clone of toGenericArray()
         $this->type = $this->getUnionType();
+    }
+
+    /**
+     * @return void
+     */
+    protected function convertToNullable()
+    {
+        // Avoid a redundant clone of nonNullableClone()
+        $type = $this->type;
+        if ($type->isEmpty() || $type->containsNullable()) {
+            return;
+        }
+        $this->type = $type->nullableClone();
     }
 
     /**
@@ -267,23 +280,23 @@ abstract class TypedElement implements TypedElementInterface
      * @return bool
      * True if this was an internal PHP object
      */
-    public function isInternal() : bool
+    public function isPHPInternal() : bool
     {
         return Flags::bitVectorHasState(
             $this->getPhanFlags(),
-            Flags::IS_INTERNAL
+            Flags::IS_PHP_INTERNAL
         );
     }
 
     /**
      * @return void
      */
-    private function setIsInternal(bool $is_internal)
+    private function setIsPHPInternal(bool $is_internal)
     {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
                 $this->getPhanFlags(),
-                Flags::IS_INTERNAL,
+                Flags::IS_PHP_INTERNAL,
                 $is_internal
             )
         );

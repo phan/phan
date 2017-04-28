@@ -2,6 +2,7 @@
 namespace Phan;
 
 use Phan\CodeBase\ClassMap;
+use Phan\CodeBase\UndoTracker;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -49,6 +50,9 @@ use Phan\Library\Set;
  *
  *  // Do stuff ...
  * ```
+ *
+ * This supports undoing some operations in the parse phase,
+ * for a background daemon analyzing single files. (Phan\CodeBase\UndoTracker)
  */
 class CodeBase
 {
@@ -116,6 +120,16 @@ class CodeBase
     private $should_hydrate_requested_elements = false;
 
     /**
+     * @var UndoTracker|null - undoes the addition of global constants, classes, functions, and methods.
+     */
+    private $undo_tracker;
+
+    /**
+     * @var bool
+     */
+    private $has_enabled_undo_tracker = false;
+
+    /**
      * Initialize a new CodeBase
      */
     public function __construct(
@@ -141,11 +155,82 @@ class CodeBase
     /**
      * @return void
      */
+    public function enableUndoTracking() {
+        if ($this->has_enabled_undo_tracker) {
+            throw new \RuntimeException("Undo tracking already enabled");
+        }
+        $this->has_enabled_undo_tracker = true;
+        $this->undo_tracker = new UndoTracker();
+    }
+
+    /**
+     * @return void
+     */
+    public function disableUndoTracking() {
+        if (!$this->has_enabled_undo_tracker) {
+            throw new \RuntimeException("Undo tracking was never enabled");
+        }
+        $this->undo_tracker = null;
+    }
+
+    public function isUndoTrackingEnabled() : bool {
+        return $this->undo_tracker !== null;
+    }
+
+    /**
+     * @return void
+     */
     public function setShouldHydrateRequestedElements(
         bool $should_hydrate_requested_elements
     ) {
         $this->should_hydrate_requested_elements =
             $should_hydrate_requested_elements;
+    }
+
+    /**
+     * @return string[] - The list of files which are successfully parsed.
+     * This changes whenever the file list is reloaded from disk.
+     * This also includes files which don't declare classes or functions or globals,
+     * because those files use classes/functions/constants.
+     *
+     * (This is the list prior to any analysis exclusion or whitelisting steps)
+     */
+    public function getParsedFilePathList() : array {
+        if ($this->undo_tracker) {
+            return $this->undo_tracker->getParsedFilePathList();
+        }
+        throw new \RuntimeException("Calling getParsedFilePathList without an undo tracker");
+    }
+
+    /**
+     * @return string[] - The size of $this->getParsedFilePathList()
+     */
+    public function getParsedFilePathCount() : int {
+        if ($this->undo_tracker) {
+            return $this->undo_tracker->getParsedFilePathCount();
+        }
+        throw new \RuntimeException("Calling getParsedFilePathCount without an undo tracker");
+    }
+
+    /**
+     * @param string|null $current_parsed_file
+     * @return void
+     */
+    public function setCurrentParsedFile($current_parsed_file) {
+        if ($this->undo_tracker) {
+            $this->undo_tracker->setCurrentParsedFile($current_parsed_file);
+        }
+    }
+
+    /**
+     * Called when a file is unparseable.
+     * Removes the classes and functions, etc. from an older version of the file, if one exists.
+     * @return void
+     */
+    public function recordUnparseableFile(string $current_parsed_file) {
+        if ($this->undo_tracker) {
+            $this->undo_tracker->recordUnparseableFile($this, $current_parsed_file);
+        }
     }
 
     /**
@@ -159,6 +244,17 @@ class CodeBase
         foreach ($class_name_list as $i => $class_name) {
             $this->addClass(Clazz::fromClassName($this, $class_name));
         }
+    }
+
+    /**
+     * @param string[] $new_file_list
+     * @return string[] - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
+     */
+    public function updateFileList(array $new_file_list) {
+        if ($this->undo_tracker) {
+            return $this->undo_tracker->updateFileList($this, $new_file_list);
+        }
+        throw new \RuntimeException("Calling updateFileList without undo tracker");
     }
 
     /**
@@ -243,6 +339,14 @@ class CodeBase
     {
         // Map the FQSEN to the class
         $this->fqsen_class_map[$class->getFQSEN()] = $class;
+        if ($this->undo_tracker) {
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($class) {
+                $fqsen = $class->getFQSEN();
+                Daemon::debugf("Undoing addClass %s\n", $fqsen);
+                unset($inner->fqsen_class_map[$fqsen]);
+                unset($inner->class_fqsen_class_map_map[$fqsen]);
+            });
+        }
     }
 
     /**
@@ -316,6 +420,12 @@ class CodeBase
             }
             $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()]->attach($method);
         }
+        if ($this->undo_tracker) {
+            // The addClass's recordUndo should remove the class map. Only need to remove it from func_and_method_set
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($method) {
+                $inner->func_and_method_set->detach($method);
+            });
+        }
     }
 
     /**
@@ -388,7 +498,7 @@ class CodeBase
     public function exportFunctionAndMethodSet() : array {
         $result = [];
         foreach ($this->func_and_method_set as $function_or_method) {
-            if ($function_or_method->isInternal()) {
+            if ($function_or_method->isPHPInternal()) {
                 continue;
             }
             $fqsen = $function_or_method->getFQSEN();
@@ -427,6 +537,14 @@ class CodeBase
 
         // Add it to the set of functions and methods
         $this->func_and_method_set->attach($function);
+
+        if ($this->undo_tracker) {
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($function) {
+                Daemon::debugf("Undoing addFunction on %s\n", $function->getFQSEN());
+                unset($inner->fqsen_func_map[$function->getFQSEN()]);
+                $inner->func_and_method_set->detach($function);
+            });
+        }
     }
 
     /**
@@ -535,6 +653,12 @@ class CodeBase
         $this->fqsen_global_constant_map[
             $global_constant->getFQSEN()
         ] = $global_constant;
+        if ($this->undo_tracker) {
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($global_constant) {
+                Daemon::debugf("Undoing addGlobalConstant on %s\n", $global_constant->getFQSEN());
+                unset($inner->fqsen_global_constant_map[$global_constant->getFQSEN()]);
+            });
+        }
     }
 
     /**

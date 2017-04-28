@@ -29,5 +29,5 @@
     "autoload-dev": {
         "psr-4": {"Phan\\Tests\\": "tests/Phan"}
     },
-    "bin": ["phan", "tocheckstyle"]
+    "bin": ["phan", "phan_client", "tocheckstyle"]
 }

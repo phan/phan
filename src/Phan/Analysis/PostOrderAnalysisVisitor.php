@@ -587,6 +587,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['expr']
         );
 
+        if (null === $node->children['expr']) {
+            $expression_type = VoidType::instance(false)->asUnionType();
+        }
+
         if ($expression_type->hasStaticType()) {
             $expression_type =
                 $expression_type->withStaticResolvedInContext(
@@ -640,10 +644,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method->getUnionType()->addUnionType($expression_type);
         }
 
-        // Mark the method as returning something
-        $method->setHasReturn(
-            isset($node->children['expr'])
-        );
+        // Mark the method as returning something (even if void)
+        $method->setHasReturn(true);
 
         return $this->context;
     }
@@ -1479,21 +1481,29 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
     public function visitStaticProp(Node $node) : Context
     {
-        return $this->visitProp($node);
+        return $this->analyzeProp($node, true);
+    }
+
+    public function visitProp(Node $node) : Context
+    {
+        return $this->analyzeProp($node, false);
     }
 
     /**
-     * Visit a node with kind `\ast\AST_PROP`
+     * Analyze a node with kind `\ast\AST_PROP` or `\ast\AST_STATIC_PROP`
      *
      * @param Node $node
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
+     * @param bool $is_static
+     * True if fetching a static property.
+     *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitProp(Node $node) : Context
+    public function analyzeProp(Node $node, bool $is_static) : Context
     {
         $exception_or_null = null;
 
@@ -1502,7 +1512,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getProperty($node->children['prop']);
+            ))->getProperty($node->children['prop'], $is_static);
 
             // Mark that this property has been referenced from
             // this context
@@ -1539,25 +1549,28 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 );
             }
 
-            // Find out of any of them have a __get magic method
-            $has_getter =
-                array_reduce($class_list, function($carry, $class) {
-                    return (
-                        $carry ||
-                        $class->hasGetMethod($this->code_base)
-                    );
-                }, false);
+            if (!$is_static) {
+                // Find out of any of them have a __get magic method
+                // (Only check if looking for instance properties)
+                $has_getter =
+                    array_reduce($class_list, function($carry, $class) {
+                        return (
+                            $carry ||
+                            $class->hasGetMethod($this->code_base)
+                        );
+                    }, false);
 
-            // If they don't, then analyze for Noops.
-            if (!$has_getter) {
-                $this->analyzeNoOp($node, Issue::NoopProperty);
+                // If they don't, then analyze for Noops.
+                if (!$has_getter) {
+                    $this->analyzeNoOp($node, Issue::NoopProperty);
 
-                if ($exception_or_null instanceof IssueException) {
-                    Issue::maybeEmitInstance(
-                        $this->code_base,
-                        $this->context,
-                        $exception_or_null->getIssueInstance()
-                    );
+                    if ($exception_or_null instanceof IssueException) {
+                        Issue::maybeEmitInstance(
+                            $this->code_base,
+                            $this->context,
+                            $exception_or_null->getIssueInstance()
+                        );
+                    }
                 }
             }
         }
@@ -1620,7 +1633,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 $this->code_base,
                                 $this->context,
                                 $argument
-                            ))->getOrCreateProperty($argument->children['prop']);
+                            ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
                         } catch (IssueException $exception) {
                             Issue::maybeEmitInstance(
                                 $this->code_base,
@@ -1690,7 +1703,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 $this->code_base,
                                 $this->context,
                                 $argument
-                            ))->getOrCreateProperty($argument->children['prop']);
+                            ))->getOrCreateProperty($argument->children['prop'], $argument->kind == \ast\AST_STATIC_PROP);
 
                         } catch (IssueException $exception) {
                             Issue::maybeEmitInstance(
@@ -1765,6 +1778,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return clone($parameter);
         }, $method->getParameterList());
 
+        if (count($original_parameter_list) === 0) {
+            return;  // No point in recursing if there's no changed parameters.
+        }
+
         // always resolve all arguments outside of quick mode to detect undefined variables, other problems in call arguments.
         // Fixes https://github.com/etsy/phan/issues/583
         $argument_types = [];
@@ -1824,7 +1841,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Now that we know something about the parameters used
         // to call the method, we can reanalyze the method with
         // the types of the parameter
-        $method->analyze($method->getContext(), $code_base);
+        $method->analyzeWithNewParams($method->getContext(), $code_base);
 
         // Reset to the original parameter list and scope after
         // having tested the parameters with the types passed in
@@ -1909,12 +1926,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             ))->getOrCreateVariable();
         } else if ($argument->kind == \ast\AST_STATIC_PROP) {
             try {
+                // TODO: shouldn't call getOrCreateProperty for a static property. You can't create a static property.
                 $variable = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $argument
                 ))->getOrCreateProperty(
-                    $argument->children['prop'] ?? ''
+                    $argument->children['prop'] ?? '',
+                    true
                 );
             } catch (UnanalyzableException $exception) {
                 // Ignore it. There's nothing we can do. (E.g. the class name for the static property fetch couldn't be determined.

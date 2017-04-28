@@ -5,6 +5,7 @@ use Phan\AST\ContextNode;
 use Phan\Analysis\ScopeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Daemon;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
@@ -37,6 +38,8 @@ use ast\Node\Decl;
  * visitor populates the $code_base with any
  * globally accessible structural elements and will return a
  * possibly new context as modified by the given node.
+ *
+ * @property-read CodeBase $code_base
  */
 class ParseVisitor extends ScopeVisitor
 {
@@ -102,6 +105,10 @@ class ParseVisitor extends ScopeVisitor
             $class_fqsen = $class_fqsen->withAlternateId(++$alternate_id);
         }
 
+        if ($alternate_id > 0) {
+            Daemon::debugf("Using an alternate for %s: %d\n", $class_fqsen, $alternate_id);
+        }
+
         // Build the class from what we know so far
         $class_context = $this->context
             ->withLineNumberStart($node->lineno ?? 0)
@@ -133,6 +140,7 @@ class ParseVisitor extends ScopeVisitor
         }
 
         $class->setIsDeprecated($comment->isDeprecated());
+        $class->setIsNSInternal($comment->isNSInternal());
 
         $class->setSuppressIssueList(
             $comment->getSuppressIssueList()
@@ -144,15 +152,27 @@ class ParseVisitor extends ScopeVisitor
 
         // Depends on code_base for checking existence of __get and __set.
         // TODO: Add a check in analyzeClasses phase that magic @property declarations
-        // are limited to classes with either __get or __set declared.
+        // are limited to classes with either __get or __set declared (or interface/abstract
         $class->setMagicPropertyMap(
             $comment->getMagicPropertyMap(),
             $this->code_base,
             $this->context
         );
 
+        // Depends on code_base for checking existence of __call or __callStatic.
+        // TODO: Add a check in analyzeClasses phase that magic @method declarations
+        // are limited to classes with either __get or __set declared (or interface/abstract)
+        $class->setMagicMethodMap(
+            $comment->getMagicMethodMap(),
+            $this->code_base,
+            $this->context
+        );
+
         // usually used together with magic @property annotations
         $class->setForbidUndeclaredMagicProperties($comment->getForbidUndeclaredMagicProperties());
+
+        // usually used together with magic @method annotations
+        $class->setForbidUndeclaredMagicMethods($comment->getForbidUndeclaredMagicMethods());
 
         // Look to see if we have a parent class
         if (!empty($node->children['extends'])) {
@@ -393,6 +413,9 @@ class ParseVisitor extends ScopeVisitor
                     false
                 );
             } catch (IssueException $exception) {
+                // TODO: (enhancement/bugfix) In daemon mode, make any user-defined types or
+                // types from constants/other files a FutureUnionType, 100% of the time?
+                // This will make analysis slower.
                 $future_union_type = new FutureUnionType(
                     $this->code_base,
                     $this->context,
@@ -465,6 +488,7 @@ class ParseVisitor extends ScopeVisitor
             }
 
             $property->setIsDeprecated($comment->isDeprecated());
+            $property->setIsNSInternal($comment->isNSInternal());
 
             // Wait until after we've added the (at)var type
             // before setting the future so that calling
@@ -501,6 +525,12 @@ class ParseVisitor extends ScopeVisitor
                 $this->context
             );
 
+            // Get a comment on the declaration
+            $comment = Comment::fromStringInContext(
+                $child_node->docComment ?? '',
+                $this->context
+            );
+
             $constant = new ClassConstant(
                 $this->context
                     ->withLineNumberStart($child_node->lineno ?? 0)
@@ -510,6 +540,9 @@ class ParseVisitor extends ScopeVisitor
                 $node->flags ?? 0,
                 $fqsen
             );
+
+            $constant->setIsDeprecated($comment->isDeprecated());
+            $constant->setIsNSInternal($comment->isNSInternal());
 
             $constant->setFutureUnionType(
                 new FutureUnionType(
@@ -545,7 +578,8 @@ class ParseVisitor extends ScopeVisitor
                 $child_node,
                 $child_node->children['name'],
                 $child_node->children['value'],
-                $child_node->flags ?? 0
+                $child_node->flags ?? 0,
+                $child_node->docComment ?? ''
             );
         }
 
@@ -639,7 +673,8 @@ class ParseVisitor extends ScopeVisitor
                     $node,
                     $args->children[0],
                     $args->children[1] ?? null,
-                    0
+                    0,
+                    ''
                 );
             }
         }
@@ -802,10 +837,18 @@ class ParseVisitor extends ScopeVisitor
      * @param int $flags
      * Any flags on the definition of the constant
      *
+     * @param string $comment_string
+     * A possibly empty comment string on the declaration
+     *
      * @return void
      */
-    private function addConstant(Node $node, string $name, $value, int $flags = 0)
-    {
+    private function addConstant(
+        Node $node,
+        string $name,
+        $value,
+        int $flags = 0,
+        string $comment_string
+    ) {
         // Give it a fully-qualified name
         $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
             $name,
@@ -822,6 +865,12 @@ class ParseVisitor extends ScopeVisitor
             $fqsen
         );
 
+        // Get a comment on the declaration
+        $comment = Comment::fromStringInContext(
+            $comment_string,
+            $this->context
+        );
+
         $constant->setFutureUnionType(
             new FutureUnionType(
                 $this->code_base,
@@ -829,6 +878,9 @@ class ParseVisitor extends ScopeVisitor
                 $value
             )
         );
+
+        $constant->setIsDeprecated($comment->isDeprecated());
+        $constant->setIsNSInternal($comment->isNSInternal());
 
         $this->code_base->addGlobalConstant(
             $constant

@@ -1,0 +1,1 @@
+%s:25 PhanTypeMismatchReturn Returning type string[] but f285_6() is declared to return ?int[]

@@ -4,7 +4,7 @@ namespace Phan\Language\Element;
 class Flags
 {
     const IS_DEPRECATED                = (1 << 1);
-    const IS_INTERNAL                  = (1 << 2);
+    const IS_PHP_INTERNAL              = (1 << 2);
 
     const IS_PARENT_CONSTRUCTOR_CALLED = (1 << 3);
 
@@ -16,6 +16,9 @@ class Flags
     const CLASS_HAS_DYNAMIC_PROPERTIES = (1 << 8);
     const IS_CLONE_OF_VARIADIC         = (1 << 9);
     const CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES = (1 << 10);
+    const CLASS_FORBID_UNDECLARED_MAGIC_METHODS    = (1 << 11);
+
+    const IS_NS_INTERNAL               = (1 << 12);
 
     /**
      * Either enable or disable the given flag on
