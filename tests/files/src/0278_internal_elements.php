@@ -4,7 +4,7 @@ namespace NS278\A {
 
     const CONST_PUBLIC = 41;
 
-    /** @internal */
+    // NOTE: Not able to parse doc comments on constants in php-ast in php 7.0, so that part of the test was left out.
     const CONST_INTERNAL = 42;
 
     /** @internal */
@@ -17,7 +17,7 @@ namespace NS278\A {
     class C2 {
         const CONST_PUBLIC = 41;
 
-        /** @internal */
+        // NOTE: Not able to parse doc comments on constants in php-ast in php 7.0, so that part of the test was left out.
         const CONST_INTERNAL = 42;
 
         /** @internal */
