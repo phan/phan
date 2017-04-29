@@ -142,6 +142,8 @@ class Phan implements IgnoredFilesFilterInterface {
             exit(self::dumpSignaturesToFile($code_base, Config::get()->dump_signatures_file));
         }
 
+        $temporary_file_mapping = [];
+
         $request = null;
         if ($is_daemon_request) {
             assert($code_base->isUndoTrackingEnabled());
@@ -163,6 +165,9 @@ class Phan implements IgnoredFilesFilterInterface {
             if (count($analyze_file_path_list) === 0)  {
                 $request->respondWithNoFilesToAnalyze();  // respond and exit.
             }
+            // Do this before we stop tracking undo operations.
+            $temporary_file_mapping = $request->getTemporaryFileMapping();
+
             // Stop tracking undo operations, now that the parse phase is done.
             $code_base->disableUndoTracking();
         }
@@ -226,9 +231,9 @@ class Phan implements IgnoredFilesFilterInterface {
 
         // This worker takes a file and analyzes it
         $analysis_worker = function($i, $file_path)
-            use ($file_count, $code_base) {
+            use ($file_count, $code_base, $temporary_file_mapping) {
                 CLI::progress('analyze', ($i + 1) / $file_count);
-                Analysis::analyzeFile($code_base, $file_path);
+                Analysis::analyzeFile($code_base, $file_path, $temporary_file_mapping[$file_path] ?? null);
             };
 
         // Determine how many processes we're running on. This may be
