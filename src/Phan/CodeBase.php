@@ -241,6 +241,17 @@ class CodeBase
     }
 
     /**
+     * @param string[] $new_file_list
+     * @return bool - true if caller should replace contents
+     */
+    public function beforeReplaceFileContents(string $file_name, string $new_file_contents) {
+        if ($this->undo_tracker) {
+            return $this->undo_tracker->beforeReplaceFileContents($this, $file_name, $new_file_contents);
+        }
+        throw new \RuntimeException("Calling replaceFileContents without undo tracker");
+    }
+
+    /**
      * @param string[] $function_name_list
      * A list of function names to load type information for
      */

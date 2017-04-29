@@ -87,6 +87,7 @@ class CLI
                 'config-file:',
                 'signature-compatibility',
                 'markdown-issue-messages',
+                'disable-plugins',
                 'daemonize-socket:',
                 'daemonize-tcp-port:',
                 'extended-help',
@@ -248,6 +249,10 @@ class CLI
                     // We handle this flag before parsing options so
                     // that we can get the project root directory to
                     // base other config flags values on
+                    break;
+                case 'disable-plugins':
+                    // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
+                    Config::get()->plugins = [];
                     break;
                 case 's':
                 case 'daemonize-socket':

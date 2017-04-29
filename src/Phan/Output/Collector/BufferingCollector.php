@@ -76,6 +76,22 @@ final class BufferingCollector implements IssueCollectorInterface
     }
 
     /**
+     * Remove all collected issues (from the parse phase) for the given file paths.
+     * Called from daemon mode.
+     *
+     * @param string[] $files - the relative paths to those files
+     * @return void
+     */
+    public function removeIssuesForFiles(array $files) {
+        $file_set = array_flip($files);
+        foreach ($this->issues as $key => $issue) {
+            if (array_key_exists($issue->getFile(), $file_set)) {
+                unset($this->issues[$key]);
+            }
+        }
+    }
+
+    /**
      * Removes all collected issues.
      */
     public function reset()
