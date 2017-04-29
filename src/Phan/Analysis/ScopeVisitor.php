@@ -132,7 +132,7 @@ abstract class ScopeVisitor extends AnalysisVisitor {
         ) {
             list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
-                $node->flags ?? 0, $alias, $target
+                $node->flags ?: $flags, $alias, $target
             );
         }
 

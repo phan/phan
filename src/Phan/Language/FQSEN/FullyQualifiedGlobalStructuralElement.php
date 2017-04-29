@@ -75,10 +75,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $namespace = implode('\\', array_merge([$namespace], $name_parts));
         $namespace = self::cleanNamespace($namespace);
 
-        $key = strtolower(implode('|', [
-            get_called_class(),
-            static::toString($namespace, $name, $alternate_id)
-        ]));
+        // use the canonicalName for $name instead of strtolower - Some subclasses(constants) are case sensitive.
+        $key = implode('|', [
+            static::class,
+            static::toString(strtolower($namespace), static::canonicalLookupKey($name), $alternate_id)
+        ]);
 
         $fqsen = self::memoizeStatic($key, function () use ($namespace, $name, $alternate_id) {
             return new static(
@@ -101,7 +102,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         string $fully_qualified_string
     ) {
 
-        $key = get_called_class() . '|' . $fully_qualified_string;
+        $key = static::class . '|' . $fully_qualified_string;
 
         return self::memoizeStatic($key, function () use ($fully_qualified_string) {
 
@@ -109,11 +110,6 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             $parts = explode(',', $fully_qualified_string);
             $fqsen_string = $parts[0];
             $alternate_id = (int)($parts[1] ?? 0);
-
-            assert(
-                is_int($alternate_id),
-                "Alternate must be an integer"
-            );
 
             $parts = explode('\\', $fqsen_string);
             $name = array_pop($parts);
@@ -138,11 +134,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /**
-     * @param Context $context
-     * The context in which the FQSEN string was found
-     *
      * @param $fqsen_string
      * An FQSEN string like '\Namespace\Class'
+     *
+     * @param Context $context
+     * The context in which the FQSEN string was found
      *
      * @return static
      */
@@ -151,7 +147,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         Context $context
     ) {
         // Check to see if we're fully qualified
-        if (0 === strpos($fqsen_string, '\\')) {
+        if ($fqsen_string[0] === '\\') {
+            return static::fromFullyQualifiedString($fqsen_string);
+        }
+        $namespace_map_type = static::getNamespaceMapType();
+        if ($namespace_map_type === \ast\AST_CONST && Type::fromReservedConstantName($fqsen_string)->isDefined()) {
             return static::fromFullyQualifiedString($fqsen_string);
         }
 
@@ -160,21 +160,17 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         $fqsen_string = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(
-            is_int($alternate_id),
-            "Alternate must be an integer"
-        );
-
         $parts = explode('\\', $fqsen_string);
+        // Split the parts into the namespace(0 or more components) and the last name.
         $name = array_pop($parts);
 
         assert(!empty($name), "The name cannot be empty");
 
         // Check for a name map
-        if ($context->hasNamespaceMapFor(static::getNamespaceMapType(), $name)) {
+        if ($context->hasNamespaceMapFor($namespace_map_type, $fqsen_string)) {
             return $context->getNamespaceMapFor(
-                static::getNamespaceMapType(),
-                $name
+                $namespace_map_type,
+                $fqsen_string
             );
         }
 

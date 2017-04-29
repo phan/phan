@@ -4,11 +4,16 @@ namespace Phan\Tests;
 global $internal_class_name_list;
 global $internal_interface_name_list;
 global $internal_trait_name_list;
+global $internal_const_name_list;
 global $internal_function_name_list;
 
 $internal_class_name_list = get_declared_classes();
 $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
+// Get everything except user-defined constants
+$internal_const_name_list = array_keys(array_merge(...array_values(
+    array_diff_key(get_defined_constants(true), ['user' => []])
+)));
 $internal_function_name_list = get_defined_functions()['internal'];
 
 use Phan\CodeBase;
@@ -34,12 +39,14 @@ class PhanTestListener
                 global $internal_class_name_list;
                 global $internal_interface_name_list;
                 global $internal_trait_name_list;
+                global $internal_const_name_list;
                 global $internal_function_name_list;
 
                 $code_base = new CodeBase(
                     $internal_class_name_list,
                     $internal_interface_name_list,
                     $internal_trait_name_list,
+                    $internal_const_name_list,
                     $internal_function_name_list
                 );
             }
