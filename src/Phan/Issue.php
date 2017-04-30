@@ -869,7 +869,7 @@ class Issue
                 self::ParamSignatureRealMismatch,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Declaration of %s should be compatible with %s defined in %s:%d",
+                "Declaration of %s should be compatible with %s (reason: %s) defined in %s:%d",
                 self::REMEDIATION_B,
                 7013
             ),
@@ -878,7 +878,7 @@ class Issue
                 self::ParamSignatureRealMismatchInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Declaration of %s should be compatible with internal %s",
+                "Declaration of %s should be compatible with internal %s (reason: %s)",
                 self::REMEDIATION_B,
                 7014
             ),

@@ -359,21 +359,23 @@ class ParameterTypesAnalyzer
 
         // Determine if the signatures match up
         $signatures_match = true;
+        $signature_error_cause = '';
 
         // Make sure the count of parameters matches
-        if ($method->getNumberOfRequiredParameters()
-            > $o_method->getNumberOfRequiredParameters()
+        if ($method->getNumberOfRequiredRealParameters()
+            > $o_method->getNumberOfRequiredRealParameters()
         ) {
             $signatures_match = false;
-        } else if ($method->getNumberOfParameters()
-            < $o_method->getNumberOfParameters()
+            $signature_error_cause = 'method override has more required parameters';
+        } else if ($method->getNumberOfRealParameters()
+            < $o_method->getNumberOfRealParameters()
         ) {
             $signatures_match = false;
-
+            $signature_error_cause = 'method override has fewer parameters';
         // If parameter counts match, check their types
         } else {
             foreach ($method->getRealParameterList() as $i => $parameter) {
-
+                $offset = $i + 1;
                 // TODO: check if variadic
                 if (!isset($o_parameter_list[$i])) {
                     continue;
@@ -385,12 +387,23 @@ class ParameterTypesAnalyzer
                 // Changing pass by reference is not ok
                 // @see https://3v4l.org/Utuo8
                 if ($parameter->isPassByReference() != $o_parameter->isPassByReference()) {
+                    if ($parameter->isPassByReference()) {
+                        $signature_error_cause = "non-reference parameter #$offset was overridden with a reference argument";
+                    } else {
+                        $signature_error_cause = "reference parameter #$offset was overridden with a non-reference argument";
+                    }
                     $signatures_match = false;
                     break;
                 }
 
                 // Changing variadic to/from non-variadic is not ok?
+                // (Not absolutely sure about that)
                 if ($parameter->isVariadic() != $o_parameter->isVariadic()) {
+                    if ($parameter->isVariadic()) {
+                        $signature_error_cause = "non-variadic parameter #$offset was replaced with a variadic parameter";
+                    } else {
+                        $signature_error_cause = "variadic parameter #$offset was replaced with a non-variadic parameter";
+                    }
                     $signatures_match = false;
                     break;
                 }
@@ -399,6 +412,11 @@ class ParameterTypesAnalyzer
                 $o_parameter_union_type = $o_parameter->getUnionType();
                 $parameter_union_type = $parameter->getUnionType();
                 if ($parameter_union_type->isEmpty() != $o_parameter_union_type->isEmpty()) {
+                    if ($parameter_union_type->isEmpty()) {
+                        $signature_error_cause = "parameter #$offset has no type, but original has type($o_parameter_union_type)";
+                    } else {
+                        $signature_error_cause = "parameter #$offset has type($parameter_union_type), but original does not";
+                    }
                     $signatures_match = false;
                     break;
                 }
@@ -418,6 +436,7 @@ class ParameterTypesAnalyzer
                              $parameter_union_type->hasType(IterableType::instance(false)) && !$o_parameter_union_type->containsNullable());
 
                         if (!$is_exception_to_rule) {
+                            $signature_error_cause = "parameter #$offset of type $parameter_union_type cannot replace original parameter of type $o_parameter_union_type";
                             $signatures_match = false;
                             break;
                         }
@@ -433,12 +452,9 @@ class ParameterTypesAnalyzer
             if (!($o_return_union_type->isEqualTo($return_union_type) || (
                 $o_return_union_type->containsNullable() && !($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
                 )) {
+                    $signature_error_cause = "method returning '$return_union_type' cannot override method returning '$o_return_union_type'";
                     $signatures_match = false;
             }
-        }
-
-        if ($o_method->returnsRef() && !$method->returnsRef()) {
-            $signatures_match = false;
         }
 
         if (!$signatures_match) {
@@ -449,7 +465,8 @@ class ParameterTypesAnalyzer
                     Issue::ParamSignatureRealMismatchInternal,
                     $method->getFileRef()->getLineNumberStart(),
                     $method->toRealSignatureString(),
-                    $o_method->toRealSignatureString()
+                    $o_method->toRealSignatureString(),
+                    $signature_error_cause
                 );
             } else {
                 Issue::maybeEmit(
@@ -459,6 +476,7 @@ class ParameterTypesAnalyzer
                     $method->getFileRef()->getLineNumberStart(),
                     $method->toRealSignatureString(),
                     $o_method->toRealSignatureString(),
+                    $signature_error_cause,
                     $o_method->getFileRef()->getFile(),
                     $o_method->getFileRef()->getLineNumberStart()
                 );
