@@ -1387,7 +1387,7 @@ return [
 'DOMDocument::getElementsByTagNameNS' => ['DOMNodeList', 'namespaceuri'=>'string', 'localname'=>'string'],
 'DOMDocument::importNode' => ['DOMNode', 'importednode'=>'domnode', 'deep='=>'bool'],
 'DOMDocument::load' => ['', 'filename'=>'string', 'options='=>'int'],
-'DOMDocument::loadHTML' => ['bool', 'source'=>'string', 'options='=>int],
+'DOMDocument::loadHTML' => ['bool', 'source'=>'string', 'options='=>'int'],
 'DOMDocument::loadHTMLFile' => ['bool', 'filename'=>'string', 'options='=>'int'],
 'DOMDocument::loadXML' => ['', 'source'=>'string', 'options='=>'int'],
 'DOMDocument::normalizeDocument' => [''],
