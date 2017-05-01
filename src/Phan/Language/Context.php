@@ -185,10 +185,10 @@ class Context extends FileRef
         if ($flags !== \ast\flags\USE_CONST) {
             $alias = strtolower($alias);
         } else {
-            $lastPartIndex = strrpos('\\', $alias);
-            if ($lastPartIndex !== false) {
+            $last_part_index = strrpos('\\', $alias);
+            if ($last_part_index !== false) {
                 // Convert the namespace to lowercase, but not the constant name.
-                $alias = strtolower(substr($alias, 0, $lastPartIndex + 1)) . substr($alias, $lastPartIndex + 1);
+                $alias = strtolower(substr($alias, 0, $last_part_index + 1)) . substr($alias, $last_part_index + 1);
             }
         }
         $this->namespace_map[$flags][$alias] = $target;
