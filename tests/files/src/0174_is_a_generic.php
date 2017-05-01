@@ -1,8 +1,8 @@
 <?php
-
-function f(resource $var) {}
-
-function g($var) : resource {
+/** @param resource $var */
+function f($var) {}
+/** @return resource */
+function g($var) {
     if (is_array($var)) {
         f($var);
     } elseif (is_bool($var)) {

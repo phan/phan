@@ -93,15 +93,14 @@ class UnionType implements \Serializable
      * The context in which the type string was
      * found
      *
-     * @param bool $is_phpdoc_type
-     * True if $type_string was extracted from a doc comment.
+     * @param int $source one of the constants in Type::FROM_*
      *
      * @return UnionType
      */
     public static function fromStringInContext(
         string $type_string,
         Context $context,
-        bool $is_phpdoc_type
+        int $source
     ) : UnionType {
         if (empty($type_string)) {
             return new UnionType();
@@ -116,12 +115,12 @@ class UnionType implements \Serializable
         }
 
         return new UnionType(
-            array_map(function (string $type_name) use ($context, $type_string, $is_phpdoc_type) {
+            array_map(function (string $type_name) use ($context, $type_string, $source) {
                 assert($type_name !== '', "Type cannot be empty.");
                 return Type::fromStringInContext(
                     $type_name,
                     $context,
-                    $is_phpdoc_type
+                    $source
                 );
             }, array_filter(array_map(function (string $type_name) {
                 return trim($type_name);
@@ -267,7 +266,7 @@ class UnionType implements \Serializable
             // Figure out the return type
             $return_type_name = array_shift($type_name_struct);
             $return_type = $return_type_name
-                ? UnionType::fromStringInContext($return_type_name, $context, false)
+                ? UnionType::fromStringInContext($return_type_name, $context, Type::FROM_TYPE)
                 : null;
 
             $name_type_name_map = $type_name_struct;
@@ -276,7 +275,7 @@ class UnionType implements \Serializable
             foreach ($name_type_name_map as $name => $type_name) {
                 $parameter_name_type_map[$name] = empty($type_name)
                     ? new UnionType()
-                    : UnionType::fromStringInContext($type_name, $context, false);
+                    : UnionType::fromStringInContext($type_name, $context, Type::FROM_TYPE);
             }
 
             $configurations[] = [

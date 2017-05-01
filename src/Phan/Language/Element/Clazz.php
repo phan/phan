@@ -169,7 +169,7 @@ class Clazz extends AddressableElement
         $clazz = new Clazz(
             $context,
             $class->getName(),
-            UnionType::fromStringInContext($class->getName(), $context, false),
+            UnionType::fromStringInContext($class->getName(), $context, Type::FROM_TYPE),
             $flags,
             $class_fqsen
         );
@@ -212,7 +212,7 @@ class Clazz extends AddressableElement
                 UnionType::fromStringInContext(
                     $property_type_string,
                     new Context,
-                    false
+                    Type::FROM_TYPE
                 );
 
             $property_fqsen = FullyQualifiedPropertyName::make(

@@ -20,7 +20,7 @@ abstract class NativeType extends Type
             static $nullable_instance = null;
 
             if (empty($nullable_instance)) {
-                $nullable_instance = static::make('\\', static::NAME, [], true, false);
+                $nullable_instance = static::make('\\', static::NAME, [], true, Type::FROM_NODE);
             }
             assert($nullable_instance instanceof static);
 
@@ -30,7 +30,7 @@ abstract class NativeType extends Type
         static $instance = null;
 
         if (empty($instance)) {
-            $instance = static::make('\\', static::NAME, [], false, false);
+            $instance = static::make('\\', static::NAME, [], false, Type::FROM_NODE);
         }
 
         assert($instance instanceof static);

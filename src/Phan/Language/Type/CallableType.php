@@ -17,7 +17,7 @@ class CallableType extends NativeType
     private static function callableInstance() : CallableType {
         static $instance = null;
         if (empty($instance)) {
-            $instance = self::make('\\', static::NAME, [], false, false);
+            $instance = self::make('\\', static::NAME, [], false, self::FROM_NODE);
         }
         return $instance;
     }

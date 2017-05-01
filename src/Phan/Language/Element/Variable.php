@@ -5,6 +5,7 @@ use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
+use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -179,7 +180,8 @@ class Variable extends TypedElement
             || in_array($name, Config::get()->runkit_superglobals)
         ) {
             $type_string = Config::get()->globals_type_map[$name] ?? '';
-            return UnionType::fromStringInContext($type_string, $context, false);
+            // Want to allow 'resource' or 'mixed' as a type here,
+            return UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
         }
 
         return null;
