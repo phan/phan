@@ -21,6 +21,8 @@ New Features (Analysis)
   (Adds `PhanAccessConstantInternal`, `PhanAccessClassInternal`, `PhanAccessClassConstantInternal`, `PhanAccessPropertyInternal`, `PhanAccessMethodInternal`)
   (The implementation may change)
 + Make conditionals such as `is_string` start applying to the condition in ternary operators (`$a ? $b : $c`)
++ Treat `resource`, `object`, and `mixed` as native types only when they occur in phpdoc.
+  Outside of phpdoc (e.g. `$x instanceof resource`), analyze those names as if they were class names.
 
 New Features (CLI, Configs)
 + (Linux/Unix only) Add Experimental Phan Daemon mode (PR #563 for Issue #22), which allows phan to run in the background, and accept TCP requests to analyze single files.

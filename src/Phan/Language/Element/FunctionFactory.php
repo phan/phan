@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
@@ -81,7 +82,7 @@ class FunctionFactory {
         $return_type = UnionType::fromStringInContext(
             array_shift($signature),
             $context,
-            false
+            Type::FROM_TYPE
         );
 
         $func = new Func(
