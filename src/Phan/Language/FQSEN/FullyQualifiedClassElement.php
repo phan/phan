@@ -79,6 +79,27 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     }
 
     /**
+     * @return static
+     * Get the canonical (non-alternate) FQSEN associated
+     * with this FQSEN
+     *
+     * @suppress PhanTypeMismatchDeclaredReturn
+     */
+    public function getCanonicalFQSEN() : FQSEN
+    {
+        $old_fully_qualified_class_name = $this->getFullyQualifiedClassName();
+        $fully_qualified_class_name = $old_fully_qualified_class_name->getCanonicalFQSEN();
+        if ($this->alternate_id == 0 && $fully_qualified_class_name === $old_fully_qualified_class_name) {
+            return $this;
+        }
+        return static::make(
+            $fully_qualified_class_name,
+            $this->getName(),
+            0
+        );
+    }
+
+    /**
      * @param $fully_qualified_string
      * An FQSEN string like '\Namespace\Class::methodName'
      */
@@ -224,6 +245,35 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             $this->getFullyQualifiedClassName(),
             $this->getName(),
             $alternate_id
+        );
+    }
+
+    /**
+     * @return int
+     * The alternate id for the class of the class element
+     * TODO: Is it necessary to have both of these?
+     */
+    public function getAlternateIdForClassName() : int{
+        return $this->getFullyQualifiedClassName()->getAlternateId();
+    }
+
+    /**
+     * @return static
+     * A FQSEN with the given alternate_id set on the class name
+     * (E.g. MyClass,1::my_function for alternate_id 1)
+     * TODO: Is it necessary to have both of these?
+     */
+    public function withAlternateIdForClassName(
+        int $alternate_id
+    ) {
+
+        assert($alternate_id < 1000,
+            "Your alternate IDs have run away");
+
+        return static::make(
+            $this->getFullyQualifiedClassName()->withAlternateId($alternate_id),
+            $this->getName(),
+            $this->getAlternateId()
         );
     }
 
