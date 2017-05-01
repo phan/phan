@@ -41,14 +41,14 @@ Bug Fixes
 - Fix uncaught exception when conditional node is a scalar (Issue #613)
 - Existence of __get() no longer affects analyzing static properties. (Issue #610)
 - Phan can now detect the declaration of constants relative to a `use`d namespace (Issue #509)
-- Phan can now detect the declaration of functions relative to a `use`d namespace (Issue #509)
+- Phan can now detect the declaration of functions relative to a `use`d namespace (Issue #510)
 
 Backwards Incompatible Changes
-- Declarations of user-defined constants are now consistently 
+- Declarations of user-defined constants are now consistently
   analyzed in a case sensitive way.
   This may affect projects using `define(name, value, case_insensitive = true)`.
   Change the code being analyzed to exactly match the constant name in define())
-  
+ 
 0.9.1 Mar 15, 2017
 ------------------
 
