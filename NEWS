@@ -29,7 +29,9 @@ New Features (CLI, Configs)
   Client usage: `path/to/phan_client --daemonize-tcp-port 4846 -l src/file1.php [ -l src/file2.php ]`
 + Add `--color` CLI flag, with rudimentary unix terminal coloring for the plain text output formatter. (Issue #363)
   Color schemes are customizable with `color_scheme`, in the config file.
-+ Add a config to excludes file paths from a regular expression (e.g. tests or example files mixed with the codebase) (#635)
++ Add the `exclude_file_regex` config to exclude file paths based on a regular expression (e.g. tests or example files mixed with the codebase) (#635)
+  The regular expression is run against the relative path within the project.
++ Add `--dump-parsed-file-list` option to print files which Phan would parse.
 
 Maintenance
 + Update function signature map to analyze `iterable` and `is_iterable` from php 7.1

@@ -96,6 +96,13 @@ class Phan implements IgnoredFilesFilterInterface {
             sort($file_path_list, SORT_STRING);
         }
 
+        if (Config::get()->dump_parsed_file_list === true) {
+            // If --dump-parsed-file-list is provided,
+            // print the files in the order they would be parsed.
+            echo implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
+            exit(EXIT_SUCCESS);
+        }
+
         // This first pass parses code and populates the
         // global state we'll need for doing a second
         // analysis after.
