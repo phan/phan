@@ -1080,40 +1080,48 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitConst(Node $node) : UnionType
     {
         if ($node->children['name']->kind == \ast\AST_NAME) {
-            if (defined($node->children['name']->children['name'])) {
-                return Type::fromObject(
-                    constant($node->children['name']->children['name'])
-                )->asUnionType();
-            } else {
-                // Figure out the name of the constant if it's
-                // a string.
-                // NOTE: It seems like this will always be '' because defined() would catch everything except absence?
-                $constant_name =
-                    $node->children['name']->children['name'] ?? '';
-
-                // If the constant is referring to the current
-                // class, return that as a type
-                if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
-                    return $this->visitClassNode($node);
+            $name = $node->children['name']->children['name'];
+            if (defined($name)) {
+                // This constant is internal to php
+                $result = Type::fromReservedConstantName($name);
+                if ($result->isDefined()) {
+                    // And it's a reserved keyword such as false, null, E_ALL, etc.
+                    return $result->get()->asUnionType();
                 }
+                // TODO: use the CodeBase for all internal constants.
+                // defined() doesn't account for use statements in the codebase (`use ... as aliased_name`)
+                // TODO: The below code will act as though some constants from Phan exist in other codebases (e.g. EXIT_STATUS).
+                return Type::fromObject(
+                    constant($name)
+                )->asUnionType();
+            }
 
-                try {
+            // Figure out the name of the constant if it's
+            // a string.
+            $constant_name = $name ?? '';
+
+            // If the constant is referring to the current
+            // class, return that as a type
+            if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
+                return $this->visitClassNode($node);
+            }
+
+            try {
                 $constant = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $node
                 ))->getConst();
-                } catch (IssueException $exception) {
-                    Issue::maybeEmitInstance(
-                        $this->code_base,
-                        $this->context,
-                        $exception->getIssueInstance()
-                    );
-                    return new UnionType;
-                }
-
-                return $constant->getUnionType();
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
+                return new UnionType;
             }
+
+            return $constant->getUnionType();
         }
 
         return new UnionType();

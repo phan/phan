@@ -12,6 +12,7 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NativeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
@@ -19,6 +20,9 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
+use Phan\Library\None;
+use Phan\Library\Option;
+use Phan\Library\Some;
 use Phan\Library\Tuple4;
 
 class Type
@@ -334,6 +338,92 @@ class Type
             $type->getIsNullable(),
             Type::FROM_TYPE
         );
+    }
+
+    /**
+     * If the $name is a reserved constant, then returns the NativeType for that name
+     * Otherwise, this returns null.
+     * @return Option<NativeType>
+     */
+    public static function fromReservedConstantName(string $name) : Option {
+        static $lookup;
+        if ($lookup === null) {
+            $lookup = self::createReservedConstantNameLookup();
+        }
+        $result = $lookup[strtoupper(ltrim($name, '\\'))] ?? null;
+        if (isset($result)) {
+            return new Some($result);
+        }
+        return new None;
+    }
+
+    /**
+     * @return NativeType[] a map from the **uppercase** reserved constant name to the subclass of NativeType for that constant.
+     * Uses the constants and types from https://secure.php.net/manual/en/reserved.constants.php
+     */
+    private static function createReservedConstantNameLookup() : array {
+        $int = IntType::instance(false);
+        $bool = BoolType::instance(false);
+        $null = NullType::instance(false);
+        $string = StringType::instance(false);
+        $float  = FloatType::instance(false);
+        return [
+            'PHP_VERSION'           => $string,
+            'PHP_MAJOR_VERSION'     => $int,
+            'PHP_MINOR_VERSION'     => $int,
+            'PHP_RELEASE_VERSION'   => $int,
+            'PHP_VERSION_ID'        => $int,
+            'PHP_EXTRA_VERSION'     => $string,
+            'PHP_ZTS'               => $int,
+            'PHP_MAXPATHLEN'        => $int,
+            'PHP_OS'                => $string,
+            'PHP_OS_FAMILY'         => $string,
+            'PHP_SAPI'              => $string,
+            'PHP_EOL'               => $string,
+            'PHP_INT_MAX'           => $int,
+            'PHP_INT_MIN'           => $int,  // since 7.0.0
+            'PHP_INT_SIZE'          => $int,  // since 7.0.0
+            //'PHP_FLOAT_DIG'         => $int,  // since 7.2.0
+            //'PHP_FLOAT_EPSILON'     => $float,  // since 7.2.0
+            //'PHP_FLOAT_MIN'         => $int, // since 7.2.0
+            //'PHP_FLOAT_MAX'         => $int, // since 7.2.0
+            'DEFAULT_INCLUDE_PATH'  => $string,
+            'PEAR_INSTALL_DIR'      => $string,
+            'PEAR_EXTENSION_DIR'    => $string,
+            'PHP_EXTENSION_DIR'     => $string,
+            'PEAR_EXTENSION_DIR'    => $string,
+            'PHP_PREFIX'            => $string,
+            'PHP_BINDIR'            => $string,
+            'PHP_BINARY'            => $string,
+            'PHP_MANDIR'            => $string,
+            'PHP_LIBDIR'            => $string,
+            'PHP_DATADIR'           => $string,
+            'PHP_SYSCONFDIR'        => $string,
+            'PHP_LOCALSTATEDIR'     => $string,
+            'PHP_CONFIG_FILE_PATH'  => $string,
+            'PHP_CONFIG_FILE_SCAN_DIR' => $string,
+            'PHP_SHLIB_SUFFIX'      => $string,
+            //'PHP_FD_SETSIZE'            => $int,  // 7.2.0 TODO: web page documentation is wrong, says string.
+            'E_ERROR'               => $int,
+            'E_WARNING'             => $int,
+            'E_PARSE'               => $int,
+            'E_NOTICE'              => $int,
+            'E_CORE_ERROR'          => $int,
+            'E_CORE_WARNING'        => $int,
+            'E_COMPILE_ERROR'       => $int,
+            'E_COMPILE_WARNING'     => $int,
+            'E_USER_ERROR'          => $int,
+            'E_USER_WARNING'        => $int,
+            'E_USER_NOTICE'         => $int,
+            'E_DEPRECATED'          => $int,
+            'E_USER_DEPRECATED'     => $int,
+            'E_ALL'                 => $int,
+            'E_STRICT'              => $int,
+            '__COMPILER_HALT_OFFSET__' => $int,
+            'TRUE'                  => $bool,
+            'FALSE'                 => $bool,
+            'NULL'                  => $null,
+        ];
     }
 
     /**

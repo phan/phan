@@ -150,6 +150,14 @@ class Analysis
         ))($node);
 
         assert(!empty($context), 'Context cannot be null');
+        $kind = $node->kind;
+
+        // \ast\AST_GROUP_USE has \ast\AST_USE as a child.
+        // We don't want to use block twice in the parse phase.
+        // (E.g. `use MyNS\{const A, const B}` would lack the MyNs part if this were to recurse.
+        if ($kind === \ast\AST_GROUP_USE) {
+            return $context;
+        }
 
         // Recurse into each child node
         $child_context = $context;
@@ -177,12 +185,12 @@ class Analysis
         // For closed context elements (that have an inner scope)
         // return the outer context instead of their inner context
         // after we finish parsing their children.
-        if (in_array($node->kind, [
+        if (in_array($kind, [
             \ast\AST_CLASS,
             \ast\AST_METHOD,
             \ast\AST_FUNC_DECL,
             \ast\AST_CLOSURE,
-        ])) {
+        ], true)) {
             return $outer_context;
         }
 

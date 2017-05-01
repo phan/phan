@@ -406,6 +406,9 @@ class CLI
         return $this->file_list;
     }
 
+    // FIXME: If I stop using defined() in UnionTypeVisitor,
+    // this will warn about the undefined constant EXIT_SUCCESS when a
+    // user-defined constant is used in parse phase in a function declaration
     private function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
     {
         global $argv;

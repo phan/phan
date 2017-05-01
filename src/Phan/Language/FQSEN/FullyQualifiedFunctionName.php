@@ -23,6 +23,8 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
      * @return string
      * The canonical representation of the name of the object. Functions
      * and Methods, for instance, lowercase their names.
+     * TODO: Separate the funciton used to render names in phan errors
+     *       from the ones used for generating array keys.
      */
     public static function canonicalName(string $name) : string
     {
@@ -51,11 +53,6 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
         $fqsen_string = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(
-            is_int($alternate_id),
-            "Alternate must be an integer"
-        );
-
         $parts = explode('\\', $fqsen_string);
         $name = array_pop($parts);
 
@@ -65,10 +62,10 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
         );
 
         // Check for a name map
-        if ($context->hasNamespaceMapFor(static::getNamespaceMapType(), $name)) {
+        if ($context->hasNamespaceMapFor(static::getNamespaceMapType(), $fqsen_string)) {
             return $context->getNamespaceMapFor(
                 static::getNamespaceMapType(),
-                $name
+                $fqsen_string
             );
         }
 
