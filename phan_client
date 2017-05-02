@@ -248,7 +248,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   Unix socket which a Phan daemon is listening for requests on.
 
  --daemonize-tcp-port <1024-65535>
-  TCP port for Phan to listen for JSON requests on, in daemon mode. (E.g. 4846)
+  TCP port which a Phan daemon is listening for JSON requests on, in daemon mode. (E.g. 4846)
 
  -l, --syntax-check <file.php>
   Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working ditectory)
