@@ -40,6 +40,8 @@ New Features (CLI, Configs)
   NOTE: this is still experimental.
 + Warn to stderr about running Phan analysis with XDebug (Issue #116)
   The warning can be disabled by the Phan config setting `skip_slow_php_options_warning` to true.
++ Add a config setting 'scalar_implicit_partial' to allow moving away from 'scalar_implicit_cast' (Issue #541)
+  This allows users to list out (and gradually remove) permitted scalar type casts.
 
 Maintenance
 + Reduce memory usage by around 15% by using a more efficient representation of union types (PR #729).
