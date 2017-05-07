@@ -92,9 +92,28 @@ class Issue
     const ParamTypeMismatch         = 'PhanParamTypeMismatch';
     const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
     const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
-    const ParamSignatureRealMismatch    = 'PhanParamSignatureRealMismatch';
-    const ParamSignatureRealMismatchInternal = 'PhanParamSignatureRealMismatchInternal';
     const ParamRedefined            = 'PhanParamRedefined';
+
+    const ParamSignatureRealMismatchReturnType                        = 'PhanParamSignatureRealMismatch';
+    const ParamSignatureRealMismatchReturnTypeInternal                = 'PhanParamSignatureRealMismatchInternal';
+    const ParamSignatureRealMismatchTooManyRequiredParameters         = 'PhanParamSignatureRealMismatchTooManyRequiredParameters';
+    const ParamSignatureRealMismatchTooManyRequiredParametersInternal = 'PhanParamSignatureRealMismatchTooManyRequiredParametersInternal';
+    const ParamSignatureRealMismatchTooFewParameters                  = 'PhanParamSignatureRealMismatchTooFewParameters';
+    const ParamSignatureRealMismatchTooFewParametersInternal          = 'PhanParamSignatureRealMismatchTooFewParametersInternal';
+    const ParamSignatureRealMismatchHasParamType                      = 'PhanParamSignatureRealMismatchHasParamType';
+    const ParamSignatureRealMismatchHasParamTypeInternal              = 'PhanParamSignatureRealMismatchHasParamTypeInternal';
+    const ParamSignatureRealMismatchHasNoParamType                    = 'PhanParamSignatureRealMismatchHasNoParamType';
+    const ParamSignatureRealMismatchHasNoParamTypeInternal            = 'PhanParamSignatureRealMismatchHasNoParamTypeInternal';
+    const ParamSignatureRealMismatchParamIsReference                  = 'PhanParamSignatureRealMismatchParamIsReference';
+    const ParamSignatureRealMismatchParamIsReferenceInternal          = 'PhanParamSignatureRealMismatchParamIsReferenceInternal';
+    const ParamSignatureRealMismatchParamIsNotReference               = 'PhanParamSignatureRealMismatchParamIsNotReference';
+    const ParamSignatureRealMismatchParamIsNotReferenceInternal       = 'PhanParamSignatureRealMismatchParamIsNotReferenceInternal';
+    const ParamSignatureRealMismatchParamVariadic                     = 'PhanParamSignatureRealMismatchParamVariadic';
+    const ParamSignatureRealMismatchParamVariadicInternal             = 'PhanParamSignatureRealMismatchParamVariadicInternal';
+    const ParamSignatureRealMismatchParamNotVariadic                  = 'PhanParamSignatureRealMismatchParamNotVariadic';
+    const ParamSignatureRealMismatchParamNotVariadicInternal          = 'PhanParamSignatureRealMismatchParamNotVariadicInternal';
+    const ParamSignatureRealMismatchParamType                         = 'PhanParamSignatureRealMismatchParamType';
+    const ParamSignatureRealMismatchParamTypeInternal                 = 'PhanParamSignatureRealMismatchParamTypeInternal';
 
     // Issue::CATEGORY_NOOP
     const NoopArray                 = 'PhanNoopArray';
@@ -865,22 +884,167 @@ class Issue
                 7012
             ),
             // TODO: Optionally, change the other message to say that it's based off of phpdoc and LSP in a future PR.
+            // NOTE: Incompatibilities in the param list are SEVERITY_NORMAL, because the php interpreter emits a notice.
+            // Incompatibilities in the return types are SEVERITY_CRITICAL, because the php interpreter will throw an Error.
             new Issue(
-                self::ParamSignatureRealMismatch,
+                self::ParamSignatureRealMismatchReturnType,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Declaration of %s should be compatible with %s (reason: %s) defined in %s:%d",
+                "Declaration of {METHOD} should be compatible with {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7013
+                7015
             ),
-            // NOTE: some extensions don't define arg info
             new Issue(
-                self::ParamSignatureRealMismatchInternal,
+                self::ParamSignatureRealMismatchReturnTypeInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Declaration of %s should be compatible with internal %s (reason: %s)",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7014
+                7016
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7017
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamTypeInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7018
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchHasParamType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7019
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchHasParamTypeInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7020
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchHasNoParamType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7021
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchHasNoParamTypeInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7022
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamVariadic,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7023
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamVariadicInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7024
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamNotVariadic,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7025
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamNotVariadicInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7026
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamIsReference,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7027
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamIsReferenceInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7028
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamIsNotReference,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7029
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamIsNotReferenceInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7030
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchTooFewParameters,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7031
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchTooFewParametersInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7032
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchTooManyRequiredParameters,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7033
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7032
             ),
 
             // Issue::CATEGORY_NOOP
@@ -1199,13 +1363,13 @@ class Issue
                 self::REMEDIATION_B,
                 15004
             ),
-
-
         ];
 
         $error_map = [];
         foreach ($error_list as $i => $error) {
-            $error_map[$error->getType()] = $error;
+            $error_type = $error->getType();
+            assert(!array_key_exists($error_type, $error_map), "Issue of type $error_type has multiple definitions");
+            $error_map[$error_type] = $error;
         }
 
         return $error_map;
