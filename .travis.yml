@@ -10,6 +10,7 @@ env:
   - TEST_SUITE="LanguageTest"
   - TEST_SUITE="OutputPrinterTest"
   - TEST_SUITE="__FakeSelfTest"
+  - TEST_SUITE="__FakeRewriterTest"
 
 sudo: false
 
@@ -26,6 +27,7 @@ install:
 
 # We have a fake TEST_SUITE which runs phan, and check if the exit code is non-zero and the standard output is non-empty.
 # This is used instead of a unit test because Phan currently caches too much state for this to be run with other unit tests, and the configuration might end up different within a unit test.
+# This was moved into a separate script to stop cluttering up .travis.yml
 script:
-  - if [ "$TEST_SUITE" != "__FakeSelfTest" ]; then ./vendor/bin/phpunit --colors --testsuite "$TEST_SUITE"; else ./phan ; fi
+  - tests/run_test "$TEST_SUITE"
   - php package.php

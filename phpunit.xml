@@ -21,6 +21,8 @@
     <php>
         <const name="RASMUS_TEST_FILE_DIR" value="./tests/rasmus_files/src"/>
         <const name="RASMUS_EXPECTED_DIR" value="./tests/rasmus_files/expected"/>
+        <const name="AST_TEST_FILE_DIR" value="./tests/misc/ast/src"/>
+        <const name="AST_EXPECTED_DIR" value="./tests/misc/ast/expected"/>
         <const name="TEST_FILE_DIR" value="./tests/files/src"/>
         <const name="EXPECTED_DIR" value="./tests/files/expected"/>
         <const name="MULTI_FILE_DIR" value="./tests/multi_files/src"/>

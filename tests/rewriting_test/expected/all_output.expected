@@ -1,0 +1,2 @@
+src/000_ast_rewriting_check.php:11 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+src/000_ast_rewriting_check.php:24 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
