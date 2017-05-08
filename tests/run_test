@@ -15,7 +15,12 @@ case "$TEST_SUITE" in
 		./phan
 		exit $?
 		;;
-	__FakeRewriterTest)
+	__FakeRewritingTest)
+		cd tests/rewriting_test
+		./test.sh
+		exit $?
+		;;
+	__FakePluginTest)
 		cd tests/plugin_test
 		./test.sh
 		exit $?

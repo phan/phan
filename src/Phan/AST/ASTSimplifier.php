@@ -88,6 +88,7 @@ class ASTSimplifier {
         foreach ($statement_list->children as $child_node) {
             if ($child_node instanceof Node) {
                 foreach ($this->apply($child_node) as $new_child_node) {
+                    // The apply() step can also modify the nodes, check below with ===
                     $new_children[] = $new_child_node;
                 }
             } else {
@@ -95,7 +96,7 @@ class ASTSimplifier {
             }
         }
         list($new_children, $modified) = $this->normalizeStatementList($new_children);
-        if (!$modified) {
+        if (!$modified && $new_children === $statement_list->children) {
             return $statement_list;
         }
         $clone_node = clone($statement_list);

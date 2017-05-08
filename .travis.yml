@@ -10,7 +10,8 @@ env:
   - TEST_SUITE="LanguageTest"
   - TEST_SUITE="OutputPrinterTest"
   - TEST_SUITE="__FakeSelfTest"
-  - TEST_SUITE="__FakeRewriterTest"
+  - TEST_SUITE="__FakeRewritingTest"
+  - TEST_SUITE="__FakePluginTest"
 
 sudo: false
 
