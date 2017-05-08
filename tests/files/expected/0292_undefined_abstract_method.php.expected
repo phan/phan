@@ -1,0 +1,3 @@
+%s:3 PhanClassContainsAbstractMethodInternal non-abstract class \Foo292 contains abstract internal method \Serializable::unserialize
+%s:13 PhanClassContainsAbstractMethod non-abstract class \B292 contains abstract method \A292::f2 declared at %s:9
+%s:42 PhanClassContainsAbstractMethod non-abstract class \ClassExtendingInterface292 contains abstract method \Interface292::myFunction declared at %s:38
