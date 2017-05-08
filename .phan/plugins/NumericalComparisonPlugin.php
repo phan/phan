@@ -71,7 +71,8 @@ class NumericalComparisonVisitor extends AnalysisVisitor {
                     $this->code_base,
                     $this->context,
                     'PhanPluginNumericalComparison',
-                    "non numerical values compared by the operators '==' or '!=='"
+                    "non numerical values compared by the operators '==' or '!=='",
+                    []
                 );
             }
             // numerical values are not allowed in the operator identical('===', '!==')
@@ -84,7 +85,8 @@ class NumericalComparisonVisitor extends AnalysisVisitor {
                     $this->code_base,
                     $this->context,
                     'PhanPluginNumericalComparison',
-                    "numerical values compared by the operators '===' or '!=='"
+                    "numerical values compared by the operators '===' or '!=='",
+                    []
                 );
             }
         }

@@ -120,7 +120,8 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
                     $this->code_base,
                     $this->context,
                     'PhanPluginDuplicateArrayKey',
-                    "Duplicate/Equivalent array key literal($normalizedKey) detected in array - the earlier entry will be ignored.",
+                    "Duplicate/Equivalent array key literal({VARIABLE}) detected in array - the earlier entry will be ignored.",
+                    [(string)$normalizedKey],
                     Issue::SEVERITY_NORMAL,
                     Issue::REMEDIATION_A,
                     15071
@@ -136,6 +137,7 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
                 $this->context,
                 'PhanPluginMixedKeyNoKey',
                 "Should not mix array entries of the form [key => value,] with entries of the form [value,].",
+                [],
                 Issue::SEVERITY_NORMAL,
                 Issue::REMEDIATION_A,
                 15071

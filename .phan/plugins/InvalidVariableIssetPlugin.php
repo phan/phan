@@ -75,7 +75,8 @@ class InvalidVariableIssetVisitor extends AnalysisVisitor {
                 $this->code_base,
                 $this->context,
                 'PhanUndeclaredVariable',
-                "undeclared variables in isset()"
+                "undeclared variables in isset()",
+                []
             );
         }
         // emit issue if argument is not array access
@@ -84,7 +85,8 @@ class InvalidVariableIssetVisitor extends AnalysisVisitor {
                 $this->code_base,
                 $this->context,
                 'PhanPluginInvalidVariableIsset',
-                "non array access in isset()"
+                "non array access in isset()",
+                []
             );
         }
         return $this->context;
