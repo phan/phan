@@ -68,6 +68,10 @@ class Config
         //       to `excluce_analysis_directory_list`.
         'exclude_analysis_directory_list' => [],
 
+        // A file list that defines files that will be included
+        // in static analysis, to the exclusion of others.
+        'include_analysis_file_list' => [],
+
         // Backwards Compatibility Checking. This is slow
         // and expensive, but you should consider running
         // it before upgrading your version of PHP to a

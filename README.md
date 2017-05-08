@@ -146,6 +146,13 @@ Usage: ./phan [options] [files...]
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
 
+ --include-file-list <file_list>
+  A comma-separated list of files that will be included in
+  static analysis, to the exclusion of others.
+
+  This is primarily intended for performing standalone
+  incremental analysis.
+
  -d, --project-root-directory
   Hunt for a directory named .phan in the current or parent
   directory and read configuration file config.php from that

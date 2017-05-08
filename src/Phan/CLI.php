@@ -72,6 +72,7 @@ class CLI
                 'dump-signatures-file:',
                 'exclude-directory-list:',
                 'exclude-file:',
+                'include-file-list:',
                 'file-list-only:',
                 'file-list:',
                 'help',
@@ -235,6 +236,9 @@ class CLI
                         Config::get()->exclude_file_list,
                         is_array($value) ? $value : [$value]
                     );
+                    break;
+                case 'include-file-list':
+                    Config::get()->include_analysis_file_list = explode(',', $value);
                     break;
                 case 'j':
                 case 'processes':
@@ -445,6 +449,13 @@ Usage: {$argv[0]} [options] [files...]
 
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
+
+ --include-file-list <file_list>
+  A comma-separated list of files that will be included in
+  static analysis, to the exclusion of others.
+
+  This is primarily intended for performing standalone
+  incremental analysis.
 
  -d, --project-root-directory
   Hunt for a directory named .phan in the current or parent
