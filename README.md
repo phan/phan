@@ -148,7 +148,7 @@ Usage: ./phan [options] [files...]
 
  --include-analysis-file-list <file_list>
   A comma-separated list of files that will be included in
-  static analysis, to the exclusion of others.
+  static analysis. All others won't be analyzed.
 
   This is primarily intended for performing standalone
   incremental analysis.
