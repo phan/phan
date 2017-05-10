@@ -176,10 +176,11 @@ class Variable extends TypedElement
             );
         }
 
-        if (array_key_exists($name, Config::get()->globals_type_map)
-            || in_array($name, Config::get()->runkit_superglobals)
+        $config = Config::get();
+        if (array_key_exists($name, $config->globals_type_map)
+            || in_array($name, $config->runkit_superglobals)
         ) {
-            $type_string = Config::get()->globals_type_map[$name] ?? '';
+            $type_string = $config->globals_type_map[$name] ?? '';
             // Want to allow 'resource' or 'mixed' as a type here,
             return UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
         }

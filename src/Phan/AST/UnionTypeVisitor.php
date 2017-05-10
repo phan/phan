@@ -23,11 +23,13 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\StaticType;
+use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use ast\Node;
 use ast\Node\Decl;
@@ -252,51 +254,6 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_COALESCE`
-     * (Null coalescing operator)
-     *
-     * @param Node $node
-     * A node of the type indicated by the method name that we'd
-     * like to figure out the type that it produces.
-     *
-     * @return UnionType
-     * The set of types that are possibly produced by the
-     * given node
-     */
-    public function visitCoalesce(Node $node) : UnionType
-    {
-        $union_type = new UnionType();
-
-        $left_type = self::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['left']
-        );
-
-        $right_type = self::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['right']
-        );
-
-        // On the left side, remove null and replace '?T' with 'T'
-        // Don't bother if the right side contains null.
-        if (!$right_type->isEmpty() && $left_type->containsNullable() && !$right_type->containsNullable()) {
-            $left_type = $left_type->nonNullableClone();
-        }
-
-        $union_type->addUnionType(
-            $left_type
-        );
-
-        $union_type->addUnionType(
-            $right_type
-        );
-
-        return $union_type;
-    }
-
-    /**
      * Visit a node with kind `\ast\AST_EMPTY`
      *
      * @param Node $node
@@ -472,6 +429,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return CallableType::instance(false)->asUnionType();
             case \ast\flags\TYPE_DOUBLE:
                 return FloatType::instance(false)->asUnionType();
+            case \ast\flags\TYPE_ITERABLE:
+                return IterableType::instance(false)->asUnionType();
             case \ast\flags\TYPE_LONG:
                 return IntType::instance(false)->asUnionType();
             case \ast\flags\TYPE_NULL:
@@ -480,6 +439,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return ObjectType::instance(false)->asUnionType();
             case \ast\flags\TYPE_STRING:
                 return StringType::instance(false)->asUnionType();
+            case \ast\flags\TYPE_VOID:
+                return VoidType::instance(false)->asUnionType();
             default:
                 assert(
                     false,

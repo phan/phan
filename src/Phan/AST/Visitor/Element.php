@@ -237,6 +237,8 @@ class Element
                 return $visitor->visitBinaryBoolAnd($this->node);
             case \ast\flags\BINARY_BOOL_OR:
                 return $visitor->visitBinaryBoolOr($this->node);
+            case \ast\flags\BINARY_COALESCE:
+                return $visitor->visitBinaryCoalesce($this->node);
             case \ast\flags\BINARY_IS_GREATER:
                 return $visitor->visitBinaryIsGreater($this->node);
             case \ast\flags\BINARY_IS_GREATER_OR_EQUAL:

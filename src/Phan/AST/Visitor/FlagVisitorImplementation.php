@@ -312,6 +312,11 @@ abstract class FlagVisitorImplementation implements FlagVisitor
         return $this->visit($node);
     }
 
+    public function visitBinaryCoalesce(Node $node)
+    {
+        return $this->visit($node);
+    }
+
     public function visitBinaryIsGreater(Node $node)
     {
         return $this->visit($node);
