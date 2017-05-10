@@ -12,7 +12,7 @@ class ClassMap
 {
     /**
      * @var ClassConstant[]
-     * A map from name to ClassCosntant
+     * A map from name to ClassConstant
      */
     private $class_constant_map = [];
 
