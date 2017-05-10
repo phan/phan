@@ -361,13 +361,7 @@ class Phan implements IgnoredFilesFilterInterface {
     ) : bool {
         $include_analysis_file_list = Config::get()->include_analysis_file_list;
         if ($include_analysis_file_list) {
-            foreach ($include_analysis_file_list as $file) {
-                if ($file_path === $file) {
-                    return false;
-                }
-            }
-
-            return true;
+            return !in_array($file_path, $include_analysis_file_list, true);
         }
 
         $file_path = str_replace('\\', '/', $file_path);

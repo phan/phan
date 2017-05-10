@@ -146,7 +146,7 @@ Usage: ./phan [options] [files...]
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
 
- --include-file-list <file_list>
+ --include-analysis-file-list <file_list>
   A comma-separated list of files that will be included in
   static analysis, to the exclusion of others.
 

@@ -72,7 +72,7 @@ class CLI
                 'dump-signatures-file:',
                 'exclude-directory-list:',
                 'exclude-file:',
-                'include-file-list:',
+                'include-analysis-file-list:',
                 'file-list-only:',
                 'file-list:',
                 'help',
@@ -237,7 +237,7 @@ class CLI
                         is_array($value) ? $value : [$value]
                     );
                     break;
-                case 'include-file-list':
+                case 'include-analysis-file-list':
                     Config::get()->include_analysis_file_list = explode(',', $value);
                     break;
                 case 'j':
@@ -450,7 +450,7 @@ Usage: {$argv[0]} [options] [files...]
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
 
- --include-file-list <file_list>
+ --include-analysis-file-list <file_list>
   A comma-separated list of files that will be included in
   static analysis, to the exclusion of others.
 
