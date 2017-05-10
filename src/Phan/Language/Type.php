@@ -715,10 +715,6 @@ class Type
             return self::fromInternalTypeName($type_name, $is_nullable, $source);
         }
 
-        if ($source === Type::FROM_PHPDOC && ($namespace ?: '\\') === '\\') {
-            $type_name = self::canonicalNameFromName($type_name);
-        }
-
         // Things like `self[]` or `$this[]`
         if ($is_generic_array_type
             && self::isSelfTypeString($non_generic_array_type_name)

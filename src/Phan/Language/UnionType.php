@@ -266,7 +266,7 @@ class UnionType implements \Serializable
             // Figure out the return type
             $return_type_name = array_shift($type_name_struct);
             $return_type = $return_type_name
-                ? UnionType::fromStringInContext($return_type_name, $context, Type::FROM_TYPE)
+                ? UnionType::fromStringInContext($return_type_name, $context, Type::FROM_PHPDOC)
                 : null;
 
             $name_type_name_map = $type_name_struct;
@@ -275,7 +275,7 @@ class UnionType implements \Serializable
             foreach ($name_type_name_map as $name => $type_name) {
                 $parameter_name_type_map[$name] = empty($type_name)
                     ? new UnionType()
-                    : UnionType::fromStringInContext($type_name, $context, Type::FROM_TYPE);
+                    : UnionType::fromStringInContext($type_name, $context, Type::FROM_PHPDOC);
             }
 
             $configurations[] = [
