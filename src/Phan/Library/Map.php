@@ -3,8 +3,7 @@ namespace Phan\Library;
 
 /**
  * A map from object to object with key comparisons
- * based on spl_object_hash, which I believe its the zval's
- * memory address.
+ * based on spl_object_hash.
  */
 class Map extends \SplObjectStorage
 {
