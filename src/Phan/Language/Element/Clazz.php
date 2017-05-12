@@ -1114,6 +1114,15 @@ class Clazz extends AddressableElement
             $method->setDefiningFQSEN($method->getFQSEN());
             $method->setFQSEN($method_fqsen);
 
+            // Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
+            // TODO: Make the parameter list immutable and have immutable types (e.g. getPhpdocParameterList(), setPhpdocParameterList()
+            // and use a clone of all of the parameters for analysis (quick_mode=false has different values).
+            // TODO: If they're immutable, they can be shared without cloning with less worry.
+            $method->setParameterList(
+                array_map(function (Parameter $parameter) : Parameter {
+                    return clone($parameter);
+                }, $method->getParameterList()));
+
             // If we have a parent type defined, map the method's
             // return type and parameter types through it
             if ($type_option->isDefined()) {
