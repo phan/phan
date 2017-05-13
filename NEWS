@@ -4,7 +4,8 @@ Phan NEWS
 -----------------------
 
 New Features (Analysis)
-+ Add `PhanParamSignatureRealMismatch`, which ignores phpdoc types and imitates PHP's inheritance warning/error checks as closely as possible. (Issue #374)
++ Add `PhanParamSignatureRealMismatch*` (e.g. `ParamSignatureRealMismatchTooManyRequiredParameters`),
+  which ignores phpdoc types and imitates PHP's inheritance warning/error checks as closely as possible. (Issue #374)
   This has a much lower rate of false positives than `PhanParamSignatureMismatch`, which is based on Liskov Substitution Principle and also accounts for phpdoc types.
   (`PhanParamSignatureMismatch` continues to exist)
 + Create `PhanUndeclaredStaticProperty` (Issue #610)
