@@ -78,6 +78,16 @@ return [
     // class types.
     'generic_types_enabled' => true,
 
+    // Setting this to true makes the process assignment for file analysis
+    // as predictable as possible, using consistent hashing.
+    // Even if files are added or removed, or process counts change,
+    // relatively few files will move to a different group.
+    // (use when the number of files is much larger than the process count)
+    // NOTE: If you rely on Phan parsing files/directories in the order
+    // that they were provided in this config, don't use this)
+    // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
+    'consistent_hashing_file_order' => false,
+
     // By default, Phan will analyze all node types.
     // If this config is set to false, Phan will do a
     // shallower pass of the AST tree which will save

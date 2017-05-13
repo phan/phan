@@ -384,6 +384,9 @@ class Config
         // Even if files are added or removed, or process counts change,
         // relatively few files will move to a different group.
         // (use when the number of files is much larger than the process count)
+        // NOTE: If you rely on Phan parsing files/directories in the order
+        // that they were provided in this config, don't use this)
+        // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
         'consistent_hashing_file_order' => false,
 
         // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
