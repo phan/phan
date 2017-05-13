@@ -110,15 +110,6 @@ class Config
         // `string` instead of an `int` as declared.
         'quick_mode' => false,
 
-        // By default, Phan will analyze all node types.
-        // If this config is set to false, Phan will do a
-        // shallower pass of the AST tree which will save
-        // time but may find fewer issues.
-        //
-        // See \Phan\Analysis::shouldVisit for the set of skipped
-        // nodes.
-        'should_visit_all_nodes' => true,
-
         // If enabled, check all methods that override a
         // parent method to make sure its signature is
         // compatible with the parent's. This check

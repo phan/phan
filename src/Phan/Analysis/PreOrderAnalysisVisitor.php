@@ -488,7 +488,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             if (!($child_node instanceof Node)) {
                 continue;
             }
-            // Technically, `return [yield 2];` is a valid php use of yield. So Analysis::shouldVisit doesn't help much.
+            // Check for occurences of `yield`, including statements such as `return [yield 2];`.
             if (self::analyzeNodeHasYield($child_node)) {
                 return true;
             }
