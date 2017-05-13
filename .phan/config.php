@@ -87,10 +87,6 @@ return [
     // nodes.
     'should_visit_all_nodes' => true,
 
-    // Override if runkit.superglobal ini directive is used.
-    // See Phan\Config.
-    'runkit_superglobals' => [],
-
     // Override to hardcode existence and types of (non-builtin) globals.
     // Class names must be prefixed with '\\'.
     'globals_type_map' => [],
