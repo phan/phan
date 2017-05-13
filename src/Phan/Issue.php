@@ -892,7 +892,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7015
+                7013
             ),
             new Issue(
                 self::ParamSignatureRealMismatchReturnTypeInternal,
@@ -900,7 +900,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7016
+                7014
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamType,
@@ -908,7 +908,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7017
+                7015
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamTypeInternal,
@@ -916,7 +916,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7018
+                7016
             ),
             new Issue(
                 self::ParamSignatureRealMismatchHasParamType,
@@ -924,7 +924,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7019
+                7017
             ),
             new Issue(
                 self::ParamSignatureRealMismatchHasParamTypeInternal,
@@ -932,7 +932,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7020
+                7018
             ),
             new Issue(
                 self::ParamSignatureRealMismatchHasNoParamType,
@@ -940,7 +940,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7021
+                7019
             ),
             new Issue(
                 self::ParamSignatureRealMismatchHasNoParamTypeInternal,
@@ -948,7 +948,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7022
+                7020
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamVariadic,
@@ -956,7 +956,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7023
+                7021
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamVariadicInternal,
@@ -964,7 +964,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7024
+                7022
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamNotVariadic,
@@ -972,7 +972,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7025
+                7023
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamNotVariadicInternal,
@@ -980,7 +980,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7026
+                7024
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamIsReference,
@@ -988,7 +988,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7027
+                7025
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamIsReferenceInternal,
@@ -996,7 +996,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7028
+                7026
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamIsNotReference,
@@ -1004,7 +1004,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7029
+                7027
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamIsNotReferenceInternal,
@@ -1012,7 +1012,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7030
+                7028
             ),
             new Issue(
                 self::ParamSignatureRealMismatchTooFewParameters,
@@ -1020,7 +1020,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7031
+                7029
             ),
             new Issue(
                 self::ParamSignatureRealMismatchTooFewParametersInternal,
@@ -1028,7 +1028,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7032
+                7030
             ),
             new Issue(
                 self::ParamSignatureRealMismatchTooManyRequiredParameters,
@@ -1036,7 +1036,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Declaration of {METHOD} should be compatible with {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                7033
+                7031
             ),
             new Issue(
                 self::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
