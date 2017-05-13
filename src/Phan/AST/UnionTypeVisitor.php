@@ -23,11 +23,13 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\StaticType;
+use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use ast\Node;
 use ast\Node\Decl;
@@ -252,51 +254,6 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * Visit a node with kind `\ast\AST_COALESCE`
-     * (Null coalescing operator)
-     *
-     * @param Node $node
-     * A node of the type indicated by the method name that we'd
-     * like to figure out the type that it produces.
-     *
-     * @return UnionType
-     * The set of types that are possibly produced by the
-     * given node
-     */
-    public function visitCoalesce(Node $node) : UnionType
-    {
-        $union_type = new UnionType();
-
-        $left_type = self::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['left']
-        );
-
-        $right_type = self::unionTypeFromNode(
-            $this->code_base,
-            $this->context,
-            $node->children['right']
-        );
-
-        // On the left side, remove null and replace '?T' with 'T'
-        // Don't bother if the right side contains null.
-        if (!$right_type->isEmpty() && $left_type->containsNullable() && !$right_type->containsNullable()) {
-            $left_type = $left_type->nonNullableClone();
-        }
-
-        $union_type->addUnionType(
-            $left_type
-        );
-
-        $union_type->addUnionType(
-            $right_type
-        );
-
-        return $union_type;
-    }
-
-    /**
      * Visit a node with kind `\ast\AST_EMPTY`
      *
      * @param Node $node
@@ -441,7 +398,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return Type::fromStringInContext(
                 $node->children['name'],
                 $this->context,
-                false
+                Type::FROM_NODE
             )->asUnionType();
         }
 
@@ -472,6 +429,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return CallableType::instance(false)->asUnionType();
             case \ast\flags\TYPE_DOUBLE:
                 return FloatType::instance(false)->asUnionType();
+            case \ast\flags\TYPE_ITERABLE:
+                return IterableType::instance(false)->asUnionType();
             case \ast\flags\TYPE_LONG:
                 return IntType::instance(false)->asUnionType();
             case \ast\flags\TYPE_NULL:
@@ -480,11 +439,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return ObjectType::instance(false)->asUnionType();
             case \ast\flags\TYPE_STRING:
                 return StringType::instance(false)->asUnionType();
+            case \ast\flags\TYPE_VOID:
+                return VoidType::instance(false)->asUnionType();
             default:
                 assert(
                     false,
                     "All flags must match. Found "
-                    . Debug::astFlagDescription($node->flags ?? 0)
+                    . Debug::astFlagDescription($node->flags ?? 0, $node->kind)
                 );
                 break;
         }
@@ -1080,40 +1041,48 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitConst(Node $node) : UnionType
     {
         if ($node->children['name']->kind == \ast\AST_NAME) {
-            if (defined($node->children['name']->children['name'])) {
-                return Type::fromObject(
-                    constant($node->children['name']->children['name'])
-                )->asUnionType();
-            } else {
-                // Figure out the name of the constant if it's
-                // a string.
-                // NOTE: It seems like this will always be '' because defined() would catch everything except absence?
-                $constant_name =
-                    $node->children['name']->children['name'] ?? '';
-
-                // If the constant is referring to the current
-                // class, return that as a type
-                if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
-                    return $this->visitClassNode($node);
+            $name = $node->children['name']->children['name'];
+            if (defined($name)) {
+                // This constant is internal to php
+                $result = Type::fromReservedConstantName($name);
+                if ($result->isDefined()) {
+                    // And it's a reserved keyword such as false, null, E_ALL, etc.
+                    return $result->get()->asUnionType();
                 }
+                // TODO: use the CodeBase for all internal constants.
+                // defined() doesn't account for use statements in the codebase (`use ... as aliased_name`)
+                // TODO: The below code will act as though some constants from Phan exist in other codebases (e.g. EXIT_STATUS).
+                return Type::fromObject(
+                    constant($name)
+                )->asUnionType();
+            }
 
-                try {
+            // Figure out the name of the constant if it's
+            // a string.
+            $constant_name = $name ?? '';
+
+            // If the constant is referring to the current
+            // class, return that as a type
+            if (Type::isSelfTypeString($constant_name) || Type::isStaticTypeString($constant_name)) {
+                return $this->visitClassNode($node);
+            }
+
+            try {
                 $constant = (new ContextNode(
                     $this->code_base,
                     $this->context,
                     $node
                 ))->getConst();
-                } catch (IssueException $exception) {
-                    Issue::maybeEmitInstance(
-                        $this->code_base,
-                        $this->context,
-                        $exception->getIssueInstance()
-                    );
-                    return new UnionType;
-                }
-
-                return $constant->getUnionType();
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
+                return new UnionType;
             }
+
+            return $constant->getUnionType();
         }
 
         return new UnionType();
@@ -1723,7 +1692,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $type = Type::fromStringInContext(
                 $class_name,
                 $context,
-                false
+                Type::FROM_NODE
             );
         }
 

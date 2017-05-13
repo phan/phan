@@ -68,6 +68,7 @@ class CLI
                 'dead-code-detection',
                 'directory:',
                 'dump-ast',
+                'dump-parsed-file-list',
                 'dump-signatures-file:',
                 'exclude-directory-list:',
                 'exclude-file:',
@@ -87,6 +88,7 @@ class CLI
                 'config-file:',
                 'signature-compatibility',
                 'markdown-issue-messages',
+                'disable-plugins',
                 'daemonize-socket:',
                 'daemonize-tcp-port:',
                 'extended-help',
@@ -210,6 +212,9 @@ class CLI
                 case 'dump-ast':
                     Config::get()->dump_ast = true;
                     break;
+                case 'dump-parsed-file-list':
+                    Config::get()->dump_parsed_file_list = true;
+                    break;
                 case 'dump-signatures-file':
                     Config::get()->dump_signatures_file = $value;
                     break;
@@ -248,6 +253,10 @@ class CLI
                     // We handle this flag before parsing options so
                     // that we can get the project root directory to
                     // base other config flags values on
+                    break;
+                case 'disable-plugins':
+                    // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
+                    Config::get()->plugins = [];
                     break;
                 case 's':
                 case 'daemonize-socket':
@@ -397,6 +406,9 @@ class CLI
         return $this->file_list;
     }
 
+    // FIXME: If I stop using defined() in UnionTypeVisitor,
+    // this will warn about the undefined constant EXIT_SUCCESS when a
+    // user-defined constant is used in parse phase in a function declaration
     private function usage(string $msg = '', int $exit_code = EXIT_SUCCESS, bool $print_extended_help = false)
     {
         global $argv;
@@ -513,6 +525,11 @@ Extended help:
  -a, --dump-ast
   Emit an AST for each file rather than analyze.
 
+ --dump-parsed-file-list
+  Emit a newline-separated list of files Phan would parse to stdout.
+  This is useful to verify that options such as exclude_file_regex are
+  properly set up, or to run other checks on the files Phan would parse.
+
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
@@ -565,7 +582,9 @@ EOB;
                         return false;
                     }
 
-                    if ($exclude_file_regex && preg_match($exclude_file_regex,$file_info->getBasename())) {
+                    // Compare exclude_file_regex against the relative path within the project
+                    // (E.g. src/foo.php)
+                    if ($exclude_file_regex && self::isPathExcludedByRegex($exclude_file_regex, $file_info->getPathname())) {
                         return false;
                     }
 
@@ -577,6 +596,13 @@ EOB;
         } catch (\Exception $exception) {
             error_log($exception->getMessage());
         }
+        usort($file_list, function(string $a, string $b) : int {
+            // Sort lexicographically by paths **within the results for a directory**,
+            // to work around some file systems not returning results lexicographically.
+            // Keep directories together by replacing directory separators with the null byte
+            // (E.g. "a.b" is lexicographically less than "a/b", but "aab" is greater than "a/b")
+            return strcmp(preg_replace("@[/\\\\]+@", "\0", $a), preg_replace("@[/\\\\]+@", "\0", $b));
+        });
 
         return $file_list;
     }
@@ -585,6 +611,27 @@ EOB;
     {
         $config = Config::get();
         return $config->progress_bar && !$config->dump_ast && !$config->daemonize_tcp_port && !$config->daemonize_socket;
+    }
+
+    /**
+     * Check if a path name is excluded by regex, in a platform independent way.
+     * Normalizes $path_name on Windows so that '/' is always the directory separator.
+     *
+     * @param string $exclude_file_regex - PHP regex
+     * @param string $path_name - path name within project, beginning with user-provided directory name.
+     *                            On windows, may contain '\'.
+     *
+     * @return bool - True if the user's configured regex is meant to exclude $path_name
+     */
+    private static function isPathExcludedByRegex(
+        string $exclude_file_regex,
+        string $path_name
+    ) : bool {
+        // Make this behave the same way on linux/unix and on Windows.
+        if (DIRECTORY_SEPARATOR === '\\') {
+            $path_name = str_replace(DIRECTORY_SEPARATOR, '/', $path_name);
+        }
+        return preg_match($exclude_file_regex, $path_name) > 0;
     }
 
     /**

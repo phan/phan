@@ -39,8 +39,13 @@ class Config
         // (e.g. php, html, htm)
         'analyzed_file_extensions' => ['php'],
 
-        // A regular expression to filter out files with matching filenames.
-        // (e.g. '/Test\.php$/')
+        // A regular expression to match files to be excluded
+        // from parsing and analysis and will not be read at all.
+        //
+        // This is useful for excluding groups of test or example
+        // directories/files, unanalyzable files, or files that
+        // can't be removed for whatever reason.
+        // (e.g. '@Test\.php$@', or '@vendor/.*/(tests|Tests)/@')
         'exclude_file_regex' => '',
 
         // A file list that defines files that will be excluded
@@ -173,6 +178,13 @@ class Config
         // what references what.
         'dead_code_detection_prefer_false_negative' => true,
 
+        // If true, then try to simplify AST into a form which improves Phan's type inference.
+        // E.g. rewrites `if (!is_string($foo)) { return; } b($foo);`
+        // into `if (is_string($foo)) {b($foo);} else {return;}`
+        // This may conflict with 'dead_code_detection'.
+        // This option also slows down analysis noticeably.
+        'simplify_ast' => false,
+
         // If disabled, Phan will not read docblock type
         // annotation comments for @property.
         // @property-read and @property-write are treated exactly the
@@ -204,6 +216,10 @@ class Config
         // function and method signatures instead of analyzing files.
         'dump_signatures_file' => null,
 
+        // If set to true, we'll dump the list of files to parse
+        // to stdout instead of parsing and analyzing files.
+        'dump_parsed_file_list' => false,
+
         // Include a progress bar in the output
         'progress_bar' => false,
 
@@ -220,7 +236,7 @@ class Config
 
         // The vesion of the AST (defined in php-ast)
         // we're using
-        'ast_version' => 35,
+        'ast_version' => 40,
 
         // Set to true to emit profiling data on how long various
         // parts of Phan took to run. You likely don't care to do
@@ -368,6 +384,9 @@ class Config
         // Even if files are added or removed, or process counts change,
         // relatively few files will move to a different group.
         // (use when the number of files is much larger than the process count)
+        // NOTE: If you rely on Phan parsing files/directories in the order
+        // that they were provided in this config, don't use this)
+        // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
         'consistent_hashing_file_order' => false,
 
         // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.

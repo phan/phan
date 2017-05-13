@@ -132,6 +132,17 @@ class ParallelParentCollector implements IssueCollectorInterface
     }
 
     /**
+     * Remove all collected issues (from the parse phase) for the given file paths.
+     * Called from daemon mode.
+     *
+     * @param string[] $files - the relative paths to those files
+     * @return void
+     */
+    public function removeIssuesForFiles(array $files) {
+        return;  // Never going to be called - daemon mode isn't combined with parallel execution.
+    }
+
+    /**
      * @return IssueInstance[]
      */
     public function getCollectedIssues() : array

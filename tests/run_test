@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+if [ "$#" != 1 ]; then
+	echo "Usage: $0 \$TEST_SUITE" 1>&2
+	echo "E.g. PhanTest" 1>&2
+	exit 1
+fi
+TEST_SUITE="$1"
+if [ "x$TEST_SUITE" == "x" ]; then
+	echo "Provided TEST_SUITE param was empty" 1>&2
+	exit 1
+fi
+set -x
+case "$TEST_SUITE" in
+	__FakeSelfTest)
+		./phan
+		exit $?
+		;;
+	__FakeRewritingTest)
+		cd tests/rewriting_test
+		./test.sh
+		exit $?
+		;;
+	__FakePluginTest)
+		cd tests/plugin_test
+		./test.sh
+		exit $?
+		;;
+	__*)
+		echo "Unknown test '$TEST_SUITE' (Tests beginning with __ are not phpunit tests)" 1>&2
+		exit 1
+		;;
+	*)
+		./vendor/bin/phpunit --colors --testsuite "$TEST_SUITE"
+		exit $?
+		;;
+esac
+

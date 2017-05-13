@@ -10,7 +10,7 @@ class DuplicateFunctionAnalyzer
 {
 
     /**
-     * Check to see if the given Clazz is a duplicate
+     * Check to see if the given FunctionInterface is a duplicate
      *
      * @return void
      */

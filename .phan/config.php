@@ -67,9 +67,26 @@ return [
     // time
     "quick_mode" => false,
 
+    // If true, then try to simplify AST into a form which improves Phan's type inference.
+    // E.g. rewrites `if (!is_string($foo)) { return; } b($foo);`
+    // into `if (is_string($foo)) {b($foo);} else {return;}`
+    // This may conflict with 'dead_code_detection'
+    // This slows down analysis noticeably.
+    "simplify_ast" => false,
+
     // Enable or disable support for generic templated
     // class types.
     'generic_types_enabled' => true,
+
+    // Setting this to true makes the process assignment for file analysis
+    // as predictable as possible, using consistent hashing.
+    // Even if files are added or removed, or process counts change,
+    // relatively few files will move to a different group.
+    // (use when the number of files is much larger than the process count)
+    // NOTE: If you rely on Phan parsing files/directories in the order
+    // that they were provided in this config, don't use this)
+    // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
+    'consistent_hashing_file_order' => false,
 
     // By default, Phan will analyze all node types.
     // If this config is set to false, Phan will do a
@@ -79,10 +96,6 @@ return [
     // See \Phan\Analysis::shouldVisit for the set of skipped
     // nodes.
     'should_visit_all_nodes' => true,
-
-    // Override if runkit.superglobal ini directive is used.
-    // See Phan\Config.
-    'runkit_superglobals' => [],
 
     // Override to hardcode existence and types of (non-builtin) globals.
     // Class names must be prefixed with '\\'.
@@ -195,6 +208,15 @@ return [
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
+    // A regular expression to match files to be excluded
+    // from parsing and analysis and will not be read at all.
+    //
+    // This is useful for excluding groups of test or example
+    // directories/files, unanalyzable files, or files that
+    // can't be removed for whatever reason.
+    // (e.g. '@Test\.php$@', or '@vendor/.*/(tests|Tests)/@')
+    'exclude_file_regex' => '@^vendor/.*/(tests|Tests)/@',
+
     // A file list that defines files that will be excluded
     // from parsing and analysis and will not be read at all.
     //
@@ -218,6 +240,7 @@ return [
         'tests/Phan',
         'vendor/phpunit/phpunit/src',
         'vendor/symfony/console',
+        '.phan/plugins',
         '.phan/stubs',
     ],
 

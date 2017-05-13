@@ -91,12 +91,14 @@ class DemoPlugin extends PluginImplementation {
         // As an example, we test to see if the name of
         // the class is `Class`, and emit an issue explain that
         // the name is not allowed.
+        // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($class->getName() == 'Class') {
             $this->emitIssue(
                 $code_base,
                 $class->getContext(),
                 'DemoPluginClassName',
-                "Class {$class->getFQSEN()} cannot be called `Class`"
+                "Class {CLASS} cannot be called `Class`"
+                [(string)$class->getFQSEN()]
             );
         }
     }
@@ -116,12 +118,14 @@ class DemoPlugin extends PluginImplementation {
     ) {
         // As an example, we test to see if the name of the
         // method is `function`, and emit an issue if it is.
+        // NOTE: Placeholders can be found in \Phan\Issue::uncolored_format_string_for_replace
         if ($method->getName() == 'function') {
             $this->emitIssue(
                 $code_base,
                 $method->getContext(),
                 'DemoPluginMethodName',
-                "Method {$method->getFQSEN()} cannot be called `function`"
+                "Method {METHOD} cannot be called `function`",
+                [(string)$method->getFQSEN()]
             );
         }
     }
@@ -146,7 +150,8 @@ class DemoPlugin extends PluginImplementation {
                 $code_base,
                 $function->getContext(),
                 'DemoPluginFunctionName',
-                "Function {$function->getFQSEN()} cannot be called `function`"
+                "Function {FUNCTION} cannot be called `function`",
+                [(string)$function->getFQSEN()]
             );
         }
     }

@@ -23,6 +23,8 @@ New Features (Analysis)
   (Adds `PhanAccessConstantInternal`, `PhanAccessClassInternal`, `PhanAccessClassConstantInternal`, `PhanAccessPropertyInternal`, `PhanAccessMethodInternal`)
   (The implementation may change)
 + Make conditionals such as `is_string` start applying to the condition in ternary operators (`$a ? $b : $c`)
++ Treat `resource`, `object`, and `mixed` as native types only when they occur in phpdoc.
+  Outside of phpdoc (e.g. `$x instanceof resource`), analyze those names as if they were class names.
 
 New Features (CLI, Configs)
 + (Linux/Unix only) Add Experimental Phan Daemon mode (PR #563 for Issue #22), which allows phan to run in the background, and accept TCP requests to analyze single files.
@@ -31,7 +33,13 @@ New Features (CLI, Configs)
   Client usage: `path/to/phan_client --daemonize-tcp-port 4846 -l src/file1.php [ -l src/file2.php ]`
 + Add `--color` CLI flag, with rudimentary unix terminal coloring for the plain text output formatter. (Issue #363)
   Color schemes are customizable with `color_scheme`, in the config file.
-+ Add a config to excludes file paths from a regular expression (e.g. tests or example files mixed with the codebase) (#635)
++ Add the `exclude_file_regex` config to exclude file paths based on a regular expression (e.g. tests or example files mixed with the codebase) (#635)
+  The regular expression is run against the relative path within the project.
++ Add `--dump-parsed-file-list` option to print files which Phan would parse.
++ Add experimental `simplify_ast` config, to simplify the AST into a form which improves Phan's type inference.
+  (E.g. handles some variable declarations within `if ()` statements.
+   Infers that $x is a string for constructs such as `if (!is_string($x)) {return;} function_using_x($x);`)
+  This is slow, and disabled by default.
 
 Maintenance
 + Update function signature map to analyze `iterable` and `is_iterable` from php 7.1
@@ -42,7 +50,15 @@ Bug Fixes
 - Fix PhanTypeMismatchArgument, etc. for uses of `new static()`, static::CONST, etc in a method. (Issue #632)
 - Fix uncaught exception when conditional node is a scalar (Issue #613)
 - Existence of __get() no longer affects analyzing static properties. (Issue #610)
+- Phan can now detect the declaration of constants relative to a `use`d namespace (Issue #509)
+- Phan can now detect the declaration of functions relative to a `use`d namespace (Issue #510)
 
+Backwards Incompatible Changes
+- Declarations of user-defined constants are now consistently
+  analyzed in a case sensitive way.
+  This may affect projects using `define(name, value, case_insensitive = true)`.
+  Change the code being analyzed to exactly match the constant name in define())
+ 
 ### Backported from Phan 0.9.1
 
 New Features (Analysis)

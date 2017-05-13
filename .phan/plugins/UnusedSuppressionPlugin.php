@@ -6,7 +6,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
-use Phan\Language\Element\TypedElement;
+use Phan\Language\Element\AddressableElement;
 use Phan\Plugin;
 use Phan\Plugin\PluginImplementation;
 use ast\Node;
@@ -23,14 +23,15 @@ class UnusedSuppressionPlugin extends PluginImplementation {
      * @param CodeBase $code_base
      * The code base in which the function exists
      *
-     * @param TypedElement $element
+     * @param AddressableElement $element
      * Any element such as function, method, class
+     * (which has an FQSEN)
      *
      * @return void
      */
-    private function analyzeTypedElement(
+    private function analyzeAddressableElement(
         CodeBase $code_base,
-        TypedElement $element
+        AddressableElement $element
     ) {
         // Get the set of suppressed issues on the element
         $suppress_issue_list =
@@ -43,7 +44,8 @@ class UnusedSuppressionPlugin extends PluginImplementation {
                     $code_base,
                     $element->getContext(),
                     'UnusedSuppression',
-                    "Element {$element->getFQSEN()} suppresses issue $issue_type but does not use it"
+                    "Element {FUNCTIONLIKE} suppresses issue {ISSUETYPE} but does not use it",
+                    [(string)$element->getFQSEN(), $issue_type]
                 );
             }
         }
@@ -62,7 +64,7 @@ class UnusedSuppressionPlugin extends PluginImplementation {
         CodeBase $code_base,
         Clazz $class
     ) {
-        $this->analyzeTypedElement($code_base, $class);
+        $this->analyzeAddressableElement($code_base, $class);
     }
 
     /**
@@ -84,7 +86,7 @@ class UnusedSuppressionPlugin extends PluginImplementation {
             return;
         }
 
-        $this->analyzeTypedElement($code_base, $method);
+        $this->analyzeAddressableElement($code_base, $method);
     }
 
     /**
@@ -100,7 +102,7 @@ class UnusedSuppressionPlugin extends PluginImplementation {
         CodeBase $code_base,
         Func $function
     ) {
-        $this->analyzeTypedElement($code_base, $function);
+        $this->analyzeAddressableElement($code_base, $function);
     }
 
 }

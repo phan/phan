@@ -209,6 +209,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
                 $this->code_base, $child_context, $node, $this->depth + 1
             ))($child_node);
 
+            // TODO(Issue #406): We can improve analysis of `if` blocks by using
+            // a BlockExitStatusChecker to avoid propogating invalid inferences.
+            // However, we need to check for a try block between this line's scope
+            // and the parent function's (or global) scope,
+            // to reduce false positives.
+            // (Variables will be available in `catch` and `finally`)
             $child_context_list[] = $child_context;
         }
 
@@ -594,6 +600,43 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         ConfigPluginSet::instance()->analyzeNode(
             $this->code_base, $context, $node, $this->parent_node
         );
+        return $context;
+    }
+
+    /**
+     * Analyzes a node of type \ast\AST_GROUP_USE
+     * This is the same as visit(), but does not recurse into the child nodes.
+     *
+     * If this function override didn't exist,
+     * then visit() would recurse into \ast\AST_USE,
+     * which would lack part of the namespace.
+     * (E.g. for use \NS\{const X, const Y}, we don't want to analyze const X or const Y
+     * without the preceding \NS\)
+     */
+    public function visitGroupUse(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        // Visit the given node populating the code base
+        // with anything we learn and get a new context
+        // indicating the state of the world within the
+        // given node
+        $context = (new PreOrderAnalysisVisitor(
+            $this->code_base, $context
+        ))($node);
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base, $context, $node
+        );
+
+        assert(!empty($context), 'Context cannot be null');
+
+        $context = $this->postOrderAnalyze($context, $node);
+
         return $context;
     }
 }

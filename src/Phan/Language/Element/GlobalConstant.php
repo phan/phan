@@ -1,8 +1,11 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\CodeBase;
+use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\Type;
 use Phan\Language\UnionType;
 
 class GlobalConstant extends AddressableElement implements ConstantInterface
@@ -33,5 +36,34 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     {
         assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
+    }
+
+    /**
+     * @param string $class_name
+     * The name of a builtin constant to build a new GlobalConstant structural
+     * element from.
+     *
+     * @return GlobalConstant
+     * A GlobalConstant structural element representing the given named
+     * builtin constant.
+     */
+    public static function fromGlobalConstantName(
+        CodeBase $code_base,
+        string $name
+    ) : GlobalConstant {
+        if (!defined($name)) {
+            throw new \InvalidArgumentException("This should not happen, const '$name' does not exist");
+        }
+        $value = constant($name);
+        $constant_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+            '\\' . $name
+        );
+        return new self(
+            new Context(),
+            $name,
+            Type::fromObject($value)->asUnionType(),
+            0,
+            $constant_fqsen
+        );
     }
 }

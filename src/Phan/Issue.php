@@ -270,7 +270,8 @@ class Issue
             $key = $matches[1];
             $replacement_exists = array_key_exists($key, self::uncolored_format_string_for_template);
             if (!$replacement_exists) {
-                error_log(sprintf("No coloring info for issue message (%s), key {%s}", $template, $key));
+                error_log(sprintf("No coloring info for issue message (%s), key {%s}. Valid template types: %s",
+                    $template, $key, implode(', ', array_keys(self::uncolored_format_string_for_template))));
                 return '%s';
             }
             return self::uncolored_format_string_for_template[$key];
