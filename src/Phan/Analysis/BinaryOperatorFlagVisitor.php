@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Analysis;
 
+use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
@@ -420,5 +421,47 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
         );
 
         return BoolType::instance(false)->asUnionType();
+    }
+
+    /**
+     * Common visitor for binary boolean operations
+     *
+     * @param Node $node
+     * A node to check types on
+     *
+     * @return UnionType
+     * The resulting type(s) of the binary operation
+     */
+    public function visitBinaryCoalesce(Node $node) : UnionType
+    {
+        $union_type = new UnionType();
+
+        $left_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['left']
+        );
+
+        $right_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['right']
+        );
+
+        // On the left side, remove null and replace '?T' with 'T'
+        // Don't bother if the right side contains null.
+        if (!$right_type->isEmpty() && $left_type->containsNullable() && !$right_type->containsNullable()) {
+            $left_type = $left_type->nonNullableClone();
+        }
+
+        $union_type->addUnionType(
+            $left_type
+        );
+
+        $union_type->addUnionType(
+            $right_type
+        );
+
+        return $union_type;
     }
 }
