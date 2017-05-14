@@ -12,6 +12,7 @@ use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NativeType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
@@ -19,6 +20,9 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
+use Phan\Library\None;
+use Phan\Library\Option;
+use Phan\Library\Some;
 use Phan\Library\Tuple4;
 
 class Type
@@ -84,6 +88,35 @@ class Type
         'string'    => true,
         'void'      => true,
     ];
+
+    /**
+     * These can currently be used in phpdoc but not real types.
+     * This is a subset of self::_internal_type_set
+     *
+     * https://secure.php.net/manual/en/reserved.other-reserved-words.php
+     * > The following list of words have had soft reservations placed on them.
+     * > Whilst they may still be used as class, interface, and trait names (as well as in namespaces),
+     * > usage of them is highly discouraged since they may be used in future versions of PHP.
+     *
+     * (numeric not supported yet)
+     */
+    const _soft_internal_type_set = [
+        'mixed'     => true,
+        'object'    => true,
+        'resource'  => true,
+    ];
+
+    // Distinguish between multiple ways types can be created.
+    // e.g. integer and resource are phpdoc types, but they aren't actual types.
+
+    /** For types created from a type in an AST node, e.g. `int $x` */
+    const FROM_NODE = 0;
+
+    /** For types copied from another type, e.g. `$x = $y` gets types from $y */
+    const FROM_TYPE = 1;
+
+    /** For types copied from phpdoc, e.g. `@param integer $x` */
+    const FROM_PHPDOC = 2;
 
     /**
      * @var string|null
@@ -154,9 +187,9 @@ class Type
      * True if this type can be null, false if it cannot
      * be null.
      *
-     * @param bool $is_phpdoc_type
-     * True if $type_name was extracted from a doc comment.
-     * (Outside of phpdoc, "integer" would be a class name)
+     * @param int $source
+     * Type::FROM_NODE, Type::FROM_TYPE, or Type::FROM_PHPDOC
+     * (E.g. outside of phpdoc, "integer" would be a class name)
      *
      * @return Type
      * A single canonical instance of the given type.
@@ -166,12 +199,12 @@ class Type
         string $type_name,
         $template_parameter_type_list,
         bool $is_nullable,
-        bool $is_phpdoc_type
+        int $source
     ) : Type {
 
         $namespace = trim($namespace);
 
-        if ('\\' === $namespace && $is_phpdoc_type) {
+        if ('\\' === $namespace && $source) {
             $type_name = self::canonicalNameFromName($type_name);
         }
 
@@ -185,7 +218,7 @@ class Type
                 substr($type_name, 0, $pos),
                 $template_parameter_type_list,
                 false,
-                $is_phpdoc_type
+                $source
             ), $is_nullable);
         }
 
@@ -215,7 +248,7 @@ class Type
         // Create a canonical representation of the
         // namespace and name
         $namespace = $namespace ?: '\\';
-        if ('\\' === $namespace && $is_phpdoc_type) {
+        if ('\\' === $namespace && $source === Type::FROM_PHPDOC) {
             $type_name = self::canonicalNameFromName($type_name);
         }
 
@@ -303,8 +336,94 @@ class Type
             $type->getName(),
             $template_parameter_type_list,
             $type->getIsNullable(),
-            false
+            Type::FROM_TYPE
         );
+    }
+
+    /**
+     * If the $name is a reserved constant, then returns the NativeType for that name
+     * Otherwise, this returns null.
+     * @return Option<NativeType>
+     */
+    public static function fromReservedConstantName(string $name) : Option {
+        static $lookup;
+        if ($lookup === null) {
+            $lookup = self::createReservedConstantNameLookup();
+        }
+        $result = $lookup[strtoupper(ltrim($name, '\\'))] ?? null;
+        if (isset($result)) {
+            return new Some($result);
+        }
+        return new None;
+    }
+
+    /**
+     * @return NativeType[] a map from the **uppercase** reserved constant name to the subclass of NativeType for that constant.
+     * Uses the constants and types from https://secure.php.net/manual/en/reserved.constants.php
+     */
+    private static function createReservedConstantNameLookup() : array {
+        $int = IntType::instance(false);
+        $bool = BoolType::instance(false);
+        $null = NullType::instance(false);
+        $string = StringType::instance(false);
+        $float  = FloatType::instance(false);
+        return [
+            'PHP_VERSION'           => $string,
+            'PHP_MAJOR_VERSION'     => $int,
+            'PHP_MINOR_VERSION'     => $int,
+            'PHP_RELEASE_VERSION'   => $int,
+            'PHP_VERSION_ID'        => $int,
+            'PHP_EXTRA_VERSION'     => $string,
+            'PHP_ZTS'               => $int,
+            'PHP_MAXPATHLEN'        => $int,
+            'PHP_OS'                => $string,
+            'PHP_OS_FAMILY'         => $string,
+            'PHP_SAPI'              => $string,
+            'PHP_EOL'               => $string,
+            'PHP_INT_MAX'           => $int,
+            'PHP_INT_MIN'           => $int,  // since 7.0.0
+            'PHP_INT_SIZE'          => $int,  // since 7.0.0
+            //'PHP_FLOAT_DIG'         => $int,  // since 7.2.0
+            //'PHP_FLOAT_EPSILON'     => $float,  // since 7.2.0
+            //'PHP_FLOAT_MIN'         => $int, // since 7.2.0
+            //'PHP_FLOAT_MAX'         => $int, // since 7.2.0
+            'DEFAULT_INCLUDE_PATH'  => $string,
+            'PEAR_INSTALL_DIR'      => $string,
+            'PEAR_EXTENSION_DIR'    => $string,
+            'PHP_EXTENSION_DIR'     => $string,
+            'PEAR_EXTENSION_DIR'    => $string,
+            'PHP_PREFIX'            => $string,
+            'PHP_BINDIR'            => $string,
+            'PHP_BINARY'            => $string,
+            'PHP_MANDIR'            => $string,
+            'PHP_LIBDIR'            => $string,
+            'PHP_DATADIR'           => $string,
+            'PHP_SYSCONFDIR'        => $string,
+            'PHP_LOCALSTATEDIR'     => $string,
+            'PHP_CONFIG_FILE_PATH'  => $string,
+            'PHP_CONFIG_FILE_SCAN_DIR' => $string,
+            'PHP_SHLIB_SUFFIX'      => $string,
+            //'PHP_FD_SETSIZE'            => $int,  // 7.2.0 TODO: web page documentation is wrong, says string.
+            'E_ERROR'               => $int,
+            'E_WARNING'             => $int,
+            'E_PARSE'               => $int,
+            'E_NOTICE'              => $int,
+            'E_CORE_ERROR'          => $int,
+            'E_CORE_WARNING'        => $int,
+            'E_COMPILE_ERROR'       => $int,
+            'E_COMPILE_WARNING'     => $int,
+            'E_USER_ERROR'          => $int,
+            'E_USER_WARNING'        => $int,
+            'E_USER_NOTICE'         => $int,
+            'E_DEPRECATED'          => $int,
+            'E_USER_DEPRECATED'     => $int,
+            'E_ALL'                 => $int,
+            'E_STRICT'              => $int,
+            '__COMPILER_HALT_OFFSET__' => $int,
+            'TRUE'                  => $bool,
+            'FALSE'                 => $bool,
+            'NULL'                  => $null,
+        ];
     }
 
     /**
@@ -313,7 +432,8 @@ class Type
      */
     public static function fromObject($object) : Type
     {
-        return Type::fromInternalTypeName(gettype($object), false, true);
+        // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
+        return Type::fromInternalTypeName(gettype($object), false, self::FROM_PHPDOC);
     }
 
     /**
@@ -324,13 +444,15 @@ class Type
      * Set to true if the type should be nullable, else pass
      * false
      *
+     * @param int $source Type::FROM_*
+     *
      * @return Type
      * Get a type for the given type name
      */
     public static function fromInternalTypeName(
         string $type_name,
         bool $is_nullable,
-        bool $is_phpdoc_type = false
+        int $source
     ) : Type {
 
         // If this is a generic type (like int[]), return
@@ -344,7 +466,7 @@ class Type
                 self::fromInternalTypeName(
                     substr($type_name, 0, $pos),
                     false,
-                    $is_phpdoc_type
+                    $source
                 ),
                 $is_nullable
             );
@@ -409,7 +531,7 @@ class Type
         string $type_name,
         bool  $is_nullable
     ) : Type {
-        return self::make($namespace, $type_name, [], $is_nullable, false);
+        return self::make($namespace, $type_name, [], $is_nullable, Type::FROM_NODE);
     }
 
     public static function fromReflectionType(
@@ -419,7 +541,7 @@ class Type
         return self::fromStringInContext(
             (string)$reflection_type,
             new Context(),
-            false
+            Type::FROM_NODE
         );
     }
 
@@ -453,7 +575,7 @@ class Type
             return self::fromInternalTypeName(
                 $fully_qualified_string,
                 $is_nullable,
-                false
+                Type::FROM_NODE
             );
         }
 
@@ -477,7 +599,7 @@ class Type
             $type_name,
             $template_parameter_type_list,
             $is_nullable,
-            false
+            Type::FROM_NODE
         );
     }
 
@@ -489,8 +611,8 @@ class Type
      * The context in which the type string was
      * found
      *
-     * @param bool $is_phpdoc_type
-     * True if $string was extracted from a doc comment.
+     * @param int $source
+     * Type::FROM_NODE, Type::FROM_TYPE, or Type::FROM_PHPDOC
      *
      * @return Type
      * Parse a type from the given string
@@ -498,7 +620,7 @@ class Type
     public static function fromStringInContext(
         string $string,
         Context $context,
-        bool $is_phpdoc_type = false
+        int $source
     ) : Type {
 
         assert(
@@ -517,8 +639,8 @@ class Type
         // Map the names of the types to actual types in the
         // template parameter type list
         $template_parameter_type_list =
-            array_map(function (string $type_name) use ($context, $is_phpdoc_type) {
-                return Type::fromStringInContext($type_name, $context, $is_phpdoc_type)->asUnionType();
+            array_map(function (string $type_name) use ($context, $source) {
+                return Type::fromStringInContext($type_name, $context, $source)->asUnionType();
             }, $template_parameter_type_name_list);
 
         // @var bool
@@ -564,7 +686,7 @@ class Type
                     $fqsen->getName(),
                     $template_parameter_type_list,
                     false,
-                    $is_phpdoc_type
+                    $source
                 ), $is_nullable);
             }
 
@@ -573,7 +695,7 @@ class Type
                 $fqsen->getName(),
                 $template_parameter_type_list,
                 $is_nullable,
-                $is_phpdoc_type
+                $source
             );
         }
 
@@ -585,16 +707,12 @@ class Type
                 $type_name,
                 $template_parameter_type_list,
                 $is_nullable,
-                $is_phpdoc_type
+                $source
             );
         }
 
-        if (self::isInternalTypeString($type_name, $is_phpdoc_type)) {
-            return self::fromInternalTypeName($type_name, $is_nullable, $is_phpdoc_type);
-        }
-
-        if ($is_phpdoc_type && ($namespace ?: '\\') === '\\') {
-            $type_name = self::canonicalNameFromName($type_name);
+        if (self::isInternalTypeString($type_name, $source)) {
+            return self::fromInternalTypeName($type_name, $is_nullable, $source);
         }
 
         // Things like `self[]` or `$this[]`
@@ -653,7 +771,7 @@ class Type
             $type_name,
             $template_parameter_type_list,
             $is_nullable,
-            $is_phpdoc_type
+            $source
         );
     }
 
@@ -731,7 +849,7 @@ class Type
             $this->getName(),
             $this->getTemplateParameterTypeList(),
             $is_nullable,
-            false
+            Type::FROM_TYPE
         );
     }
 
@@ -753,13 +871,20 @@ class Type
      * @see \Phan\Deprecated\Util::is_native_type
      * Formerly `function is_native_type`
      */
-    private static function isInternalTypeString(string $type_name, bool $is_phpdoc_type) : bool
+    private static function isInternalTypeString(string $type_name, int $source) : bool
     {
         $type_name = str_replace('[]', '', strtolower($type_name));
-        if ($is_phpdoc_type) {
+        if ($source === Type::FROM_PHPDOC) {
             $type_name = self::canonicalNameFromName($type_name);  // Have to convert boolean[] to bool
         }
-        return array_key_exists($type_name, self::_internal_type_set);
+        if (!array_key_exists($type_name, self::_internal_type_set)) {
+            return false;
+        }
+        // All values of $type_name exist as a valid phpdoc type, but some don't exist as real types.
+        if ($source === Type::FROM_NODE && array_key_exists($type_name, self::_soft_internal_type_set)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -909,7 +1034,7 @@ class Type
                 substr($this->getName(), 0, $pos),
                 $this->template_parameter_type_list,
                 $this->getIsNullable(),
-                false
+                self::FROM_TYPE
             );
         }
 

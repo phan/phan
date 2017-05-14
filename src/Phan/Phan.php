@@ -96,6 +96,13 @@ class Phan implements IgnoredFilesFilterInterface {
             sort($file_path_list, SORT_STRING);
         }
 
+        if (Config::get()->dump_parsed_file_list === true) {
+            // If --dump-parsed-file-list is provided,
+            // print the files in the order they would be parsed.
+            echo implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
+            exit(EXIT_SUCCESS);
+        }
+
         // This first pass parses code and populates the
         // global state we'll need for doing a second
         // analysis after.
@@ -121,6 +128,10 @@ class Phan implements IgnoredFilesFilterInterface {
                 $analyze_file_path_list[] = $file_path;
 
 
+            } catch (\AssertionError $assertion_error) {
+                error_log("While parsing $file_path...\n");
+                error_log("$assertion_error\n");
+                exit(EXIT_FAILURE);
             } catch (\Throwable $throwable) {
                 error_log($file_path . ' ' . $throwable->getMessage() . "\n");
                 $code_base->recordUnparseableFile($file_path);
@@ -137,6 +148,8 @@ class Phan implements IgnoredFilesFilterInterface {
         if (is_string(Config::get()->dump_signatures_file)) {
             exit(self::dumpSignaturesToFile($code_base, Config::get()->dump_signatures_file));
         }
+
+        $temporary_file_mapping = [];
 
         $request = null;
         if ($is_daemon_request) {
@@ -159,6 +172,9 @@ class Phan implements IgnoredFilesFilterInterface {
             if (count($analyze_file_path_list) === 0)  {
                 $request->respondWithNoFilesToAnalyze();  // respond and exit.
             }
+            // Do this before we stop tracking undo operations.
+            $temporary_file_mapping = $request->getTemporaryFileMapping();
+
             // Stop tracking undo operations, now that the parse phase is done.
             $code_base->disableUndoTracking();
         }
@@ -222,9 +238,9 @@ class Phan implements IgnoredFilesFilterInterface {
 
         // This worker takes a file and analyzes it
         $analysis_worker = function($i, $file_path)
-            use ($file_count, $code_base) {
+            use ($file_count, $code_base, $temporary_file_mapping) {
                 CLI::progress('analyze', ($i + 1) / $file_count);
-                Analysis::analyzeFile($code_base, $file_path);
+                Analysis::analyzeFile($code_base, $file_path, $temporary_file_mapping[$file_path] ?? null);
             };
 
         // Determine how many processes we're running on. This may be

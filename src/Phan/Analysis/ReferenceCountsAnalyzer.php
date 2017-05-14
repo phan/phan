@@ -13,6 +13,14 @@ use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Library\Map;
+use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
+use Phan\Language\FQSEN\FullyQualifiedClassElement;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
+use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
 class ReferenceCountsAnalyzer
 {
@@ -227,6 +235,16 @@ class ReferenceCountsAnalyzer
             }
 
             if ($element instanceof AddressableElement) {
+                $element_alt = self::findAlternateReferencedElementDeclaration($code_base, $element);
+                if (!is_null($element_alt)) {
+                    if ($element_alt->getReferenceCount($code_base) >= 1) {
+                        // If there is a reference to the "canonical" declaration (the one which was parsed first),
+                        // then also treat it as a reference to the duplicate.
+                        return;
+                    }
+                }
+
+                // If there are duplicate declarations, display issues for unreferenced elements on each declaration.
                 Issue::maybeEmit(
                     $code_base,
                     $element->getContext(),
@@ -244,5 +262,62 @@ class ReferenceCountsAnalyzer
                 );
             }
         }
+    }
+
+    /**
+     * @return ?AddressableElement
+     */
+    public static function findAlternateReferencedElementDeclaration(
+        CodeBase $code_base,
+        AddressableElement $element
+    ) {
+        $old_fqsen = $element->getFQSEN();
+        if ($old_fqsen instanceof FullyQualifiedGlobalStructuralElement) {
+            $fqsen = $old_fqsen->getCanonicalFQSEN();
+            if ($fqsen === $old_fqsen) {
+                return null;  // $old_fqsen was not an alternaive
+            }
+            if ($fqsen instanceof FullyQualifiedFunctionName) {
+                if ($code_base->hasFunctionWithFQSEN($fqsen)) {
+                    return $code_base->getFunctionByFQSEN($fqsen);
+                }
+                return null;
+            } else if ($fqsen instanceof FullyQualifiedClassName) {
+                if ($code_base->hasClassWithFQSEN($fqsen)) {
+                    return $code_base->getClassByFQSEN($fqsen);
+                }
+                return null;
+            } else if ($fqsen instanceof FullyQualifiedGlobalConstantName) {
+                if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
+                    return $code_base->getGlobalConstantByFQSEN($fqsen);
+                }
+                return null;
+            }
+        } else if ($old_fqsen instanceof FullyQualifiedClassElement) {
+            // If this needed to be more thorough,
+            // the code adding references could treat uses from within the classes differently from outside.
+            $fqsen = $old_fqsen->getCanonicalFQSEN();
+            if ($fqsen === $old_fqsen) {
+                return null;  // $old_fqsen was not an alternative
+            }
+
+            if ($fqsen instanceof FullyQualifiedMethodName) {
+                if ($code_base->hasMethodWithFQSEN($fqsen)) {
+                    return $code_base->getMethodByFQSEN($fqsen);
+                }
+                return null;
+            } else if ($fqsen instanceof FullyQualifiedPropertyName) {
+                if ($code_base->hasPropertyWithFQSEN($fqsen)) {
+                    return $code_base->getPropertyByFQSEN($fqsen);
+                }
+                return null;
+            } else if ($fqsen instanceof FullyQualifiedClassConstantName) {
+                if ($code_base->hasClassConstantWithFQSEN($fqsen)) {
+                    return $code_base->getClassConstantByFQSEN($fqsen);
+                }
+                return null;
+            }
+        }
+        return null;
     }
 }

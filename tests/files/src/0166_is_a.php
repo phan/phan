@@ -1,6 +1,6 @@
 <?php
-
-function emitType(resource $var) {}
+/** @param resource $var */
+function emitType($var) {}
 
 function emitResourceType(string $var) {}
 

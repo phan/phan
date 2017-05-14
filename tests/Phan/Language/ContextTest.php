@@ -17,7 +17,7 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
     protected $code_base = null;
 
     protected function setUp() {
-        $this->code_base = new CodeBase([], [], [], []);
+        $this->code_base = new CodeBase([], [], [], [], []);
     }
 
     protected function tearDown() {

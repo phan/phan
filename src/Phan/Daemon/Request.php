@@ -20,6 +20,7 @@ class Request {
     const PARAM_METHOD = 'method';
     const PARAM_FILES  = 'files';
     const PARAM_FORMAT = 'format';
+    const PARAM_TEMPORARY_FILE_MAPPING_CONTENTS = 'temporary_file_mapping_contents';
 
     // success codes
     const STATUS_OK = 'ok';  // unrecognized output format
@@ -135,6 +136,16 @@ class Request {
         }
         Daemon::debugf("Returning file set: %s", json_encode($filteredFiles));
         return $filteredFiles;
+    }
+
+    /**
+     * TODO: convert absolute path to relative paths.
+     * @return string[] - Maps original relative file paths to contents.
+     */
+    public function getTemporaryFileMapping() : array {
+        $mapping = $this->config[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
+        Daemon::debugf("Have the following files in mapping: %s", json_encode(array_keys($mapping)));
+        return $mapping;
     }
 
     /**
@@ -264,6 +275,23 @@ class Request {
             } else {
                 $error_message = 'Must pass a non-empty array of file paths for field files';
             }
+            if (is_null($error_message)) {
+                $file_mapping_contents = $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
+                if (!is_array($file_mapping_contents)) {
+                    $error_message = 'Invalid value of temporary_file_mapping_contents';
+                }
+                $new_file_mapping_contents = [];
+                foreach ($file_mapping_contents ?? [] as $file => $contents) {
+                    $new_file_mapping_contents[FileRef::getProjectRelativePathForPath($file)] = $contents;
+                    if (!is_string($file)) {
+                        $error_message = 'Passed non-string in list of files to map';
+                        break;
+                    } else if (!is_string($contents)) {
+                        $error_message = 'Passed non-string in as new file contents';
+                    }
+                }
+                $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] = $new_file_mapping_contents;
+            }
             if ($error_message !== null) {
                 Daemon::debugf($error_message);
                 self::sendJSONResponseOverSocket($conn, [
@@ -294,7 +322,12 @@ class Request {
             Daemon::debugf("This is the fork");
             self::$child_pids = [];
             // TODO: Re-parse the file list.
-            return new self($conn, $request);;
+            $request_obj = new self($conn, $request);
+            $temporary_file_mapping = $request_obj->getTemporaryFileMapping();
+            if (count($temporary_file_mapping) > 0) {
+                self::applyTemporaryFileMappingForParsePhase($code_base, $temporary_file_mapping);
+            }
+            return $request_obj;
         } else {
             $pid = $fork_result;
             $status = self::$exited_pid_status[$pid] ?? null;
@@ -360,5 +393,52 @@ class Request {
             }
         }
         Daemon::debugf("Done parsing modified files");
+    }
+
+    /**
+     * Substitutes files. We assume that the original file path exists already, and reject it if it doesn't.
+     * (i.e. it was returned by $file_path_lister in the past)
+     *
+     * @return void
+     */
+    private static function applyTemporaryFileMappingForParsePhase(CodeBase $code_base, array $temporary_file_mapping_contents) {
+        $oldCount = $code_base->getParsedFilePathCount();
+        if (count($temporary_file_mapping_contents) === 0) {
+            return;
+        }
+
+        // too verbose
+        Daemon::debugf("Parsing temporary file mapping contents: New contents = %s", json_encode($temporary_file_mapping_contents));
+
+        $changesToAdd = [];
+        foreach ($temporary_file_mapping_contents as $file_name => $contents) {
+            if ($code_base->beforeReplaceFileContents($file_name, $contents)) {
+                $changesToAdd[$file_name] = $contents;
+            }
+        }
+        Daemon::debugf("Done setting temporary file contents: Will replace contents of the following files: %s", json_encode(array_keys($changesToAdd)));
+        if (count($changesToAdd) === 0) {
+            return;
+        }
+        Type::clearAllMemoizations();
+
+        foreach ($changesToAdd as $file_path => $newContents) {
+            // Kick out anything we read from the former version
+            // of this file
+            $code_base->flushDependenciesForFile($file_path);
+
+            // If the file is gone, no need to continue
+            if (($real = realpath($file_path)) === false || !file_exists($real)) {
+                Daemon::debugf("file $file_path no longer exists on disk, but we tried to replace it?");
+                continue;
+            }
+            Daemon::debugf("Parsing temporary file instead of %s", $file_path);
+            try {
+                // Parse the file
+                Analysis::parseFile($code_base, $file_path, false, $newContents);
+            } catch (\Throwable $throwable) {
+                error_log(sprintf("Analysis::parseFile threw %s for %s: %s\n%s", get_class($throwable), $file_path, $throwable->getMessage(), $throwable->getTraceAsString()));
+            }
+        }
     }
 }

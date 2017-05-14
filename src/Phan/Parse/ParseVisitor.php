@@ -379,15 +379,22 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @suppress PhanUndeclaredProperty - A property element can have a docComment - it's an exception
      */
     public function visitPropDecl(Node $node) : Context
     {
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
-
+        $docComment = '';
+        // TODO: Can other
+        $first_child_node = $node->children[0] ?? null;
+        if ($first_child_node instanceof Node) {
+            $docComment = $first_child_node->docComment ?? '';
+        }
         // Get a comment on the property declaration
         $comment = Comment::fromStringInContext(
-            $node->children[0]->docComment ?? '',
+            $docComment,
             $this->context
         );
 
@@ -398,6 +405,7 @@ class ParseVisitor extends ScopeVisitor
             ) {
                 continue;
             }
+            assert($child_node instanceof Node, 'expected property element to be Node');
 
             // If something goes wrong will getting the type of
             // a property, we'll store it as a future union
@@ -512,12 +520,16 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @suppress PhanUndeclaredProperty - class const elements are exceptions, and can have docComment properties.
+     *                                    They can't have endLineno, but may have it in the future.
      */
     public function visitClassConstDecl(Node $node) : Context
     {
         $class = $this->getContextClass();
 
         foreach ($node->children ?? [] as $child_node) {
+            assert($child_node instanceof Node, 'expected class const element to be a Node');
             $name = $child_node->children['name'];
 
             $fqsen = FullyQualifiedClassConstantName::fromStringInContext(
@@ -531,10 +543,11 @@ class ParseVisitor extends ScopeVisitor
                 $this->context
             );
 
+            $line_number_start = $child_node->lineno ?? 0;
             $constant = new ClassConstant(
                 $this->context
-                    ->withLineNumberStart($child_node->lineno ?? 0)
-                    ->withLineNumberEnd($child_node->endLineno ?? 0),
+                    ->withLineNumberStart($line_number_start)
+                    ->withLineNumberEnd($child_node->endLineno ?? $line_number_start),
                 $name,
                 new UnionType(),
                 $node->flags ?? 0,
@@ -570,10 +583,13 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * @suppress PhanUndeclaredProperty - const elements are Nodes, but can have docComment.
      */
     public function visitConstDecl(Node $node) : Context
     {
         foreach ($node->children ?? [] as $child_node) {
+            assert($child_node instanceof Node);
             $this->addConstant(
                 $child_node,
                 $child_node->children['name'],

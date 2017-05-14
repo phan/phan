@@ -2,6 +2,8 @@
 <?php
 /**
  * Usage: phan_client -l path/to/file.php
+ * Compatible with php 5.6, 7.0 and php 7.1.
+ * (The server itself requires a newer php version)
  *
  * See plugins/vim/snippet.vim for an example of a use of this program.
  *
@@ -31,11 +33,19 @@ class PhanPHPLinter {
     /** @var bool - Whether or not this is verbose */
     public static $verbose = false;
 
-    private static function debugError(string $msg) {
+    /**
+     * @param string $msg
+     * @return void
+     */
+    private static function debugError($msg) {
         error_log($msg);
     }
 
-    private static function debugInfo(string $msg) {
+    /**
+     * @param string $msg
+     * @return void
+     */
+    private static function debugInfo($msg) {
         if (self::$verbose) {
             self::debugError($msg);
         }
@@ -49,11 +59,26 @@ class PhanPHPLinter {
         self::$verbose = $opts->verbose;
 
         $failure_code = 0;
+        $temporary_file_mapping_contents = [];
         foreach ($opts->file_list as $path) {
-            // TODO: use popen instead
-            // TODO: add option to capture output, suppress "No syntax error"?
-            // --no-php-ini is a faster way to parse since php doesn't need to load multiple extensions. Assumes none of the extensions change the way php is parsed.
-            system("php -l --no-php-ini " . escapeshellarg($path), $exit_code);
+            if (isset($opts->temporary_file_map[$path])) {
+                $temporary_path = $opts->temporary_file_map[$path];
+                $temporary_contents = file_get_contents($temporary_path);
+                if ($temporary_contents === false) {
+                    self::debugError(sprintf("Could not open temporary input file: %s", $temporary_path));
+                    $failure_code = 1;
+                    continue;
+                }
+                system("php -l --no-php-ini " . escapeshellarg($temporary_path), $exit_code);
+                if ($exit_code === 0) {
+                    $temporary_file_mapping_contents[$path] = $temporary_contents;
+                }
+            } else {
+                // TODO: use popen instead
+                // TODO: add option to capture output, suppress "No syntax error"?
+                // --no-php-ini is a faster way to parse since php doesn't need to load multiple extensions. Assumes none of the extensions change the way php is parsed.
+                system("php -l --no-php-ini " . escapeshellarg($path), $exit_code);
+            }
             if ($exit_code !== 0) {
                 // The file is syntactically invalid. Or php somehow isn't able to be invoked from this script.
                 $failure_code = $exit_code;
@@ -65,6 +90,8 @@ class PhanPHPLinter {
             exit($failure_code);
         }
 
+        // TODO: Check that everything in $this->file_list is in the same path.
+        // $path = reset($opts->file_list);
         $real = realpath($path);
         if (!$real) {
             self::debugError("Could not resolve $path\n");
@@ -90,6 +117,7 @@ class PhanPHPLinter {
         }
 
         $file_mapping = [];
+        $real_files = [];
         foreach ($opts->file_list as $path) {
             $real = realpath($path);
             if (!$real) {
@@ -99,7 +127,16 @@ class PhanPHPLinter {
             // Convert this to a relative path
             if (strncmp($dirname . '/', $real, strlen($dirname . '/')) === 0) {
                 $real = substr($real, strlen($dirname . '/'));
-                $file_mapping[$real] = $path;
+                if (isset($opts->temporary_file_map[$path])) {
+                    // If we are analyzing a temporary file, but it's within a project, then output the path to a temporary file for consistency.
+                    // (Tools which pass something a temporary path expect a temporary path in the output.)
+                    $file_mapping[$real] = $opts->temporary_file_map[$path];
+                } else {
+                    $file_mapping[$real] = $path;
+                }
+                $real_files[] = $real;
+            } else {
+                self::debugInfo("Not in a Phan project, nothing to do.");
             }
         }
         if (count($file_mapping) == 0) {
@@ -118,9 +155,13 @@ class PhanPHPLinter {
         }
         $request = [
             'method' => 'analyze_files',
-            'files' => $file_mapping,
+            'files' => $real_files,
             'format' => 'json',
         ];
+
+        if (count($temporary_file_mapping_contents) > 0) {
+            $request['temporary_file_mapping_contents'] = $temporary_file_mapping_contents;
+        }
 
         // This used to use the 'phplike' format, but it doesn't work well with filtering files.
         fwrite($client, json_encode($request));
@@ -136,11 +177,11 @@ class PhanPHPLinter {
         $response_bytes = implode('', $response_lines);
         // This uses the 'phplike' format imitating php's error format. "%s in %s on line %d"
         $response = json_decode($response_bytes, true);
-        $status = ($response['status'] ?? null);
+        $status = isset($response['status']) ? $response['status'] : null;
         if ($status === 'ok') {
             self::dumpJSONIssues($response, $file_mapping);
         } else {
-            self::debugError(sprintf("Invalid response from phan for %s: %s\n", json_encode($file_mapping), $response_bytes));
+            self::debugError(sprintf("Invalid response from phan for url %s, files %s: %s\n", $opts->url, json_encode($file_mapping), $response_bytes));
         }
     }
 
@@ -181,6 +222,9 @@ class PhanPHPLinterOpts {
     /** @var string[] - file list */
     public $file_list = [];
 
+    /** @var string[]|null - optional, maps original files to temporary file path to use as a substitute. */
+    public $temporary_file_map = null;
+
     /** @var bool - unused. */
     public $verbose = false;
 
@@ -189,7 +233,7 @@ class PhanPHPLinterOpts {
      * @param int $exit_code - process exit code.
      * @return void - exits with $exit_code
      */
-    public function usage(string $msg = '', int $exit_code = 0) {
+    public function usage($msg = '', $exit_code = 0) {
         global $argv;
         if (!empty($msg)) {
             echo "$msg\n";
@@ -204,11 +248,18 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   Unix socket which a Phan daemon is listening for requests on.
 
  --daemonize-tcp-port <1024-65535>
-  TCP port for Phan to listen for JSON requests on, in daemon mode. (E.g. 4846)
+  TCP port which a Phan daemon is listening for JSON requests on, in daemon mode. (E.g. 4846)
 
  -l, --syntax-check <file.php>
   Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working ditectory)
   This will only analyze the file if a full phan check (with .phan/config.php) would analyze the file.
+
+ -t, --temporary-file-map '{"file.php":"/path/to/tmp/file_copy.php"}'
+  A json mapping from original path to absolute temporary path (E.g. of a file that is still being edited)
+
+ -f, --flycheck-file '/path/to/tmp/file_copy.php'
+  A simpler way to specify a file mapping when checking a single files.
+  Pass this after the only occurence of --syntax-check.
 
  -v, --verbose
   Whether to emit debugging output of this client.
@@ -224,11 +275,13 @@ EOB;
 
         // Parse command line args
         $optind = 0;
-        $shortopts = "s:p:l:v";
+        $shortopts = "s:p:l:t:f:v";
         $longopts = [
             'daemonize-socket:',
             'daemonize-tcp-port:',
             'syntax-check:',
+            'temporary-file-map:',
+            'flycheck-file:',
             'verbose',
         ];
         if (PHP_VERSION_ID >= 70100) {
@@ -248,7 +301,7 @@ EOB;
         }
 
         $url = null;
-        foreach ($opts ?? [] as $key => $value) {
+        foreach ((is_array($opts) ? $opts : []) as $key => $value) {
             switch($key) {
             case 's':
             case 'daemonize-socket':
@@ -265,6 +318,31 @@ EOB;
                 } else {
                     $this->url = sprintf('unix://%s/%s', $socket_dirname, basename($value));
                 }
+                break;
+            case 'f':
+            case 'flycheck-file':
+                // Add alias, for use in flycheck
+                if (is_array($this->temporary_file_map)) {
+                    $this->usage('--flycheck-file should be specified only once.', 1);
+                }
+                if (!is_array($this->file_list) || count($this->file_list) !== 1) {
+                    $this->usage('--flycheck-file should be specified after the first occurrence of -l.', 1);
+                }
+                $this->temporary_file_map = [
+                    $this->file_list[0] => $value,
+                ];
+                break;
+            case 't':
+            case 'temporary-file-map':
+                if (is_array($this->temporary_file_map)) {
+                    $this->usage('--temporary-file-map should be specified only once.', 1);
+                }
+                $mapping = json_decode($value, true);
+                if (!is_array($mapping)) {
+                    $this->usage('--temporary-file-map should be a JSON encoded map from source file to temporary file to analyze instead', 1);
+                }
+                $this->temporary_file_map = $mapping;
+
                 break;
             case 'p':
             case 'daemonize-tcp-port':
@@ -289,6 +367,9 @@ EOB;
             case 'help':
                 $this->usage();
                 break;
+            case 'v':
+            case 'verbose':
+                break;  // already parsed.
             default:
                 $this->usage("Unknown option '-$key'", 1);
                 break;
@@ -297,6 +378,13 @@ EOB;
         }
         if (count($this->file_list) === 0) {
             $this->usage("This requires at least one file to analyze (with -l path/to/file", 1);
+        }
+        if (is_array($this->temporary_file_map)) {
+            foreach ($this->temporary_file_map as $original_path => $temporary_path) {
+                if (!in_array($original_path, $this->file_list)) {
+                    $this->usage("Need to specify -l '$original_path' if a mapping is included", 1);
+                }
+            }
         }
         if ($this->url === null) {
             $this->url = 'tcp://127.0.0.1:4846';
@@ -307,7 +395,7 @@ EOB;
      * prints error message if php doesn't support connecting to a daemon with a given protocol.
      * @return void
      */
-    private function checkCanConnectToDaemon(string $protocol) {
+    private function checkCanConnectToDaemon($protocol) {
         $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
         if (!in_array($protocol, stream_get_transports())) {
             $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot connect to a daemon with $opt", 1);

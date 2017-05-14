@@ -295,7 +295,7 @@ interface FlagVisitor
     public function visitUnaryBitwiseNot(Node $node);
 
     /**
-     * Visit a node with flag `\ast\flags\UNARYbOOL_NOT`
+     * Visit a node with flag `\ast\flags\UNARY_BOOL_NOT`
      */
     public function visitUnaryBoolNot(Node $node);
 
@@ -309,6 +309,10 @@ interface FlagVisitor
      */
     public function visitBinaryBoolOr(Node $node);
 
+    /**
+     * Visit a node with flag `\ast\flags\AST_COALESCE`
+     */
+    public function visitBinaryCoalesce(Node $node);
     /**
      * Visit a node with flag `\ast\flags\BINARY_IS_GREATER`
      */

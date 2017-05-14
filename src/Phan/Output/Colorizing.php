@@ -119,7 +119,8 @@ class Colorizing {
     public static function colorizeField(string $template_type, $arg) : string {
         $fmt_directive = Issue::uncolored_format_string_for_template[$template_type] ?? null;
         if ($fmt_directive === null) {
-            error_log("Unknown template type '$template_type'");
+            error_log(sprintf("Unknown template type '%s'. Known template types: %s",
+                    implode(', ', array_keys(Issue::uncolored_format_string_for_template))));
         }
         // TODO: Add more complicated color coding, e.g. MyClass::method should have the option for multiple colors.
         // TODO: Allow choosing color schemes via .phan/config.php

@@ -121,7 +121,8 @@ class DollarDollarVisitor extends AnalysisVisitor {
                 $this->code_base,
                 $this->context,
                 'PhanPluginDollarDollar',
-                "$$ Variables are not allowed."
+                "$$ Variables are not allowed.",
+                []
             );
         }
     }

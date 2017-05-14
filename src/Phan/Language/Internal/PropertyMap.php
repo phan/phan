@@ -409,7 +409,7 @@ return [
         'lineno' => 'int',
         'children' => 'array|null',
         'endLineno' => 'int',
-        'name' => 'string',
+        'name' => 'string|null',
         'docComment' => 'string|null',
     ],
 ];

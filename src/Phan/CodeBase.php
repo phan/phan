@@ -136,6 +136,7 @@ class CodeBase
         array $internal_class_name_list,
         array $internal_interface_name_list,
         array $internal_trait_name_list,
+        array $internal_constant_name_list,
         array $internal_function_name_list
     ) {
         $this->fqsen_class_map = new Map;
@@ -145,10 +146,11 @@ class CodeBase
         $this->func_and_method_set = new Set;
 
         // Add any pre-defined internal classes, interfaces,
-        // traits and functions
+        // constants, traits and functions
         $this->addClassesByNames($internal_class_name_list);
         $this->addClassesByNames($internal_interface_name_list);
         $this->addClassesByNames($internal_trait_name_list);
+        $this->addGlobalConstantsByNames($internal_constant_name_list);
         $this->addFunctionsByNames($internal_function_name_list);
     }
 
@@ -241,8 +243,21 @@ class CodeBase
      */
     private function addClassesByNames(array $class_name_list)
     {
-        foreach ($class_name_list as $i => $class_name) {
+        foreach ($class_name_list as $class_name) {
             $this->addClass(Clazz::fromClassName($this, $class_name));
+        }
+    }
+
+    /**
+     * @param string[] $const_name_list
+     * A list of global constant names to load type information for
+     *
+     * @return void
+     */
+    private function addGlobalConstantsByNames(array $const_name_list)
+    {
+        foreach ($const_name_list as $const_name) {
+            $this->addGlobalConstant(GlobalConstant::fromGlobalConstantName($this, $const_name));
         }
     }
 
@@ -255,6 +270,17 @@ class CodeBase
             return $this->undo_tracker->updateFileList($this, $new_file_list);
         }
         throw new \RuntimeException("Calling updateFileList without undo tracker");
+    }
+
+    /**
+     * @param string[] $new_file_list
+     * @return bool - true if caller should replace contents
+     */
+    public function beforeReplaceFileContents(string $file_name, string $new_file_contents) {
+        if ($this->undo_tracker) {
+            return $this->undo_tracker->beforeReplaceFileContents($this, $file_name, $new_file_contents);
+        }
+        throw new \RuntimeException("Calling replaceFileContents without undo tracker");
     }
 
     /**
@@ -315,7 +341,7 @@ class CodeBase
      */
     public function shallowClone() : CodeBase
     {
-        $code_base = new CodeBase([], [], [], []);
+        $code_base = new CodeBase([], [], [], [], []);
         $code_base->fqsen_class_map =
             clone($this->fqsen_class_map);
         $code_base->fqsen_global_constant_map =

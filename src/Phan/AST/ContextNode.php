@@ -793,33 +793,34 @@ class ContextNode
      */
     public function getConst() : GlobalConstant
     {
+        $node = $this->node;
         assert(
-            $this->node instanceof \ast\Node,
-            '$this->node must be a node'
+            $node instanceof \ast\Node,
+            '$node must be a node'
         );
 
         assert(
-            $this->node->kind === \ast\AST_CONST,
+            $node->kind === \ast\AST_CONST,
             "Node must be of type \ast\AST_CONST"
         );
 
-        if ($this->node->children['name']->kind !== \ast\AST_NAME) {
+        if ($node->children['name']->kind !== \ast\AST_NAME) {
             throw new NodeException(
-                $this->node,
+                $node,
                 "Can't determine constant name"
             );
         }
 
         $constant_name =
-            $this->node->children['name']->children['name'];
+            $node->children['name']->children['name'];
 
+        // TODO: could speed up looking up reserved words such as null, true, false
         $fqsen = FullyQualifiedGlobalConstantName::fromStringInContext(
             $constant_name,
             $this->context
         );
 
         if (!$this->code_base->hasGlobalConstantWithFQSEN($fqsen)) {
-
             $fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
                 $constant_name
             );
@@ -828,7 +829,7 @@ class ContextNode
                 throw new IssueException(
                     Issue::fromType(Issue::UndeclaredConstant)(
                         $this->context->getFile(),
-                        $this->node->lineno ?? 0,
+                        $node->lineno ?? 0,
                         [ $fqsen ]
                     )
                 );
@@ -846,7 +847,7 @@ class ContextNode
             throw new IssueException(
                 Issue::fromType(Issue::AccessConstantInternal)(
                     $this->context->getFile(),
-                    $this->node->lineno ?? 0,
+                    $node->lineno ?? 0,
                     [
                         (string)$constant->getFQSEN(),
                         $constant->getFileRef()->getFile(),

@@ -1,0 +1,6 @@
+<?php
+
+/** @param string|int $a */
+function foo($a) : string {
+    if (is_string($a)) { return $a; } else {return sprintf('bar%d', $a); }
+}

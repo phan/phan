@@ -311,7 +311,7 @@ class Comment
         $return_union_type = UnionType::fromStringInContext(
             $return_union_type_string,
             $context,
-            true
+            Type::FROM_PHPDOC
         );
 
         return $return_union_type;
@@ -358,7 +358,7 @@ class Comment
                     UnionType::fromStringInContext(
                         $type,
                         $context,
-                        true
+                        Type::FROM_PHPDOC
                     );
             } else {
                 $union_type = new UnionType();
@@ -419,7 +419,7 @@ class Comment
             $type = new Some(Type::fromStringInContext(
                 $type_string,
                 $context,
-                true
+                Type::FROM_PHPDOC
             ));
 
             return $type;
@@ -469,7 +469,7 @@ class Comment
             $union_type = UnionType::fromStringInContext(
                 $union_type_string,
                 $context,
-                true
+                Type::FROM_PHPDOC
             );
             $is_variadic = $param_match[28] === '...';
             $default_str = $param_match[31];
@@ -519,7 +519,7 @@ class Comment
                     UnionType::fromStringInContext(
                         $return_union_type_string,
                         $context,
-                        true
+                        Type::FROM_PHPDOC
                     );
             } else {
                 // From https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
@@ -583,7 +583,7 @@ class Comment
                     UnionType::fromStringInContext(
                         $type,
                         $context,
-                        true
+                        Type::FROM_PHPDOC
                     );
             } else {
                 $union_type = new UnionType();
@@ -626,7 +626,8 @@ class Comment
         if ($closure_scope_union_type_string !== '') {
             return new Some(Type::fromStringInContext(
                 $closure_scope_union_type_string,
-                $context
+                $context,
+                Type::FROM_PHPDOC
             ));
         }
         return new None();
