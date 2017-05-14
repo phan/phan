@@ -2,6 +2,7 @@
 namespace Phan\Analysis;
 
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Langauge\Type;
@@ -73,8 +74,60 @@ class ConditionVisitor extends KindVisitorImplementation
         $flags = ($node->flags ?? 0);
         if ($flags === \ast\flags\BINARY_BOOL_AND) {
             return $this->visitShortCircuitingAnd($node->children['left'], $node->children['right']);
+        } else if ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
+            return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
         }
         return $this->context;
+    }
+
+    /**
+     * @param Node|int|float|string $left
+     * @param Node|int|float|string $right
+     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     */
+    private function analyzeIsIdentical($left, $right) : Context
+    {
+        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
+            return $this->analyzeVarIsIdentical($left, $right);
+        } else if (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
+            return $this->analyzeVarIsIdentical($right, $left);
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node $left
+     * @param Node|int|float|string $right
+     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     */
+    private function analyzeVarIsIdentical(Node $varNode, $expr) : Context
+    {
+        $name = $varNode->children['name'] ?? null;
+        $context = $this->context;
+        if (is_string($name) && $name) {
+            $exprType = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $this->context, $expr);
+            if ($exprType) {
+                // Get the variable we're operating on
+                $variable = (new ContextNode(
+                    $this->code_base,
+                    $context,
+                    $varNode
+                ))->getVariable();
+
+                // Make a copy of the variable
+                $variable = clone($variable);
+
+                $variable->setUnionType($exprType);
+
+                // Overwrite the variable with its new type in this
+                // scope without overwriting other scopes
+                $context = $context->withScopeVariable(
+                    $variable
+                );
+                return $context;
+            }
+        }
+        return $context;
     }
 
     /**
