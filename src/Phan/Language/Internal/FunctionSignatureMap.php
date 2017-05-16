@@ -7113,7 +7113,7 @@ return [
 'preg_match_all' => ['int|false', 'pattern'=>'string', 'subject'=>'string', '&subpatterns='=>'array', 'flags='=>'int', 'offset='=>'int'],
 'preg_match' => ['int|false', 'pattern'=>'string', 'subject'=>'string', '&subpatterns='=>'array', 'flags='=>'int', 'offset='=>'int'],
 'preg_quote' => ['string', 'str'=>'string', 'delim_char='=>'string'],
-'preg_replace_callback_array' => ['string|array', 'pattern'=>'callable[]', 'subject'=>'array', 'limit='=>'int', '&count='=>'int'],
+'preg_replace_callback_array' => ['string|array', 'pattern'=>'callable[]', 'subject'=>'string|array', 'limit='=>'int', '&count='=>'int'],
 'preg_replace_callback' => ['string|array', 'regex'=>'string|array', 'callback'=>'callable', 'subject'=>'string|array', 'limit='=>'int', '&count='=>'int'],
 'preg_replace' => ['string|array', 'regex'=>'string|array', 'replace'=>'string|array', 'subject'=>'string|array', 'limit='=>'int', '&count='=>'int'],
 'preg_split' => ['array', 'pattern'=>'string', 'subject'=>'string', 'limit='=>'int|null', 'flags='=>'int'],
