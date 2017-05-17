@@ -459,18 +459,22 @@ trait FunctionTrait {
             return;
         }
         $parameter_offset = 0;
-        foreach ($function->getParameterList() as $i => $parameter) {
+        $function_parameter_list = $function->getParameterList();
+        $real_parameter_name_set = [];
+        foreach ($function_parameter_list as $i => $parameter) {
+            $parameter_name = $parameter->getName();
+            $real_parameter_name_set[$parameter_name] = true;
             if ($parameter->getUnionType()->isEmpty()) {
                 // If there is no type specified in PHP, check
                 // for a docComment with @param declarations. We
                 // assume order in the docComment matches the
                 // parameter order in the code
                 if ($comment->hasParameterWithNameOrOffset(
-                    $parameter->getName(),
+                    $parameter_name,
                     $parameter_offset
                 )) {
                     $comment_param = $comment->getParameterWithNameOrOffset(
-                        $parameter->getName(),
+                        $parameter_name,
                         $parameter_offset
                     );
                     $comment_param_type = $comment_param->getUnionType();
@@ -508,7 +512,7 @@ trait FunctionTrait {
                             Issue::TypeMismatchDefault,
                             $node->lineno ?? 0,
                             (string)$parameter->getUnionType(),
-                            $parameter->getName(),
+                            $parameter_name,
                             (string)$default_type
                         );
                     }
@@ -548,6 +552,20 @@ trait FunctionTrait {
 
             ++$parameter_offset;
         }
+
+        foreach ($comment->getParameterMap() as $comment_parameter_name => $comment_parameter) {
+            if (!array_key_exists($comment_parameter_name, $real_parameter_name_set)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    count($real_parameter_name_set) > 0 ? Issue::CommentParamWithoutRealParam : Issue::CommentParamOnEmptyParamList,
+                    $node->lineno ?? 0,
+                    $comment_parameter_name,
+                    (string)$function
+                );
+            }
+        }
+        // Special, for libraries which use this for to document variadic param lists.
     }
 
     /**
