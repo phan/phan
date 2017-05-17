@@ -399,8 +399,6 @@ trait FunctionTrait {
     }
 
     /**
-     * @param Context $context
-     *
      * @return UnionType
      * The type of this method in its given context.
      */

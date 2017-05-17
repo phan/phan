@@ -107,7 +107,7 @@ interface FunctionInterface extends AddressableElementInterface {
      *
      * @return void
      */
-    public function setHasYield(bool $has_return);
+    public function setHasYield(bool $has_yield);
 
     /**
      * @return Parameter[]

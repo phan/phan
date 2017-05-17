@@ -173,12 +173,12 @@ class Type
     }
 
     /**
-     * @param string $name
-     * The name of the type such as 'int' or 'MyClass'
-     *
      * @param string $namespace
      * The (optional) namespace of the type such as '\'
      * or '\Phan\Language'.
+     *
+     * @param string $type_name
+     * The name of the type such as 'int' or 'MyClass'
      *
      * @param UnionType[] $template_parameter_type_list
      * A (possibly empty) list of template parameter types
@@ -548,10 +548,6 @@ class Type
     /**
      * @param string $fully_qualified_string
      * A fully qualified type name
-     *
-     * @param Context $context
-     * The context in which the type string was
-     * found
      *
      * @return Type
      */
@@ -1348,7 +1344,7 @@ class Type
     }
 
     /**
-     * @param string $type_name
+     * @param string $name
      * Any type name
      *
      * @return string

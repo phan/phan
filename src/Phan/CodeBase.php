@@ -256,7 +256,8 @@ class CodeBase
     }
 
     /**
-     * @param string[] $new_file_list
+     * @param string $file_name
+     * @param string $new_file_contents
      * @return bool - true if caller should replace contents
      */
     public function beforeReplaceFileContents(string $file_name, string $new_file_contents) {

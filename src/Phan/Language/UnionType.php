@@ -64,10 +64,6 @@ class UnionType implements \Serializable
      * A '|' delimited string representing a type in the form
      * 'int|string|null|ClassName'.
      *
-     * @param Context $context
-     * The context in which the type string was
-     * found
-     *
      * @return UnionType
      */
     public static function fromFullyQualifiedString(

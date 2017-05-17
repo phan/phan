@@ -88,7 +88,6 @@ class Colorizing {
     /**
      * @param string $template
      * @param int[]|string[] $template_parameters
-     * @param int $severity (Issue::SEVERITY_*)
      */
     public static function colorizeTemplate(
         string $template,
