@@ -172,7 +172,10 @@ class Func extends AddressableElement implements FunctionInterface
         // extra meta information about the function.
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
-            $context
+            $code_base,
+            $context,
+            $node->lineno ?? 0,
+            Comment::ON_FUNCTION
         );
 
         // Redefine the function's internal scope to point to the new class before adding any variables to the scope.

@@ -65,7 +65,7 @@ class Type
      * A legal type identifier matching a type optionally with a []
      * indicating that it's a generic typed array (e.g. 'int[]',
      * 'string' or 'Set<DateTime>')
-     * TODO: change the regex so that '@return $this' will work (Currently not parsed, has empty regex)
+     * TODO: change the regex so that '(at)return $this' will work (Currently not parsed, has empty regex)
      */
     const type_regex =
         self::simple_type_with_template_parameter_list_regex . '(\[\])*';
@@ -115,7 +115,7 @@ class Type
     /** For types copied from another type, e.g. `$x = $y` gets types from $y */
     const FROM_TYPE = 1;
 
-    /** For types copied from phpdoc, e.g. `@param integer $x` */
+    /** For types copied from phpdoc, e.g. `(at)param integer $x` */
     const FROM_PHPDOC = 2;
 
     /**

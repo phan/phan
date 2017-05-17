@@ -164,6 +164,12 @@ class Issue
     const GenericGlobalVariable     = 'PhanGenericGlobalVariable';
     const GenericConstructorTypes   = 'PhanGenericConstructorTypes';
 
+    // Issue::CATEGORY_COMMENT
+    const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
+    const MisspelledAnnotation             = 'PhanMisspelledAnnotation';
+    const UnextractableAnnotation          = 'PhanUnextractableAnnotation';
+    const UnextractableAnnotationPart      = 'PhanUnextractableAnnotationPart';
+
     const CATEGORY_ACCESS            = 1 << 1;
     const CATEGORY_ANALYSIS          = 1 << 2;
     const CATEGORY_COMPATIBLE        = 1 << 3;
@@ -179,6 +185,7 @@ class Issue
     const CATEGORY_PLUGIN            = 1 << 13;
     const CATEGORY_GENERIC           = 1 << 14;
     const CATEGORY_INTERNAL          = 1 << 15;
+    const CATEGORY_COMMENT           = 1 << 16;
 
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
@@ -216,6 +223,7 @@ class Issue
     // Keep sorted and in sync with Colorizing::default_color_for_template
     const uncolored_format_string_for_template = [
         'CLASS'         => '%s',
+        'COMMENT'       => '%s',
         'CONST'         => '%s',
         'COUNT'         => '%d',
         'FILE'          => '%s',
@@ -505,7 +513,7 @@ class Issue
             // Issue::CATEGORY_ANALYSIS
             new Issue(
                 self::Unanalyzable,
-                self::CATEGORY_UNDEFINED,
+                self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
                 "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/etsy/phan/issues/new.",
                 self::REMEDIATION_B,
@@ -1362,6 +1370,40 @@ class Issue
                 "Cannot access internal method {METHOD} defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 15004
+            ),
+
+            // Issue::CATEGORY_COMMENT
+            new Issue(
+                self::InvalidCommentForDeclarationType,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "The phpdoc comment for {COMMENT} cannot occur on a {TYPE}",
+                self::REMEDIATION_B,
+                16000
+            ),
+            new Issue(
+                self::MisspelledAnnotation,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw misspelled annotation {COMMENT}, should be {COMMENT}",
+                self::REMEDIATION_B,
+                16001
+            ),
+            new Issue(
+                self::UnextractableAnnotation,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw unextractable annotation for comment {COMMENT}",
+                self::REMEDIATION_B,
+                16002
+            ),
+            new Issue(
+                self::UnextractableAnnotationPart,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw unextractable annotation for a fragment of comment {COMMENT}: {COMMENT}",
+                self::REMEDIATION_B,
+                16003
             ),
         ];
 

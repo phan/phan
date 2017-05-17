@@ -217,7 +217,10 @@ class Method extends ClassElement implements FunctionInterface
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
-            $context
+            $code_base,
+            $context,
+            $node->lineno ?? 0,
+            Comment::ON_METHOD
         );
 
         // @var Parameter[]
