@@ -24,6 +24,9 @@ New Features (Analysis)
 + Make conditionals such as `is_string` start applying to the condition in ternary operators (`$a ? $b : $c`)
 + Treat `resource`, `object`, and `mixed` as native types only when they occur in phpdoc.
   Outside of phpdoc (e.g. `$x instanceof resource`), analyze those names as if they were class names.
++ Emit low severity issues if Phan can't extract types from phpdoc,
+  the phpdoc `@param` is out of sync with the code,
+  or if the phpdoc annotation doesn't apply to an element type (Issue #778)
 
 New Features (CLI, Configs)
 + (Linux/Unix only) Add Experimental Phan Daemon mode (PR #563 for Issue #22), which allows phan to run in the background, and accept TCP requests to analyze single files.
