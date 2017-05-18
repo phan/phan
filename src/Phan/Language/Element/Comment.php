@@ -337,7 +337,7 @@ class Comment
         bool $is_var
     ) {
         $match = [];
-        if (preg_match('/@(param|var)\s+(' . UnionType::union_type_regex . ')(\s+(\.\.\.)?\s*(\\$\S+))?/', $line, $match)) {
+        if (preg_match('/@(param|var)\s+(' . UnionType::union_type_regex . ')(\s+(\.\.\.)?\s*(\\$' . self::word_regex . '))?/', $line, $match)) {
             $type = $match[2];
 
             $is_variadic = ($match[29] ?? '') === '...';
@@ -345,8 +345,7 @@ class Comment
             if ($is_var && $is_variadic) {
                 $variable_name = '';  // "@var int ...$x" is nonsense and invalid phpdoc.
             } else {
-                $variable_name =
-                    empty($match[30]) ? '' : trim($match[30], '$');
+                $variable_name = $match[31] ?? '';
             }
 
             // If the type looks like a variable name, make it an
@@ -568,11 +567,10 @@ class Comment
         // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
         // TODO: properly handle duplicates...
         // TODO: support read-only/write-only checks elsewhere in the codebase?
-        if (preg_match('/@(property|property-read|property-write)(\s+' . UnionType::union_type_regex . ')?(\s+(\\$\S+))/', $line, $match)) {
+        if (preg_match('/@(property|property-read|property-write)(\s+' . UnionType::union_type_regex . ')?(\s+(\\$' . self::word_regex . '))/', $line, $match)) {
             $type = ltrim($match[2] ?? '');
 
-            $property_name =
-                empty($match[29]) ? '' : trim($match[29], '$');
+            $property_name = $match[30] ?? '';
             if ($property_name === '') {
                 return null;
             }
