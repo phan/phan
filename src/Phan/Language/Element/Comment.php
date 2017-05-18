@@ -511,7 +511,9 @@ class Comment
         // Syntax:
         //    @method [return type] [name]([[type] [parameter]<, ...>]) [<description>]
         //    Assumes the parameters end at the first ")" after "("
-        if (preg_match('/@method(\s+(static))?((\s+(' . UnionType::union_type_regex . '))?)\s+' . self::word_regex . '\s*\(([^()]*)\)\s*(.*)/', $line, $match)) {
+        //    As an exception, allows one level of matching brackets
+        //    to support old style arrays such as $x = array(), $x = array(2) (Default values are ignored)
+        if (preg_match('/@method(\s+(static))?((\s+(' . UnionType::union_type_regex . '))?)\s+' . self::word_regex . '\s*\((([^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
             $is_static = $match[2] === 'static';
             $return_union_type_string = $match[4];
             if ($return_union_type_string !== '') {

@@ -5,6 +5,8 @@
  * @method int fooWithReturnType()
  * @method fooWithOptionalSecondParam(int, int $b=2) - Phan doesn't check if the default is valid, just for the presence
  * @method fooWithOptionalNullableParam(string $x=  null  )This is a nullable string, the only time we check the default
+ * @method fooWithOptionalArrayParam(int, array $b=[]) - Phan doesn't check if the default is valid, just for the presence
+ * @method fooWithOptionalArrayParam2(int, array $b=array(), int $c) - Phan doesn't check if the default is valid, just for the presence
  * @method static static_foo()
  * @method static int static_foo_with_return_type()
  * @method static static static_foo_with_return_type_of_static()
@@ -68,6 +70,9 @@ function testA281(A281 $a) {
     $v = $a->myMethodWithVariadicParams(2, 'str', 2, 4.2);  // 4.2 is not valid, but int|string is.
     expects_int281($v);
     expects_a281($v);  // invalid, $v is int|string
+
+    $a->fooWithOptionalArrayParam(2, 3);  // invalid, $b is array
+    $a->fooWithOptionalArrayParam2(2, 3, 'x');  // invalid, $b is array, and $c is int
 }
 
 // a quick check that support also works for abstract classes, not just interfaces
