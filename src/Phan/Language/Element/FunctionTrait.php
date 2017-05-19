@@ -33,9 +33,25 @@ trait FunctionTrait {
 
     /**
      * @var int
-     * The number of optional parameters for the method
+     * The number of optional parameters for the method.
+     * Note that this is set to a large number in methods using varargs or func_get_arg*()
      */
     private $number_of_optional_parameters = 0;
+
+    /**
+     * @var int
+     * The number of required (real) parameters for the method declaration.
+     * For internal methods, ignores phan's annotations.
+     */
+    private $number_of_required_real_parameters = 0;
+
+    /**
+     * @var int
+     * The number of optional (real) parameters for the method declaration.
+     * For internal methods, ignores phan's annotations.
+     * For user-defined methods, ignores presence of func_get_arg*()
+     */
+    private $number_of_optional_real_parameters = 0;
 
     /**
      * @var Parameter[]
@@ -79,6 +95,18 @@ trait FunctionTrait {
 
     /**
      * @return int
+     * The number of optional real parameters on this function/method.
+     * May differ from getNumberOfOptionalParameters()
+     * for internal modules lacking proper reflection info,
+     * or if the installed module version's API changed from what Phan's stubs used,
+     * or if a function/method uses variadics/func_get_arg*()
+     */
+    public function getNumberOfOptionalRealParameters() : int {
+        return $this->number_of_optional_real_parameters;
+    }
+
+    /**
+     * @return int
      * The number of optional parameters on this method
      */
     public function getNumberOfOptionalParameters() : int {
@@ -96,7 +124,20 @@ trait FunctionTrait {
 
     /**
      * @return int
-     * The maximum number of parameters to this method
+     * The number of parameters in this function/method declaration.
+     * Variadic parameters are counted only once.
+     * TODO: Specially handle variadic parameters, either here or in ParameterTypesAnalyzer::analyzeOverrideRealSignature
+     */
+    public function getNumberOfRealParameters() : int {
+        return (
+            $this->getNumberOfRequiredRealParameters()
+            + $this->getNumberOfOptionalRealParameters()
+        );
+    }
+
+    /**
+     * @return int
+     * The maximum number of parameters to this function/method
      */
     public function getNumberOfParameters() : int {
         return (
@@ -107,7 +148,17 @@ trait FunctionTrait {
 
     /**
      * @return int
-     * The number of required parameters on this method
+     * The number of required real parameters on this function/method.
+     * May differ for internal modules lacking proper reflection info,
+     * or if the installed module version's API changed from what Phan's stubs used.
+     */
+    public function getNumberOfRequiredRealParameters() : int {
+        return $this->number_of_required_real_parameters;
+    }
+
+    /**
+     * @return int
+     * The number of required parameters on this function/method
      */
     public function getNumberOfRequiredParameters() : int {
         return $this->number_of_required_parameters;
@@ -320,6 +371,18 @@ trait FunctionTrait {
         $this->real_parameter_list = array_map(function(Parameter $param) {
             return clone($param);
         }, $parameter_list);
+
+        $required_count = 0;
+        $optional_count = 0;
+        foreach ($parameter_list as $parameter) {
+            if ($parameter->isOptional()) {
+                $optional_count++;
+            } else {
+                $required_count++;
+            }
+        }
+        $this->number_of_required_real_parameters = $required_count;
+        $this->number_of_optional_real_parameters = $optional_count;
     }
 
     /**
