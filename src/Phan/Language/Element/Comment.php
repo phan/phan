@@ -437,7 +437,7 @@ class Comment
     private static function suppressIssueFromCommentLine(
         string $line
     ) : string {
-        if (preg_match('/@suppress\s+([^\s]+)/', $line, $match)) {
+        if (preg_match('/@suppress\s+' . self::word_regex . '/', $line, $match)) {
             return $match[1];
         }
 
