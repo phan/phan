@@ -1111,7 +1111,7 @@ class Clazz extends AddressableElement
 
         if ($method->getFQSEN() !== $method_fqsen) {
             $method = clone($method);
-            $method->setDefiningFQSEN($method->getFQSEN());
+            $method->setDefiningFQSEN($method->getDefiningFQSEN());
             $method->setFQSEN($method_fqsen);
 
             // Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
