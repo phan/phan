@@ -88,7 +88,7 @@ class Request {
         if (($this->config[self::PARAM_FORMAT] ?? null) === 'json') {
             $issues = json_decode($rawIssues, true);
             if (!is_array($issues)) {
-                $issues = "(Failed to decode) " . $rawIssues;
+                $issues = "(Failed to decode) " . json_last_error_msg() . ': ' . $rawIssues;
             }
         } else {
             $issues = $rawIssues;
