@@ -898,7 +898,7 @@ class Issue
                 self::ParamSignatureRealMismatchReturnTypeInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}')",
                 self::REMEDIATION_B,
                 7014
             ),
@@ -914,7 +914,7 @@ class Issue
                 self::ParamSignatureRealMismatchParamTypeInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}')",
                 self::REMEDIATION_B,
                 7016
             ),
@@ -930,7 +930,7 @@ class Issue
                 self::ParamSignatureRealMismatchHasParamTypeInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type)",
                 self::REMEDIATION_B,
                 7018
             ),
@@ -946,7 +946,7 @@ class Issue
                 self::ParamSignatureRealMismatchHasNoParamTypeInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}')",
                 self::REMEDIATION_B,
                 7020
             ),
@@ -962,7 +962,7 @@ class Issue
                 self::ParamSignatureRealMismatchParamVariadicInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter)",
                 self::REMEDIATION_B,
                 7022
             ),
@@ -978,7 +978,7 @@ class Issue
                 self::ParamSignatureRealMismatchParamNotVariadicInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter)",
                 self::REMEDIATION_B,
                 7024
             ),
@@ -994,7 +994,7 @@ class Issue
                 self::ParamSignatureRealMismatchParamIsReferenceInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter)",
                 self::REMEDIATION_B,
                 7026
             ),
@@ -1010,7 +1010,7 @@ class Issue
                 self::ParamSignatureRealMismatchParamIsNotReferenceInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter)",
                 self::REMEDIATION_B,
                 7028
             ),
@@ -1026,7 +1026,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooFewParametersInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT})",
                 self::REMEDIATION_B,
                 7030
             ),
@@ -1042,7 +1042,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT})",
                 self::REMEDIATION_B,
                 7032
             ),
