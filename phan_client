@@ -188,11 +188,21 @@ class PhanPHPLinter {
     /**
      * @param array[] $response
      * @param string[] $file_mapping
+     * @return void
      */
     private static function dumpJSONIssues(array $response, array $file_mapping) {
         $did_debug = false;
         // if ($response['issue_count'] > 0)
-        foreach ($response['issues'] as $issue) {
+        $issues = $response['issues'];
+        if (!is_array($issues)) {
+            if (is_string($issues)) {
+                self::debugError(sprintf("Invalid issues response from phan: %s\n", $issues));
+            } else {
+                self::debugError(sprintf("Invalid type for issues response from phan: %s\n", gettype($issues)));
+            }
+            return;
+        }
+        foreach ($issues as $issue) {
             if ($issue['type'] !== 'issue') {
                 continue;
             }
