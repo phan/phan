@@ -172,7 +172,8 @@ class UndoTracker {
 
     /**
      * @param CodeBase $code_base - code base owning this tracker
-     * @param string[] $new_file_list
+     * @param string $file_path
+     * @param string $new_file_contents
      * @return bool - true if the file existed
      */
     public function beforeReplaceFileContents(CodeBase $code_base, string $file_path, string $new_file_contents) {

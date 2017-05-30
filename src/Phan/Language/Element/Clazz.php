@@ -57,14 +57,14 @@ class Clazz extends AddressableElement
      * @param Context $context
      * The context in which the structural element lives
      *
-     * @param string $name,
+     * @param string $name
      * The name of the typed structural element
      *
-     * @param UnionType $type,
+     * @param UnionType $type
      * A '|' delimited set of types satisfied by this
      * typed structural element.
      *
-     * @param int $flags,
+     * @param int $flags
      * The flags property contains node specific flags. It is
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
@@ -1447,9 +1447,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Forbid undeclared magic properties
-     * @param bool $forbid - set to true to forbid.
-     * @return void
+     * Check if this class or its ancestors forbids undeclared magic properties.
      */
     public function getForbidUndeclaredMagicProperties(CodeBase $code_base) : bool {
         return (
@@ -1469,7 +1467,7 @@ class Clazz extends AddressableElement
     /**
      * Set whether undeclared magic properties are forbidden
      * (properties accessed through __get or __set, with no (at)property annotation on parent class)
-     * @param bool $forbid - set to true to forbid.
+     * @param bool $forbid_undeclared_dynamic_properties - set to true to forbid.
      * @return void
      */
     public function setForbidUndeclaredMagicProperties(
@@ -1483,9 +1481,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Forbid undeclared magic methods
-     * @param bool $forbid - set to true to forbid.
-     * @return void
+     * Check if this class or its ancestors forbids undeclared magic methods.
      */
     public function getForbidUndeclaredMagicMethods(CodeBase $code_base) : bool {
         return (
@@ -1505,7 +1501,7 @@ class Clazz extends AddressableElement
     /**
      * Set whether undeclared magic methods are forbidden
      * (methods accessed through __call or __callStatic, with no (at)method annotation on class)
-     * @param bool $forbid - set to true to forbid.
+     * @param bool $forbid_undeclared_magic_methods - set to true to forbid.
      * @return void
      */
     public function setForbidUndeclaredMagicMethods(

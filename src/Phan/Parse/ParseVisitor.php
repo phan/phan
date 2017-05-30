@@ -131,7 +131,10 @@ class ParseVisitor extends ScopeVisitor
         // Get a comment on the class declaration
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
-            $this->context
+            $this->code_base,
+            $this->context,
+            $node->lineno ?? 0,
+            Comment::ON_CLASS
         );
 
         // Add any template types parameterizing a generic class
@@ -395,7 +398,10 @@ class ParseVisitor extends ScopeVisitor
         // Get a comment on the property declaration
         $comment = Comment::fromStringInContext(
             $docComment,
-            $this->context
+            $this->code_base,
+            $this->context,
+            $node->lineno ?? 0,
+            Comment::ON_PROPERTY
         );
 
         foreach ($node->children ?? [] as $i => $child_node) {
@@ -540,7 +546,10 @@ class ParseVisitor extends ScopeVisitor
             // Get a comment on the declaration
             $comment = Comment::fromStringInContext(
                 $child_node->docComment ?? '',
-                $this->context
+                $this->code_base,
+                $this->context,
+                $child_node->lineno ?? 0,
+                Comment::ON_CONST
             );
 
             $line_number_start = $child_node->lineno ?? 0;
@@ -884,7 +893,10 @@ class ParseVisitor extends ScopeVisitor
         // Get a comment on the declaration
         $comment = Comment::fromStringInContext(
             $comment_string,
-            $this->context
+            $this->code_base,
+            $this->context,
+            $node->lineno ?? 0,
+            Comment::ON_CONST
         );
 
         $constant->setFutureUnionType(

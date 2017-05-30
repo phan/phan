@@ -14,12 +14,9 @@ class ForkPool {
     private $read_streams = [];
 
     /**
-     * @param int $pool_size
-     * The number of worker processes to create
-     *
-     * @param array $task_data_iterator
+     * @param array $process_task_data_iterator
      * An array of task data items to be divided up among the
-     * workers
+     * workers. The size of this is the number of forked processes.
      *
      * @param \Closure $startup_closure
      * A closure to execute upon starting a child

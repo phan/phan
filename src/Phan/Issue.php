@@ -164,6 +164,15 @@ class Issue
     const GenericGlobalVariable     = 'PhanGenericGlobalVariable';
     const GenericConstructorTypes   = 'PhanGenericConstructorTypes';
 
+    // Issue::CATEGORY_COMMENT
+    const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
+    const MisspelledAnnotation             = 'PhanMisspelledAnnotation';
+    const UnextractableAnnotation          = 'PhanUnextractableAnnotation';
+    const UnextractableAnnotationPart      = 'PhanUnextractableAnnotationPart';
+    const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
+    const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
+
+
     const CATEGORY_ACCESS            = 1 << 1;
     const CATEGORY_ANALYSIS          = 1 << 2;
     const CATEGORY_COMPATIBLE        = 1 << 3;
@@ -179,6 +188,7 @@ class Issue
     const CATEGORY_PLUGIN            = 1 << 13;
     const CATEGORY_GENERIC           = 1 << 14;
     const CATEGORY_INTERNAL          = 1 << 15;
+    const CATEGORY_COMMENT           = 1 << 16;
 
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
@@ -216,6 +226,7 @@ class Issue
     // Keep sorted and in sync with Colorizing::default_color_for_template
     const uncolored_format_string_for_template = [
         'CLASS'         => '%s',
+        'COMMENT'       => '%s',
         'CONST'         => '%s',
         'COUNT'         => '%d',
         'FILE'          => '%s',
@@ -505,7 +516,7 @@ class Issue
             // Issue::CATEGORY_ANALYSIS
             new Issue(
                 self::Unanalyzable,
-                self::CATEGORY_UNDEFINED,
+                self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
                 "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/etsy/phan/issues/new.",
                 self::REMEDIATION_B,
@@ -1363,6 +1374,56 @@ class Issue
                 self::REMEDIATION_B,
                 15004
             ),
+
+            // Issue::CATEGORY_COMMENT
+            new Issue(
+                self::InvalidCommentForDeclarationType,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "The phpdoc comment for {COMMENT} cannot occur on a {TYPE}",
+                self::REMEDIATION_B,
+                16000
+            ),
+            new Issue(
+                self::MisspelledAnnotation,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw misspelled annotation {COMMENT}, should be {COMMENT}",
+                self::REMEDIATION_B,
+                16001
+            ),
+            new Issue(
+                self::UnextractableAnnotation,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw unextractable annotation for comment {COMMENT}",
+                self::REMEDIATION_B,
+                16002
+            ),
+            new Issue(
+                self::UnextractableAnnotationPart,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw unextractable annotation for a fragment of comment {COMMENT}: {COMMENT}",
+                self::REMEDIATION_B,
+                16003
+            ),
+            new Issue(
+                self::CommentParamWithoutRealParam,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw an @param annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}",
+                self::REMEDIATION_B,
+                16004
+            ),
+            new Issue(
+                self::CommentParamOnEmptyParamList,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw an @param annotation for {VARIABLE}, but the param list of {FUNCTIONLIKE} is empty",
+                self::REMEDIATION_B,
+                16005
+            ),
         ];
 
         $error_map = [];
@@ -1581,31 +1642,33 @@ class Issue
 
         // If this issue type has been suppressed in
         // the config, ignore it
-        if (!Config::get()->disable_suppression
-            && in_array($issue_instance->getIssue()->getType(),
-                Config::get()->suppress_issue_types ?? [])
-        ) {
-            return;
-        }
 
-        // If a white-list of allowed issue types is defined,
-        // only emit issues on the white-list
-        if (!Config::get()->disable_suppression
-            && count(Config::get()->whitelist_issue_types) > 0
-            && !in_array($issue_instance->getIssue()->getType(),
-                Config::get()->whitelist_issue_types ?? [])
-        ) {
-            return;
-        }
+        $config = Config::get();
+        if (!$config->disable_suppression) {
+            if (in_array($issue_instance->getIssue()->getType(),
+                    $config->suppress_issue_types ?? [])
+            ) {
+                return;
+            }
 
-        // If this issue type has been suppressed in
-        // this scope from a doc block, ignore it.
-        if (!Config::get()->disable_suppression
-            && $context->hasSuppressIssue(
-                $code_base,
-                $issue_instance->getIssue()->getType()
-        )) {
-            return;
+            // If a white-list of allowed issue types is defined,
+            // only emit issues on the white-list
+            $whitelist_issue_types = $config->whitelist_issue_types ?? [];
+            if (count($whitelist_issue_types) > 0
+                && !in_array($issue_instance->getIssue()->getType(),
+                        $whitelist_issue_types)
+            ) {
+                return;
+            }
+
+            // If this issue type has been suppressed in
+            // this scope from a doc block, ignore it.
+            if ($context->hasSuppressIssue(
+                    $code_base,
+                    $issue_instance->getIssue()->getType()
+            )) {
+                return;
+            }
         }
 
         self::emitInstance($issue_instance);

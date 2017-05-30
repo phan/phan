@@ -135,7 +135,7 @@ class Analysis
     /**
      * @see self::parseNodeInContext
      *
-     * @param bool $shouldVisitEverything - Whether or not all AST nodes should be parsed.
+     * @param bool $should_visit_everything - Whether or not all AST nodes should be parsed.
      */
     private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node, bool $should_visit_everything) {
         // Save a reference to the outer context
