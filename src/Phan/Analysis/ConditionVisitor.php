@@ -96,8 +96,8 @@ class ConditionVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @param Node $left
-     * @param Node|int|float|string $right
+     * @param Node $varNode
+     * @param Node|int|float|string $expr
      * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
      */
     private function analyzeVarIsIdentical(Node $varNode, $expr) : Context
