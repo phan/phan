@@ -33,6 +33,8 @@ class Issue
     const UndeclaredTypeParameter   = 'PhanUndeclaredTypeParameter';
     const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
     const UndeclaredVariable        = 'PhanUndeclaredVariable';
+    const ClassContainsAbstractMethod = 'PhanClassContainsAbstractMethod';
+    const ClassContainsAbstractMethodInternal = 'PhanClassContainsAbstractMethodInternal';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
@@ -511,6 +513,22 @@ class Issue
                 "Reference to undeclared class {CLASS} in PhanClosureScope",
                 self::REMEDIATION_B,
                 1021
+            ),
+            new Issue(
+                self::ClassContainsAbstractMethod,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "non-abstract class {CLASS} contains abstract method {METHOD} declared at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1022
+            ),
+            new Issue(
+                self::ClassContainsAbstractMethodInternal,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "non-abstract class {CLASS} contains abstract internal method {METHOD}",
+                self::REMEDIATION_B,
+                1023
             ),
 
             // Issue::CATEGORY_ANALYSIS

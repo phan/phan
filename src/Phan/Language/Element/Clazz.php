@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Analysis\AbstractMethodAnalyzer;
 use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\ClassInheritanceAnalyzer;
@@ -1096,17 +1097,22 @@ class Clazz extends AddressableElement
             $method->getFQSEN()->getAlternateId()
         );
 
+        $is_override = $code_base->hasMethodWithFQSEN($method_fqsen);
         // Don't overwrite overridden methods with
         // parent methods
-        if ($code_base->hasMethodWithFQSEN($method_fqsen)) {
+        if ($is_override) {
 
             // Note that we're overriding something
+            // (but only do this if it's abstract)
+            // TODO: Consider all permutations of abstract and real methods on classes, interfaces, and traits.
             $existing_method =
                 $code_base->getMethodByFQSEN($method_fqsen);
-            $existing_method->setIsOverride(true);
+            if ($method->isAbstract() || !$existing_method->isAbstract() || $existing_method->getIsNewConstructor()) {
+                $existing_method->setIsOverride(true);
 
-            // Don't add the method
-            return;
+                // Don't add the method
+                return;
+            }
         }
 
         if ($method->getFQSEN() !== $method_fqsen) {
@@ -1168,6 +1174,18 @@ class Clazz extends AddressableElement
             if (!$newType->canCastToUnionType($method->getUnionType())) {
                 $method->setUnionType($newType);
             }
+        }
+
+        // Methods defined on interfaces are always abstract, but don't have that flag set.
+        // NOTE: __construct is special for the following reasons:
+        // 1. We automatically add __construct to class-like definitions (Not sure why it's done for interfaces)
+        // 2. If it's abstract, then PHP would enforce that signatures are compatible
+        if ($this->isInterface() && !$method->getIsNewConstructor()) {
+            $method->setFlags(Flags::bitVectorWithState($method->getFlags(), \ast\flags\MODIFIER_ABSTRACT, true));
+        }
+
+        if ($is_override) {
+            $method->setIsOverride(true);
         }
 
         $code_base->addMethod($method);
@@ -1965,6 +1983,11 @@ class Clazz extends AddressableElement
 
         // Load parent methods, properties, constants
         $this->importAncestorClasses($code_base);
+
+        // Make sure there are no abstract methods on non-abstract classes
+        AbstractMethodAnalyzer::analyzeAbstractMethodsAreImplemented(
+            $code_base, $this
+        );
     }
 
     /**

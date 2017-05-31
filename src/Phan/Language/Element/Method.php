@@ -118,6 +118,15 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return bool
+     * True if this is the `__construct` method
+     * (Does not return true for php4 constructors)
+     */
+    public function getIsNewConstructor() : bool {
+        return strcasecmp('__construct', $this->getName()) === 0;
+    }
+
+    /**
+     * @return bool
      * True if this is the magic `__call` method
      */
     public function getIsMagicCall() : bool {
