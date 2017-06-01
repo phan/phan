@@ -53,6 +53,11 @@ final class StaticType extends Type
         return true;
     }
 
+    public function isObject() : bool
+    {
+        return true;
+    }
+
     public function __toString() : string
     {
         $string = $this->name;

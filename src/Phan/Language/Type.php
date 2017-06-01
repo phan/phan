@@ -938,7 +938,7 @@ class Type
 
     /**
      * @return bool
-     * True if all types in this union are scalars
+     * True if this type is scalar.
      *
      * @see \Phan\Deprecated\Util::type_scalar
      * Formerly `function type_scalar`
@@ -946,6 +946,15 @@ class Type
     public function isScalar() : bool
     {
         return false;  // Overridden in subclass ScalarType
+    }
+
+    /**
+     * @return bool
+     * True if this type is an object (or the phpdoc `object`)
+     */
+    public function isObject() : bool
+    {
+        return true;  // Overridden in various subclasses
     }
 
     /**
