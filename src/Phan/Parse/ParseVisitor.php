@@ -257,20 +257,27 @@ class ParseVisitor extends ScopeVisitor
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
 
-        $trait_fqsen_string_list = (new ContextNode(
+        $trait_fqsen_list = (new ContextNode(
             $this->code_base,
             $this->context,
             $node->children['traits']
-        ))->getQualifiedNameList();
+        ))->getTraitFQSENList();
 
         // Add each trait to the class
-        foreach ($trait_fqsen_string_list as $trait_fqsen_string) {
-            $trait_fqsen = FullyQualifiedClassName::fromStringInContext(
-                $trait_fqsen_string,
-                $this->context
-            );
-
+        foreach ($trait_fqsen_list as $trait_fqsen) {
             $class->addTraitFQSEN($trait_fqsen);
+        }
+
+        // Get the adaptations for those traits
+        // Pass in the corresponding FQSENs for those traits.
+        $trait_adaptations_map = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['adaptations']
+        ))->getTraitAdaptationsMap($trait_fqsen_list);
+
+        foreach ($trait_adaptations_map as $trait_adaptations) {
+            $class->addTraitAdaptations($trait_adaptations);
         }
 
         return $this->context;
