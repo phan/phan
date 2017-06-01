@@ -182,9 +182,8 @@ class Method extends ClassElement implements FunctionInterface
 
         if ($clazz->hasMethodWithName($code_base, $clazz->getName())) {
             $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
-            $parameter_list = $old_style_constructor->getParameterList();
-            $method->setParameterList($parameter_list);
-            $method->setRealParameterList($parameter_list);
+            $method->setParameterList($old_style_constructor->getParameterList());
+            $method->setRealParameterList($old_style_constructor->getRealParameterList());
             $method->setNumberOfRequiredParameters($old_style_constructor->getNumberOfRequiredParameters());
             $method->setNumberOfOptionalParameters($old_style_constructor->getNumberOfOptionalParameters());
         }
@@ -246,7 +245,8 @@ class Method extends ClassElement implements FunctionInterface
         // TODO: Update and add setNumberOfRealRequiredParameters once other PR is merged?
         $parameter_list = $this->getParameterList();
         $method->setParameterList($parameter_list);
-        $method->setRealParameterList($parameter_list);
+        $method->setRealParameterList($this->getRealParameterList());
+        $method->setRealReturnType($this->getRealReturnType());
         $method->setNumberOfRequiredParameters($this->getNumberOfRequiredParameters());
         $method->setNumberOfOptionalParameters($this->getNumberOfOptionalParameters());
 
