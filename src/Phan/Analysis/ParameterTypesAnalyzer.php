@@ -8,6 +8,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\TemplateType;
@@ -53,6 +54,7 @@ class ParameterTypesAnalyzer
                 } else {
                     // Make sure the class exists
                     $type_fqsen = $type->asFQSEN();
+                    assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
                     if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
                         Issue::maybeEmit(
                             $code_base,

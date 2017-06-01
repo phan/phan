@@ -1,12 +1,12 @@
 <?php declare(strict_types = 1);
-namespace Phan\Test;
+namespace Phan\Tests;
 
 use Phan\ForkPool;
 
 /**
  * @requires extension pcntl
  */
-class ForkPoolTest extends \PHPUnit_Framework_TestCase
+class ForkPoolTest extends BaseTest
 {
     /**
      * Test that workers are able to send their data back

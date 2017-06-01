@@ -1,4 +1,4 @@
 <?php
 
-$result = filter_id('not-a-filter');
-$result->doSomething();
+$result290 = filter_id('not-a-filter');
+$result290->doSomething();

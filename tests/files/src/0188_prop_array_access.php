@@ -7,5 +7,6 @@ class E188 {
     private $p;
     function f() {
         $this->p['key'] = 42;
+        $this->p->key = 43;
     }
 }

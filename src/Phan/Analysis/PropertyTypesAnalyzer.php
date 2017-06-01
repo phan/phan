@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\TemplateType;
 
 class PropertyTypesAnalyzer
@@ -52,6 +53,7 @@ class PropertyTypesAnalyzer
 
                     // Make sure the class exists
                     $type_fqsen = $type->asFQSEN();
+                    assert($type_fqsen instanceof FullyQualifiedClassName, 'fqsens of non-native types must be class names');
 
                     if (!$code_base->hasClassWithFQSEN($type_fqsen)
                         && !($type instanceof TemplateType)

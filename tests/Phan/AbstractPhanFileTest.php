@@ -9,7 +9,7 @@ use Phan\Phan;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 abstract class AbstractPhanFileTest
-    extends \PHPUnit_Framework_TestCase
+    extends BaseTest
     implements CodeBaseAwareTestInterface
 {
     const EXPECTED_SUFFIX = '.expected';
