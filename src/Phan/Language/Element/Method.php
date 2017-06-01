@@ -243,8 +243,7 @@ class Method extends ClassElement implements FunctionInterface
         // TODO: setDefiningFQSEN?
 
         // TODO: Update and add setNumberOfRealRequiredParameters once other PR is merged?
-        $parameter_list = $this->getParameterList();
-        $method->setParameterList($parameter_list);
+        $method->setParameterList($this->getParameterList());
         $method->setRealParameterList($this->getRealParameterList());
         $method->setRealReturnType($this->getRealReturnType());
         $method->setNumberOfRequiredParameters($this->getNumberOfRequiredParameters());
@@ -479,15 +478,27 @@ class Method extends ClassElement implements FunctionInterface
             $code_base
         );
 
+        $first_method_match = null;
         // Hunt for any ancestor class that defines a method with
         // the same name as this one
         foreach ($ancestor_class_list as $ancestor_class) {
+            // TODO: Handle edge cases in traits.
+            // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
             if ($ancestor_class->hasMethodWithName($code_base, $this->getName())) {
-                return $ancestor_class->getMethodByName(
+                $method = $ancestor_class->getMethodByName(
                     $code_base,
                     $this->getName()
                 );
+                if ($method->isAbstract()) {
+                    return $method;
+                }
+                if ($first_method_match === null) {
+                    $first_method_match = $method;
+                }
             }
+        }
+        if ($first_method_match !== null) {
+            return $first_method_match;
         }
 
         // Throw an exception if this method doesn't override

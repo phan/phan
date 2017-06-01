@@ -1,7 +1,7 @@
 %s:6 PhanParamSignatureMismatch Declaration of function f() should be compatible with function f(int $a) defined in %s:3
-%s:6 PhanParamSignatureRealMismatchTooFewParameters Declaration of function f() should be compatible with function f(int $a) (the method override accepts 0 parameters, but the overridden method can accept 1) defined in %s:3
+%s:6 PhanParamSignatureRealMismatchTooFewParameters Declaration of function f() should be compatible with function f(int $a) (the method override accepts 0 parameter(s), but the overridden method can accept 1) defined in %s:3
 %s:12 PhanParamSignatureMismatch Declaration of function f(int $a, int $b) should be compatible with function f(int $a) defined in %s:3
-%s:12 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function f(int $a, int $b) should be compatible with function f(int $a) (the method override requires 2 parameters, but the overridden method requires only 1) defined in ./tests/files/src/0124_override_signature.php:3
+%s:12 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function f(int $a, int $b) should be compatible with function f(int $a) (the method override requires 2 parameter(s), but the overridden method requires only 1) defined in ./tests/files/src/0124_override_signature.php:3
 %s:15 PhanParamSignatureMismatch Declaration of function f(string $a) should be compatible with function f(int $a) defined in %s:3
 %s:15 PhanParamSignatureRealMismatchParamType Declaration of function f(string $a) should be compatible with function f(int $a) (parameter #1 of type 'string' cannot replace original parameter of type 'int') defined in %s:3
 %s:18 PhanParamSignatureMismatch Declaration of function f($a) should be compatible with function f(int $a) defined in %s:3
@@ -11,11 +11,11 @@
 %s:28 PhanParamSignatureRealMismatch Declaration of function g() should be compatible with function g() : string (method returning '' cannot override method returning 'string') defined in %s:22
 %s:35 PhanParamSignatureRealMismatchHasParamType Declaration of function h(int $a) should be compatible with function h($a) (parameter #1 of has type 'int' cannot replace original parameter with no type) defined in %s:32
 %s:50 PhanParamSignatureMismatch Declaration of function i($a) should be compatible with function i($a, mixed|string $b = default) defined in %s:46
-%s:50 PhanParamSignatureRealMismatchTooFewParameters Declaration of function i($a) should be compatible with function i($a, $b = default) (the method override accepts 1 parameters, but the overridden method can accept 2) defined in ./tests/files/src/0124_override_signature.php:46
+%s:50 PhanParamSignatureRealMismatchTooFewParameters Declaration of function i($a) should be compatible with function i($a, $b = default) (the method override accepts 1 parameter(s), but the overridden method can accept 2) defined in ./tests/files/src/0124_override_signature.php:46
 %s:58 PhanParamSignatureMismatch Declaration of function j() should be compatible with function &j() defined in %s:54
 %s:67 PhanParamSignatureMismatch Declaration of function k(&$a) should be compatible with function k($a) defined in %s:62
 %s:67 PhanParamSignatureRealMismatchParamIsReference Declaration of function k(&$a) should be compatible with function k($a) (parameter #1 is a reference parameter overriding a non-reference parameter) defined in %s:62
 %s:68 PhanParamSignatureMismatch Declaration of function l($b) should be compatible with function l(&$b) defined in %s:63
 %s:68 PhanParamSignatureRealMismatchParamIsNotReference Declaration of function l($b) should be compatible with function l(&$b) (parameter #1 is a non-reference parameter overriding a reference parameter) defined in %s:63
 %s:76 PhanParamSignatureMismatch Declaration of function m($a) should be compatible with function m(mixed $a = null) defined in %s:72
-%s:76 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function m($a) should be compatible with function m($a = null) (the method override requires 1 parameters, but the overridden method requires only 0) defined in %s:72
+%s:76 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function m($a) should be compatible with function m($a = null) (the method override requires 1 parameter(s), but the overridden method requires only 0) defined in %s:72

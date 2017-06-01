@@ -120,14 +120,13 @@ class ParameterTypesAnalyzer
 
         // A lot of analyzeOverrideRealSignature is redundant.
         // However, phan should consistently emit both issue types if one of them is suppressed.
-        self::analyzeOverrideRealSignature($code_base, $method, $o_method, $o_class);
+        self::analyzeOverrideRealSignature($code_base, $method, $class, $o_method, $o_class);
 
-        // PHP doesn't complain about signature mismatches
-        // with traits, so neither shall we
-        // TODO: it does, in some cases, such as a trait existing for an abstract method defined in the class.
-        //   (Wrong way around to analyze that, though)
-        // It also checks if a trait redefines a method in the class.
-        if ($o_class->isTrait()) {
+        // Phan needs to complain in some cases, such as a trait existing for an abstract method defined in the class.
+        // PHP also checks if a trait redefines a method in the class.
+        if ($o_class->isTrait() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
+            // Give up on analyzing if the class **directly** overrides any (abstract OR non-abstract) method defined by the trait
+            // TODO: Fix edge cases caused by hack changing FQSEN of private methods
             return;
         }
 
@@ -345,11 +344,14 @@ class ParameterTypesAnalyzer
     private static function analyzeOverrideRealSignature(
         CodeBase $code_base,
         Method $method,
+        Clazz $class,
         Method $o_method,
         Clazz $o_class
     ) {
-        if ($o_class->isTrait()) {
-            return;  // TODO: properly analyze abstract methods overriding/overridden by traits.
+        if ($o_class->isTrait() && $method->getDefiningFQSEN()->getFullyQualifiedClassName() === $class->getFQSEN()) {
+            // Give up on analyzing if the class **directly** overrides any (abstract OR non-abstract) method defined by the trait
+            // TODO: Fix edge cases caused by hack changing FQSEN of private methods
+            return;
         }
 
         // Get the parameters for that method
