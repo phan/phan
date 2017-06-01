@@ -31,17 +31,17 @@ class Func extends AddressableElement implements FunctionInterface
     protected $closure_scope = null;
 
     /**
-     * @param \phan\Context $context
+     * @param Context $context
      * The context in which the structural element lives
      *
-     * @param string $name,
+     * @param string $name
      * The name of the typed structural element
      *
-     * @param UnionType $type,
+     * @param UnionType $type
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
-     * @param int $flags,
+     * @param int $flags
      * The flags property contains node specific flags. It is
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
@@ -172,7 +172,10 @@ class Func extends AddressableElement implements FunctionInterface
         // extra meta information about the function.
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
-            $context
+            $code_base,
+            $context,
+            $node->lineno ?? 0,
+            Comment::ON_FUNCTION
         );
 
         // Redefine the function's internal scope to point to the new class before adding any variables to the scope.

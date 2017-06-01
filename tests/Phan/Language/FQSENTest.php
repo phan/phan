@@ -10,8 +10,9 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Tests\BaseTest;
 
-class FQSENTest extends \PHPUnit_Framework_TestCase {
+class FQSENTest extends BaseTest {
 
     /** @var Context|null */
     protected $context = null;

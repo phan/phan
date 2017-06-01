@@ -28,14 +28,14 @@ class Method extends ClassElement implements FunctionInterface
      * @param Context $context
      * The context in which the structural element lives
      *
-     * @param string $name,
+     * @param string $name
      * The name of the typed structural element
      *
-     * @param UnionType $type,
+     * @param UnionType $type
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
-     * @param int $flags,
+     * @param int $flags
      * The flags property contains node specific flags. It is
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
@@ -118,6 +118,15 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return bool
+     * True if this is the `__construct` method
+     * (Does not return true for php4 constructors)
+     */
+    public function getIsNewConstructor() : bool {
+        return strcasecmp('__construct', $this->getName()) === 0;
+    }
+
+    /**
+     * @return bool
      * True if this is the magic `__call` method
      */
     public function getIsMagicCall() : bool {
@@ -184,6 +193,67 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * @param int $new_visibility_flags (0 if unchanged)
+     * @return Method
+     * An alias from a trait use
+     */
+    public function createUseAlias(
+        Clazz $clazz,
+        CodeBase $code_base,
+        string $alias_method_name,
+        int $new_visibility_flags
+    ) : Method {
+
+        $method_fqsen = FullyQualifiedMethodName::make(
+            $clazz->getFQSEN(),
+            $alias_method_name
+        );
+
+        $method = new Method(
+            $this->getContext(),
+            $alias_method_name,
+            $this->getUnionType(),
+            $this->getFlags(),
+            $method_fqsen
+        );
+        switch ($new_visibility_flags) {
+        case \ast\flags\MODIFIER_PUBLIC:
+        case \ast\flags\MODIFIER_PROTECTED:
+        case \ast\flags\MODIFIER_PRIVATE:
+            // Replace the visibility with the new visibility.
+            $method->setFlags(Flags::bitVectorWithState(
+                Flags::bitVectorWithState(
+                    $method->getFlags(),
+                    \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_PRIVATE,
+                    false
+                ),
+                $new_visibility_flags,
+                true
+            ));
+            break;
+        default:
+            break;
+        }
+
+        // Workaround: If you import a trait's method as private, it becomes private **to the class which used the trait**
+        // (But preserving the defining FQSEN is fine for this)
+        if (!Flags::bitVectorHasState($method->getFlags(), \ast\flags\MODIFIER_PRIVATE)) {
+            $method->setDefiningFQSEN($method_fqsen);
+        }
+
+        // TODO: setDefiningFQSEN?
+
+        // TODO: Update and add setNumberOfRealRequiredParameters once other PR is merged?
+        $parameter_list = $this->getParameterList();
+        $method->setParameterList($parameter_list);
+        $method->setRealParameterList($parameter_list);
+        $method->setNumberOfRequiredParameters($this->getNumberOfRequiredParameters());
+        $method->setNumberOfOptionalParameters($this->getNumberOfOptionalParameters());
+
+        return $method;
+    }
+
+    /**
      * @param Context $context
      * The context in which the node appears
      *
@@ -217,7 +287,10 @@ class Method extends ClassElement implements FunctionInterface
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
-            $context
+            $code_base,
+            $context,
+            $node->lineno ?? 0,
+            Comment::ON_METHOD
         );
 
         // @var Parameter[]
@@ -339,8 +412,6 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
-     * @param Context $context
-     *
      * @return UnionType
      * The type of this method in its given context.
      */
