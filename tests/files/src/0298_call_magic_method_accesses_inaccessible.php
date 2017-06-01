@@ -1,6 +1,6 @@
 <?php
 
-class A291
+class A298
 {
     private function hidden()
     {
@@ -18,7 +18,7 @@ class A291
 /**
  * @method bool hidden()
  */
-class B291
+class B298
 {
     /**
      * @suppress PhanRedefineFunction
@@ -36,7 +36,7 @@ class B291
     }
 }
 
-class C291
+class C298
 {
     protected function hidden()
     {
@@ -51,18 +51,18 @@ class C291
     }
 }
 
-class D291 extends C291
+class D298 extends C298
 {
 }
 
-$a = new A291();
+$a = new A298();
 var_dump($a->hidden());
 
-$b = new B291();
+$b = new B298();
 var_dump($b->hidden());
 
-$c = new C291();
+$c = new C298();
 var_dump($c->hidden());
 
-$d = new D291();
+$d = new D298();
 var_dump($d->hidden());
