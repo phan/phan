@@ -9,9 +9,10 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\FunctionLikeScope;
+use Phan\Tests\BaseTest;
 use Phan\Parse\ParseVisitor;
 
-class ContextTest extends \PHPUnit_Framework_TestCase {
+class ContextTest extends BaseTest {
 
     /** @var CodeBase|null */
     protected $code_base = null;
