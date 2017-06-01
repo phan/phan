@@ -1573,9 +1573,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 || $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
             )
         ) {
-            $has_call_magic_method = $method->getDefiningClass(
-                $this->code_base
-            )->hasMethodWithName($this->code_base, '__call');
+            $has_call_magic_method = !$method->isStatic()
+                && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call');
 
             $this->emitIssue(
                 $has_call_magic_method ?
@@ -1601,9 +1600,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 && $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
             )
         ) {
-            $has_call_magic_method = $method->getDefiningClass(
-                $this->code_base
-            )->hasMethodWithName($this->code_base, '__call');
+            $has_call_magic_method = !$method->isStatic()
+                && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call');
 
             $this->emitIssue(
                 $has_call_magic_method ?
