@@ -2,12 +2,15 @@
 namespace Phan\Analysis;
 
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Langauge\Type;
 use Phan\Language\Context;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ObjectType;
+use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -73,8 +76,60 @@ class ConditionVisitor extends KindVisitorImplementation
         $flags = ($node->flags ?? 0);
         if ($flags === \ast\flags\BINARY_BOOL_AND) {
             return $this->visitShortCircuitingAnd($node->children['left'], $node->children['right']);
+        } else if ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
+            return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
         }
         return $this->context;
+    }
+
+    /**
+     * @param Node|int|float|string $left
+     * @param Node|int|float|string $right
+     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     */
+    private function analyzeIsIdentical($left, $right) : Context
+    {
+        if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
+            return $this->analyzeVarIsIdentical($left, $right);
+        } else if (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
+            return $this->analyzeVarIsIdentical($right, $left);
+        }
+        return $this->context;
+    }
+
+    /**
+     * @param Node $varNode
+     * @param Node|int|float|string $expr
+     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
+     */
+    private function analyzeVarIsIdentical(Node $varNode, $expr) : Context
+    {
+        $name = $varNode->children['name'] ?? null;
+        $context = $this->context;
+        if (is_string($name) && $name) {
+            $exprType = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $this->context, $expr);
+            if ($exprType) {
+                // Get the variable we're operating on
+                $variable = (new ContextNode(
+                    $this->code_base,
+                    $context,
+                    $varNode
+                ))->getVariable();
+
+                // Make a copy of the variable
+                $variable = clone($variable);
+
+                $variable->setUnionType($exprType);
+
+                // Overwrite the variable with its new type in this
+                // scope without overwriting other scopes
+                $context = $context->withScopeVariable(
+                    $variable
+                );
+                return $context;
+            }
+        }
+        return $context;
     }
 
     /**
@@ -280,12 +335,119 @@ class ConditionVisitor extends KindVisitorImplementation
     private static function isCallStringWithSingleVariableArgument(Node $node) : bool
     {
         $args = $node->children['args']->children;
-        return count($args) === 1
-            && $args[0] instanceof Node
-            && $args[0]->kind === \ast\AST_VAR
-            && $node->children['expr'] instanceof Node
-            && !empty($node->children['expr']->children['name'] ?? null)
-            && is_string($node->children['expr']->children['name']);
+        if (count($args) === 1) {
+            $arg = $args[0];
+            if (($arg instanceof Node) && ($arg->kind === \ast\AST_VAR)) {
+                $expr = $node->children['expr'];
+                if ($expr instanceof Node) {
+                    $name = $expr->children['name'] ?? null;
+                    if (is_string($name) && $name) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This function is called once, and returns closures to modify the types of variables.
+     *
+     * This contains Phan's logic for inferring the resulting union types of variables, e.g. in is_array($x).
+     *
+     * @return \Closure[] - The closures to call for a given
+     */
+    private static function initTypeModifyingClosuresForVisitCall() : array
+    {
+        $make_basic_assertion_callback = function(string $union_type_string) : \Closure
+        {
+            $type = UnionType::fromFullyQualifiedString(
+                $union_type_string
+            );
+
+            /** @return void */
+            return function(Variable $variable) use($type)
+            {
+                // Otherwise, overwrite the type for any simple
+                // primitive types.
+                $variable->setUnionType(clone($type));
+            };
+        };
+
+        /** @return void */
+        $array_callback = function(Variable $variable)
+        {
+            // Change the type to match the is_a relationship
+            // If we already have generic array types, then keep those
+            // (E.g. T[]|false becomes T[], ?array|null becomes array
+            $newType = $variable->getUnionType()->genericArrayTypes();
+            if ($newType->isEmpty()) {
+                $newType->addType(ArrayType::instance(false));
+            } else {
+                // Convert inferred (?T)[] to T[], ?array to array
+                if ($newType->containsNullable()) {
+                    $newType = $newType->nonNullableClone();
+                }
+            }
+            $variable->setUnionType($newType);
+        };
+
+        /** @return void */
+        $object_callback = function(Variable $variable) : void
+        {
+            // Change the type to match the is_a relationship
+            // If we already have the `object` type or generic object types, then keep those
+            // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
+            $newType = $variable->getUnionType()->objectTypes();
+            if ($newType->isEmpty()) {
+                $newType->addType(ObjectType::instance(false));
+            } else {
+                // Convert inferred ?MyClass to MyClass, ?object to object
+                if ($newType->containsNullable()) {
+                    $newType = $newType->nonNullableClone();
+                }
+            }
+            $variable->setUnionType($newType);
+        };
+        $scalar_callback = function(Variable $variable) : void
+        {
+            // Change the type to match the is_a relationship
+            // If we already have possible scalar types, then keep those
+            // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
+            $newType = $variable->getUnionType()->scalarTypes();
+            if ($newType->isEmpty() || $newType->isType(NullType::instance(false))) {
+                // If there are no inferred types, or the only type we saw was 'null',
+                // assume there this can be any possible scalar.
+                // (Excludes `resource`, which is technically a scalar)
+                $newType = UnionType::fromFullyQualifiedString('int|float|bool|string|null');
+            }
+            $variable->setUnionType($newType);
+        };
+
+        $float_callback = $make_basic_assertion_callback('float');
+        $int_callback = $make_basic_assertion_callback('int');
+        $null_callback = $make_basic_assertion_callback('null');
+        // Note: isset() is handled in visitIsset()
+
+        return [
+            'is_array' => $array_callback,
+            'is_bool' => $make_basic_assertion_callback('bool'),
+            'is_callable' => $make_basic_assertion_callback('callable'),
+            'is_double' => $float_callback,
+            'is_float' => $float_callback,
+            'is_int' => $int_callback,
+            'is_integer' => $int_callback,
+            'is_iterable' => $make_basic_assertion_callback('iterable'),  // TODO: Could keep basic array types and classes extending iterable
+            'is_long' => $int_callback,
+            'is_null' => $null_callback,
+            'is_numeric' => $make_basic_assertion_callback('string|int|float'),
+            'is_object' => $object_callback,
+            'is_real' => $float_callback,
+            'is_resource' => $make_basic_assertion_callback('resource'),
+            'is_scalar' => $scalar_callback,
+            'is_string' => $make_basic_assertion_callback('string'),
+            'empty' => $null_callback,
+        ];
     }
 
     /**
@@ -308,34 +470,16 @@ class ConditionVisitor extends KindVisitorImplementation
         }
 
         // Translate the function name into the UnionType it asserts
-        $map = array(
-            'is_array' => 'array',
-            'is_bool' => 'bool',
-            'is_callable' => 'callable',
-            'is_double' => 'float',
-            'is_float' => 'float',
-            'is_int' => 'int',
-            'is_integer' => 'int',
-            'is_iterable' => 'iterable',
-            'is_long' => 'int',
-            'is_null' => 'null',
-            'is_numeric' => 'string|int|float',
-            'is_object' => 'object',
-            'is_real' => 'float',
-            'is_resource' => 'resource',
-            'is_scalar' => 'int|float|bool|string|null',
-            'is_string' => 'string',
-            'empty' => 'null',
-        );
-
-        $function_name = $node->children['expr']->children['name'];
-        if (!isset($map[$function_name])) {
-            return $this->context;
+        static $map = null;
+        if (empty($map)) {
+             $map = self::initTypeModifyingClosuresForVisitCall();
         }
 
-        $type = UnionType::fromFullyQualifiedString(
-            $map[$function_name]
-        );
+        $function_name = strtolower($node->children['expr']->children['name']);
+        $type_modification_callback = $map[$function_name] ?? null;
+        if ($type_modification_callback === null) {
+            return $this->context;
+        }
 
         $context = $this->context;
 
@@ -356,23 +500,8 @@ class ConditionVisitor extends KindVisitorImplementation
             // Make a copy of the variable
             $variable = clone($variable);
 
-            $variable->setUnionType(
-                clone($variable->getUnionType())
-            );
-
-            // Change the type to match the is_a relationship
-            if ($type->isType(ArrayType::instance(false))
-                && $variable->getUnionType()->hasGenericArray()
-            ) {
-                // If the variable is already a generic array,
-                // note that it can be an arbitrary array without
-                // erasing the existing generic type.
-                $variable->getUnionType()->addUnionType($type);
-            } else {
-                // Otherwise, overwrite the type for any simple
-                // primitive types.
-                $variable->setUnionType($type);
-            }
+            // Modify the types of that variable.
+            $type_modification_callback($variable);
 
             // Overwrite the variable with its new type in this
             // scope without overwriting other scopes

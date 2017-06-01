@@ -88,7 +88,7 @@ class Request {
         if (($this->config[self::PARAM_FORMAT] ?? null) === 'json') {
             $issues = json_decode($rawIssues, true);
             if (!is_array($issues)) {
-                $issues = "(Failed to decode) " . $rawIssues;
+                $issues = "(Failed to decode) " . json_last_error_msg() . ': ' . $rawIssues;
             }
         } else {
             $issues = $rawIssues;
@@ -153,7 +153,6 @@ class Request {
      * Currently supports only JSON.
      * TODO: HTTP protocol.
      *
-     * @param resource $conn
      * @param array $response
      * @return void
      */
@@ -225,7 +224,7 @@ class Request {
 
     /**
      * @param CodeBase $code_base
-     * @param \Closure $file_path_list
+     * @param \Closure $file_path_lister
      * @param resource $conn
      * @return Request|null - non-null if this is a worker process with work to do. null if request failed or this is the master.
      */

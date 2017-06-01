@@ -1041,6 +1041,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
             }
 
+            $this->analyzeMethodVisibility(
+                $this->code_base,
+                $method,
+                $node
+            );
+
             // Make sure the parameters look good
             $this->analyzeCallToMethod(
                 $this->code_base,
@@ -1341,52 +1347,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return $this->context;
         }
 
-        // Make sure the magic method is accessible
-        if ($method->isPrivate()
-            && !$method->getDefiningClass($this->code_base)->isTrait()
-            && (!$this->context->isInClassScope()
-                || $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
-            )
-        ) {
-            $has_call_magic_method = $method->getDefiningClass(
-                $this->code_base
-            )->hasMethodWithName($this->code_base, '__call');
-
-            $this->emitIssue(
-                $has_call_magic_method ?
-                    Issue::AccessMethodPrivateWithCallMagicMethod : Issue::AccessMethodPrivate,
-                $node->lineno ?? 0,
-                (string)$method->getFQSEN(),
-                $method->getFileRef()->getFile(),
-                (string)$method->getFileRef()->getLineNumberStart()
-            );
-        } else if ($method->isProtected()
-            && !$method->getDefiningClass($this->code_base)->isTrait()
-            && (!$this->context->isInClassScope()
-            || (!$this->context->getClassFQSEN()->asType()->canCastToType(
-                    $method->getClassFQSEN()->asType()
-                )
-                && !$this->context->getClassFQSEN()->asType()->isSubclassOf(
-                        $this->code_base,
-                        $method->getDefiningClassFQSEN()->asType()
-                    )
-                )
-                && $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
-            )
-        ) {
-            $has_call_magic_method = $method->getDefiningClass(
-                $this->code_base
-            )->hasMethodWithName($this->code_base, '__call');
-
-            $this->emitIssue(
-                $has_call_magic_method ?
-                    Issue::AccessMethodProtectedWithCallMagicMethod : Issue::AccessMethodProtected,
-                $node->lineno ?? 0,
-                (string)$method->getFQSEN(),
-                $method->getFileRef()->getFile(),
-                (string)$method->getFileRef()->getLineNumberStart()
-            );
-        }
+        $this->analyzeMethodVisibility(
+            $this->code_base,
+            $method,
+            $node
+        );
 
         // Check the call for paraemter and argument types
         $this->analyzeCallToMethod(
@@ -1585,6 +1550,70 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * Analyze whether a method is callable
+     *
+     * @param CodeBase $code_base
+     * @param Method $method
+     * @param Node $node
+     *
+     * @return void
+     */
+    private function analyzeMethodVisibility(
+        CodeBase $code_base,
+        Method $method,
+        Node $node
+    ) {
+        if (
+            $method->isPrivate()
+            && (
+                !$this->context->isInClassScope()
+                || $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
+            )
+        ) {
+            $has_call_magic_method = $method->getDefiningClass(
+                $this->code_base
+            )->hasMethodWithName($this->code_base, '__call');
+
+            $this->emitIssue(
+                $has_call_magic_method ?
+                    Issue::AccessMethodPrivateWithCallMagicMethod : Issue::AccessMethodPrivate,
+                $node->lineno ?? 0,
+                (string)$method->getFQSEN(),
+                $method->getFileRef()->getFile(),
+                (string)$method->getFileRef()->getLineNumberStart()
+            );
+        } else if (
+            $method->isProtected()
+            && (
+                !$this->context->isInClassScope()
+                || (
+                    !$this->context->getClassFQSEN()->asType()->canCastToType(
+                        $method->getClassFQSEN()->asType()
+                    )
+                    && !$this->context->getClassFQSEN()->asType()->isSubclassOf(
+                        $code_base,
+                        $method->getDefiningClassFQSEN()->asType()
+                    )
+                )
+                && $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
+            )
+        ) {
+            $has_call_magic_method = $method->getDefiningClass(
+                $this->code_base
+            )->hasMethodWithName($this->code_base, '__call');
+
+            $this->emitIssue(
+                $has_call_magic_method ?
+                    Issue::AccessMethodProtectedWithCallMagicMethod : Issue::AccessMethodProtected,
+                $node->lineno ?? 0,
+                (string)$method->getFQSEN(),
+                $method->getFileRef()->getFile(),
+                (string)$method->getFileRef()->getLineNumberStart()
+            );
+        }
     }
 
     /**

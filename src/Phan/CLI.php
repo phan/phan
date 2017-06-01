@@ -596,6 +596,13 @@ EOB;
         } catch (\Exception $exception) {
             error_log($exception->getMessage());
         }
+        usort($file_list, function(string $a, string $b) : int {
+            // Sort lexicographically by paths **within the results for a directory**,
+            // to work around some file systems not returning results lexicographically.
+            // Keep directories together by replacing directory separators with the null byte
+            // (E.g. "a.b" is lexicographically less than "a/b", but "aab" is greater than "a/b")
+            return strcmp(preg_replace("@[/\\\\]+@", "\0", $a), preg_replace("@[/\\\\]+@", "\0", $b));
+        });
 
         return $file_list;
     }
@@ -636,10 +643,6 @@ EOB;
      *
      * @param float $p
      * The percentage to display
-     *
-     * @param float $sample_rate
-     * How frequently we should update the progress
-     * bar, randomly sampled
      *
      * @return void
      */

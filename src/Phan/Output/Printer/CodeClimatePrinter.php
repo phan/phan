@@ -64,10 +64,8 @@ final class CodeClimatePrinter implements BufferedPrinterInterface
         // See https://github.com/codeclimate/spec/blob/master/SPEC.md#output
         // for details on the CodeClimate output format
         foreach ($this->messages as $message) {
-            $this->output->write(
-                json_encode($message, JSON_UNESCAPED_SLASHES, JSON_UNESCAPED_UNICODE)
-                . chr(0)
-            );
+            $encodedMessage = json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\0";
+            $this->output->write($encodedMessage, false, OutputInterface::OUTPUT_RAW);
         }
         $this->messages = [];
     }

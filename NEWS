@@ -4,7 +4,8 @@ Phan NEWS
 -----------------------
 
 New Features (Analysis)
-+ Add `PhanParamSignatureRealMismatch`, which ignores phpdoc types and imitates PHP's inheritance warning/error checks as closely as possible. (Issue #374)
++ Add `PhanParamSignatureRealMismatch*` (e.g. `ParamSignatureRealMismatchTooManyRequiredParameters`),
+  which ignores phpdoc types and imitates PHP's inheritance warning/error checks as closely as possible. (Issue #374)
   This has a much lower rate of false positives than `PhanParamSignatureMismatch`, which is based on Liskov Substitution Principle and also accounts for phpdoc types.
   (`PhanParamSignatureMismatch` continues to exist)
 + Create `PhanUndeclaredStaticProperty` (Issue #610)
@@ -23,6 +24,19 @@ New Features (Analysis)
 + Make conditionals such as `is_string` start applying to the condition in ternary operators (`$a ? $b : $c`)
 + Treat `resource`, `object`, and `mixed` as native types only when they occur in phpdoc.
   Outside of phpdoc (e.g. `$x instanceof resource`), analyze those names as if they were class names.
++ Emit low severity issues if Phan can't extract types from phpdoc,
+  the phpdoc `@param` is out of sync with the code,
+  or if the phpdoc annotation doesn't apply to an element type (Issue #778)
++ Allow inferring the type of variables from `===` conditionals such as `if ($x === true)`
++ Add issue type for non-abstract classes containing abstract methods from itself or its ancestors
+  (`PhanClassContainsAbstractMethod`, `PhanClassContainsAbstractMethodInternal`)
++ Partial support for handling trait adaptations (`as`/`insteadof`) when using traits (Issue #312)
++ Start checking if uses of private/protected class methods *defined in a trait* are visible outside of that class.
+  Before, Phan would always assume they were visible, to reduce false positives.
++ If Phan has inferred/been provided generic array types for a variable (e.g. `int[]`),
+  then analysis of the code within `if (is_array($x))` will act as though the type is `int[]`.
+  The checks `is_object` and `is_scalar` now also preserve known sub-types of the group of types.
+  (If Phan isn't aware of any sub-types, it will infer the generic version, e.g. `object`)
 
 New Features (CLI, Configs)
 + (Linux/Unix only) Add Experimental Phan Daemon mode (PR #563 for Issue #22), which allows phan to run in the background, and accept TCP requests to analyze single files.
@@ -50,6 +64,7 @@ Bug Fixes
 - Existence of __get() no longer affects analyzing static properties. (Issue #610)
 - Phan can now detect the declaration of constants relative to a `use`d namespace (Issue #509)
 - Phan can now detect the declaration of functions relative to a `use`d namespace (Issue #510)
+- Fix bug where JSON output printer accidentally escaped some output ("<"), causing invalid JSON.
 
 Backwards Incompatible Changes
 - Declarations of user-defined constants are now consistently

@@ -1,0 +1,5 @@
+%s:12 PhanAccessMethodPrivate Cannot access private method \B292::priv defined at %s:4
+%s:17 PhanAccessMethodPrivate Cannot access private method \A292::priv defined at %s:4
+%s:18 PhanAccessMethodProtected Cannot access protected method \A292::prot defined at %s:5
+%s:21 PhanAccessMethodPrivate Cannot access private method \B292::priv defined at %s:4
+%s:22 PhanAccessMethodProtected Cannot access protected method \B292::prot defined at %s:5

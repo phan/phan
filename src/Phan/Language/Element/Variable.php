@@ -31,17 +31,17 @@ class Variable extends TypedElement
     ];
 
     /**
-     * @param \phan\Context $context
+     * @param Context $context
      * The context in which the structural element lives
      *
-     * @param string $name,
+     * @param string $name
      * The name of the typed structural element
      *
-     * @param UnionType $type,
+     * @param UnionType $type
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
-     * @param int $flags,
+     * @param int $flags
      * The flags property contains node specific flags. It is
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
@@ -176,10 +176,11 @@ class Variable extends TypedElement
             );
         }
 
-        if (array_key_exists($name, Config::get()->globals_type_map)
-            || in_array($name, Config::get()->runkit_superglobals)
+        $config = Config::get();
+        if (array_key_exists($name, $config->globals_type_map)
+            || in_array($name, $config->runkit_superglobals)
         ) {
-            $type_string = Config::get()->globals_type_map[$name] ?? '';
+            $type_string = $config->globals_type_map[$name] ?? '';
             // Want to allow 'resource' or 'mixed' as a type here,
             return UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
         }

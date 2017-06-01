@@ -8,6 +8,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\TemplateType;
@@ -53,6 +54,7 @@ class ParameterTypesAnalyzer
                 } else {
                     // Make sure the class exists
                     $type_fqsen = $type->asFQSEN();
+                    assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
                     if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
                         Issue::maybeEmit(
                             $code_base,
@@ -357,70 +359,130 @@ class ParameterTypesAnalyzer
         // type parameters we may have
         $o_return_union_type = $o_method->getRealReturnType();
 
-        // Determine if the signatures match up
-        $signatures_match = true;
-
         // Make sure the count of parameters matches
-        if ($method->getNumberOfRequiredParameters()
-            > $o_method->getNumberOfRequiredParameters()
+        if ($method->getNumberOfRequiredRealParameters()
+            > $o_method->getNumberOfRequiredRealParameters()
         ) {
-            $signatures_match = false;
-        } else if ($method->getNumberOfParameters()
-            < $o_method->getNumberOfParameters()
+            self::emitSignatureRealMismatchIssue(
+                $code_base,
+                $method,
+                $o_method,
+                Issue::ParamSignatureRealMismatchTooManyRequiredParameters,
+                Issue::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
+                $method->getNumberOfRequiredRealParameters(),
+                $o_method->getNumberOfRequiredRealParameters()
+            );
+            return;
+        } else if ($method->getNumberOfRealParameters()
+            < $o_method->getNumberOfRealParameters()
         ) {
-            $signatures_match = false;
+            self::emitSignatureRealMismatchIssue(
+                $code_base,
+                $method,
+                $o_method,
+                Issue::ParamSignatureRealMismatchTooFewParameters,
+                Issue::ParamSignatureRealMismatchTooFewParametersInternal,
+                $method->getNumberOfRealParameters(),
+                $o_method->getNumberOfRealParameters()
+            );
+            return;
+            // If parameter counts match, check their types
+        }
+        foreach ($method->getRealParameterList() as $i => $parameter) {
+            $offset = $i + 1;
+            // TODO: check if variadic
+            if (!isset($o_parameter_list[$i])) {
+                continue;
+            }
 
-        // If parameter counts match, check their types
-        } else {
-            foreach ($method->getRealParameterList() as $i => $parameter) {
+            // TODO: check that the variadic types match up?
+            $o_parameter = $o_parameter_list[$i];
 
-                // TODO: check if variadic
-                if (!isset($o_parameter_list[$i])) {
-                    continue;
+            // Changing pass by reference is not ok
+            // @see https://3v4l.org/Utuo8
+            if ($parameter->isPassByReference() != $o_parameter->isPassByReference()) {
+                $is_reference = $parameter->isPassByReference();
+                self::emitSignatureRealMismatchIssue(
+                    $code_base,
+                    $method,
+                    $o_method,
+                    ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReference         : Issue::ParamSignatureRealMismatchParamIsNotReference),
+                    ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReferenceInternal : Issue::ParamSignatureRealMismatchParamIsNotReferenceInternal),
+                    $offset
+                );
+                return;
+            }
+
+            // Changing variadic to/from non-variadic is not ok?
+            // (Not absolutely sure about that)
+            if ($parameter->isVariadic() != $o_parameter->isVariadic()) {
+                $is_variadic = $parameter->isVariadic();
+                self::emitSignatureRealMismatchIssue(
+                    $code_base,
+                    $method,
+                    $o_method,
+                    ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadic         : Issue::ParamSignatureRealMismatchParamNotVariadic),
+                    ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadicInternal : Issue::ParamSignatureRealMismatchParamNotVariadicInternal),
+                    $offset
+                );
+                return;
+            }
+
+            // Either 0 or both of the params must have types for the signatures to be compatible.
+            $o_parameter_union_type = $o_parameter->getUnionType();
+            $parameter_union_type = $parameter->getUnionType();
+            if ($parameter_union_type->isEmpty() != $o_parameter_union_type->isEmpty()) {
+                if ($parameter_union_type->isEmpty()) {
+                    self::emitSignatureRealMismatchIssue(
+                        $code_base,
+                        $method,
+                        $o_method,
+                        Issue::ParamSignatureRealMismatchHasNoParamType,
+                        Issue::ParamSignatureRealMismatchHasNoParamTypeInternal,
+                        $offset,
+                        (string)$o_parameter_union_type
+                    );
+                    return;
+                } else {
+                    self::emitSignatureRealMismatchIssue(
+                        $code_base,
+                        $method,
+                        $o_method,
+                        Issue::ParamSignatureRealMismatchHasParamType,
+                        Issue::ParamSignatureRealMismatchHasParamTypeInternal,
+                        $offset,
+                        (string)$parameter_union_type
+                    );
+                    return;
                 }
+            }
 
-                // TODO: check that the variadic types match up?
-                $o_parameter = $o_parameter_list[$i];
+            // If both have types, make sure they are identical.
+            // Non-nullable param types can be substituted with the nullable equivalents.
+            // E.g. A::foo(?int $x) can override BaseClass::foo(int $x)
+            if (!$parameter_union_type->isEmpty()) {
+                if (!$o_parameter_union_type->isEqualTo($parameter_union_type) &&
+                    !($parameter_union_type->containsNullable() && $o_parameter_union_type->isEqualTo($parameter_union_type->nonNullableClone()))
+                ) {
+                    // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
+                    // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?
+                    $is_exception_to_rule = $parameter_union_type->hasIterable() &&
+                        $o_parameter_union_type->hasIterable() &&
+                        ($parameter_union_type->hasType(IterableType::instance(true)) ||
+                         $parameter_union_type->hasType(IterableType::instance(false)) && !$o_parameter_union_type->containsNullable());
 
-                // Changing pass by reference is not ok
-                // @see https://3v4l.org/Utuo8
-                if ($parameter->isPassByReference() != $o_parameter->isPassByReference()) {
-                    $signatures_match = false;
-                    break;
-                }
-
-                // Changing variadic to/from non-variadic is not ok?
-                if ($parameter->isVariadic() != $o_parameter->isVariadic()) {
-                    $signatures_match = false;
-                    break;
-                }
-
-                // Either 0 or both of the params must have types for the signatures to be compatible.
-                $o_parameter_union_type = $o_parameter->getUnionType();
-                $parameter_union_type = $parameter->getUnionType();
-                if ($parameter_union_type->isEmpty() != $o_parameter_union_type->isEmpty()) {
-                    $signatures_match = false;
-                    break;
-                }
-
-                // If both have types, make sure they are identical.
-                // Non-nullable param types can be substituted with the nullable equivalents.
-                // E.g. A::foo(?int $x) can override BaseClass::foo(int $x)
-                if (!$parameter_union_type->isEmpty()) {
-                    if (!$o_parameter_union_type->isEqualTo($parameter_union_type) &&
-                        !($parameter_union_type->containsNullable() && $o_parameter_union_type->isEqualTo($parameter_union_type->nonNullableClone()))
-                    ) {
-                        // There is one exception to this in php 7.1 - the pseudo-type "iterable" can replace ArrayAccess/array in a subclass
-                        // TODO: Traversable and array work, but Iterator doesn't. Check for those specific cases?
-                        $is_exception_to_rule = $parameter_union_type->hasIterable() &&
-                            $o_parameter_union_type->hasIterable() &&
-                            ($parameter_union_type->hasType(IterableType::instance(true)) ||
-                             $parameter_union_type->hasType(IterableType::instance(false)) && !$o_parameter_union_type->containsNullable());
-
-                        if (!$is_exception_to_rule) {
-                            $signatures_match = false;
-                            break;
-                        }
+                    if (!$is_exception_to_rule) {
+                        self::emitSignatureRealMismatchIssue(
+                            $code_base,
+                            $method,
+                            $o_method,
+                            Issue::ParamSignatureRealMismatchParamType,
+                            Issue::ParamSignatureRealMismatchParamTypeInternal,
+                            $offset,
+                            (string)$parameter_union_type,
+                            (string)$o_parameter_union_type
+                        );
+                        return;
                     }
                 }
             }
@@ -433,36 +495,55 @@ class ParameterTypesAnalyzer
             if (!($o_return_union_type->isEqualTo($return_union_type) || (
                 $o_return_union_type->containsNullable() && !($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
                 )) {
-                    $signatures_match = false;
+
+                self::emitSignatureRealMismatchIssue(
+                    $code_base,
+                    $method,
+                    $o_method,
+                    Issue::ParamSignatureRealMismatchReturnType,
+                    Issue::ParamSignatureRealMismatchReturnTypeInternal,
+                    (string)$return_union_type,
+                    (string)$o_return_union_type
+                );
+                return;
             }
         }
+    }
 
-        if ($o_method->returnsRef() && !$method->returnsRef()) {
-            $signatures_match = false;
-        }
-
-        if (!$signatures_match) {
-            if ($o_method->isPHPInternal()) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::ParamSignatureRealMismatchInternal,
-                    $method->getFileRef()->getLineNumberStart(),
-                    $method->toRealSignatureString(),
-                    $o_method->toRealSignatureString()
-                );
-            } else {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::ParamSignatureRealMismatch,
-                    $method->getFileRef()->getLineNumberStart(),
-                    $method->toRealSignatureString(),
-                    $o_method->toRealSignatureString(),
+    /**
+     * Emit an
+     *
+     * @param CodeBase $code_base
+     * @param Method $method
+     * @param Method $o_method the overridden method
+     * @param string $issue_type the ParamSignatureRealMismatch* (issue type if overriding user-defined method)
+     * @param string $internal_issue_type the ParamSignatureRealMismatch* (issue type if overriding internal method)
+     * @param int|string ...$args
+     */
+    private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, ...$args) {
+        if ($o_method->isPHPInternal()) {
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                $internal_issue_type,
+                $method->getFileRef()->getLineNumberStart(),
+                $method->toRealSignatureString(),
+                $o_method->toRealSignatureString(),
+                ...$args
+            );
+        } else {
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                $issue_type,
+                $method->getFileRef()->getLineNumberStart(),
+                $method->toRealSignatureString(),
+                $o_method->toRealSignatureString(),
+                ...array_merge($args, [
                     $o_method->getFileRef()->getFile(),
-                    $o_method->getFileRef()->getLineNumberStart()
-                );
-            }
+                    $o_method->getFileRef()->getLineNumberStart(),
+                ])
+            );
         }
     }
 }

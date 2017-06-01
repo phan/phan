@@ -147,7 +147,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         Context $context
     ) {
         // Check to see if we're fully qualified
-        if ($fqsen_string[0] === '\\') {
+        if (($fqsen_string[0] ?? '') === '\\') {
             return static::fromFullyQualifiedString($fqsen_string);
         }
         $namespace_map_type = static::getNamespaceMapType();

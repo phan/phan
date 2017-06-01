@@ -17,7 +17,10 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
+use Phan\Language\Element\TraitAdaptations;
+use Phan\Language\Element\TraitAliasSource;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
@@ -90,6 +93,205 @@ class ContextNode
     public function getQualifiedName() : string
     {
         return $this->getClassUnionType()->__toString();
+    }
+
+    /**
+     * Gets the FQSEN for a trait.
+     * NOTE: does not validate that it is really used on a trait
+     * @return FQSEN[]
+     */
+    public function getTraitFQSENList() : array
+    {
+        if (!($this->node instanceof Node)) {
+            return [];
+        }
+
+        return array_map(function($name_node) : FQSEN {
+            return (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $name_node
+            ))->getTraitFQSEN([]);
+        }, $this->node->children ?? []);
+    }
+
+    /**
+     * Gets the FQSEN for a trait.
+     * NOTE: does not validate that it is really used on a trait
+     * @param TraitAdaptations[] $adaptations_map
+     * @return ?FQSEN (If this returns null, the caller is responsible for emitting an issue or falling back)
+     */
+    public function getTraitFQSEN(array $adaptations_map)
+    {
+        // TODO: In a subsequent PR, try to make trait analysis work when $adaptations_map has multiple possible traits.
+        $trait_fqsen_string = $this->getQualifiedName();
+        if ($trait_fqsen_string === '') {
+            if (count($adaptations_map) === 1) {
+                return reset($adaptations_map)->getTraitFQSEN();
+            } else {
+                return null;
+            }
+        }
+        return FullyQualifiedClassName::fromStringInContext(
+            $trait_fqsen_string,
+            $this->context
+        );
+    }
+
+    /**
+     * Get a list of traits adaptations from a node of kind \ast\AST_TRAIT_ADAPTATIONS
+     * (with fully qualified names and `as`/`instead` info)
+     *
+     * @param FQSEN[] $trait_fqsen_list TODO: use this for sanity check
+     *
+     * @return TraitAdaptations[] maps the lowercase trait fqsen to the corresponding adaptations.
+     */
+    public function getTraitAdaptationsMap(array $trait_fqsen_list) : array
+    {
+        $node = $this->node;
+        if (!($node instanceof Node)) {
+            return [];
+        }
+        assert($node->kind === \ast\AST_TRAIT_ADAPTATIONS);
+
+        // NOTE: This fetches fully qualified names more than needed,
+        // but this isn't optimized, since traits aren't frequently used in classes.
+
+        $adaptations_map = [];
+        foreach ($trait_fqsen_list as $trait_fqsen) {
+            $adaptations_map[strtolower($trait_fqsen->__toString())] = new TraitAdaptations($trait_fqsen);
+        }
+
+        foreach ($this->node->children ?? [] as $adaptation_node) {
+            assert($adaptation_node instanceof Node);
+            if ($adaptation_node->kind === \ast\AST_TRAIT_ALIAS) {
+                $this->handleTraitAlias($adaptations_map, $adaptation_node);
+            } else if ($adaptation_node->kind === \ast\AST_TRAIT_PRECEDENCE) {
+                $this->handleTraitPrecedence($adaptations_map, $adaptation_node);
+            } else {
+                assert(false, ("Unknown adaptation node kind " . $adaptation_node->kind));
+            }
+        }
+        return $adaptations_map;
+    }
+
+    /**
+     * Handles a node of kind \ast\AST_TRAIT_ALIAS, modifying the corresponding TraitAdaptations instance
+     * @param TraitAdaptations[] $adaptations_map
+     * @param Node $adaptation_node
+     * @return void
+     */
+    private function handleTraitAlias(array $adaptations_map, Node $adaptation_node)
+    {
+        $trait_method_node = $adaptation_node->children['method'];
+        $trait_original_class_name_node = $trait_method_node->children['class'];
+        $trait_original_method_name = $trait_method_node->children['method'];
+        $trait_new_method_name = $adaptation_node->children['alias'];
+        assert(is_string($trait_original_method_name));
+        assert(is_string($trait_new_method_name));
+        $trait_fqsen = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $trait_original_class_name_node
+        ))->getTraitFQSEN($adaptations_map);
+        if ($trait_fqsen === null) {
+            // TODO: try to analyze this rare special case instead of giving up in a subsequent PR?
+            // E.g. `use A, B{foo as bar}` is valid PHP, but hard to analyze.
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::AmbiguousTraitAliasSource,
+                $trait_method_node->lineno ?? 0,
+                $trait_new_method_name,
+                $trait_original_method_name,
+                '[' . implode(', ', array_map(function(TraitAdaptations $t) : string {
+                    return (string) $t->getTraitFQSEN();
+                }, $adaptations_map)) . ']'
+            );
+            return;
+        }
+
+        $fqsen_key = strtolower($trait_fqsen->__toString());
+
+        $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
+        if ($adaptations_info === null) {
+            // This will probably correspond to a PHP fatal error, but keep going anyway.
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::RequiredTraitNotAdded,
+                $trait_original_class_name_node->lineno ?? 0,
+                $trait_fqsen->__toString()
+            );
+            return;
+        }
+        // TODO: Could check for duplicate alias method occurences, but `php -l` would do that for you in some cases
+        $adaptations_info->alias_methods[$trait_new_method_name] = new TraitAliasSource($trait_original_method_name, $adaptation_node->lineno ?? 0, $adaptation_node->flags ?? 0);
+    }
+
+    /**
+     * Handles a node of kind \ast\AST_TRAIT_PRECEDENCE, modifying the corresponding TraitAdaptations instance
+     * @param TraitAdaptations[] $adaptations_map
+     * @param Node $adaptation_node
+     * @return void
+     */
+    private function handleTraitPrecedence(array $adaptations_map, Node $adaptation_node) {
+        // TODO: Should also verify that the original method exists, in a future PR?
+        $trait_method_node = $adaptation_node->children['method'];
+        // $trait_chosen_class_name_node = $trait_method_node->children['class'];
+        $trait_chosen_method_name = $trait_method_node->children['method'];
+        $trait_chosen_class_name_node = $trait_method_node->children['class'];
+
+        $trait_chosen_fqsen = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $trait_chosen_class_name_node
+        ))->getTraitFQSEN($adaptations_map);
+
+
+        if (!$trait_chosen_fqsen) {
+            throw new UnanalyzableException($trait_chosen_class_name_node, "This shouldn't happen. Could not determine trait fqsen for trait with higher precedence for method $trait_chosen_method_name");
+        }
+
+        if (($adaptations_map[strtolower($trait_chosen_fqsen->__toString())] ?? null) === null) {
+            // This will probably correspond to a PHP fatal error, but keep going anyway.
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::RequiredTraitNotAdded,
+                $trait_chosen_class_name_node->lineno ?? 0,
+                $trait_chosen_fqsen->__toString()
+            );
+        }
+
+        // This is the class which will have the method hidden
+        foreach ($adaptation_node->children['insteadof']->children as $trait_insteadof_class_name) {
+            assert(is_string($trait_chosen_method_name));
+            $trait_insteadof_fqsen = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $trait_insteadof_class_name
+            ))->getTraitFQSEN($adaptations_map);
+            if (!$trait_insteadof_fqsen) {
+                throw new UnanalyzableException($trait_insteadof_class_name, "This shouldn't happen. Could not determine trait fqsen for trait with lower precedence for method $trait_chosen_method_name");
+            }
+
+            $fqsen_key = strtolower($trait_insteadof_fqsen->__toString());
+
+            $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
+            if ($adaptations_info === null) {
+                // TODO: Make this into an issue type
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::RequiredTraitNotAdded,
+                    $trait_insteadof_class_name->lineno ?? 0,
+                    $trait_insteadof_fqsen->__toString()
+                );
+                continue;
+            }
+            $adaptations_info->hidden_methods[strtolower($trait_chosen_method_name)] = true;
+        }
     }
 
     /**

@@ -15,6 +15,7 @@ use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
+use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\TemplateType;
 use Phan\Library\Set;
 use ast\Node;
@@ -63,10 +64,6 @@ class UnionType implements \Serializable
      * @param string $fully_qualified_string
      * A '|' delimited string representing a type in the form
      * 'int|string|null|ClassName'.
-     *
-     * @param Context $context
-     * The context in which the type string was
-     * found
      *
      * @return UnionType
      */
@@ -969,7 +966,7 @@ class UnionType implements \Serializable
      * Takes "a|b[]|c|d[]|e" and returns "a|c|e"
      *
      * @return UnionType
-     * A UnionType with generic types filtered out
+     * A UnionType with generic array types filtered out
      *
      * @see \Phan\Deprecated\Pass2::nongenerics
      * Formerly `function nongenerics`
@@ -983,6 +980,70 @@ class UnionType implements \Serializable
                 }
             )
         );
+    }
+
+    /**
+     * Takes "a|b[]|c|d[]|e" and returns "b[]|d[]"
+     *
+     * @return UnionType
+     * A UnionType with generic array types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @see genericArrayElementTypes
+     */
+    public function genericArrayTypes() : UnionType
+    {
+        return new UnionType(
+            $this->type_set->filter(
+                function (Type $type) : bool {
+                    return $type->isGenericArray();
+                }
+            )
+        );
+    }
+
+    /**
+     * Takes "MyClass|int|array|?object" and returns "MyClass|?object"
+     *
+     * @return UnionType
+     * A UnionType with known object types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @see genericArrayElementTypes
+     */
+    public function objectTypes() : UnionType
+    {
+        return new UnionType(
+            $this->type_set->filter(
+                function (Type $type) : bool {
+                    return $type->isObject();
+                }
+            )
+        );
+    }
+
+    /**
+     * Takes "MyClass|int|?bool|array|?object" and returns "int|?bool"
+     * Takes "?MyClass" and returns "null"
+     *
+     * @return UnionType
+     * A UnionType with known object types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @see genericArrayElementTypes
+     */
+    public function scalarTypes() : UnionType
+    {
+        $types = $this->type_set->filter(
+            function (Type $type) : bool {
+                return $type->isScalar();
+            }
+        );
+        $nullType = NullType::instance(false);
+        if (!$types->contains($nullType) && $this->containsNullable()) {
+            $types->attach($nullType);
+        }
+        return new UnionType($types);
     }
 
     /**

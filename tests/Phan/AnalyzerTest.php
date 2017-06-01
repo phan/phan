@@ -17,7 +17,7 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
-class AnalyzerTest extends \PHPUnit_Framework_TestCase {
+class AnalyzerTest extends BaseTest {
 
     private $class_name_list;
     private $interface_name_list;

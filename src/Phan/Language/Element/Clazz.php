@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Analysis\AbstractMethodAnalyzer;
 use Phan\Analysis\CompositionAnalyzer;
 use Phan\Analysis\DuplicateClassAnalyzer;
 use Phan\Analysis\ClassInheritanceAnalyzer;
@@ -54,17 +55,24 @@ class Clazz extends AddressableElement
     private $trait_fqsen_list = [];
 
     /**
+     * @var TraitAdaptations[]
+     * Maps lowercase fqsen of a method to the trait names which are hidden
+     * and the trait aliasing info
+     */
+    private $trait_adaptations_map = [];
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
-     * @param string $name,
+     * @param string $name
      * The name of the typed structural element
      *
-     * @param UnionType $type,
+     * @param UnionType $type
      * A '|' delimited set of types satisfied by this
      * typed structural element.
      *
-     * @param int $flags,
+     * @param int $flags
      * The flags property contains node specific flags. It is
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
@@ -267,6 +275,8 @@ class Clazz extends AddressableElement
         }
 
         foreach ($class->getTraitNames() as $name) {
+            // TODO: optionally, support getTraitAliases()? This is low importance for internal PHP modules,
+            // it would be uncommon to see traits in internal PHP modules.
             $clazz->addTraitFQSEN(
                 FullyQualifiedClassName::fromFullyQualifiedString(
                     '\\' . $name
@@ -1096,23 +1106,37 @@ class Clazz extends AddressableElement
             $method->getFQSEN()->getAlternateId()
         );
 
+        $is_override = $code_base->hasMethodWithFQSEN($method_fqsen);
         // Don't overwrite overridden methods with
         // parent methods
-        if ($code_base->hasMethodWithFQSEN($method_fqsen)) {
+        if ($is_override) {
 
             // Note that we're overriding something
+            // (but only do this if it's abstract)
+            // TODO: Consider all permutations of abstract and real methods on classes, interfaces, and traits.
             $existing_method =
                 $code_base->getMethodByFQSEN($method_fqsen);
-            $existing_method->setIsOverride(true);
+            if ($method->isAbstract() || !$existing_method->isAbstract() || $existing_method->getIsNewConstructor()) {
+                $existing_method->setIsOverride(true);
 
-            // Don't add the method
-            return;
+                // Don't add the method
+                return;
+            }
         }
 
         if ($method->getFQSEN() !== $method_fqsen) {
             $method = clone($method);
-            $method->setDefiningFQSEN($method->getFQSEN());
+            $method->setDefiningFQSEN($method->getDefiningFQSEN());
             $method->setFQSEN($method_fqsen);
+
+            // Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
+            // TODO: Make the parameter list immutable and have immutable types (e.g. getPhpdocParameterList(), setPhpdocParameterList()
+            // and use a clone of all of the parameters for analysis (quick_mode=false has different values).
+            // TODO: If they're immutable, they can be shared without cloning with less worry.
+            $method->setParameterList(
+                array_map(function (Parameter $parameter) : Parameter {
+                    return clone($parameter);
+                }, $method->getParameterList()));
 
             // If we have a parent type defined, map the method's
             // return type and parameter types through it
@@ -1159,6 +1183,18 @@ class Clazz extends AddressableElement
             if (!$newType->canCastToUnionType($method->getUnionType())) {
                 $method->setUnionType($newType);
             }
+        }
+
+        // Methods defined on interfaces are always abstract, but don't have that flag set.
+        // NOTE: __construct is special for the following reasons:
+        // 1. We automatically add __construct to class-like definitions (Not sure why it's done for interfaces)
+        // 2. If it's abstract, then PHP would enforce that signatures are compatible
+        if ($this->isInterface() && !$method->getIsNewConstructor()) {
+            $method->setFlags(Flags::bitVectorWithState($method->getFlags(), \ast\flags\MODIFIER_ABSTRACT, true));
+        }
+
+        if ($is_override) {
+            $method->setIsOverride(true);
         }
 
         $code_base->addMethod($method);
@@ -1404,6 +1440,14 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * @return void
+     */
+    public function addTraitAdaptations(TraitAdaptations $trait_adaptations)
+    {
+        $this->trait_adaptations_map[strtolower($trait_adaptations->getTraitFQSEN()->__toString())] = $trait_adaptations;
+    }
+
+    /**
      * @return FQSEN[]
      * A list of FQSEN's for included traits
      */
@@ -1438,9 +1482,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Forbid undeclared magic properties
-     * @param bool $forbid - set to true to forbid.
-     * @return void
+     * Check if this class or its ancestors forbids undeclared magic properties.
      */
     public function getForbidUndeclaredMagicProperties(CodeBase $code_base) : bool {
         return (
@@ -1460,7 +1502,7 @@ class Clazz extends AddressableElement
     /**
      * Set whether undeclared magic properties are forbidden
      * (properties accessed through __get or __set, with no (at)property annotation on parent class)
-     * @param bool $forbid - set to true to forbid.
+     * @param bool $forbid_undeclared_dynamic_properties - set to true to forbid.
      * @return void
      */
     public function setForbidUndeclaredMagicProperties(
@@ -1474,9 +1516,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * Forbid undeclared magic methods
-     * @param bool $forbid - set to true to forbid.
-     * @return void
+     * Check if this class or its ancestors forbids undeclared magic methods.
      */
     public function getForbidUndeclaredMagicMethods(CodeBase $code_base) : bool {
         return (
@@ -1496,7 +1536,7 @@ class Clazz extends AddressableElement
     /**
      * Set whether undeclared magic methods are forbidden
      * (methods accessed through __call or __callStatic, with no (at)method annotation on class)
-     * @param bool $forbid - set to true to forbid.
+     * @param bool $forbid_undeclared_magic_methods - set to true to forbid.
      * @return void
      */
     public function setForbidUndeclaredMagicMethods(
@@ -1804,8 +1844,9 @@ class Clazz extends AddressableElement
         Clazz $class,
         $type_option
     ) {
+        $key = strtolower((string)$class->getFQSEN());
         if (!$this->isFirstExecution(
-            __METHOD__ . ':' . (string)$class->getFQSEN()
+            __METHOD__ . ':' . $key
         )) {
             return;
         }
@@ -1814,9 +1855,13 @@ class Clazz extends AddressableElement
 
         // Make sure that the class imports its parents first
         $class->hydrate($code_base);
+        $is_trait = $class->isTrait();
+        $trait_adaptations = $is_trait ? ($this->trait_adaptations_map[$key] ?? null) : null;
 
         // Copy properties
         foreach ($class->getPropertyMap($code_base) as $property) {
+            // TODO: check for conflicts in visibility and default values for traits.
+            // TODO: Check for ancestor classes with the same private property?
             $this->addProperty(
                 $code_base,
                 $property,
@@ -1831,11 +1876,70 @@ class Clazz extends AddressableElement
 
         // Copy methods
         foreach ($class->getMethodMap($code_base) as $method) {
+            if (!is_null($trait_adaptations) && count($trait_adaptations->hidden_methods) > 0) {
+                $method_name_key = strtolower($method->getName());
+                if (isset($trait_adaptations->hidden_methods[$method_name_key])) {
+                    // TODO: Record that the method was hidden, and check later on that all method that were hidden were actually defined?
+                    continue;
+                }
+            }
+            // Workaround: For private methods, copy the method with a new defining class.
+            // If you import a trait's private method, it becomes private **to the class which used the trait** in PHP code.
+            // (But preserving the defining FQSEN is fine for this)
+            if ($is_trait && Flags::bitVectorHasState($method->getFlags(), \ast\flags\MODIFIER_PRIVATE)) {
+                $method = $method->createUseAlias($this, $code_base, $method->getName(), \ast\flags\MODIFIER_PRIVATE);
+            }
             $this->addMethod(
                 $code_base,
                 $method,
                 $type_option
             );
+        }
+
+        if (!is_null($trait_adaptations)) {
+            $this->importTraitAdaptations($code_base, $class, $trait_adaptations, $type_option);
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * @param Clazz $class
+     * @param TraitAdaptations $trait_adaptations
+     * @param Option<Type>|None $type_option
+     * A possibly defined ancestor type used to define template
+     * parameter types when importing ancestor properties and
+     * methods
+     *
+     * @return void
+     */
+    private function importTraitAdaptations(
+        CodeBase $code_base,
+        Clazz $class,
+        TraitAdaptations $trait_adaptations,
+        $type_option
+    ) {
+        foreach ($trait_adaptations->alias_methods ?? [] as $alias_method_name => $original_trait_alias_source) {
+            $source_method_name = $original_trait_alias_source->getSourceMethodName();
+            if (!$class->hasMethodWithName($code_base, $source_method_name)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $this->getContext(),
+                    Issue::UndeclaredAliasedMethodOfTrait,
+                    $original_trait_alias_source->getAliasLineno(),  // TODO: Track line number in TraitAdaptation
+                    sprintf('%s::%s', $this->getFQSEN(), $alias_method_name),
+                    sprintf('%s::%s', $class->getFQSEN(), $source_method_name),
+                    $class->getName()
+                );
+                continue;
+            }
+            $source_method = $class->getMethodByName($code_base, $source_method_name);
+            $alias_method = $source_method->createUseAlias(
+                $class,
+                $code_base,
+                $alias_method_name,
+                $original_trait_alias_source->getAliasVisibilityFlags()
+            );
+            $this->addMethod($code_base, $alias_method, $type_option);
         }
     }
 
@@ -1960,6 +2064,11 @@ class Clazz extends AddressableElement
 
         // Load parent methods, properties, constants
         $this->importAncestorClasses($code_base);
+
+        // Make sure there are no abstract methods on non-abstract classes
+        AbstractMethodAnalyzer::analyzeAbstractMethodsAreImplemented(
+            $code_base, $this
+        );
     }
 
     /**

@@ -131,14 +131,17 @@ class Element
     /**
      * Accepts a visitor that differentiates on the kind value
      * of the AST node.
+     *
+     * NOTE: This was turned into a static method for performance
+     * because it was called extremely frequently.
      */
-    public function acceptKindVisitor(KindVisitor $visitor)
+    public static function acceptNodeAndKindVisitor(Node $node, KindVisitor $visitor)
     {
-        $fn_name = self::VISIT_LOOKUP_TABLE[$this->node->kind] ?? null;
+        $fn_name = self::VISIT_LOOKUP_TABLE[$node->kind] ?? null;
         if (is_string($fn_name)) {
-            return $visitor->{$fn_name}($this->node);
+            return $visitor->{$fn_name}($node);
         } else {
-            Debug::printNode($this->node);
+            Debug::printNode($node);
             assert(false, 'All node kinds must match');
         }
     }
@@ -237,6 +240,8 @@ class Element
                 return $visitor->visitBinaryBoolAnd($this->node);
             case \ast\flags\BINARY_BOOL_OR:
                 return $visitor->visitBinaryBoolOr($this->node);
+            case \ast\flags\BINARY_COALESCE:
+                return $visitor->visitBinaryCoalesce($this->node);
             case \ast\flags\BINARY_IS_GREATER:
                 return $visitor->visitBinaryIsGreater($this->node);
             case \ast\flags\BINARY_IS_GREATER_OR_EQUAL:

@@ -273,7 +273,7 @@ abstract class Scope
     }
 
     /**
-     * @param string $generic_type_identifier
+     * @param string $template_type_identifier
      * The identifier for a generic type
      *
      * @return TemplateType

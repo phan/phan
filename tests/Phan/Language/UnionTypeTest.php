@@ -19,8 +19,9 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
+use Phan\Tests\BaseTest;
 
-class UnionTypeTest extends \PHPUnit_Framework_TestCase {
+class UnionTypeTest extends BaseTest {
 
     /** @var Context|null */
     protected $context = null;

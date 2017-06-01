@@ -1,6 +1,6 @@
 %s:12 PhanParamSignatureMismatch Declaration of function f($p) should be compatible with function f(\CB $p) defined in %s:8
-%s:12 PhanParamSignatureRealMismatch Declaration of function f($p) should be compatible with function f(\CB $p) defined in %s:8
+%s:12 PhanParamSignatureRealMismatchHasNoParamType Declaration of function f($p) should be compatible with function f(\CB $p) (parameter #1 with no type cannot replace original parameter with type '\CB') defined in %s:8
 %s:16 PhanParamSignatureMismatch Declaration of function f(\CC $p) should be compatible with function f(\CB $p) defined in %s:8
-%s:16 PhanParamSignatureRealMismatch Declaration of function f(\CC $p) should be compatible with function f(\CB $p) defined in %s:8
+%s:16 PhanParamSignatureRealMismatchParamType Declaration of function f(\CC $p) should be compatible with function f(\CB $p) (parameter #1 of type '\CC' cannot replace original parameter of type '\CB') defined in %s:8
 %s:20 PhanParamSignatureMismatch Declaration of function f(\CA $p) should be compatible with function f(\CB $p) defined in %s:8
-%s:20 PhanParamSignatureRealMismatch Declaration of function f(\CA $p) should be compatible with function f(\CB $p) defined in %s:8
+%s:20 PhanParamSignatureRealMismatchParamType Declaration of function f(\CA $p) should be compatible with function f(\CB $p) (parameter #1 of type '\CA' cannot replace original parameter of type '\CB') defined in %s:8
