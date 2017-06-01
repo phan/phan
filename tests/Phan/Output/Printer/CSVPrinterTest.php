@@ -5,10 +5,11 @@ namespace Phan\Tests\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\CSVPrinter;
+use Phan\Tests\BaseTest;
 use PHPUnit_Framework_TestCase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class CSVPrinterTest extends PHPUnit_Framework_TestCase {
+class CSVPrinterTest extends BaseTest {
 
     public function testHeaderCorrespondsToData() {
         $output = new BufferedOutput();

@@ -9,7 +9,7 @@ class Set extends \SplObjectStorage
 {
 
     /**
-     * @param \Iterator|array $elements
+     * @param \Iterator|array $element_iterator
      * An optional set of items to add to the set
      */
     public function __construct($element_iterator = null)

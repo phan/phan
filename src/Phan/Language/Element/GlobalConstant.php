@@ -39,7 +39,8 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
     }
 
     /**
-     * @param string $class_name
+     * @param CodeBase $code_base
+     * @param string $name
      * The name of a builtin constant to build a new GlobalConstant structural
      * element from.
      *

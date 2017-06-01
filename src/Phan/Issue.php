@@ -11,14 +11,19 @@ class Issue
     const SyntaxError               = 'PhanSyntaxError';
 
     // Issue::CATEGORY_UNDEFINED
+    const AmbiguousTraitAliasSource = 'AmbiguousTraitAliasSource';
+    const ClassContainsAbstractMethodInternal = 'PhanClassContainsAbstractMethodInternal';
+    const ClassContainsAbstractMethod = 'PhanClassContainsAbstractMethod';
     const EmptyFile                 = 'PhanEmptyFile';
     const ParentlessClass           = 'PhanParentlessClass';
+    const RequiredTraitNotAdded     = 'PhanRequiredTraitNotAdded';
     const TraitParentReference      = 'PhanTraitParentReference';
-    const UndeclaredClass           = 'PhanUndeclaredClass';
+    const UndeclaredAliasedMethodOfTrait = 'PhanUndeclaredAliasedMethodOfTrait';
     const UndeclaredClassCatch      = 'PhanUndeclaredClassCatch';
     const UndeclaredClassConstant   = 'PhanUndeclaredClassConstant';
     const UndeclaredClassInstanceof = 'PhanUndeclaredClassInstanceof';
     const UndeclaredClassMethod     = 'PhanUndeclaredClassMethod';
+    const UndeclaredClass           = 'PhanUndeclaredClass';
     const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
     const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
     const UndeclaredConstant        = 'PhanUndeclaredConstant';
@@ -92,9 +97,28 @@ class Issue
     const ParamTypeMismatch         = 'PhanParamTypeMismatch';
     const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
     const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
-    const ParamSignatureRealMismatch    = 'PhanParamSignatureRealMismatch';
-    const ParamSignatureRealMismatchInternal = 'PhanParamSignatureRealMismatchInternal';
     const ParamRedefined            = 'PhanParamRedefined';
+
+    const ParamSignatureRealMismatchReturnType                        = 'PhanParamSignatureRealMismatch';
+    const ParamSignatureRealMismatchReturnTypeInternal                = 'PhanParamSignatureRealMismatchInternal';
+    const ParamSignatureRealMismatchTooManyRequiredParameters         = 'PhanParamSignatureRealMismatchTooManyRequiredParameters';
+    const ParamSignatureRealMismatchTooManyRequiredParametersInternal = 'PhanParamSignatureRealMismatchTooManyRequiredParametersInternal';
+    const ParamSignatureRealMismatchTooFewParameters                  = 'PhanParamSignatureRealMismatchTooFewParameters';
+    const ParamSignatureRealMismatchTooFewParametersInternal          = 'PhanParamSignatureRealMismatchTooFewParametersInternal';
+    const ParamSignatureRealMismatchHasParamType                      = 'PhanParamSignatureRealMismatchHasParamType';
+    const ParamSignatureRealMismatchHasParamTypeInternal              = 'PhanParamSignatureRealMismatchHasParamTypeInternal';
+    const ParamSignatureRealMismatchHasNoParamType                    = 'PhanParamSignatureRealMismatchHasNoParamType';
+    const ParamSignatureRealMismatchHasNoParamTypeInternal            = 'PhanParamSignatureRealMismatchHasNoParamTypeInternal';
+    const ParamSignatureRealMismatchParamIsReference                  = 'PhanParamSignatureRealMismatchParamIsReference';
+    const ParamSignatureRealMismatchParamIsReferenceInternal          = 'PhanParamSignatureRealMismatchParamIsReferenceInternal';
+    const ParamSignatureRealMismatchParamIsNotReference               = 'PhanParamSignatureRealMismatchParamIsNotReference';
+    const ParamSignatureRealMismatchParamIsNotReferenceInternal       = 'PhanParamSignatureRealMismatchParamIsNotReferenceInternal';
+    const ParamSignatureRealMismatchParamVariadic                     = 'PhanParamSignatureRealMismatchParamVariadic';
+    const ParamSignatureRealMismatchParamVariadicInternal             = 'PhanParamSignatureRealMismatchParamVariadicInternal';
+    const ParamSignatureRealMismatchParamNotVariadic                  = 'PhanParamSignatureRealMismatchParamNotVariadic';
+    const ParamSignatureRealMismatchParamNotVariadicInternal          = 'PhanParamSignatureRealMismatchParamNotVariadicInternal';
+    const ParamSignatureRealMismatchParamType                         = 'PhanParamSignatureRealMismatchParamType';
+    const ParamSignatureRealMismatchParamTypeInternal                 = 'PhanParamSignatureRealMismatchParamTypeInternal';
 
     // Issue::CATEGORY_NOOP
     const NoopArray                 = 'PhanNoopArray';
@@ -145,6 +169,15 @@ class Issue
     const GenericGlobalVariable     = 'PhanGenericGlobalVariable';
     const GenericConstructorTypes   = 'PhanGenericConstructorTypes';
 
+    // Issue::CATEGORY_COMMENT
+    const InvalidCommentForDeclarationType = 'PhanInvalidCommentForDeclarationType';
+    const MisspelledAnnotation             = 'PhanMisspelledAnnotation';
+    const UnextractableAnnotation          = 'PhanUnextractableAnnotation';
+    const UnextractableAnnotationPart      = 'PhanUnextractableAnnotationPart';
+    const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
+    const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
+
+
     const CATEGORY_ACCESS            = 1 << 1;
     const CATEGORY_ANALYSIS          = 1 << 2;
     const CATEGORY_COMPATIBLE        = 1 << 3;
@@ -160,6 +193,7 @@ class Issue
     const CATEGORY_PLUGIN            = 1 << 13;
     const CATEGORY_GENERIC           = 1 << 14;
     const CATEGORY_INTERNAL          = 1 << 15;
+    const CATEGORY_COMMENT           = 1 << 16;
 
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
@@ -197,6 +231,7 @@ class Issue
     // Keep sorted and in sync with Colorizing::default_color_for_template
     const uncolored_format_string_for_template = [
         'CLASS'         => '%s',
+        'COMMENT'       => '%s',
         'CONST'         => '%s',
         'COUNT'         => '%d',
         'FILE'          => '%s',
@@ -482,11 +517,51 @@ class Issue
                 self::REMEDIATION_B,
                 1021
             ),
+            new Issue(
+                self::ClassContainsAbstractMethod,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "non-abstract class {CLASS} contains abstract method {METHOD} declared at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1022
+            ),
+            new Issue(
+                self::ClassContainsAbstractMethodInternal,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "non-abstract class {CLASS} contains abstract internal method {METHOD}",
+                self::REMEDIATION_B,
+                1023
+            ),
+            new Issue(
+                self::UndeclaredAliasedMethodOfTrait,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "Alias {METHOD} was defined for a method {METHOD} which does not exist in trait {TRAIT}",
+                self::REMEDIATION_B,
+                1024
+            ),
+            new Issue(
+                self::RequiredTraitNotAdded,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Required trait {TRAIT} for trait adaptation was not added to class",
+                self::REMEDIATION_B,
+                1025
+            ),
+            new Issue(
+                self::AmbiguousTraitAliasSource,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Trait alias {METHOD} has an ambiguous source method {METHOD} with more than one possible source trait. Possibilities: {TRAIT}",
+                self::REMEDIATION_B,
+                1026
+            ),
 
             // Issue::CATEGORY_ANALYSIS
             new Issue(
                 self::Unanalyzable,
-                self::CATEGORY_UNDEFINED,
+                self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
                 "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/etsy/phan/issues/new.",
                 self::REMEDIATION_B,
@@ -865,22 +940,167 @@ class Issue
                 7012
             ),
             // TODO: Optionally, change the other message to say that it's based off of phpdoc and LSP in a future PR.
+            // NOTE: Incompatibilities in the param list are SEVERITY_NORMAL, because the php interpreter emits a notice.
+            // Incompatibilities in the return types are SEVERITY_CRITICAL, because the php interpreter will throw an Error.
             new Issue(
-                self::ParamSignatureRealMismatch,
+                self::ParamSignatureRealMismatchReturnType,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Declaration of %s should be compatible with %s defined in %s:%d",
+                "Declaration of {METHOD} should be compatible with {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7013
             ),
-            // NOTE: some extensions don't define arg info
             new Issue(
-                self::ParamSignatureRealMismatchInternal,
+                self::ParamSignatureRealMismatchReturnTypeInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_CRITICAL,
-                "Declaration of %s should be compatible with internal %s",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}')",
                 self::REMEDIATION_B,
                 7014
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7015
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamTypeInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}')",
+                self::REMEDIATION_B,
+                7016
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchHasParamType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7017
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchHasParamTypeInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type)",
+                self::REMEDIATION_B,
+                7018
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchHasNoParamType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7019
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchHasNoParamTypeInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}')",
+                self::REMEDIATION_B,
+                7020
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamVariadic,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7021
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamVariadicInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter)",
+                self::REMEDIATION_B,
+                7022
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamNotVariadic,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7023
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamNotVariadicInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter)",
+                self::REMEDIATION_B,
+                7024
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamIsReference,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7025
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamIsReferenceInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter)",
+                self::REMEDIATION_B,
+                7026
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamIsNotReference,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7027
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchParamIsNotReferenceInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter)",
+                self::REMEDIATION_B,
+                7028
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchTooFewParameters,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7029
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchTooFewParametersInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT})",
+                self::REMEDIATION_B,
+                7030
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchTooManyRequiredParameters,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7031
+            ),
+            new Issue(
+                self::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT})",
+                self::REMEDIATION_B,
+                7032
             ),
 
             // Issue::CATEGORY_NOOP
@@ -1200,12 +1420,62 @@ class Issue
                 15004
             ),
 
-
+            // Issue::CATEGORY_COMMENT
+            new Issue(
+                self::InvalidCommentForDeclarationType,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "The phpdoc comment for {COMMENT} cannot occur on a {TYPE}",
+                self::REMEDIATION_B,
+                16000
+            ),
+            new Issue(
+                self::MisspelledAnnotation,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw misspelled annotation {COMMENT}, should be {COMMENT}",
+                self::REMEDIATION_B,
+                16001
+            ),
+            new Issue(
+                self::UnextractableAnnotation,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw unextractable annotation for comment {COMMENT}",
+                self::REMEDIATION_B,
+                16002
+            ),
+            new Issue(
+                self::UnextractableAnnotationPart,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw unextractable annotation for a fragment of comment {COMMENT}: {COMMENT}",
+                self::REMEDIATION_B,
+                16003
+            ),
+            new Issue(
+                self::CommentParamWithoutRealParam,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw an @param annotation for {VARIABLE}, but it was not found in the param list of {FUNCTIONLIKE}",
+                self::REMEDIATION_B,
+                16004
+            ),
+            new Issue(
+                self::CommentParamOnEmptyParamList,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw an @param annotation for {VARIABLE}, but the param list of {FUNCTIONLIKE} is empty",
+                self::REMEDIATION_B,
+                16005
+            ),
         ];
 
         $error_map = [];
         foreach ($error_list as $i => $error) {
-            $error_map[$error->getType()] = $error;
+            $error_type = $error->getType();
+            assert(!array_key_exists($error_type, $error_map), "Issue of type $error_type has multiple definitions");
+            $error_map[$error_type] = $error;
         }
 
         return $error_map;
@@ -1417,31 +1687,33 @@ class Issue
 
         // If this issue type has been suppressed in
         // the config, ignore it
-        if (!Config::get()->disable_suppression
-            && in_array($issue_instance->getIssue()->getType(),
-                Config::get()->suppress_issue_types ?? [])
-        ) {
-            return;
-        }
 
-        // If a white-list of allowed issue types is defined,
-        // only emit issues on the white-list
-        if (!Config::get()->disable_suppression
-            && count(Config::get()->whitelist_issue_types) > 0
-            && !in_array($issue_instance->getIssue()->getType(),
-                Config::get()->whitelist_issue_types ?? [])
-        ) {
-            return;
-        }
+        $config = Config::get();
+        if (!$config->disable_suppression) {
+            if (in_array($issue_instance->getIssue()->getType(),
+                    $config->suppress_issue_types ?? [])
+            ) {
+                return;
+            }
 
-        // If this issue type has been suppressed in
-        // this scope from a doc block, ignore it.
-        if (!Config::get()->disable_suppression
-            && $context->hasSuppressIssue(
-                $code_base,
-                $issue_instance->getIssue()->getType()
-        )) {
-            return;
+            // If a white-list of allowed issue types is defined,
+            // only emit issues on the white-list
+            $whitelist_issue_types = $config->whitelist_issue_types ?? [];
+            if (count($whitelist_issue_types) > 0
+                && !in_array($issue_instance->getIssue()->getType(),
+                        $whitelist_issue_types)
+            ) {
+                return;
+            }
+
+            // If this issue type has been suppressed in
+            // this scope from a doc block, ignore it.
+            if ($context->hasSuppressIssue(
+                    $code_base,
+                    $issue_instance->getIssue()->getType()
+            )) {
+                return;
+            }
         }
 
         self::emitInstance($issue_instance);

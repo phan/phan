@@ -33,9 +33,25 @@ trait FunctionTrait {
 
     /**
      * @var int
-     * The number of optional parameters for the method
+     * The number of optional parameters for the method.
+     * Note that this is set to a large number in methods using varargs or func_get_arg*()
      */
     private $number_of_optional_parameters = 0;
+
+    /**
+     * @var int
+     * The number of required (real) parameters for the method declaration.
+     * For internal methods, ignores phan's annotations.
+     */
+    private $number_of_required_real_parameters = 0;
+
+    /**
+     * @var int
+     * The number of optional (real) parameters for the method declaration.
+     * For internal methods, ignores phan's annotations.
+     * For user-defined methods, ignores presence of func_get_arg*()
+     */
+    private $number_of_optional_real_parameters = 0;
 
     /**
      * @var Parameter[]
@@ -79,6 +95,18 @@ trait FunctionTrait {
 
     /**
      * @return int
+     * The number of optional real parameters on this function/method.
+     * May differ from getNumberOfOptionalParameters()
+     * for internal modules lacking proper reflection info,
+     * or if the installed module version's API changed from what Phan's stubs used,
+     * or if a function/method uses variadics/func_get_arg*()
+     */
+    public function getNumberOfOptionalRealParameters() : int {
+        return $this->number_of_optional_real_parameters;
+    }
+
+    /**
+     * @return int
      * The number of optional parameters on this method
      */
     public function getNumberOfOptionalParameters() : int {
@@ -96,7 +124,20 @@ trait FunctionTrait {
 
     /**
      * @return int
-     * The maximum number of parameters to this method
+     * The number of parameters in this function/method declaration.
+     * Variadic parameters are counted only once.
+     * TODO: Specially handle variadic parameters, either here or in ParameterTypesAnalyzer::analyzeOverrideRealSignature
+     */
+    public function getNumberOfRealParameters() : int {
+        return (
+            $this->getNumberOfRequiredRealParameters()
+            + $this->getNumberOfOptionalRealParameters()
+        );
+    }
+
+    /**
+     * @return int
+     * The maximum number of parameters to this function/method
      */
     public function getNumberOfParameters() : int {
         return (
@@ -107,7 +148,17 @@ trait FunctionTrait {
 
     /**
      * @return int
-     * The number of required parameters on this method
+     * The number of required real parameters on this function/method.
+     * May differ for internal modules lacking proper reflection info,
+     * or if the installed module version's API changed from what Phan's stubs used.
+     */
+    public function getNumberOfRequiredRealParameters() : int {
+        return $this->number_of_required_real_parameters;
+    }
+
+    /**
+     * @return int
+     * The number of required parameters on this function/method
      */
     public function getNumberOfRequiredParameters() : int {
         return $this->number_of_required_parameters;
@@ -320,6 +371,18 @@ trait FunctionTrait {
         $this->real_parameter_list = array_map(function(Parameter $param) {
             return clone($param);
         }, $parameter_list);
+
+        $required_count = 0;
+        $optional_count = 0;
+        foreach ($parameter_list as $parameter) {
+            if ($parameter->isOptional()) {
+                $optional_count++;
+            } else {
+                $required_count++;
+            }
+        }
+        $this->number_of_required_real_parameters = $required_count;
+        $this->number_of_optional_real_parameters = $optional_count;
     }
 
     /**
@@ -336,8 +399,6 @@ trait FunctionTrait {
     }
 
     /**
-     * @param Context $context
-     *
      * @return UnionType
      * The type of this method in its given context.
      */
@@ -396,18 +457,22 @@ trait FunctionTrait {
             return;
         }
         $parameter_offset = 0;
-        foreach ($function->getParameterList() as $i => $parameter) {
+        $function_parameter_list = $function->getParameterList();
+        $real_parameter_name_set = [];
+        foreach ($function_parameter_list as $i => $parameter) {
+            $parameter_name = $parameter->getName();
+            $real_parameter_name_set[$parameter_name] = true;
             if ($parameter->getUnionType()->isEmpty()) {
                 // If there is no type specified in PHP, check
                 // for a docComment with @param declarations. We
                 // assume order in the docComment matches the
                 // parameter order in the code
                 if ($comment->hasParameterWithNameOrOffset(
-                    $parameter->getName(),
+                    $parameter_name,
                     $parameter_offset
                 )) {
                     $comment_param = $comment->getParameterWithNameOrOffset(
-                        $parameter->getName(),
+                        $parameter_name,
                         $parameter_offset
                     );
                     $comment_param_type = $comment_param->getUnionType();
@@ -445,7 +510,7 @@ trait FunctionTrait {
                             Issue::TypeMismatchDefault,
                             $node->lineno ?? 0,
                             (string)$parameter->getUnionType(),
-                            $parameter->getName(),
+                            $parameter_name,
                             (string)$default_type
                         );
                     }
@@ -485,6 +550,20 @@ trait FunctionTrait {
 
             ++$parameter_offset;
         }
+
+        foreach ($comment->getParameterMap() as $comment_parameter_name => $comment_parameter) {
+            if (!array_key_exists($comment_parameter_name, $real_parameter_name_set)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    count($real_parameter_name_set) > 0 ? Issue::CommentParamWithoutRealParam : Issue::CommentParamOnEmptyParamList,
+                    $node->lineno ?? 0,
+                    $comment_parameter_name,
+                    (string)$function
+                );
+            }
+        }
+        // Special, for libraries which use this for to document variadic param lists.
     }
 
     /**

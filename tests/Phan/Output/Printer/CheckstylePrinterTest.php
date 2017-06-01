@@ -5,10 +5,11 @@ namespace Phan\Tests\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\CheckstylePrinter;
+use Phan\Tests\BaseTest;
 use PHPUnit_Framework_TestCase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class CheckstylePrinterTest extends PHPUnit_Framework_TestCase {
+class CheckstylePrinterTest extends BaseTest {
 
     /**
      * @param string $string String to check against

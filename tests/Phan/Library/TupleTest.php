@@ -1,10 +1,10 @@
 <?php declare(strict_types = 1);
-namespace Phan\Test;
+namespace Phan\Tests;
 
 
 /**
  */
-class TupleTest extends \PHPUnit_Framework_TestCase
+class TupleTest extends BaseTest
 {
     public function testSimple()
     {

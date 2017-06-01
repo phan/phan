@@ -1,0 +1,2 @@
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array but \intdiv() takes int
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int

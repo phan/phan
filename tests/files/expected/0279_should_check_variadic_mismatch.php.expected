@@ -1,10 +1,10 @@
 %s:21 PhanParamSignatureMismatch Declaration of function foo(int ...$args) should be compatible with function foo(int $args) defined in %s:4
-%s:21 PhanParamSignatureRealMismatch Declaration of function foo(int ...$args) should be compatible with function foo(int $args) defined in %s:4
+%s:21 PhanParamSignatureRealMismatchParamVariadic Declaration of function foo(int ...$args) should be compatible with function foo(int $args) (parameter #1 is a variadic parameter replacing a non-variadic parameter) defined in %s:4
 %s:23 PhanParamSignatureMismatch Declaration of function bar(int $args) should be compatible with function bar(int ...$args) defined in %s:6
-%s:23 PhanParamSignatureRealMismatch Declaration of function bar(int $args) should be compatible with function bar(int ...$args) defined in %s:6
+%s:23 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function bar(int $args) should be compatible with function bar(int ...$args) (the method override requires 1 parameters, but the overridden method requires only 0) defined in %s:6
 %s:27 PhanParamSignatureMismatch Declaration of function bag() should be compatible with function bag(int ...$args) defined in %s:10
-%s:27 PhanParamSignatureRealMismatch Declaration of function bag() should be compatible with function bag(int ...$args) defined in %s:10
+%s:27 PhanParamSignatureRealMismatchTooFewParameters Declaration of function bag() should be compatible with function bag(int ...$args) (the method override accepts 0 parameters, but the overridden method can accept 1) defined in %s:10
 %s:32 PhanParamSignatureMismatch Declaration of function man(...$args) should be compatible with function man(array $args) defined in %s:15
-%s:32 PhanParamSignatureRealMismatch Declaration of function man(...$args) should be compatible with function man(array $args) defined in %s:15
+%s:32 PhanParamSignatureRealMismatchParamVariadic Declaration of function man(...$args) should be compatible with function man(array $args) (parameter #1 is a variadic parameter replacing a non-variadic parameter) defined in %s:15
 %s:34 PhanParamSignatureMismatch Declaration of function dog(array $args) should be compatible with function dog(...$args) defined in %s:17
-%s:34 PhanParamSignatureRealMismatch Declaration of function dog(array $args) should be compatible with function dog(...$args) defined in %s:17
+%s:34 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function dog(array $args) should be compatible with function dog(...$args) (the method override requires 1 parameters, but the overridden method requires only 0) defined in %s:17

@@ -131,7 +131,10 @@ class ParseVisitor extends ScopeVisitor
         // Get a comment on the class declaration
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
-            $this->context
+            $this->code_base,
+            $this->context,
+            $node->lineno ?? 0,
+            Comment::ON_CLASS
         );
 
         // Add any template types parameterizing a generic class
@@ -254,20 +257,27 @@ class ParseVisitor extends ScopeVisitor
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
 
-        $trait_fqsen_string_list = (new ContextNode(
+        $trait_fqsen_list = (new ContextNode(
             $this->code_base,
             $this->context,
             $node->children['traits']
-        ))->getQualifiedNameList();
+        ))->getTraitFQSENList();
 
         // Add each trait to the class
-        foreach ($trait_fqsen_string_list as $trait_fqsen_string) {
-            $trait_fqsen = FullyQualifiedClassName::fromStringInContext(
-                $trait_fqsen_string,
-                $this->context
-            );
-
+        foreach ($trait_fqsen_list as $trait_fqsen) {
             $class->addTraitFQSEN($trait_fqsen);
+        }
+
+        // Get the adaptations for those traits
+        // Pass in the corresponding FQSENs for those traits.
+        $trait_adaptations_map = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $node->children['adaptations']
+        ))->getTraitAdaptationsMap($trait_fqsen_list);
+
+        foreach ($trait_adaptations_map as $trait_adaptations) {
+            $class->addTraitAdaptations($trait_adaptations);
         }
 
         return $this->context;
@@ -395,7 +405,10 @@ class ParseVisitor extends ScopeVisitor
         // Get a comment on the property declaration
         $comment = Comment::fromStringInContext(
             $docComment,
-            $this->context
+            $this->code_base,
+            $this->context,
+            $node->lineno ?? 0,
+            Comment::ON_PROPERTY
         );
 
         foreach ($node->children ?? [] as $i => $child_node) {
@@ -540,7 +553,10 @@ class ParseVisitor extends ScopeVisitor
             // Get a comment on the declaration
             $comment = Comment::fromStringInContext(
                 $child_node->docComment ?? '',
-                $this->context
+                $this->code_base,
+                $this->context,
+                $child_node->lineno ?? 0,
+                Comment::ON_CONST
             );
 
             $line_number_start = $child_node->lineno ?? 0;
@@ -884,7 +900,10 @@ class ParseVisitor extends ScopeVisitor
         // Get a comment on the declaration
         $comment = Comment::fromStringInContext(
             $comment_string,
-            $this->context
+            $this->code_base,
+            $this->context,
+            $node->lineno ?? 0,
+            Comment::ON_CONST
         );
 
         $constant->setFutureUnionType(

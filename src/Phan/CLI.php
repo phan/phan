@@ -644,10 +644,6 @@ EOB;
      * @param float $p
      * The percentage to display
      *
-     * @param float $sample_rate
-     * How frequently we should update the progress
-     * bar, randomly sampled
-     *
      * @return void
      */
     public static function progress(

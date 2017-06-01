@@ -60,6 +60,7 @@ class Colorizing {
     // In future PRs, it will be possible for users to add their own color schemes in .phan/config.php
     const default_color_for_template = [
         'CLASS'         => 'green',
+        'COMMENT'       => 'light_green',
         'CONST'         => 'light_red',
         'COUNT'         => 'light_magenta',
         'FILE'          => 'light_cyan',
@@ -87,7 +88,6 @@ class Colorizing {
     /**
      * @param string $template
      * @param int[]|string[] $template_parameters
-     * @param int $severity (Issue::SEVERITY_*)
      */
     public static function colorizeTemplate(
         string $template,
