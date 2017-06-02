@@ -55,6 +55,21 @@ class D298 extends C298
 {
 }
 
+class E298
+{
+    private static function hidden()
+    {
+        return true;
+    }
+
+    public static function __callStatic($name, array $args)
+    {
+        if ($name == 'hidden') {
+            return self::hidden();
+        }
+    }
+}
+
 $a = new A298();
 var_dump($a->hidden());
 
@@ -66,3 +81,5 @@ var_dump($c->hidden());
 
 $d = new D298();
 var_dump($d->hidden());
+
+var_dump(E298::hidden());
