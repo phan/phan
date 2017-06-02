@@ -15,3 +15,7 @@
 %s:37 PhanTypeMismatchArgument Argument 1 (var) is bool|float|int|null|string but \emitType() takes resource defined at %s:3
 %s:39 PhanTypeMismatchArgument Argument 1 (var) is string but \emitType() takes resource defined at %s:3
 %s:41 PhanTypeMismatchArgument Argument 1 (var) is iterable but \emitType() takes resource defined at %s:3
+%s:44 PhanTypeMismatchArgument Argument 1 (var) is \stdClass but \emitType() takes resource defined at %s:3
+%s:46 PhanTypeMismatchArgument Argument 1 (var) is \SimpleXMLElement|\Traversable but \emitType() takes resource defined at %s:3
+%s:48 PhanTypeMismatchArgument Argument 1 (var) is \DateTime|\DateTimeInterface but \emitType() takes resource defined at %s:3
+%s:50 PhanTypeMismatchArgument Argument 1 (var) is \DateTimeImmutable|\DateTimeInterface but \emitType() takes resource defined at %s:3

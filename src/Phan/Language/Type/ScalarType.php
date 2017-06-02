@@ -95,4 +95,17 @@ abstract class ScalarType extends NativeType
     {
         return $this->name;
     }
+
+    public function getIsAlwaysTruthy() : bool
+    {
+        // Most scalars (Except ResourceType) have a false value, e.g. 0/""/"0"/0.0/false.
+        // (But ResourceType isn't a subclass of ScalarType in Phan's implementation)
+        return false;
+    }
+
+    public function asNonTruthyType() : Type
+    {
+        // Subclasses of ScalarType all have false values within their types.
+        return $this;
+    }
 }

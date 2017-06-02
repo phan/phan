@@ -379,17 +379,19 @@ class AssignmentVisitor extends AnalysisVisitor
             // know what the constitutation of the parameter is
             // outside of the scope of this assignment, so we add to
             // its union type rather than replace it.
+            $property_union_type = $property->getUnionType();
             if ($this->is_dim_assignment) {
                 if ($this->right_type->canCastToExpandedUnionType(
-                    $property->getUnionType(),
-                    $this->code_base
-                )) {
-                    $property->getUnionType()->addUnionType(
+                        $property_union_type,
+                        $this->code_base
+                    )
+                ) {
+                    $property_union_type->addUnionType(
                         $this->right_type
                     );
-                    // do nothing
-                } else if ($this->right_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
-                    $property->getUnionType()->addUnionType(
+                } else if ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                    // Add any type if this is a subclass with array access.
+                    $property_union_type->addUnionType(
                         $this->right_type
                     );
                 } else {
@@ -398,15 +400,16 @@ class AssignmentVisitor extends AnalysisVisitor
                         $node->lineno ?? 0,
                         (string)$this->right_type,
                         "{$clazz->getFQSEN()}::{$property->getName()}",
-                        (string)$property->getUnionType()
+                        (string)$property_union_type
                     );
                     return $this->context;
                 }
             } else {
                 if (!$this->right_type->canCastToExpandedUnionType(
-                        $property->getUnionType(),
+                        $property_union_type,
                         $this->code_base
                     )
+                    && !($this->right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
                     && !$clazz->getHasDynamicProperties($this->code_base)
                 ) {
                     // TODO: optionally, change the message from "::" to "->"?
@@ -415,7 +418,7 @@ class AssignmentVisitor extends AnalysisVisitor
                         $node->lineno ?? 0,
                         (string)$this->right_type,
                         "{$clazz->getFQSEN()}::{$property->getName()}",
-                        (string)$property->getUnionType()
+                        (string)$property_union_type
                     );
 
                     return $this->context;
@@ -524,9 +527,10 @@ class AssignmentVisitor extends AnalysisVisitor
             }
 
             if (!$this->right_type->canCastToExpandedUnionType(
-                $property->getUnionType(),
-                $this->code_base
-            )) {
+                    $property->getUnionType(),
+                    $this->code_base)
+                && !($this->right_type->hasTypeInBoolFamily() && $property->getUnionType()->hasTypeInBoolFamily())
+            ) {
                 // Currently, same warning type for static and non-static property type mismatches.
                 $this->emitIssue(
                     Issue::TypeMismatchProperty,

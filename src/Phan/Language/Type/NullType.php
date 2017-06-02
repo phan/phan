@@ -101,4 +101,13 @@ class NullType extends ScalarType
         return $this->name;
     }
 
+    public function getIsPossiblyFalsey() : bool
+    {
+        return true;  // Null is always falsey.
+    }
+
+    public function getIsAlwaysFalsey() : bool
+    {
+        return true;  // Null is always falsey.
+    }
 }

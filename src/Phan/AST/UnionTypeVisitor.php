@@ -1163,9 +1163,6 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitClassConst(Node $node) : UnionType
     {
-
-        $constant_name = $node->children['const'];
-
         try {
             $constant = (new ContextNode(
                 $this->code_base,

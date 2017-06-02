@@ -1,5 +1,5 @@
-%s:4 PhanTypeMismatchDefault Default value for int $p can't be bool
-%s:7 PhanTypeArraySuspicious Suspicious array access to bool
+%s:4 PhanTypeMismatchDefault Default value for int $p can't be false
+%s:7 PhanTypeArraySuspicious Suspicious array access to false
 %s:10 PhanTypeMismatchProperty Assigning string to property but \C::p is int
 %s:13 PhanTypeInstantiateAbstract Instantiation of abstract class \D
 %s:16 PhanTypeInstantiateInterface Instantiation of interface \E

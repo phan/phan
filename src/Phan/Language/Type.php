@@ -7,6 +7,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
@@ -19,6 +20,7 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Library\ArraySet;
@@ -85,6 +87,7 @@ class Type
         'array'     => true,
         'bool'      => true,
         'callable'  => true,
+        'false'     => true,
         'float'     => true,
         'int'       => true,
         'iterable'  => true,
@@ -94,6 +97,7 @@ class Type
         'resource'  => true,
         'static'    => true,
         'string'    => true,
+        'true'      => true,
         'void'      => true,
     ];
 
@@ -361,11 +365,13 @@ class Type
      * Uses the constants and types from https://secure.php.net/manual/en/reserved.constants.php
      */
     private static function createReservedConstantNameLookup() : array {
-        $int = IntType::instance(false);
-        $bool = BoolType::instance(false);
-        $null = NullType::instance(false);
-        $string = StringType::instance(false);
+        $false  = FalseType::instance(false);
         $float  = FloatType::instance(false);
+        $int    = IntType::instance(false);
+        $null   = NullType::instance(false);
+        $string = StringType::instance(false);
+        $true   = TrueType::instance(false);
+
         return [
             'PHP_VERSION'           => $string,
             'PHP_MAJOR_VERSION'     => $int,
@@ -419,8 +425,8 @@ class Type
             'E_ALL'                 => $int,
             'E_STRICT'              => $int,
             '__COMPILER_HALT_OFFSET__' => $int,
-            'TRUE'                  => $bool,
-            'FALSE'                 => $bool,
+            'TRUE'                  => $true,
+            'FALSE'                 => $false,
             'NULL'                  => $null,
         ];
     }
@@ -474,6 +480,7 @@ class Type
         $type_name =
             self::canonicalNameFromName($type_name);
 
+        // TODO: Is this worth optimizing into a lookup table?
         switch (\strtolower($type_name)) {
             case 'array':
                 return ArrayType::instance($is_nullable);
@@ -481,6 +488,8 @@ class Type
                 return BoolType::instance($is_nullable);
             case 'callable':
                 return CallableType::instance($is_nullable);
+            case 'false':
+                return FalseType::instance($is_nullable);
             case 'float':
                 return FloatType::instance($is_nullable);
             case 'int':
@@ -495,6 +504,8 @@ class Type
                 return ResourceType::instance($is_nullable);
             case 'string':
                 return StringType::instance($is_nullable);
+            case 'true':
+                return TrueType::instance($is_nullable);
             case 'void':
                 // TODO: This can't be nullable, right?
                 return VoidType::instance($is_nullable);
@@ -849,6 +860,51 @@ class Type
         return $this->is_nullable;
     }
 
+    public function getIsPossiblyFalsey() : bool
+    {
+        return $this->is_nullable;
+    }
+
+    public function getIsAlwaysFalsey() : bool
+    {
+        return false;  // overridden in FalseType and NullType
+    }
+
+    public function getIsPossiblyTruthy() : bool
+    {
+        return true;  // overridden in various types. This base class (Type) is implicitly the type of an object, which is always truthy.
+    }
+
+    public function getIsAlwaysTruthy() : bool
+    {
+        return true;  // overridden in various types. This base class (Type) is implicitly the type of an object, which is always truthy.
+    }
+
+    public function getIsPossiblyFalse() : bool
+    {
+        return false;
+    }
+
+    public function getIsAlwaysFalse() : bool
+    {
+        return false;  // overridden in FalseType
+    }
+
+    public function getIsPossiblyTrue() : bool
+    {
+        return false;
+    }
+
+    public function getIsAlwaysTrue() : bool
+    {
+        return false;  // overridden in TrueType
+    }
+
+    public function getIsInBoolFamily() : bool
+    {
+        return false;  // overridden in FalseType, TrueType, BoolType
+    }
+
     /**
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass
@@ -870,6 +926,30 @@ class Type
             $is_nullable,
             Type::FROM_TYPE
         );
+    }
+
+    public function asNonFalseyType() : Type
+    {
+        // Overridden by BoolType subclass to return TrueType
+        return $this->withIsNullable(false);
+    }
+
+    public function asNonTruthyType() : Type
+    {
+        // Overridden by ScalarType, BoolType, etc.
+        return NullType::instance(false);
+    }
+
+    public function asNonFalseType() : Type
+    {
+        // Overridden by BoolType, etc.
+        return $this;
+    }
+
+    public function asNonTrueType() : Type
+    {
+        // Overridden by BoolType, etc.
+        return $this;
     }
 
     /**
@@ -1473,15 +1553,13 @@ class Type
      * @return string
      * A canonical name for the given type name
      */
-    private static function canonicalNameFromName(
+    public static function canonicalNameFromName(
         string $name
     ) : string {
         static $map = [
             'boolean'  => 'bool',
             'callback' => 'callable',
             'double'   => 'float',
-            'false'    => 'bool',
-            'true'     => 'bool',
             'integer'  => 'int',
         ];
 

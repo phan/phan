@@ -7,7 +7,8 @@ function testIrregularVar128() {
     echo intdiv(${42}, 3);  // intdiv takes int but this is string[]
     } catch(Throwable $e) {}
     echo "Next\n";
-    ${rand() % 2 === 0} = ['value'];
+    ${true} = ['value'];
+    ${rand() % 2 == 0} = ['value'];
     ${[2]} = ['value'];  // Seriously, this is an alias for $Array?
     echo intdiv(${[3]}, 4);
     echo "Done\n";
