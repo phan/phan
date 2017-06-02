@@ -38,6 +38,7 @@ New Features (CLI, Configs)
   (E.g. handles some variable declarations within `if ()` statements.
    Infers that $x is a string for constructs such as `if (!is_string($x)) {return;} function_using_x($x);`)
   This is slow, and disabled by default.
++ Add `--include-analysis-file-list` option to define files that will be included in static analysis, to the exclusion of others.
 
 Maintenance
 + Update function signature map to analyze `iterable` and `is_iterable` from php 7.1
