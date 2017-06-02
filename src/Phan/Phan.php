@@ -195,6 +195,10 @@ class Phan implements IgnoredFilesFilterInterface {
         $code_base->setShouldHydrateRequestedElements(true);
 
 
+        // TODO: consider filtering if Config::get()->include_analysis_file_list is set
+        // most of what needs considering is that Analysis::analyzeClasses() and Analysis:analyzeFunctions() have side effects
+        // these side effects don't matter in daemon mode, but they do matter with this other form of incremental analysis
+        // other parts of these analysis steps could be skipped, which would reduce the overall execution time
         $path_filter = isset($request) ? array_flip($analyze_file_path_list) : null;
         // Take a pass over all functions verifying
         // various states now that we have the whole
@@ -359,8 +363,11 @@ class Phan implements IgnoredFilesFilterInterface {
     private static function isExcludedAnalysisFile(
         string $file_path
     ) : bool {
-        // TODO: add an alternative of a whitelist of files.
-        // Incompatible with exclude_analysis_directory_list
+        $include_analysis_file_list = Config::get()->include_analysis_file_list;
+        if ($include_analysis_file_list) {
+            return !in_array($file_path, $include_analysis_file_list, true);
+        }
+
         $file_path = str_replace('\\', '/', $file_path);
         foreach (Config::get()->exclude_analysis_directory_list
                  as $directory
