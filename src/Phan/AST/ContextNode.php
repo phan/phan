@@ -26,6 +26,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
@@ -320,15 +321,30 @@ class ContextNode
             return (string)$node;
         }
 
-        if (empty($node->children['name'])) {
+        $name_node = $node->children['name'] ?? null;
+        if (empty($name_node)) {
             return '';
         }
 
-        if ($node->children['name'] instanceof \ast\Node) {
+        if ($name_node instanceof \ast\Node) {
+            // This is nonsense. Give up, but check if it's a type other than int/string.
+            // (e.g. to catch typos such as $$this->foo = bar;)
+            $name_node_type = (new UnionTypeVisitor($this->code_base, $this->context, true))($name_node);
+            static $intOrStringType;
+            if ($intOrStringType === null) {
+                $intOrStringType = new UnionType();
+                $intOrStringType->addType(StringType::instance(false));
+                $intOrStringType->addType(IntType::instance(false));
+                $intOrStringType->addType(NullType::instance(false));
+            }
+            if (!$name_node_type->canCastToUnionType($intOrStringType)) {
+                Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
+            }
+
             return '';
         }
 
-        return (string)$node->children['name'];
+        return (string)$name_node;
     }
 
     /**

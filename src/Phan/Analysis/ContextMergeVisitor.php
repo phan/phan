@@ -96,6 +96,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // Merge in the types for any variables found in a catch.
         foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
+            $variable_name = (string)$variable_name;  // e.g. ${42}
             foreach ($catch_scope_list as $catch_scope) {
 
                 // Merge types if try and catch have a variable in common
@@ -114,6 +115,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Look for variables that exist in catch, but not try
         foreach ($catch_scope_list as $catch_scope) {
             foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
+                $variable_name = (string)$variable_name;
                 if (!$try_scope->hasVariableWithName($variable_name)) {
 
                     // Note that it can be null

@@ -1002,20 +1002,27 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitVar(Node $node) : UnionType
     {
         // $$var or ${...} (whose idea was that anyway?)
-        if (($node->children['name'] instanceof Node)
-            && ($node->children['name']->kind == \ast\AST_VAR
-            || $node->children['name']->kind == \ast\AST_BINARY_OP)
-        ) {
+        $name_node = $node->children['name'];
+        if (($name_node instanceof Node)) {
+            // This is nonsense. Give up.
+            $name_node_type = $this($name_node);
+            static $intOrStringType;
+            if ($intOrStringType === null) {
+                $intOrStringType = new UnionType();
+                $intOrStringType->addType(StringType::instance(false));
+                $intOrStringType->addType(IntType::instance(false));
+                $intOrStringType->addType(NullType::instance(false));
+            }
+            if (!$name_node_type->canCastToUnionType($intOrStringType)) {
+                Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
+            }
+
             return MixedType::instance(false)->asUnionType();
         }
 
-        // This is nonsense. Give up.
-        if ($node->children['name'] instanceof Node) {
-            return new UnionType();
-        }
-
+        // foo(${42}) is technically valid PHP code, avoid TypeError
         $variable_name =
-            $node->children['name'];
+            (string)$name_node;
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
             if (Variable::isSuperglobalVariableWithName($variable_name)) {
