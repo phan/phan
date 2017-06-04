@@ -1,1 +1,2 @@
-%s:26 PhanUndeclaredMethod Call to undeclared method \A::z
+%s:27 PhanUndeclaredMethod Call to undeclared method \B::z
+%s:28 PhanUndeclaredMethod Call to undeclared method \A::z

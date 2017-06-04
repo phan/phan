@@ -81,6 +81,7 @@ trait Alternatives
      * with this FQSEN
      *
      * @suppress PhanTypeMismatchDeclaredReturn
+     * @suppress PhanTypeMismatchReturn (Alternatives is a trait, cannot directly implement the FQSEN interface. Related to #800)
      */
     public function getCanonicalFQSEN() : FQSEN
     {

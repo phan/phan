@@ -6,6 +6,7 @@ use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
 use Phan\Language\Context;
+use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Parse\ParseVisitor;
@@ -244,15 +245,15 @@ class Analysis
      *
      * @return void
      */
-    public static function analyzeClasses($code_base, array $path_filter = null)
+    public static function analyzeClasses(CodeBase $code_base, array $path_filter = null)
     {
-        $classes = $code_base->getClassMap();
+        $classes = self::getUserDefinedClasses($code_base);
         if (is_array($path_filter)) {
-            // Convert Map to array. Both are iterable.
+            // If a list of files is provided, then limit analysis to classes defined in those files.
             $old_classes = $classes;
             $classes = [];
             foreach ($old_classes as $class) {
-                if (!$class->isPHPInternal() && isset($path_filter[$class->getContext()->getFile()])) {
+                if (isset($path_filter[$class->getContext()->getFile()])) {
                     $classes[] = $class;
                 }
             }
@@ -260,6 +261,21 @@ class Analysis
         foreach ($classes as $class) {
             $class->analyze($code_base);
         }
+    }
+
+    /**
+     * Fetches all of the user defined classes in $code_base
+     * @return Clazz[]
+     */
+    private static function getUserDefinedClasses(CodeBase $code_base)
+    {
+        $classes = [];
+        foreach ($code_base->getClassMap() as $class) {
+            if (!$class->isPHPInternal()) {
+                $classes[] = $class;
+            }
+        }
+        return $classes;
     }
 
     /**

@@ -390,12 +390,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
             }
 
-            if ('self' === $node->children['name']
-                && $this->context->getClassInScope($this->code_base)->isTrait()
-            ) {
-                return new UnionType();
-            }
-
             return Type::fromStringInContext(
                 $node->children['name'],
                 $this->context,
