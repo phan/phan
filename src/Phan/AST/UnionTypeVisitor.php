@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
+use Phan\Analysis\AssignOperatorFlagVisitor;
 use Phan\Analysis\BinaryOperatorFlagVisitor;
 use Phan\Analysis\ConditionVisitor;
 use Phan\CodeBase;
@@ -695,6 +696,25 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitBinaryOp(Node $node) : UnionType
     {
         return (new BinaryOperatorFlagVisitor(
+            $this->code_base,
+            $this->context
+        ))($node);
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_ASSIGN_OP` (E.g. $x .= 'suffix')
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitAssignOp(Node $node) : UnionType
+    {
+        return (new AssignOperatorFlagVisitor(
             $this->code_base,
             $this->context
         ))($node);

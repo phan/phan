@@ -149,49 +149,6 @@ class Element
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @suppress PhanUnreferencedMethod
-     */
-    public function acceptAssignFlagVisitor(FlagVisitor $visitor)
-    {
-        switch ($this->node->flags) {
-            case \ast\flags\ASSIGN_ADD:
-                return $visitor->visitAssignAdd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_AND:
-                return $visitor->visitAssignBitwiseAnd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_OR:
-                return $visitor->visitAssignBitwiseOr($this->node);
-            case \ast\flags\ASSIGN_BITWISE_XOR:
-                return $visitor->visitAssignBitwiseXor($this->node);
-            case \ast\flags\ASSIGN_CONCAT:
-                return $visitor->visitAssignConcat($this->node);
-            case \ast\flags\ASSIGN_DIV:
-                return $visitor->visitAssignDiv($this->node);
-            case \ast\flags\ASSIGN_MOD:
-                return $visitor->visitAssignMod($this->node);
-            case \ast\flags\ASSIGN_MUL:
-                return $visitor->visitAssignMul($this->node);
-            case \ast\flags\ASSIGN_POW:
-                return $visitor->visitAssignPow($this->node);
-            case \ast\flags\ASSIGN_SHIFT_LEFT:
-                return $visitor->visitAssignShiftLeft($this->node);
-            case \ast\flags\ASSIGN_SHIFT_RIGHT:
-                return $visitor->visitAssignShiftRight($this->node);
-            case \ast\flags\ASSIGN_SUB:
-                return $visitor->visitAssignSub($this->node);
-            default:
-                assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
-        }
-    }
-
-    /**
-     * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
      */
     public function acceptBinaryFlagVisitor(FlagVisitor $visitor)
     {

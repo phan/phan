@@ -17,6 +17,7 @@ use Phan\Language\Type\{
 use Phan\Issue;
 use ast\Node;
 
+// TODO: Improve analysis of bitwise operations, warn if non-int is provided and consistently return int if it's guaranteed
 class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
 {
 
@@ -100,6 +101,46 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             IntType::instance(false),
             FloatType::instance(false)
         ]);
+    }
+
+    // Code can bitwise xor strings byte by byte in PHP
+    public function visitBinaryBitwiseXor(Node $node) : UnionType
+    {
+        $left = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['left']
+        );
+
+        $right = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['right']
+        );
+
+        if ($left->isType(ArrayType::instance(false))
+            || $right->isType(ArrayType::instance(false))
+        ) {
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::TypeArrayOperator,
+                $node->lineno ?? 0,
+                $left, $right
+            );
+
+            return new UnionType();
+        } elseif ($left->hasType(IntType::instance(false))
+            && $right->hasType(IntType::instance(false))
+        ) {
+            return IntType::instance(false)->asUnionType();
+        } elseif ($left->hasType(StringType::instance(false))
+            && $right->hasType(StringType::instance(false))
+        ) {
+            return StringType::instance(false)->asUnionType();
+        }
+
+        return IntType::instance(false)->asUnionType();
     }
 
     /**
