@@ -710,7 +710,15 @@ class ParseVisitor extends ScopeVisitor
                 );
             }
         }
+        if (Config::get()->backward_compatibility_checks) {
+            $this->analyzeBackwardCompatibility($node);
 
+            foreach ($node->children['args']->children ?? [] as $arg_node) {
+                if ($arg_node instanceof Node) {
+                    $this->analyzeBackwardCompatibility($arg_node);
+                }
+            }
+        }
         return $this->context;
     }
 
@@ -747,6 +755,21 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
+     * Analyze a node for syntax backward compatibility, if that option is enabled
+     * @return void
+     */
+    private function analyzeBackwardCompatibility(Node $node)
+    {
+        if (Config::get()->backward_compatibility_checks) {
+            (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->analyzeBackwardCompatibility();
+        }
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_RETURN`
      *
      * @param Node $node
@@ -758,13 +781,7 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitReturn(Node $node) : Context
     {
-        if (Config::get()->backward_compatibility_checks) {
-            (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node
-            ))->analyzeBackwardCompatibility();
-        }
+        $this->analyzeBackwardCompatibility($node);
 
         // Make sure we're actually returning from a method.
         if (!$this->context->isInFunctionLikeScope()) {
@@ -800,9 +817,10 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitPrint(Node $node) : Context
     {
-        return $this->visitReturn($node);
+        // Analyze backward compatibility for the arguments of this print statement.
+        $this->analyzeBackwardCompatibility($node);
+        return $this->context;
     }
-
     /**
      * Visit a node with kind `\ast\AST_ECHO`
      *
@@ -815,7 +833,9 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitEcho(Node $node) : Context
     {
-        return $this->visitReturn($node);
+        // Analyze backward compatibility for the arguments of this echo statement.
+        $this->analyzeBackwardCompatibility($node);
+        return $this->context;
     }
 
     /**
@@ -830,7 +850,94 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitMethodCall(Node $node) : Context
     {
-        return $this->visitReturn($node);
+        // Analyze backward compatibility for the arguments of this method call
+        $this->analyzeBackwardCompatibility($node);
+        return $this->context;
+    }
+
+    public function visitAssign(Node $node) : Context
+    {
+        if (!Config::get()->backward_compatibility_checks) {
+            return $this->context;
+        }
+        // Analyze the assignment for compatibility with some
+        // breaking changes betweeen PHP5 and PHP7.
+        $var_node = $node->children['var'];
+        if ($var_node instanceof Node) {
+            $this->analyzeBackwardCompatibility($var_node);
+        }
+        $expr_node = $node->children['expr'];
+        if ($expr_node instanceof Node) {
+            $this->analyzeBackwardCompatibility($expr_node);
+        }
+        return $this->context;
+    }
+
+    public function visitDim(Node $node) : Context
+    {
+        if (!Config::get()->backward_compatibility_checks) {
+            return $this->context;
+        }
+
+        if (!($node->children['expr'] instanceof Node
+            && ($node->children['expr']->children['name'] ?? null) instanceof Node)
+        ) {
+            return $this->context;
+        }
+
+        // check for $$var[]
+        if ($node->children['expr']->kind == \ast\AST_VAR
+            && $node->children['expr']->children['name']->kind == \ast\AST_VAR
+        ) {
+            $temp = $node->children['expr']->children['name'];
+            $depth = 1;
+            while ($temp instanceof Node) {
+                assert(
+                    isset($temp->children['name']),
+                    "Expected to find a name in context, something else found."
+                );
+                $temp = $temp->children['name'];
+                $depth++;
+            }
+            $dollars = str_repeat('$', $depth);
+            $ftemp = new \SplFileObject($this->context->getFile());
+            $ftemp->seek($node->lineno-1);
+            $line = $ftemp->current();
+            assert(is_string($line));
+            unset($ftemp);
+            if (strpos($line, '{') === false
+                || strpos($line, '}') === false
+            ) {
+                $this->emitIssue(
+                    Issue::CompatibleExpressionPHP7,
+                    $node->lineno ?? 0,
+                    "{$dollars}{$temp}[]"
+                );
+            }
+
+        // $foo->$bar['baz'];
+        } elseif (!empty($node->children['expr']->children[1])
+            && ($node->children['expr']->children[1] instanceof Node)
+            && ($node->children['expr']->kind == \ast\AST_PROP)
+            && ($node->children['expr']->children[0]->kind == \ast\AST_VAR)
+            && ($node->children['expr']->children[1]->kind == \ast\AST_VAR)
+        ) {
+            $ftemp = new \SplFileObject($this->context->getFile());
+            $ftemp->seek($node->lineno-1);
+            $line = $ftemp->current();
+            assert(is_string($line));
+            unset($ftemp);
+            if (strpos($line, '{') === false
+                || strpos($line, '}') === false
+            ) {
+                $this->emitIssue(
+                    Issue::CompatiblePHP7,
+                    $node->lineno ?? 0
+                );
+            }
+        }
+
+        return $this->context;
     }
 
     /**
