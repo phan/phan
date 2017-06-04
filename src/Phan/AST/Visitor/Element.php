@@ -248,37 +248,6 @@ class Element
      *
      * @suppress PhanUnreferencedMethod
      */
-    public function acceptModifierFlagVisitor(FlagVisitor $visitor)
-    {
-        switch ($this->node->flags) {
-            case \ast\flags\MODIFIER_ABSTRACT:
-                return $visitor->visitModifierAbstract($this->node);
-            case \ast\flags\MODIFIER_FINAL:
-                return $visitor->visitModifierFinal($this->node);
-            case \ast\flags\MODIFIER_PRIVATE:
-                return $visitor->visitModifierPrivate($this->node);
-            case \ast\flags\MODIFIER_PROTECTED:
-                return $visitor->visitModifierProtected($this->node);
-            case \ast\flags\MODIFIER_PUBLIC:
-                return $visitor->visitModifierPublic($this->node);
-            case \ast\flags\MODIFIER_STATIC:
-                return $visitor->visitModifierStatic($this->node);
-            default:
-                assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
-        }
-    }
-
-    /**
-     * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
-     *
-     * @suppress PhanUnreferencedMethod
-     */
     public function acceptNameFlagVisitor(FlagVisitor $visitor)
     {
         switch ($this->node->flags) {
