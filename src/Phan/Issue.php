@@ -143,7 +143,9 @@ class Issue
     const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
     const AccessPropertyProtected   = 'PhanAccessPropertyProtected';
     const AccessMethodPrivate       = 'PhanAccessMethodPrivate';
+    const AccessMethodPrivateWithCallMagicMethod = 'PhanAccessMethodPrivateWithCallMagicMethod';
     const AccessMethodProtected     = 'PhanAccessMethodProtected';
+    const AccessMethodProtectedWithCallMagicMethod = 'PhanAccessMethodProtectedWithCallMagicMethod';
     const AccessSignatureMismatch   = 'PhanAccessSignatureMismatch';
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
     const AccessStaticToNonStatic   = 'PhanAccessStaticToNonStatic';
@@ -1316,7 +1318,22 @@ class Issue
                 self::REMEDIATION_B,
                 1010
             ),
-
+            new Issue(
+                self::AccessMethodProtectedWithCallMagicMethod,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access protected method {METHOD} defined at {FILE}:{LINE} (if this call should be handled by __call, consider adding a @method tag to the class)",
+                self::REMEDIATION_B,
+                1011
+            ),
+            new Issue(
+                self::AccessMethodPrivateWithCallMagicMethod,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access private method {METHOD} defined at {FILE}:{LINE} (if this call should be handled by __call, consider adding a @method tag to the class)",
+                self::REMEDIATION_B,
+                1012
+            ),
 
             // Issue::CATEGORY_COMPATIBLE
             new Issue(

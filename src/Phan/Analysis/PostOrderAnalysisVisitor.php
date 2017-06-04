@@ -1573,8 +1573,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 || $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
             )
         ) {
+            $has_call_magic_method = !$method->isStatic()
+                && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call');
+
             $this->emitIssue(
-                Issue::AccessMethodPrivate,
+                $has_call_magic_method ?
+                    Issue::AccessMethodPrivateWithCallMagicMethod : Issue::AccessMethodPrivate,
                 $node->lineno ?? 0,
                 (string)$method->getFQSEN(),
                 $method->getFileRef()->getFile(),
@@ -1596,8 +1600,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 && $this->context->getClassFQSEN() != $method->getDefiningClassFQSEN()
             )
         ) {
+            $has_call_magic_method = !$method->isStatic()
+                && $method->getDefiningClass($this->code_base)->hasMethodWithName($this->code_base, '__call');
+
             $this->emitIssue(
-                Issue::AccessMethodProtected,
+                $has_call_magic_method ?
+                    Issue::AccessMethodProtectedWithCallMagicMethod : Issue::AccessMethodProtected,
                 $node->lineno ?? 0,
                 (string)$method->getFQSEN(),
                 $method->getFileRef()->getFile(),
