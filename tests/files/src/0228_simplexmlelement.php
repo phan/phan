@@ -7,3 +7,5 @@ f($x->foo);
 
 function g(bool $v) {}
 g($x->foo);
+
+$x->prop = 'some value';
