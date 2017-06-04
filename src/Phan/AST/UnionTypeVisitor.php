@@ -551,10 +551,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $cond_truthiness = $this->checkCondUnconditionalTruthiness($cond_node);
         // For the shorthand $a ?: $b, the cond node will be the truthy value.
         // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
-        $true_node =
-            $node->children['trueExpr'] ??
-                $node->children['true'] ??
-                    $cond_node;
+        $true_node = $node->children['true'] ??  $cond_node;
 
         // Rarely, an
         if ($cond_truthiness !== null) {
@@ -564,9 +561,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
-                    $node->children['trueExpr'] ??
-                        $node->children['true'] ??
-                            $cond_node
+                    $node->children['true'] ?? $cond_node
                 );
             } else {
                 // The condition is unconditionally false
@@ -575,8 +570,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
-                    $node->children['falseExpr'] ??
-                        $node->children['false'] ?? ''
+                    $node->children['false'] ?? ''
                 );
             }
         }
@@ -603,8 +597,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $false_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['falseExpr'] ??
-                $node->children['false'] ?? ''
+            $node->children['false'] ?? ''
         );
 
         $union_type = new UnionType();
