@@ -174,15 +174,11 @@ Usage: ./phan [options] [files...]
  -o, --output <filename>
   Output filename
 
+ --color
+  Add colors to the outputted issues. Tested for Unix, recommended for only the default --output-mode ('text')
+
  -p, --progress-bar
   Show progress bar
-
- -a, --dump-ast
-  Emit an AST for each file rather than analyze
-
- --dump-signatures-file <filename>
-  Emit JSON serialized signatures to the given file.
-  This uses a method signature format similar to FunctionSignatureMap.php.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
@@ -214,8 +210,20 @@ Usage: ./phan [options] [files...]
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
 
- -h,--help
+ -s, --daemonize-socket </path/to/file.sock>
+  Unix socket for Phan to listen for requests on, in daemon mode.
+
+ --daemonize-tcp-port <1024-65535>
+  TCP port for Phan to listen for JSON requests on, in daemon mode. (e.g. 4846)
+
+ -v, --version
+  Print phan's version number
+
+ -h, --help
   This help information
+
+ --extended-help
+  This help information, plus less commonly used flags
 ```
 
 ## Annotating Your Source Code
