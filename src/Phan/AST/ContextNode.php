@@ -1216,7 +1216,9 @@ class ContextNode
     }
 
     /**
-     * Perform some backwards compatibility checks on a node
+     * Perform some backwards compatibility checks on a node.
+     * This ignores union types, and can be run in the parse phase.
+     * (It often should, because outside quick mode, it may be run multiple times per node)
      *
      * @return void
      */

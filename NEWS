@@ -65,7 +65,8 @@ Bug Fixes
 - Existence of __get() no longer affects analyzing static properties. (Issue #610)
 - Phan can now detect the declaration of constants relative to a `use`d namespace (Issue #509)
 - Phan can now detect the declaration of functions relative to a `use`d namespace (Issue #510)
-- Fix bug where JSON output printer accidentally escaped some output ("<"), causing invalid JSON.
+- Fix a bug where the JSON output printer accidentally escaped some output ("<"), causing invalid JSON.
+- Fix a bug where a print/echo/method call erroneously marked methods/functions as having a return value. (Issue #811)
 
 Backwards Incompatible Changes
 - Declarations of user-defined constants are now consistently

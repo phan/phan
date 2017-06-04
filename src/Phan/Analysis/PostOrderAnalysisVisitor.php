@@ -114,20 +114,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $right_type
         ))($node->children['var']);
 
-        // Analyze the assignment for compatibility with some
-        // breaking changes betweeen PHP5 and PHP7.
-        (new ContextNode(
-            $this->code_base,
-            $this->context,
-            $node->children['var']
-        ))->analyzeBackwardCompatibility();
-
-        (new ContextNode(
-            $this->code_base,
-            $this->context,
-            $node->children['expr']
-        ))->analyzeBackwardCompatibility();
-
         if ($node->children['expr'] instanceof Node
             && $node->children['expr']->kind == \ast\AST_CLOSURE
         ) {
@@ -675,22 +661,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitCall(Node $node) : Context
     {
         $expression = $node->children['expr'];
-
-        (new ContextNode(
-            $this->code_base,
-            $this->context,
-            $node
-        ))->analyzeBackwardCompatibility();
-
-        foreach ($node->children['args']->children ?? [] as $arg_node) {
-            if ($arg_node instanceof Node) {
-                (new ContextNode(
-                    $this->code_base,
-                    $this->context,
-                    $arg_node
-                ))->analyzeBackwardCompatibility();
-            }
-        }
 
         if ($expression->kind == \ast\AST_VAR) {
             $variable_name = (new ContextNode(
@@ -1387,69 +1357,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         } catch (IssueException $exception) {
             // Swallow it. We'll deal with issues elsewhere
         }
-
-        if (!Config::get()->backward_compatibility_checks) {
-            return $this->context;
-        }
-
-        if (!($node->children['expr'] instanceof Node
-            && ($node->children['expr']->children['name'] ?? null) instanceof Node)
-        ) {
-            return $this->context;
-        }
-
-        // check for $$var[]
-        if ($node->children['expr']->kind == \ast\AST_VAR
-            && $node->children['expr']->children['name']->kind == \ast\AST_VAR
-        ) {
-            $temp = $node->children['expr']->children['name'];
-            $depth = 1;
-            while ($temp instanceof Node) {
-                assert(
-                    isset($temp->children['name']),
-                    "Expected to find a name in context, something else found."
-                );
-                $temp = $temp->children['name'];
-                $depth++;
-            }
-            $dollars = str_repeat('$', $depth);
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno-1);
-            $line = $ftemp->current();
-            assert(is_string($line));
-            unset($ftemp);
-            if (strpos($line, '{') === false
-                || strpos($line, '}') === false
-            ) {
-                $this->emitIssue(
-                    Issue::CompatibleExpressionPHP7,
-                    $node->lineno ?? 0,
-                    "{$dollars}{$temp}[]"
-                );
-            }
-
-        // $foo->$bar['baz'];
-        } elseif (!empty($node->children['expr']->children[1])
-            && ($node->children['expr']->children[1] instanceof Node)
-            && ($node->children['expr']->kind == \ast\AST_PROP)
-            && ($node->children['expr']->children[0]->kind == \ast\AST_VAR)
-            && ($node->children['expr']->children[1]->kind == \ast\AST_VAR)
-        ) {
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($node->lineno-1);
-            $line = $ftemp->current();
-            assert(is_string($line));
-            unset($ftemp);
-            if (strpos($line, '{') === false
-                || strpos($line, '}') === false
-            ) {
-                $this->emitIssue(
-                    Issue::CompatiblePHP7,
-                    $node->lineno ?? 0
-                );
-            }
-        }
-
         return $this->context;
     }
 
