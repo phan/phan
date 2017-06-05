@@ -924,23 +924,33 @@ class UnionTypeVisitor extends AnalysisVisitor
             $element_types->addType(StringType::instance(false));
         }
 
-        // array offsets work on strings, unfortunately
-        // Double check that any classes in the type don't
-        // have ArrayAccess
-        $array_access_type =
-            Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
-
-        // Hunt for any types that are viable class names and
-        // see if they inherit from ArrayAccess
-        try {
-            foreach ($union_type->asClassList($this->code_base, $this->context) as $class) {
-                if ($class->getUnionType()->asExpandedTypes($this->code_base)->hasType($array_access_type)) {
-                    return $element_types;
-                }
-            }
-        } catch (CodeBaseException $exception) {}
-
         if ($element_types->isEmpty()) {
+            // If none of the types we found were arrays with elements,
+            // then check for ArrayAccess
+            static $array_access_type;
+            static $simple_xml_element_type;  // SimpleXMLElement doesn't `implement` ArrayAccess, but can be accessed that way. See #542
+            if ($array_access_type === null) {
+                // array offsets work on strings, unfortunately
+                // Double check that any classes in the type don't
+                // have ArrayAccess
+                $array_access_type =
+                    Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
+                $simple_xml_element_type =
+                    Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
+            }
+
+            // Hunt for any types that are viable class names and
+            // see if they inherit from ArrayAccess
+            try {
+                foreach ($union_type->asClassList($this->code_base, $this->context) as $class) {
+                    $expanded_types = $class->getUnionType()->asExpandedTypes($this->code_base);
+                    if ($expanded_types->hasType($array_access_type) ||
+                            $expanded_types->hasType($simple_xml_element_type)) {
+                        return $element_types;
+                    }
+                }
+            } catch (CodeBaseException $exception) {}
+
             $this->emitIssue(
                 Issue::TypeArraySuspicious,
                 $node->lineno ?? 0,
