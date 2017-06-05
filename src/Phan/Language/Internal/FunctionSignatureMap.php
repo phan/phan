@@ -920,7 +920,7 @@ return [
 'cubrid_connect' => ['resource', 'host'=>'string', 'port'=>'int', 'dbname'=>'string', 'userid='=>'string', 'passwd='=>'string'],
 'cubrid_connect_with_url' => ['resource', 'conn_url'=>'string', 'userid='=>'string', 'passwd='=>'string'],
 'cubrid_current_oid' => ['string', 'req_identifier'=>''],
-'cubrid_data_seek' => ['int', 'req_identifier'=>'', 'row_number'=>'int'],
+'cubrid_data_seek' => ['bool', 'req_identifier'=>'', 'row_number'=>'int'],
 'cubrid_db_name' => ['string', 'result'=>'array', 'index'=>'int'],
 'cubrid_disconnect' => ['bool', 'conn_identifier'=>''],
 'cubrid_drop' => ['bool', 'conn_identifier'=>'', 'oid'=>'string'],
