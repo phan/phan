@@ -13,7 +13,7 @@ class FunctionFactory {
 
     /**
      * @return Func[]
-     * One or more (alternate) methods begotten from
+     * One or more (alternate) functions/methods begotten from
      * reflection info and internal method data
      */
     public static function functionListFromName(
@@ -28,8 +28,8 @@ class FunctionFactory {
 
     /**
      * @return Func[]
-     * One or more (alternate) methods begotten from
-     * reflection info and internal method data
+     * One or more (alternate) functions begotten from
+     * reflection info and internal functions data
      */
     public static function functionListFromReflectionFunction(
         CodeBase $code_base,
@@ -39,11 +39,11 @@ class FunctionFactory {
         $context = new Context();
 
         $parts = explode('\\', $reflection_function->getName());
-        $method_name = array_pop($parts);
+        $function_name = array_pop($parts);
         $namespace = '\\' . implode('\\', $parts);
 
         $fqsen = FullyQualifiedFunctionName::make(
-            $namespace, $method_name
+            $namespace, $function_name
         );
 
         $function = new Func(
@@ -62,6 +62,7 @@ class FunctionFactory {
             $reflection_function->getNumberOfParameters()
             - $reflection_function->getNumberOfRequiredParameters()
         );
+        $function->setIsDeprecated($reflection_function->isDeprecated());
 
         return self::functionListFromFunction($function, $code_base);
     }
@@ -137,7 +138,7 @@ class FunctionFactory {
             $method->setNumberOfOptionalParameters(999);
             $method->setNumberOfRequiredParameters(0);
         }
-        // FIXME: make this from ReflectionMethod->getReturnType
+        $method->setIsDeprecated($reflection_method->isDeprecated());
         $method->setRealReturnType(UnionType::fromReflectionType($reflection_method->getReturnType()));
         $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
 
