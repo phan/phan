@@ -544,11 +544,20 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitVar(Node $node) : Context
     {
-        $variable_name = (new ContextNode(
-            $this->code_base,
-            $this->context,
-            $node
-        ))->getVariableName();
+        try {
+            $variable_name = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $node
+            ))->getVariableName();
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
+            return $this->context;
+        }
 
         // Check to see if the variable already exists
         if ($this->context->getScope()->hasVariableWithName(
