@@ -5474,7 +5474,7 @@ return [
 'm_transkeyval' => ['int', 'conn'=>'', 'identifier'=>'int', 'key'=>'string', 'value'=>'string'],
 'm_transnew' => ['int', 'conn'=>''],
 'm_transsend' => ['int', 'conn'=>'', 'identifier'=>'int'],
-'mt_srand' => ['', 'seed='=>'int'],
+'mt_srand' => ['', 'seed='=>'int', 'mode='=>'int'],
 'MultipleIterator::attachIterator' => ['', 'iterator'=>'iterator', 'infos='=>'string'],
 'MultipleIterator::__construct' => ['MultipleIterator', 'flags'=>'int'],
 'MultipleIterator::containsIterator' => ['', 'iterator'=>'iterator'],
