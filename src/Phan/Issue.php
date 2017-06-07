@@ -1085,7 +1085,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooFewParameters,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with {METHOD} (the method override accepts {COUNT} parameter(s), but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7029
             ),
@@ -1093,7 +1093,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooFewParametersInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT})",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override accepts {COUNT} parameter(s), but the overridden method can accept {COUNT})",
                 self::REMEDIATION_B,
                 7030
             ),
@@ -1101,7 +1101,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooManyRequiredParameters,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with {METHOD} (the method override requires {COUNT} parameter(s), but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7031
             ),
@@ -1109,7 +1109,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT})",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override requires {COUNT} parameter(s), but the overridden method requires only {COUNT})",
                 self::REMEDIATION_B,
                 7032
             ),
