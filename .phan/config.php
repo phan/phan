@@ -88,15 +88,6 @@ return [
     // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
     'consistent_hashing_file_order' => false,
 
-    // By default, Phan will analyze all node types.
-    // If this config is set to false, Phan will do a
-    // shallower pass of the AST tree which will save
-    // time but may find fewer issues.
-    //
-    // See \Phan\Analysis::shouldVisit for the set of skipped
-    // nodes.
-    'should_visit_all_nodes' => true,
-
     // Override to hardcode existence and types of (non-builtin) globals.
     // Class names must be prefixed with '\\'.
     'globals_type_map' => [],

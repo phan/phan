@@ -32,12 +32,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
     private $depth;
 
     /**
-     * @var bool
-     * Whether or not this visitor will visit all nodes
-     */
-    private $should_visit_everything;
-
-    /**
      * @param CodeBase $code_base
      * The code base within which we're operating
      *
@@ -50,22 +44,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
      *
      * @param int $depth
      * The depth of the node being analyzed in the AST
-     *
-     * @param bool|null $should_visit_everything
-     * Determined from the Config instance. Cached to avoid overhead of function calls.
      */
     public function __construct(
         CodeBase $code_base,
         Context $context,
         Node $parent_node = null,
-        int $depth = 0,
-        bool $should_visit_everything = null
+        int $depth = 0
     ) {
-        $should_visit_everything = $should_visit_everything ?? Analysis::shouldVisitEverything();
         parent::__construct($code_base, $context);
         $this->parent_node = $parent_node;
         $this->depth = $depth;
-        $this->should_visit_everything = $should_visit_everything;
     }
 
     /**
@@ -116,14 +104,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         // to this method, we analyze all children of the
         // node.
         foreach ($node->children ?? [] as $child_node) {
-            // Skip any non Node children or boring nodes
-            // that are too deep.
-            if (!($child_node instanceof Node)
-                || !($this->should_visit_everything || Analysis::shouldVisitNode($child_node))
-            ) {
-                $context->withLineNumberStart(
-                    $child_node->lineno ?? 0
-                );
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
                 continue;
             }
 
@@ -213,10 +195,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         foreach ($node->children ?? [] as $node_key => $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
-                continue;
-            }
-
-            if (!($this->should_visit_everything || Analysis::shouldVisitNode($child_node))) {
                 continue;
             }
 
@@ -366,13 +344,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
                 continue;
             }
 
-            if (!($this->should_visit_everything || Analysis::shouldVisit($child_node))) {
-                $child_context->withLineNumberStart(
-                    $child_node->lineno ?? 0
-                );
-                continue;
-            }
-
             // Step into each child node and get an
             // updated context for the node
             $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
@@ -465,7 +436,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
                 $node->children['false'] ?? null;
 
         $cond_node = $node->children['cond'];
-        if (($cond_node instanceof Node) && ($this->should_visit_everything || Analysis::shouldVisitNode($cond_node))) {
+        if ($cond_node instanceof Node) {
             // Step into each child node and get an
             // updated context for the node
             // (e.g. there may be assignments such as '($x = foo()) ? $a : $b)
@@ -484,17 +455,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         // In the long form, there's a $true_node, but in the short form (?:),
         // $cond_node is the (already processed) value for truthy.
         if ($true_node instanceof Node) {
-            if ($this->should_visit_everything || Analysis::shouldVisit($true_node)) {
-                $child_context = $this->analyzeAndGetUpdatedContext($true_context, $node, $true_node);
-                $child_context_list[] = $child_context;
-            }
+            $child_context = $this->analyzeAndGetUpdatedContext($true_context, $node, $true_node);
+            $child_context_list[] = $child_context;
         }
 
         if ($false_node instanceof Node) {
-            if ($this->should_visit_everything || Analysis::shouldVisit($false_node)) {
-                $child_context = $this->analyzeAndGetUpdatedContext($context, $node, $false_node);
-                $child_context_list[] = $child_context;
-            }
+            $child_context = $this->analyzeAndGetUpdatedContext($context, $node, $false_node);
+            $child_context_list[] = $child_context;
         }
         if (count($child_context_list) >= 1) {
             $context = (new ContextMergeVisitor(
@@ -509,7 +476,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         return $context;
     }
     /**
-     * @param Node $node
+     * @param Decl $node
      * An AST node we'd like to determine the UnionType
      * for
      *
