@@ -82,6 +82,7 @@ class Issue
     const DeprecatedInterface       = 'PhanDeprecatedInterface';
     const DeprecatedTrait           = 'PhanDeprecatedTrait';
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
+    const DeprecatedFunctionInternal = 'PhanDeprecatedFunctionInternal';
     const DeprecatedProperty        = 'PhanDeprecatedProperty';
 
     // Issue::CATEGORY_PARAMETER
@@ -802,6 +803,14 @@ class Issue
                 "Call to deprecated function {FUNCTIONLIKE}() defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5000
+            ),
+            new Issue(
+                self::DeprecatedFunctionInternal,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Call to deprecated function {FUNCTIONLIKE}()",
+                self::REMEDIATION_B,
+                5005
             ),
             new Issue(
                 self::DeprecatedClass,

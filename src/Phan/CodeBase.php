@@ -275,9 +275,9 @@ class CodeBase
     {
         foreach ($function_name_list as $i => $function_name) {
             foreach (FunctionFactory::functionListFromName($this, $function_name)
-                as $function_or_method
+                as $function
             ) {
-                $this->addFunction($function_or_method);
+                $this->addFunction($function);
             }
         }
     }
