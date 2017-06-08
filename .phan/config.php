@@ -196,6 +196,8 @@ return [
 
     // A list of files to include in analysis
     'file_list' => [
+        'phan',
+        'phan_client',
         // 'vendor/phpunit/phpunit/src/Framework/TestCase.php',
     ],
 
