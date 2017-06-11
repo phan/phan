@@ -1281,7 +1281,7 @@ class Type
             // If this is nullable, but that isn't, and we've
             // configured nulls to cast as anything, ignore
             // the nullable part.
-            if (Config::get()->null_casts_as_any_type) {
+            if (Config::get_null_casts_as_any_type()) {
                 return $this->withIsNullable(false)->canCastToType($type);
             }
 

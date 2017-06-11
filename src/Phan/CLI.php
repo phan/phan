@@ -109,7 +109,7 @@ class CLI
 
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
-        Config::get()->setProjectRootDirectory(
+        Config::setProjectRootDirectory(
             $opts['d'] ?? $opts['project-root-directory'] ?? getcwd()
         );
 
@@ -717,7 +717,7 @@ EOB;
             !empty($this->config_file)
             ? realpath($this->config_file)
             : implode(DIRECTORY_SEPARATOR, [
-                Config::get()->getProjectRootDirectory(),
+                Config::getProjectRootDirectory(),
                 '.phan',
                 'config.php'
             ]);
@@ -732,7 +732,7 @@ EOB;
 
         // Write each value to the config
         foreach ($config as $key => $value) {
-            Config::get()->__set($key, $value);
+            Config::setValue($key, $value);
         }
     }
 }
