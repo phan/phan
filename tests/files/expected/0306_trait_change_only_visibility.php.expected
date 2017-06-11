@@ -1,0 +1,6 @@
+%s:23 PhanUndeclaredAliasedMethodOfTrait Alias \Foo306::missingAsProtected was defined for a method \MyTrait306::missingAsProtected which does not exist in trait MyTrait306
+%s:29 PhanAccessMethodProtected Cannot access protected method \Foo306::publicAsProtected defined at %s:5
+%s:31 PhanAccessMethodPrivate Cannot access private method \Foo306::publicAsPrivate defined at %s:4
+%s:33 PhanAccessMethodProtected Cannot access protected method \Foo306::privateAsProtected defined at %s:9
+%s:34 PhanAccessMethodPrivate Cannot access private method \Foo306::privateAsPrivate defined at %s:8
+%s:36 PhanUndeclaredMethod Call to undeclared method \Foo306::missingAsProtected
