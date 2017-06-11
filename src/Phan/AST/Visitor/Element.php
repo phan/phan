@@ -138,7 +138,7 @@ class Element
     public static function acceptNodeAndKindVisitor(Node $node, KindVisitor $visitor)
     {
         $fn_name = self::VISIT_LOOKUP_TABLE[$node->kind] ?? null;
-        if (is_string($fn_name)) {
+        if (\is_string($fn_name)) {
             return $visitor->{$fn_name}($node);
         } else {
             Debug::printNode($node);

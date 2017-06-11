@@ -85,7 +85,7 @@ final class BufferingCollector implements IssueCollectorInterface
     public function removeIssuesForFiles(array $files) {
         $file_set = array_flip($files);
         foreach ($this->issues as $key => $issue) {
-            if (array_key_exists($issue->getFile(), $file_set)) {
+            if (\array_key_exists($issue->getFile(), $file_set)) {
                 unset($this->issues[$key]);
             }
         }

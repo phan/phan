@@ -121,7 +121,7 @@ class ASTSimplifier {
      * The resulting Node has kind AST_STMT_LIST.
      */
     private static function cloneStatementList(Node $stmt_list = null) : Node {
-        if (is_null($stmt_list)) {
+        if (\is_null($stmt_list)) {
             return self::buildStatementList(0);
         }
         if ($stmt_list->kind === \ast\AST_STMT_LIST) {
@@ -301,7 +301,7 @@ class ASTSimplifier {
         if (count($children) <= 2) {
             return $node;
         }
-        assert(is_array($children));
+        assert(\is_array($children));
         while (count($children) > 2) {
             $r = array_pop($children);
             $l = array_pop($children);

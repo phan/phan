@@ -1982,7 +1982,7 @@ class Clazz extends AddressableElement
 
         // Copy methods
         foreach ($class->getMethodMap($code_base) as $method) {
-            if (!is_null($trait_adaptations) && count($trait_adaptations->hidden_methods) > 0) {
+            if (!\is_null($trait_adaptations) && count($trait_adaptations->hidden_methods) > 0) {
                 $method_name_key = strtolower($method->getName());
                 if (isset($trait_adaptations->hidden_methods[$method_name_key])) {
                     // TODO: Record that the method was hidden, and check later on that all method that were hidden were actually defined?
@@ -2002,7 +2002,7 @@ class Clazz extends AddressableElement
             );
         }
 
-        if (!is_null($trait_adaptations)) {
+        if (!\is_null($trait_adaptations)) {
             $this->importTraitAdaptations($code_base, $class, $trait_adaptations, $type_option);
         }
     }

@@ -139,7 +139,7 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         $name = $var_node->children['name'] ?? null;
         $context = $this->context;
-        if (is_string($name) && $name) {
+        if (\is_string($name) && $name) {
             try {
                 $exprType = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $this->context, $expr);
                 if ($exprType) {
@@ -241,11 +241,11 @@ class ConditionVisitor extends KindVisitorImplementation
             $args = $negatedNode->children;
             $this->checkVariablesDefinedInCallArgs($negatedNode);
             if (self::isCallStringWithSingleVariableArgument($negatedNode)) {
-                // TODO: Make this generic to all type assertions? E.g. if (!is_string($x)) removes 'string' from type, makes '?string' (nullable) into 'null'.
+                // TODO: Make this generic to all type assertions? E.g. if (!\is_string($x)) removes 'string' from type, makes '?string' (nullable) into 'null'.
                 // This may be redundant in some places if AST canonicalization is used, but still useful in some places
                 // TODO: Make this generic so that it can be used in the 'else' branches?
                 $function_name = $negatedNode->children['expr']->children['name'];
-                if (in_array($function_name, ['empty', 'is_null', 'is_scalar'], true)) {
+                if (\in_array($function_name, ['empty', 'is_null', 'is_scalar'], true)) {
                     return $this->removeNullFromVariable($negatedNode->children['args']->children[0], $context);
                 }
             }
@@ -453,7 +453,7 @@ class ConditionVisitor extends KindVisitorImplementation
                 $expr = $node->children['expr'];
                 if ($expr instanceof Node) {
                     $name = $expr->children['name'] ?? null;
-                    if (is_string($name) && $name) {
+                    if (\is_string($name) && $name) {
                         return true;
                     }
                 }
@@ -465,7 +465,7 @@ class ConditionVisitor extends KindVisitorImplementation
     /**
      * This function is called once, and returns closures to modify the types of variables.
      *
-     * This contains Phan's logic for inferring the resulting union types of variables, e.g. in is_array($x).
+     * This contains Phan's logic for inferring the resulting union types of variables, e.g. in \is_array($x).
      *
      * @return \Closure[] - The closures to call for a given
      */

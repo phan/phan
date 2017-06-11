@@ -454,7 +454,7 @@ class ParseVisitor extends ScopeVisitor
             $property_name = $child_node->children['name'];
 
             assert(
-                is_string($property_name),
+                \is_string($property_name),
                 'Property name must be a string. '
                 . 'Got '
                 . print_r($property_name, true)
@@ -462,7 +462,7 @@ class ParseVisitor extends ScopeVisitor
                 . $this->context
             );
 
-            $property_name = is_string($child_node->children['name'])
+            $property_name = \is_string($child_node->children['name'])
                 ? $child_node->children['name']
                 : '_error_';
 
@@ -722,8 +722,8 @@ class ParseVisitor extends ScopeVisitor
         $expression = $node->children['expr'];
 
         if ($expression->kind === \ast\AST_NAME) {
-            $function_name = strtolower($expression->children['name']);
-            if (in_array($function_name, [
+            $function_name = \strtolower($expression->children['name']);
+            if (\in_array($function_name, [
                 'func_get_args', 'func_get_arg', 'func_num_args'
             ], true)) {
                 if ($this->context->isInFunctionLikeScope()) {
@@ -734,7 +734,7 @@ class ParseVisitor extends ScopeVisitor
                 $args = $node->children['args'];
                 if ($args->kind === \ast\AST_ARG_LIST
                     && isset($args->children[0])
-                    && is_string($args->children[0])
+                    && \is_string($args->children[0])
                 ) {
                     $this->addConstant(
                         $node,
@@ -943,7 +943,7 @@ class ParseVisitor extends ScopeVisitor
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
-            assert(is_string($line));
+            assert(\is_string($line));
             unset($ftemp);
             if (strpos($line, '{') === false
                 || strpos($line, '}') === false
@@ -965,7 +965,7 @@ class ParseVisitor extends ScopeVisitor
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
-            assert(is_string($line));
+            assert(\is_string($line));
             unset($ftemp);
             if (strpos($line, '{') === false
                 || strpos($line, '}') === false

@@ -96,13 +96,13 @@ class CLI
             ]
         );
 
-        if (array_key_exists('extended-help', $opts ?? [])) {
+        if (\array_key_exists('extended-help', $opts ?? [])) {
             $this->usage('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
         }
-        if (array_key_exists('h', $opts ?? []) || array_key_exists('help', $opts ?? [])) {
+        if (\array_key_exists('h', $opts ?? []) || \array_key_exists('help', $opts ?? [])) {
             $this->usage();  // --help prints help and calls exit(0)
         }
-        if (array_key_exists('v', $opts ?? []) || array_key_exists('version', $opts ?? [])) {
+        if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
             printf("Phan %s\n", self::PHAN_VERSION);
             exit(EXIT_SUCCESS);
         }
@@ -146,7 +146,7 @@ class CLI
                     // file list
                 case 'f':
                 case 'file-list':
-                    $file_list = is_array($value) ? $value : [$value];
+                    $file_list = \is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
@@ -163,7 +163,7 @@ class CLI
                 case 'l':
                 case 'directory':
                     if (!$this->file_list_only) {
-                        $directory_list = is_array($value) ? $value : [$value];
+                        $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
                             $this->file_list = array_merge(
                                 $this->file_list,
@@ -234,7 +234,7 @@ class CLI
                 case 'exclude-file':
                     Config::get()->exclude_file_list = array_merge(
                         Config::get()->exclude_file_list,
-                        is_array($value) ? $value : [$value]
+                        \is_array($value) ? $value : [$value]
                     );
                     break;
                 case 'include-analysis-file-list':
@@ -320,7 +320,7 @@ class CLI
                 $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
                 if (($chunk == $value
-                    || (is_array($value) && in_array($chunk, $value))
+                    || (\is_array($value) && in_array($chunk, $value))
                     )
                     && $argv[$key-1][0] == '-'
                     || preg_match($regex, $chunk)
@@ -573,7 +573,7 @@ EOB;
         try {
             $file_extensions = Config::get()->analyzed_file_extensions;
 
-            if (!is_array($file_extensions) || count($file_extensions) === 0) {
+            if (!\is_array($file_extensions) || count($file_extensions) === 0) {
                 throw new \InvalidArgumentException(
                     'Empty list in config analyzed_file_extensions. Nothing to analyze.'
                 );

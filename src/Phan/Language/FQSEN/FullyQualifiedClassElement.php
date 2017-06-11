@@ -136,7 +136,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(is_int($alternate_id), "Alternate must be an integer");
+        assert(\is_int($alternate_id), "Alternate must be an integer");
 
         return static::make(
             $fully_qualified_class_name,
@@ -194,7 +194,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         $alternate_id = (int)($parts[1] ?? 0);
 
         assert(
-            is_int($alternate_id),
+            \is_int($alternate_id),
             "Alternate must be an integer"
         );
 

@@ -491,7 +491,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return null;
         }
         // Otherwise, this is an int/float/string.
-        assert(is_scalar($node), 'node must be Node or scalar');
+        assert(\is_scalar($node), 'node must be Node or scalar');
         return Type::fromObject($node)->asUnionType();
     }
 
@@ -524,7 +524,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Otherwise, this is an int/float/string.
         // Use the exact same truthiness rules as PHP to check if the conditional is truthy.
         // (e.g. "0" and 0.0 and '' are false)
-        assert(is_scalar($cond), 'cond must be Node or scalar');
+        assert(\is_scalar($cond), 'cond must be Node or scalar');
         return (bool)$cond;
     }
 
@@ -1370,7 +1370,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Method names can some times turn up being
         // other method calls.
         assert(
-            is_string($method_name),
+            \is_string($method_name),
             "Method name must be a string. Something else given."
         );
 

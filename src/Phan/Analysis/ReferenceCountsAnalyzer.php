@@ -236,7 +236,7 @@ class ReferenceCountsAnalyzer
 
             if ($element instanceof AddressableElement) {
                 $element_alt = self::findAlternateReferencedElementDeclaration($code_base, $element);
-                if (!is_null($element_alt)) {
+                if (!\is_null($element_alt)) {
                     if ($element_alt->getReferenceCount($code_base) >= 1) {
                         // If there is a reference to the "canonical" declaration (the one which was parsed first),
                         // then also treat it as a reference to the duplicate.

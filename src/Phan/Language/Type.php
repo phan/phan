@@ -873,11 +873,11 @@ class Type
         if ($source === Type::FROM_PHPDOC) {
             $type_name = self::canonicalNameFromName($type_name);  // Have to convert boolean[] to bool
         }
-        if (!array_key_exists($type_name, self::_internal_type_set)) {
+        if (!\array_key_exists($type_name, self::_internal_type_set)) {
             return false;
         }
         // All values of $type_name exist as a valid phpdoc type, but some don't exist as real types.
-        if ($source === Type::FROM_NODE && array_key_exists($type_name, self::_soft_internal_type_set)) {
+        if ($source === Type::FROM_NODE && \array_key_exists($type_name, self::_soft_internal_type_set)) {
             return false;
         }
         return true;
