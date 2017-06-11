@@ -428,12 +428,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
 
         assert(!empty($context), 'Context cannot be null');
 
-        $true_node =
-            $node->children['trueExpr'] ??
-                $node->children['true'] ?? null;
-        $false_node =
-            $node->children['falseExpr'] ??
-                $node->children['false'] ?? null;
+        $true_node = $node->children['true'] ?? null;
+        $false_node = $node->children['false'] ?? null;
 
         $cond_node = $node->children['cond'];
         if ($cond_node instanceof Node) {

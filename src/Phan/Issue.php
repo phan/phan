@@ -43,6 +43,7 @@ class Issue
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
     const TypeArrayOperator         = 'PhanTypeArrayOperator';
     const TypeArraySuspicious       = 'PhanTypeArraySuspicious';
+    const TypeSuspiciousIndirectVariable = 'PhanTypeSuspiciousIndirectVariable';
     const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
@@ -763,6 +764,14 @@ class Issue
                 "Cannot assign void return value",
                 self::REMEDIATION_B,
                 10000
+            ),
+            new Issue(
+                self::TypeSuspiciousIndirectVariable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Indirect variable ${(expr)} has invalid inner expression type {TYPE}, expected string/integer',
+                self::REMEDIATION_B,
+                10023
             ),
 
             // Issue::CATEGORY_VARIABLE
