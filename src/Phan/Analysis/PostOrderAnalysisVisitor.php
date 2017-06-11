@@ -544,18 +544,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitReturn(Node $node) : Context
     {
-        // Don't check return types in traits
-        if ($this->context->isInClassScope()) {
-            $clazz = $this->context->getClassInScope($this->code_base);
-            if ($clazz->isTrait()) {
-                return $this->context;
-            }
-        }
-
         // Make sure we're actually returning from a method.
         if (!$this->context->isInFunctionLikeScope()) {
             return $this->context;
         }
+
+        // Check real return types instead of phpdoc return types in traits for #800
+        // TODO: Why did Phan originally not analyze return types of traits at all in 4c6956c05222e093b29393ceaa389ffb91041bdc
+        $is_trait = false;
+        if ($this->context->isInClassScope()) {
+            $clazz = $this->context->getClassInScope($this->code_base);
+            $is_trait = $clazz->isTrait();
+        }
+
 
         // Get the method/function/closure we're in
         $method = $this->context->getFunctionLikeInScope($this->code_base);
@@ -564,7 +565,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             "We're supposed to be in either method or closure scope.");
 
         // Figure out what we intend to return
-        $method_return_type = $method->getUnionType();
+        // (For traits, lower the false positive rate by comparing against the real return type instead of the phpdoc type (#800))
+        $method_return_type = $is_trait ? $method->getRealReturnType() : $method->getUnionType();
 
         // Figure out what is actually being returned
         $expression_type = UnionType::fromNode(
@@ -594,17 +596,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         if ($method_return_type->isEmpty()
             || $method->isReturnTypeUndefined()
         ) {
-            $method->setIsReturnTypeUndefined(true);
+            if (!$is_trait) {
+                $method->setIsReturnTypeUndefined(true);
 
-            // Set the inferred type of the method based
-            // on what we're returning
-            $method->getUnionType()->addUnionType($expression_type);
+                // Set the inferred type of the method based
+                // on what we're returning
+                $method->getUnionType()->addUnionType($expression_type);
+            }
 
             // No point in comparing this type to the
             // type we just set
             return $this->context;
         }
-
 
         // C
         if (!$method->isReturnTypeUndefined()
