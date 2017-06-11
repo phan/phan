@@ -1,0 +1,1 @@
+%s:28 PhanTypeMismatchArgument Argument 1 (x) is string but \C::fn2() takes int defined at %s:17

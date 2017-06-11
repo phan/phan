@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\AST;
 
+use Phan\Analysis\AssignOperatorFlagVisitor;
 use Phan\Analysis\BinaryOperatorFlagVisitor;
 use Phan\Analysis\ConditionVisitor;
 use Phan\CodeBase;
@@ -550,10 +551,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $cond_truthiness = $this->checkCondUnconditionalTruthiness($cond_node);
         // For the shorthand $a ?: $b, the cond node will be the truthy value.
         // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
-        $true_node =
-            $node->children['trueExpr'] ??
-                $node->children['true'] ??
-                    $cond_node;
+        $true_node = $node->children['true'] ??  $cond_node;
 
         // Rarely, an
         if ($cond_truthiness !== null) {
@@ -563,9 +561,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
-                    $node->children['trueExpr'] ??
-                        $node->children['true'] ??
-                            $cond_node
+                    $node->children['true'] ?? $cond_node
                 );
             } else {
                 // The condition is unconditionally false
@@ -574,8 +570,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
-                    $node->children['falseExpr'] ??
-                        $node->children['false'] ?? ''
+                    $node->children['false'] ?? ''
                 );
             }
         }
@@ -602,8 +597,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $false_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
-            $node->children['falseExpr'] ??
-                $node->children['false'] ?? ''
+            $node->children['false'] ?? ''
         );
 
         $union_type = new UnionType();
@@ -695,6 +689,25 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitBinaryOp(Node $node) : UnionType
     {
         return (new BinaryOperatorFlagVisitor(
+            $this->code_base,
+            $this->context
+        ))($node);
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_ASSIGN_OP` (E.g. $x .= 'suffix')
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitAssignOp(Node $node) : UnionType
+    {
+        return (new AssignOperatorFlagVisitor(
             $this->code_base,
             $this->context
         ))($node);
@@ -924,23 +937,33 @@ class UnionTypeVisitor extends AnalysisVisitor
             $element_types->addType(StringType::instance(false));
         }
 
-        // array offsets work on strings, unfortunately
-        // Double check that any classes in the type don't
-        // have ArrayAccess
-        $array_access_type =
-            Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
-
-        // Hunt for any types that are viable class names and
-        // see if they inherit from ArrayAccess
-        try {
-            foreach ($union_type->asClassList($this->code_base, $this->context) as $class) {
-                if ($class->getUnionType()->asExpandedTypes($this->code_base)->hasType($array_access_type)) {
-                    return $element_types;
-                }
-            }
-        } catch (CodeBaseException $exception) {}
-
         if ($element_types->isEmpty()) {
+            // If none of the types we found were arrays with elements,
+            // then check for ArrayAccess
+            static $array_access_type;
+            static $simple_xml_element_type;  // SimpleXMLElement doesn't `implement` ArrayAccess, but can be accessed that way. See #542
+            if ($array_access_type === null) {
+                // array offsets work on strings, unfortunately
+                // Double check that any classes in the type don't
+                // have ArrayAccess
+                $array_access_type =
+                    Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
+                $simple_xml_element_type =
+                    Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
+            }
+
+            // Hunt for any types that are viable class names and
+            // see if they inherit from ArrayAccess
+            try {
+                foreach ($union_type->asClassList($this->code_base, $this->context) as $class) {
+                    $expanded_types = $class->getUnionType()->asExpandedTypes($this->code_base);
+                    if ($expanded_types->hasType($array_access_type) ||
+                            $expanded_types->hasType($simple_xml_element_type)) {
+                        return $element_types;
+                    }
+                }
+            } catch (CodeBaseException $exception) {}
+
             $this->emitIssue(
                 Issue::TypeArraySuspicious,
                 $node->lineno ?? 0,
@@ -992,20 +1015,27 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitVar(Node $node) : UnionType
     {
         // $$var or ${...} (whose idea was that anyway?)
-        if (($node->children['name'] instanceof Node)
-            && ($node->children['name']->kind == \ast\AST_VAR
-            || $node->children['name']->kind == \ast\AST_BINARY_OP)
-        ) {
+        $name_node = $node->children['name'];
+        if (($name_node instanceof Node)) {
+            // This is nonsense. Give up.
+            $name_node_type = $this($name_node);
+            static $intOrStringType;
+            if ($intOrStringType === null) {
+                $intOrStringType = new UnionType();
+                $intOrStringType->addType(StringType::instance(false));
+                $intOrStringType->addType(IntType::instance(false));
+                $intOrStringType->addType(NullType::instance(false));
+            }
+            if (!$name_node_type->canCastToUnionType($intOrStringType)) {
+                Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
+            }
+
             return MixedType::instance(false)->asUnionType();
         }
 
-        // This is nonsense. Give up.
-        if ($node->children['name'] instanceof Node) {
-            return new UnionType();
-        }
-
+        // foo(${42}) is technically valid PHP code, avoid TypeError
         $variable_name =
-            $node->children['name'];
+            (string)$name_node;
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
             if (Variable::isSuperglobalVariableWithName($variable_name)) {

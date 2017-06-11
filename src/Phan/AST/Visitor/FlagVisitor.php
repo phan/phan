@@ -8,67 +8,6 @@ use ast\Node;
  */
 interface FlagVisitor
 {
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_ADD`
-     */
-    public function visitAssignAdd(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_BITWISE_AND`
-     */
-    public function visitAssignBitwiseAnd(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_BITWISE_OR`
-     */
-    public function visitAssignBitwiseOr(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_BITWISE_XOR`
-     */
-    public function visitAssignBitwiseXor(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_CONCAT`
-     */
-    public function visitAssignConcat(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_DIV`
-     */
-    public function visitAssignDiv(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_MOD`
-     */
-    public function visitAssignMod(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_MUL`
-     */
-    public function visitAssignMul(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_POW`
-     */
-    public function visitAssignPow(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_SHIFT_LEFT`
-     */
-    public function visitAssignShiftLeft(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_SHIFT_RIGHT`
-     */
-    public function visitAssignShiftRight(Node $node);
-
-    /**
-     * Visit a node with flag `\ast\flags\ASSIGN_SUB`
-     */
-    public function visitAssignSub(Node $node);
-
     /**
      * Visit a node with flag `\ast\flags\BINARY_ADD`
      */

@@ -48,7 +48,17 @@ class ArgumentType
         // Special common cases where we want slightly
         // better multi-signature error messages
         if ($method->isPHPInternal()) {
-            if(self::analyzeInternalArgumentType(
+            // Emit an error if this internal method is marked as deprecated
+            if ($method->isDeprecated()) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::DeprecatedFunctionInternal,
+                    $context->getLineNumberStart(),
+                    (string)$method->getFQSEN()
+                );
+            }
+            if (self::analyzeInternalArgumentType(
                 $method,
                 $node,
                 $context,
@@ -56,19 +66,21 @@ class ArgumentType
             )) {
                 return;
             }
-        }
-
-        // Emit an error if this method is marked as deprecated
-        if ($method->isDeprecated()) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::DeprecatedFunction,
-                $context->getLineNumberStart(),
-                (string)$method->getFQSEN(),
-                $method->getFileRef()->getFile(),
-                $method->getFileRef()->getLineNumberStart()
-            );
+        } else {
+            // Emit an error if this user-defined method is marked as deprecated
+            if ($method->isDeprecated()) {
+                if (!$method->isPHPInternal()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::DeprecatedFunction,
+                        $context->getLineNumberStart(),
+                        (string)$method->getFQSEN(),
+                        $method->getFileRef()->getFile(),
+                        $method->getFileRef()->getLineNumberStart()
+                    );
+                }
+            }
         }
 
         // Emit an issue if this is an externally accessed internal method

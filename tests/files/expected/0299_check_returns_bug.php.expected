@@ -1,0 +1,2 @@
+%s:4 PhanTypeMissingReturn Method \Example is declared to return bool but has no return value
+%s:12 PhanTypeMissingReturn Method \X::Example is declared to return bool but has no return value

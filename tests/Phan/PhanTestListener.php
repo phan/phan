@@ -17,16 +17,17 @@ $internal_const_name_list = array_keys(array_merge(...array_values(
 $internal_function_name_list = get_defined_functions()['internal'];
 
 use Phan\CodeBase;
-use PHPUnit_Framework_Test;
+use PHPUnit\Framework\BaseTestListener;
+use PHPUnit\Framework\Test;
 
 /**
  * @suppress PhanUnreferencedClass
  * This class is referenced in phpunit.xml
  */
 class PhanTestListener
-    extends \PHPUnit_Framework_BaseTestListener
+    extends BaseTestListener
 {
-    public function startTest(PHPUnit_Framework_Test $test) {
+    public function startTest(Test $test) {
         if ($test instanceof CodeBaseAwareTestInterface) {
 
             // We're holding a static reference to the
@@ -55,7 +56,7 @@ class PhanTestListener
         }
     }
 
-    public function endTest(PHPUnit_Framework_Test $test, $time) {
+    public function endTest(Test $test, $time) {
         if ($test instanceof CodeBaseAwareTestInterface) {
             $test->setCodeBase(null);
         }

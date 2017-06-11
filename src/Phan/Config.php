@@ -68,6 +68,10 @@ class Config
         //       to `excluce_analysis_directory_list`.
         'exclude_analysis_directory_list' => [],
 
+        // A file list that defines files that will be included
+        // in static analysis, to the exclusion of others.
+        'include_analysis_file_list' => [],
+
         // Backwards Compatibility Checking. This is slow
         // and expensive, but you should consider running
         // it before upgrading your version of PHP to a
@@ -109,15 +113,6 @@ class Config
         // detect that it is actually returning the passed in
         // `string` instead of an `int` as declared.
         'quick_mode' => false,
-
-        // By default, Phan will analyze all node types.
-        // If this config is set to false, Phan will do a
-        // shallower pass of the AST tree which will save
-        // time but may find fewer issues.
-        //
-        // See \Phan\Analysis::shouldVisit for the set of skipped
-        // nodes.
-        'should_visit_all_nodes' => true,
 
         // If enabled, check all methods that override a
         // parent method to make sure its signature is

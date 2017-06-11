@@ -43,6 +43,7 @@ class Issue
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
     const TypeArrayOperator         = 'PhanTypeArrayOperator';
     const TypeArraySuspicious       = 'PhanTypeArraySuspicious';
+    const TypeSuspiciousIndirectVariable = 'PhanTypeSuspiciousIndirectVariable';
     const TypeComparisonFromArray   = 'PhanTypeComparisonFromArray';
     const TypeComparisonToArray     = 'PhanTypeComparisonToArray';
     const TypeConversionFromArray   = 'PhanTypeConversionFromArray';
@@ -82,6 +83,7 @@ class Issue
     const DeprecatedInterface       = 'PhanDeprecatedInterface';
     const DeprecatedTrait           = 'PhanDeprecatedTrait';
     const DeprecatedFunction        = 'PhanDeprecatedFunction';
+    const DeprecatedFunctionInternal = 'PhanDeprecatedFunctionInternal';
     const DeprecatedProperty        = 'PhanDeprecatedProperty';
 
     // Issue::CATEGORY_PARAMETER
@@ -143,7 +145,9 @@ class Issue
     const AccessPropertyPrivate     = 'PhanAccessPropertyPrivate';
     const AccessPropertyProtected   = 'PhanAccessPropertyProtected';
     const AccessMethodPrivate       = 'PhanAccessMethodPrivate';
+    const AccessMethodPrivateWithCallMagicMethod = 'PhanAccessMethodPrivateWithCallMagicMethod';
     const AccessMethodProtected     = 'PhanAccessMethodProtected';
+    const AccessMethodProtectedWithCallMagicMethod = 'PhanAccessMethodProtectedWithCallMagicMethod';
     const AccessSignatureMismatch   = 'PhanAccessSignatureMismatch';
     const AccessSignatureMismatchInternal = 'PhanAccessSignatureMismatchInternal';
     const AccessStaticToNonStatic   = 'PhanAccessStaticToNonStatic';
@@ -761,6 +765,14 @@ class Issue
                 self::REMEDIATION_B,
                 10000
             ),
+            new Issue(
+                self::TypeSuspiciousIndirectVariable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Indirect variable ${(expr)} has invalid inner expression type {TYPE}, expected string/integer',
+                self::REMEDIATION_B,
+                10023
+            ),
 
             // Issue::CATEGORY_VARIABLE
             new Issue(
@@ -800,6 +812,14 @@ class Issue
                 "Call to deprecated function {FUNCTIONLIKE}() defined at {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 5000
+            ),
+            new Issue(
+                self::DeprecatedFunctionInternal,
+                self::CATEGORY_DEPRECATED,
+                self::SEVERITY_NORMAL,
+                "Call to deprecated function {FUNCTIONLIKE}()",
+                self::REMEDIATION_B,
+                5005
             ),
             new Issue(
                 self::DeprecatedClass,
@@ -1074,7 +1094,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooFewParameters,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with {METHOD} (the method override accepts {COUNT} parameter(s), but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7029
             ),
@@ -1082,7 +1102,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooFewParametersInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override accepts {COUNT} parameters, but the overridden method can accept {COUNT})",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override accepts {COUNT} parameter(s), but the overridden method can accept {COUNT})",
                 self::REMEDIATION_B,
                 7030
             ),
@@ -1090,7 +1110,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooManyRequiredParameters,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
+                "Declaration of {METHOD} should be compatible with {METHOD} (the method override requires {COUNT} parameter(s), but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7031
             ),
@@ -1098,7 +1118,7 @@ class Issue
                 self::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
-                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override requires {COUNT} parameters, but the overridden method requires only {COUNT})",
+                "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override requires {COUNT} parameter(s), but the overridden method requires only {COUNT})",
                 self::REMEDIATION_B,
                 7032
             ),
@@ -1316,7 +1336,22 @@ class Issue
                 self::REMEDIATION_B,
                 1010
             ),
-
+            new Issue(
+                self::AccessMethodProtectedWithCallMagicMethod,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access protected method {METHOD} defined at {FILE}:{LINE} (if this call should be handled by __call, consider adding a @method tag to the class)",
+                self::REMEDIATION_B,
+                1011
+            ),
+            new Issue(
+                self::AccessMethodPrivateWithCallMagicMethod,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Cannot access private method {METHOD} defined at {FILE}:{LINE} (if this call should be handled by __call, consider adding a @method tag to the class)",
+                self::REMEDIATION_B,
+                1012
+            ),
 
             // Issue::CATEGORY_COMPATIBLE
             new Issue(

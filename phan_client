@@ -150,7 +150,7 @@ class PhanPHPLinter {
         $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);
         if (!is_resource($client)) {
             // TODO: This should attempt to start up the phan daemon for the given folder?
-            self::debugError("Phan daemon not running on port 4846");
+            self::debugError("Phan daemon not running on " . ($opts->url));
             exit(0);
         }
         $request = [
@@ -294,8 +294,10 @@ EOB;
             'flycheck-file:',
             'verbose',
         ];
-        if (PHP_VERSION_ID >= 70100) {
+        $getopt_reflection = new ReflectionFunction('getopt');
+        if ($getopt_reflection->getNumberOfParameters() >= 3) {
             // optind support is only in php 7.1+.
+            // hhvm doesn't expect a third parameter, but reports a version of php 7.1, even in the latest version.
             $opts = getopt($shortopts, $longopts, $optind);
         } else {
             $opts = getopt($shortopts, $longopts);
