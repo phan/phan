@@ -280,6 +280,9 @@ EOB;
         exit($exit_code);
     }
 
+    /**
+     * @suppress PhanParamTooManyInternal - `getopt` added an optional third parameter in php 7.1
+     */
     public function __construct()  {
         global $argv;
 
