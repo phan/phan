@@ -186,7 +186,7 @@ class ContextNode
         $trait_method_node = $adaptation_node->children['method'];
         $trait_original_class_name_node = $trait_method_node->children['class'];
         $trait_original_method_name = $trait_method_node->children['method'];
-        $trait_new_method_name = $adaptation_node->children['alias'];
+        $trait_new_method_name = $adaptation_node->children['alias'] ?? $trait_original_method_name;
         assert(is_string($trait_original_method_name));
         assert(is_string($trait_new_method_name));
         $trait_fqsen = (new ContextNode(
@@ -227,6 +227,11 @@ class ContextNode
         }
         // TODO: Could check for duplicate alias method occurences, but `php -l` would do that for you in some cases
         $adaptations_info->alias_methods[$trait_new_method_name] = new TraitAliasSource($trait_original_method_name, $adaptation_node->lineno ?? 0, $adaptation_node->flags ?? 0);
+        // Handle `use MyTrait { myMethod as private; }` by skipping the original method.
+        // TODO: Do this a cleaner way.
+        if (strcasecmp($trait_new_method_name, $trait_original_method_name) === 0) {
+            $adaptations_info->hidden_methods[strtolower($trait_original_method_name)] = true;
+        }
     }
 
     /**

@@ -70,6 +70,7 @@ Bug Fixes
 - Fix a bug where the JSON output printer accidentally escaped some output ("<"), causing invalid JSON.
 - Fix a bug where a print/echo/method call erroneously marked methods/functions as having a return value. (Issue #811)
 - Improve analysis of SimpleXMLElement (Issues #542, #539)
+- Fix crash handling trait use aliases which change only the method's visibility (Issue #861)
 
 Backwards Incompatible Changes
 - Declarations of user-defined constants are now consistently
