@@ -149,49 +149,6 @@ class Element
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
-     *
-     * @suppress PhanUnreferencedMethod
-     */
-    public function acceptAssignFlagVisitor(FlagVisitor $visitor)
-    {
-        switch ($this->node->flags) {
-            case \ast\flags\ASSIGN_ADD:
-                return $visitor->visitAssignAdd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_AND:
-                return $visitor->visitAssignBitwiseAnd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_OR:
-                return $visitor->visitAssignBitwiseOr($this->node);
-            case \ast\flags\ASSIGN_BITWISE_XOR:
-                return $visitor->visitAssignBitwiseXor($this->node);
-            case \ast\flags\ASSIGN_CONCAT:
-                return $visitor->visitAssignConcat($this->node);
-            case \ast\flags\ASSIGN_DIV:
-                return $visitor->visitAssignDiv($this->node);
-            case \ast\flags\ASSIGN_MOD:
-                return $visitor->visitAssignMod($this->node);
-            case \ast\flags\ASSIGN_MUL:
-                return $visitor->visitAssignMul($this->node);
-            case \ast\flags\ASSIGN_POW:
-                return $visitor->visitAssignPow($this->node);
-            case \ast\flags\ASSIGN_SHIFT_LEFT:
-                return $visitor->visitAssignShiftLeft($this->node);
-            case \ast\flags\ASSIGN_SHIFT_RIGHT:
-                return $visitor->visitAssignShiftRight($this->node);
-            case \ast\flags\ASSIGN_SUB:
-                return $visitor->visitAssignSub($this->node);
-            default:
-                assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
-        }
-    }
-
-    /**
-     * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
      */
     public function acceptBinaryFlagVisitor(FlagVisitor $visitor)
     {
@@ -275,37 +232,6 @@ class Element
                 return $visitor->visitClassTrait($this->node);
             case \ast\flags\CLASS_ANONYMOUS:
                 return $visitor->visitClassAnonymous($this->node);
-            default:
-                assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
-        }
-    }
-
-    /**
-     * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
-     *
-     * @suppress PhanUnreferencedMethod
-     */
-    public function acceptModifierFlagVisitor(FlagVisitor $visitor)
-    {
-        switch ($this->node->flags) {
-            case \ast\flags\MODIFIER_ABSTRACT:
-                return $visitor->visitModifierAbstract($this->node);
-            case \ast\flags\MODIFIER_FINAL:
-                return $visitor->visitModifierFinal($this->node);
-            case \ast\flags\MODIFIER_PRIVATE:
-                return $visitor->visitModifierPrivate($this->node);
-            case \ast\flags\MODIFIER_PROTECTED:
-                return $visitor->visitModifierProtected($this->node);
-            case \ast\flags\MODIFIER_PUBLIC:
-                return $visitor->visitModifierPublic($this->node);
-            case \ast\flags\MODIFIER_STATIC:
-                return $visitor->visitModifierStatic($this->node);
             default:
                 assert(
                     false,
@@ -526,30 +452,6 @@ class Element
     public function acceptAnyFlagVisitor(FlagVisitor $visitor)
     {
         switch ($this->node->flags) {
-            case \ast\flags\ASSIGN_ADD:
-                return $visitor->visitAssignAdd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_AND:
-                return $visitor->visitAssignBitwiseAnd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_OR:
-                return $visitor->visitAssignBitwiseOr($this->node);
-            case \ast\flags\ASSIGN_BITWISE_XOR:
-                return $visitor->visitAssignBitwiseXor($this->node);
-            case \ast\flags\ASSIGN_CONCAT:
-                return $visitor->visitAssignConcat($this->node);
-            case \ast\flags\ASSIGN_DIV:
-                return $visitor->visitAssignDiv($this->node);
-            case \ast\flags\ASSIGN_MOD:
-                return $visitor->visitAssignMod($this->node);
-            case \ast\flags\ASSIGN_MUL:
-                return $visitor->visitAssignMul($this->node);
-            case \ast\flags\ASSIGN_POW:
-                return $visitor->visitAssignPow($this->node);
-            case \ast\flags\ASSIGN_SHIFT_LEFT:
-                return $visitor->visitAssignShiftLeft($this->node);
-            case \ast\flags\ASSIGN_SHIFT_RIGHT:
-                return $visitor->visitAssignShiftRight($this->node);
-            case \ast\flags\ASSIGN_SUB:
-                return $visitor->visitAssignSub($this->node);
             case \ast\flags\BINARY_ADD:
                 return $visitor->visitBinaryAdd($this->node);
             case \ast\flags\BINARY_BITWISE_AND:

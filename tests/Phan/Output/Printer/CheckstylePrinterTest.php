@@ -6,7 +6,6 @@ use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\CheckstylePrinter;
 use Phan\Tests\BaseTest;
-use PHPUnit_Framework_TestCase;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class CheckstylePrinterTest extends BaseTest {
@@ -23,6 +22,7 @@ class CheckstylePrinterTest extends BaseTest {
         $printer->configureOutput($output);
         $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 0, [$string]));
         $printer->flush();
+        $this->assertContains('PhanSyntaxError', $output->fetch());
     }
 
     public function invalidUTF8StringsProvider() {

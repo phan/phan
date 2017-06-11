@@ -52,6 +52,11 @@ abstract class NativeType extends Type
         return false;
     }
 
+    public function isObject() : bool
+    {
+        return false;
+    }
+
     /**
      * @return bool
      * True if this Type can be cast to the given Type

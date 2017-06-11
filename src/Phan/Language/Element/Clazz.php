@@ -1117,6 +1117,8 @@ class Clazz extends AddressableElement
             $existing_method =
                 $code_base->getMethodByFQSEN($method_fqsen);
             if ($method->isAbstract() || !$existing_method->isAbstract() || $existing_method->getIsNewConstructor()) {
+                // TODO: What if both of these are abstract, and those get combined into an abstract class?
+                //       Should phan check compatibility of the abstract methods it inherits?
                 $existing_method->setIsOverride(true);
 
                 // Don't add the method

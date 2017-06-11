@@ -1,0 +1,13 @@
+%s:17 PhanInvalidCommentForDeclarationType The phpdoc comment for @param cannot occur on a class
+%s:17 PhanInvalidCommentForDeclarationType The phpdoc comment for @return cannot occur on a class
+%s:17 PhanMisspelledAnnotation Saw misspelled annotation @phan-forbid-this-is-a-typo, should be @phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties
+%s:17 PhanUnextractableAnnotationPart Saw unextractable annotation for a fragment of comment * @method foo(string$invalidType $param1): string$invalidType $param1
+%s:17 PhanUnextractableAnnotation Saw unextractable annotation for comment * @method unmatched(
+%s:17 PhanUnextractableAnnotation Saw unextractable annotation for comment * @property int (Can't parse the variable name, so silently ignore)
+%s:22 PhanInvalidCommentForDeclarationType The phpdoc comment for @param cannot occur on a property
+%s:22 PhanInvalidCommentForDeclarationType The phpdoc comment for @return cannot occur on a property
+%s:30 PhanInvalidCommentForDeclarationType The phpdoc comment for @method cannot occur on a method
+%s:30 PhanInvalidCommentForDeclarationType The phpdoc comment for @phan-forbid-undeclared-magic-properties cannot occur on a method
+%s:30 PhanInvalidCommentForDeclarationType The phpdoc comment for @property cannot occur on a method
+%s:30 PhanUnextractableAnnotation Saw unextractable annotation for comment * @method int $wrongPlaceForMethod
+%s:38 PhanUnextractableAnnotation Saw unextractable annotation for comment * @param

@@ -78,9 +78,11 @@ class ContextTest extends BaseTest {
         $context = (new ParseVisitor(
             $this->code_base, $context
         ))($method_node);
+
+        $this->assertSame('\C::f', (string)$context->getScope()->getFQSEN());
     }
 
-    public function testNamespaceMap() {
+    public function disabled_testNamespaceMap() {
         // ...
     }
 

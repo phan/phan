@@ -12,66 +12,6 @@ abstract class FlagVisitorImplementation implements FlagVisitor
 
     abstract public function visit(Node $node);
 
-    public function visitAssignAdd(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignBitwiseAnd(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignBitwiseOr(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignBitwiseXor(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignConcat(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignDiv(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignMod(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignMul(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignPow(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignShiftLeft(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignShiftRight(Node $node)
-    {
-        return $this->visit($node);
-    }
-
-    public function visitAssignSub(Node $node)
-    {
-        return $this->visit($node);
-    }
-
     public function visitBinaryAdd(Node $node)
     {
         return $this->visit($node);

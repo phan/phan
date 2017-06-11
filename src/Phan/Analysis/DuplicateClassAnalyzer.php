@@ -38,32 +38,36 @@ class DuplicateClassAnalyzer
         // Check to see if the original definition was from
         // an internal class
         if ($original_class->isPHPInternal()) {
-            Issue::maybeEmit(
-                $code_base,
-                $clazz->getContext(),
-                Issue::RedefineClassInternal,
-                $clazz->getFileRef()->getLineNumberStart(),
-                (string)$clazz,
-                $clazz->getFileRef()->getFile(),
-                $clazz->getFileRef()->getLineNumberStart(),
-                (string)$original_class
-            );
+            if (!$clazz->hasSuppressIssue(Issue::RedefineClassInternal)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $clazz->getContext(),
+                    Issue::RedefineClassInternal,
+                    $clazz->getFileRef()->getLineNumberStart(),
+                    (string)$clazz,
+                    $clazz->getFileRef()->getFile(),
+                    $clazz->getFileRef()->getLineNumberStart(),
+                    (string)$original_class
+                );
+            }
 
         // Otherwise, print the coordinates of the original
         // definition
         } else {
-            Issue::maybeEmit(
-                $code_base,
-                $clazz->getContext(),
-                Issue::RedefineClass,
-                $clazz->getFileRef()->getLineNumberStart(),
-                (string)$clazz,
-                $clazz->getFileRef()->getFile(),
-                $clazz->getFileRef()->getLineNumberStart(),
-                (string)$original_class,
-                $original_class->getFileRef()->getFile(),
-                $original_class->getFileRef()->getLineNumberStart()
-            );
+            if (!$clazz->hasSuppressIssue(Issue::RedefineClass)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $clazz->getContext(),
+                    Issue::RedefineClass,
+                    $clazz->getFileRef()->getLineNumberStart(),
+                    (string)$clazz,
+                    $clazz->getFileRef()->getFile(),
+                    $clazz->getFileRef()->getLineNumberStart(),
+                    (string)$original_class,
+                    $original_class->getFileRef()->getFile(),
+                    $original_class->getFileRef()->getLineNumberStart()
+                );
+            }
         }
 
         return;

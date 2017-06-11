@@ -22,7 +22,7 @@ trait ElementFutureUnionType
      * @param UnionType $type
      * Set the type of this element
      *
-     * @return null
+     * @return void
      */
     abstract public function setUnionType(UnionType $type);
 

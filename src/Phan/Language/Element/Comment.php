@@ -754,17 +754,12 @@ class Comment
 
             // If the type looks like a property name, make it an
             // empty type so that other stuff can match it.
-            $union_type = null;
-            if (0 !== strpos($type, '$')) {
-                $union_type =
-                    UnionType::fromStringInContext(
-                        $type,
-                        $context,
-                        Type::FROM_PHPDOC
-                    );
-            } else {
-                $union_type = new UnionType();
-            }
+            $union_type =
+                UnionType::fromStringInContext(
+                    $type,
+                    $context,
+                    Type::FROM_PHPDOC
+                );
 
             return new CommentParameter(
                 $property_name,
