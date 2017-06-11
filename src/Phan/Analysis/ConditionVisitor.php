@@ -393,7 +393,7 @@ class ConditionVisitor extends KindVisitorImplementation
         };
 
         /** @return void */
-        $object_callback = function(Variable $variable) : void
+        $object_callback = function(Variable $variable)
         {
             // Change the type to match the is_a relationship
             // If we already have the `object` type or generic object types, then keep those
@@ -409,7 +409,8 @@ class ConditionVisitor extends KindVisitorImplementation
             }
             $variable->setUnionType($newType);
         };
-        $scalar_callback = function(Variable $variable) : void
+        /** @return void */
+        $scalar_callback = function(Variable $variable)
         {
             // Change the type to match the is_a relationship
             // If we already have possible scalar types, then keep those
