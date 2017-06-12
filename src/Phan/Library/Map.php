@@ -11,6 +11,9 @@ class Map extends \SplObjectStorage
     /**
      * We redefine the key to be the actual key rather than
      * the index of the key
+     *
+     * @return object
+     * @suppress PhanParamSignatureMismatchInternal - This is deliberately changing the phpdoc return type.
      */
     public function key()
     {

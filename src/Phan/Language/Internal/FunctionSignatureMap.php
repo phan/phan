@@ -4435,7 +4435,7 @@ return [
 'IteratorIterator::next' => [''],
 'IteratorIterator::rewind' => [''],
 'IteratorIterator::valid' => ['bool'],
-'Iterator::key' => ['scalar'],
+'Iterator::key' => ['int|string'],
 'Iterator::next' => ['void'],
 'Iterator::rewind' => ['void'],
 'iterator_to_array' => ['array', 'it'=>'traversable', 'use_keys='=>'bool'],
