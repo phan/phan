@@ -241,7 +241,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $node
             ))->getVariableName();
 
-            if (Variable::isSuperglobalVariableWithName($variable_name)) {
+            if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
                 return $this->analyzeSuperglobalDim($node, $variable_name);
             }
         }
@@ -274,7 +274,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
             // assert(is_string($dim), "dim is not a string");
 
-            if (Variable::isSuperglobalVariableWithName($dim)) {
+            if (Variable::isHardcodedVariableInScopeWithName($dim, $this->context->isInGlobalScope())) {
                 // Don't override types of superglobals such as $_POST, $argv through $_GLOBALS['_POST'] = expr either. TODO: Warn.
                 return $this->context;
             }
