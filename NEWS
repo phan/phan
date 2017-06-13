@@ -1,5 +1,20 @@
 Phan NEWS
 
+?? ??? 2017, Phan 0.8.5 (dev)
+-----------------------
+
+### Backported from Phan 0.9.3-dev
+
+New Features (Analysis)
+
+New Features (CLI, Configs)
+
+Maintenance
+
+Bug Fixes
+
+Backwards Incompatible Changes
+
 0.8.4 Jun 13, 2017
 ------------------
 
