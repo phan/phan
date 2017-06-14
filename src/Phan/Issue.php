@@ -248,6 +248,7 @@ class Issue
         'ISSUETYPE_NORMAL' => '%s',  // for normal issues
         'LINE'          => '%d',
         'METHOD'        => '%s',
+        'NAMESPACE'     => '%s',
         'PARAMETER'     => '%s',
         'PROPERTY'      => '%s',
         'TYPE'          => '%s',
@@ -1418,7 +1419,7 @@ class Issue
                 self::AccessConstantInternal,
                 self::CATEGORY_INTERNAL,
                 self::SEVERITY_NORMAL,
-                "Cannot access internal constant {CONST} defined at {FILE}:{LINE}",
+                "Cannot access internal constant {CONST} of namepace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}",
                 self::REMEDIATION_B,
                 15000
             ),
@@ -1442,7 +1443,7 @@ class Issue
                 self::AccessPropertyInternal,
                 self::CATEGORY_INTERNAL,
                 self::SEVERITY_NORMAL,
-                "Cannot access internal property {PROPERTY} defined at {FILE}:{LINE}",
+                "Cannot access internal property {PROPERTY} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}",
                 self::REMEDIATION_B,
                 15003
             ),
@@ -1450,7 +1451,7 @@ class Issue
                 self::AccessMethodInternal,
                 self::CATEGORY_INTERNAL,
                 self::SEVERITY_NORMAL,
-                "Cannot access internal method {METHOD} defined at {FILE}:{LINE}",
+                "Cannot access internal method {METHOD} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}",
                 self::REMEDIATION_B,
                 15004
             ),
