@@ -8,3 +8,5 @@
 %s:34 PhanTypeMismatchArgumentInternal Argument 1 (string) is int[]|int[][]|string[]|string[][] but \strlen() takes string
 %s:37 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is int[]|int[][]|string[]|string[][] but \intdiv() takes int
 %s:40 PhanTypeMismatchArgumentInternal Argument 1 (string) is null|string[] but \strlen() takes string
+%s:49 PhanUndeclaredVariable Variable $argc is undeclared
+%s:50 PhanUndeclaredVariable Variable $argv is undeclared

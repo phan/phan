@@ -1,0 +1,1 @@
+%s:7 PhanTypeMismatchProperty Assigning array to property but \Foo307::x is \ArrayAccess

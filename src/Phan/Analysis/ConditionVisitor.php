@@ -107,26 +107,30 @@ class ConditionVisitor extends KindVisitorImplementation
         $name = $varNode->children['name'] ?? null;
         $context = $this->context;
         if (is_string($name) && $name) {
-            $exprType = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $this->context, $expr);
-            if ($exprType) {
-                // Get the variable we're operating on
-                $variable = (new ContextNode(
-                    $this->code_base,
-                    $context,
-                    $varNode
-                ))->getVariable();
+            try {
+                $exprType = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $this->context, $expr);
+                if ($exprType) {
+                    // Get the variable we're operating on
+                    $variable = (new ContextNode(
+                        $this->code_base,
+                        $context,
+                        $varNode
+                    ))->getVariable();
 
-                // Make a copy of the variable
-                $variable = clone($variable);
+                    // Make a copy of the variable
+                    $variable = clone($variable);
 
-                $variable->setUnionType($exprType);
+                    $variable->setUnionType($exprType);
 
-                // Overwrite the variable with its new type in this
-                // scope without overwriting other scopes
-                $context = $context->withScopeVariable(
-                    $variable
-                );
-                return $context;
+                    // Overwrite the variable with its new type in this
+                    // scope without overwriting other scopes
+                    $context = $context->withScopeVariable(
+                        $variable
+                    );
+                    return $context;
+                }
+            } catch (\Exception $e) {
+                // ignore it.
             }
         }
         return $context;
