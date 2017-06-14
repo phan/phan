@@ -279,14 +279,16 @@ class ParameterTypesAnalyzer
 
         if (!$signatures_match) {
             if ($o_method->isPHPInternal()) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::ParamSignatureMismatchInternal,
-                    $method->getFileRef()->getLineNumberStart(),
-                    $method,
-                    $o_method
-                );
+                if (!$method->hasSuppressIssue(Issue::ParamSignatureMismatchInternal)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::ParamSignatureMismatchInternal,
+                        $method->getFileRef()->getLineNumberStart(),
+                        $method,
+                        $o_method
+                    );
+                }
             } else {
                 Issue::maybeEmit(
                     $code_base,
@@ -306,25 +308,29 @@ class ParameterTypesAnalyzer
             || $o_method->isPublic() && !$method->isPublic()
         ) {
             if ($o_method->isPHPInternal()) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::AccessSignatureMismatchInternal,
-                    $method->getFileRef()->getLineNumberStart(),
-                    $method,
-                    $o_method
-                );
+                if (!$method->hasSuppressIssue(Issue::AccessSignatureMismatchInternal)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::AccessSignatureMismatchInternal,
+                        $method->getFileRef()->getLineNumberStart(),
+                        $method,
+                        $o_method
+                    );
+                }
             } else {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::AccessSignatureMismatch,
-                    $method->getFileRef()->getLineNumberStart(),
-                    $method,
-                    $o_method,
-                    $o_method->getFileRef()->getFile(),
-                    $o_method->getFileRef()->getLineNumberStart()
-                );
+                if (!$method->hasSuppressIssue(Issue::AccessSignatureMismatch)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::AccessSignatureMismatch,
+                        $method->getFileRef()->getLineNumberStart(),
+                        $method,
+                        $o_method,
+                        $o_method->getFileRef()->getFile(),
+                        $o_method->getFileRef()->getLineNumberStart()
+                    );
+                }
             }
 
         }
@@ -390,6 +396,8 @@ class ParameterTypesAnalyzer
             return;
             // If parameter counts match, check their types
         }
+        $is_possibly_compatible = true;
+
         foreach ($method->getRealParameterList() as $i => $parameter) {
             $offset = $i + 1;
             // TODO: check if variadic
@@ -412,6 +420,7 @@ class ParameterTypesAnalyzer
                     ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReferenceInternal : Issue::ParamSignatureRealMismatchParamIsNotReferenceInternal),
                     $offset
                 );
+                $is_possibly_compatible = false;
                 return;
             }
 
@@ -427,6 +436,7 @@ class ParameterTypesAnalyzer
                     ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadicInternal : Issue::ParamSignatureRealMismatchParamNotVariadicInternal),
                     $offset
                 );
+                $is_possibly_compatible = false;
                 return;
             }
 
@@ -434,6 +444,7 @@ class ParameterTypesAnalyzer
             $o_parameter_union_type = $o_parameter->getUnionType();
             $parameter_union_type = $parameter->getUnionType();
             if ($parameter_union_type->isEmpty() != $o_parameter_union_type->isEmpty()) {
+                $is_possibly_compatible = false;
                 if ($parameter_union_type->isEmpty()) {
                     self::emitSignatureRealMismatchIssue(
                         $code_base,
@@ -444,7 +455,7 @@ class ParameterTypesAnalyzer
                         $offset,
                         (string)$o_parameter_union_type
                     );
-                    return;
+                    continue;
                 } else {
                     self::emitSignatureRealMismatchIssue(
                         $code_base,
@@ -455,7 +466,7 @@ class ParameterTypesAnalyzer
                         $offset,
                         (string)$parameter_union_type
                     );
-                    return;
+                    continue;
                 }
             }
 
@@ -474,6 +485,7 @@ class ParameterTypesAnalyzer
                          $parameter_union_type->hasType(IterableType::instance(false)) && !$o_parameter_union_type->containsNullable());
 
                     if (!$is_exception_to_rule) {
+                        $is_possibly_compatible = false;
                         self::emitSignatureRealMismatchIssue(
                             $code_base,
                             $method,
@@ -484,7 +496,7 @@ class ParameterTypesAnalyzer
                             (string)$parameter_union_type,
                             (string)$o_parameter_union_type
                         );
-                        return;
+                        continue;
                     }
                 }
             }
@@ -498,6 +510,8 @@ class ParameterTypesAnalyzer
                 $o_return_union_type->containsNullable() && !($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
                 )) {
 
+                $is_possibly_compatible = false;
+
                 self::emitSignatureRealMismatchIssue(
                     $code_base,
                     $method,
@@ -507,7 +521,48 @@ class ParameterTypesAnalyzer
                     (string)$return_union_type,
                     (string)$o_return_union_type
                 );
-                return;
+            }
+        }
+        if ($is_possibly_compatible) {
+            if (Config::get()->inherit_phpdoc_types) {
+                self::inheritPHPDoc($method, $o_method);
+            }
+        }
+    }
+
+    /**
+     * Inherit any missing phpdoc types for (at)return and (at)param of $method from $o_method.
+     * This is the default behaviour, see https://www.phpdoc.org/docs/latest/guides/inheritance.html
+     *
+     * @return void
+     */
+    private static function inheritPHPDoc(
+        Method $method,
+        Method $o_method
+    ) {
+        // Get the parameters for that method
+        $phpdoc_parameter_list = $method->getParameterList();
+        $o_phpdoc_parameter_list = $o_method->getParameterList();
+        foreach ($phpdoc_parameter_list as $i => $parameter) {
+            $parameter_type = $parameter->getUnionType();
+            if (!$parameter_type->isEmpty()) {
+                continue;
+            }
+            $parent_parameter = $o_phpdoc_parameter_list[$i] ?? null;
+            if ($parent_parameter) {
+                $parent_parameter_type = $parent_parameter->getUnionType();
+                if ($parent_parameter_type->isEmpty()) {
+                    continue;
+                }
+                $parameter->setUnionType(clone($parent_parameter_type));
+            }
+        }
+
+        $phpdoc_return_type = $method->getUnionType();
+        if ($phpdoc_return_type->isEmpty()) {
+            $parent_phpdoc_return_type = $o_method->getUnionType();
+            if (!$parent_phpdoc_return_type->isEmpty()) {
+                $method->setUnionType(clone($parent_phpdoc_return_type));
             }
         }
     }
@@ -521,8 +576,12 @@ class ParameterTypesAnalyzer
      * @param string $issue_type the ParamSignatureRealMismatch* (issue type if overriding user-defined method)
      * @param string $internal_issue_type the ParamSignatureRealMismatch* (issue type if overriding internal method)
      * @param int|string ...$args
+     * @return void
      */
     private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, ...$args) {
+        if ($method->hasSuppressIssue($internal_issue_type)) {
+            return;
+        }
         if ($o_method->isPHPInternal()) {
             Issue::maybeEmit(
                 $code_base,

@@ -1,7 +1,7 @@
 <?php
-
 // Sanity checking phan's checks on the types of built in superglobals.
 function superglobal_sanity_check(bool $exec = false) {
+    global $argc, $argv;
     var_dump(strlen($_POST));
     var_dump(count($_POST));
     var_dump(count($_GET));
@@ -44,3 +44,9 @@ function superglobal_sanity_check(bool $exec = false) {
     }
 }
 superglobal_sanity_check();
+
+function builtin_global_sanity_check() {
+    var_dump(intdiv($argc, 1));  // emits warning about undefined $argc
+    var_dump(count($argv));  // emits warning about undefined $argv
+}
+builtin_global_sanity_check();

@@ -120,6 +120,12 @@ class Config
         // can add quite a bit of time to the analysis.
         'analyze_signature_compatibility' => true,
 
+        // If enabled, inherit any missing phpdoc for types from
+        // the parent method if none is provided.
+        //
+        // NOTE: This step will only be performed if analyze_signature_compatibility is also enabled.
+        'inherit_phpdoc_types' => true,
+
         // The minimum severity level to report on. This can be
         // set to Issue::SEVERITY_LOW, Issue::SEVERITY_NORMAL or
         // Issue::SEVERITY_CRITICAL. Setting it to only
