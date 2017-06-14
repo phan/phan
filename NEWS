@@ -1,10 +1,11 @@
 Phan NEWS
-
-
 ?? ??? 2017, Phan 0.9.3 (dev)
 -----------------------
 
 New Features (Analysis)
++ Automatically inherit `@param` and `@return` types from parent methods.
+  This is controlled by the boolean config `enable_phpdoc_types`, which is true by default.
+  `analyze_signature_compatibility` must also be set to true (default is true) for this step to be performed.
 
 New Features (CLI, Configs)
 
