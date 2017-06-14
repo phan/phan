@@ -826,8 +826,10 @@ class ContextNode
                         $this->node->lineno ?? 0,
                         [
                             (string)$property->getFQSEN(),
+                            $property->getElementNamespace($this->code_base),
                             $property->getFileRef()->getFile(),
                             $property->getFileRef()->getLineNumberStart(),
+                            $this->context->getNamespace(),
                         ]
                     )
                 );
@@ -1073,8 +1075,10 @@ class ContextNode
                     $node->lineno ?? 0,
                     [
                         (string)$constant->getFQSEN(),
+                        $constant->getElementNamespace($this->code_base),
                         $constant->getFileRef()->getFile(),
                         $constant->getFileRef()->getLineNumberStart(),
+                        $this->context->getNamespace()
                     ]
                 )
             );

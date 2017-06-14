@@ -73,6 +73,7 @@ class Colorizing {
         'ISSUETYPE_NORMAL' => 'light_red',  // for normal issues
         'LINE'          => 'light_gray',
         'METHOD'        => 'light_yellow',
+        'NAMESPACE'     => 'green',
         'PARAMETER'     => 'cyan',
         'PROPERTY'      => 'cyan',
         'TYPE'          => 'light_gray',
