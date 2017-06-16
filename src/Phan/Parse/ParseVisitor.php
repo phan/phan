@@ -445,7 +445,7 @@ class ParseVisitor extends ScopeVisitor
                 $union_type = new UnionType();
             }
 
-            // Don't set 'null' as the type if thats the default
+            // Don't set 'null' as the type if that's the default
             // given that its the default default.
             if ($union_type->isType(NullType::instance(false))) {
                 $union_type = new UnionType();

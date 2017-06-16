@@ -967,7 +967,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->checkNonAncestorConstructCall($node, $static_class, $method_name);
                 // Even if it exists, continue on and type check the arguments passed.
             }
-            // Get the method thats calling the static method
+            // Get the method that's calling the static method
             $calling_method = null;
             if ($this->context->isInMethodScope()) {
                 $calling_function_like =

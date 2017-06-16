@@ -226,7 +226,7 @@ class ContextNode
             );
             return;
         }
-        // TODO: Could check for duplicate alias method occurences, but `php -l` would do that for you in some cases
+        // TODO: Could check for duplicate alias method occurrences, but `php -l` would do that for you in some cases
         $adaptations_info->alias_methods[$trait_new_method_name] = new TraitAliasSource($trait_original_method_name, $adaptation_node->lineno ?? 0, $adaptation_node->flags ?? 0);
         // Handle `use MyTrait { myMethod as private; }` by skipping the original method.
         // TODO: Do this a cleaner way.

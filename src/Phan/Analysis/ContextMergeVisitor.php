@@ -129,7 +129,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
             }
         }
 
-        // If we have a finally, overwite types for each
+        // If we have a finally, overwrite types for each
         // element
         if (!empty($node->children['finallyStmts'])
             || !empty($node->children['finally'])

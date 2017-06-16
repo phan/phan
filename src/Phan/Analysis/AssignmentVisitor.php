@@ -578,7 +578,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
 
             } else {
-                // If the variable isn't a pass-by-reference paramter
+                // If the variable isn't a pass-by-reference parameter
                 // we clone it so as to not disturb its previous types
                 // as we replace it.
                 if ($variable instanceof Parameter) {
