@@ -502,7 +502,7 @@ class Clazz extends AddressableElement
      * details
      *
      * @return FullyQualifiedClassName
-     * The FQSEN of the root class on this class's hiearchy
+     * The FQSEN of the root class on this class's hierarchy
      */
     public function getHierarchyRootFQSEN(
         CodeBase $code_base

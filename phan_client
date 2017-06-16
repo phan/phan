@@ -269,7 +269,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
 
  -f, --flycheck-file '/path/to/tmp/file_copy.php'
   A simpler way to specify a file mapping when checking a single files.
-  Pass this after the only occurence of --syntax-check.
+  Pass this after the only occurrence of --syntax-check.
 
  -v, --verbose
   Whether to emit debugging output of this client.

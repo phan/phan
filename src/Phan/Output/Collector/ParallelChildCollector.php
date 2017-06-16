@@ -76,7 +76,7 @@ class ParallelChildCollector implements IssueCollectorInterface
     public function getCollectedIssues():array
     {
         // This collector should not be used for collecting
-        // issues. Intead, it proxies all messages on to a
+        // issues. Instead, it proxies all messages on to a
         // message queue.
         return [];
     }

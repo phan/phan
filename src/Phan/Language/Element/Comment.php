@@ -946,7 +946,7 @@ class Comment
 
     /**
      * @return CommentParameter
-     * The paramter at the given offset
+     * The parameter at the given offset
      */
     public function getParameterWithNameOrOffset(
         string $name,
