@@ -19,7 +19,7 @@ namespace Phan\Language\Internal;
  * 1. '&rw_<arg_name>' indicates that a parameter with a value is expected to be passed in, and may be modified.
  *    Phan will warn if the variable has an incompatible type, or is undefined.
  * 2. '&w_<arg_name>' indicates that a parameter is expected to be passed in, and the value will be ignored, and may be overwritten.
- * 3. The absense of a prefix is treated by Phan the same way as having the prefix 'w_' (Some may be changed to 'rw_name'). These will have prefixes added later.
+ * 3. The absence of a prefix is treated by Phan the same way as having the prefix 'w_' (Some may be changed to 'rw_name'). These will have prefixes added later.
  *
  * So, for functions like sort() where technically the arg is by-ref,
  * indicate the reference param's signature by-ref and read-write,
@@ -6110,7 +6110,7 @@ return [
 'newt_grid_add_components_to_form' => ['', 'grid'=>'', 'form'=>'', 'recurse'=>'bool'],
 'newt_grid_basic_window' => ['resource', 'text'=>'', 'middle'=>'', 'buttons'=>''],
 'newt_grid_free' => ['', 'grid'=>'', 'recurse'=>'bool'],
-'newt_grid_get_size' => ['', 'grid'=>'resouce', 'width'=>'int', 'height'=>'int'],
+'newt_grid_get_size' => ['', 'grid'=>'resource', 'width'=>'int', 'height'=>'int'],
 'newt_grid_h_close_stacked' => ['resource', 'element1_type'=>'int', 'element1'=>'', '...='=>''],
 'newt_grid_h_stacked' => ['resource', 'element1_type'=>'int', 'element1'=>'', '...='=>''],
 'newt_grid_place' => ['', 'grid'=>'', 'left'=>'int', 'top'=>'int'],
@@ -6139,7 +6139,7 @@ return [
 'newt_listbox_set_entry' => ['', 'listbox'=>'', 'num'=>'int', 'text'=>'string'],
 'newt_listbox_set_width' => ['', 'listbox'=>'', 'width'=>'int'],
 'newt_listitem_get_data' => ['', 'item'=>''],
-'newt_listitem' => ['resource', 'left'=>'int', 'top'=>'int', 'text'=>'string', 'is_default'=>'bool', 'prev_item'=>'resouce', 'data'=>'', 'flags='=>'int'],
+'newt_listitem' => ['resource', 'left'=>'int', 'top'=>'int', 'text'=>'string', 'is_default'=>'bool', 'prev_item'=>'resource', 'data'=>'', 'flags='=>'int'],
 'newt_listitem_set' => ['', 'item'=>'', 'text'=>'string'],
 'newt_open_window' => ['int', 'left'=>'int', 'top'=>'int', 'width'=>'int', 'height'=>'int', 'title='=>'string'],
 'newt_pop_help_line' => [''],
@@ -7183,7 +7183,7 @@ return [
 'ps_new' => ['resource'],
 'ps_open_file' => ['bool', 'psdoc'=>'', 'filename='=>'string'],
 'ps_open_image_file' => ['int', 'psdoc'=>'', 'type'=>'string', 'filename'=>'string', 'stringparam='=>'string', 'intparam='=>'int'],
-'ps_open_image' => ['int', 'psdoc'=>'', 'type'=>'string', 'source'=>'string', 'data'=>'string', 'lenght'=>'int', 'width'=>'int', 'height'=>'int', 'components'=>'int', 'bpc'=>'int', 'params'=>'string'],
+'ps_open_image' => ['int', 'psdoc'=>'', 'type'=>'string', 'source'=>'string', 'data'=>'string', 'length'=>'int', 'width'=>'int', 'height'=>'int', 'components'=>'int', 'bpc'=>'int', 'params'=>'string'],
 'ps_open_memory_image' => ['int', 'psdoc'=>'', 'gd'=>'int'],
 'pspell_add_to_personal' => ['bool', 'pspell'=>'int', 'word'=>'string'],
 'pspell_add_to_session' => ['bool', 'pspell'=>'int', 'word'=>'string'],
@@ -8164,7 +8164,7 @@ return [
 'socket_select' => ['int', '&rw_read_fds'=>'resource[]', '&rw_write_fds'=>'resource[]', '&rw_except_fds'=>'resource[]', 'tv_sec'=>'int', 'tv_usec='=>'int'],
 'socket_send' => ['int', 'socket'=>'resource', 'buf'=>'string', 'len'=>'int', 'flags'=>'int'],
 'socket_sendmsg' => ['int', 'socket'=>'resource', 'message'=>'array', 'flags'=>'int'],
-'socket_sendto' => ['int', 'socket'=>'resouce', 'buf'=>'string', 'len'=>'int', 'flags'=>'int', 'addr'=>'string', 'port='=>'int'],
+'socket_sendto' => ['int', 'socket'=>'resource', 'buf'=>'string', 'len'=>'int', 'flags'=>'int', 'addr'=>'string', 'port='=>'int'],
 'socket_set_block' => ['bool', 'socket'=>'resource'],
 'socket_set_nonblock' => ['bool', 'socket'=>'resource'],
 'socket_set_option' => ['bool', 'socket'=>'resource', 'level'=>'int', 'optname'=>'int', 'optval'=>'int|array'],
@@ -9011,7 +9011,7 @@ return [
 'stream_socket_get_name' => ['string', 'stream'=>'resource', 'want_peer'=>'bool'],
 'stream_socket_pair' => ['array', 'domain'=>'int', 'type'=>'int', 'protocol'=>'int'],
 'stream_socket_recvfrom' => ['string', 'stream'=>'resource', 'amount'=>'int', 'flags='=>'int', '&w_remote_addr='=>'string'],
-'stream_socket_sendto' => ['int', 'stream'=>'resouce', 'data'=>'string', 'flags='=>'int', 'target_addr='=>'string'],
+'stream_socket_sendto' => ['int', 'stream'=>'resource', 'data'=>'string', 'flags='=>'int', 'target_addr='=>'string'],
 'stream_socket_server' => ['resource', 'localaddress'=>'string', '&w_errcode='=>'int', '&w_errstring='=>'string', 'flags='=>'int', 'context='=>''],
 'stream_socket_shutdown' => ['bool', 'stream'=>'resource', 'how'=>'int'],
 'stream_supports_lock' => ['bool', 'stream'=>'resource'],
