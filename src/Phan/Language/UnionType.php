@@ -846,6 +846,24 @@ class UnionType implements \Serializable
 
     /**
      * @return bool
+     * True if this union contains the ArrayAccess type.
+     * (Call asExpandedTypes() first to check for subclasses of ArrayAccess)
+     */
+    public function hasArrayAccess() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return (false ===
+            $this->type_set->find(function (Type $type) : bool {
+                return !$type->isArrayAccess();
+            })
+        );
+    }
+
+    /**
+     * @return bool
      * True if this union type represents types that are
      * array-like, and nothing else (e.g. can't be null).
      * If any of the array-like types are nullable, this returns false.

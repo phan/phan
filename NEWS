@@ -13,6 +13,8 @@ New Features (Analysis)
 + Improve analysis of types in expressions within compound conditions (Issue #847)
   (E.g. `if (is_array($x) && fn_expecting_array($x)) {...}`)
 + Evaluate the third part of a for loop with the context after the inner body is evaluated (Issue #477)
++ Emit `PhanUndeclaredVariableDim` if adding an array field to an undeclared variable. (Issue #841)
+  Better analyze `list($var['field']) = values`
 
 New Features (CLI, Configs)
 
