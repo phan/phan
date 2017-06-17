@@ -14,6 +14,7 @@ New Features (CLI, Configs)
 Maintenance
 
 Bug Fixes
++ Work around known bugs in current releases of two PECL extensions (Issue #888, #889)
 
 Backwards Incompatible Changes
 

@@ -106,14 +106,14 @@ class FunctionFactory {
         \ReflectionClass $class,
         \ReflectionMethod $reflection_method
     ) : array {
-
         $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
             $reflection_method->getName(),
             $context
         );
 
+        $class_name = $class->getName();
         $reflection_method = new \ReflectionMethod(
-            $class->getName(),
+            $class_name,
             $reflection_method->name
         );
 
@@ -139,8 +139,11 @@ class FunctionFactory {
             $method->setNumberOfRequiredParameters(0);
         }
         $method->setIsDeprecated($reflection_method->isDeprecated());
-        $method->setRealReturnType(UnionType::fromReflectionType($reflection_method->getReturnType()));
-        $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
+        // https://github.com/etsy/phan/issues/888 - Reflection for that class's parameters causes php to throw/hang
+        if ($class_name !== 'ServerResponse') {
+            $method->setRealReturnType(UnionType::fromReflectionType($reflection_method->getReturnType()));
+            $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
+        }
 
         return self::functionListFromFunction($method, $code_base);
     }
