@@ -1208,11 +1208,12 @@ class Clazz extends AddressableElement
      */
     public function hasMethodWithName(
         CodeBase $code_base,
-        string $name
+        string $name,
+        bool $is_direct_invocation = false
     ) : bool {
         // All classes have a constructor even if it hasn't
         // been declared yet
-        if ('__construct' === strtolower($name)) {
+        if (!$is_direct_invocation && '__construct' === strtolower($name)) {
             return true;
         }
 

@@ -414,6 +414,9 @@ class ContextNode
      * @param bool $is_static
      * Set to true if this is a static method call
      *
+     * @param bool $is_direct
+     * Set to true if this is directly invoking the method (guaranteed not to be special syntax)
+     *
      * @return Method
      * A method with the given name on the class referenced
      * from the given node
@@ -433,7 +436,8 @@ class ContextNode
      */
     public function getMethod(
         $method_name,
-        bool $is_static
+        bool $is_static,
+        bool $is_direct = false
     ) : Method {
 
         if ($method_name instanceof Node) {
@@ -514,7 +518,7 @@ class ContextNode
         // Hunt to see if any of them have the method we're
         // looking for
         foreach ($class_list as $i => $class) {
-            if ($class->hasMethodWithName($this->code_base, $method_name)) {
+            if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
                 return $class->getMethodByNameInContext(
                     $this->code_base,
                     $method_name,

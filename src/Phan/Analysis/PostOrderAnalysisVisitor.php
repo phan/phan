@@ -812,6 +812,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
             $method = $context_node->getMethod(
                 '__construct',
+                false,
                 false
             );
 
@@ -1149,7 +1150,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node
-            ))->getMethod($method_name, true);
+            ))->getMethod($method_name, true, true);
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
                 $this->code_base,
