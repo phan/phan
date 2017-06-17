@@ -23,7 +23,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
      * @return string
      * The canonical representation of the name of the object. Functions
      * and Methods, for instance, lowercase their names.
-     * TODO: Separate the funciton used to render names in phan errors
+     * TODO: Separate the function used to render names in phan errors
      *       from the ones used for generating array keys.
      */
     public static function canonicalName(string $name) : string

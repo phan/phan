@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 // Phan does a ton of GC and this offers a major speed
-// improvment if your system can handle it (which it
+// improvement if your system can handle it (which it
 // should be able to)
 gc_disable();
 

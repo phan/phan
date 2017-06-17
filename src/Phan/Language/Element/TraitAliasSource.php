@@ -18,7 +18,7 @@ class TraitAliasSource
     private $source_method_name;
 
     /**
-     * @var int the overriden visibility modifier, or 0 if the visibility didn't change
+     * @var int the overridden visibility modifier, or 0 if the visibility didn't change
      */
     private $alias_visibility_flags;
 

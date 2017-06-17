@@ -155,6 +155,7 @@ class Issue
     const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
     const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
     const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
+    const AccessOwnConstructor = 'PhanAccessOwnConstructor';
 
     const AccessConstantInternal    = 'PhanAccessConstantInternal';
     const AccessClassInternal       = 'PhanAccessClassInternal';
@@ -248,6 +249,7 @@ class Issue
         'ISSUETYPE_NORMAL' => '%s',  // for normal issues
         'LINE'          => '%d',
         'METHOD'        => '%s',
+        'NAMESPACE'     => '%s',
         'PARAMETER'     => '%s',
         'PROPERTY'      => '%s',
         'TYPE'          => '%s',
@@ -1332,7 +1334,15 @@ class Issue
                 self::AccessPropertyStaticAsNonStatic,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Accessing static property %s as non static",
+                "Accessing static property {PROPERTY} as non static",
+                self::REMEDIATION_B,
+                1010
+            ),
+            new Issue(
+                self::AccessOwnConstructor,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Accessing own constructor directly via {CLASS}::__construct",
                 self::REMEDIATION_B,
                 1010
             ),
@@ -1418,7 +1428,7 @@ class Issue
                 self::AccessConstantInternal,
                 self::CATEGORY_INTERNAL,
                 self::SEVERITY_NORMAL,
-                "Cannot access internal constant {CONST} defined at {FILE}:{LINE}",
+                "Cannot access internal constant {CONST} of namepace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}",
                 self::REMEDIATION_B,
                 15000
             ),
@@ -1442,7 +1452,7 @@ class Issue
                 self::AccessPropertyInternal,
                 self::CATEGORY_INTERNAL,
                 self::SEVERITY_NORMAL,
-                "Cannot access internal property {PROPERTY} defined at {FILE}:{LINE}",
+                "Cannot access internal property {PROPERTY} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}",
                 self::REMEDIATION_B,
                 15003
             ),
@@ -1450,7 +1460,7 @@ class Issue
                 self::AccessMethodInternal,
                 self::CATEGORY_INTERNAL,
                 self::SEVERITY_NORMAL,
-                "Cannot access internal method {METHOD} defined at {FILE}:{LINE}",
+                "Cannot access internal method {METHOD} of namespace {NAMESPACE} defined at {FILE}:{LINE} from namespace {NAMESPACE}",
                 self::REMEDIATION_B,
                 15004
             ),
