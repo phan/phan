@@ -700,19 +700,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitIfElem(Node $node) : Context
     {
-        if (!isset($node->children['cond'])
-            || !($node->children['cond'] instanceof Node)
-        ) {
+        $cond = $node->children['cond'] ?? null;
+        if (!($cond instanceof Node)) {
             return $this->context;
         }
-
-        // Get the type just to make sure everything
-        // is defined.
-        $expression_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $node->children['cond']
-        );
 
         // Look to see if any proofs we do within the condition
         // can say anything about types within the statement
@@ -720,7 +711,55 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return (new ConditionVisitor(
             $this->code_base,
             $this->context
-        ))($node->children['cond']);
+        ))($cond);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitWhile(Node $node) : Context
+    {
+        $cond = $node->children['cond'];
+        if (!($cond instanceof Node)) {
+            return $this->context;
+        }
+
+        // Look to see if any proofs we do within the condition of the while
+        // can say anything about types within the statement
+        // list.
+        return (new ConditionVisitor(
+            $this->code_base,
+            $this->context
+        ))($cond);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitFor(Node $node) : Context
+    {
+        $cond = $node->children['cond'];
+        if (!($cond instanceof Node)) {
+            return $this->context;
+        }
+
+        // Look to see if any proofs we do within the condition of the while
+        // can say anything about types within the statement
+        // list.
+        return (new ConditionVisitor(
+            $this->code_base,
+            $this->context
+        ))($cond);
     }
 
     /**
