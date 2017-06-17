@@ -8,6 +8,11 @@ New Features (Analysis)
   `analyze_signature_compatibility` must also be set to true (default is true) for this step to be performed.
 + Better analysis of calls to parent::__construct(). (Issue #852)
 + Warn with `PhanAccessOwnConstructor` if directly invoking self::__construct or static::__construct in some cases (partial).
++ Start analyzing the inside of for/while loops using the loop's condition (Issue #859)
+  (Inferences may leak to outside of those loops. `do{} while(cond)` is not specially analyzed yet)
++ Improve analysis of types in expressions within compound conditions (Issue #847)
+  (E.g. `if (is_array($x) && fn_expecting_array($x)) {...}`)
++ Evaluate the third part of a for loop with the context after the inner body is evaluated (Issue #477)
 
 New Features (CLI, Configs)
 
