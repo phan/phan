@@ -23,7 +23,7 @@ class ArgumentType
 
     /**
      * @param FunctionInterface $method
-     * The method we're analyzing arguments for
+     * The function/method we're analyzing arguments for
      *
      * @param Node $node
      * The node holding the method call we're looking at
@@ -96,8 +96,10 @@ class ArgumentType
                 Issue::AccessMethodInternal,
                 $context->getLineNumberStart(),
                 (string)$method->getFQSEN(),
+                $method->getElementNamespace($code_base) ?: '\\',
                 $method->getFileRef()->getFile(),
-                $method->getFileRef()->getLineNumberStart()
+                $method->getFileRef()->getLineNumberStart(),
+                ($context->getNamespace()) ?: '\\'
             );
         }
 

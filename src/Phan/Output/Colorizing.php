@@ -9,7 +9,7 @@ use Phan\Config;
 class Colorizing {
     const styles = [
         'none'             => '0',  // Alias of 'reset'
-        'reset'            => '0',  // Use 'reset' for the absense of color.
+        'reset'            => '0',  // Use 'reset' for the absence of color.
         'bold'             => '1',
         'dark'             => '2',
         'italic'           => '3',
@@ -73,6 +73,7 @@ class Colorizing {
         'ISSUETYPE_NORMAL' => 'light_red',  // for normal issues
         'LINE'          => 'light_gray',
         'METHOD'        => 'light_yellow',
+        'NAMESPACE'     => 'green',
         'PARAMETER'     => 'cyan',
         'PROPERTY'      => 'cyan',
         'TYPE'          => 'light_gray',

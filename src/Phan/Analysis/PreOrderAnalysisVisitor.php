@@ -488,7 +488,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             if (!($child_node instanceof Node)) {
                 continue;
             }
-            // Check for occurences of `yield`, including statements such as `return [yield 2];`.
+            // Check for occurrences of `yield`, including statements such as `return [yield 2];`.
             if (self::analyzeNodeHasYield($child_node)) {
                 return true;
             }
