@@ -2,6 +2,6 @@
 %s:26 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Missing261
 %s:26 PhanUndeclaredStaticMethod Static call to undeclared method Missing261::__construct()
 %s:37 PhanUndeclaredStaticMethod Static call to undeclared method Other261::__construct()
-%s:49 PhanUndeclaredStaticMethod Static call to undeclared method self::__construct()
-%s:55 PhanUndeclaredStaticMethod Static call to undeclared method static::__construct()
-%s:61 PhanUndeclaredStaticMethod Static call to undeclared method Self261C::__construct()
+%s:49 PhanAccessOwnConstructor Accessing own constructor directly via self::__construct
+%s:55 PhanAccessOwnConstructor Accessing own constructor directly via static::__construct
+%s:61 PhanAccessOwnConstructor Accessing own constructor directly via Self261C::__construct

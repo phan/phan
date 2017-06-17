@@ -1076,11 +1076,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         string $static_class,
         string $method_name
     ) {
-        if ($static_class === 'parent') {
-            return;
-        }
         // TODO: what about unanalyzable?
-        if ($node->children['class']->kind != \ast\AST_NAME) {
+        if ($node->children['class']->kind !== \ast\AST_NAME) {
             return;
         }
         $class_context_node = (new ContextNode(
@@ -1099,8 +1096,21 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if (!$possible_ancestor_type->isEmpty()) {
                 // but forbid 'self::__construct', 'static::__construct'
                 $type = $this->context->getClassFQSEN()->asUnionType();
-                if ($type->asExpandedTypes($this->code_base)->canCastToUnionType($possible_ancestor_type)
-                        && !$type->canCastToUnionType($possible_ancestor_type)) {
+                if ($possible_ancestor_type->hasStaticType()) {
+                    $this->emitIssue(
+                        Issue::AccessOwnConstructor,
+                        $node->lineno ?? 0,
+                        $static_class
+                    );
+                    $found_ancestor_constructor = true;
+                } else if ($type->asExpandedTypes($this->code_base)->canCastToUnionType($possible_ancestor_type)) {
+                    if ($type->canCastToUnionType($possible_ancestor_type)) {
+                        $this->emitIssue(
+                            Issue::AccessOwnConstructor,
+                            $node->lineno ?? 0,
+                            $static_class
+                        );
+                    }
                     $found_ancestor_constructor = true;
                 }
             }

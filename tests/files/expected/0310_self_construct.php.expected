@@ -1,0 +1,6 @@
+%s:15 PhanAccessOwnConstructor Accessing own constructor directly via self::__construct
+%s:15 PhanTypeMismatchArgument Argument 1 (arg) is string but \Foo310::__construct() takes int defined at %s:10
+%s:16 PhanAccessOwnConstructor Accessing own constructor directly via static::__construct
+%s:16 PhanTypeMismatchArgument Argument 1 (arg) is string but \Foo310::__construct() takes int defined at %s:10
+%s:17 PhanParamTooMany Call with 1 arg(s) to \Bar310::__construct() which only takes 0 arg(s) defined at %s:4
+%s:21 PhanTypeMismatchArgument Argument 1 (arg) is string but \Foo310::__construct() takes int defined at %s:10

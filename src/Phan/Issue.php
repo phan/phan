@@ -155,6 +155,7 @@ class Issue
     const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
     const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
     const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
+    const AccessOwnConstructor = 'PhanAccessOwnConstructor';
 
     const AccessConstantInternal    = 'PhanAccessConstantInternal';
     const AccessClassInternal       = 'PhanAccessClassInternal';
@@ -1333,7 +1334,15 @@ class Issue
                 self::AccessPropertyStaticAsNonStatic,
                 self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
-                "Accessing static property %s as non static",
+                "Accessing static property {PROPERTY} as non static",
+                self::REMEDIATION_B,
+                1010
+            ),
+            new Issue(
+                self::AccessOwnConstructor,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_NORMAL,
+                "Accessing own constructor directly via {CLASS}::__construct",
                 self::REMEDIATION_B,
                 1010
             ),
