@@ -306,7 +306,7 @@ class ContextNode
      */
     public function getVariableName() : string
     {
-        if (!$this->node instanceof \ast\Node) {
+        if (!($this->node instanceof \ast\Node)) {
             return (string)$this->node;
         }
 
@@ -322,7 +322,7 @@ class ContextNode
             $node = array_values($node->children ?? [])[0];
         }
 
-        if (!$node instanceof \ast\Node) {
+        if (!($node instanceof \ast\Node)) {
             return (string)$node;
         }
 

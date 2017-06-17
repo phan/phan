@@ -38,6 +38,7 @@ class Issue
     const UndeclaredTypeParameter   = 'PhanUndeclaredTypeParameter';
     const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
     const UndeclaredVariable        = 'PhanUndeclaredVariable';
+    const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
@@ -562,6 +563,14 @@ class Issue
                 "Trait alias {METHOD} has an ambiguous source method {METHOD} with more than one possible source trait. Possibilities: {TRAIT}",
                 self::REMEDIATION_B,
                 1026
+            ),
+            new Issue(
+                self::UndeclaredVariableDim,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_LOW,
+                "Variable \${VARIABLE} was undeclared, but array fields are being added to it.",
+                self::REMEDIATION_B,
+                1027
             ),
 
             // Issue::CATEGORY_ANALYSIS
