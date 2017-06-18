@@ -28,6 +28,8 @@ New Features (CLI, Configs)
   to analyze phpdoc param types instead of provided signature types if the possible phpdoc types are narrower and compatible.
   (E.g. indicate that subclasses are expected over base classes, indicate that non-nullable is expected instead of nullable)
   This affects analysis both inside and outside the method.
++ Create `enable_class_alias_support` (disabled by default), which enables analyzing basic usage of class_alias. (Issue #586)
+  NOTE: this is still experimental.
 
 Maintenance
 
