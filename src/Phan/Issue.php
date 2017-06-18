@@ -644,7 +644,7 @@ class Issue
                 self::TypeMismatchDeclaredReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Doc-block declares return type {TYPE} which is incompatible with the return type {TYPE} declared in the signature",
+                "Doc-block of {METHOD} declares return type {TYPE} which is incompatible with the return type {TYPE} declared in the signature",
                 self::REMEDIATION_B,
                 10020
             ),

@@ -369,8 +369,7 @@ class Clazz extends AddressableElement
 
         $this->parent_type = $parent_type;
 
-        // Add the parent to the union type of this
-        // class
+        // Add the parent to the union type of this class
         $this->getUnionType()->addUnionType(
             $parent_type->asUnionType()
         );

@@ -898,10 +898,11 @@ class Type
      * @return bool
      * True if this type is a type referencing the
      * class context 'static'.
+     * Overridden in the subclass StaticType
      */
     public function isStaticType() : bool
     {
-        return 'static' === strtolower(ltrim((string)$this, '\\'));
+        return false;
     }
 
     /**
@@ -1300,6 +1301,82 @@ class Type
         ];
 
         return $matrix[(string)$this][(string)$type] ?? false;
+    }
+
+    /**
+     * @param UnionType $union_type
+     * A union type to compare against. Resolve it before checking.
+     *
+     * @param Context $context
+     * The context in which this type exists.
+     *
+     * @param CodeBase $code_base
+     * The code base in which both this and the given union
+     * types exist.
+     *
+     * @return bool
+     * True if each type within this union type can cast
+     * to the given union type.
+     *
+     * @see StaticType->isExclusivelyNarrowedFormOrEquivalentTo for how it resolves static.
+     * TODO: Refactor.
+     *
+     * @see UnionType->isExclusivelyNarrowedFormOrEquivalentTo for a check on union types as a whole.
+     */
+    public function isExclusivelyNarrowedFormOrEquivalentTo(
+        UnionType $union_type,
+        Context $context,
+        CodeBase $code_base
+    ) : bool {
+
+        // Special rule: anything can cast to nothing
+        // and nothing can cast to anything
+        if ($union_type->isEmpty()) {
+            return true;
+        }
+
+        // Check to see if the other union type contains this
+        if ($union_type->hasType($this)) {
+            return true;
+        }
+        $this_resolved = $this->withStaticResolvedInContext($context);
+        // TODO: Allow casting MyClass<TemplateType> to MyClass (Without the template?
+
+
+        // TODO: Need to resolve expanded union types (parents, interfaces) of classes *before* this is called.
+
+        // Test to see if this (or any ancestor types) can cast to the given union type.
+        $expanded_types = $this_resolved->asExpandedTypes($code_base);
+        if ($expanded_types->canCastToUnionType(
+            $union_type
+        )) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return Type
+     * Either this or 'static' resolved in the given context.
+     */
+    public function withStaticResolvedInContext(
+        Context $context
+    ) : Type {
+        // TODO: Create SelfType, to go along with StaticType
+        if (strcasecmp($this->name, 'self') !== 0) {
+            return $this;
+        }
+
+        // If the context isn't in a class scope, there's nothing
+        // we can do
+        if (!$context->isInClassScope()) {
+            return $this;
+        }
+        $type = $context->getClassFQSEN()->asType();
+        if ($this->getIsNullable()) {
+            return $type->withIsNullable(true);
+        }
+        return $type;
     }
 
     /**

@@ -51,10 +51,9 @@ class UndoTracker {
     }
 
     /**
-     * @return string[] - The size of $this->getParsedFilePathList()
+     * @return int The size of $this->getParsedFilePathList()
      */
     public function getParsedFilePathCount() : int {
-
         return count($this->fileModificationState);
     }
 

@@ -4,6 +4,7 @@ namespace Phan;
 use Phan\AST\ASTSimplifier;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
+use Phan\Analysis\ReturnTypesAnalyzer;
 use Phan\Analysis\ReferenceCountsAnalyzer;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
@@ -211,6 +212,7 @@ class Analysis
             if (is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
                 continue;
             }
+
             DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
                 $code_base, $function_or_method
             );
@@ -218,6 +220,10 @@ class Analysis
             // This is the most time consuming step.
             // Can probably apply this to other functions, but this was the slowest.
             ParameterTypesAnalyzer::analyzeParameterTypes(
+                $code_base, $function_or_method
+            );
+
+            ReturnTypesAnalyzer::analyzeReturnTypes(
                 $code_base, $function_or_method
             );
             // Let any plugins analyze the methods or functions

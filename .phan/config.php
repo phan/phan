@@ -48,6 +48,9 @@ return [
     // Backwards Compatibility Checking
     'backward_compatibility_checks' => false,
 
+    // Backwards Compatibility Checking
+    'check_docblock_signature_return_type_match' => true,
+
     // If enabled, check all methods that override a
     // parent method to make sure its signature is
     // compatible with the parent's. This check

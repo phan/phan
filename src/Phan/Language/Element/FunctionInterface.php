@@ -3,6 +3,7 @@ namespace Phan\Language\Element;
 
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\UnionType;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClosedScope;
@@ -186,4 +187,10 @@ interface FunctionInterface extends AddressableElementInterface {
     public function analyzeWithNewParams(Context $context, CodeBase $code_base) : Context;
 
     public function getElementNamespace(CodeBase $code_base) : string;
+
+    /**
+     * @return UnionType
+     * The type of this method in its given context.
+     */
+    public function getRealReturnType() : UnionType;
 }
