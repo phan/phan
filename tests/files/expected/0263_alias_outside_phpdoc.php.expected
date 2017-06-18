@@ -2,6 +2,7 @@
 %s:4 PhanUndeclaredTypeParameter Parameter of undeclared type \callback
 %s:4 PhanUndeclaredTypeParameter Parameter of undeclared type \double
 %s:4 PhanUndeclaredTypeParameter Parameter of undeclared type \integer
+%s:4 PhanUndeclaredTypeReturnType Return type of foo263 is undeclared type \boolean
 %s:5 PhanTypeMismatchReturn Returning type bool but foo263() is declared to return \boolean
 %s:7 PhanTypeMismatchArgument Argument 1 (a) is bool but \foo263() takes \boolean defined at %s:4
 %s:7 PhanTypeMismatchArgument Argument 2 (b) is int but \foo263() takes \integer defined at %s:4

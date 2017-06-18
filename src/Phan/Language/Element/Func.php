@@ -251,6 +251,7 @@ class Func extends AddressableElement implements FunctionInterface
                 $code_base,
                 $node->children['returnType']
             );
+            $func->setRealReturnType($union_type);
 
             $func->getUnionType()->addUnionType($union_type);
         }

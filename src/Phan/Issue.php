@@ -36,6 +36,7 @@ class Issue
     const UndeclaredStaticProperty  = 'PhanUndeclaredStaticProperty';
     const UndeclaredTrait           = 'PhanUndeclaredTrait';
     const UndeclaredTypeParameter   = 'PhanUndeclaredTypeParameter';
+    const UndeclaredTypeReturnType  = 'PhanUndeclaredTypeReturnType';
     const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
     const UndeclaredVariable        = 'PhanUndeclaredVariable';
     const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
@@ -572,6 +573,14 @@ class Issue
                 "Variable \${VARIABLE} was undeclared, but array fields are being added to it.",
                 self::REMEDIATION_B,
                 1027
+            ),
+            new Issue(
+                self::UndeclaredTypeReturnType,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Return type of {METHOD} is undeclared type {TYPE}",
+                self::REMEDIATION_B,
+                1028
             ),
 
             // Issue::CATEGORY_ANALYSIS
