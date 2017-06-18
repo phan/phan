@@ -87,6 +87,13 @@ trait FunctionTrait {
     private $real_parameter_list = [];
 
     /**
+     * @var UnionType[]
+     * The list of unmodified *phpdoc* parameter types for this method.
+     * This does not change after initialization.
+     */
+    private $phpdoc_parameter_type_map = [];
+
+    /**
      * @var UnionType
      * The *real* (not from phpdoc) return type from this method.
      * This does not change after initialization.
@@ -551,6 +558,7 @@ trait FunctionTrait {
             ++$parameter_offset;
         }
 
+        $valid_comment_parameter_type_map = [];
         foreach ($comment->getParameterMap() as $comment_parameter_name => $comment_parameter) {
             if (!array_key_exists($comment_parameter_name, $real_parameter_name_set)) {
                 Issue::maybeEmit(
@@ -561,9 +569,34 @@ trait FunctionTrait {
                     $comment_parameter_name,
                     (string)$function
                 );
+            } else {
+                // Record phpdoc types to check if they are narrower than real types, later.
+                // Only keep non-empty types.
+                $comment_parameter_type = $comment_parameter->getUnionType();
+                if (!$comment_parameter_type->isEmpty()) {
+                    $valid_comment_parameter_type_map[$comment_parameter_name] = $comment_parameter_type;
+                }
             }
         }
+        $function->setPHPDocParameterTypeMap($valid_comment_parameter_type_map);
         // Special, for libraries which use this for to document variadic param lists.
+    }
+
+    /**
+     * @param UnionType[] maps a subset of param names to the unmodified phpdoc parameter types. May differ from real parameter types
+     * @return void
+     */
+    public function setPHPDocParameterTypeMap(array $parameter_map)
+    {
+        $this->phpdoc_parameter_type_map = $parameter_map;
+    }
+
+    /**
+     * @return UnionType[] maps a subset of param names to the unmodified phpdoc parameter types.
+     */
+    public function getPHPDocParameterTypeMap()
+    {
+        return $this->phpdoc_parameter_type_map;
     }
 
     /**

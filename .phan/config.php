@@ -48,8 +48,26 @@ return [
     // Backwards Compatibility Checking
     'backward_compatibility_checks' => false,
 
-    // Backwards Compatibility Checking
+    // If true, check to make sure the return type declared
+    // in the doc-block (if any) matches the return type
+    // declared in the method signature. This process is
+    // slow.
     'check_docblock_signature_return_type_match' => true,
+
+    // If true, check to make sure the return type declared
+    // in the doc-block (if any) matches the return type
+    // declared in the method signature. This process is
+    // slow.
+    'check_docblock_signature_param_type_match' => true,
+
+    // (*Requires check_docblock_signature_param_type_match to be true*)
+    // If true, make narrowed types from phpdoc override
+    // the real types from the signature, when real types exist.
+    // Ignore incompatible or wider phpdoc union types.
+    // (E.g. allows specifying desired lists of subclasses,
+    //  or to indicate a preference for non-nullable types over nullable types)
+    // Affects analysis of the body of the method and the param types passed in by callers.
+    'prefer_narrowed_phpdoc_param_types' => true,
 
     // If enabled, check all methods that override a
     // parent method to make sure its signature is

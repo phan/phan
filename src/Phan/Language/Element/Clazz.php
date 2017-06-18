@@ -141,7 +141,7 @@ class Clazz extends AddressableElement
      * A reference to the entire code base in which this
      * context exists
      *
-     * @param ReflectionClass $class
+     * @param \ReflectionClass $class
      * A reflection class representing a builtin class.
      *
      * @return Clazz

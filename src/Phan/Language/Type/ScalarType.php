@@ -4,6 +4,8 @@ namespace Phan\Language\Type;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Type;
+use Phan\Language\UnionType;
+use Phan\Language\Context;
 
 abstract class ScalarType extends NativeType
 {
@@ -68,4 +70,14 @@ abstract class ScalarType extends NativeType
         return parent::canCastToNonNullableType($type);
     }
 
+    /**
+     * @override
+     */
+    public function isExclusivelyNarrowedFormOrEquivalentTo(
+        UnionType $union_type,
+        Context $context,
+        CodeBase $code_base
+    ) : bool {
+        return $union_type->hasType($this) || $this->asUnionType()->canCastToUnionType($union_type);
+    }
 }

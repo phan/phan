@@ -32,7 +32,7 @@ class Parameter extends Variable
     private $default_value = null;
 
     /**
-     * @param \phan\Context $context
+     * @param Context $context
      * The context in which the structural element lives
      *
      * @param string $name

@@ -631,6 +631,8 @@ class UnionType implements \Serializable
      * True if each type within this union type can cast
      * to the given union type.
      */
+    // Currently unused and buggy, commenting this out.
+    /**
     public function isExclusivelyNarrowedFormOrEquivalentTo(
         UnionType $union_type,
         Context $context,
@@ -678,6 +680,7 @@ class UnionType implements \Serializable
         }
         return true;
     }
+     */
 
     /**
      * @param Type[] $type_list
@@ -1178,7 +1181,7 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @param Closure $closure
+     * @param \Closure $closure
      * A closure mapping `Type` to `Type`
      *
      * @return UnionType

@@ -193,4 +193,22 @@ interface FunctionInterface extends AddressableElementInterface {
      * The type of this method in its given context.
      */
     public function getRealReturnType() : UnionType;
+
+    /**
+     * @return Parameter[]
+     * A list of parameters on the method, with types from the method signature.
+     */
+    public function getRealParameterList();
+
+    /**
+     * @param UnionType[] maps a subset of param names to the unmodified phpdoc parameter types.
+     * Will differ from real parameter types (ideally narrower)
+     * @return void
+     */
+    public function setPHPDocParameterTypeMap(array $parameter_map);
+
+    /**
+     * @return UnionType[] maps a subset of param names to the unmodified phpdoc parameter types.
+     */
+    public function getPHPDocParameterTypeMap();
 }
