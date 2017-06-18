@@ -365,7 +365,7 @@ class Config
         'runkit_superglobals' => [],
 
         // Override to hardcode existence and types of (non-builtin) globals in the global scope.
-        // Class names must be prefixed with '\\'.
+        // Class names should be prefixed with '\\'.
         // (E.g. ['_FOO' => '\\FooClass', 'page' => '\\PageClass', 'userId' => 'int'])
         'globals_type_map' => [],
 

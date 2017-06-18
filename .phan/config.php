@@ -110,7 +110,8 @@ return [
     'consistent_hashing_file_order' => false,
 
     // Override to hardcode existence and types of (non-builtin) globals.
-    // Class names must be prefixed with '\\'.
+    // Class names should be prefixed with '\\'.
+    // (E.g. ['_FOO' => '\\FooClass', 'page' => '\\PageClass', 'userId' => 'int'])
     'globals_type_map' => [],
 
     // The minimum severity level to report on. This can be

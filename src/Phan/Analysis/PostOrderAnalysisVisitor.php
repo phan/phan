@@ -287,7 +287,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             false
         );
         $variable_name = $variable->getName();
-        $optional_global_variable_type = Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name, $this->context);
+        $optional_global_variable_type = Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name);
         if ($optional_global_variable_type) {
             $variable->setUnionType($optional_global_variable_type);
         } else {

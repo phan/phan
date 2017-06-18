@@ -189,8 +189,7 @@ class Variable extends TypedElement
      * otherwise.
      */
     public static function getUnionTypeOfHardcodedGlobalVariableWithName(
-        string $name,
-        Context $context
+        string $name
     ) {
         if (array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES)) {
             // More efficient than using context.
@@ -202,7 +201,7 @@ class Variable extends TypedElement
         ) {
             $type_string = $config->globals_type_map[$name] ?? '';
             // Want to allow 'resource' or 'mixed' as a type here,
-            return UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
+            return UnionType::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC);
         }
 
         return null;
