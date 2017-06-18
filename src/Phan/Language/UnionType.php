@@ -956,6 +956,60 @@ class UnionType implements \Serializable
      *
      * @return \Generator
      *
+     * A list of class FQSENs representing the non-native types
+     * associated with this UnionType
+     *
+     * @throws CodeBaseException
+     * An exception is thrown if a non-native type does not have
+     * an associated class
+     *
+     * @throws IssueException
+     * An exception is thrown if static is used as a type outside of an object
+     * context
+     *
+     * TODO: Add a method to ContextNode to directly get FQSEN instead?
+     */
+    public function asClassFQSENList(
+        CodeBase $code_base,
+        Context $context
+    ) {
+        // Iterate over each viable class type to see if any
+        // have the constant we're looking for
+        foreach ($this->nonNativeTypes()->getTypeSet() as $class_type) {
+
+            // Get the class FQSEN
+            $class_fqsen = $class_type->asFQSEN();
+
+            if ($class_type->isStaticType()) {
+                if (!$context->isInClassScope()) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::ContextNotObject)(
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [
+                                (string)$class_type
+                            ]
+                        )
+                    );
+
+                }
+                yield $class_fqsen;
+            } else {
+                yield $class_fqsen;
+            }
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The code base in which to find classes
+     *
+     * @param Context $context
+     * The context in which we're resolving this union
+     * type.
+     *
+     * @return \Generator
+     *
      * A list of classes representing the non-native types
      * associated with this UnionType
      *

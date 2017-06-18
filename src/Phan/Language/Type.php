@@ -1193,6 +1193,18 @@ class Type
             }
         }
 
+        // Add in aliases
+        // (If enable_class_alias_support is false, this will do nothing)
+        $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
+        foreach ($fqsen_aliases as $alias_fqsen_record) {
+            $alias_fqsen = $alias_fqsen_record->alias_fqsen;
+            $recursive_union_type->addUnionType(
+                $this->isGenericArray()
+                    ? $alias_fqsen->asUnionType()->asGenericArrayTypes()
+                    : $alias_fqsen->asUnionType()
+            );
+        }
+
         return $recursive_union_type;
     }
 
