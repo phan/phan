@@ -201,8 +201,10 @@ class Phan implements IgnoredFilesFilterInterface {
         // other parts of these analysis steps could be skipped, which would reduce the overall execution time
         $path_filter = isset($request) ? array_flip($analyze_file_path_list) : null;
 
-        // Find any class aliases and tie them together to the source class
-        Analysis::analyzeAliases($code_base, $analyze_file_path_list);
+        // Tie class aliases together with the source class
+        if (Config::get()->enable_class_alias_support) {
+            $code_base->resolveClassAliases();
+        }
 
         // Take a pass over all functions verifying
         // various states now that we have the whole

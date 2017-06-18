@@ -3,6 +3,8 @@ namespace Phan;
 
 use Phan\CodeBase\ClassMap;
 use Phan\CodeBase\UndoTracker;
+use Phan\Language\Context;
+use Phan\Language\Element\ClassAliasRecord;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -64,7 +66,7 @@ class CodeBase
 
     /**
      * @var Map
-     * A map from FQSEN to list of aliases
+     * A map from FQSEN to set of ClassAliasRecord objects
      */
     private $fqsen_alias_map;
 
@@ -369,25 +371,105 @@ class CodeBase
     }
 
     /**
+     * Call this to record the existence of a class_alias in the global scope.
+     * After parse phase is complete (And daemonize has split off a new process),
+     * call resolveClassAliases() to create FQSEN entries.
+     *
      * @param FullyQualifiedClassName $original
      *  an existing class to alias to
      *
      * @param FullyQualifiedClassName $alias
      *  a name to alias $original to
      *
+     *
      * @return void
      */
     public function addClassAlias(
         FullyQualifiedClassName $original,
-        FullyQualifiedClassName $alias
+        FullyQualifiedClassName $alias,
+        Context $context,
+        int $lineno
     ) {
-        $class = $this->getClassByFQSEN($original);
-        $this->fqsen_class_map[$alias] = $class;
-
         if (!isset($this->fqsen_alias_map[$original])) {
             $this->fqsen_alias_map[$original] = new Set();
         }
-        $this->fqsen_alias_map[$original]->attach($alias);
+        $alias_record = new ClassAliasRecord($alias, $context, $lineno);
+        $this->fqsen_alias_map[$original]->attach($alias_record);
+
+        if ($this->undo_tracker) {
+            // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
+            // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($original, $alias_record) {
+                $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
+                if ($fqsen_alias_map) {
+                    $fqsen_alias_map->detach($alias_record);
+                    if ($fqsen_alias_map->count() == 0) {
+                        unset($inner->fqsen_alias_map[$original]);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function resolveClassAliases()
+    {
+        assert(!$this->undo_tracker, 'should only call this after daemon mode is finished');
+        // loop through fqsen_alias_map and add entries to fqsen_class_map.
+        foreach ($this->fqsen_alias_map as $original_fqsen => $alias_set) {
+            $this->resolveClassAliasesForAliasSet($original_fqsen, $alias_set);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function resolveClassAliasesForAliasSet(FullyQualifiedClassName $original_fqsen, Set $alias_set)
+    {
+        if (!$this->hasClassWithFQSEN($original_fqsen)) {
+            // The original class does not exist.
+            // Emit issues at the point of every single class_alias call with that original class.
+            foreach ($alias_set as $alias_record) {
+                assert($alias_record instanceof ClassAliasRecord);
+                Issue::maybeEmit(
+                    $this,
+                    $alias_record->context,
+                    Issue::UndeclaredClassAliasOriginal,
+                    $alias_record->lineno,
+                    $original_fqsen,
+                    $alias_record->alias_fqsen
+                );
+            }
+            return;
+        }
+        // The original class exists. Attempt to create aliases of the original class.
+        $class = $this->getClassByFQSEN($original_fqsen);
+        foreach ($alias_set as $alias_record) {
+            assert($alias_record instanceof ClassAliasRecord);
+            $alias_fqsen = $alias_record->alias_fqsen;
+            // Don't do anything if there is a real class, or if an earlier class_alias created an alias.
+            if ($this->hasClassWithFQSEN($alias_fqsen)) {
+                // Emit a different issue type to make filtering out false positives easier.
+                $clazz = $this->getClassByFQSEN($alias_fqsen);
+                $clazz_context = $clazz->getContext();
+                Issue::maybeEmit(
+                    $this,
+                    $alias_record->context,
+                    Issue::RedefineClassAlias,
+                    $alias_record->lineno,
+                    $alias_fqsen,
+                    $alias_record->context->getFile(),
+                    $alias_record->lineno,
+                    $clazz->getFQSEN(),
+                    $clazz->getFileRef()->getFile(),
+                    $clazz->getFileRef()->getLineNumberStart()
+                );
+            } else {
+                $this->fqsen_class_map[$alias_fqsen] = $class;
+            }
+        }
     }
 
     /**
@@ -432,8 +514,8 @@ class CodeBase
      * @param FullyQualifiedClassName $original
      * The FQSEN of class to get aliases of
      *
-     * @return FullyQualifiedClassName[]
-     * A list of all aliases of $original
+     * @return ClassAliasRecord[]
+     * A list of all aliases of $original (and their definitions)
      */
     public function getClassAliasesByFQSEN(
         FullyQualifiedClassName $original

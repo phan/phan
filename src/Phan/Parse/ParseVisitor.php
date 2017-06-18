@@ -686,29 +686,33 @@ class ParseVisitor extends ScopeVisitor
         // it can be called with anything.
         $expression = $node->children['expr'];
 
-        if ($expression->kind === \ast\AST_NAME
-            && $this->context->isInFunctionLikeScope()
-            && in_array($expression->children['name'], [
+        if ($expression->kind === \ast\AST_NAME) {
+            $function_name = strtolower($expression->children['name']);
+            if (in_array($function_name, [
                 'func_get_args', 'func_get_arg', 'func_num_args'
-            ])
-        ) {
-            $this->context->getFunctionLikeInScope($this->code_base)
-                ->setNumberOfOptionalParameters(999999);
-        } else if ($expression->kind === \ast\AST_NAME
-            && $expression->children['name'] === 'define'
-        ) {
-            $args = $node->children['args'];
-            if ($args->kind === \ast\AST_ARG_LIST
-                && isset($args->children[0])
-                && is_string($args->children[0])
-            ) {
-                $this->addConstant(
-                    $node,
-                    $args->children[0],
-                    $args->children[1] ?? null,
-                    0,
-                    ''
-                );
+            ], true)) {
+                if ($this->context->isInFunctionLikeScope()) {
+                    $this->context->getFunctionLikeInScope($this->code_base)
+                                  ->setNumberOfOptionalParameters(999999);
+                }
+            } else if ($function_name === 'define') {
+                $args = $node->children['args'];
+                if ($args->kind === \ast\AST_ARG_LIST
+                    && isset($args->children[0])
+                    && is_string($args->children[0])
+                ) {
+                    $this->addConstant(
+                        $node,
+                        $args->children[0],
+                        $args->children[1] ?? null,
+                        0,
+                        ''
+                    );
+                }
+            } else if ($function_name === 'class_alias') {
+                if (Config::get()->enable_class_alias_support && $this->context->isInGlobalScope()) {
+                    $this->recordClassAlias($node);
+                }
             }
         }
         if (Config::get()->backward_compatibility_checks) {
@@ -1039,5 +1043,72 @@ class ParseVisitor extends ScopeVisitor
         assert($this->context->isInClassScope(),
             "Must be in class scope");
         return $this->context->getClassInScope($this->code_base);
+    }
+
+    /**
+     * Return the existence of a class_alias from one FQSEN to the other.
+     * Modifies $this->codebase if successful.
+     *
+     * @param Node $node - An AST_CALL node with name 'class_alias' to attempt to resolve
+     * @return void
+     */
+    private function recordClassAlias(Node $node)
+    {
+        $args = $node->children['args']->children;
+        if (count($args) < 2 || count($args) > 3) {
+            return;
+        }
+        try {
+            $original_fqsen = $this->resolveClassNameInContext($args[0]);
+            $alias_fqsen = $this->resolveClassNameInContext($args[1]);
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
+            return;
+        }
+
+        if ($original_fqsen === null || $alias_fqsen === null) {
+            return;
+        }
+
+        // Add the class alias during parse phase.
+        // Figure out if any of the aliases are wrong after analysis phase.
+        $this->code_base->addClassAlias($original_fqsen, $alias_fqsen, $this->context, $node->lineno ?? 0);
+    }
+
+    /**
+     * @param Node|string|float|int $arg
+     * A function argument to resolve into an FQSEN
+     *
+     * @return ?FullyQualifiedClassName
+     * @throws IssueException if the list of possible classes couldn't be determined.
+     */
+    private function resolveClassNameInContext($arg)
+    {
+        if (is_string($arg)) {
+            // Class_alias treats arguments as fully qualified strings.
+            return FullyQualifiedClassName::fromFullyQualifiedString($arg);
+        }
+        if ($arg instanceof Node
+            && $arg->kind === \ast\AST_CLASS_CONST
+            && strcasecmp($arg->children['const'], 'class') === 0
+        ) {
+            $class_type = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $arg->children['class']
+            ))->getClassUnionType();
+
+            // If we find a class definition, then return it. There should be 0 or 1.
+            // (Expressions such as 'int::class' are syntactically valid, but would have 0 results).
+            foreach ($class_type->asClassFQSENList($this->code_base, $this->context) as $class_fqsen) {
+                return $class_fqsen;
+            }
+        }
+
+        return null;
     }
 }

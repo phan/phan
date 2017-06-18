@@ -19,11 +19,12 @@ class Issue
     const RequiredTraitNotAdded     = 'PhanRequiredTraitNotAdded';
     const TraitParentReference      = 'PhanTraitParentReference';
     const UndeclaredAliasedMethodOfTrait = 'PhanUndeclaredAliasedMethodOfTrait';
+    const UndeclaredClass           = 'PhanUndeclaredClass';
+    const UndeclaredClassAliasOriginal = 'PhanUndeclaredClassAliasOriginal';
     const UndeclaredClassCatch      = 'PhanUndeclaredClassCatch';
     const UndeclaredClassConstant   = 'PhanUndeclaredClassConstant';
     const UndeclaredClassInstanceof = 'PhanUndeclaredClassInstanceof';
     const UndeclaredClassMethod     = 'PhanUndeclaredClassMethod';
-    const UndeclaredClass           = 'PhanUndeclaredClass';
     const UndeclaredClassReference  = 'PhanUndeclaredClassReference';
     const UndeclaredClosureScope    = 'PhanUndeclaredClosureScope';
     const UndeclaredConstant        = 'PhanUndeclaredConstant';
@@ -138,6 +139,7 @@ class Issue
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
+    const RedefineClassAlias        = 'PhanRedefineClassAlias';
     const RedefineClassInternal     = 'PhanRedefineClassInternal';
     const RedefineFunction          = 'PhanRedefineFunction';
     const RedefineFunctionInternal  = 'PhanRedefineFunctionInternal';
@@ -581,6 +583,14 @@ class Issue
                 "Return type of {METHOD} is undeclared type {TYPE}",
                 self::REMEDIATION_B,
                 1028
+            ),
+            new Issue(
+                self::UndeclaredClassAliasOriginal,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_CRITICAL,
+                "Reference to undeclared class {CLASS} for the original class of a class_alias for {CLASS}",
+                self::REMEDIATION_B,
+                1029
             ),
 
             // Issue::CATEGORY_ANALYSIS
@@ -1274,6 +1284,14 @@ class Issue
                 "Declaration of {METHOD} must be compatible with {METHOD} in {FILE} on line {LINE}",
                 self::REMEDIATION_B,
                 8005
+            ),
+            new Issue(
+                self::RedefineClassAlias,
+                self::CATEGORY_REDEFINE,
+                self::SEVERITY_NORMAL,
+                "{CLASS} aliased at {FILE}:{LINE} was previously defined as {CLASS} at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                8006
             ),
 
             // Issue::CATEGORY_ACCESS

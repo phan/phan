@@ -1563,7 +1563,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         // class node and get its type
         $is_static_type_string = Type::isStaticTypeString($class_name);
         if (!($is_static_type_string || Type::isSelfTypeString($class_name))) {
-            // TODO: does anyone else call this method?
             return self::unionTypeFromClassNode(
                 $this->code_base,
                 $this->context,

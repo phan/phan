@@ -1194,12 +1194,14 @@ class Type
         }
 
         // Add in aliases
-        $fqsenAliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
-        foreach ($fqsenAliases as $aliasFQSEN) {
+        // (If enable_class_alias_support is false, this will do nothing)
+        $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
+        foreach ($fqsen_aliases as $alias_fqsen_record) {
+            $alias_fqsen = $alias_fqsen_record->alias_fqsen;
             $recursive_union_type->addUnionType(
                 $this->isGenericArray()
-                    ? $aliasFQSEN->asUnionType()->asGenericArrayTypes()
-                    : $aliasFQSEN->asUnionType()
+                    ? $alias_fqsen->asUnionType()->asGenericArrayTypes()
+                    : $alias_fqsen->asUnionType()
             );
         }
 
