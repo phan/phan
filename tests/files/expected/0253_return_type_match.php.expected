@@ -1,2 +1,6 @@
-%s:4 PhanTypeMismatchDeclaredReturn Doc-block declares return type string which is incompatible with the return type int declared in the signature
-%s:26 PhanTypeMismatchDeclaredReturn Doc-block declares return type \C253_1 which is incompatible with the return type \C253_2 declared in the signature
+%s:4 PhanTypeMismatchDeclaredReturn Doc-block of f1 contains declared return type string which is incompatible with the return type int declared in the signature
+%s:21 PhanTypeMismatchDeclaredReturn Doc-block of a5 contains declared return type iterable which is incompatible with the return type array declared in the signature
+%s:33 PhanTypeMismatchDeclaredReturn Doc-block of a8 contains declared return type string which is incompatible with the return type iterable declared in the signature
+%s:42 PhanTypeMismatchDeclaredReturn Doc-block of a10 contains declared return type ?int which is incompatible with the return type int declared in the signature
+%s:57 PhanTypeMismatchDeclaredReturn Doc-block of f6 contains declared return type \C253_1 which is incompatible with the return type \C253_2 declared in the signature
+%s:61 PhanTypeMismatchDeclaredReturn Doc-block of f7 contains declared return type \C253_1 which is incompatible with the return type \C253_2 declared in the signature

@@ -1,0 +1,11 @@
+%s:4 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in f1 contains phpdoc param type string which is incompatible with the param type int declared in the signature
+%s:15 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in f4 contains phpdoc param type iterable which is incompatible with the param type array declared in the signature
+%s:18 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in f5 contains phpdoc param type iterable which is incompatible with the param type array declared in the signature
+%s:24 PhanTypeMismatchDeclaredParam Doc-block of $arg2 in f6 contains phpdoc param type iterable which is incompatible with the param type array declared in the signature
+%s:24 PhanTypeMismatchDeclaredParam Doc-block of $arg2 in f6 contains phpdoc param type string which is incompatible with the param type array declared in the signature
+%s:33 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in f9 contains phpdoc param type string which is incompatible with the param type iterable declared in the signature
+%s:37 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in a10 contains phpdoc param type ?int which is incompatible with the param type int declared in the signature
+%s:58 PhanTypeMismatchReturn Returning type int[] but a13() is declared to return int
+%s:75 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in g2 contains phpdoc param type \C314_1 which is incompatible with the param type \C314_2 declared in the signature
+%s:79 PhanTypeMismatchDeclaredParam Doc-block of $arg1 in g3 contains phpdoc param type \C314_1 which is incompatible with the param type \C314_2 declared in the signature
+%s:84 PhanTypeMismatchArgumentInternal Argument 1 (string) is int[] but \strlen() takes string

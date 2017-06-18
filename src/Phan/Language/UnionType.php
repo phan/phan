@@ -16,6 +16,7 @@ use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
 use Phan\Library\Set;
 use ast\Node;
@@ -458,11 +459,14 @@ class UnionType implements \Serializable
      */
     public function hasStaticType() : bool
     {
-        return (false !==
-            $this->type_set->find(function (Type $type) : bool {
-                return $type->isStaticType();
-            })
-        );
+        static $static_type;
+        static $static_nullable_type;
+        if ($static_type === null) {
+            $static_type = StaticType::instance(false);
+            $static_nullable_type = StaticType::instance(true);
+        }
+        return $this->type_set->contains($static_type) ||
+            $this->type_set->contains($static_nullable_type);
     }
 
     /**
@@ -480,13 +484,18 @@ class UnionType implements \Serializable
             return $this;
         }
 
-        // Find the static type on the list
-        $static_type = $this->getTypeSet()->find(function (Type $type) : bool {
-            return $type->isStaticType();
-        });
+        static $static_type;
+        static $static_nullable_type;
+        if ($static_type === null) {
+            $static_type = StaticType::instance(false);
+            $static_nullable_type = StaticType::instance(true);
+        }
 
-        // If we don't actually have a static type, we're all set
-        if (!$static_type) {
+        $has_static_type = $this->type_set->contains($static_type);
+        $has_static_nullable_type = $this->type_set->contains($static_nullable_type);
+
+        // If this doesn't reference 'static', there's nothing to do.
+        if (!($has_static_type || $has_static_nullable_type)) {
             return $this;
         }
 
@@ -496,10 +505,17 @@ class UnionType implements \Serializable
         $union_type = clone($this);
 
         // Remove the static type
-        $union_type->removeType($static_type);
+        if ($has_static_type) {
+            $union_type->removeType($static_type);
 
-        // Add in the class in scope
-        $union_type->addType($context->getClassFQSEN()->asType());
+            // Add in the class in scope
+            $union_type->addType($context->getClassFQSEN()->asType());
+        } else {
+            $union_type->removeType($static_type);
+
+            // Add in the nullable class in scope
+            $union_type->addType($context->getClassFQSEN()->asType()->withIsNullable(true));
+        }
 
         return $union_type;
     }
@@ -615,6 +631,8 @@ class UnionType implements \Serializable
      * True if each type within this union type can cast
      * to the given union type.
      */
+    // Currently unused and buggy, commenting this out.
+    /**
     public function isExclusivelyNarrowedFormOrEquivalentTo(
         UnionType $union_type,
         Context $context,
@@ -622,7 +640,8 @@ class UnionType implements \Serializable
     ) : bool {
 
         // Special rule: anything can cast to nothing
-        if ($union_type->isEmpty()) {
+        // and nothing can cast to anything
+        if ($union_type->isEmpty() || $this->isEmpty()) {
             return true;
         }
 
@@ -630,31 +649,38 @@ class UnionType implements \Serializable
         if ($this->isEqualTo($union_type)) {
             return true;
         }
+        // TODO: Allow casting MyClass<TemplateType> to MyClass (Without the template?
 
         // Resolve 'static' for the given context to
         // determine whats actually being referred
         // to in concrete terms.
-        $union_type =
+        $other_resolved_type =
             $union_type->withStaticResolvedInContext($context);
+        $other_resolved_type_set = $other_resolved_type->type_set;
 
-        // Convert this type to an array of resolved
-        // types.
-        $type_set =
-            $this->withStaticResolvedInContext($context)
-            ->getTypeSet()->toArray();
+        // Convert this type to a set of resolved types to iterate over.
+        $this_resolved_type_set =
+            $this->withStaticResolvedInContext($context)->type_set;
+
+        // TODO: Need to resolve expanded union types (parents, interfaces) of classes *before* this is called.
 
         // Test to see if every single type in this union
         // type can cast to the given union type.
-        return array_reduce($type_set,
-            function (bool $can_cast, Type $type) use($union_type, $code_base) : bool {
-                return (
-                    $can_cast
-                    && $type->asUnionType()->asExpandedTypes($code_base)->canCastToUnionType(
-                        $union_type
-                    )
-                );
-            }, true);
+        foreach ($this_resolved_type_set as $type) {
+            // First check if this contains the type as an optimization.
+            if ($other_resolved_type_set->contains($type)) {
+                continue;
+            }
+            $expanded_types = $type->asExpandedTypes($code_base);
+            if ($other_resolved_type->canCastToUnionType(
+                $expanded_types
+            )) {
+                continue;
+            }
+        }
+        return true;
     }
+     */
 
     /**
      * @param Type[] $type_list
@@ -1155,7 +1181,7 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @param Closure $closure
+     * @param \Closure $closure
      * A closure mapping `Type` to `Type`
      *
      * @return UnionType

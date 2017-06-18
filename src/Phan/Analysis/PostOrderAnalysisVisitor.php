@@ -1830,7 +1830,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * The argument whose type we'd like to replace the
      * parameter type with.
      *
-     * @param Node|mixed $argument_type
+     * @param UnionType $argument_type
      * The type of $argument
      *
      * @param int $parameter_offset

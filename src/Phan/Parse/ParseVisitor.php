@@ -63,7 +63,7 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLASS`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -286,7 +286,7 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_METHOD`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -622,7 +622,7 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context

@@ -62,6 +62,7 @@ class Issue
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
     const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
+    const TypeMismatchDeclaredParam = 'PhanTypeMismatchDeclaredParam';
     const TypeMissingReturn         = 'PhanTypeMissingReturn';
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
@@ -644,9 +645,17 @@ class Issue
                 self::TypeMismatchDeclaredReturn,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Doc-block declares return type {TYPE} which is incompatible with the return type {TYPE} declared in the signature",
+                "Doc-block of {METHOD} contains declared return type {TYPE} which is incompatible with the return type {TYPE} declared in the signature",
                 self::REMEDIATION_B,
                 10020
+            ),
+            new Issue(
+                self::TypeMismatchDeclaredParam,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Doc-block of \${VARIABLE} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature",
+                self::REMEDIATION_B,
+                10021
             ),
             new Issue(
                 self::TypeMissingReturn,

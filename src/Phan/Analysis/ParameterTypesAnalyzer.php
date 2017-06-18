@@ -25,6 +25,10 @@ class ParameterTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ) {
+        if (Config::get()->check_docblock_signature_param_type_match) {
+            self::analyzeParameterTypesDocblockSignaturesMatch($code_base, $method);
+        }
+
         // Look at each parameter to make sure their types
         // are valid
         foreach ($method->getParameterList() as $parameter) {
@@ -35,7 +39,7 @@ class ParameterTypesAnalyzer
 
                 // If its a native type or a reference to
                 // self, its OK
-                if ($type->isNativeType() || $type->isSelfType()) {
+                if ($type->isNativeType() || ($method instanceof Method && ($type->isSelfType() || $type->isStaticType()))) {
                     continue;
                 }
 
@@ -605,6 +609,65 @@ class ParameterTypesAnalyzer
                     $o_method->getFileRef()->getLineNumberStart(),
                 ])
             );
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private static function analyzeParameterTypesDocblockSignaturesMatch(
+        CodeBase $code_base,
+        FunctionInterface $method
+    ) {
+        $phpdoc_parameter_map = $method->getPHPDocParameterTypeMap();
+        if (count($phpdoc_parameter_map) === 0) {
+            // nothing to check.
+            return;
+        }
+        $real_parameter_list = $method->getRealParameterList();
+        foreach ($real_parameter_list as $i => $parameter) {
+            $real_param_type = $parameter->getNonVariadicUnionType();
+            if ($real_param_type->isEmpty()) {
+                continue;
+            }
+            $phpdoc_param_union_type = $phpdoc_parameter_map[$parameter->getName()] ?? null;
+            if ($phpdoc_param_union_type) {
+                $context = $method->getContext();
+                $resolved_real_param_type = $real_param_type->withStaticResolvedInContext($context);
+                $is_exclusively_narrowed = true;
+                foreach ($phpdoc_param_union_type->getTypeSet() as $phpdoc_type) {
+                    // Make sure that the commented type is a narrowed
+                    // or equivalent form of the syntax-level declared
+                    // return type.
+                    if (!$phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
+                            $resolved_real_param_type,
+                            $context,
+                            $code_base
+                        )
+                    ) {
+                        $is_exclusively_narrowed = false;
+                        if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParam)) {
+                            Issue::maybeEmit(
+                                $code_base,
+                                $context,
+                                Issue::TypeMismatchDeclaredParam,
+                                $context->getLineNumberStart(),
+                                $parameter->getName(),
+                                $method->getName(),
+                                $phpdoc_type->__toString(),
+                                $real_param_type->__toString()
+                            );
+                        }
+                    }
+                }
+                // TODO: test edge cases of variadic signatures
+                if ($is_exclusively_narrowed && Config::get()->prefer_narrowed_phpdoc_param_type) {
+                    $param_to_modify = $method->getParameterList()[$i] ?? null;
+                    if ($param_to_modify) {
+                        $param_to_modify->setUnionType($phpdoc_param_union_type);
+                    }
+                }
+            }
         }
     }
 }

@@ -380,27 +380,6 @@ class Method extends ClassElement implements FunctionInterface
                 }
             }
 
-            if (Config::get()->check_docblock_signature_return_type_match) {
-                // Make sure that the commented type is a narrowed
-                // or equivalent form of the syntax-level declared
-                // return type.
-                if (!$comment_return_union_type->isExclusivelyNarrowedFormOrEquivalentTo(
-                        $return_union_type,
-                        $context,
-                        $code_base
-                    )
-                ) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchDeclaredReturn,
-                        $node->lineno ?? 0,
-                        $comment_return_union_type->__toString(),
-                        $return_union_type->__toString()
-                    );
-                }
-            }
-
             $method->getUnionType()->addUnionType($comment_return_union_type);
         }
 

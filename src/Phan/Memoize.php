@@ -61,7 +61,7 @@ trait Memoize
      * The key to use for storing the result of the
      * computation.
      *
-     * @param Closure $fn
+     * @param \Closure $fn
      * A function to compute only once for the given
      * $key.
      *

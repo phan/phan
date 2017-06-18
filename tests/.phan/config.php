@@ -32,6 +32,14 @@ return [
     // slow.
     'check_docblock_signature_return_type_match' => true,
 
+    // If true, check to make sure the return type declared
+    // in the doc-block (if any) matches the return type
+    // declared in the method signature. This process is
+    // slow.
+    'check_docblock_signature_param_type_match' => true,
+
+    'prefer_narrowed_phpdoc_param_type' => true,
+
     // A set of fully qualified class-names for which
     // a call to parent::__construct() is required.
     'parent_constructor_required' => ['Child283'],

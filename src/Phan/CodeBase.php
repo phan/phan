@@ -188,7 +188,7 @@ class CodeBase
     }
 
     /**
-     * @return string[] - The size of $this->getParsedFilePathList()
+     * @return int The size of $this->getParsedFilePathList()
      */
     public function getParsedFilePathCount() : int {
         if ($this->undo_tracker) {

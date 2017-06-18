@@ -152,7 +152,7 @@ class Comment
      * @param string[] $template_type_list
      * A list of template types parameterizing a generic class
      *
-     * @param Option<Type> $inherited_type
+     * @param Option<Type>|None $inherited_type (Note: some issues with templates and narrowing signature types to phpdoc type, added None as a workaround)
      * An override on the type of the extended class
      *
      * @param UnionType $return_union_type
@@ -164,7 +164,7 @@ class Comment
      *
      * @param CommentMethod[] $magic_method_list
      *
-     * @param Option<Type> $closure_scope
+     * @param Option<Type>|None $closure_scope
      * For closures: Allows us to document the class of the object
      * to which a closure will be bound.
      */
@@ -227,6 +227,8 @@ class Comment
      * @return Comment
      * A comment built by parsing the given doc block
      * string.
+     *
+     * suppress PhanTypeMismatchArgument - Still need to work out issues with prefer_narrowed_phpdoc_param_type
      */
     public static function fromStringInContext(
         string $comment,

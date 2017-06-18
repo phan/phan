@@ -243,7 +243,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /**
-     * @param string|null $namespace
+     * @param string $namespace (can be empty)
      *
      * @return string
      * A cleaned version of the given namespace such that
@@ -253,7 +253,6 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     protected static function cleanNamespace(string $namespace) : string
     {
         if (!$namespace
-            || empty($namespace)
             || $namespace === '\\'
         ) {
             return '\\';
