@@ -12,3 +12,5 @@
 %s:37 PhanTraitParentReference Reference to parent from trait \T
 %s:40 PhanParentlessClass Reference to parent of class \G that does not extend anything
 %s:43 PhanUndeclaredExtendedClass Class extends undeclared class \Undef
+%s:46 PhanUndeclaredTypeReturnType Return type of j is undeclared type \Undef
+%s:49 PhanUndeclaredTypeReturnType Return type of k is undeclared type \self
