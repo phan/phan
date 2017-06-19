@@ -53,7 +53,7 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         string $name
     ) : GlobalConstant {
         if (!defined($name)) {
-            throw new \InvalidArgumentException("This should not happen, const '$name' does not exist");
+            throw new \InvalidArgumentException(sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", var_export($name, true)));
         }
         $value = constant($name);
         $constant_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
