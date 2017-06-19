@@ -69,6 +69,30 @@ class Method extends ClassElement implements FunctionInterface
         ));
     }
 
+    /**
+     * @return bool
+     * True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
+     */
+    public function isFromPHPDoc() : bool {
+        return Flags::bitVectorHasState(
+            $this->getPhanFlags(),
+            Flags::IS_FROM_PHPDOC
+        );
+    }
+
+    /**
+     * @param bool $from_phpdoc - True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
+     * @return void
+     */
+    public function setIsFromPHPDoc(bool $from_phpdoc) {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_FROM_PHPDOC,
+                true
+            )
+        );
+    }
 
     /**
      * @return bool

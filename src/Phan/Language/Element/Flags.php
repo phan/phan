@@ -19,6 +19,7 @@ class Flags
     const CLASS_FORBID_UNDECLARED_MAGIC_METHODS    = (1 << 11);
 
     const IS_NS_INTERNAL               = (1 << 12);
+    const IS_FROM_PHPDOC               = (1 << 13);
 
     /**
      * Either enable or disable the given flag on

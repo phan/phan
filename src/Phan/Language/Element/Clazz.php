@@ -710,9 +710,12 @@ class Clazz extends AddressableElement
             $real_parameter_list = array_map(function(\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
                 return $parameter->asRealParameter($context);
             }, $comment_method->getParameterList());
+
             $method->setParameterList($real_parameter_list);
+            $method->setRealParameterList($real_parameter_list);
             $method->setNumberOfRequiredParameters($comment_method->getNumberOfRequiredParameters());
             $method->setNumberOfOptionalParameters($comment_method->getNumberOfOptionalParameters());
+            $method->setIsFromPHPDoc(true);
 
             $this->addMethod($code_base, $method, new None);
         }

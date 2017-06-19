@@ -1,0 +1,6 @@
+%s:17 PhanParamSignatureMismatch Declaration of function bar(int $x) : int should be compatible with function bar(int $x) : void defined in %s:9
+%s:17 PhanParamSignatureMismatch Declaration of function baz(string $x) : int should be compatible with function baz(int $x) : int defined in %s:9
+%s:17 PhanParamSignatureMismatch Declaration of function foo(int $x, int $y) : void should be compatible with function foo(int $x) : void defined in %s:9
+%s:17 PhanParamSignaturePHPDocMismatchParamType Declaration of real/@method function baz(string $x) should be compatible with real/@method function baz(int $x) (parameter #1 of type 'string' cannot replace original parameter of type 'int') defined in %s:9
+%s:17 PhanParamSignaturePHPDocMismatchTooManyRequiredParameters Declaration of real/@method function foo(int $x, int $y) should be compatible with real/@method function foo(int $x) (the method override requires 2 parameter(s), but the overridden method requires only 1) defined in %s:9
+%s:18 PhanParamSignatureMismatch Declaration of function realOverride(int $x) : string should be compatible with function realOverride(int $x) : int defined in %s:9

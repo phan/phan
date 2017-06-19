@@ -19,6 +19,8 @@ New Features (Analysis)
 + Create `PhanTypeMismatchDeclaredParam` (Move the check to after params are parsed)
   Also `prefer_narrowed_phpdoc_param_type` (See "New Features (CLI, Configs))
 + Detect undeclared return types at point of declaration, and emit `PhanUndeclaredTypeReturnType` (Issue #835)
++ Create `PhanParamSignaturePHPDocMismatch*` issue types, for mismatches between `@method` and real signature/other `@method` tag.
+
 
 New Features (CLI, Configs)
 + Create `check_docblock_signature_param_type_match` (similar to `check_docblock_signature_return_type_match`) config setting
@@ -35,6 +37,7 @@ Maintenance
 
 Bug Fixes
 + Work around known bugs in current releases of two PECL extensions (Issue #888, #889)
++ Fix typo - Change `PhanParamSignatureRealMismatch` to `PhanParamSignatureRealMismatchReturnType`
 
 Backwards Incompatible Changes
 
