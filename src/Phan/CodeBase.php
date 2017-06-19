@@ -249,7 +249,12 @@ class CodeBase
     private function addGlobalConstantsByNames(array $const_name_list)
     {
         foreach ($const_name_list as $const_name) {
-            $this->addGlobalConstant(GlobalConstant::fromGlobalConstantName($this, $const_name));
+            try {
+                $const_obj = GlobalConstant::fromGlobalConstantName($this, $const_name);
+                $this->addGlobalConstant($const_obj);
+            } catch (\InvalidArgumentException $e) {
+                fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", var_export($const_name, true), $e->getMessage());
+            }
         }
     }
 
