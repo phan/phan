@@ -105,26 +105,36 @@ class Issue
     const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
     const ParamRedefined            = 'PhanParamRedefined';
 
-    const ParamSignatureRealMismatchReturnType                        = 'PhanParamSignatureRealMismatch';
-    const ParamSignatureRealMismatchReturnTypeInternal                = 'PhanParamSignatureRealMismatchInternal';
+    const ParamSignatureRealMismatchReturnType                        = 'PhanParamSignatureRealMismatchReturnType';
+    const ParamSignatureRealMismatchReturnTypeInternal                = 'PhanParamSignatureRealMismatchReturnTypeInternal';
+    const ParamSignaturePHPDocMismatchReturnType                      = 'PhanParamSignaturePHPDocMismatchReturnType';
     const ParamSignatureRealMismatchTooManyRequiredParameters         = 'PhanParamSignatureRealMismatchTooManyRequiredParameters';
     const ParamSignatureRealMismatchTooManyRequiredParametersInternal = 'PhanParamSignatureRealMismatchTooManyRequiredParametersInternal';
+    const ParamSignaturePHPDocMismatchTooManyRequiredParameters       = 'PhanParamSignaturePHPDocMismatchTooManyRequiredParameters';
     const ParamSignatureRealMismatchTooFewParameters                  = 'PhanParamSignatureRealMismatchTooFewParameters';
     const ParamSignatureRealMismatchTooFewParametersInternal          = 'PhanParamSignatureRealMismatchTooFewParametersInternal';
+    const ParamSignaturePHPDocMismatchTooFewParameters                = 'PhanParamSignaturePHPDocMismatchTooFewParameters';
     const ParamSignatureRealMismatchHasParamType                      = 'PhanParamSignatureRealMismatchHasParamType';
     const ParamSignatureRealMismatchHasParamTypeInternal              = 'PhanParamSignatureRealMismatchHasParamTypeInternal';
+    const ParamSignaturePHPDocMismatchHasParamType                    = 'PhanParamSignaturePHPDocMismatchHasParamType';
     const ParamSignatureRealMismatchHasNoParamType                    = 'PhanParamSignatureRealMismatchHasNoParamType';
     const ParamSignatureRealMismatchHasNoParamTypeInternal            = 'PhanParamSignatureRealMismatchHasNoParamTypeInternal';
+    const ParamSignaturePHPDocMismatchHasNoParamType                  = 'PhanParamSignaturePHPDocMismatchHasNoParamType';
     const ParamSignatureRealMismatchParamIsReference                  = 'PhanParamSignatureRealMismatchParamIsReference';
     const ParamSignatureRealMismatchParamIsReferenceInternal          = 'PhanParamSignatureRealMismatchParamIsReferenceInternal';
+    const ParamSignaturePHPDocMismatchParamIsReference                = 'PhanParamSignaturePHPDocMismatchParamIsReference';
     const ParamSignatureRealMismatchParamIsNotReference               = 'PhanParamSignatureRealMismatchParamIsNotReference';
     const ParamSignatureRealMismatchParamIsNotReferenceInternal       = 'PhanParamSignatureRealMismatchParamIsNotReferenceInternal';
+    const ParamSignaturePHPDocMismatchParamIsNotReference             = 'PhanParamSignaturePHPDocMismatchParamIsNotReference';
     const ParamSignatureRealMismatchParamVariadic                     = 'PhanParamSignatureRealMismatchParamVariadic';
     const ParamSignatureRealMismatchParamVariadicInternal             = 'PhanParamSignatureRealMismatchParamVariadicInternal';
+    const ParamSignaturePHPDocMismatchParamVariadic                   = 'PhanParamSignaturePHPDocMismatchParamVariadic';
     const ParamSignatureRealMismatchParamNotVariadic                  = 'PhanParamSignatureRealMismatchParamNotVariadic';
     const ParamSignatureRealMismatchParamNotVariadicInternal          = 'PhanParamSignatureRealMismatchParamNotVariadicInternal';
+    const ParamSignaturePHPDocMismatchParamNotVariadic                = 'PhanParamSignaturePHPDocMismatchParamNotVariadic';
     const ParamSignatureRealMismatchParamType                         = 'PhanParamSignatureRealMismatchParamType';
     const ParamSignatureRealMismatchParamTypeInternal                 = 'PhanParamSignatureRealMismatchParamTypeInternal';
+    const ParamSignaturePHPDocMismatchParamType                       = 'PhanParamSignaturePHPDocMismatchParamType';
 
     // Issue::CATEGORY_NOOP
     const NoopArray                 = 'PhanNoopArray';
@@ -1018,6 +1028,14 @@ class Issue
                 7014
             ),
             new Issue(
+                self::ParamSignaturePHPDocMismatchReturnType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (method returning '{TYPE}' cannot override method returning '{TYPE}') defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7033
+            ),
+            new Issue(
                 self::ParamSignatureRealMismatchParamType,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
@@ -1032,6 +1050,14 @@ class Issue
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}')",
                 self::REMEDIATION_B,
                 7016
+            ),
+            new Issue(
+                self::ParamSignaturePHPDocMismatchParamType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} of type '{TYPE}' cannot replace original parameter of type '{TYPE}') defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7034
             ),
             new Issue(
                 self::ParamSignatureRealMismatchHasParamType,
@@ -1050,6 +1076,14 @@ class Issue
                 7018
             ),
             new Issue(
+                self::ParamSignaturePHPDocMismatchHasParamType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} of has type '{TYPE}' cannot replace original parameter with no type) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7035
+            ),
+            new Issue(
                 self::ParamSignatureRealMismatchHasNoParamType,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
@@ -1064,6 +1098,14 @@ class Issue
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}')",
                 self::REMEDIATION_B,
                 7020
+            ),
+            new Issue(
+                self::ParamSignaturePHPDocMismatchHasNoParamType,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} with no type cannot replace original parameter with type '{TYPE}') defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7036
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamVariadic,
@@ -1082,6 +1124,14 @@ class Issue
                 7022
             ),
             new Issue(
+                self::ParamSignaturePHPDocMismatchParamVariadic,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a variadic parameter replacing a non-variadic parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7037
+            ),
+            new Issue(
                 self::ParamSignatureRealMismatchParamNotVariadic,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
@@ -1096,6 +1146,14 @@ class Issue
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter)",
                 self::REMEDIATION_B,
                 7024
+            ),
+            new Issue(
+                self::ParamSignaturePHPDocMismatchParamNotVariadic,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a non-variadic parameter replacing a variadic parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7038
             ),
             new Issue(
                 self::ParamSignatureRealMismatchParamIsReference,
@@ -1114,6 +1172,14 @@ class Issue
                 7026
             ),
             new Issue(
+                self::ParamSignaturePHPDocMismatchParamIsReference,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a reference parameter overriding a non-reference parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7039
+            ),
+            new Issue(
                 self::ParamSignatureRealMismatchParamIsNotReference,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
@@ -1128,6 +1194,14 @@ class Issue
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter)",
                 self::REMEDIATION_B,
                 7028
+            ),
+            new Issue(
+                self::ParamSignaturePHPDocMismatchParamIsNotReference,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (parameter #{INDEX} is a non-reference parameter overriding a reference parameter) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7040
             ),
             new Issue(
                 self::ParamSignatureRealMismatchTooFewParameters,
@@ -1146,6 +1220,14 @@ class Issue
                 7030
             ),
             new Issue(
+                self::ParamSignaturePHPDocMismatchTooFewParameters,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (the method override accepts {COUNT} parameter(s), but the overridden method can accept {COUNT}) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7041
+            ),
+            new Issue(
                 self::ParamSignatureRealMismatchTooManyRequiredParameters,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
@@ -1160,6 +1242,14 @@ class Issue
                 "Declaration of {METHOD} should be compatible with internal {METHOD} (the method override requires {COUNT} parameter(s), but the overridden method requires only {COUNT})",
                 self::REMEDIATION_B,
                 7032
+            ),
+            new Issue(
+                self::ParamSignaturePHPDocMismatchTooManyRequiredParameters,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (the method override requires {COUNT} parameter(s), but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7042
             ),
 
             // Issue::CATEGORY_NOOP

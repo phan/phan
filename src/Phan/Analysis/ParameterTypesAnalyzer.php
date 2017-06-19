@@ -381,6 +381,7 @@ class ParameterTypesAnalyzer
                 $o_method,
                 Issue::ParamSignatureRealMismatchTooManyRequiredParameters,
                 Issue::ParamSignatureRealMismatchTooManyRequiredParametersInternal,
+                Issue::ParamSignaturePHPDocMismatchTooManyRequiredParameters,
                 $method->getNumberOfRequiredRealParameters(),
                 $o_method->getNumberOfRequiredRealParameters()
             );
@@ -394,6 +395,7 @@ class ParameterTypesAnalyzer
                 $o_method,
                 Issue::ParamSignatureRealMismatchTooFewParameters,
                 Issue::ParamSignatureRealMismatchTooFewParametersInternal,
+                Issue::ParamSignaturePHPDocMismatchTooFewParameters,
                 $method->getNumberOfRealParameters(),
                 $o_method->getNumberOfRealParameters()
             );
@@ -422,6 +424,7 @@ class ParameterTypesAnalyzer
                     $o_method,
                     ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReference         : Issue::ParamSignatureRealMismatchParamIsNotReference),
                     ($is_reference ? Issue::ParamSignatureRealMismatchParamIsReferenceInternal : Issue::ParamSignatureRealMismatchParamIsNotReferenceInternal),
+                    ($is_reference ? Issue::ParamSignaturePHPDocMismatchParamIsReference       : Issue::ParamSignaturePHPDocMismatchParamIsNotReference),
                     $offset
                 );
                 $is_possibly_compatible = false;
@@ -438,6 +441,7 @@ class ParameterTypesAnalyzer
                     $o_method,
                     ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadic         : Issue::ParamSignatureRealMismatchParamNotVariadic),
                     ($is_variadic ? Issue::ParamSignatureRealMismatchParamVariadicInternal : Issue::ParamSignatureRealMismatchParamNotVariadicInternal),
+                    ($is_variadic ? Issue::ParamSignaturePHPDocMismatchParamVariadic       : Issue::ParamSignaturePHPDocMismatchParamNotVariadic),
                     $offset
                 );
                 $is_possibly_compatible = false;
@@ -456,6 +460,7 @@ class ParameterTypesAnalyzer
                         $o_method,
                         Issue::ParamSignatureRealMismatchHasNoParamType,
                         Issue::ParamSignatureRealMismatchHasNoParamTypeInternal,
+                        Issue::ParamSignaturePHPDocMismatchHasNoParamType,
                         $offset,
                         (string)$o_parameter_union_type
                     );
@@ -467,6 +472,7 @@ class ParameterTypesAnalyzer
                         $o_method,
                         Issue::ParamSignatureRealMismatchHasParamType,
                         Issue::ParamSignatureRealMismatchHasParamTypeInternal,
+                        Issue::ParamSignaturePHPDocMismatchHasParamType,
                         $offset,
                         (string)$parameter_union_type
                     );
@@ -496,6 +502,7 @@ class ParameterTypesAnalyzer
                             $o_method,
                             Issue::ParamSignatureRealMismatchParamType,
                             Issue::ParamSignatureRealMismatchParamTypeInternal,
+                            Issue::ParamSignaturePHPDocMismatchParamType,
                             $offset,
                             (string)$parameter_union_type,
                             (string)$o_parameter_union_type
@@ -522,6 +529,7 @@ class ParameterTypesAnalyzer
                     $o_method,
                     Issue::ParamSignatureRealMismatchReturnType,
                     Issue::ParamSignatureRealMismatchReturnTypeInternal,
+                    Issue::ParamSignaturePHPDocMismatchReturnType,
                     (string)$return_union_type,
                     (string)$o_return_union_type
                 );
@@ -582,11 +590,28 @@ class ParameterTypesAnalyzer
      * @param int|string ...$args
      * @return void
      */
-    private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, ...$args) {
-        if ($method->hasSuppressIssue($internal_issue_type)) {
-            return;
-        }
-        if ($o_method->isPHPInternal()) {
+    private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, string $phpdoc_issue_type, ...$args) {
+        if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
+            // TODO: for overriding methods defined in phpdoc, going to need to add issue suppressions from the class phpdoc?
+            if ($method->hasSuppressIssue($phpdoc_issue_type)) {
+                return;
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                $phpdoc_issue_type,
+                $method->getFileRef()->getLineNumberStart(),
+                $method->toRealSignatureString(),
+                $o_method->toRealSignatureString(),
+                ...array_merge($args, [
+                    $o_method->getFileRef()->getFile(),
+                    $o_method->getFileRef()->getLineNumberStart(),
+                ])
+            );
+        } else if ($o_method->isPHPInternal()) {
+            if ($method->hasSuppressIssue($internal_issue_type)) {
+                return;
+            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
@@ -597,6 +622,9 @@ class ParameterTypesAnalyzer
                 ...$args
             );
         } else {
+            if ($method->hasSuppressIssue($issue_type)) {
+                return;
+            }
             Issue::maybeEmit(
                 $code_base,
                 $method->getContext(),
