@@ -276,11 +276,15 @@ class CLI
                     // TODO: HTTP server binding to 127.0.0.1, daemonize-port.
                 case 'daemonize-tcp-port':
                     $this->checkCanDaemonize('tcp');
-                    $port = filter_var($value, FILTER_VALIDATE_INT);
+                    if (strcasecmp($value, 'default') === 0) {
+                        $port = 4846;
+                    } else {
+                        $port = filter_var($value, FILTER_VALIDATE_INT);
+                    }
                     if ($port >= 1024 && $port <= 65535) {
                         Config::get()->daemonize_tcp_port = $port;
                     } else {
-                        $this->usage("daemonize-tcp-port must be between 1024 and 65535, got '$value'", 1);
+                        $this->usage("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
                     }
                     break;
                 case 'x':
@@ -516,8 +520,9 @@ Usage: {$argv[0]} [options] [files...]
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
- --daemonize-tcp-port <1024-65535>
-  TCP port for Phan to listen for JSON requests on, in daemon mode. (e.g. 4846)
+ --daemonize-tcp-port <default|1024-65535>
+  TCP port for Phan to listen for JSON requests on, in daemon mode.
+  (e.g. 'default', which is an alias for port 4846.)
 
  -v, --version
   Print phan's version number

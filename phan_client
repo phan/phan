@@ -257,8 +257,9 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
  --daemonize-socket </path/to/file.sock>
   Unix socket which a Phan daemon is listening for requests on.
 
- --daemonize-tcp-port <1024-65535>
-  TCP port which a Phan daemon is listening for JSON requests on, in daemon mode. (E.g. 4846)
+ --daemonize-tcp-port <default|1024-65535>
+  TCP port which a Phan daemon is listening for JSON requests on, in daemon mode. (E.g. 'default', which is an alias for port 4846)
+  If no option is specified for the daemon's address, phan_client defaults to connecting on port 4846.
 
  -l, --syntax-check <file.php>
   Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working ditectory)
@@ -362,11 +363,15 @@ EOB;
             case 'p':
             case 'daemonize-tcp-port':
                 $this->checkCanConnectToDaemon('tcp');
-                $port = filter_var($value, FILTER_VALIDATE_INT);
+                if (strcasecmp($value, 'default') === 0) {
+                    $port = 4846;
+                } else {
+                    $port = filter_var($value, FILTER_VALIDATE_INT);
+                }
                 if ($port >= 1024 && $port <= 65535) {
                     $this->url = sprintf('tcp://127.0.0.1:%d', $port);
                 } else {
-                    $this->usage("daemonize-tcp-port must be between 1024 and 65535, got '$value'", 1);
+                    $this->usage("daemonize-tcp-port must be the string 'default' or an integer between 1024 and 65535, got '$value'", 1);
                 }
                 break;
             case 'l':
