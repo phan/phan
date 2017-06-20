@@ -107,6 +107,17 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return bool
+     * True if this is a final method
+     */
+    public function isFinal() : bool {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\MODIFIER_FINAL
+        );
+    }
+
+    /**
+     * @return bool
      * True if this method returns reference
      */
     public function returnsRef() : bool {
@@ -467,12 +478,13 @@ class Method extends ClassElement implements FunctionInterface
      * @param CodeBase $code_base
      * The code base with which to look for classes
      *
-     * @return Method
-     * The Method that this Method is overriding
+     * @return Method[]
+     * The Methods that this Method is overriding
+     * @throws CodeBaseException if 0 methods were found.
      */
-    public function getOverriddenMethod(
+    public function getOverriddenMethods(
         CodeBase $code_base
-    ) : Method {
+    ) : array {
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 
@@ -481,7 +493,10 @@ class Method extends ClassElement implements FunctionInterface
             $code_base
         );
 
+        $defining_fqsen = $this->getDefiningFQSEN();
+
         $first_method_match = null;
+        $first_abstract_method_match = null;
         // Hunt for any ancestor class that defines a method with
         // the same name as this one
         foreach ($ancestor_class_list as $ancestor_class) {
@@ -492,16 +507,31 @@ class Method extends ClassElement implements FunctionInterface
                     $code_base,
                     $this->getName()
                 );
+                if ($method->getDefiningFQSEN() === $defining_fqsen) {
+                    // Skip it, this method **is** the one which defined this.
+                    continue;
+                }
                 if ($method->isAbstract()) {
-                    return $method;
+                    // TODO: check for trait conflicts, etc.
+                    if ($first_abstract_method_match === null) {
+                        $first_abstract_method_match = $method;
+                    }
+                    continue;
                 }
                 if ($first_method_match === null) {
                     $first_method_match = $method;
                 }
             }
         }
+        $method_list = [];
+        if ($first_abstract_method_match !== null) {
+            $method_list[] = $first_abstract_method_match;
+        }
         if ($first_method_match !== null) {
-            return $first_method_match;
+            $method_list[] = $first_method_match;
+        }
+        if (count($method_list) > 0) {
+            return $method_list;
         }
 
         // Throw an exception if this method doesn't override

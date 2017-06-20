@@ -1,0 +1,1 @@
+%s:20 PhanAccessOverridesFinalMethod Declaration of method \MySubclass::baz overrides final method \MyBase319::baz defined in %s:12

@@ -118,6 +118,7 @@ class Config
         // parent method to make sure its signature is
         // compatible with the parent's. This check
         // can add quite a bit of time to the analysis.
+        // This will also check if final methods are overridden, etc.
         'analyze_signature_compatibility' => true,
 
         // If enabled, inherit any missing phpdoc for types from

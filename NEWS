@@ -22,6 +22,7 @@ New Features (Analysis)
 + Create `PhanParamSignaturePHPDocMismatch*` issue types, for mismatches between `@method` and real signature/other `@method` tag.
 + Create `PhanAccessWrongInheritanceCategory*` issue types to warn about classes extending a trait/interface instead of class, etc. (#873)
 + Create `PhanExtendsFinalClass*` issue types to warn about classes extending from final classes.
++ Create `PhanAccessOverridesFinalMethod*` issue types to warn about methods overriding final methods.
 
 New Features (CLI, Configs)
 + Create `check_docblock_signature_param_type_match` (similar to `check_docblock_signature_return_type_match`) config setting
