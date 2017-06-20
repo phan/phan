@@ -177,6 +177,10 @@ class Issue
     const AccessClassConstantInternal = 'PhanAccessClassConstantInternal';
     const AccessPropertyInternal    = 'PhanAccessPropertyInternal';
     const AccessMethodInternal      = 'PhanAccessMethodInternal';
+    const AccessWrongInheritanceCategory = 'PhanAccessWrongInheritanceCategory';
+    const AccessWrongInheritanceCategoryInternal = 'PhanAccessWrongInheritanceCategoryInternal';
+    const AccessExtendsFinalClass   = 'PhanAccessExtendsFinalClass';
+    const AccessExtendsFinalClassInternal = 'PhanAccessExtendsFinalClassInternal';
 
     // Issue::CATEGORY_COMPATIBLE
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
@@ -251,6 +255,7 @@ class Issue
     // Keep sorted and in sync with Colorizing::default_color_for_template
     const uncolored_format_string_for_template = [
         'CLASS'         => '%s',
+        'CLASSLIKE'     => '%s',
         'COMMENT'       => '%s',
         'CONST'         => '%s',
         'COUNT'         => '%d',
@@ -1496,6 +1501,38 @@ class Issue
                 "Cannot access private method {METHOD} defined at {FILE}:{LINE} (if this call should be handled by __call, consider adding a @method tag to the class)",
                 self::REMEDIATION_B,
                 1012
+            ),
+            new Issue(
+                self::AccessWrongInheritanceCategory,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Attempting to inherit {CLASSLIKE} defined at {FILE}:{LINE} as if it were a {CLASSLIKE}",
+                self::REMEDIATION_B,
+                1013
+            ),
+            new Issue(
+                self::AccessWrongInheritanceCategoryInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Attempting to inherit internal {CLASSLIKE} as if it were a {CLASSLIKE}",
+                self::REMEDIATION_B,
+                1014
+            ),
+            new Issue(
+                self::AccessExtendsFinalClass,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Attempting to extend from final class {CLASS} defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1015
+            ),
+            new Issue(
+                self::AccessExtendsFinalClassInternal,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Attempting to extend from final internal class {CLASS}",
+                self::REMEDIATION_B,
+                1016
             ),
 
             // Issue::CATEGORY_COMPATIBLE
