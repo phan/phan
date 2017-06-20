@@ -20,7 +20,8 @@ New Features (Analysis)
   Also `prefer_narrowed_phpdoc_param_type` (See "New Features (CLI, Configs))
 + Detect undeclared return types at point of declaration, and emit `PhanUndeclaredTypeReturnType` (Issue #835)
 + Create `PhanParamSignaturePHPDocMismatch*` issue types, for mismatches between `@method` and real signature/other `@method` tag.
-
++ Create `PhanAccessWrongInheritanceCategory*` issue types to warn about classes extending a trait/interface instead of class, etc. (#873)
++ Create `PhanExtendsFinalClass*` issue types to warn about classes extending from final classes.
 
 New Features (CLI, Configs)
 + Create `check_docblock_signature_param_type_match` (similar to `check_docblock_signature_return_type_match`) config setting

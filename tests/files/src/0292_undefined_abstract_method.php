@@ -25,7 +25,7 @@ class D292 extends C292 {
     public function f1(int $x) { }
 }
 
-class ETrait292 {
+trait ETrait292 {
     public function f1(int $x) { }
 }
 

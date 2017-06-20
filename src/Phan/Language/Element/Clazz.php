@@ -934,7 +934,7 @@ class Clazz extends AddressableElement
     /**
      * Add a class constant
      *
-     * @return null;
+     * @return void
      */
     public function addConstant(
         CodeBase $code_base,
@@ -1760,12 +1760,31 @@ class Clazz extends AddressableElement
             return;
         }
 
-        foreach ($this->getNonParentAncestorFQSENList($code_base) as $fqsen) {
+        foreach ($this->getInterfaceFQSENList() as $fqsen) {
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 continue;
             }
 
             $ancestor = $code_base->getClassByFQSEN($fqsen);
+
+            if (!$ancestor->isInterface()) {
+                $this->emitWrongInheritanceCategoryWarning($code_base, $ancestor, 'Interface');
+            }
+
+            $this->importAncestorClass(
+                $code_base, $ancestor, new None
+            );
+        }
+
+        foreach ($this->getTraitFQSENList() as $fqsen) {
+            if (!$code_base->hasClassWithFQSEN($fqsen)) {
+                continue;
+            }
+
+            $ancestor = $code_base->getClassByFQSEN($fqsen);
+            if (!$ancestor->isTrait()) {
+                $this->emitWrongInheritanceCategoryWarning($code_base, $ancestor, 'Trait');
+            }
 
             $this->importAncestorClass(
                 $code_base, $ancestor, new None
@@ -1784,9 +1803,9 @@ class Clazz extends AddressableElement
      * The entire code base from which we'll find ancestor
      * details
      *
-     * @return null
+     * @return void
      */
-    public function importParentClass(CodeBase $code_base)
+    private function importParentClass(CodeBase $code_base)
     {
         if (!$this->isFirstExecution(__METHOD__)) {
             return;
@@ -1815,6 +1834,13 @@ class Clazz extends AddressableElement
         // Get the parent class
         $parent = $this->getParentClass($code_base);
 
+        if ($parent->isTrait() || $parent->isInterface()) {
+            $this->emitWrongInheritanceCategoryWarning($code_base, $parent, 'Class');
+        }
+        if ($parent->isFinal()) {
+            $this->emitExtendsFinalClassWarning($code_base, $parent);
+        }
+
         $parent->addReference($this->getContext());
 
         // Tell the parent to import its own parents first
@@ -1825,6 +1851,75 @@ class Clazz extends AddressableElement
             $parent,
             $this->getParentTypeOption()
         );
+    }
+
+    /**
+     * @return void
+     */
+    private function emitWrongInheritanceCategoryWarning(
+        CodeBase $code_base,
+        Clazz $ancestor,
+        string $expected_inheritance_category
+    ) {
+        $context = $this->getContext();
+        if ($ancestor->isPHPInternal()) {
+            if (!$this->hasSuppressIssue(Issue::AccessWrongInheritanceCategoryInternal)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::AccessWrongInheritanceCategoryInternal,
+                    $context->getLineNumberStart(),
+                    (string)$ancestor,
+                    $expected_inheritance_category
+                );
+            }
+        } else {
+            if (!$this->hasSuppressIssue(Issue::AccessWrongInheritanceCategory)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::AccessWrongInheritanceCategory,
+                    $context->getLineNumberStart(),
+                    (string)$ancestor,
+                    $ancestor->getFileRef()->getFile(),
+                    $ancestor->getFileRef()->getLineNumberStart(),
+                    $expected_inheritance_category
+                );
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function emitExtendsFinalClassWarning(
+        CodeBase $code_base,
+        Clazz $ancestor
+    ) {
+        $context = $this->getContext();
+        if ($ancestor->isPHPInternal()) {
+            if (!$this->hasSuppressIssue(Issue::AccessExtendsFinalClassInternal)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::AccessExtendsFinalClassInternal,
+                    $context->getLineNumberStart(),
+                    (string)$ancestor->getFQSEN()
+                );
+            }
+        } else {
+            if (!$this->hasSuppressIssue(Issue::AccessExtendsFinalClass)) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::AccessExtendsFinalClass,
+                    $context->getLineNumberStart(),
+                    (string)$ancestor->getFQSEN(),
+                    $ancestor->getFileRef()->getFile(),
+                    $ancestor->getFileRef()->getLineNumberStart()
+                );
+            }
+        }
     }
 
     /**
