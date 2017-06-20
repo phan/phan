@@ -3,6 +3,7 @@ namespace Phan\Analysis;
 
 use Phan\CodeBase;
 use Phan\Config;
+use Phan\Exception\CodeBaseException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
@@ -105,8 +106,42 @@ class ParameterTypesAnalyzer
             return;
         }
 
-        // Get the method that is being overridden
-        $o_method = $method->getOverriddenMethod($code_base);
+        // Get the method(s) that are being overridden
+        // E.g. if the subclass, the parent class, and an interface the subclass implements implement a method,
+        //      then this has to check two different overrides (Subclass overriding parent class, and subclass overriding abstract method in interface)
+        try {
+            $o_method_list = $method->getOverriddenMethods($code_base);
+        } catch(CodeBaseException $e) {
+            // TODO: Remove if no edge cases are seen.
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                Issue::UnanalyzableInheritance,
+                $method->getFileRef()->getLineNumberStart(),
+                $method->getFQSEN()
+            );
+            return;
+        }
+        foreach ($o_method_list as $o_method) {
+            self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $o_method);
+        }
+    }
+
+    /**
+     * Make sure signatures line up between methods and a method it overrides.
+     *
+     * @see https://en.wikipedia.org/wiki/Liskov_substitution_principle
+     */
+    private static function analyzeOverrideSignatureForOverriddenMethod(
+        CodeBase $code_base,
+        Method $method,
+        Clazz $class,
+        Method $o_method
+    ) {
+        if ($o_method->isFinal()) {
+            // Even if it is a constructor, verify that a method doesn't override a final method.
+            self::warnOverridingFinalMethod($code_base, $method, $class, $o_method);
+        }
 
         // Unless it is an abstract constructor,
         // don't worry about signatures lining up on
@@ -696,6 +731,56 @@ class ParameterTypesAnalyzer
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Warns if a method is overriding a final method
+     * @return void
+     */
+    private static function warnOverridingFinalMethod(CodeBase $code_base, Method $method, Clazz $class, Method $o_method)
+    {
+        if ($method->isFromPHPDoc()) {
+            // TODO: Track phpdoc methods separately from real methods
+            if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethodPHPDoc) || $class->hasSuppressIssue(Issue::AccessOverridesFinalMethodPHPDoc)) {
+                return;
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                Issue::AccessOverridesFinalMethodPHPDoc,
+                $method->getFileRef()->getLineNumberStart(),
+                $method->getFQSEN(),
+                $o_method->getFQSEN(),
+                $o_method->getFileRef()->getFile(),
+                $o_method->getFileRef()->getLineNumberStart()
+            );
+        } else if ($o_method->isPHPInternal()) {
+            if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethodInternal)) {
+                return;
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                Issue::AccessOverridesFinalMethodInternal,
+                $method->getFileRef()->getLineNumberStart(),
+                $method->getFQSEN(),
+                $o_method->getFQSEN()
+            );
+        } else {
+            if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethod)) {
+                return;
+            }
+            Issue::maybeEmit(
+                $code_base,
+                $method->getContext(),
+                Issue::AccessOverridesFinalMethod,
+                $method->getFileRef()->getLineNumberStart(),
+                $method->getFQSEN(),
+                $o_method->getFQSEN(),
+                $o_method->getFileRef()->getFile(),
+                $o_method->getFileRef()->getLineNumberStart()
+            );
         }
     }
 }

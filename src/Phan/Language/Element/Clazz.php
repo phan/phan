@@ -1112,12 +1112,15 @@ class Clazz extends AddressableElement
         // Don't overwrite overridden methods with
         // parent methods
         if ($is_override) {
-
             // Note that we're overriding something
             // (but only do this if it's abstract)
             // TODO: Consider all permutations of abstract and real methods on classes, interfaces, and traits.
             $existing_method =
                 $code_base->getMethodByFQSEN($method_fqsen);
+            if ($method->getDefiningFQSEN() === $existing_method->getDefiningFQSEN()) {
+                return;
+            }
+
             if ($method->isAbstract() || !$existing_method->isAbstract() || $existing_method->getIsNewConstructor()) {
                 // TODO: What if both of these are abstract, and those get combined into an abstract class?
                 //       Should phan check compatibility of the abstract methods it inherits?
@@ -1132,6 +1135,9 @@ class Clazz extends AddressableElement
             $method = clone($method);
             $method->setDefiningFQSEN($method->getDefiningFQSEN());
             $method->setFQSEN($method_fqsen);
+            // When we inherit it from the ancestor class, it may be an override in the ancestor class,
+            // but that doesn't imply it's an override in *this* class.
+            $method->setIsOverride($is_override);
 
             // Clone the parameter list, so that modifying the parameters on the first call won't modify the others.
             // TODO: Make the parameter list immutable and have immutable types (e.g. getPhpdocParameterList(), setPhpdocParameterList()

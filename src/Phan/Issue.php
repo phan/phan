@@ -72,6 +72,7 @@ class Issue
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
+    const UnanalyzableInheritance   = 'PhanUnanalyzableInheritance';
 
     // Issue::CATEGORY_VARIABLE
     const VariableUseClause         = 'PhanVariableUseClause';
@@ -179,8 +180,11 @@ class Issue
     const AccessMethodInternal      = 'PhanAccessMethodInternal';
     const AccessWrongInheritanceCategory = 'PhanAccessWrongInheritanceCategory';
     const AccessWrongInheritanceCategoryInternal = 'PhanAccessWrongInheritanceCategoryInternal';
-    const AccessExtendsFinalClass   = 'PhanAccessExtendsFinalClass';
-    const AccessExtendsFinalClassInternal = 'PhanAccessExtendsFinalClassInternal';
+    const AccessExtendsFinalClass                = 'PhanAccessExtendsFinalClass';
+    const AccessExtendsFinalClassInternal        = 'PhanAccessExtendsFinalClassInternal';
+    const AccessOverridesFinalMethod             = 'PhanAccessOverridesFinalMethod';
+    const AccessOverridesFinalMethodInternal     = 'PhanAccessOverridesFinalMethodInternal';
+    const AccessOverridesFinalMethodPHPDoc     = 'PhanAccessOverridesFinalMethodPHPDoc';
 
     // Issue::CATEGORY_COMPATIBLE
     const CompatibleExpressionPHP7  = 'PhanCompatibleExpressionPHP7';
@@ -614,6 +618,14 @@ class Issue
                 self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
                 "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/etsy/phan/issues/new.",
+                self::REMEDIATION_B,
+                2000
+            ),
+            new Issue(
+                self::UnanalyzableInheritance,
+                self::CATEGORY_ANALYSIS,
+                self::SEVERITY_LOW,
+                "Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/etsy/phan/issues/new with a test case.",
                 self::REMEDIATION_B,
                 2000
             ),
@@ -1533,6 +1545,30 @@ class Issue
                 "Attempting to extend from final internal class {CLASS}",
                 self::REMEDIATION_B,
                 1016
+            ),
+            new Issue(
+                self::AccessOverridesFinalMethod,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                "Declaration of method {METHOD} overrides final method {METHOD} defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1017
+            ),
+            new Issue(
+                self::AccessOverridesFinalMethodInternal,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_CRITICAL,
+                "Declaration of method {METHOD} overrides final internal method {METHOD}",
+                self::REMEDIATION_B,
+                1018
+            ),
+            new Issue(
+                self::AccessOverridesFinalMethodPHPDoc,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Declaration of phpdoc method {METHOD} is an unnecessary override of final method {METHOD} defined in {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                1019
             ),
 
             // Issue::CATEGORY_COMPATIBLE
