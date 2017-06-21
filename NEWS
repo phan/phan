@@ -25,6 +25,7 @@ New Features (Analysis)
 + Create `PhanAccessOverridesFinalMethod*` issue types to warn about methods overriding final methods.
 + Create `PhanTypeMagicVoidWithReturn` to warn if `void` methods such as `__construct`, `__set`, etc return a value that would be ignored. (Issue #913)
 + Add check for `PhanTypeMissingReturn` within closures. Properly emit `PhanTypeMissingReturn` in functions/methods containing closures. (Issue #599)
++ Improved checking for `PhanUndeclaredVariable` in array keys and conditional conditions. (Issue #912)
 
 New Features (CLI, Configs)
 + Create `check_docblock_signature_param_type_match` (similar to `check_docblock_signature_return_type_match`) config setting
