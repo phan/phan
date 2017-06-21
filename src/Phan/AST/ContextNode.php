@@ -35,6 +35,7 @@ use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Some;
 use ast\Node;
+use ast\Node\Decl;
 
 /**
  * Methods for an AST node in context
@@ -48,7 +49,7 @@ class ContextNode
     /** @var Context */
     private $context;
 
-    /** @var Node|string|null */
+    /** @var Decl|Node|string|null */
     private $node;
 
     /**
@@ -1231,7 +1232,8 @@ class ContextNode
     {
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
-                $this->context
+                $this->context,
+                $this->node
             );
 
         if (!$this->code_base->hasFunctionWithFQSEN($closure_fqsen)) {

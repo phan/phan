@@ -321,15 +321,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     public function visitClosure(Decl $node) : Context
     {
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-            $this->context->withLineNumberStart($node->lineno ?? 0)
+            $this->context->withLineNumberStart($node->lineno ?? 0),
+            $node
         );
-
-        $func = Func::fromNode(
-            $this->context,
-            $this->code_base,
-            $node,
-            $closure_fqsen
-        );
+        $func = $this->code_base->getFunctionByFQSEN($closure_fqsen);
 
         // usually the same as $this->context, unless this Closure uses @PhanClosureScope
         // Also need to override $this if bindTo is called?

@@ -2,6 +2,8 @@
 namespace Phan\Language\FQSEN;
 
 use Phan\Language\Context;
+use ast\Node\Decl;
+use ast\Node;
 
 /**
  * A Fully-Qualified Function Name
@@ -81,12 +83,23 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
     }
 
     public static function fromClosureInContext(
-        Context $context
+        Context $context,
+        Decl $node
     ) : FullyQualifiedFunctionName {
-        $name = 'closure_' . substr(md5(implode('|', [
+        $hash_material = implode('|', [
             $context->getFile(),
-            $context->getLineNumberStart()
-        ])), 0, 12);
+            $context->getLineNumberStart(),
+            $node->docComment ?? '',
+            implode(',', array_map(function(Node $arg) : string {
+                return serialize([$arg->children['type'], $arg->children['name'], $arg->children['default']]);
+            }, $node->children['params']->children)),
+            implode(',', array_map(function(Node $use) : string {
+                return $use->children['name'];
+            }, $node->children['uses']->children ?? [])),
+            serialize($node->children['returnType']),
+        ]);
+        // TODO: hash args
+        $name = 'closure_' . substr(md5($hash_material), 0, 12);
 
         return static::fromStringInContext(
             $name,

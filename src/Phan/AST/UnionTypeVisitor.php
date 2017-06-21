@@ -985,7 +985,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         // at its definition
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
-                $this->context
+                $this->context,
+                $node
             );
 
         $type = CallableType::instanceWithClosureFQSEN(
