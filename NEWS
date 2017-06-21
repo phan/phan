@@ -31,12 +31,15 @@ New Features (CLI, Configs)
 + Create `check_docblock_signature_param_type_match` (similar to `check_docblock_signature_return_type_match`) config setting
   to enable warning if phpdoc types are incompatible with the real types. False by default.
 
-  Create `prefer_narrowed_phpdoc_param_type` (requires `check_docblock_signature_return_type_match`)
-  to analyze phpdoc param types instead of provided signature types if the possible phpdoc types are narrower and compatible.
+  Create `prefer_narrowed_phpdoc_param_type` config setting (requires `check_docblock_signature_return_type_match`).
+  This is off by default, set it to true to analyze phpdoc param types instead of provided signature types if the possible phpdoc types are narrower and compatible.
   (E.g. indicate that subclasses are expected over base classes, indicate that non-nullable is expected instead of nullable)
   This affects analysis both inside and outside the method.
-+ Create `enable_class_alias_support` (disabled by default), which enables analyzing basic usage of class_alias. (Issue #586)
++ Create `enable_class_alias_support` config setting (disabled by default), which enables analyzing basic usage of class_alias. (Issue #586)
+  Set it to true to enable it.
   NOTE: this is still experimental.
++ Warn to stderr about running Phan analysis with XDebug (Issue #116)
+  The warning can be disabled by the Phan config setting `skip_slow_php_options_warning` to true.
 
 Maintenance
 

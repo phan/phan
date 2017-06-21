@@ -483,6 +483,10 @@ class Config
         // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
         'consistent_hashing_file_order' => false,
 
+        // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
+        // (e.g. PHP is compiled with --enable-debug or when using XDebug)
+        'skip_slow_php_options_warning' => false,
+
         // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_socket' => false,
 

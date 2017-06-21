@@ -96,13 +96,6 @@ class Daemon {
         } else {
             throw new \InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
         }
-        // Unless debugging Phan itself, these two configurations are unnecessarily adding slowness.
-        if (PHP_DEBUG) {
-            fwrite(STDERR, "Warning: This daemon is slower when php is compiled with --enable-debug\n");
-        }
-        if (extension_loaded('xdebug')) {
-            fwrite(STDERR, "Warning: This daemon is slower when xdebug is installed");
-        }
         echo "Listening for Phan analysis requests at $listen_url\n";
         $socket_server = stream_socket_server($listen_url, $errno, $errstr);
         if (!$socket_server) {

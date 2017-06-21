@@ -359,6 +359,10 @@ return [
         'vendor/'
     ],
 
+    // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
+    // (e.g. PHP is compiled with --enable-debug or when using XDebug)
+    'skip_slow_php_options_warning' => false,
+
     // A list of plugin files to execute
     'plugins' => [
         '.phan/plugins/DemoPlugin.php',
