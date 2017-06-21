@@ -543,6 +543,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitClosure(Decl $node) : Context
     {
+        $func = $this->context->getFunctionLikeInScope($this->code_base);
+
+        $return_type = $func->getUnionType();
+
+        if (!$return_type->isEmpty()
+            && !$func->getHasReturn()
+            && !$this->declOnlyThrows($node)
+            && !$return_type->hasType(VoidType::instance(false))
+            && !$return_type->hasType(NullType::instance(false))
+        ) {
+            $this->emitIssue(
+                Issue::TypeMissingReturn,
+                $node->lineno ?? 0,
+                (string)$func->getFQSEN(),
+                (string)$return_type
+            );
+        }
         $this->analyzeNoOp($node, Issue::NoopClosure);
         return $this->context;
     }
@@ -1231,6 +1248,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     (string)$method->getFQSEN()
                 );
             }
+        }
+
+        if ($method->getHasReturn() && $method->getIsMagicAndVoid()) {
+            $this->emitIssue(
+                Issue::TypeMagicVoidWithReturn,
+                $node->lineno ?? 0,
+                (string)$method->getFQSEN()
+            );
         }
 
         $parameters_seen = [];

@@ -55,6 +55,7 @@ class Issue
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
+    const TypeMagicVoidWithReturn   = 'TypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
@@ -838,6 +839,14 @@ class Issue
                 'Indirect variable ${(expr)} has invalid inner expression type {TYPE}, expected string/integer',
                 self::REMEDIATION_B,
                 10023
+            ),
+            new Issue(
+                self::TypeMagicVoidWithReturn,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_LOW,
+                'Found a return statement with a value in the implementation of the magic method {METHOD}, expected void return type',
+                self::REMEDIATION_B,
+                10024
             ),
 
             // Issue::CATEGORY_VARIABLE

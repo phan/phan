@@ -669,6 +669,41 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_CLOSURE`
+     *
+     * @param Decl $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitClosure(Decl $node) : Context
+    {
+        $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
+            $this->context->withLineNumberStart($node->lineno ?? 0),
+            $node
+        );
+
+        $func = Func::fromNode(
+            $this->context,
+            $this->code_base,
+            $node,
+            $closure_fqsen
+        );
+
+        $this->code_base->addFunction($func);
+
+        // Send the context into the function and reset the scope
+        // (E.g. to properly check for the presence of `return` statements.
+        $context = $this->context->withScope(
+            $func->getInternalScope()
+        );
+
+        return $context;
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_CALL`
      *
      * @param Node $node

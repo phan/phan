@@ -24,6 +24,18 @@ trait FunctionTrait {
      */
     abstract public function setPhanFlags(int $phan_flags);
 
+    /**
+     * @return string
+     * The (not fully-qualified) name of this element.
+     */
+    abstract public function getName() : string;
+
+    /**
+     * @return FQSEN
+     * The fully-qualified structural element name of this
+     * structural element
+     */
+    public abstract function getFQSEN();
 
     /**
      * @var int

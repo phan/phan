@@ -1,3 +1,4 @@
+%s:17 PhanTypeMissingReturn Method \closure264\TestFramework::mockA is declared to return string but has no return value
 %s:44 PhanUndeclaredProperty Reference to undeclared property \closure264\BoundClass264->d
 %s:50 PhanTypeInvalidClosureScope Invalid PhanClosureScope: expected a class name, got string
 %s:51 PhanUndeclaredProperty Reference to undeclared property \closure264\TestFramework->b

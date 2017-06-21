@@ -53,7 +53,7 @@ class Method extends ClassElement implements FunctionInterface
     ) {
         parent::__construct(
             $context,
-            $name,
+            FullyQualifiedMethodName::canonicalName($name),
             $type,
             $flags,
             $fqsen
@@ -130,25 +130,19 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * @return bool
      * True if this is a magic method
+     * (Names are all normalized in FullyQualifiedMethodName::make())
      */
     public function getIsMagic() : bool {
-        return in_array($this->getName(), [
-            '__call',
-            '__callStatic',
-            '__clone',
-            '__construct',
-            '__debugInfo',
-            '__destruct',
-            '__get',
-            '__invoke',
-            '__isset',
-            '__set',
-            '__set_state',
-            '__sleep',
-            '__toString',
-            '__unset',
-            '__wakeup',
-        ]);
+        return array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET);
+    }
+
+    /**
+     * @return bool
+     * True if this is a magic method which should have return type of void
+     * (Names are all normalized in FullyQualifiedMethodName::make())
+     */
+    public function getIsMagicAndVoid() : bool {
+        return array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
     }
 
     /**
@@ -157,7 +151,7 @@ class Method extends ClassElement implements FunctionInterface
      * (Does not return true for php4 constructors)
      */
     public function getIsNewConstructor() : bool {
-        return strcasecmp('__construct', $this->getName()) === 0;
+        return ($this->getName() === '__construct');
     }
 
     /**
