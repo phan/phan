@@ -3,6 +3,7 @@ namespace Phan\Analysis;
 
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
@@ -250,6 +251,18 @@ class AssignmentVisitor extends AnalysisVisitor
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
                 return $this->analyzeSuperglobalDim($node, $variable_name);
             }
+        }
+
+        // TODO: Check if the unionType is valid for the []
+        // For most types, it should be int|string, but SplObjectStorage and a few user-defined types will be exceptions.
+        // Infer it from offsetSet?
+        $dim_node = $node->children['dim'];
+        if ($dim_node instanceof Node) {
+            UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $node->children['dim']
+            );
         }
 
         // Recurse into whatever we're []'ing

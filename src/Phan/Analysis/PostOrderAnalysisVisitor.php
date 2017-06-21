@@ -3,6 +3,7 @@ namespace Phan\Analysis;
 
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\CodeBaseException;
@@ -1400,15 +1401,24 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Check the array type to trigger
         // TypeArraySuspicious
         try {
-            $array_type = UnionType::fromNode(
-                $this->context,
+            $array_type = UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
+                $this->context,
                 $node,
                 false
             );
+            // TODO: check if array_type has array but not ArrayAccess.
+            // If that is true, then assert that $dim_type can cast to `int|string`
         } catch (IssueException $exception) {
-            // Swallow it. We'll deal with issues elsewhere
+            // Detect this elsewhere, e.g. want to detect PhanUndeclaredVariableDim but not PhanUndeclaredVariable
         }
+        // Check the dimension type to trigger PhanUndeclaredVariable, etc.
+        $dim_type = UnionTypeVisitor::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['dim'],
+            true
+        );
         return $this->context;
     }
 

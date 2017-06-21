@@ -1,0 +1,6 @@
+%s:3 PhanUndeclaredVariable Variable $cond is undeclared
+%s:5 PhanUndeclaredVariable Variable $undef is undeclared
+%s:6 PhanUndeclaredVariable Variable $undefB is undeclared
+%s:8 PhanUndeclaredVariable Variable $cond321 is undeclared
+%s:10 PhanUndeclaredVariable Variable $undef321 is undeclared
+%s:11 PhanUndeclaredVariable Variable $undefB321 is undeclared
