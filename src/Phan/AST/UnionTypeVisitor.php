@@ -1022,14 +1022,14 @@ class UnionTypeVisitor extends AnalysisVisitor
         if (($name_node instanceof Node)) {
             // This is nonsense. Give up.
             $name_node_type = $this($name_node);
-            static $intOrStringType;
-            if ($intOrStringType === null) {
-                $intOrStringType = new UnionType();
-                $intOrStringType->addType(StringType::instance(false));
-                $intOrStringType->addType(IntType::instance(false));
-                $intOrStringType->addType(NullType::instance(false));
+            static $int_or_string_type;
+            if ($int_or_string_type === null) {
+                $int_or_string_type = new UnionType();
+                $int_or_string_type->addType(StringType::instance(false));
+                $int_or_string_type->addType(IntType::instance(false));
+                $int_or_string_type->addType(NullType::instance(false));
             }
-            if (!$name_node_type->canCastToUnionType($intOrStringType)) {
+            if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
                 Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
             }
 
