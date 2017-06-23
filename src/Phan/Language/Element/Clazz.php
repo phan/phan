@@ -360,7 +360,7 @@ class Clazz extends AddressableElement
                         return new UnionType(
                             \array_map(function (Type $type) use ($template_type_map) : Type {
                                 return $template_type_map[$type->getName()] ?? $type;
-                            }, $union_type->getTypeSet()->toArray())
+                            }, $union_type->getTypeSet())
                         );
                     }, $parent_type->getTemplateParameterTypeList())
                 );
