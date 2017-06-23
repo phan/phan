@@ -42,6 +42,8 @@ New Features (CLI, Configs)
   The warning can be disabled by the Phan config setting `skip_slow_php_options_warning` to true.
 
 Maintenance
++ Reduce memory usage by around 15% by using a more efficient representation of union types (PR #729).
+  The optional extension https://github.com/runkit7/runkit_object_id can be installed to boost performance by around 10%.
 
 Bug Fixes
 + Work around known bugs in current releases of two PECL extensions (Issue #888, #889)
