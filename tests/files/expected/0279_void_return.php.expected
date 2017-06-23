@@ -1,2 +1,3 @@
 %s:9 PhanTypeMismatchReturn Returning type void but f() is declared to return \DateTime
+%s:14 PhanTypeMissingReturn Method \g is declared to return int but has no return value
 %s:15 PhanTypeMismatchReturn Returning type void but g() is declared to return int
