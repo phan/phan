@@ -238,7 +238,7 @@ abstract class Scope
      */
     public function getTemplateTypeMap() : array
     {
-        return array_merge(
+        return \array_merge(
             $this->template_type_map,
             $this->hasParentScope()
                 ? $this->getParentScope()->getTemplateTypeMap()

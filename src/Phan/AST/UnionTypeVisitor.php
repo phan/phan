@@ -667,10 +667,10 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             $element_types =
-                array_values(array_unique($element_types));
+                \array_unique($element_types);
 
-            if (count($element_types) == 1) {
-                return $element_types[0]->asGenericArrayTypes();
+            if (\count($element_types) === 1) {
+                return reset($element_types)->asGenericArrayTypes();
             }
         }
 
@@ -802,7 +802,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // For any types that are templates, map them to concrete
         // types based on the parameters passed in.
-        return new UnionType(array_map(function (Type $type) use ($node) {
+        return new UnionType(\array_map(function (Type $type) use ($node) {
 
             // Get a fully qualified name for the type
             $fqsen = $type->asFQSEN();
@@ -839,7 +839,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $class->getMethodByName($this->code_base, '__construct');
 
             // Map each argument to its type
-            $arg_type_list = array_map(function($arg_node) {
+            $arg_type_list = \array_map(function($arg_node) {
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,

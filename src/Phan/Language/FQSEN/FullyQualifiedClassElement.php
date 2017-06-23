@@ -63,7 +63,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         $name = static::canonicalName($name);
 
         $key = self::toString($fully_qualified_class_name, $name, $alternate_id)
-            . '|' . get_called_class();
+            . '|' . \get_called_class();
 
         return self::memoizeStatic($key, function () use (
             $fully_qualified_class_name,
@@ -107,7 +107,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         string $fully_qualified_string
     ) {
         assert(
-            false !== strpos(
+            false !== \strpos(
                 $fully_qualified_string,
                 '::'
             ),
@@ -159,7 +159,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         Context $context
     ) {
         // Test to see if we have a class defined
-        if (false === strpos($fqsen_string, '::')) {
+        if (false === \strpos($fqsen_string, '::')) {
 
             assert(
                 $context->isInClassScope(),
@@ -169,7 +169,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             $fully_qualified_class_name = $context->getClassFQSEN();
         } else {
             assert(
-                false !== strpos(
+                false !== \strpos(
                     $fqsen_string,
                     '::'
                 ),
@@ -179,7 +179,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
             list(
                 $class_name_string,
                 $fqsen_string
-            ) = explode('::', $fqsen_string);
+            ) = \explode('::', $fqsen_string);
 
             $fully_qualified_class_name =
                 FullyQualifiedClassName::fromStringInContext(
@@ -189,7 +189,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         }
 
         // Split off the alternate ID
-        $parts = explode(',', $fqsen_string);
+        $parts = \explode(',', $fqsen_string);
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 

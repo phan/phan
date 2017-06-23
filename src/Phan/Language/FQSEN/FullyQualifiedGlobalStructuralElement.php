@@ -70,9 +70,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         // Transfer any relative namespace stuff from the
         // name to the namespace.
-        $name_parts= explode('\\', $name);
-        $name = array_pop($name_parts);
-        $namespace = implode('\\', array_merge([$namespace], $name_parts));
+        $name_parts= \explode('\\', $name);
+        $name = \array_pop($name_parts);
+        $namespace = \implode('\\', \array_merge([$namespace], $name_parts));
         $namespace = self::cleanNamespace($namespace);
 
         // use the canonicalName for $name instead of strtolower - Some subclasses(constants) are case sensitive.
@@ -260,14 +260,14 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         // Ensure that the first character of the namespace
         // is always a '\'
-        if (0 !== strpos($namespace, '\\')) {
+        if ($namespace[0] !== '\\') {
             $namespace = '\\' . $namespace;
         }
 
         // Ensure that we don't have a trailing '\' on the
         // namespace
-        if ('\\' === substr($namespace, -1)) {
-            $namespace = substr($namespace, 0, -1);
+        if ('\\' === \substr($namespace, -1)) {
+            $namespace = \substr($namespace, 0, -1);
         }
 
         return $namespace;

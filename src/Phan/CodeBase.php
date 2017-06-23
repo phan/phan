@@ -966,7 +966,7 @@ class CodeBase
                 $this,
                 $fqsen,
                 $signature
-            ) as $i => $function) {
+            ) as $function) {
                 $this->addFunction($function);
             }
 
@@ -983,16 +983,16 @@ class CodeBase
      */
     public function totalElementCount() : int {
         $sum = (
-            count($this->getFunctionMap())
-            + count($this->getGlobalConstantMap())
-            + count($this->getClassMap())
+            \count($this->getFunctionMap())
+            + \count($this->getGlobalConstantMap())
+            + \count($this->getClassMap())
         );
 
         foreach ($this->getClassMapMap() as $class_map) {
             $sum += (
-                count($class_map->getClassConstantMap())
-                + count($class_map->getPropertyMap())
-                + count($class_map->getMethodMap())
+                \count($class_map->getClassConstantMap())
+                + \count($class_map->getPropertyMap())
+                + \count($class_map->getMethodMap())
             );
         }
 

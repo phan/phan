@@ -1036,7 +1036,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ))->getClassList();
 
                 if (!empty($class_list)) {
-                    $class = array_values($class_list)[0];
+                    $class = \array_values($class_list)[0];
 
                     $this->emitIssue(
                         Issue::StaticCallToNonStatic,
@@ -1498,7 +1498,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // Find out of any of them have a __get magic method
                 // (Only check if looking for instance properties)
                 $has_getter =
-                    array_reduce($class_list, function($carry, $class) {
+                    \array_reduce($class_list, function($carry, $class) {
                         return (
                             $carry ||
                             $class->hasGetMethod($this->code_base)
@@ -1781,11 +1781,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // and scope so that we can reset it after re-analyzing
         // it.
         $original_method_scope = clone($method->getInternalScope());
-        $original_parameter_list = array_map(function (Variable $parameter) : Variable {
+        $original_parameter_list = \array_map(function (Variable $parameter) : Variable {
             return clone($parameter);
         }, $method->getParameterList());
 
-        if (count($original_parameter_list) === 0) {
+        if (\count($original_parameter_list) === 0) {
             return;  // No point in recursing if there's no changed parameters.
         }
 
@@ -2002,9 +2002,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * True when the decl can only throw an exception
      */
     private function declOnlyThrows(Decl $node) {
-        return isset( $node->children['stmts'] )
-            && $node->children['stmts']->kind === \ast\AST_STMT_LIST
-            && count($node->children['stmts']->children) === 1
-            && $node->children['stmts']->children[0]->kind === \ast\AST_THROW;
+        $stmts = $node->children['stmts'] ?? null;
+        return isset($stmts)
+            && $stmts->kind === \ast\AST_STMT_LIST
+            && \count($stmts->children) === 1
+            && $stmts->children[0]->kind === \ast\AST_THROW;
     }
 }

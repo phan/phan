@@ -577,7 +577,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $child_context = $this->analyzeAndGetUpdatedContext($context, $node, $false_node);
             $child_context_list[] = $child_context;
         }
-        if (count($child_context_list) >= 1) {
+        if (\count($child_context_list) >= 1) {
             $context = (new ContextMergeVisitor(
                 $this->code_base,
                 $context,

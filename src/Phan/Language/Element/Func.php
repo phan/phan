@@ -218,14 +218,14 @@ class Func extends AddressableElement implements FunctionInterface
         // Set the parameter list on the function
         $func->setParameterList($parameter_list);
 
-        $func->setNumberOfRequiredParameters(array_reduce(
+        $func->setNumberOfRequiredParameters(\array_reduce(
             $parameter_list,
             function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             }, 0)
         );
 
-        $func->setNumberOfOptionalParameters(array_reduce(
+        $func->setNumberOfOptionalParameters(\array_reduce(
             $parameter_list, function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             }, 0)

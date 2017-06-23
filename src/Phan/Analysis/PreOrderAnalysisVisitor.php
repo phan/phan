@@ -767,12 +767,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitCall(Node $node) : Context
     {
+        $name = $node->children['expr']->children['name'] ?? null;
         // Look only at nodes of the form `assert(expr, ...)`.
-        if (!isset($node->children['expr'])
-            || !isset($node->children['expr']->children['name'])
-            || $node->children['expr']->children['name'] !== 'assert'
-            || !isset($node->children['args'])
-            || !isset($node->children['args']->children[0])
+        if ($node->children['expr'] !== 'assert') {
+            return $this->context;
+        }
+        $args = $node->children['args'];
+        if (!isset($node->children['args']->children[0])
             || !($node->children['args']->children[0] instanceof Node)
         ) {
             return $this->context;
@@ -783,7 +784,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return (new ConditionVisitor(
             $this->code_base,
             $this->context
-        ))($node->children['args']->children[0]);
+        ))($args->children[0]);
     }
 
     /**

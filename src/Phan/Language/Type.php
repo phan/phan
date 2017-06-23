@@ -202,7 +202,7 @@ class Type
         int $source
     ) : Type {
 
-        $namespace = trim($namespace);
+        $namespace = \trim($namespace);
 
         if ('\\' === $namespace && $source) {
             $type_name = self::canonicalNameFromName($type_name);
@@ -211,11 +211,11 @@ class Type
         // If this looks like a generic type string, explicitly
         // make it as such
         if (self::isGenericArrayString($type_name)
-            && ($pos = strrpos($type_name, '[]')) !== false
+            && ($pos = \strrpos($type_name, '[]')) !== false
         ) {
             return GenericArrayType::fromElementType(Type::make(
                 $namespace,
-                substr($type_name, 0, $pos),
+                \substr($type_name, 0, $pos),
                 $template_parameter_type_list,
                 false,
                 $source
@@ -238,7 +238,7 @@ class Type
         );
 
         assert(
-            false === strpos(
+            false === \strpos(
                 $type_name,
                 '|'
             ),
@@ -257,12 +257,12 @@ class Type
         $key = ($is_nullable ? '?' : '') . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
-            $key .= '<' . implode(',', array_map(function (UnionType $union_type) {
+            $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) {
                 return (string)$union_type;
             }, $template_parameter_type_list)) . '>';
         }
 
-        $key = strtolower($key);
+        $key = \strtolower($key);
 
         return static::cachedGetInstanceHelper($namespace, $type_name, $template_parameter_type_list, $is_nullable, $key, false);
     }
@@ -350,7 +350,7 @@ class Type
         if ($lookup === null) {
             $lookup = self::createReservedConstantNameLookup();
         }
-        $result = $lookup[strtoupper(ltrim($name, '\\'))] ?? null;
+        $result = $lookup[\strtoupper(\ltrim($name, '\\'))] ?? null;
         if (isset($result)) {
             return new Some($result);
         }
@@ -433,7 +433,7 @@ class Type
     public static function fromObject($object) : Type
     {
         // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
-        return Type::fromInternalTypeName(gettype($object), false, self::FROM_PHPDOC);
+        return Type::fromInternalTypeName(\gettype($object), false, self::FROM_PHPDOC);
     }
 
     /**
@@ -461,10 +461,10 @@ class Type
         // When there's a nullability operator such as in
         // `?int[]`, it applies to the array rather than
         // the int
-        if (false !== ($pos = strrpos($type_name, '[]'))) {
+        if (false !== ($pos = \strrpos($type_name, '[]'))) {
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
-                    substr($type_name, 0, $pos),
+                    \substr($type_name, 0, $pos),
                     false,
                     $source
                 ),
@@ -475,7 +475,7 @@ class Type
         $type_name =
             self::canonicalNameFromName($type_name);
 
-        switch (strtolower($type_name)) {
+        switch (\strtolower($type_name)) {
             case 'array':
                 return ArrayType::instance($is_nullable);
             case 'bool':
@@ -577,7 +577,7 @@ class Type
 
         // Map the names of the types to actual types in the
         // template parameter type list
-        $template_parameter_type_list = array_map(function (string $type_name) {
+        $template_parameter_type_list = \array_map(function (string $type_name) {
             return Type::fromFullyQualifiedString($type_name)->asUnionType();
         }, $template_parameter_type_name_list);
 
@@ -648,10 +648,10 @@ class Type
         // the type of each element
         $non_generic_array_type_name = $type_name;
         if ($is_generic_array_type
-           && false !== ($pos = strrpos($type_name, '[]'))
+           && false !== ($pos = \strrpos($type_name, '[]'))
         ) {
             $non_generic_array_type_name =
-                substr($type_name, 0, $pos);
+                \substr($type_name, 0, $pos);
         }
 
         // Check to see if the type name is mapped via
@@ -1037,7 +1037,7 @@ class Type
 
             return Type::make(
                 $this->getNamespace(),
-                substr($this->getName(), 0, $pos),
+                \substr($this->getName(), 0, $pos),
                 $this->template_parameter_type_list,
                 $this->getIsNullable(),
                 self::FROM_TYPE
@@ -1115,7 +1115,7 @@ class Type
                 $this->getTemplateParameterTypeList();
 
             $map = [];
-            foreach (array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
+            foreach (\array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
                 if (isset($template_parameter_type_list[$i])) {
                     $map[$identifier] = $template_parameter_type_list[$i];
                 }
@@ -1479,14 +1479,14 @@ class Type
 
         $match = [];
         $is_nullable = false;
-        if (preg_match('/' . self::type_regex. '/', $type_string, $match)) {
+        if (\preg_match('/' . self::type_regex. '/', $type_string, $match)) {
             $type_string = $match[1];
 
             // Rip out the nullability indicator if it
             // exists and note its nullability
             $is_nullable = ($match[2] ?? '') == '?';
             if ($is_nullable) {
-                $type_string = substr($type_string, 1);
+                $type_string = \substr($type_string, 1);
             }
 
             // If we have a generic array symbol '[]', append that back
@@ -1494,28 +1494,28 @@ class Type
             if (isset($match[12])) {
                 // Figure out the dimensionality of the type array
                 $gmatch = [];
-                if (preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
+                if (\preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
                     $type_string .= $gmatch[0];
                 }
             }
 
             $template_parameter_type_name_list = !empty($match[4])
-                ?  preg_split('/\s*,\s*/', $match[4])
+                ? \preg_split('/\s*,\s*/', $match[4])
                 : [];
         }
 
         // Determine if the type name is fully qualified
         // (as specified by a leading backslash).
-        $is_fully_qualified = (0 === strpos($type_string, '\\'));
+        $is_fully_qualified = (0 === \strpos($type_string, '\\'));
 
         $fq_class_name_elements =
-            array_filter(explode('\\', $type_string));
+            \array_filter(\explode('\\', $type_string));
 
         $class_name =
-            (string)array_pop($fq_class_name_elements);
+            (string)\array_pop($fq_class_name_elements);
 
         $namespace = ($is_fully_qualified ? '\\' : '')
-            . implode('\\', array_filter(
+            . implode('\\', \array_filter(
                 $fq_class_name_elements
             ));
 

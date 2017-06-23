@@ -447,7 +447,7 @@ class ConditionVisitor extends KindVisitorImplementation
     private static function isCallStringWithSingleVariableArgument(Node $node) : bool
     {
         $args = $node->children['args']->children;
-        if (count($args) === 1) {
+        if (\count($args) === 1) {
             $arg = $args[0];
             if (($arg instanceof Node) && ($arg->kind === \ast\AST_VAR)) {
                 $expr = $node->children['expr'];
@@ -666,7 +666,7 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitExprList(Node $node) : Context
     {
         $children = $node->children;
-        $count = count($children);
+        $count = \count($children);
         if ($count > 1) {
             foreach ($children as $sub_node) {
                 --$count;
@@ -676,6 +676,6 @@ class ConditionVisitor extends KindVisitorImplementation
             }
         }
         // Only analyze the last expression in the expression list for conditions.
-        return $this(end($node->children));
+        return $this(\end($node->children));
     }
 }

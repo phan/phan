@@ -66,9 +66,9 @@ class GenericArrayType extends ArrayType
             return true;
         }
 
-        $d = strtolower((string)$type);
+        $d = \strtolower((string)$type);
         if ($d[0] == '\\') {
-            $d = substr($d, 1);
+            $d = \substr($d, 1);
         }
         if ($d === 'callable') {
             return true;

@@ -356,9 +356,9 @@ class Clazz extends AddressableElement
             if ($contains_templated_type) {
                 $parent_type = Type::fromType(
                     $parent_type,
-                    array_map(function (UnionType $union_type) use ($template_type_map) : UnionType {
+                    \array_map(function (UnionType $union_type) use ($template_type_map) : UnionType {
                         return new UnionType(
-                            array_map(function (Type $type) use ($template_type_map) : Type {
+                            \array_map(function (Type $type) use ($template_type_map) : Type {
                                 return $template_type_map[$type->getName()] ?? $type;
                             }, $union_type->getTypeSet()->toArray())
                         );
@@ -707,7 +707,7 @@ class Clazz extends AddressableElement
                 $flags,
                 $method_fqsen
             );
-            $real_parameter_list = array_map(function(\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
+            $real_parameter_list = \array_map(function(\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
                 return $parameter->asRealParameter($context);
             }, $comment_method->getParameterList());
 
@@ -1144,7 +1144,7 @@ class Clazz extends AddressableElement
             // and use a clone of all of the parameters for analysis (quick_mode=false has different values).
             // TODO: If they're immutable, they can be shared without cloning with less worry.
             $method->setParameterList(
-                array_map(function (Parameter $parameter) : Parameter {
+                \array_map(function (Parameter $parameter) : Parameter {
                     return clone($parameter);
                 }, $method->getParameterList()));
 
@@ -1165,7 +1165,7 @@ class Clazz extends AddressableElement
 
                 // Map each method parameter
                 $method->setParameterList(
-                    array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+                    \array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
 
                         if (!$parameter->getUnionType()->hasTemplateType()) {
                             return $parameter;
@@ -1659,7 +1659,7 @@ class Clazz extends AddressableElement
      */
     public function getNonParentAncestorFQSENList(CodeBase $code_base)
     {
-        return array_merge(
+        return \array_merge(
             $this->getInterfaceFQSENList(),
             $this->getTraitFQSENList()
         );
@@ -2061,7 +2061,7 @@ class Clazz extends AddressableElement
         // A function that maps a list of elements to the
         // total reference count for all elements
         $list_count = function (array $list) use ($code_base) {
-            return array_reduce($list, function (
+            return \array_reduce($list, function (
                 int $count,
                 AddressableElement $element
             ) use ($code_base) {

@@ -78,7 +78,7 @@ class ContextNode
             return [];
         }
 
-        return array_map(function ($name_node) {
+        return \array_map(function ($name_node) {
             return (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -108,7 +108,7 @@ class ContextNode
             return [];
         }
 
-        return array_map(function($name_node) : FQSEN {
+        return \array_map(function($name_node) : FQSEN {
             return (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -128,8 +128,8 @@ class ContextNode
         // TODO: In a subsequent PR, try to make trait analysis work when $adaptations_map has multiple possible traits.
         $trait_fqsen_string = $this->getQualifiedName();
         if ($trait_fqsen_string === '') {
-            if (count($adaptations_map) === 1) {
-                return reset($adaptations_map)->getTraitFQSEN();
+            if (\count($adaptations_map) === 1) {
+                return \reset($adaptations_map)->getTraitFQSEN();
             } else {
                 return null;
             }
@@ -206,7 +206,7 @@ class ContextNode
                 $trait_method_node->lineno ?? 0,
                 $trait_new_method_name,
                 $trait_original_method_name,
-                '[' . implode(', ', array_map(function(TraitAdaptations $t) : string {
+                '[' . implode(', ', \array_map(function(TraitAdaptations $t) : string {
                     return (string) $t->getTraitFQSEN();
                 }, $adaptations_map)) . ']'
             );
@@ -320,7 +320,7 @@ class ContextNode
             && ($node->kind != \ast\AST_MAGIC_CONST)
         ) {
             $parent = $node;
-            $node = array_values($node->children ?? [])[0];
+            $node = \array_values($node->children ?? [])[0];
         }
 
         if (!($node instanceof \ast\Node)) {
@@ -983,7 +983,7 @@ class ContextNode
             );
         }
 
-        $class = array_values($class_list)[0];
+        $class = \array_values($class_list)[0];
 
         $flags = 0;
         if ($this->node->kind == \ast\AST_STATIC_PROP) {
@@ -1217,7 +1217,7 @@ class ContextNode
         );
 
         $class_name = 'anonymous_class_'
-            . substr(md5(implode('|', [
+            . \substr(\md5(\implode('|', [
                 $this->context->getFile(),
                 $this->context->getLineNumberStart()
             ])), 0, 8);
@@ -1312,7 +1312,7 @@ class ContextNode
 
             // Lets just hope the 0th is the expression
             // we want
-            $temp = array_values($temp->children)[0];
+            $temp = \array_values($temp->children)[0];
         }
 
         if (!($temp instanceof Node)) {

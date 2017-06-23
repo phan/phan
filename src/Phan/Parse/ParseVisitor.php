@@ -202,7 +202,7 @@ class ParseVisitor extends ScopeVisitor
 
             // The name is fully qualified. Make sure it looks
             // like it is
-            if (0 !== strpos($parent_class_name, '\\')) {
+            if (0 !== \strpos($parent_class_name, '\\')) {
                 $parent_class_name = '\\' . $parent_class_name;
             }
 
@@ -327,7 +327,7 @@ class ParseVisitor extends ScopeVisitor
 
                 // Get the set of template type identifiers defined on
                 // the class
-                $template_type_identifiers = array_keys(
+                $template_type_identifiers = \array_keys(
                     $class->getTemplateTypeMap()
                 );
 
@@ -345,7 +345,7 @@ class ParseVisitor extends ScopeVisitor
                     }
                 }
 
-                $missing_template_type_identifiers = array_diff(
+                $missing_template_type_identifiers = \array_diff(
                     $template_type_identifiers,
                     $parameter_template_type_identifiers
                 );
@@ -781,7 +781,7 @@ class ParseVisitor extends ScopeVisitor
             if ($func_name == 'parent') {
                 // Make sure it is not a crazy dynamic parent method call
                 if (!($node->children['method'] instanceof Node)) {
-                    $meth = strtolower($node->children['method']);
+                    $meth = \strtolower($node->children['method']);
 
                     if ($meth == '__construct') {
                         $class = $this->getContextClass();
@@ -967,8 +967,8 @@ class ParseVisitor extends ScopeVisitor
             $line = $ftemp->current();
             assert(\is_string($line));
             unset($ftemp);
-            if (strpos($line, '{') === false
-                || strpos($line, '}') === false
+            if (\strpos($line, '{') === false
+                || \strpos($line, '}') === false
             ) {
                 $this->emitIssue(
                     Issue::CompatiblePHP7,
@@ -1090,7 +1090,7 @@ class ParseVisitor extends ScopeVisitor
     private function recordClassAlias(Node $node)
     {
         $args = $node->children['args']->children;
-        if (count($args) < 2 || count($args) > 3) {
+        if (\count($args) < 2 || \count($args) > 3) {
             return;
         }
         try {
@@ -1123,13 +1123,13 @@ class ParseVisitor extends ScopeVisitor
      */
     private function resolveClassNameInContext($arg)
     {
-        if (is_string($arg)) {
+        if (\is_string($arg)) {
             // Class_alias treats arguments as fully qualified strings.
             return FullyQualifiedClassName::fromFullyQualifiedString($arg);
         }
         if ($arg instanceof Node
             && $arg->kind === \ast\AST_CLASS_CONST
-            && strcasecmp($arg->children['const'], 'class') === 0
+            && \strcasecmp($arg->children['const'], 'class') === 0
         ) {
             $class_type = (new ContextNode(
                 $this->code_base,
