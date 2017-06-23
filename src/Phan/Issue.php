@@ -55,7 +55,7 @@ class Issue
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
-    const TypeMagicVoidWithReturn   = 'TypeMagicVoidWithReturn';
+    const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
