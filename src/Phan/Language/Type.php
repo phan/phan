@@ -222,22 +222,22 @@ class Type
             ), $is_nullable);
         }
 
-        assert(
+        \assert(
             !empty($namespace),
             "Namespace cannot be empty"
         );
 
-        assert(
+        \assert(
             '\\' === $namespace[0],
             "Namespace must be fully qualified"
         );
 
-        assert(
+        \assert(
             !empty($type_name),
             "Type name cannot be empty"
         );
 
-        assert(
+        \assert(
             false === \strpos(
                 $type_name,
                 '|'
@@ -505,7 +505,7 @@ class Type
                 return StaticType::instance($is_nullable);
         }
 
-        assert(
+        \assert(
             false,
             "No internal type with name $type_name"
         );
@@ -555,7 +555,7 @@ class Type
         string $fully_qualified_string
     ) : Type {
 
-        assert(
+        \assert(
             !empty($fully_qualified_string),
             "Type cannot be empty"
         );
@@ -585,7 +585,7 @@ class Type
             $namespace = '\\' . $namespace;
         }
 
-        assert(
+        \assert(
             !empty($namespace) && !empty($type_name),
             "Type was not fully qualified"
         );
@@ -619,7 +619,7 @@ class Type
         int $source
     ) : Type {
 
-        assert(
+        \assert(
             $string !== '',
             "Type cannot be empty"
         );
@@ -720,7 +720,7 @@ class Type
             // to see if this type is a reference to 'parent' and
             // dealing with it there. We don't want to have this
             // method be dependent on the code base
-            assert(
+            \assert(
                 'parent' !== $non_generic_array_type_name,
                 __METHOD__ . " does not know how to handle the type name 'parent'"
             );
@@ -741,7 +741,7 @@ class Type
             // to see if this type is a reference to 'parent' and
             // dealing with it there. We don't want to have this
             // method be dependent on the code base
-            assert(
+            \assert(
                 'parent' !== $type_name,
                 __METHOD__ . " does not know how to handle the type name 'parent'"
             );
@@ -1024,13 +1024,13 @@ class Type
      */
     public function genericArrayElementType() : Type
     {
-        assert(
+        \assert(
             $this->isGenericArray(),
             "Cannot call genericArrayElementType on non-generic array"
         );
 
         if (($pos = strrpos($this->getName(), '[]')) !== false) {
-            assert(
+            \assert(
                 $this->getName() !== '[]' && $this->getName() !== 'array',
                 "Non-generic type requested to be non-generic"
             );
@@ -1101,7 +1101,7 @@ class Type
                 return [];
             }
 
-            assert($fqsen instanceof FullyQualifiedClassName);
+            \assert($fqsen instanceof FullyQualifiedClassName);
 
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 return [];
@@ -1145,7 +1145,7 @@ class Type
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        assert(
+        \assert(
             $recursion_depth < 20,
             "Recursion has gotten out of hand"
         );
@@ -1164,7 +1164,7 @@ class Type
             return $union_type;
         }
 
-        assert($class_fqsen instanceof FullyQualifiedClassName);
+        \assert($class_fqsen instanceof FullyQualifiedClassName);
 
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             return $union_type;
@@ -1220,14 +1220,14 @@ class Type
     public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
     {
         $fqsen = $this->asFQSEN();
-        assert($fqsen instanceof FullyQualifiedClassName);
+        \assert($fqsen instanceof FullyQualifiedClassName);
 
         $this_clazz = $code_base->getClassByFQSEN(
             $fqsen
         );
 
         $parent_fqsen = $parent->asFQSEN();
-        assert($parent_fqsen instanceof FullyQualifiedClassName);
+        \assert($parent_fqsen instanceof FullyQualifiedClassName);
 
         $parent_clazz = $code_base->getClassByFQSEN(
             $parent_fqsen

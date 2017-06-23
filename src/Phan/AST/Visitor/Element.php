@@ -142,7 +142,7 @@ class Element
             return $visitor->{$fn_name}($node);
         } else {
             Debug::printNode($node);
-            assert(false, 'All node kinds must match');
+            \assert(false, 'All node kinds must match');
         }
     }
 
@@ -204,7 +204,7 @@ class Element
             case \ast\flags\BINARY_IS_GREATER_OR_EQUAL:
                 return $visitor->visitBinaryIsGreaterOrEqual($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -233,7 +233,7 @@ class Element
             case \ast\flags\CLASS_ANONYMOUS:
                 return $visitor->visitClassAnonymous($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -258,7 +258,7 @@ class Element
             case \ast\flags\NAME_RELATIVE:
                 return $visitor->visitNameRelative($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -281,7 +281,7 @@ class Element
             case \ast\flags\PARAM_VARIADIC:
                 return $visitor->visitParamVariadic($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -316,7 +316,7 @@ class Element
             case \ast\flags\TYPE_STRING:
                 return $visitor->visitUnionTypeString($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -345,7 +345,7 @@ class Element
             case \ast\flags\UNARY_SILENCE:
                 return $visitor->visitUnarySilence($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -374,7 +374,7 @@ class Element
             case \ast\flags\EXEC_REQUIRE_ONCE:
                 return $visitor->visitExecRequireOnce($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -409,7 +409,7 @@ class Element
             case \ast\flags\MAGIC_TRAIT:
                 return $visitor->visitMagicTrait($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -434,7 +434,7 @@ class Element
             case \ast\flags\USE_NORMAL:
                 return $visitor->visitUseNormal($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -593,7 +593,7 @@ class Element
             case \ast\flags\USE_NORMAL:
                 return $visitor->visitUseNormal($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)

@@ -142,7 +142,7 @@ class Analysis
             $context->withLineNumberStart($node->lineno ?? 0)
         ))($node);
 
-        assert(!empty($context), 'Context cannot be null');
+        \assert(!empty($context), 'Context cannot be null');
         $kind = $node->kind;
 
         // \ast\AST_GROUP_USE has \ast\AST_USE as a child.
@@ -165,7 +165,7 @@ class Analysis
             // updated context for the node
             $child_context = self::parseNodeInContextInner($code_base, $child_context, $child_node);
 
-            assert(!empty($child_context), 'Context cannot be null');
+            \assert(!empty($child_context), 'Context cannot be null');
         }
 
         // For closed context elements (that have an inner scope)

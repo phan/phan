@@ -25,7 +25,7 @@ class Daemon {
      * Callers should close after they are finished writing.
      */
     public static function run(CodeBase $code_base, \Closure $file_path_lister) {
-        assert($code_base->isUndoTrackingEnabled());
+        \assert($code_base->isUndoTrackingEnabled());
 
         $receivedSignal = false;
         // example requests over TCP
@@ -71,7 +71,7 @@ class Daemon {
                     // If we didn't get a connection, and it wasn't due
                     break;
                 }
-                assert(\is_resource($conn));
+                \assert(\is_resource($conn));
                 $request = Request::accept($code_base, $file_path_lister, $conn);
                 if ($request instanceof Request) {
                     return $request;  // We forked off a worker process successfully, and this is the worker process

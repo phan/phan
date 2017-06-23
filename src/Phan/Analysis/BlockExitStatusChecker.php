@@ -39,7 +39,7 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
             return self::STATUS_PROCEED;
         }
         $result = $this($node);
-        assert(\is_int($result), 'Expected int');
+        \assert(\is_int($result), 'Expected int');
         return $result;
     }
 

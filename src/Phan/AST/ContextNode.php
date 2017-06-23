@@ -154,7 +154,7 @@ class ContextNode
         if (!($node instanceof Node)) {
             return [];
         }
-        assert($node->kind === \ast\AST_TRAIT_ADAPTATIONS);
+        \assert($node->kind === \ast\AST_TRAIT_ADAPTATIONS);
 
         // NOTE: This fetches fully qualified names more than needed,
         // but this isn't optimized, since traits aren't frequently used in classes.
@@ -165,13 +165,13 @@ class ContextNode
         }
 
         foreach ($this->node->children ?? [] as $adaptation_node) {
-            assert($adaptation_node instanceof Node);
+            \assert($adaptation_node instanceof Node);
             if ($adaptation_node->kind === \ast\AST_TRAIT_ALIAS) {
                 $this->handleTraitAlias($adaptations_map, $adaptation_node);
             } else if ($adaptation_node->kind === \ast\AST_TRAIT_PRECEDENCE) {
                 $this->handleTraitPrecedence($adaptations_map, $adaptation_node);
             } else {
-                assert(false, ("Unknown adaptation node kind " . $adaptation_node->kind));
+                \assert(false, ("Unknown adaptation node kind " . $adaptation_node->kind));
             }
         }
         return $adaptations_map;
@@ -189,8 +189,8 @@ class ContextNode
         $trait_original_class_name_node = $trait_method_node->children['class'];
         $trait_original_method_name = $trait_method_node->children['method'];
         $trait_new_method_name = $adaptation_node->children['alias'] ?? $trait_original_method_name;
-        assert(\is_string($trait_original_method_name));
-        assert(\is_string($trait_new_method_name));
+        \assert(\is_string($trait_original_method_name));
+        \assert(\is_string($trait_new_method_name));
         $trait_fqsen = (new ContextNode(
             $this->code_base,
             $this->context,
@@ -273,7 +273,7 @@ class ContextNode
 
         // This is the class which will have the method hidden
         foreach ($adaptation_node->children['insteadof']->children as $trait_insteadof_class_name) {
-            assert(\is_string($trait_chosen_method_name));
+            \assert(\is_string($trait_chosen_method_name));
             $trait_insteadof_fqsen = (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -451,12 +451,12 @@ class ContextNode
             );
         }
 
-        assert(
+        \assert(
             \is_string($method_name),
             "Method name must be a string. Found non-string in context."
         );
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -602,7 +602,7 @@ class ContextNode
             }
         }
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -634,7 +634,7 @@ class ContextNode
      */
     public function getVariable() : Variable
     {
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -680,7 +680,7 @@ class ContextNode
             // Swallow it
         }
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -731,7 +731,7 @@ class ContextNode
         bool $is_static
     ) : Property {
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -955,7 +955,7 @@ class ContextNode
             // because we'll create our own property
         }
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -1024,12 +1024,12 @@ class ContextNode
     public function getConst() : GlobalConstant
     {
         $node = $this->node;
-        assert(
+        \assert(
             $node instanceof \ast\Node,
             '$node must be a node'
         );
 
-        assert(
+        \assert(
             $node->kind === \ast\AST_CONST,
             "Node must be of type \ast\AST_CONST"
         );
@@ -1114,12 +1114,12 @@ class ContextNode
      */
     public function getClassConst() : ClassConstant
     {
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
 
-        assert(
+        \assert(
             $this->node->kind === \ast\AST_CLASS_CONST,
             "Node must be of type \ast\AST_CLASS_CONST"
         );
@@ -1206,12 +1206,12 @@ class ContextNode
      */
     public function getUnqualifiedNameForAnonymousClass() : string
     {
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
 
-        assert(
+        \assert(
             (bool)($this->node->flags & \ast\flags\CLASS_ANONYMOUS),
             "Node must be an anonymous class node"
         );
@@ -1369,7 +1369,7 @@ class ContextNode
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($this->node->lineno-1);
             $line = $ftemp->current();
-            assert(\is_string($line));
+            \assert(\is_string($line));
             unset($ftemp);
             if (strpos($line, '}[') === false
                 || strpos($line, ']}') === false

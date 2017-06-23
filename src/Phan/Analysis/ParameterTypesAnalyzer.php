@@ -59,7 +59,7 @@ class ParameterTypesAnalyzer
                 } else {
                     // Make sure the class exists
                     $type_fqsen = $type->asFQSEN();
-                    assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
+                    \assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
                     if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
                         Issue::maybeEmit(
                             $code_base,

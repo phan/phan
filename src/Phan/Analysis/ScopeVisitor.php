@@ -155,7 +155,7 @@ abstract class ScopeVisitor extends AnalysisVisitor {
         string $prefix = '',
         int $flags = 0
     ) : array {
-        assert($node->kind == \ast\AST_USE,
+        \assert($node->kind == \ast\AST_USE,
             'Method takes AST_USE nodes');
 
         $map = [];

@@ -26,7 +26,7 @@ final class StaticType extends Type
                 $nullable_instance = static::make('\\', static::NAME, [], true, Type::FROM_TYPE);
             }
 
-            assert($nullable_instance instanceof static);
+            \assert($nullable_instance instanceof static);
             return $nullable_instance;
         }
 
@@ -34,10 +34,10 @@ final class StaticType extends Type
 
         if (empty($instance)) {
             $instance = static::make('\\', static::NAME, [], false, Type::FROM_TYPE);
-            assert($instance instanceof static);
+            \assert($instance instanceof static);
         }
 
-        assert($instance instanceof static);
+        \assert($instance instanceof static);
         return $instance;
     }
 

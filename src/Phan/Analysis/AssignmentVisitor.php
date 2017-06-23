@@ -87,7 +87,7 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visit(Node $node) : Context
     {
-        assert(
+        \assert(
             false,
             "Unknown left side of assignment in {$this->context} with node type "
             . Debug::nodeName($node)
@@ -330,7 +330,7 @@ class AssignmentVisitor extends AnalysisVisitor
             return $this->context;
         }
 
-        assert(\is_string($property_name), "Property must be string");
+        \assert(\is_string($property_name), "Property must be string");
 
         try {
             $class_list = (new ContextNode(
@@ -481,7 +481,7 @@ class AssignmentVisitor extends AnalysisVisitor
             return $this->context;
         }
 
-        assert(\is_string($property_name), "Static property must be string");
+        \assert(\is_string($property_name), "Static property must be string");
 
         try {
             $class_list = (new ContextNode(

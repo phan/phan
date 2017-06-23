@@ -93,7 +93,7 @@ class Property extends ClassElement
      */
     public function getFQSEN() : FullyQualifiedPropertyName
     {
-        assert(!empty($this->fqsen), "FQSEN must be defined");
+        \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 }

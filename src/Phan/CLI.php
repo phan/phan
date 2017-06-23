@@ -386,7 +386,7 @@ class CLI
         // way during analysis. With our parallelization mechanism, there
         // is no shared state between processes, making it impossible to
         // have a complete set of reference lists.
-        assert(Config::get()->processes === 1
+        \assert(Config::get()->processes === 1
             || !Config::get()->dead_code_detection,
             "We cannot run dead code detection on more than one core.");
     }

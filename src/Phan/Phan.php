@@ -155,7 +155,7 @@ class Phan implements IgnoredFilesFilterInterface {
 
         $request = null;
         if ($is_daemon_request) {
-            assert($code_base->isUndoTrackingEnabled());
+            \assert($code_base->isUndoTrackingEnabled());
             // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
             // TODO: check for conflicts with other config options - incompatible with dump_ast, dump_signatures_file, output-file, etc.
             // incompatible with dead_code_detection
@@ -165,7 +165,7 @@ class Phan implements IgnoredFilesFilterInterface {
                 error_log("Finished serving requests, exiting");
                 exit(2);
             }
-            assert($request instanceof Request);
+            \assert($request instanceof Request);
             self::$printer = $request->getPrinter();
 
             // This is the list of all of the parsed files
@@ -259,7 +259,7 @@ class Phan implements IgnoredFilesFilterInterface {
         // excessively.
         $process_count = count($process_file_list_map);
 
-        assert($process_count > 0 && $process_count <= Config::get()->processes,
+        \assert($process_count > 0 && $process_count <= Config::get()->processes,
             "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used.");
 
         CLI::progress('analyze', 0.0);

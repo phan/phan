@@ -39,7 +39,7 @@ class Ordering
         array $analysis_file_list
     ) : array {
 
-        assert($process_count > 0,
+        \assert($process_count > 0,
             "The process count must be greater than zero.");
 
         if (Config::get()->randomize_file_order) {

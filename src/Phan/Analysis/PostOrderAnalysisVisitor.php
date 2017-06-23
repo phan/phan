@@ -93,7 +93,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['expr']
         );
 
-        assert(
+        \assert(
             $node->children['var'] instanceof Node,
             "Expected left side of assignment to be a var"
         );
@@ -592,7 +592,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the method/function/closure we're in
         $method = $this->context->getFunctionLikeInScope($this->code_base);
 
-        assert(!empty($method),
+        \assert(!empty($method),
             "We're supposed to be in either method or closure scope.");
 
         // Figure out what we intend to return
@@ -1207,14 +1207,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitMethod(Decl $node) : Context
     {
-        assert($this->context->isInFunctionLikeScope(),
+        \assert($this->context->isInFunctionLikeScope(),
             "Must be in function-like scope to get method");
 
         $method = $this->context->getFunctionLikeInScope($this->code_base);
 
         $return_type = $method->getUnionType();
 
-        assert($method instanceof Method,
+        \assert($method instanceof Method,
             "Function found where method expected");
 
         $has_interface_class = false;
@@ -1474,7 +1474,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->analyzeNoOp($node, Issue::NoopProperty);
         } else {
 
-            assert(isset($node->children['expr'])
+            \assert(isset($node->children['expr'])
                 || isset($node->children['class']),
                     "Property nodes must either have an expression or class");
 

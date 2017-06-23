@@ -106,7 +106,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) {
-        assert(
+        \assert(
             false !== \strpos(
                 $fully_qualified_string,
                 '::'
@@ -126,7 +126,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
 
         // Make sure that we're actually getting a class
         // name reference back
-        assert(
+        \assert(
             $fully_qualified_class_name instanceof FullyQualifiedClassName,
             "FQSEN must be an instanceof FullyQualifiedClassName"
         );
@@ -136,7 +136,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(\is_int($alternate_id), "Alternate must be an integer");
+        \assert(\is_int($alternate_id), "Alternate must be an integer");
 
         return static::make(
             $fully_qualified_class_name,
@@ -161,14 +161,14 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         // Test to see if we have a class defined
         if (false === \strpos($fqsen_string, '::')) {
 
-            assert(
+            \assert(
                 $context->isInClassScope(),
                 "Cannot reference class element without class name when not in class scope."
             );
 
             $fully_qualified_class_name = $context->getClassFQSEN();
         } else {
-            assert(
+            \assert(
                 false !== \strpos(
                     $fqsen_string,
                     '::'
@@ -193,7 +193,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         $name = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        assert(
+        \assert(
             \is_int($alternate_id),
             "Alternate must be an integer"
         );
@@ -238,7 +238,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         int $alternate_id
     ) {
 
-        assert($alternate_id < 1000,
+        \assert($alternate_id < 1000,
             "Your alternate IDs have run away");
 
         return static::make(
@@ -267,7 +267,7 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         int $alternate_id
     ) {
 
-        assert($alternate_id < 1000,
+        \assert($alternate_id < 1000,
             "Your alternate IDs have run away");
 
         return static::make(

@@ -41,11 +41,11 @@ class ParallelParentCollector implements IssueCollectorInterface
     public function __construct(
         IssueCollectorInterface $base_collector
     ) {
-        assert(extension_loaded('sysvsem'),
+        \assert(extension_loaded('sysvsem'),
             'PHP must be compiled with --enable-sysvsem in order to use -j(>=2).'
         );
 
-        assert(extension_loaded('sysvmsg'),
+        \assert(extension_loaded('sysvmsg'),
             'PHP must be compiled with --enable-sysvmsg in order to use -j(>=2).'
         );
 
@@ -71,7 +71,7 @@ class ParallelParentCollector implements IssueCollectorInterface
             $this->message_queue_resource
         );
 
-        assert($success,
+        \assert($success,
             "Failed to remove queue with ID {$this->message_queue_resource}");
     }
 
@@ -114,7 +114,7 @@ class ParallelParentCollector implements IssueCollectorInterface
                 $message,
                 true
             )) {
-                assert($message instanceof IssueInstance,
+                \assert($message instanceof IssueInstance,
                     "Messages must be of type IssueInstance.");
 
                 // Cast the message to an IssueInstance

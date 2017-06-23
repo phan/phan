@@ -431,7 +431,7 @@ class Clazz extends AddressableElement
         }
 
         $parent_fqsen = $parent_type_option->get()->asFQSEN();
-        assert($parent_fqsen instanceof FullyQualifiedClassName);
+        \assert($parent_fqsen instanceof FullyQualifiedClassName);
 
         return $code_base->getClassByFQSEN(
             $parent_fqsen
@@ -1832,7 +1832,7 @@ class Clazz extends AddressableElement
             return;
         }
 
-        assert(
+        \assert(
             $code_base->hasClassWithFQSEN($this->getParentClassFQSEN()),
             "Clazz should already have been proven to exist."
         );

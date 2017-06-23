@@ -421,7 +421,7 @@ class CodeBase
      */
     public function resolveClassAliases()
     {
-        assert(!$this->undo_tracker, 'should only call this after daemon mode is finished');
+        \assert(!$this->undo_tracker, 'should only call this after daemon mode is finished');
         // loop through fqsen_alias_map and add entries to fqsen_class_map.
         foreach ($this->fqsen_alias_map as $original_fqsen => $alias_set) {
             $this->resolveClassAliasesForAliasSet($original_fqsen, $alias_set);
@@ -437,7 +437,7 @@ class CodeBase
             // The original class does not exist.
             // Emit issues at the point of every single class_alias call with that original class.
             foreach ($alias_set as $alias_record) {
-                assert($alias_record instanceof ClassAliasRecord);
+                \assert($alias_record instanceof ClassAliasRecord);
                 Issue::maybeEmit(
                     $this,
                     $alias_record->context,
@@ -452,7 +452,7 @@ class CodeBase
         // The original class exists. Attempt to create aliases of the original class.
         $class = $this->getClassByFQSEN($original_fqsen);
         foreach ($alias_set as $alias_record) {
-            assert($alias_record instanceof ClassAliasRecord);
+            \assert($alias_record instanceof ClassAliasRecord);
             $alias_fqsen = $alias_record->alias_fqsen;
             // Don't do anything if there is a real class, or if an earlier class_alias created an alias.
             if ($this->hasClassWithFQSEN($alias_fqsen)) {
@@ -619,7 +619,7 @@ class CodeBase
      */
     public function getMethodSetByName(string $name) : Set
     {
-        assert(Config::get()->dead_code_detection,
+        \assert(Config::get()->dead_code_detection,
             __METHOD__ . ' can only be called when dead code '
             . ' detection is enabled.'
         );

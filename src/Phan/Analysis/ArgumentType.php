@@ -335,7 +335,7 @@ class ArgumentType
                 }
 
                 $alternate_parameter = $candidate_alternate_parameter;
-                assert($alternate_parameter instanceof Variable);
+                \assert($alternate_parameter instanceof Variable);
 
                 // See if the argument can be cast to the
                 // parameter

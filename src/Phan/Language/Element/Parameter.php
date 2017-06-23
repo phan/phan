@@ -169,7 +169,7 @@ class Parameter extends Variable
         CodeBase $code_base,
         Node $node
     ) : array {
-        assert($node instanceof Node, "node was not an \\ast\\Node");
+        \assert($node instanceof Node, "node was not an \\ast\\Node");
 
         $parameter_list = [];
         $is_optional_seen = false;
@@ -251,7 +251,7 @@ class Parameter extends Variable
         Node $node
     ) : Parameter {
 
-        assert($node instanceof Node, "node was not an \\ast\\Node");
+        \assert($node instanceof Node, "node was not an \\ast\\Node");
 
         // Get the type of the parameter
         $union_type = UnionType::fromNode(

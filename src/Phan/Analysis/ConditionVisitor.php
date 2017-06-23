@@ -148,7 +148,7 @@ class ConditionVisitor extends KindVisitorImplementation
                     if (\is_null($variable)) {
                         return $context;
                     }
-                    assert(!\is_null($variable));  // redundant annotation for phan.
+                    \assert(!\is_null($variable));  // redundant annotation for phan.
 
                     // Make a copy of the variable
                     $variable = clone($variable);
@@ -307,7 +307,7 @@ class ConditionVisitor extends KindVisitorImplementation
             if (\is_null($variable)) {
                 return $context;
             }
-            assert(!\is_null($variable));  // redundant annotation for phan.
+            \assert(!\is_null($variable));  // redundant annotation for phan.
 
             if (!$variable->getUnionType()->containsNullable()) {
                 return $context;
@@ -415,7 +415,7 @@ class ConditionVisitor extends KindVisitorImplementation
             if (\is_null($variable)) {
                 return $context;
             }
-            assert(!\is_null($variable));  // redundant annotation for phan.
+            \assert(!\is_null($variable));  // redundant annotation for phan.
 
             // Get the type that we're checking it against
             $type = UnionType::fromNode(
@@ -612,7 +612,7 @@ class ConditionVisitor extends KindVisitorImplementation
             if (\is_null($variable)) {
                 return $context;
             }
-            assert(!\is_null($variable));  // redundant annotation for phan.
+            \assert(!\is_null($variable));  // redundant annotation for phan.
 
             if ($variable->getUnionType()->isEmpty()) {
                 $variable->getUnionType()->addType(

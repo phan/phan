@@ -114,7 +114,7 @@ class UnionType implements \Serializable
 
         return new UnionType(
             \array_map(function (string $type_name) use ($context, $type_string, $source) {
-                assert($type_name !== '', "Type cannot be empty.");
+                \assert($type_name !== '', "Type cannot be empty.");
                 return Type::fromStringInContext(
                     $type_name,
                     $context,
@@ -1279,7 +1279,7 @@ class UnionType implements \Serializable
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        assert(
+        \assert(
             $recursion_depth < 10,
             "Recursion has gotten out of hand"
         );
