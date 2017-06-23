@@ -5,13 +5,16 @@ use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Type;
 use Phan\Language\Context;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\StringType;
 use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -128,24 +131,24 @@ class ConditionVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @param Node $varNode
+     * @param Node $var_node
      * @param Node|int|float|string $expr
      * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
      */
-    private function analyzeVarIsIdentical(Node $varNode, $expr) : Context
+    private function analyzeVarIsIdentical(Node $var_node, $expr) : Context
     {
-        $name = $varNode->children['name'] ?? null;
+        $name = $var_node->children['name'] ?? null;
         $context = $this->context;
         if (is_string($name) && $name) {
             try {
                 $exprType = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $this->context, $expr);
                 if ($exprType) {
                     // Get the variable we're operating on
-                    $variable = (new ContextNode(
-                        $this->code_base,
-                        $context,
-                        $varNode
-                    ))->getVariable();
+                    $variable = $this->getVariableFromScope($var_node);
+                    if (\is_null($variable)) {
+                        return $context;
+                    }
+                    assert(!\is_null($variable));  // redundant annotation for phan.
 
                     // Make a copy of the variable
                     $variable = clone($variable);
@@ -296,15 +299,15 @@ class ConditionVisitor extends KindVisitorImplementation
         return $this->removeNullFromVariable($node, $this->context);
     }
 
-    private function removeNullFromVariable(Node $varNode, Context $context) : Context
+    private function removeNullFromVariable(Node $var_node, Context $context) : Context
     {
         try {
             // Get the variable we're operating on
-            $variable = (new ContextNode(
-                $this->code_base,
-                $context,
-                $varNode
-            ))->getVariable();
+            $variable = $this->getVariableFromScope($var_node);
+            if (\is_null($variable)) {
+                return $context;
+            }
+            assert(!\is_null($variable));  // redundant annotation for phan.
 
             if (!$variable->getUnionType()->containsNullable()) {
                 return $context;
@@ -331,6 +334,62 @@ class ConditionVisitor extends KindVisitorImplementation
     }
 
     /**
+     * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.
+     *                     or if assertions won't be applied?
+     * @throws IssueException if variable is undeclared and not ignored.
+     * @see UnionTypeVisitor->visitVar
+     *
+     * TODO: support assertions on superglobals, within the current file scope?
+     */
+    private function getVariableFromScope(Node $var_node) {
+        if (!($var_node instanceof Node || $var_node->kind !== \ast\AST_VAR)) {
+            return null;
+        }
+        $var_name_node = $var_node->children['name'] ?? null;
+
+        if ($var_name_node instanceof Node) {
+            // This is nonsense. Give up, but check if it's a type other than int/string.
+            // (e.g. to catch typos such as $$this->foo = bar;)
+            $name_node_type = (new UnionTypeVisitor($this->code_base, $this->context, true))($var_name_node);
+            static $int_or_string_type;
+            if ($int_or_string_type === null) {
+                $int_or_string_type = new UnionType();
+                $int_or_string_type->addType(StringType::instance(false));
+                $int_or_string_type->addType(IntType::instance(false));
+                $int_or_string_type->addType(NullType::instance(false));
+            }
+            if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
+                Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $var_name_node->lineno ?? 0, (string)$name_node_type);
+            }
+
+            return null;
+        }
+
+        $var_name = (string)$var_name_node;
+
+        if (!$this->context->getScope()->hasVariableWithName($var_name)) {
+            if (Variable::isHardcodedVariableInScopeWithName($var_name, $this->context->isInGlobalScope())) {
+                return null;
+            }
+            if (!Config::get()->ignore_undeclared_variables_in_global_scope
+                || !$this->context->isInGlobalScope()
+            ) {
+                throw new IssueException(
+                    Issue::fromType(Issue::UndeclaredVariable)(
+                        $this->context->getFile(),
+                        $var_node->lineno ?? 0,
+                        [$var_name]
+                    )
+                );
+            }
+            return null;
+        }
+        return $this->context->getScope()->getVariableByName(
+            $var_name
+        );
+    }
+
+    /**
      * @param Node $node
      * A node to parse
      *
@@ -343,7 +402,8 @@ class ConditionVisitor extends KindVisitorImplementation
         //$this->checkVariablesDefined($node);
         // Only look at things of the form
         // `$variable instanceof ClassName`
-        if ($node->children['expr']->kind !== \ast\AST_VAR) {
+        $expr_node = $node->children['expr'];
+        if (!($expr_node instanceof Node) || $expr_node->kind !== \ast\AST_VAR) {
             return $this->context;
         }
 
@@ -351,11 +411,11 @@ class ConditionVisitor extends KindVisitorImplementation
 
         try {
             // Get the variable we're operating on
-            $variable = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['expr']
-            ))->getVariable();
+            $variable = $this->getVariableFromScope($expr_node);
+            if (\is_null($variable)) {
+                return $context;
+            }
+            assert(!\is_null($variable));  // redundant annotation for phan.
 
             // Get the type that we're checking it against
             $type = UnionType::fromNode(
@@ -547,11 +607,12 @@ class ConditionVisitor extends KindVisitorImplementation
 
         try {
             // Get the variable we're operating on
-            $variable = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['args']->children[0]
-            ))->getVariable();
+            $variable = $this->getVariableFromScope($node->children['args']->children[0]);
+
+            if (\is_null($variable)) {
+                return $context;
+            }
+            assert(!\is_null($variable));  // redundant annotation for phan.
 
             if ($variable->getUnionType()->isEmpty()) {
                 $variable->getUnionType()->addType(
