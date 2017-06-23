@@ -747,7 +747,7 @@ class UnionType implements \Serializable
      */
     public function typeCount() : int
     {
-        return count($this->type_set);
+        return \count($this->type_set);
     }
 
     /**
@@ -756,7 +756,7 @@ class UnionType implements \Serializable
      */
     public function isEmpty() : bool
     {
-        return ($this->typeCount() < 1);
+        return \count($this->type_set) === 0;
     }
 
     /**
