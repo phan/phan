@@ -100,7 +100,7 @@ abstract class Scope
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
-        assert($this->hasParentScope(),
+        \assert($this->hasParentScope(),
             "Cannot get class FQSEN on scope");
 
         return $this->getParentScope()->getClassFQSEN();
@@ -122,7 +122,7 @@ abstract class Scope
      */
     public function getFunctionLikeFQSEN()
     {
-        assert($this->hasParentScope(),
+        \assert($this->hasParentScope(),
             "Cannot get method/function/closure FQSEN on scope");
 
         return $this->getParentScope()->getFunctionLikeFQSEN();
@@ -184,7 +184,7 @@ abstract class Scope
      */
     public function addGlobalVariable(Variable $variable)
     {
-        assert($this->hasParentScope(),
+        \assert($this->hasParentScope(),
             "No global scope available. This should not happen.");
 
         $this->getParentScope()->addGlobalVariable($variable);
@@ -196,7 +196,7 @@ abstract class Scope
      */
     public function hasGlobalVariableWithName(string $name) : bool
     {
-        assert($this->hasParentScope(),
+        \assert($this->hasParentScope(),
             "No global scope available. This should not happen.");
 
         return $this->getParentScope()->hasGlobalVariableWithName(
@@ -210,7 +210,7 @@ abstract class Scope
      */
     public function getGlobalVariableByName(string $name) : Variable
     {
-        assert($this->hasParentScope(),
+        \assert($this->hasParentScope(),
             "No global scope available. This should not happen.");
 
         return $this->getParentScope()->getGlobalVariableByName($name);
@@ -238,7 +238,7 @@ abstract class Scope
      */
     public function getTemplateTypeMap() : array
     {
-        return array_merge(
+        return \array_merge(
             $this->template_type_map,
             $this->hasParentScope()
                 ? $this->getParentScope()->getTemplateTypeMap()
@@ -283,7 +283,7 @@ abstract class Scope
         string $template_type_identifier
     ) : TemplateType {
 
-        assert(
+        \assert(
             $this->hasTemplateType($template_type_identifier),
             "Cannot get template type with identifier $template_type_identifier"
         );

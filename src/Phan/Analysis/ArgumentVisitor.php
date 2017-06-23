@@ -113,7 +113,7 @@ class ArgumentVisitor extends KindVisitorImplementation
 
             // Only look at properties with names that aren't
             // variables or whatever
-            if (!is_string($node->children['prop'])) {
+            if (!\is_string($node->children['prop'])) {
                 return;
             }
 
@@ -177,7 +177,7 @@ class ArgumentVisitor extends KindVisitorImplementation
             return;
         }
 
-        if (!is_string($method_name)) {
+        if (!\is_string($method_name)) {
             return;
         }
 

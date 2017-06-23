@@ -78,7 +78,7 @@ class ContextNode
             return [];
         }
 
-        return array_map(function ($name_node) {
+        return \array_map(function ($name_node) {
             return (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -108,7 +108,7 @@ class ContextNode
             return [];
         }
 
-        return array_map(function($name_node) : FQSEN {
+        return \array_map(function($name_node) : FQSEN {
             return (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -128,8 +128,8 @@ class ContextNode
         // TODO: In a subsequent PR, try to make trait analysis work when $adaptations_map has multiple possible traits.
         $trait_fqsen_string = $this->getQualifiedName();
         if ($trait_fqsen_string === '') {
-            if (count($adaptations_map) === 1) {
-                return reset($adaptations_map)->getTraitFQSEN();
+            if (\count($adaptations_map) === 1) {
+                return \reset($adaptations_map)->getTraitFQSEN();
             } else {
                 return null;
             }
@@ -154,7 +154,7 @@ class ContextNode
         if (!($node instanceof Node)) {
             return [];
         }
-        assert($node->kind === \ast\AST_TRAIT_ADAPTATIONS);
+        \assert($node->kind === \ast\AST_TRAIT_ADAPTATIONS);
 
         // NOTE: This fetches fully qualified names more than needed,
         // but this isn't optimized, since traits aren't frequently used in classes.
@@ -165,13 +165,13 @@ class ContextNode
         }
 
         foreach ($this->node->children ?? [] as $adaptation_node) {
-            assert($adaptation_node instanceof Node);
+            \assert($adaptation_node instanceof Node);
             if ($adaptation_node->kind === \ast\AST_TRAIT_ALIAS) {
                 $this->handleTraitAlias($adaptations_map, $adaptation_node);
             } else if ($adaptation_node->kind === \ast\AST_TRAIT_PRECEDENCE) {
                 $this->handleTraitPrecedence($adaptations_map, $adaptation_node);
             } else {
-                assert(false, ("Unknown adaptation node kind " . $adaptation_node->kind));
+                \assert(false, ("Unknown adaptation node kind " . $adaptation_node->kind));
             }
         }
         return $adaptations_map;
@@ -189,8 +189,8 @@ class ContextNode
         $trait_original_class_name_node = $trait_method_node->children['class'];
         $trait_original_method_name = $trait_method_node->children['method'];
         $trait_new_method_name = $adaptation_node->children['alias'] ?? $trait_original_method_name;
-        assert(is_string($trait_original_method_name));
-        assert(is_string($trait_new_method_name));
+        \assert(\is_string($trait_original_method_name));
+        \assert(\is_string($trait_new_method_name));
         $trait_fqsen = (new ContextNode(
             $this->code_base,
             $this->context,
@@ -206,7 +206,7 @@ class ContextNode
                 $trait_method_node->lineno ?? 0,
                 $trait_new_method_name,
                 $trait_original_method_name,
-                '[' . implode(', ', array_map(function(TraitAdaptations $t) : string {
+                '[' . implode(', ', \array_map(function(TraitAdaptations $t) : string {
                     return (string) $t->getTraitFQSEN();
                 }, $adaptations_map)) . ']'
             );
@@ -273,7 +273,7 @@ class ContextNode
 
         // This is the class which will have the method hidden
         foreach ($adaptation_node->children['insteadof']->children as $trait_insteadof_class_name) {
-            assert(is_string($trait_chosen_method_name));
+            \assert(\is_string($trait_chosen_method_name));
             $trait_insteadof_fqsen = (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -320,7 +320,7 @@ class ContextNode
             && ($node->kind != \ast\AST_MAGIC_CONST)
         ) {
             $parent = $node;
-            $node = array_values($node->children ?? [])[0];
+            $node = \array_values($node->children ?? [])[0];
         }
 
         if (!($node instanceof \ast\Node)) {
@@ -451,12 +451,12 @@ class ContextNode
             );
         }
 
-        assert(
-            is_string($method_name),
+        \assert(
+            \is_string($method_name),
             "Method name must be a string. Found non-string in context."
         );
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -602,7 +602,7 @@ class ContextNode
             }
         }
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -634,7 +634,7 @@ class ContextNode
      */
     public function getVariable() : Variable
     {
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -680,7 +680,7 @@ class ContextNode
             // Swallow it
         }
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -731,7 +731,7 @@ class ContextNode
         bool $is_static
     ) : Property {
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -739,7 +739,7 @@ class ContextNode
         $property_name = $this->node->children['prop'];
 
         // Give up for things like C::$prop_name
-        if (!is_string($property_name)) {
+        if (!\is_string($property_name)) {
             throw new NodeException(
                 $this->node,
                 "Cannot figure out non-string property name"
@@ -955,7 +955,7 @@ class ContextNode
             // because we'll create our own property
         }
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -983,7 +983,7 @@ class ContextNode
             );
         }
 
-        $class = array_values($class_list)[0];
+        $class = \array_values($class_list)[0];
 
         $flags = 0;
         if ($this->node->kind == \ast\AST_STATIC_PROP) {
@@ -1024,12 +1024,12 @@ class ContextNode
     public function getConst() : GlobalConstant
     {
         $node = $this->node;
-        assert(
+        \assert(
             $node instanceof \ast\Node,
             '$node must be a node'
         );
 
-        assert(
+        \assert(
             $node->kind === \ast\AST_CONST,
             "Node must be of type \ast\AST_CONST"
         );
@@ -1114,12 +1114,12 @@ class ContextNode
      */
     public function getClassConst() : ClassConstant
     {
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
 
-        assert(
+        \assert(
             $this->node->kind === \ast\AST_CLASS_CONST,
             "Node must be of type \ast\AST_CLASS_CONST"
         );
@@ -1206,18 +1206,18 @@ class ContextNode
      */
     public function getUnqualifiedNameForAnonymousClass() : string
     {
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
 
-        assert(
+        \assert(
             (bool)($this->node->flags & \ast\flags\CLASS_ANONYMOUS),
             "Node must be an anonymous class node"
         );
 
         $class_name = 'anonymous_class_'
-            . substr(md5(implode('|', [
+            . \substr(\md5(\implode('|', [
                 $this->context->getFile(),
                 $this->context->getLineNumberStart()
             ])), 0, 8);
@@ -1312,7 +1312,7 @@ class ContextNode
 
             // Lets just hope the 0th is the expression
             // we want
-            $temp = array_values($temp->children)[0];
+            $temp = \array_values($temp->children)[0];
         }
 
         if (!($temp instanceof Node)) {
@@ -1369,7 +1369,7 @@ class ContextNode
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($this->node->lineno-1);
             $line = $ftemp->current();
-            assert(is_string($line));
+            \assert(\is_string($line));
             unset($ftemp);
             if (strpos($line, '}[') === false
                 || strpos($line, ']}') === false

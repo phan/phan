@@ -202,7 +202,7 @@ class Type
         int $source
     ) : Type {
 
-        $namespace = trim($namespace);
+        $namespace = \trim($namespace);
 
         if ('\\' === $namespace && $source) {
             $type_name = self::canonicalNameFromName($type_name);
@@ -211,34 +211,34 @@ class Type
         // If this looks like a generic type string, explicitly
         // make it as such
         if (self::isGenericArrayString($type_name)
-            && ($pos = strrpos($type_name, '[]')) !== false
+            && ($pos = \strrpos($type_name, '[]')) !== false
         ) {
             return GenericArrayType::fromElementType(Type::make(
                 $namespace,
-                substr($type_name, 0, $pos),
+                \substr($type_name, 0, $pos),
                 $template_parameter_type_list,
                 false,
                 $source
             ), $is_nullable);
         }
 
-        assert(
+        \assert(
             !empty($namespace),
             "Namespace cannot be empty"
         );
 
-        assert(
+        \assert(
             '\\' === $namespace[0],
             "Namespace must be fully qualified"
         );
 
-        assert(
+        \assert(
             !empty($type_name),
             "Type name cannot be empty"
         );
 
-        assert(
-            false === strpos(
+        \assert(
+            false === \strpos(
                 $type_name,
                 '|'
             ),
@@ -257,12 +257,12 @@ class Type
         $key = ($is_nullable ? '?' : '') . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
-            $key .= '<' . implode(',', array_map(function (UnionType $union_type) {
+            $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) {
                 return (string)$union_type;
             }, $template_parameter_type_list)) . '>';
         }
 
-        $key = strtolower($key);
+        $key = \strtolower($key);
 
         return static::cachedGetInstanceHelper($namespace, $type_name, $template_parameter_type_list, $is_nullable, $key, false);
     }
@@ -350,7 +350,7 @@ class Type
         if ($lookup === null) {
             $lookup = self::createReservedConstantNameLookup();
         }
-        $result = $lookup[strtoupper(ltrim($name, '\\'))] ?? null;
+        $result = $lookup[\strtoupper(\ltrim($name, '\\'))] ?? null;
         if (isset($result)) {
             return new Some($result);
         }
@@ -433,7 +433,7 @@ class Type
     public static function fromObject($object) : Type
     {
         // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
-        return Type::fromInternalTypeName(gettype($object), false, self::FROM_PHPDOC);
+        return Type::fromInternalTypeName(\gettype($object), false, self::FROM_PHPDOC);
     }
 
     /**
@@ -461,10 +461,10 @@ class Type
         // When there's a nullability operator such as in
         // `?int[]`, it applies to the array rather than
         // the int
-        if (false !== ($pos = strrpos($type_name, '[]'))) {
+        if (false !== ($pos = \strrpos($type_name, '[]'))) {
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
-                    substr($type_name, 0, $pos),
+                    \substr($type_name, 0, $pos),
                     false,
                     $source
                 ),
@@ -475,7 +475,7 @@ class Type
         $type_name =
             self::canonicalNameFromName($type_name);
 
-        switch (strtolower($type_name)) {
+        switch (\strtolower($type_name)) {
             case 'array':
                 return ArrayType::instance($is_nullable);
             case 'bool':
@@ -505,7 +505,7 @@ class Type
                 return StaticType::instance($is_nullable);
         }
 
-        assert(
+        \assert(
             false,
             "No internal type with name $type_name"
         );
@@ -555,7 +555,7 @@ class Type
         string $fully_qualified_string
     ) : Type {
 
-        assert(
+        \assert(
             !empty($fully_qualified_string),
             "Type cannot be empty"
         );
@@ -577,7 +577,7 @@ class Type
 
         // Map the names of the types to actual types in the
         // template parameter type list
-        $template_parameter_type_list = array_map(function (string $type_name) {
+        $template_parameter_type_list = \array_map(function (string $type_name) {
             return Type::fromFullyQualifiedString($type_name)->asUnionType();
         }, $template_parameter_type_name_list);
 
@@ -585,7 +585,7 @@ class Type
             $namespace = '\\' . $namespace;
         }
 
-        assert(
+        \assert(
             !empty($namespace) && !empty($type_name),
             "Type was not fully qualified"
         );
@@ -619,7 +619,7 @@ class Type
         int $source
     ) : Type {
 
-        assert(
+        \assert(
             $string !== '',
             "Type cannot be empty"
         );
@@ -648,10 +648,10 @@ class Type
         // the type of each element
         $non_generic_array_type_name = $type_name;
         if ($is_generic_array_type
-           && false !== ($pos = strrpos($type_name, '[]'))
+           && false !== ($pos = \strrpos($type_name, '[]'))
         ) {
             $non_generic_array_type_name =
-                substr($type_name, 0, $pos);
+                \substr($type_name, 0, $pos);
         }
 
         // Check to see if the type name is mapped via
@@ -720,7 +720,7 @@ class Type
             // to see if this type is a reference to 'parent' and
             // dealing with it there. We don't want to have this
             // method be dependent on the code base
-            assert(
+            \assert(
                 'parent' !== $non_generic_array_type_name,
                 __METHOD__ . " does not know how to handle the type name 'parent'"
             );
@@ -741,7 +741,7 @@ class Type
             // to see if this type is a reference to 'parent' and
             // dealing with it there. We don't want to have this
             // method be dependent on the code base
-            assert(
+            \assert(
                 'parent' !== $type_name,
                 __METHOD__ . " does not know how to handle the type name 'parent'"
             );
@@ -873,11 +873,11 @@ class Type
         if ($source === Type::FROM_PHPDOC) {
             $type_name = self::canonicalNameFromName($type_name);  // Have to convert boolean[] to bool
         }
-        if (!array_key_exists($type_name, self::_internal_type_set)) {
+        if (!\array_key_exists($type_name, self::_internal_type_set)) {
             return false;
         }
         // All values of $type_name exist as a valid phpdoc type, but some don't exist as real types.
-        if ($source === Type::FROM_NODE && array_key_exists($type_name, self::_soft_internal_type_set)) {
+        if ($source === Type::FROM_NODE && \array_key_exists($type_name, self::_soft_internal_type_set)) {
             return false;
         }
         return true;
@@ -1024,20 +1024,20 @@ class Type
      */
     public function genericArrayElementType() : Type
     {
-        assert(
+        \assert(
             $this->isGenericArray(),
             "Cannot call genericArrayElementType on non-generic array"
         );
 
         if (($pos = strrpos($this->getName(), '[]')) !== false) {
-            assert(
+            \assert(
                 $this->getName() !== '[]' && $this->getName() !== 'array',
                 "Non-generic type requested to be non-generic"
             );
 
             return Type::make(
                 $this->getNamespace(),
-                substr($this->getName(), 0, $pos),
+                \substr($this->getName(), 0, $pos),
                 $this->template_parameter_type_list,
                 $this->getIsNullable(),
                 self::FROM_TYPE
@@ -1101,7 +1101,7 @@ class Type
                 return [];
             }
 
-            assert($fqsen instanceof FullyQualifiedClassName);
+            \assert($fqsen instanceof FullyQualifiedClassName);
 
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 return [];
@@ -1115,7 +1115,7 @@ class Type
                 $this->getTemplateParameterTypeList();
 
             $map = [];
-            foreach (array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
+            foreach (\array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
                 if (isset($template_parameter_type_list[$i])) {
                     $map[$identifier] = $template_parameter_type_list[$i];
                 }
@@ -1145,7 +1145,7 @@ class Type
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        assert(
+        \assert(
             $recursion_depth < 20,
             "Recursion has gotten out of hand"
         );
@@ -1164,7 +1164,7 @@ class Type
             return $union_type;
         }
 
-        assert($class_fqsen instanceof FullyQualifiedClassName);
+        \assert($class_fqsen instanceof FullyQualifiedClassName);
 
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             return $union_type;
@@ -1220,14 +1220,14 @@ class Type
     public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
     {
         $fqsen = $this->asFQSEN();
-        assert($fqsen instanceof FullyQualifiedClassName);
+        \assert($fqsen instanceof FullyQualifiedClassName);
 
         $this_clazz = $code_base->getClassByFQSEN(
             $fqsen
         );
 
         $parent_fqsen = $parent->asFQSEN();
-        assert($parent_fqsen instanceof FullyQualifiedClassName);
+        \assert($parent_fqsen instanceof FullyQualifiedClassName);
 
         $parent_clazz = $code_base->getClassByFQSEN(
             $parent_fqsen
@@ -1479,14 +1479,14 @@ class Type
 
         $match = [];
         $is_nullable = false;
-        if (preg_match('/' . self::type_regex. '/', $type_string, $match)) {
+        if (\preg_match('/' . self::type_regex. '/', $type_string, $match)) {
             $type_string = $match[1];
 
             // Rip out the nullability indicator if it
             // exists and note its nullability
             $is_nullable = ($match[2] ?? '') == '?';
             if ($is_nullable) {
-                $type_string = substr($type_string, 1);
+                $type_string = \substr($type_string, 1);
             }
 
             // If we have a generic array symbol '[]', append that back
@@ -1494,28 +1494,28 @@ class Type
             if (isset($match[12])) {
                 // Figure out the dimensionality of the type array
                 $gmatch = [];
-                if (preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
+                if (\preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
                     $type_string .= $gmatch[0];
                 }
             }
 
             $template_parameter_type_name_list = !empty($match[4])
-                ?  preg_split('/\s*,\s*/', $match[4])
+                ? \preg_split('/\s*,\s*/', $match[4])
                 : [];
         }
 
         // Determine if the type name is fully qualified
         // (as specified by a leading backslash).
-        $is_fully_qualified = (0 === strpos($type_string, '\\'));
+        $is_fully_qualified = (0 === \strpos($type_string, '\\'));
 
         $fq_class_name_elements =
-            array_filter(explode('\\', $type_string));
+            \array_filter(\explode('\\', $type_string));
 
         $class_name =
-            (string)array_pop($fq_class_name_elements);
+            (string)\array_pop($fq_class_name_elements);
 
         $namespace = ($is_fully_qualified ? '\\' : '')
-            . implode('\\', array_filter(
+            . implode('\\', \array_filter(
                 $fq_class_name_elements
             ));
 

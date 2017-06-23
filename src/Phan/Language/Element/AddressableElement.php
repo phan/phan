@@ -68,7 +68,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * structural element
      */
     public function getFQSEN() {
-        assert(!empty($this->fqsen), "FQSEN must be defined");
+        \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 
@@ -232,7 +232,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function getElementNamespace(CodeBase $code_base) : string
     {
         $element_fqsen = $this->getFQSEN();
-        assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);
+        \assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);
 
         // Figure out which namespace this element is within
         return $element_fqsen->getNamespace();

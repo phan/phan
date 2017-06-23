@@ -59,7 +59,7 @@ class ParameterTypesAnalyzer
                 } else {
                     // Make sure the class exists
                     $type_fqsen = $type->asFQSEN();
-                    assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
+                    \assert($type_fqsen instanceof FullyQualifiedClassName, 'non-native types must be class names');
                     if (!$code_base->hasClassWithFQSEN($type_fqsen)) {
                         Issue::maybeEmit(
                             $code_base,
@@ -180,7 +180,7 @@ class ParameterTypesAnalyzer
         // template type parameters we may have
         if ($type_option->isDefined()) {
             $o_parameter_list =
-                array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
+                \array_map(function (Parameter $parameter) use ($type_option, $code_base) : Parameter {
 
                     if (!$parameter->getUnionType()->hasTemplateType()) {
                         return $parameter;

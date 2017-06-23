@@ -111,7 +111,7 @@ class Func extends AddressableElement implements FunctionInterface
             // shouldn't happen
             return $context;
         }
-        assert($class_fqsen instanceof FullyQualifiedClassName);
+        \assert($class_fqsen instanceof FullyQualifiedClassName);
 
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             Issue::maybeEmit(
@@ -218,14 +218,14 @@ class Func extends AddressableElement implements FunctionInterface
         // Set the parameter list on the function
         $func->setParameterList($parameter_list);
 
-        $func->setNumberOfRequiredParameters(array_reduce(
+        $func->setNumberOfRequiredParameters(\array_reduce(
             $parameter_list,
             function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
             }, 0)
         );
 
-        $func->setNumberOfOptionalParameters(array_reduce(
+        $func->setNumberOfOptionalParameters(\array_reduce(
             $parameter_list, function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
             }, 0)
@@ -261,7 +261,7 @@ class Func extends AddressableElement implements FunctionInterface
             // See if we have a return type specified in the comment
             $union_type = $comment->getReturnType();
 
-            assert(!$union_type->hasSelfType(),
+            \assert(!$union_type->hasSelfType(),
                 "Function referencing self in $context");
 
             $func->getUnionType()->addUnionType($union_type);

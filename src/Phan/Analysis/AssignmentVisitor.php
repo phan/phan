@@ -87,7 +87,7 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visit(Node $node) : Context
     {
-        assert(
+        \assert(
             false,
             "Unknown left side of assignment in {$this->context} with node type "
             . Debug::nodeName($node)
@@ -285,13 +285,13 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzeSuperglobalDim(Node $node, string $variable_name) : Context {
         $dim = $node->children['dim'];
         if ('GLOBALS' === $variable_name) {
-            if (!is_string($dim)) {
+            if (!\is_string($dim)) {
                 // You're not going to believe this, but I just
                 // found a piece of code like $GLOBALS[mt_rand()].
                 // Super weird, right?
                 return $this->context;
             }
-            // assert(is_string($dim), "dim is not a string");
+            // assert(\is_string($dim), "dim is not a string");
 
             if (Variable::isHardcodedVariableInScopeWithName($dim, $this->context->isInGlobalScope())) {
                 // Don't override types of superglobals such as $_POST, $argv through $_GLOBALS['_POST'] = expr either. TODO: Warn.
@@ -326,11 +326,11 @@ class AssignmentVisitor extends AnalysisVisitor
         $property_name = $node->children['prop'];
 
         // Things like $foo->$bar
-        if (!is_string($property_name)) {
+        if (!\is_string($property_name)) {
             return $this->context;
         }
 
-        assert(is_string($property_name), "Property must be string");
+        \assert(\is_string($property_name), "Property must be string");
 
         try {
             $class_list = (new ContextNode(
@@ -477,11 +477,11 @@ class AssignmentVisitor extends AnalysisVisitor
         $property_name = $node->children['prop'];
 
         // Things like self::${$x}
-        if (!is_string($property_name)) {
+        if (!\is_string($property_name)) {
             return $this->context;
         }
 
-        assert(is_string($property_name), "Static property must be string");
+        \assert(\is_string($property_name), "Static property must be string");
 
         try {
             $class_list = (new ContextNode(

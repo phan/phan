@@ -26,7 +26,7 @@ class ClassScope extends ClosedScope {
             return $fqsen;
         }
 
-        assert($fqsen instanceof FullyQualifiedClassName,
+        \assert($fqsen instanceof FullyQualifiedClassName,
             "FQSEN must be a FullyQualifiedClassName");
     }
 

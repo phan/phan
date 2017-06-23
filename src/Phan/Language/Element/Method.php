@@ -133,7 +133,7 @@ class Method extends ClassElement implements FunctionInterface
      * (Names are all normalized in FullyQualifiedMethodName::make())
      */
     public function getIsMagic() : bool {
-        return array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET);
+        return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET);
     }
 
     /**
@@ -142,7 +142,7 @@ class Method extends ClassElement implements FunctionInterface
      * (Names are all normalized in FullyQualifiedMethodName::make())
      */
     public function getIsMagicAndVoid() : bool {
-        return array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
+        return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
     }
 
     /**
@@ -549,7 +549,7 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', $this->getParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
         if (!$this->getUnionType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getUnionType();
@@ -572,7 +572,7 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', $this->getRealParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->getRealParameterList()) . ')';
 
         if (!$this->getRealReturnType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getRealReturnType();

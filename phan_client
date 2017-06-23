@@ -148,7 +148,7 @@ class PhanPHPLinter {
         // TODO: check if the folder is within a folder with subdirectory .phan/config.php
         // TODO: Check if there is a lock before attempting to connect?
         $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);
-        if (!is_resource($client)) {
+        if (!\is_resource($client)) {
             // TODO: This should attempt to start up the phan daemon for the given folder?
             self::debugError("Phan daemon not running on " . ($opts->url));
             exit(0);
@@ -194,8 +194,8 @@ class PhanPHPLinter {
         $did_debug = false;
         // if ($response['issue_count'] > 0)
         $issues = $response['issues'];
-        if (!is_array($issues)) {
-            if (is_string($issues)) {
+        if (!\is_array($issues)) {
+            if (\is_string($issues)) {
                 self::debugError(sprintf("Invalid issues response from phan: %s\n", $issues));
             } else {
                 self::debugError(sprintf("Invalid type for issues response from phan: %s\n", gettype($issues)));
@@ -317,7 +317,7 @@ EOB;
         }
 
         $url = null;
-        foreach ((is_array($opts) ? $opts : []) as $key => $value) {
+        foreach ((\is_array($opts) ? $opts : []) as $key => $value) {
             switch($key) {
             case 's':
             case 'daemonize-socket':
@@ -338,10 +338,10 @@ EOB;
             case 'f':
             case 'flycheck-file':
                 // Add alias, for use in flycheck
-                if (is_array($this->temporary_file_map)) {
+                if (\is_array($this->temporary_file_map)) {
                     $this->usage('--flycheck-file should be specified only once.', 1);
                 }
-                if (!is_array($this->file_list) || count($this->file_list) !== 1) {
+                if (!\is_array($this->file_list) || count($this->file_list) !== 1) {
                     $this->usage('--flycheck-file should be specified after the first occurrence of -l.', 1);
                 }
                 $this->temporary_file_map = [
@@ -350,11 +350,11 @@ EOB;
                 break;
             case 't':
             case 'temporary-file-map':
-                if (is_array($this->temporary_file_map)) {
+                if (\is_array($this->temporary_file_map)) {
                     $this->usage('--temporary-file-map should be specified only once.', 1);
                 }
                 $mapping = json_decode($value, true);
-                if (!is_array($mapping)) {
+                if (!\is_array($mapping)) {
                     $this->usage('--temporary-file-map should be a JSON encoded map from source file to temporary file to analyze instead', 1);
                 }
                 $this->temporary_file_map = $mapping;
@@ -399,7 +399,7 @@ EOB;
         if (count($this->file_list) === 0) {
             $this->usage("This requires at least one file to analyze (with -l path/to/file", 1);
         }
-        if (is_array($this->temporary_file_map)) {
+        if (\is_array($this->temporary_file_map)) {
             foreach ($this->temporary_file_map as $original_path => $temporary_path) {
                 if (!in_array($original_path, $this->file_list)) {
                     $this->usage("Need to specify -l '$original_path' if a mapping is included", 1);

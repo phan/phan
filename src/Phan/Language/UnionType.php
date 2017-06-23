@@ -76,9 +76,9 @@ class UnionType implements \Serializable
         }
 
         return new UnionType(
-            array_map(function (string $type_name) {
+            \array_map(function (string $type_name) {
                 return Type::fromFullyQualifiedString($type_name);
-            }, explode('|', $fully_qualified_string))
+            }, \explode('|', $fully_qualified_string))
         );
     }
 
@@ -113,19 +113,19 @@ class UnionType implements \Serializable
         }
 
         return new UnionType(
-            array_map(function (string $type_name) use ($context, $type_string, $source) {
-                assert($type_name !== '', "Type cannot be empty.");
+            \array_map(function (string $type_name) use ($context, $type_string, $source) {
+                \assert($type_name !== '', "Type cannot be empty.");
                 return Type::fromStringInContext(
                     $type_name,
                     $context,
                     $source
                 );
-            }, array_filter(array_map(function (string $type_name) {
-                return trim($type_name);
+            }, \array_filter(\array_map(function (string $type_name) {
+                return \trim($type_name);
             }, explode('|', $type_string)), function(string $type_name) {
                 // Exclude empty type names
                 // Exclude namespaces without type names (e.g. `\`, `\NS\`)
-                return $type_name !== '' && preg_match('@\\\\[\[\]]*$@', $type_name) === 0;
+                return $type_name !== '' && \preg_match('@\\\\[\[\]]*$@', $type_name) === 0;
             }))
         );
     }
@@ -189,7 +189,7 @@ class UnionType implements \Serializable
     ) : array {
         $map = self::internalPropertyMap();
 
-        $canonical_class_name = strtolower($class_name);
+        $canonical_class_name = \strtolower($class_name);
 
         return $map[$canonical_class_name] ?? [];
     }
@@ -207,13 +207,13 @@ class UnionType implements \Serializable
         if (!$map) {
             $map_raw = require(__DIR__.'/Internal/PropertyMap.php');
             foreach ($map_raw as $key => $value) {
-                $map[strtolower($key)] = $value;
+                $map[\strtolower($key)] = $value;
             }
 
             // Merge in an empty type for dynamic properties on any
             // classes listed as supporting them.
             foreach (require(__DIR__.'/Internal/DynamicPropertyMap.php') as $class_name) {
-                $map[strtolower($class_name)]['*'] = '';
+                $map[\strtolower($class_name)]['*'] = '';
             }
         }
 
@@ -246,7 +246,7 @@ class UnionType implements \Serializable
             $function_name = $function_fqsen->getName();
         }
 
-        $function_name = strtolower($function_name);
+        $function_name = \strtolower($function_name);
 
         $function_name_original = $function_name;
         $alternate_id = 0;
@@ -262,7 +262,7 @@ class UnionType implements \Serializable
             }
 
             // Figure out the return type
-            $return_type_name = array_shift($type_name_struct);
+            $return_type_name = \array_shift($type_name_struct);
             $return_type = $return_type_name
                 ? UnionType::fromStringInContext($return_type_name, $context, Type::FROM_PHPDOC)
                 : null;
@@ -366,9 +366,9 @@ class UnionType implements \Serializable
             return [];
         }
 
-        return array_reduce($this->getTypeSet()->toArray(),
+        return \array_reduce($this->getTypeSet()->toArray(),
             function (array $map, Type $type) {
-                return array_merge(
+                return \array_merge(
                     $type->getTemplateParameterTypeList(),
                     $map
                 );
@@ -395,9 +395,9 @@ class UnionType implements \Serializable
             return [];
         }
 
-        return array_reduce($this->getTypeSet()->toArray(),
+        return \array_reduce($this->getTypeSet()->toArray(),
             function (array $map, Type $type) use ($code_base) {
-                return array_merge(
+                return \array_merge(
                     $type->getTemplateParameterTypeMap($code_base),
                     $map
                 );
@@ -900,7 +900,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return array_reduce($this->getTypeSet()->toArray(),
+        return \array_reduce($this->getTypeSet()->toArray(),
             function (bool $is_exclusively_array, Type $type) : bool {
                 return (
                     $is_exclusively_array
@@ -921,7 +921,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return array_reduce($this->getTypeSet()->toArray(),
+        return \array_reduce($this->getTypeSet()->toArray(),
             function (bool $is_exclusively_array, Type $type) : bool {
                 return (
                     $is_exclusively_array
@@ -1279,7 +1279,7 @@ class UnionType implements \Serializable
         CodeBase $code_base,
         int $recursion_depth = 0
     ) : UnionType {
-        assert(
+        \assert(
             $recursion_depth < 10,
             "Recursion has gotten out of hand"
         );
@@ -1322,9 +1322,9 @@ class UnionType implements \Serializable
     public function unserialize($serialized)
     {
         $this->type_set = new Set(
-            array_map(function (string $type_name) {
+            \array_map(function (string $type_name) {
                 return Type::fromFullyQualifiedString($type_name);
-            }, explode('|', $serialized ?? ''))
+            }, \explode('|', $serialized ?? ''))
         );
     }
 
@@ -1338,16 +1338,16 @@ class UnionType implements \Serializable
         // Create a new array containing the string
         // representations of each type
         $type_name_list =
-            array_map(function (Type $type) : string {
+            \array_map(function (Type $type) : string {
                 return (string)$type;
             }, $this->getTypeSet()->toArray());
 
         // Sort the types so that we get a stable
         // representation
-        asort($type_name_list);
+        \asort($type_name_list);
 
         // Join them with a pipe
-        return implode('|', $type_name_list);
+        return \implode('|', $type_name_list);
     }
 
     /**
@@ -1363,7 +1363,7 @@ class UnionType implements \Serializable
         if (!$map) {
             $map_raw = require(__DIR__.'/Internal/FunctionSignatureMap.php');
             foreach ($map_raw as $key => $value) {
-                $map[strtolower($key)] = $value;
+                $map[\strtolower($key)] = $value;
             }
         }
 

@@ -93,7 +93,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $node->children['expr']
         );
 
-        assert(
+        \assert(
             $node->children['var'] instanceof Node,
             "Expected left side of assignment to be a var"
         );
@@ -229,7 +229,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $variable_name = $child_node->children['name'];
 
                 // Ignore $$var type things
-                if (!is_string($variable_name)) {
+                if (!\is_string($variable_name)) {
                     continue;
                 }
 
@@ -592,7 +592,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the method/function/closure we're in
         $method = $this->context->getFunctionLikeInScope($this->code_base);
 
-        assert(!empty($method),
+        \assert(!empty($method),
             "We're supposed to be in either method or closure scope.");
 
         // Figure out what we intend to return
@@ -962,7 +962,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method_name = $node->children['method'];
 
         // Give up on things like Class::$var
-        if (!is_string($method_name)) {
+        if (!\is_string($method_name)) {
             return $this->context;
         }
 
@@ -1036,7 +1036,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ))->getClassList();
 
                 if (!empty($class_list)) {
-                    $class = array_values($class_list)[0];
+                    $class = \array_values($class_list)[0];
 
                     $this->emitIssue(
                         Issue::StaticCallToNonStatic,
@@ -1207,14 +1207,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitMethod(Decl $node) : Context
     {
-        assert($this->context->isInFunctionLikeScope(),
+        \assert($this->context->isInFunctionLikeScope(),
             "Must be in function-like scope to get method");
 
         $method = $this->context->getFunctionLikeInScope($this->code_base);
 
         $return_type = $method->getUnionType();
 
-        assert($method instanceof Method,
+        \assert($method instanceof Method,
             "Function found where method expected");
 
         $has_interface_class = false;
@@ -1337,7 +1337,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         $method_name = $node->children['method'];
 
-        if (!is_string($method_name)) {
+        if (!\is_string($method_name)) {
             return $this->context;
         }
 
@@ -1474,7 +1474,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $this->analyzeNoOp($node, Issue::NoopProperty);
         } else {
 
-            assert(isset($node->children['expr'])
+            \assert(isset($node->children['expr'])
                 || isset($node->children['class']),
                     "Property nodes must either have an expression or class");
 
@@ -1498,7 +1498,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // Find out of any of them have a __get magic method
                 // (Only check if looking for instance properties)
                 $has_getter =
-                    array_reduce($class_list, function($carry, $class) {
+                    \array_reduce($class_list, function($carry, $class) {
                         return (
                             $carry ||
                             $class->hasGetMethod($this->code_base)
@@ -1632,7 +1632,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ) {
                     $property_name = $argument->children['prop'];
 
-                    if (is_string($property_name)) {
+                    if (\is_string($property_name)) {
                         // We don't do anything with it; just create it
                         // if it doesn't exist
                         try {
@@ -1702,7 +1702,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 ) {
                     $property_name = $argument->children['prop'];
 
-                    if (is_string($property_name)) {
+                    if (\is_string($property_name)) {
                         // We don't do anything with it; just create it
                         // if it doesn't exist
                         try {
@@ -1781,11 +1781,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // and scope so that we can reset it after re-analyzing
         // it.
         $original_method_scope = clone($method->getInternalScope());
-        $original_parameter_list = array_map(function (Variable $parameter) : Variable {
+        $original_parameter_list = \array_map(function (Variable $parameter) : Variable {
             return clone($parameter);
         }, $method->getParameterList());
 
-        if (count($original_parameter_list) === 0) {
+        if (\count($original_parameter_list) === 0) {
             return;  // No point in recursing if there's no changed parameters.
         }
 
@@ -2002,9 +2002,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * True when the decl can only throw an exception
      */
     private function declOnlyThrows(Decl $node) {
-        return isset( $node->children['stmts'] )
-            && $node->children['stmts']->kind === \ast\AST_STMT_LIST
-            && count($node->children['stmts']->children) === 1
-            && $node->children['stmts']->children[0]->kind === \ast\AST_THROW;
+        $stmts = $node->children['stmts'] ?? null;
+        return isset($stmts)
+            && $stmts->kind === \ast\AST_STMT_LIST
+            && \count($stmts->children) === 1
+            && $stmts->children[0]->kind === \ast\AST_THROW;
     }
 }

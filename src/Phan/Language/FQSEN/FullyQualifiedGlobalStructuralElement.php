@@ -35,11 +35,11 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         string $name,
         int $alternate_id = 0
     ) {
-        assert(!empty($name), "The name cannot be empty");
+        \assert(!empty($name), "The name cannot be empty");
 
-        assert(!empty($namespace), "The namespace cannot be empty");
+        \assert(!empty($namespace), "The namespace cannot be empty");
 
-        assert(
+        \assert(
             $namespace[0] === '\\',
             "The first character of a namespace must be \\"
         );
@@ -70,9 +70,9 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         // Transfer any relative namespace stuff from the
         // name to the namespace.
-        $name_parts= explode('\\', $name);
-        $name = array_pop($name_parts);
-        $namespace = implode('\\', array_merge([$namespace], $name_parts));
+        $name_parts= \explode('\\', $name);
+        $name = \array_pop($name_parts);
+        $namespace = \implode('\\', \array_merge([$namespace], $name_parts));
         $namespace = self::cleanNamespace($namespace);
 
         // use the canonicalName for $name instead of strtolower - Some subclasses(constants) are case sensitive.
@@ -114,13 +114,13 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             $parts = explode('\\', $fqsen_string);
             $name = array_pop($parts);
 
-            assert(!empty($name), "The name cannot be empty");
+            \assert(!empty($name), "The name cannot be empty");
 
             $namespace = '\\' . implode('\\', array_filter($parts));
 
-            assert(!empty($namespace), "The namespace cannot be empty");
+            \assert(!empty($namespace), "The namespace cannot be empty");
 
-            assert(
+            \assert(
                 $namespace[0] === '\\',
                 "The first character of the namespace must be \\"
             );
@@ -164,7 +164,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // Split the parts into the namespace(0 or more components) and the last name.
         $name = array_pop($parts);
 
-        assert(!empty($name), "The name cannot be empty");
+        \assert(!empty($name), "The name cannot be empty");
 
         // Check for a name map
         if ($context->hasNamespaceMapFor($namespace_map_type, $fqsen_string)) {
@@ -230,7 +230,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
             return $this;
         }
 
-        assert(
+        \assert(
             $alternate_id < 1000,
             "Your alternate IDs have run away"
         );
@@ -260,14 +260,14 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         // Ensure that the first character of the namespace
         // is always a '\'
-        if (0 !== strpos($namespace, '\\')) {
+        if ($namespace[0] !== '\\') {
             $namespace = '\\' . $namespace;
         }
 
         // Ensure that we don't have a trailing '\' on the
         // namespace
-        if ('\\' === substr($namespace, -1)) {
-            $namespace = substr($namespace, 0, -1);
+        if ('\\' === \substr($namespace, -1)) {
+            $namespace = \substr($namespace, 0, -1);
         }
 
         return $namespace;

@@ -49,7 +49,7 @@ class Analysis
         // before passing it on to the recursive version
         // of this method
         try {
-            if (is_string($override_contents)) {
+            if (\is_string($override_contents)) {
                 $node = \ast\parse_code(
                     $override_contents,
                     Config::get()->ast_version
@@ -142,7 +142,7 @@ class Analysis
             $context->withLineNumberStart($node->lineno ?? 0)
         ))($node);
 
-        assert(!empty($context), 'Context cannot be null');
+        \assert(!empty($context), 'Context cannot be null');
         $kind = $node->kind;
 
         // \ast\AST_GROUP_USE has \ast\AST_USE as a child.
@@ -165,7 +165,7 @@ class Analysis
             // updated context for the node
             $child_context = self::parseNodeInContextInner($code_base, $child_context, $child_node);
 
-            assert(!empty($child_context), 'Context cannot be null');
+            \assert(!empty($child_context), 'Context cannot be null');
         }
 
         // For closed context elements (that have an inner scope)
@@ -209,7 +209,7 @@ class Analysis
             }
 
             // If there is an array limiting the set of files, skip this file if it's not in the list,
-            if (is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
+            if (\is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
                 continue;
             }
 
@@ -254,7 +254,7 @@ class Analysis
     public static function analyzeClasses(CodeBase $code_base, array $path_filter = null)
     {
         $classes = self::getUserDefinedClasses($code_base);
-        if (is_array($path_filter)) {
+        if (\is_array($path_filter)) {
             // If a list of files is provided, then limit analysis to classes defined in those files.
             $old_classes = $classes;
             $classes = [];
@@ -327,7 +327,7 @@ class Analysis
         // before passing it on to the recursive version
         // of this method
         try {
-            if (is_string($file_contents_override)) {
+            if (\is_string($file_contents_override)) {
                 $node = \ast\parse_code(
                     $file_contents_override,
                     Config::get()->ast_version

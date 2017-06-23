@@ -36,10 +36,6 @@ class BranchScope extends Scope {
      */
     public function getVariableMap() : array
     {
-        return array_merge(
-            $this->getParentScope()->getVariableMap(),
-            $this->variable_map
-        );
-
+        return $this->variable_map + $this->getParentScope()->getVariableMap();
     }
 }

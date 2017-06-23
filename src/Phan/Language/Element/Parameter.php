@@ -169,7 +169,7 @@ class Parameter extends Variable
         CodeBase $code_base,
         Node $node
     ) : array {
-        assert($node instanceof Node, "node was not an \\ast\\Node");
+        \assert($node instanceof Node, "node was not an \\ast\\Node");
 
         $parameter_list = [];
         $is_optional_seen = false;
@@ -204,7 +204,7 @@ class Parameter extends Variable
     public static function listFromReflectionParameterList(
         array $reflection_parameters
     ) : array {
-        return array_map(function(\ReflectionParameter $reflection_parameter) {
+        return \array_map(function(\ReflectionParameter $reflection_parameter) {
             return self::fromReflectionParameter($reflection_parameter);
         }, $reflection_parameters);
     }
@@ -251,7 +251,7 @@ class Parameter extends Variable
         Node $node
     ) : Parameter {
 
-        assert($node instanceof Node, "node was not an \\ast\\Node");
+        \assert($node instanceof Node, "node was not an \\ast\\Node");
 
         // Get the type of the parameter
         $union_type = UnionType::fromNode(

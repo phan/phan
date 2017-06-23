@@ -36,10 +36,10 @@ class ForkPool {
 
         $pool_size = count($process_task_data_iterator);
 
-        assert($pool_size > 1,
+        \assert($pool_size > 1,
             'The pool size must be >= 2 to use the fork pool.');
 
-        assert(extension_loaded('pcntl'),
+        \assert(extension_loaded('pcntl'),
             'The pcntl extension must be loaded in order for Phan to be able to fork.'
         );
 

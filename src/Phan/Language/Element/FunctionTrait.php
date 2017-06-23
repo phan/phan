@@ -572,7 +572,7 @@ trait FunctionTrait {
 
         $valid_comment_parameter_type_map = [];
         foreach ($comment->getParameterMap() as $comment_parameter_name => $comment_parameter) {
-            if (!array_key_exists($comment_parameter_name, $real_parameter_name_set)) {
+            if (!\array_key_exists($comment_parameter_name, $real_parameter_name_set)) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,

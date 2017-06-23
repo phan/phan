@@ -46,19 +46,19 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
     ) : FullyQualifiedFunctionName {
 
         // Check to see if we're fully qualified
-        if (0 === strpos($fqsen_string, '\\')) {
+        if (0 === \strpos($fqsen_string, '\\')) {
             return static::fromFullyQualifiedString($fqsen_string);
         }
 
         // Split off the alternate ID
-        $parts = explode(',', $fqsen_string);
+        $parts = \explode(',', $fqsen_string);
         $fqsen_string = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        $parts = explode('\\', $fqsen_string);
-        $name = array_pop($parts);
+        $parts = \explode('\\', $fqsen_string);
+        $name = \array_pop($parts);
 
-        assert(
+        \assert(
             !empty($name),
             "The name cannot be empty"
         );
@@ -112,7 +112,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
      * True if this FQSEN represents a closure
      */
     public function isClosure() : bool {
-        return (preg_match('/^closure_/', $this->getName()) === 1);
+        return (\preg_match('/^closure_/', $this->getName()) === 1);
     }
 
 }

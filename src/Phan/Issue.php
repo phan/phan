@@ -11,7 +11,7 @@ class Issue
     const SyntaxError               = 'PhanSyntaxError';
 
     // Issue::CATEGORY_UNDEFINED
-    const AmbiguousTraitAliasSource = 'AmbiguousTraitAliasSource';
+    const AmbiguousTraitAliasSource = 'PhanAmbiguousTraitAliasSource';
     const ClassContainsAbstractMethodInternal = 'PhanClassContainsAbstractMethodInternal';
     const ClassContainsAbstractMethod = 'PhanClassContainsAbstractMethod';
     const EmptyFile                 = 'PhanEmptyFile';
@@ -334,7 +334,7 @@ class Issue
         /** @param string[] $matches */
         return preg_replace_callback('/{([A-Z_]+)}/', function(array $matches) use($template): string {
             $key = $matches[1];
-            $replacement_exists = array_key_exists($key, self::uncolored_format_string_for_template);
+            $replacement_exists = \array_key_exists($key, self::uncolored_format_string_for_template);
             if (!$replacement_exists) {
                 error_log(sprintf("No coloring info for issue message (%s), key {%s}. Valid template types: %s",
                     $template, $key, implode(', ', array_keys(self::uncolored_format_string_for_template))));
@@ -1736,7 +1736,8 @@ class Issue
         $error_map = [];
         foreach ($error_list as $i => $error) {
             $error_type = $error->getType();
-            assert(!array_key_exists($error_type, $error_map), "Issue of type $error_type has multiple definitions");
+            \assert(!\array_key_exists($error_type, $error_map), "Issue of type $error_type has multiple definitions");
+            \assert(\strncmp($error_type, 'Phan', 4) === 0, "Issue of type $error_type should begin with 'Phan'");
             $error_map[$error_type] = $error;
         }
 
@@ -1848,7 +1849,7 @@ class Issue
     {
         $error_map = self::issueMap();
 
-        assert(
+        \assert(
             !empty($error_map[$type]),
             "Undefined error type $type"
         );

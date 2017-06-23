@@ -31,7 +31,7 @@ class FunctionLikeScope extends ClosedScope {
             return $fqsen;
         }
 
-        assert(false, "FQSEN must be a function-like FQSEN");
+        \assert(false, "FQSEN must be a function-like FQSEN");
     }
 
 }
