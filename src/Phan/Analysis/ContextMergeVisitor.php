@@ -247,11 +247,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 }, $variable_list);
 
                 if (\count($type_set_list) < 2) {
-                    return new UnionType($type_set_list[0] ?? []);
+                    return new UnionType($type_set_list[0] ?? [], true);
                 }
 
                 return new UnionType(
-                    ArraySet::unionAll($type_set_list)
+                    ArraySet::unionAll($type_set_list), true
                 );
             };
 
