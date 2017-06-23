@@ -8,6 +8,8 @@ abstract class NativeType extends Type
 {
     const NAME = '';
 
+    const KEY_PREFIX = '!';
+
     /**
      * @param bool $is_nullable
      * If true, returns a nullable instance of this native type

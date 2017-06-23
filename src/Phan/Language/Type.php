@@ -20,10 +20,18 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
+use Phan\Language\UnionType;
+use Phan\Library\ArraySet;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple4;
+
+use ast\Node;
+
+if (!function_exists('runkit_object_id')) {
+    require_once __DIR__ . '/../../runkit.php';
+}
 
 class Type
 {
@@ -118,6 +126,8 @@ class Type
     /** For types copied from phpdoc, e.g. `(at)param integer $x` */
     const FROM_PHPDOC = 2;
 
+    /** To distinguish NativeType subclasses and classes with the same name. Overridden in subclasses */
+    const KEY_PREFIX = '';
     /**
      * @var string|null
      * The namespace of this type such as '\' or
@@ -145,6 +155,8 @@ class Type
      */
     protected $is_nullable = false;
 
+    private static $canonical_object_map = [];
+
     /**
      * @param string $name
      * The name of the type such as 'int' or 'MyClass'
@@ -170,6 +182,17 @@ class Type
         $this->name = $name;
         $this->template_parameter_type_list = $template_parameter_type_list;
         $this->is_nullable = $is_nullable;
+    }
+
+    // Override two magic methods to ensure that Type isn't being cloned accidentally.
+    // (It has previously been accidentally cloned in unit tests by phpunit (global_state helper),
+    //  which saves and restores some static properties)
+    public function __wakeup() {
+        throw new \Error("Cannot unserialize Type");
+    }
+
+    public function __clone() {
+        throw new \Error("Cannot clone Type");
     }
 
     /**
@@ -254,7 +277,7 @@ class Type
 
         // Make sure we only ever create exactly one
         // object for any unique type
-        $key = ($is_nullable ? '?' : '') . $namespace . '\\' . $type_name;
+        $key = ($is_nullable ? '?' : '') . static::KEY_PREFIX . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
             $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) {
@@ -264,39 +287,15 @@ class Type
 
         $key = \strtolower($key);
 
-        return static::cachedGetInstanceHelper($namespace, $type_name, $template_parameter_type_list, $is_nullable, $key, false);
-    }
-
-    /**
-     * @return static
-     * @see static::__construct
-     */
-    protected static final function cachedGetInstanceHelper(
-        string $namespace,
-        string $name,
-        $template_parameter_type_list,
-        bool $is_nullable,
-        string $key,
-        bool $clear_all_memoize
-    ) : Type {
-        // TODO: Figure out why putting this into a static variable results in test failures.
-        static $canonical_object_map = [];
-        if ($clear_all_memoize) {
-            foreach ($canonical_object_map as $type) {
-                $type->memoizeFlushAll();
-            }
-            return NullType::instance(false);  // dummy
-        }
-        $value = $canonical_object_map[$key] ?? null;
+        $value = self::$canonical_object_map[$key] ?? null;
         if (!$value) {
-            $value =
-                new static(
-                    $namespace,
-                    $name,
-                    $template_parameter_type_list,
-                    $is_nullable
-                );
-            $canonical_object_map[$key] = $value;
+            $value = new static(
+                $namespace,
+                $type_name,
+                $template_parameter_type_list,
+                $is_nullable
+            );
+            self::$canonical_object_map[$key] = $value;
         }
         return $value;
     }
@@ -312,9 +311,9 @@ class Type
      */
     public static function clearAllMemoizations() {
         // Clear anything that has memoized state
-        Type::cachedGetInstanceHelper('', '', [], false, '', true);
-        TemplateType::cachedGetInstanceHelper('', '', [], false, '', true);
-        GenericArrayType::cachedGetInstanceHelper('', '', [], false, '', true);
+        foreach (self::$canonical_object_map as $type) {
+            $type->memoizeFlushAll();
+        }
     }
 
 
@@ -772,12 +771,36 @@ class Type
     }
 
     /**
+     * @var Type[][] - Maps runkit_object_id() to an array containing the type for that object id.
+     *                 The object id doesn't change as long as there's one reference to that object (including singleton_map)
+     * Note: this is static instead of instance because some subclasses can be cloned (e.g. ClosureType)
+     */
+    private static $singleton_map = [];
+
+    /**
      * @return UnionType
      * A UnionType representing this and only this type
      */
     public function asUnionType() : UnionType
     {
-        return new UnionType([$this]);
+        $object_id = \runkit_object_id($this);
+        $types_set = self::$singleton_map[$object_id] ?? null;
+        if ($types_set === null) {
+            $types_set = [$object_id => $this];  // same as ArraySet::singleton, but why bother recomputing object id.
+            self::$singleton_map[$object_id] = $types_set;
+        }
+        // var_export($types_set);
+        /**
+        if (!ArraySet::is_array_set($types_set)) {
+            printf("Assertion failed: %s %s %d %s %s %s\n", $this, json_encode($this instanceof StringType), $object_id, $old_hash, spl_object_hash($this), var_export($types_set, true));
+            debug_zval_dump([self::$singleton_map[$object_id], $types_set]);
+            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        }
+         */
+        // return new UnionType([$this]);
+        // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
+        // TODO: Figure out why this is buggy
+        return new UnionType($types_set, true);
     }
 
     /**
