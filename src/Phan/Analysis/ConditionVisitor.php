@@ -676,6 +676,12 @@ class ConditionVisitor extends KindVisitorImplementation
             }
         }
         // Only analyze the last expression in the expression list for conditions.
-        return $this(\end($node->children));
+        $last_expression = \end($node->children);
+        if ($last_expression instanceof Node) {
+            return $this($last_expression);
+        } else {
+            // TODO: emit no-op warning
+            return $this->context;
+        }
     }
 }
