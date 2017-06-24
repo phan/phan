@@ -15,17 +15,17 @@ function superglobal_sanity_check(bool $exec = false) {
     var_dump(strlen($_REQUEST));  // invalid
     var_dump(count($_REQUEST));
     $_SERVER = 'foo';  // Invalid for the purpose of type checking, but still valid php.
-    var_dump(strlen($_SERVER));  // invalid
-    var_dump(count($_SERVER));
+    var_dump(strlen($_SERVER));  // normally invalid, but valid here?
+    var_dump(count($_SERVER));  // invalid because it's now a string.
     var_dump(strlen($_ENV));
     var_dump(count($_ENV));
-    var_dump(count($_ENV['HOME'])); // invalid
+    var_dump(count($_ENV['HOME'])); // invalid, this is a string
 
     var_dump(strlen($_ENV['HOME'])); // valid
-    var_dump(count($_ENV['HOME'])); // invalid
 
-    var_dump(strlen($GLOBALS)); // valid
-    var_dump(count($GLOBALS)); // invalid
+
+    var_dump(strlen($GLOBALS)); // invalid
+    var_dump(count($GLOBALS)); // valid
 
     // https://secure.php.net/manual/en/features.file-upload.post-method.php
     // https://secure.php.net/manual/en/features.file-upload.multiple.php - Can have array of files with the same label.
