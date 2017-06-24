@@ -187,7 +187,7 @@ class ConfigPluginSet extends Plugin {
 
                     return $plugin_instance;
                 },
-                Config::get()->plugins
+                Config::getValue('plugins')
             );
         }
         return $this->pluginSet;

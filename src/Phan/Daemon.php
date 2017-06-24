@@ -89,10 +89,10 @@ class Daemon {
      */
     private static function createDaemonStreamSocketServer() {
         $listen_url = null;
-        if (Config::get()->daemonize_socket) {
-            $listen_url = 'unix://' . Config::get()->daemonize_socket;
-        } else if (Config::get()->daemonize_tcp_port) {
-            $listen_url = sprintf('tcp://127.0.0.1:%d', Config::get()->daemonize_tcp_port);
+        if (Config::getValue('daemonize_socket')) {
+            $listen_url = 'unix://' . Config::getValue('daemonize_socket');
+        } else if (Config::getValue('daemonize_tcp_port')) {
+            $listen_url = sprintf('tcp://127.0.0.1:%d', Config::getValue('daemonize_tcp_port'));
         } else {
             throw new \InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
         }

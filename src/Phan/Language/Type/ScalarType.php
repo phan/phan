@@ -61,7 +61,7 @@ abstract class ScalarType extends NativeType
     protected function canCastToNonNullableType(Type $type) : bool
     {
         // Scalars may be configured to always cast to eachother
-        if (Config::get()->scalar_implicit_cast
+        if (Config::getValue('scalar_implicit_cast')
             && $type->isScalar()
         ) {
             return true;

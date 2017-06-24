@@ -52,12 +52,12 @@ class Analysis
             if (\is_string($override_contents)) {
                 $node = \ast\parse_code(
                     $override_contents,
-                    Config::get()->ast_version
+                    Config::getValue('ast_version')
                 );
             } else {
                 $node = \ast\parse_file(
                     Config::projectPath($file_path),
-                    Config::get()->ast_version
+                    Config::getValue('ast_version')
                 );
             }
         } catch (\ParseError $parse_error) {
@@ -75,7 +75,7 @@ class Analysis
             return $context;
         }
 
-        if (Config::get()->dump_ast) {
+        if (Config::getValue('dump_ast')) {
             echo $file_path . "\n"
                 . str_repeat("\u{00AF}", strlen($file_path))
                 . "\n";
@@ -330,12 +330,12 @@ class Analysis
             if (\is_string($file_contents_override)) {
                 $node = \ast\parse_code(
                     $file_contents_override,
-                    Config::get()->ast_version
+                    Config::getValue('ast_version')
                 );
             } else {
                 $node = \ast\parse_file(
                     Config::projectPath($file_path),
-                    Config::get()->ast_version
+                    Config::getValue('ast_version')
                 );
             }
         } catch (\ParseError $parse_error) {
@@ -361,7 +361,7 @@ class Analysis
             return $context;
         }
 
-        if (Config::get()->simplify_ast) {
+        if (Config::getValue('simplify_ast')) {
             try {
                 $newNode = ASTSimplifier::applyStatic($node);  // Transform the original AST, leaving the original unmodified.
                 $node = $newNode;  // Analyze the new AST instead.

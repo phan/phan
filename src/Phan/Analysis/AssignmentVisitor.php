@@ -433,7 +433,7 @@ class AssignmentVisitor extends AnalysisVisitor
         // Check if it is a built in class with dynamic properties but (possibly) no __set, such as SimpleXMLElement or stdClass or V8Js
         $is_class_with_arbitrary_types = isset($class_list[0]) ? $class_list[0]->getHasDynamicProperties($this->code_base) : false;
 
-        if ($is_class_with_arbitrary_types || Config::get()->allow_missing_properties) {
+        if ($is_class_with_arbitrary_types || Config::getValue('allow_missing_properties')) {
             try {
                 // Create the property
                 $property = (new ContextNode(

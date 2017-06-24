@@ -238,7 +238,7 @@ class Comment
         int $comment_type
     ) : Comment {
 
-        if (!Config::get()->read_type_annotations) {
+        if (!Config::getValue('read_type_annotations')) {
             return new Comment(
                 0, [], [], [], new None, new UnionType(), [], [], [], new None
             );
@@ -288,7 +288,7 @@ class Comment
             } elseif (\stripos($line, '@template') !== false) {
 
                 // Make sure support for generic types is enabled
-                if (Config::get()->generic_types_enabled) {
+                if (Config::getValue('generic_types_enabled')) {
                     $check_compatible('@template', [Comment::ON_CLASS]);
                     if (($template_type =
                         self::templateTypeFromCommentLine($context, $line))
@@ -299,7 +299,7 @@ class Comment
             } elseif (\stripos($line, '@inherits') !== false) {
                 $check_compatible('@inherits', [Comment::ON_CLASS]);
                 // Make sure support for generic types is enabled
-                if (Config::get()->generic_types_enabled) {
+                if (Config::getValue('generic_types_enabled')) {
                     $inherited_type =
                         self::inheritsFromCommentLine($context, $line);
                 }
@@ -324,7 +324,7 @@ class Comment
             } elseif (\strpos($line, '@property') !== false) {
                 $check_compatible('@property', [Comment::ON_CLASS]);
                 // Make sure support for magic properties is enabled.
-                if (Config::get()->read_magic_property_annotations) {
+                if (Config::getValue('read_magic_property_annotations')) {
                     $magic_property = self::magicPropertyFromCommentLine($code_base, $context, $line, $lineno);
                     if ($magic_property !== null) {
                         $magic_property_list[] = $magic_property;
@@ -332,7 +332,7 @@ class Comment
                 }
             } elseif (\strpos($line, '@method') !== false) {
                 // Make sure support for magic methods is enabled.
-                if (Config::get()->read_magic_method_annotations) {
+                if (Config::getValue('read_magic_method_annotations')) {
                     $check_compatible('@method', [Comment::ON_CLASS]);
                     $magic_method = self::magicMethodFromCommentLine($code_base, $context, $line, $lineno);
                     if ($magic_method !== null) {

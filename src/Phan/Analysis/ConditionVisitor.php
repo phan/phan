@@ -371,7 +371,7 @@ class ConditionVisitor extends KindVisitorImplementation
             if (Variable::isHardcodedVariableInScopeWithName($var_name, $this->context->isInGlobalScope())) {
                 return null;
             }
-            if (!Config::get()->ignore_undeclared_variables_in_global_scope
+            if (!Config::getValue('ignore_undeclared_variables_in_global_scope')
                 || !$this->context->isInGlobalScope()
             ) {
                 throw new IssueException(

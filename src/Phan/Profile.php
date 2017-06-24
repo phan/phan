@@ -23,7 +23,7 @@ trait Profile
     protected static function time(string $label, \Closure $closure)
     {
 
-        if (!Config::get()->profiler_enabled) {
+        if (!Config::getValue('profiler_enabled')) {
             return $closure();
         }
 

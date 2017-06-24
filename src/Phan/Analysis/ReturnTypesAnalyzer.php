@@ -66,7 +66,7 @@ class ReturnTypesAnalyzer
                 }
             }
         }
-        if (Config::get()->check_docblock_signature_return_type_match && !$real_return_type->isEmpty() && !$phpdoc_return_type->isEmpty()) {
+        if (Config::getValue('check_docblock_signature_return_type_match') && !$real_return_type->isEmpty() && !$phpdoc_return_type->isEmpty()) {
             $context = $method->getContext();
             $resolved_real_return_type = $real_return_type->withStaticResolvedInContext($context);
             foreach ($phpdoc_return_type->getTypeSet() as $phpdoc_type) {

@@ -235,7 +235,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
                 // Don't worry about non-existent undeclared variables
                 // in the global scope if configured to do so
-                if(Config::get()->ignore_undeclared_variables_in_global_scope
+                if (Config::getValue('ignore_undeclared_variables_in_global_scope')
                     && $this->context->isInGlobalScope()
                 ) {
                     continue;

@@ -25,7 +25,7 @@ final class PlainTextPrinter implements IssuePrinterInterface
         $issue   = $instance->getIssue();
         $type    = $issue->getType();
         $message = $instance->getMessage();
-        if (Config::get()->color_issue_messages) {
+        if (Config::getValue('color_issue_messages')) {
             switch($issue->getSeverity()) {
             case Issue::SEVERITY_CRITICAL:
                 $issue_type_template = '{ISSUETYPE_CRITICAL}';

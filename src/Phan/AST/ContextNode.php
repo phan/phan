@@ -848,7 +848,7 @@ class ContextNode
         // properties
         if (!$is_static) {
             foreach ($class_list as $i => $class) {
-                if (Config::get()->allow_missing_properties
+                if (Config::getValue('allow_missing_properties')
                     || $class->getHasDynamicProperties($this->code_base)
                 ) {
                     return $class->getPropertyByNameInContext(
@@ -868,7 +868,7 @@ class ContextNode
         // If missing properties are cool, create it on
         // the first class we found
         if (!$is_static && ($class_fqsen && ($class_fqsen === $std_class_fqsen))
-            || Config::get()->allow_missing_properties
+            || Config::getValue('allow_missing_properties')
         ) {
             if (count($class_list) > 0) {
                 $class = $class_list[0];

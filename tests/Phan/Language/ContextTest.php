@@ -61,7 +61,7 @@ class ContextTest extends BaseTest {
 
         $stmt_list_node = \ast\parse_code(
             $code,
-            Config::get()->ast_version
+            Config::getValue('ast_version')
         );
 
         $class_node = $stmt_list_node->children[0];

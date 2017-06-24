@@ -1951,17 +1951,16 @@ class Issue
         // If this issue type has been suppressed in
         // the config, ignore it
 
-        $config = Config::get();
-        if (!$config->disable_suppression) {
+        if (!Config::getValue('disable_suppression')) {
             if (in_array($issue_instance->getIssue()->getType(),
-                    $config->suppress_issue_types ?? [])
+                    Config::getValue('suppress_issue_types') ?? [])
             ) {
                 return;
             }
 
             // If a white-list of allowed issue types is defined,
             // only emit issues on the white-list
-            $whitelist_issue_types = $config->whitelist_issue_types ?? [];
+            $whitelist_issue_types = Config::getValue('whitelist_issue_types') ?? [];
             if (count($whitelist_issue_types) > 0
                 && !in_array($issue_instance->getIssue()->getType(),
                         $whitelist_issue_types)
@@ -2041,23 +2040,23 @@ class Issue
     ) {
         // If this issue type has been suppressed in
         // the config, ignore it
-        if (!Config::get()->disable_suppression
+        if (!Config::getValue('disable_suppression')
             && in_array($issue_type,
-            Config::get()->suppress_issue_types ?? [])
+            Config::getValue('suppress_issue_types') ?? [])
         ) {
             return;
         }
         // If a white-list of allowed issue types is defined,
         // only emit issues on the white-list
-        if (!Config::get()->disable_suppression
-            && count(Config::get()->whitelist_issue_types) > 0
+        if (!Config::getValue('disable_suppression')
+            && count(Config::getValue('whitelist_issue_types')) > 0
             && !in_array($issue_type,
-                Config::get()->whitelist_issue_types ?? [])
+                Config::getValue('whitelist_issue_types') ?? [])
         ) {
             return;
         }
 
-        if (!Config::get()->disable_suppression
+        if (!Config::getValue('disable_suppression')
             && $context->hasSuppressIssue($code_base, $issue_type)
         ) {
             return;

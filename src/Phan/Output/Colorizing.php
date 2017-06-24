@@ -159,7 +159,7 @@ class Colorizing {
      */
     private static function initColorScheme() {
         self::$color_scheme = self::default_color_for_template;
-        foreach (Config::get()->color_scheme ?? [] as $template_type => $color_name) {
+        foreach (Config::getValue('color_scheme') ?? [] as $template_type => $color_name) {
             if (!\is_scalar($color_name) || !\array_key_exists($color_name, self::styles)) {
                 error_log("Invalid color name ($color_name)");
                 continue;
