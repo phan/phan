@@ -40,15 +40,7 @@ function check($var) {
 	} elseif (is_iterable($var)) {
 		emitType($var);
 		foreach ($var as $v) { }  // sanity check that iteration works
-    } elseif (is_a($var, 'stdClass')) {
-        emitType($var);
-    } elseif (is_a($var, '\\SimpleXMLElement')) {
-        emitType($var);
-    } elseif (is_a($var, \DateTime::class)) {
-        emitType($var);
-    } elseif (is_a($var, DateTimeImmutable::class)) {
-        emitType($var);
-    }
+	}
 }
 
 check(null);

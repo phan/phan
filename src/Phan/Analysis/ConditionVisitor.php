@@ -118,6 +118,7 @@ class ConditionVisitor extends KindVisitorImplementation
             $this->checkVariablesDefined($node);
             return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
         } else if ($flags === \ast\flags\BINARY_IS_NOT_IDENTICAL || $flags === \ast\flags\BINARY_IS_NOT_EQUAL) {
+            $this->checkVariablesDefined($node);
             // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
             return $this->analyzeIsNotIdentical($node->children['left'], $node->children['right']);
         } else {
@@ -298,9 +299,14 @@ class ConditionVisitor extends KindVisitorImplementation
         // Negation
         // TODO: negate instanceof, other checks
         // TODO: negation would also go in the else statement
-        // TODO: if (!$x) {} should narrow the types down to false and null (and other falsey possibilities such as int(0), string(""/"0"), array([]))
         if (($negatedNode->kind ?? 0) === \ast\AST_CALL) {
             $args = $negatedNode->children['args']->children;
+            foreach ($args as $arg) {
+                if ($arg instanceof Node) {
+                    $this->checkVariablesDefined($arg);
+                }
+            }
+
             if (self::isArgumentListWithVarAsFirstArgument($args)) {
                 $function_name = strtolower(ltrim($negatedNode->children['expr']->children['name'], '\\'));
                 if (\count($args) !== 1) {
@@ -445,6 +451,7 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitVar(Node $node) : Context
     {
+        $this->checkVariablesDefined($node);
         return $this->removeFalseyFromVariable($node, $this->context);
     }
 
@@ -760,8 +767,39 @@ class ConditionVisitor extends KindVisitorImplementation
         /** @return void */
         $object_callback = static function(Variable $variable, array $args)
         {
-            return self::analyzeIsObjectAssertion($variable);
+            // Change the type to match the is_a relationship
+            // If we already have the `object` type or generic object types, then keep those
+            // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
+            $newType = $variable->getUnionType()->objectTypes();
+            if ($newType->isEmpty()) {
+                $newType->addType(ObjectType::instance(false));
+            } else {
+                // Convert inferred ?MyClass to MyClass, ?object to object
+                if ($newType->containsNullable()) {
+                    $newType = $newType->nonNullableClone();
+                }
+            }
+            $variable->setUnionType($newType);
         };
+        /** @return void */
+        $is_a_callback = function(Variable $variable, array $args) use($object_callback)
+        {
+            $class_name = $args[1] ?? null;
+            if (!\is_string($class_name)) {
+                // Limit the types of $variable to an object if we can't infer the class name.
+                $object_callback($variable, $args);
+                return;
+            }
+            $class_name = ltrim($class_name, '\\');
+            if (empty($class_name)) {
+                return;
+            }
+            // TODO: validate argument
+            $class_name = '\\' . $class_name;
+            $class_type = Type::fromStringInContext($class_name, new Context(), Type::FROM_NODE);
+            $variable->setUnionType($class_type->asUnionType());
+        };
+
         /** @return void */
         $scalar_callback = static function(Variable $variable, array $args)
         {
@@ -784,6 +822,7 @@ class ConditionVisitor extends KindVisitorImplementation
         // Note: isset() is handled in visitIsset()
 
         return [
+            'is_a' => $is_a_callback,
             'is_array' => $array_callback,
             'is_bool' => $make_basic_assertion_callback('bool'),
             'is_callable' => $make_basic_assertion_callback('callable'),
@@ -804,51 +843,6 @@ class ConditionVisitor extends KindVisitorImplementation
         ];
     }
 
-    private function checkVariablesDefinedInCallArgs(Node $node) {
-        $args = $node->children['args']->children;
-        foreach ($args as $arg) {
-            if ($arg instanceof Node) {
-                $this->checkVariablesDefined($arg);
-            }
-        }
-    }
-
-    /**
-     * @return void
-     */
-    private function analyzeVariableIsA(Variable $variable, array $args)
-    {
-        $class_name = $args[1] ?? null;
-        if (!is_string($class_name)) {
-            if ($class_name instanceof Node && $class_name->kind === \ast\AST_CLASS_CONST) {
-                $constant_name = $class_name->children['const'];
-                if (strcasecmp($constant_name, 'class') === 0) {
-                    $class_name_node = $class_name->children['class'];
-                    if ($class_name_node instanceof Node && ($class_name_node->kind === \ast\AST_NAME)) {
-                        $class_union_type = UnionType::fromNode(
-                            $this->context,
-                            $this->code_base,
-                            $class_name_node
-                        );
-                        if (!$class_union_type->isEmpty()) {  // always true?
-                            $variable->setUnionType($class_union_type);
-                        }
-                    }
-                }
-            }
-            // Limit the types of $variable to an object if we can't infer the class name.
-            return self::analyzeIsObjectAssertion($variable);
-        }
-        $class_name = ltrim($class_name, '\\');
-        if (empty($class_name)) {
-            return;
-        }
-        // TODO: validate argument
-        $class_name = '\\' . $class_name;
-        $class_type = Type::fromStringInContext($class_name, new Context(), Type::FROM_NODE);
-        $variable->setUnionType($class_type->asUnionType());
-    }
-
     /**
      * Fetches the function name. Does not check for function uses or namespaces.
      * @return ?string (null if function name could not be found)
@@ -859,7 +853,7 @@ class ConditionVisitor extends KindVisitorImplementation
             return null;
         }
         $raw_function_name = $expr->children['name'] ?? null;
-        if (!(is_string($raw_function_name) && $raw_function_name)) {
+        if (!(\is_string($raw_function_name) && $raw_function_name)) {
             return null;
         }
         return $raw_function_name;
@@ -879,50 +873,21 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitCall(Node $node) : Context
     {
         $raw_function_name = self::getFunctionName($node);
-        if (!is_string($raw_function_name)) {
+        if (!\is_string($raw_function_name)) {
             return $this->context;
         }
-        assert(is_string($raw_function_name));
+        assert(\is_string($raw_function_name));
         $args = $node->children['args']->children;
         // Only look at things of the form
-        // `is_string($variable)`
+        // `\is_string($variable)`
         if (!self::isArgumentListWithVarAsFirstArgument($args)) {
             return $this->context;
         }
 
-        if (count($args) !== 1) {
-            if (strcasecmp($raw_function_name, 'is_a') === 0) {
-                // TODO: deduplicate
-                try {
-                    // Get the variable we're operating on
-                    $variable = (new ContextNode(
-                        $this->code_base,
-                        $this->context,
-                        $args[0]
-                    ))->getVariable();
-
-                    if ($variable->getUnionType()->isEmpty()) {
-                        $variable->getUnionType()->addType(
-                            NullType::instance(false)
-                        );
-                    }
-
-                    // Make a copy of the variable
-                    $variable = clone($variable);
-
-                    // Modify the types of that variable.
-                    $this->analyzeVariableIsA($variable, $args);
-
-                    // Overwrite the variable with its new type in this
-                    // scope without overwriting other scopes
-                    return $this->context->withScopeVariable(
-                        $variable
-                    );
-                } catch (\Exception $exception) {
-                    // Swallow it (E.g. IssueException for undefined variable)
-                }
+        if (\count($args) !== 1) {
+            if (!(\strcasecmp($raw_function_name, 'is_a') === 0 && \count($args) === 2)) {
+                return $this->context;
             }
-            return $this->context;
         }
         // Translate the function name into the UnionType it asserts
         static $map = null;
