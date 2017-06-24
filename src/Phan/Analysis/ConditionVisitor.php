@@ -350,9 +350,9 @@ class ConditionVisitor extends KindVisitorImplementation
         };
 
         // Remove any Types from UnionType that are subclasses of $base_class_name
-        $make_basic_negated_assertion_callback = function(string $base_class_name) : \Closure
+        $make_basic_negated_assertion_callback = static function(string $base_class_name) : \Closure
         {
-            return function(ConditionVisitor $cv, Node $var_node, Context $context) use($base_class_name) : Context {
+            return static function(ConditionVisitor $cv, Node $var_node, Context $context) use($base_class_name) : Context {
                 return $cv->updateVariableWithConditionalFilter(
                     $var_node,
                     $context,
@@ -386,6 +386,38 @@ class ConditionVisitor extends KindVisitorImplementation
         };
         $remove_float_callback = $make_basic_negated_assertion_callback(FloatType::class);
         $remove_int_callback = $make_basic_negated_assertion_callback(IntType::class);
+        $remove_scalar_callback = static function(ConditionVisitor $cv, Node $var_node, Context $context) : Context {
+            return $cv->updateVariableWithConditionalFilter(
+                $var_node,
+                $context,
+                // if (!is_scalar($x)) removes scalar types from $x, but $x can still be null.
+                function(UnionType $union_type) : bool {
+                    return $union_type->hasTypeMatchingCallback(function(Type $type) : bool {
+                        return ($type instanceof ScalarType) && !($type instanceof NullType);
+                    });
+                },
+                function(UnionType $union_type) : UnionType {
+                    $new_type = new UnionType();
+                    $hasNull = false;
+                    $hasOtherNullableTypes = false;
+                    // Add types which are
+                    foreach ($union_type->getTypeSet() as $type) {
+                        if ($type instanceof ScalarType && !($type instanceof NullType)) {
+                            $hasNull = $hasNull || $type->getIsNullable();
+                            continue;
+                        }
+                        assert($type instanceof Type);
+                        $hasOtherNullableTypes = $hasOtherNullableTypes || $type->getIsNullable();
+                        $new_type->addType($type);
+                    }
+                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
+                    if ($hasNull && !$hasOtherNullableTypes) {
+                        $new_type->addType(NullType::instance(false));
+                    }
+                    return $new_type;
+                }
+            );
+        };
 
         return [
             'empty' => $remove_empty_cb,
@@ -404,7 +436,7 @@ class ConditionVisitor extends KindVisitorImplementation
             // TODO 'is_object' => $remove_object_callback,
             'is_real' => $remove_float_callback,
             'is_resource' => $make_basic_negated_assertion_callback(ResourceType::class),
-            'is_scalar' => $make_basic_negated_assertion_callback(ScalarType::class),
+            'is_scalar' => $remove_scalar_callback,
             'is_string' => $make_basic_negated_assertion_callback(StringType::class),
         ];
     }
@@ -807,11 +839,11 @@ class ConditionVisitor extends KindVisitorImplementation
             // If we already have possible scalar types, then keep those
             // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
             $newType = $variable->getUnionType()->scalarTypes();
-            if ($newType->isEmpty() || $newType->isType(NullType::instance(false))) {
+            if ($newType->isEmpty()) {
                 // If there are no inferred types, or the only type we saw was 'null',
                 // assume there this can be any possible scalar.
                 // (Excludes `resource`, which is technically a scalar)
-                $newType = UnionType::fromFullyQualifiedString('int|float|bool|string|null');
+                $newType = UnionType::fromFullyQualifiedString('int|float|bool|string');
             }
             $variable->setUnionType($newType);
         };

@@ -1307,8 +1307,10 @@ class UnionType implements \Serializable
     }
 
     /**
-     * Takes "MyClass|int|?bool|array|?object" and returns "int|?bool"
-     * Takes "?MyClass" and returns "null"
+     * Returns the types for which is_scalar($x) would be true.
+     * This means null/nullable is removed.
+     * Takes "MyClass|int|?bool|array|?object" and returns "int|bool"
+     * Takes "?MyClass" and returns an empty union type.
      *
      * @return UnionType
      * A UnionType with known object types kept, other types filtered out.
@@ -1320,14 +1322,8 @@ class UnionType implements \Serializable
     {
         // TODO: is_scalar(null) is false, account for that in analysis.
         $types = \array_filter($this->type_set, function (Type $type) : bool {
-            return $type->isScalar();
+            return $type->isScalar() && !($type instanceof NullType);
         });
-        $null_type = NullType::instance(false);
-        $null_type_id = \runkit_object_id($null_type);
-        if (!\array_key_exists($null_type_id, $types) && $this->containsNullable()) {
-            // E.g. if this has `?stdClass`, add `null` to the resulting set of scalar types.
-            $types[\runkit_object_id($null_type)] = $null_type;
-        }
         return new UnionType($types, true);
     }
 
