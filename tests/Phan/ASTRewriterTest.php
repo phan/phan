@@ -41,7 +41,7 @@ class ASTRewriterTest extends AbstractPhanFileTest {
         $this->assertNotEquals(false, $original_src);
         $this->assertNotEquals(false, $expected_src);
 
-        $ast_version = Config::get()->ast_version;
+        $ast_version = Config::getValue('ast_version');
         $expected = \ast\parse_code($expected_src, $ast_version);
         $beforeTransform = \ast\parse_code($original_src, $ast_version);
 

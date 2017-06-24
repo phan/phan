@@ -125,7 +125,7 @@ class AnalyzerTest extends BaseTest {
                 new Context,
                 \ast\parse_code(
                     '<?php ' . $code_stub,
-                    Config::get()->ast_version
+                    Config::getValue('ast_version')
                 )
             );
     }

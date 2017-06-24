@@ -223,7 +223,7 @@ abstract class Scope
      */
     public function hasAnyTemplateType() : bool
     {
-        if (!Config::get()->generic_types_enabled) {
+        if (!Config::getValue('generic_types_enabled')) {
             return false;
         }
 

@@ -356,7 +356,7 @@ class Request {
 
         $file_list = $file_path_lister();
 
-        if (Config::get()->consistent_hashing_file_order) {
+        if (Config::getValue('consistent_hashing_file_order')) {
             // Parse the files in lexicographic order.
             // If there are duplicate class/function definitions,
             // this ensures they are added to the maps in the same order.

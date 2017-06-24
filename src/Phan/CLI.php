@@ -128,7 +128,7 @@ class CLI
         $this->output = new ConsoleOutput();
         $factory = new PrinterFactory();
         $printer_type = 'text';
-        $minimum_severity = Config::get()->minimum_severity;
+        $minimum_severity = Config::getValue('minimum_severity');
         $mask = -1;
 
         foreach ($opts ?? [] as $key => $value) {
@@ -194,30 +194,29 @@ class CLI
                     break;
                 case 'c':
                 case 'parent-constructor-required':
-                    Config::get()->parent_constructor_required =
-                    explode(',', $value);
+                    Config::setValue('parent_constructor_required', explode(',', $value));
                     break;
                 case 'q':
                 case 'quick':
-                    Config::get()->quick_mode = true;
+                    Config::setValue('quick_mode', true);
                     break;
                 case 'b':
                 case 'backward-compatibility-checks':
-                    Config::get()->backward_compatibility_checks = true;
+                    Config::setValue('backward_compatibility_checks', true);
                     break;
                 case 'p':
                 case 'progress-bar':
-                    Config::get()->progress_bar = true;
+                    Config::setValue('progress_bar', true);
                     break;
                 case 'a':
                 case 'dump-ast':
-                    Config::get()->dump_ast = true;
+                    Config::setValue('dump_ast', true);
                     break;
                 case 'dump-parsed-file-list':
-                    Config::get()->dump_parsed_file_list = true;
+                    Config::setValue('dump_parsed_file_list', true);
                     break;
                 case 'dump-signatures-file':
-                    Config::get()->dump_signatures_file = $value;
+                    Config::setValue('dump_signatures_file', $value);
                     break;
                 case 'o':
                 case 'output':
@@ -229,24 +228,24 @@ class CLI
                     break;
                 case '3':
                 case 'exclude-directory-list':
-                    Config::get()->exclude_analysis_directory_list = explode(',', $value);
+                    Config::setValue('exclude_analysis_directory_list', explode(',', $value));
                     break;
                 case 'exclude-file':
-                    Config::get()->exclude_file_list = array_merge(
-                        Config::get()->exclude_file_list,
+                    Config::setValue('exclude_file_list', array_merge(
+                        Config::getValue('exclude_file_list'),
                         \is_array($value) ? $value : [$value]
-                    );
+                    ));
                     break;
                 case 'include-analysis-file-list':
-                    Config::get()->include_analysis_file_list = explode(',', $value);
+                    Config::setValue('include_analysis_file_list', explode(',', $value));
                     break;
                 case 'j':
                 case 'processes':
-                    Config::get()->processes = (int)$value;
+                    Config::setValue('processes', (int)$value);
                     break;
                 case 'z':
                 case 'signature-compatibility':
-                    Config::get()->analyze_signature_compatibility = (bool)$value;
+                    Config::setValue('analyze_signature_compatibility', (bool)$value);
                     break;
                 case 'y':
                 case 'minimum-severity':
@@ -260,7 +259,7 @@ class CLI
                     break;
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
-                    Config::get()->plugins = [];
+                    Config::setValue('plugins', []);
                     break;
                 case 's':
                 case 'daemonize-socket':
@@ -270,7 +269,7 @@ class CLI
                         $msg = sprintf('Requested to create unix socket server in %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
                         $this->usage($msg, 1);
                     } else {
-                        Config::get()->daemonize_socket = $value;  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
+                        Config::setValue('daemonize_socket', $value);  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
                     }
                     break;
                     // TODO: HTTP server binding to 127.0.0.1, daemonize-port.
@@ -282,20 +281,20 @@ class CLI
                         $port = filter_var($value, FILTER_VALIDATE_INT);
                     }
                     if ($port >= 1024 && $port <= 65535) {
-                        Config::get()->daemonize_tcp_port = $port;
+                        Config::setValue('daemonize_tcp_port', $port);
                     } else {
                         $this->usage("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
                     }
                     break;
                 case 'x':
                 case 'dead-code-detection':
-                    Config::get()->dead_code_detection = true;
+                    Config::setValue('dead_code_detection', true);
                     break;
                 case 'markdown-issue-messages':
-                    Config::get()->markdown_issue_messages = true;
+                    Config::setValue('markdown_issue_messages', true);
                     break;
                 case 'color':
-                    Config::get()->color_issue_messages = true;
+                    Config::setValue('color_issue_messages', true);
                     break;
                 default:
                     $this->usage("Unknown option '-$key'", EXIT_FAILURE);
@@ -351,11 +350,11 @@ class CLI
             /** @var string[] */
             $this->file_list = array_merge(
                 $this->file_list,
-                Config::get()->file_list
+                Config::getValue('file_list')
             );
 
             // Merge in any directories given in the config
-            foreach (Config::get()->directory_list as $directory_name) {
+            foreach (Config::getValue('directory_list') as $directory_name) {
                 $this->file_list = array_merge(
                     $this->file_list,
                     $this->directoryNameToFileList($directory_name)
@@ -368,9 +367,9 @@ class CLI
 
         // Exclude any files that should be excluded from
         // parsing and analysis (not read at all)
-        if (count(Config::get()->exclude_file_list) > 0) {
+        if (count(Config::getValue('exclude_file_list')) > 0) {
             $exclude_file_set = [];
-            foreach (Config::get()->exclude_file_list as $file) {
+            foreach (Config::getValue('exclude_file_list') as $file) {
                 $exclude_file_set[$file] = true;
             }
 
@@ -386,8 +385,8 @@ class CLI
         // way during analysis. With our parallelization mechanism, there
         // is no shared state between processes, making it impossible to
         // have a complete set of reference lists.
-        \assert(Config::get()->processes === 1
-            || !Config::get()->dead_code_detection,
+        \assert(Config::getValue('processes') === 1
+            || !Config::getValue('dead_code_detection'),
             "We cannot run dead code detection on more than one core.");
     }
 
@@ -400,7 +399,7 @@ class CLI
         if (!function_exists('pcntl_fork')) {
             $this->usage("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
         }
-        if (Config::get()->daemonize_socket || Config::get()->daemonize_tcp_port) {
+        if (Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port')) {
             $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
         }
     }
@@ -571,7 +570,7 @@ EOB;
         $file_list = [];
 
         try {
-            $file_extensions = Config::get()->analyzed_file_extensions;
+            $file_extensions = Config::getValue('analyzed_file_extensions');
 
             if (!\is_array($file_extensions) || count($file_extensions) === 0) {
                 throw new \InvalidArgumentException(
@@ -579,7 +578,7 @@ EOB;
                 );
             }
 
-            $exclude_file_regex = Config::get()->exclude_file_regex;
+            $exclude_file_regex = Config::getValue('exclude_file_regex');
             $iterator = new \CallbackFilterIterator(
                 new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
@@ -617,7 +616,7 @@ EOB;
             // to work around some file systems not returning results lexicographically.
             // Keep directories together by replacing directory separators with the null byte
             // (E.g. "a.b" is lexicographically less than "a/b", but "aab" is greater than "a/b")
-            return strcmp(preg_replace("@[/\\\\]+@", "\0", $a), preg_replace("@[/\\\\]+@", "\0", $b));
+            return \strcmp(\preg_replace("@[/\\\\]+@", "\0", $a), \preg_replace("@[/\\\\]+@", "\0", $b));
         });
 
         return $file_list;
@@ -625,8 +624,10 @@ EOB;
 
     public static function shouldShowProgress() : bool
     {
-        $config = Config::get();
-        return $config->progress_bar && !$config->dump_ast && !$config->daemonize_tcp_port && !$config->daemonize_socket;
+        return Config::getValue('progress_bar') &&
+            !Config::getValue('dump_ast') &&
+            !Config::getValue('daemonize_tcp_port') &&
+            !Config::getValue('daemonize_socket');
     }
 
     /**
@@ -677,7 +678,7 @@ EOB;
         // super fast
         if ($p > 0.0
             && $p < 1.0
-            && rand(0, 1000) > (1000 * Config::get()->progress_bar_sample_rate
+            && rand(0, 1000) > (1000 * Config::getValue('progress_bar_sample_rate')
             )) {
             return;
         }

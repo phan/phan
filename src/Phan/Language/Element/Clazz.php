@@ -894,7 +894,7 @@ class Clazz extends AddressableElement
         // Check to see if missing properties are allowed
         // or we're working with a class with dynamic
         // properties such as stdclass.
-        if (!$is_static && (Config::get()->allow_missing_properties
+        if (!$is_static && (Config::getValue('allow_missing_properties')
             || $this->getHasDynamicProperties($code_base))
         ) {
             $property = new Property(

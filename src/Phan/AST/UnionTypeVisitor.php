@@ -1048,7 +1048,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
                 return Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name);
             }
-            if (!Config::get()->ignore_undeclared_variables_in_global_scope
+            if (!Config::getValue('ignore_undeclared_variables_in_global_scope')
                 || !$this->context->isInGlobalScope()
             ) {
                 throw new IssueException(

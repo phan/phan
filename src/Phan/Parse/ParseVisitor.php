@@ -745,7 +745,7 @@ class ParseVisitor extends ScopeVisitor
                     );
                 }
             } else if ($function_name === 'class_alias') {
-                if (Config::get()->enable_class_alias_support && $this->context->isInGlobalScope()) {
+                if (Config::getValue('enable_class_alias_support') && $this->context->isInGlobalScope()) {
                     $this->recordClassAlias($node);
                 }
             }

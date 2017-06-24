@@ -26,7 +26,7 @@ class ParameterTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ) {
-        if (Config::get()->check_docblock_signature_param_type_match) {
+        if (Config::getValue('check_docblock_signature_param_type_match')) {
             self::analyzeParameterTypesDocblockSignaturesMatch($code_base, $method);
         }
 
@@ -88,7 +88,7 @@ class ParameterTypesAnalyzer
         CodeBase $code_base,
         Method $method
     ) {
-        if (!Config::get()->analyze_signature_compatibility) {
+        if (!Config::getValue('analyze_signature_compatibility')) {
             return;
         }
 
@@ -571,7 +571,7 @@ class ParameterTypesAnalyzer
             }
         }
         if ($is_possibly_compatible) {
-            if (Config::get()->inherit_phpdoc_types) {
+            if (Config::getValue('inherit_phpdoc_types')) {
                 self::inheritPHPDoc($method, $o_method);
             }
         }
@@ -724,7 +724,7 @@ class ParameterTypesAnalyzer
                     }
                 }
                 // TODO: test edge cases of variadic signatures
-                if ($is_exclusively_narrowed && Config::get()->prefer_narrowed_phpdoc_param_type) {
+                if ($is_exclusively_narrowed && Config::getValue('prefer_narrowed_phpdoc_param_type')) {
                     $param_to_modify = $method->getParameterList()[$i] ?? null;
                     if ($param_to_modify) {
                         $param_to_modify->setUnionType($phpdoc_param_union_type);
