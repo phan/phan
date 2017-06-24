@@ -612,7 +612,7 @@ class Config
     /**
      * @return mixed
      */
-    public function getValue(string $name)
+    public static function getValue(string $name)
     {
         return self::$configuration[$name];
     }
@@ -672,3 +672,6 @@ class Config
         ]);
     }
 }
+
+// Call init() to trigger the magic setters.
+Config::get();
