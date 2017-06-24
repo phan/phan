@@ -1071,8 +1071,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
-            if (Config::get()->dead_code_detection
-                && Config::get()->dead_code_detection_prefer_false_negative
+            if (Config::get_dead_code_detection()
+                && Config::getValue('dead_code_detection_prefer_false_negative')
             ) {
                 foreach ($this->code_base->getMethodSetByName(
                     $method_name
@@ -1182,8 +1182,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
-            if (Config::get()->dead_code_detection
-                && Config::get()->dead_code_detection_prefer_false_negative
+            if (Config::get_dead_code_detection()
+                && Config::getValue('dead_code_detection_prefer_false_negative')
             ) {
                 foreach ($this->code_base->getMethodSetByName(
                     $method_name
@@ -1358,8 +1358,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
-            if (Config::get()->dead_code_detection
-                && Config::get()->dead_code_detection_prefer_false_negative
+            if (Config::get_dead_code_detection()
+                && Config::getValue('dead_code_detection_prefer_false_negative')
             ) {
                 foreach ($this->code_base->getMethodSetByName(
                     $method_name
@@ -1679,7 +1679,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
 
-            if (Config::get()->dead_code_detection) {
+            if (Config::get_dead_code_detection()) {
                 (new ArgumentVisitor(
                     $this->code_base,
                     $this->context
@@ -1738,7 +1738,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
         // If we're in quick mode, don't retest methods based on
         // parameter types passed in
-        if (Config::get()->quick_mode) {
+        if (Config::get_quick_mode()) {
             return;
         }
 

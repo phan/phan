@@ -55,7 +55,7 @@ class NullType extends ScalarType
             return true;
         }
 
-        if (Config::get()->null_casts_as_any_type) {
+        if (Config::get_null_casts_as_any_type()) {
             return true;
         }
 

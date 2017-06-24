@@ -14,13 +14,28 @@ class Config
      * The root directory of the project. This is used to
      * store canonical path names and find project resources
      */
-    private $project_root_directory = null;
+    private static $project_root_directory = null;
 
     /**
      * Configuration options
      */
-    private $configuration = [
+    private static $configuration = self::DEFAULT_CONFIGURATION;
 
+    // The 4 most commonly accessed configs:
+    /** @var bool */
+    private static $null_casts_as_any_type = false;
+
+    /** @var bool */
+    private static $dead_code_detection = false;
+
+    /** @var bool */
+    private static $backward_compatibility_checks = false;
+
+    /** @var bool */
+    private static $quick_mode = false;
+    // End of the 4 most commonly accessed configs.
+
+    const DEFAULT_CONFIGURATION = [
         // A list of individual files to include in analysis
         // with a path relative to the root directory of the
         // project
@@ -510,9 +525,9 @@ class Config
      * Get the root directory of the project that we're
      * scanning
      */
-    public function getProjectRootDirectory() : string
+    public static function getProjectRootDirectory() : string
     {
-        return $this->project_root_directory ?? getcwd();
+        return self::$project_root_directory ?? getcwd();
     }
 
     /**
@@ -522,10 +537,10 @@ class Config
      *
      * @return void
      */
-    public function setProjectRootDirectory(
+    public static function setProjectRootDirectory(
         string $project_root_directory
     ) {
-        $this->project_root_directory = $project_root_directory;
+        self::$project_root_directory = $project_root_directory;
     }
 
     /**
@@ -541,7 +556,19 @@ class Config
         }
 
         $instance = new Config();
+        $instance->init();
         return $instance;
+    }
+
+    /**
+     * @return void
+     */
+    private function init()
+    {
+        // Trigger magic setters
+        foreach (self::$configuration as $name => $v) {
+            self::setValue($name, $v);
+        }
     }
 
     /**
@@ -550,18 +577,80 @@ class Config
      */
     public function toArray() : array
     {
-        return $this->configuration;
+        return self::$configuration;
     }
 
-    /** @return mixed */
+    public static function get_null_casts_as_any_type() : bool
+    {
+        return self::$null_casts_as_any_type;
+    }
+
+    public static function get_dead_code_detection() : bool
+    {
+        return self::$dead_code_detection;
+    }
+
+    public static function get_backward_compatibility_checks() : bool
+    {
+        return self::$backward_compatibility_checks;
+    }
+
+    public static function get_quick_mode() : bool
+    {
+        return self::$quick_mode;
+    }
+
+    /**
+     * @return mixed
+     * @deprecated
+     */
     public function __get(string $name)
     {
-        return $this->configuration[$name];
+        return self::getValue($name);
     }
 
+    /**
+     * @return mixed
+     */
+    public function getValue(string $name)
+    {
+        return self::$configuration[$name];
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @return void
+     * @deprecated
+     */
     public function __set(string $name, $value)
     {
-        $this->configuration[$name] = $value;
+        self::setValue($name, $value);
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @return void
+     */
+    public static function setValue(string $name, $value)
+    {
+        switch ($name) {
+        case 'null_casts_as_any_type':
+            self::$null_casts_as_any_type = $value;
+            break;
+        case 'dead_code_detection':
+            self::$dead_code_detection = $value;
+            break;
+        case 'backward_compatibility_checks':
+            self::$backward_compatibility_checks = $value;
+            break;
+        case 'quick_mode':
+            self::$quick_mode = $value;
+            break;
+        }
+
+        self::$configuration[$name] = $value;
     }
 
     /**
@@ -578,7 +667,7 @@ class Config
         }
 
         return \implode(DIRECTORY_SEPARATOR, [
-            Config::get()->getProjectRootDirectory(),
+            Config::getProjectRootDirectory(),
             $relative_path
         ]);
     }
