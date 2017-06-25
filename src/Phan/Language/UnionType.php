@@ -608,6 +608,22 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return bool
+     * True iff this union contains a type that's also in
+     * the other union type.
+     */
+    public function hasCommonType(UnionType $union_type) : bool
+    {
+        $other_type_set = $union_type->type_set;
+        foreach ($this->type_set as $type_id => $type) {
+            if (isset($other_type_set[$type_id])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return bool - True if not empty and at least one type is NullType or nullable.
      */
     public function containsNullable() : bool
@@ -813,8 +829,8 @@ class UnionType implements \Serializable
             return true;
         }
 
-        // T === T
-        if ($this->isEqualTo($target)) {
+        // T overlaps with T, a future call to Type->canCastToType will pass.
+        if ($this->hasCommonType($target)) {
             return true;
         }
 
