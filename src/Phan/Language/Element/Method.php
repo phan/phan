@@ -474,6 +474,8 @@ class Method extends ClassElement implements FunctionInterface
      *
      * @return Method[]
      * The Methods that this Method is overriding
+     * (Abstract methods are returned before concrete methods)
+     *
      * @throws CodeBaseException if 0 methods were found.
      */
     public function getOverriddenMethods(
@@ -489,13 +491,14 @@ class Method extends ClassElement implements FunctionInterface
 
         $defining_fqsen = $this->getDefiningFQSEN();
 
-        $first_method_match = null;
-        $first_abstract_method_match = null;
-        // Hunt for any ancestor class that defines a method with
-        // the same name as this one
+        $method_list = [];
+        $abstract_method_list = [];
+        // Hunt for any ancestor classes that define a method with
+        // the same name as this one.
         foreach ($ancestor_class_list as $ancestor_class) {
             // TODO: Handle edge cases in traits.
             // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
+            // TODO: What about trait aliasing rules?
             if ($ancestor_class->hasMethodWithName($code_base, $this->getName())) {
                 $method = $ancestor_class->getMethodByName(
                     $code_base,
@@ -507,23 +510,14 @@ class Method extends ClassElement implements FunctionInterface
                 }
                 if ($method->isAbstract()) {
                     // TODO: check for trait conflicts, etc.
-                    if ($first_abstract_method_match === null) {
-                        $first_abstract_method_match = $method;
-                    }
+                    $abstract_method_list[] = $method;
                     continue;
                 }
-                if ($first_method_match === null) {
-                    $first_method_match = $method;
-                }
+                $method_list[] = $method;
             }
         }
-        $method_list = [];
-        if ($first_abstract_method_match !== null) {
-            $method_list[] = $first_abstract_method_match;
-        }
-        if ($first_method_match !== null) {
-            $method_list[] = $first_method_match;
-        }
+        // Return abstract methods before concrete methods, in order to best check method compatibility.
+        $method_list = array_merge($abstract_method_list, $method_list);
         if (count($method_list) > 0) {
             return $method_list;
         }
