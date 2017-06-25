@@ -13,6 +13,9 @@ class ForkPool {
     /** @var resource[] */
     private $read_streams = [];
 
+    /** @var bool */
+    private $did_have_error = false;
+
     /**
      * @param array $process_task_data_iterator
      * An array of task data items to be divided up among the
@@ -22,7 +25,8 @@ class ForkPool {
      * A closure to execute upon starting a child
      *
      * @param \Closure $task_closure
-     * A method to execute on each task data
+     * A method to execute on each task data.
+     * This closure must return an array (to be gathered).
      *
      * @param \Closure $shutdown_closure
      * A closure to execute upon shutting down a child
@@ -102,17 +106,13 @@ class ForkPool {
         // exiting the process
         $results = $shutdown_closure();
 
-        // If this child produced results, serialize them onto
-        // the stream to the parent.
-        if ($results) {
-            fwrite($write_stream, serialize($results));
-        }
+        // Serialize this child's produced results and send them to the parent.
+        fwrite($write_stream, serialize($results ?: []));
 
         fclose($write_stream);
 
         // Children exit after completing their work
         exit(EXIT_SUCCESS);
-
     }
 
     /**
@@ -207,7 +207,12 @@ class ForkPool {
 
         // Unmarshal the content into its original form.
         return array_values(array_map(function($data) {
-            return unserialize($data);
+            $result = unserialize($data);
+            if (!\is_array($result)) {
+                error_log("Child terminated without returning a serialized array (threw or crashed - not enough memory?): response type=" . gettype($result));
+                $this->did_have_error = true;
+            }
+            return $result;
         }, $content));
     }
 
@@ -231,6 +236,7 @@ class ForkPool {
             if (pcntl_wifsignaled($status)) {
                 $return_code = pcntl_wexitstatus($status);
                 $term_sig = pcntl_wtermsig($status);
+                $this->did_have_error = true;
                 error_log("Child terminated with return code $return_code and signal $term_sig");
             }
         }
@@ -238,4 +244,11 @@ class ForkPool {
         return $content;
     }
 
+    /**
+     * Returns true if this had an error, e.g. due to memory limits or due to a child process crashing.
+     */
+    public function didHaveError() : bool
+    {
+        return $this->did_have_error;
+    }
 }

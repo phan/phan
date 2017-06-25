@@ -49,6 +49,7 @@ Maintenance
 Bug Fixes
 + Work around known bugs in current releases of two PECL extensions (Issue #888, #889)
 + Fix typo - Change `PhanParamSignatureRealMismatch` to `PhanParamSignatureRealMismatchReturnType`
++ Consistently exit with non-zero exit code if there are multiple processes, and any process failed to return valid results. (Issue #868)
 
 Backwards Incompatible Changes
 

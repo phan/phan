@@ -247,7 +247,10 @@ class Phan implements IgnoredFilesFilterInterface {
                 $analyze_file_path_list
             );
 
-        // This worker takes a file and analyzes it
+        /**
+         * This worker takes a file and analyzes it
+         * @return void
+         */
         $analysis_worker = function($i, $file_path)
             use ($file_count, $code_base, $temporary_file_mapping) {
                 CLI::progress('analyze', ($i + 1) / $file_count);
@@ -262,6 +265,8 @@ class Phan implements IgnoredFilesFilterInterface {
         \assert($process_count > 0 && $process_count <= Config::getValue('processes'),
             "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used.");
 
+        $did_fork_pool_have_error = false;
+
         CLI::progress('analyze', 0.0);
         // Check to see if we're running as multiple processes
         // or not
@@ -271,13 +276,14 @@ class Phan implements IgnoredFilesFilterInterface {
             // files up among a given number of child processes.
             $pool = new ForkPool(
                 $process_file_list_map,
-                function () {
+                /** @return void */
+                function() {
                     // Remove any issues that were collected prior to forking
                     // to prevent duplicate issues in the output.
                     self::getIssueCollector()->reset();
                 },
                 $analysis_worker,
-                function () {
+                function () : array {
                     // Return the collected issues to be serialized.
                     return self::getIssueCollector()->getCollectedIssues();
                 }
@@ -285,6 +291,7 @@ class Phan implements IgnoredFilesFilterInterface {
 
             // Wait for all tasks to complete and collect the results.
             self::collectSerializedResults($pool->wait());
+            $did_fork_pool_have_error = $pool->didHaveError();
 
         } else {
             // Get the task data from the 0th processor
@@ -311,7 +318,12 @@ class Phan implements IgnoredFilesFilterInterface {
         self::display();
         if ($request instanceof Request) {
             $request->respondWithIssues($issue_count);
-            exit(0);
+            exit(EXIT_SUCCESS);
+        }
+
+        if ($did_fork_pool_have_error) {
+            // Make fork pool errors (e.g. due to memory limits) easy to detect when running CI jobs.
+            return true;
         }
 
         return $is_issue_found;
