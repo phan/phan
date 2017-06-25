@@ -34,7 +34,7 @@ class UnionType implements \Serializable
         . '(\|' . Type::type_regex . ')*';
 
     /**
-     * @var Type[]
+     * @var Type[] - [int $type_object_id => Type $type]
      */
     private $type_set;
 
@@ -347,7 +347,7 @@ class UnionType implements \Serializable
      */
     public function hasType(Type $type) : bool
     {
-        return ArraySet::contains($this->type_set, $type);
+        return isset($this->type_set[\runkit_object_id($type)]);
     }
 
     /**
@@ -560,11 +560,12 @@ class UnionType implements \Serializable
      */
     public function isType(Type $type) : bool
     {
-        if ($this->typeCount() != 1) {
+        $type_set = $this->type_set;
+        if (\count($type_set) !== 1) {
             return false;
         }
 
-        return ArraySet::contains($this->type_set, $type);
+        return \reset($type_set) === $type;
     }
 
     /**
@@ -833,26 +834,36 @@ class UnionType implements \Serializable
         if ($this->hasCommonType($target)) {
             return true;
         }
+        static $float_type;
+        static $int_type;
+        static $mixed_type;
+        static $null_type;
+        if ($null_type === null) {
+            $int_type   = IntType::instance(false);
+            $float_type = FloatType::instance(false);
+            $mixed_type = MixedType::instance(false);
+            $null_type  = NullType::instance(false);
+        }
 
         if (Config::get_null_casts_as_any_type()) {
             // null <-> null
-            if ($this->isType(NullType::instance(false))
-                || $target->isType(NullType::instance(false))
+            if ($this->isType($null_type)
+                || $target->isType($null_type)
             ) {
                 return true;
             }
         }
 
         // mixed <-> mixed
-        if ($target->hasType(MixedType::instance(false))
-            || $this->hasType(MixedType::instance(false))
+        if ($target->hasType($mixed_type)
+            || $this->hasType($mixed_type)
         ) {
             return true;
         }
 
         // int -> float
-        if ($this->isType(IntType::instance(false))
-            && $target->isType(FloatType::instance(false))
+        if ($this->hasType($int_type)
+            && $target->hasType($float_type)
         ) {
             return true;
         }
@@ -861,17 +872,7 @@ class UnionType implements \Serializable
         // type combinations and see if any can cast to
         // any.
         foreach ($this->type_set as $source_type) {
-            // TODO Noop?
-            if (empty($source_type)) {
-                continue;
-            }
-
             foreach ($target->type_set as $target_type) {
-                // TODO noop?
-                if (empty($target_type)) {
-                    continue;
-                }
-
                 if ($source_type->canCastToType($target_type)) {
                     return true;
                 }
@@ -984,8 +985,8 @@ class UnionType implements \Serializable
      * If this the filter preserves everything, calls clone() instead.
      */
     public function makeFromFilter(\Closure $cb) : UnionType {
-        $new_type_set = array_filter($this->type_set, $cb);
-        if (count($new_type_set) === count($this->type_set)) {
+        $new_type_set = \array_filter($this->type_set, $cb);
+        if (\count($new_type_set) === \count($this->type_set)) {
             return clone($this);
         }
         return new UnionType($new_type_set, true);
