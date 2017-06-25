@@ -33,6 +33,6 @@ if (PHP_INT_SIZE === 8) {
         // Fit this into a php long (32-bit or 64-bit signed int).
         // The first 16 hex digits (64 bytes) vary, the last 16 don't.
         // Values are usually padded with 0s at the front.
-        return intval(substr($hash, 1, 15), 16);
+        return intval(substr($hash, 9, 7), 16);
     }
 }
