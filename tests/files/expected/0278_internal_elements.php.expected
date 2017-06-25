@@ -1,6 +1,6 @@
 %s:92 PhanAccessMethodInternal Cannot access internal method \NS278\A\f of namespace \NS278\A defined at %s:33 from namespace \NS278\B
 %s:94 PhanAccessConstantInternal Cannot access internal constant \NS278\A\CONST_INTERNAL of namepace \NS278\A defined at %s:8 from namespace \NS278\B
-%s:96 PhanAccessMethodInternal Cannot access internal method \NS278\A\C1::__construct of namespace \NS278\A defined at %s:39 from namespace \NS278\B
+%s:96 PhanAccessMethodInternal Cannot access internal method \NS278\A\C1::__construct of namespace \NS278\A defined at %s:11 from namespace \NS278\B
 %s:97 PhanAccessPropertyInternal Cannot access internal property \NS278\A\C1::p of namespace \NS278\A defined at %s:13 from namespace \NS278\B
 %s:98 PhanAccessMethodInternal Cannot access internal method \NS278\A\C1::f of namespace \NS278\A defined at %s:14 from namespace \NS278\B
 %s:99 PhanAccessClassConstantInternal Cannot access internal class constant \NS278\A\C1::CONST_INTERNAL defined at %s:12

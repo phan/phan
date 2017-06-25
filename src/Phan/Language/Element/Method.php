@@ -195,6 +195,11 @@ class Method extends ClassElement implements FunctionInterface
         Context $context,
         CodeBase $code_base
     ) : Method {
+        if ($clazz->hasMethodWithName($code_base, $clazz->getName())) {
+            $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
+        } else {
+            $old_style_constructor = null;
+        }
 
         $method_fqsen = FullyQualifiedMethodName::make(
             $clazz->getFQSEN(),
@@ -202,19 +207,20 @@ class Method extends ClassElement implements FunctionInterface
         );
 
         $method = new Method(
-            $context,
+            $old_style_constructor ? $old_style_constructor->getContext() : $clazz->getContext(),
             '__construct',
             $clazz->getUnionType(),
             0,
             $method_fqsen
         );
 
-        if ($clazz->hasMethodWithName($code_base, $clazz->getName())) {
-            $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
+        if ($old_style_constructor) {
             $method->setParameterList($old_style_constructor->getParameterList());
             $method->setRealParameterList($old_style_constructor->getRealParameterList());
             $method->setNumberOfRequiredParameters($old_style_constructor->getNumberOfRequiredParameters());
             $method->setNumberOfOptionalParameters($old_style_constructor->getNumberOfOptionalParameters());
+            $method->setRealReturnType($old_style_constructor->getRealReturnType());
+            $method->setUnionType($old_style_constructor->getUnionType());
         }
 
         return $method;
