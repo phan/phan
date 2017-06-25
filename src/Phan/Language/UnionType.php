@@ -852,6 +852,13 @@ class UnionType implements \Serializable
             ) {
                 return true;
             }
+        } else {
+            // If null_casts_as_any_type isn't set, then try the other two fallbacks.
+            if (Config::get_null_casts_as_array() && $this->isType($null_type) && $target->hasArrayLike()) {
+                return true;
+            } else if (Config::get_array_casts_as_null() && $target->isType($null_type) && $this->hasArrayLike()) {
+                return true;
+            }
         }
 
         // mixed <-> mixed

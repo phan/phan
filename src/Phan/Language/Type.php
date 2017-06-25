@@ -1279,9 +1279,11 @@ class Type
         if ($this->getIsNullable() && !$type->getIsNullable()) {
 
             // If this is nullable, but that isn't, and we've
-            // configured nulls to cast as anything, ignore
+            // configured nulls to cast as anything (or as arrays), ignore
             // the nullable part.
             if (Config::get_null_casts_as_any_type()) {
+                return $this->withIsNullable(false)->canCastToType($type);
+            } else if (Config::get_null_casts_as_array() && $type->isArrayLike()) {
                 return $this->withIsNullable(false)->canCastToType($type);
             }
 
