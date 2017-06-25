@@ -1,0 +1,27 @@
+%s:4 PhanParamSignatureMismatch Declaration of function foo(int $x) : int should be compatible with function foo(int $x) : string defined in %s:12
+%s:4 PhanParamSignatureMismatch Declaration of function foo(int $x) : int should be compatible with function foo(int $x, int $y) : string defined in %s:16
+%s:4 PhanParamSignatureMismatch Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : array defined in %s:30
+%s:4 PhanParamSignatureMismatch Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : int defined in %s:26
+%s:4 PhanParamSignatureMismatch Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : string defined in %s:20
+%s:4 PhanParamSignatureMismatch Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : string defined in %s:8
+%s:4 PhanParamSignatureRealMismatchParamType Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : array (parameter #1 of type 'int' cannot replace original parameter of type 'string') defined in %s:30
+%s:4 PhanParamSignatureRealMismatchParamType Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : int (parameter #1 of type 'int' cannot replace original parameter of type 'string') defined in %s:26
+%s:4 PhanParamSignatureRealMismatchParamType Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : string (parameter #1 of type 'int' cannot replace original parameter of type 'string') defined in %s:20
+%s:4 PhanParamSignatureRealMismatchParamType Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : string (parameter #1 of type 'int' cannot replace original parameter of type 'string') defined in %s:8
+%s:4 PhanParamSignatureRealMismatchReturnType Declaration of function foo(int $x) : int should be compatible with function foo(int $x) : string (method returning 'int' cannot override method returning 'string') defined in %s:12
+%s:4 PhanParamSignatureRealMismatchReturnType Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : array (method returning 'int' cannot override method returning 'array') defined in %s:30
+%s:4 PhanParamSignatureRealMismatchReturnType Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : string (method returning 'int' cannot override method returning 'string') defined in %s:20
+%s:4 PhanParamSignatureRealMismatchReturnType Declaration of function foo(int $x) : int should be compatible with function foo(string $x) : string (method returning 'int' cannot override method returning 'string') defined in %s:8
+%s:4 PhanParamSignatureRealMismatchTooFewParameters Declaration of function foo(int $x) : int should be compatible with function foo(int $x, int $y) : string (the method override accepts 1 parameter(s), but the overridden method can accept 2) defined in %s:16
+%s:20 PhanParamSignatureMismatch Declaration of function foo(string $x) : string should be compatible with function foo(int $x) : int defined in %s:4
+%s:20 PhanParamSignatureMismatch Declaration of function foo(string $x) : string should be compatible with function foo(int $x) : string defined in %s:12
+%s:20 PhanParamSignatureMismatch Declaration of function foo(string $x) : string should be compatible with function foo(int $x, int $y) : string defined in %s:16
+%s:20 PhanParamSignatureMismatch Declaration of function foo(string $x) : string should be compatible with function foo(string $x) : array defined in %s:30
+%s:20 PhanParamSignatureMismatch Declaration of function foo(string $x) : string should be compatible with function foo(string $x) : int defined in %s:26
+%s:20 PhanParamSignatureRealMismatchParamType Declaration of function foo(string $x) : string should be compatible with function foo(int $x) : int (parameter #1 of type 'string' cannot replace original parameter of type 'int') defined in %s:4
+%s:20 PhanParamSignatureRealMismatchParamType Declaration of function foo(string $x) : string should be compatible with function foo(int $x) : string (parameter #1 of type 'string' cannot replace original parameter of type 'int') defined in %s:12
+%s:20 PhanParamSignatureRealMismatchReturnType Declaration of function foo(string $x) : string should be compatible with function foo(int $x) : int (method returning 'string' cannot override method returning 'int') defined in %s:4
+%s:20 PhanParamSignatureRealMismatchReturnType Declaration of function foo(string $x) : string should be compatible with function foo(string $x) : array (method returning 'string' cannot override method returning 'array') defined in %s:30
+%s:20 PhanParamSignatureRealMismatchReturnType Declaration of function foo(string $x) : string should be compatible with function foo(string $x) : int (method returning 'string' cannot override method returning 'int') defined in %s:26
+%s:20 PhanParamSignatureRealMismatchTooFewParameters Declaration of function foo(string $x) : string should be compatible with function foo(int $x, int $y) : string (the method override accepts 1 parameter(s), but the overridden method can accept 2) defined in %s:16
+%s:21 PhanTypeMismatchReturn Returning type int but foo() is declared to return string
