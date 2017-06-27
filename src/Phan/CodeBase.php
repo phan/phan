@@ -557,10 +557,10 @@ class CodeBase
 
         $this->func_and_method_set->attach($method);
 
-        // If we're doing dead code detection and this is a
+        // If we're doing dead code detection(or something else) and this is a
         // method, map the name to the FQSEN so we can do hail-
         // mary references.
-        if (Config::get_dead_code_detection()) {
+        if (Config::get_track_references()) {
             if (empty($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
                 $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set;
             }
@@ -619,9 +619,9 @@ class CodeBase
      */
     public function getMethodSetByName(string $name) : Set
     {
-        \assert(Config::get_dead_code_detection(),
+        \assert(Config::get_track_references(),
             __METHOD__ . ' can only be called when dead code '
-            . ' detection is enabled.'
+            . ' detection (or force_tracking_references) is enabled.'
         );
 
         return $this->name_method_map[$name] ?? new Set;

@@ -1071,7 +1071,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
-            if (Config::get_dead_code_detection()
+            if (Config::get_track_references()
                 && Config::getValue('dead_code_detection_prefer_false_negative')
             ) {
                 foreach ($this->code_base->getMethodSetByName(
@@ -1182,7 +1182,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
-            if (Config::get_dead_code_detection()
+            if (Config::get_track_references()
                 && Config::getValue('dead_code_detection_prefer_false_negative')
             ) {
                 foreach ($this->code_base->getMethodSetByName(
@@ -1358,7 +1358,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // If we can't figure out the class for this method
             // call, cry YOLO and mark every method with that
             // name with a reference.
-            if (Config::get_dead_code_detection()
+            if (Config::get_track_references()
                 && Config::getValue('dead_code_detection_prefer_false_negative')
             ) {
                 foreach ($this->code_base->getMethodSetByName(
@@ -1679,7 +1679,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
 
-            if (Config::get_dead_code_detection()) {
+            if (Config::get_track_references()) {
                 (new ArgumentVisitor(
                     $this->code_base,
                     $this->context

@@ -296,7 +296,7 @@ class Analysis
         // in mind that the results here are just a guess and
         // we can't tell with certainty that anything is
         // definitely unreferenced.
-        if (!Config::get_dead_code_detection()) {
+        if (!Config::getValue('dead_code_detection')) {
             return;
         }
 
