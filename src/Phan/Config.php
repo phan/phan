@@ -32,7 +32,7 @@ class Config
     private static $array_casts_as_null = false;
 
     /** @var bool */
-    private static $dead_code_detection = false;
+    private static $track_references = false;
 
     /** @var bool */
     private static $backward_compatibility_checks = false;
@@ -222,6 +222,12 @@ class Config
         // `$class->$method()`) in ways that we're unable
         // to make sense of.
         'dead_code_detection' => false,
+
+        // Set to true in order to force tracking references to elements
+        // (functions/methods/consts/protected).
+        // dead_code_detection is another option which also causes references
+        // to be tracked.
+        'force_tracking_references' => false,
 
         // If true, the dead code detection rig will
         // prefer false negatives (not report dead code) to
@@ -621,9 +627,14 @@ class Config
         return self::$array_casts_as_null;
     }
 
+    public static function get_track_references() : bool
+    {
+        return self::$track_references;
+    }
+
     public static function get_dead_code_detection() : bool
     {
-        return self::$dead_code_detection;
+        return self::getValue('dead_code_detection');
     }
 
     public static function get_backward_compatibility_checks() : bool
@@ -671,6 +682,7 @@ class Config
      */
     public static function setValue(string $name, $value)
     {
+        self::$configuration[$name] = $value;
         switch ($name) {
         case 'null_casts_as_any_type':
             self::$null_casts_as_any_type = $value;
@@ -682,7 +694,8 @@ class Config
             self::$array_casts_as_null = $value;
             break;
         case 'dead_code_detection':
-            self::$dead_code_detection = $value;
+        case 'force_tracking_references':
+            self::$track_references = self::getValue('dead_code_detection') || self::getValue('force_tracking_references');
             break;
         case 'backward_compatibility_checks':
             self::$backward_compatibility_checks = $value;
@@ -692,7 +705,6 @@ class Config
             break;
         }
 
-        self::$configuration[$name] = $value;
     }
 
     /**

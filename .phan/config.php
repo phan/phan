@@ -102,6 +102,12 @@ return [
     // to make sense of.
     'dead_code_detection' => false,
 
+    // Set to true in order to force tracking references to elements
+    // (functions/methods/consts/protected).
+    // dead_code_detection is another option which also causes references
+    // to be tracked.
+    'force_tracking_references' => false,
+
     // Run a quick version of checks that takes less
     // time
     "quick_mode" => false,
