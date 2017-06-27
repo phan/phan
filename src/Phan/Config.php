@@ -165,6 +165,13 @@ class Config
         // are treated as if they can cast to each other.
         'scalar_implicit_cast' => false,
 
+        // If this has entries, scalars (int, float, bool, string, null)
+        // are allowed to perform the casts listed.
+        // E.g. ['int' => ['float', 'string'], 'float' => ['int'], 'string' => ['int'], 'null' => ['string']]
+        // allows casting null to a string, but not vice versa.
+        // (subset of scalar_implicit_cast)
+        'scalar_implicit_partial' => [],
+
         // If true, seemingly undeclared variables in the global
         // scope will be ignored. This is useful for projects
         // with complicated cross-file globals that you have no

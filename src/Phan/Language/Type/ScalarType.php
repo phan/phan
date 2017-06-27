@@ -61,10 +61,17 @@ abstract class ScalarType extends NativeType
     protected function canCastToNonNullableType(Type $type) : bool
     {
         // Scalars may be configured to always cast to eachother
-        if (Config::getValue('scalar_implicit_cast')
-            && $type->isScalar()
-        ) {
-            return true;
+        if ($type->isScalar()) {
+            if (Config::getValue('scalar_implicit_cast')) {
+                return true;
+            }
+            $scalar_implicit_partial = Config::getValue('scalar_implicit_partial');
+            if (\count($scalar_implicit_partial) > 0) {
+                // check if $type->getName() is in the list of permitted types $this->getName() can cast to.
+                if (\in_array($type->getName(), Config::get()->scalar_implicit_partial[$this->getName()] ?? [], true)) {
+                    return true;
+                }
+            }
         }
 
         return parent::canCastToNonNullableType($type);
@@ -79,5 +86,13 @@ abstract class ScalarType extends NativeType
         CodeBase $code_base
     ) : bool {
         return $union_type->hasType($this) || $this->asUnionType()->canCastToUnionType($union_type);
+    }
+
+    /**
+     * @override
+     */
+    public function asFQSENString() : string
+    {
+        return $this->name;
     }
 }
