@@ -35,6 +35,16 @@ return [
     // type to be cast to null.
     "null_casts_as_any_type" => false,
 
+    // Allow null to be cast as any array-like type
+    // This is an incremental step in migrating away from null_casts_as_any_type.
+    // If null_casts_as_any_type is true, this has no effect.
+    'null_casts_as_array' => false,
+
+    // Allow any array-like type to be cast to null.
+    // This is an incremental step in migrating away from null_casts_as_any_type.
+    // If null_casts_as_any_type is true, this has no effect.
+    'array_casts_as_null' => false,
+
     // If enabled, scalars (int, float, bool, string, null)
     // are treated as if they can cast to each other.
     'scalar_implicit_cast' => false,

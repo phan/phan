@@ -21,9 +21,15 @@ class Config
      */
     private static $configuration = self::DEFAULT_CONFIGURATION;
 
-    // The 4 most commonly accessed configs:
+    // The 6 most commonly accessed configs:
     /** @var bool */
     private static $null_casts_as_any_type = false;
+
+    /** @var bool */
+    private static $null_casts_as_array = false;
+
+    /** @var bool */
+    private static $array_casts_as_null = false;
 
     /** @var bool */
     private static $dead_code_detection = false;
@@ -155,6 +161,16 @@ class Config
         // to a class property that wasn't explicitly
         // defined.
         'allow_missing_properties' => false,
+
+        // Allow null to be cast as any array-like type
+        // This is an incremental step in migrating away from null_casts_as_any_type.
+        // If null_casts_as_any_type is true, this has no effect.
+        'null_casts_as_array' => false,
+
+        // Allow any array-like type to be cast to null.
+        // This is an incremental step in migrating away from null_casts_as_any_type.
+        // If null_casts_as_any_type is true, this has no effect.
+        'array_casts_as_null' => false,
 
         // Allow null to be cast as any type and for any
         // type to be cast to null. Setting this to false
@@ -595,6 +611,16 @@ class Config
         return self::$null_casts_as_any_type;
     }
 
+    public static function get_null_casts_as_array() : bool
+    {
+        return self::$null_casts_as_array;
+    }
+
+    public static function get_array_casts_as_null() : bool
+    {
+        return self::$array_casts_as_null;
+    }
+
     public static function get_dead_code_detection() : bool
     {
         return self::$dead_code_detection;
@@ -648,6 +674,12 @@ class Config
         switch ($name) {
         case 'null_casts_as_any_type':
             self::$null_casts_as_any_type = $value;
+            break;
+        case 'null_casts_as_array':
+            self::$null_casts_as_array = $value;
+            break;
+        case 'array_casts_as_null':
+            self::$array_casts_as_null = $value;
             break;
         case 'dead_code_detection':
             self::$dead_code_detection = $value;

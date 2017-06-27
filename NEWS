@@ -42,6 +42,8 @@ New Features (CLI, Configs)
   The warning can be disabled by the Phan config setting `skip_slow_php_options_warning` to true.
 + Add a config setting 'scalar_implicit_partial' to allow moving away from 'scalar_implicit_cast' (Issue #541)
   This allows users to list out (and gradually remove) permitted scalar type casts.
++ Add `null_casts_as_array` and `array_casts_as_null` settings, which can be used while migrating away from `null_casts_as_any_type`.
+  These will be checked if one of the types has a union type of `null`, as well as when checking if a nullable array can cast to a regular array.
 
 Maintenance
 + Reduce memory usage by around 15% by using a more efficient representation of union types (PR #729).
