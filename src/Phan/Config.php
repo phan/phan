@@ -498,6 +498,9 @@ class Config
         // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
         'consistent_hashing_file_order' => false,
 
+        // Set by --print-memory-usage-summary. Prints a memory usage summary to stderr after analysis.
+        'print_memory_usage_summary' => false,
+
         // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
         // (e.g. PHP is compiled with --enable-debug or when using XDebug)
         'skip_slow_php_options_warning' => false,

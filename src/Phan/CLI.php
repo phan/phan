@@ -88,6 +88,7 @@ class CLI
                 'processes:',
                 'config-file:',
                 'signature-compatibility',
+                'print-memory-usage-summary',
                 'markdown-issue-messages',
                 'disable-plugins',
                 'daemonize-socket:',
@@ -289,6 +290,9 @@ class CLI
                 case 'x':
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
+                    break;
+                case 'print-memory-usage-summary':
+                    Config::setValue('print_memory_usage_summary', true);
                     break;
                 case 'markdown-issue-messages':
                     Config::setValue('markdown_issue_messages', true);
@@ -546,6 +550,10 @@ Extended help:
   properly set up, or to run other checks on the files Phan would parse.
 
  --dump-signatures-file <filename>
+  Emit JSON serialized signatures to the given file.
+  This uses a method signature format similar to FunctionSignatureMap.php.
+
+ --print-memory-usage-summary
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
 
