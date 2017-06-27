@@ -321,6 +321,10 @@ class Phan implements IgnoredFilesFilterInterface {
             exit(EXIT_SUCCESS);
         }
 
+        if (Config::getValue('print_memory_usage_summary')) {
+            self::printMemoryUsageSummary();
+        }
+
         if ($did_fork_pool_have_error) {
             // Make fork pool errors (e.g. due to memory limits) easy to detect when running CI jobs.
             return true;
@@ -457,6 +461,16 @@ class Phan implements IgnoredFilesFilterInterface {
             return EXIT_FAILURE;
         }
         return EXIT_SUCCESS;
+    }
+
+    /**
+     * @return void
+     */
+    private static function printMemoryUsageSummary()
+    {
+        $memory = memory_get_usage()/1024/1024;
+        $peak   = memory_get_peak_usage()/1024/1024;
+        fwrite(STDERR, sprintf("Memory usage after analysis completed: %.02dMB/%.02dMB\n", $memory, $peak));
     }
 
     /**
