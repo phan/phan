@@ -145,6 +145,7 @@ class Issue
     const NoopProperty              = 'PhanNoopProperty';
     const NoopVariable              = 'PhanNoopVariable';
     const UnreferencedClass         = 'PhanUnreferencedClass';
+    const UnreferencedFunction      = 'PhanUnreferencedFunction';
     const UnreferencedMethod        = 'PhanUnreferencedMethod';
     const UnreferencedProperty      = 'PhanUnreferencedProperty';
     const UnreferencedConstant      = 'PhanUnreferencedConstant';
@@ -1350,6 +1351,14 @@ class Issue
                 "Possibly zero references to constant {CONST}",
                 self::REMEDIATION_B,
                 6008
+            ),
+            new Issue(
+                self::UnreferencedFunction,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to function {FUNCTION}",
+                self::REMEDIATION_B,
+                6009
             ),
 
             // Issue::CATEGORY_REDEFINE

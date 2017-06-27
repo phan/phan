@@ -10,6 +10,7 @@ use Phan\Issue;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\ClassElement;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Library\Map;
@@ -48,7 +49,7 @@ class ReferenceCountsAnalyzer
         self::analyzeElementListReferenceCounts(
             $code_base,
             $code_base->getFunctionMap(),
-            Issue::UnreferencedMethod,
+            Issue::UnreferencedFunction,
             $total_count,
             $i
         );
@@ -242,6 +243,9 @@ class ReferenceCountsAnalyzer
                         // then also treat it as a reference to the duplicate.
                         return;
                     }
+                }
+                if ($element instanceof Func && \strcasecmp($element->getName(), "__autoload") === 0) {
+                    return;
                 }
 
                 // If there are duplicate declarations, display issues for unreferenced elements on each declaration.
