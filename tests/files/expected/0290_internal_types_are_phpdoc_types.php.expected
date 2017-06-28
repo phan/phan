@@ -1,1 +1,1 @@
-%s:4 PhanNonClassMethodCall Call to method doSomething on non-class type bool|int
+%s:4 PhanNonClassMethodCall Call to method doSomething on non-class type false|int

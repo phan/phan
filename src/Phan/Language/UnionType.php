@@ -12,6 +12,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
@@ -391,6 +392,17 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @return bool
+     * True if this union type has any types that are bool/false/true types
+     */
+    public function hasTypeInBoolFamily() : bool
+    {
+        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+            return $type->getIsInBoolFamily();
+        });
+    }
+
+    /**
      * @return UnionType[]
      * A map from template type identifiers to the UnionType
      * to replace it with
@@ -664,6 +676,138 @@ class UnionType implements \Serializable
             }
 
             $result->addType($type->withIsNullable(true));
+        }
+        return $result;
+    }
+
+    /**
+     * @return bool - True if type set is not empty and at least one type is NullType or nullable or FalseType or BoolType.
+     * (I.e. the type is always falsey, or both sometimes falsey with a non-falsey type it can be narrowed down to)
+     * This does not include values such as `IntType`, since there is currently no `NonZeroIntType`.
+     */
+    public function containsFalsey() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->getIsPossiblyFalsey()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function nonFalseyClone() : UnionType
+    {
+        $result = new UnionType();
+        foreach ($this->type_set as $type) {
+            if (!$type->getIsPossiblyFalsey()) {
+                $result->addType($type);
+                continue;
+            }
+            if ($type->getIsAlwaysFalsey()) {
+                // don't add null/false to the resulting type
+                continue;
+            }
+
+            // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
+            $result->addType($type->asNonFalseyType());
+        }
+        return $result;
+    }
+
+    /**
+     * @return bool - True if type set is not empty and at least one type is NullType or nullable or FalseType or BoolType.
+     * (I.e. the type is always falsey, or both sometimes falsey with a non-falsey type it can be narrowed down to)
+     * This does not include values such as `IntType`, since there is currently no `NonZeroIntType`.
+     */
+    public function containsTruthy() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->getIsPossiblyTruthy()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function nonTruthyClone() : UnionType
+    {
+        $result = new UnionType();
+        foreach ($this->type_set as $type) {
+            if (!$type->getIsPossiblyTruthy()) {
+                $result->addType($type);
+                continue;
+            }
+            if ($type->getIsAlwaysTruthy()) {
+                // don't add null/false to the resulting type
+                continue;
+            }
+
+            // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
+            $result->addType($type->asNonTruthyType());
+        }
+        return $result;
+    }
+
+    /**
+     * @return bool - True if type set is not empty and at least one type is BoolType or FalseType
+     */
+    public function containsFalse() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->getIsPossiblyFalse()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return bool - True if type set is not empty and at least one type is BoolType or TrueType
+     */
+    public function containsTrue() : bool
+    {
+        foreach ($this->type_set as $type) {
+            if ($type->getIsPossiblyTrue()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function nonFalseClone() : UnionType
+    {
+        $result = new UnionType();
+        foreach ($this->type_set as $type) {
+            if (!$type->getIsPossiblyFalse()) {
+                $result->addType($type);
+                continue;
+            }
+            if ($type->getIsAlwaysFalse()) {
+                // don't add null/false to the resulting type
+                continue;
+            }
+
+            // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
+            $result->addType($type->asNonFalseType());
+        }
+        return $result;
+    }
+
+    public function nonTrueClone() : UnionType
+    {
+        $result = new UnionType();
+        foreach ($this->type_set as $type) {
+            if (!$type->getIsPossiblyTrue()) {
+                $result->addType($type);
+                continue;
+            }
+            if ($type->getIsAlwaysTrue()) {
+                // don't add null/false to the resulting type
+                continue;
+            }
+
+            // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
+            $result->addType($type->asNonTrueType());
         }
         return $result;
     }
@@ -1163,8 +1307,10 @@ class UnionType implements \Serializable
     }
 
     /**
-     * Takes "MyClass|int|?bool|array|?object" and returns "int|?bool"
-     * Takes "?MyClass" and returns "null"
+     * Returns the types for which is_scalar($x) would be true.
+     * This means null/nullable is removed.
+     * Takes "MyClass|int|?bool|array|?object" and returns "int|bool"
+     * Takes "?MyClass" and returns an empty union type.
      *
      * @return UnionType
      * A UnionType with known object types kept, other types filtered out.
@@ -1174,15 +1320,10 @@ class UnionType implements \Serializable
      */
     public function scalarTypes() : UnionType
     {
+        // TODO: is_scalar(null) is false, account for that in analysis.
         $types = \array_filter($this->type_set, function (Type $type) : bool {
-            return $type->isScalar();
+            return $type->isScalar() && !($type instanceof NullType);
         });
-        $null_type = NullType::instance(false);
-        $null_type_id = \runkit_object_id($null_type);
-        if (!\array_key_exists($null_type_id, $types) && $this->containsNullable()) {
-            // E.g. if this has `?stdClass`, add `null` to the resulting set of scalar types.
-            $types[\runkit_object_id($null_type)] = $null_type;
-        }
         return new UnionType($types, true);
     }
 
@@ -1199,7 +1340,7 @@ class UnionType implements \Serializable
     {
 
         return new UnionType(
-            array_filter($this->type_set,
+            \array_filter($this->type_set,
                 function (Type $type) : bool {
                     return !$type->isGenericArray()
                         && $type !== ArrayType::instance(false);
@@ -1237,6 +1378,15 @@ class UnionType implements \Serializable
         return ArraySet::exists($this->type_set, function (Type $type) : bool {
             return $type->isGenericArray();
         });
+    }
+
+    /**
+     * @return bool
+     * True if any of the types in this UnionType made $matcher_callback return true
+     */
+    public function hasTypeMatchingCallback(\Closure $matcher_callback) : bool
+    {
+        return ArraySet::exists($this->type_set, $matcher_callback);
     }
 
     /**
