@@ -129,7 +129,7 @@ class Analysis
     /**
      * @see self::parseNodeInContext
      */
-    private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node) {
+    private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node) : Context {
         // Save a reference to the outer context
         $outer_context = $context;
 
