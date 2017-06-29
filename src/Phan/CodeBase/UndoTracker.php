@@ -58,7 +58,7 @@ class UndoTracker {
     }
 
     /**
-     * @param string|null $current_parsed_file
+     * @param ?string $current_parsed_file
      * @return void
      */
     public function setCurrentParsedFile($current_parsed_file) {
@@ -71,7 +71,7 @@ class UndoTracker {
 
 
     /**
-     * @return string|null - This string should change when the file is modified. Returns null if the file somehow doesn't exist
+     * @return ?string - This string should change when the file is modified. Returns null if the file somehow doesn't exist
      */
     public static function getFileState(string $path) {
         clearstatcache(true, $path);  // TODO: does this work properly with symlinks? seems to.
@@ -79,7 +79,10 @@ class UndoTracker {
         if (!$real) {
             return null;
         }
-        $stat = @stat($real);  // suppress notices because phan's error_handler terminates on error.
+        if (!file_exists($real)) {
+            return null;
+        }
+        $stat = @stat($real);  // Double check: suppress to prevent phan's error_handler from terminating on error.
         if (!$stat) {
             return null;  // It was missing or unreadable.
         }
