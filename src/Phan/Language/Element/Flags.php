@@ -21,6 +21,10 @@ class Flags
     const IS_NS_INTERNAL               = (1 << 12);
     const IS_FROM_PHPDOC               = (1 << 13);
 
+    // These can be combined in 3 ways, see Parameter->getReferenceType()
+    const IS_READ_REFERENCE            = (1 << 14);
+    const IS_WRITE_REFERENCE           = (1 << 15);
+
     /**
      * Either enable or disable the given flag on
      * the given bit vector.

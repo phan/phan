@@ -1,0 +1,2 @@
+%s:6 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 3 of \preg_match()
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 (string) is array but \strlen() takes string

@@ -800,7 +800,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                     $this->context
                 );
 
-                // Check the call for paraemter and argument types
+                // Check the call for parameter and argument types
                 $this->analyzeCallToMethod(
                     $this->code_base,
                     $method,
@@ -1729,9 +1729,44 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
 
                 if ($variable) {
-                    $variable->getUnionType()->addUnionType(
-                        $parameter->getNonVariadicUnionType()
-                    );
+                    $reference_parameter_type = $parameter->getNonVariadicUnionType();
+                    switch ($parameter->getReferenceType()) {
+                    case Parameter::REFERENCE_WRITE_ONLY:
+                        // The previous value is being ignored, and being replaced.
+                        $variable->setUnionType(
+                            $reference_parameter_type
+                        );
+                        break;
+                    case Parameter::REFERENCE_READ_WRITE:
+                        $variable_type = $variable->getUnionType();
+                        if ($variable_type->isEmpty()) {
+                            // if Phan doesn't know the variable type,
+                            // then guess that the variable is the type of the reference
+                            // when analyzing the following statements.
+                            $variable->setUnionType(
+                                $reference_parameter_type
+                            );
+                        } else if (!$variable_type->canCastToUnionType($reference_parameter_type)) {
+                            // Phan already warned about incompatible types.
+                            // But analyze the following statements as if it could have been the type expected,
+                            // to reduce false positives.
+                            $variable->getUnionType()->addUnionType(
+                                $reference_parameter_type
+                            );
+                        }
+                        // don't modify - assume the function takes the same type in that it returns,
+                        // and we want to preserve generic array types for sorting functions (May change later on)
+                        // TODO: Check type compatibility earlier, and don't modify?
+                        break;
+                    case Parameter::REFERENCE_DEFAULT:
+                    default:
+                        // We have no idea what type of reference this is.
+                        // Probably user defined code.
+                        $variable->getUnionType()->addUnionType(
+                            $reference_parameter_type
+                        );
+                        break;
+                    }
                 }
             }
         }
