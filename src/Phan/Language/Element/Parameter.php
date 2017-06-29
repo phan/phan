@@ -18,6 +18,9 @@ use ast\Node;
 
 class Parameter extends Variable
 {
+    const REFERENCE_DEFAULT = 1;
+    const REFERENCE_READ_WRITE = 2;
+    const REFERENCE_WRITE_ONLY = 3;
 
     /**
      * @var UnionType|null
@@ -486,6 +489,17 @@ class Parameter extends Variable
             $this->getFlags(),
             \ast\flags\PARAM_REF
         );
+    }
+
+    public function getReferenceType() : int
+    {
+        $flags = $this->getPhanFlags();
+        if (Flags::bitVectorHasState($flags, Flags::IS_READ_REFERENCE)) {
+            return self::REFERENCE_READ_WRITE;
+        } else if (Flags::bitVectorHasState($flags, Flags::IS_WRITE_REFERENCE)) {
+            return self::REFERENCE_WRITE_ONLY;
+        }
+        return self::REFERENCE_DEFAULT;
     }
 
     public function __toString() : string

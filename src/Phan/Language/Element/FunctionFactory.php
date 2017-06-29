@@ -196,12 +196,20 @@ class FunctionFactory {
                 as $parameter_name => $parameter_type
             ) {
                 $flags = 0;
+                $phan_flags = 0;
                 $is_optional = false;
 
                 // Check to see if its a pass-by-reference parameter
-                if (\strpos($parameter_name, '&') === 0) {
+                if (($parameter_name[0] ?? '') === '&') {
                     $flags |= \ast\flags\PARAM_REF;
                     $parameter_name = \substr($parameter_name, 1);
+                    if (\strncmp($parameter_name, 'rw_', 3) === 0) {
+                        $phan_flags |= Flags::IS_READ_REFERENCE | Flags::IS_WRITE_REFERENCE;
+                        $parameter_name = \substr($parameter_name, 3);
+                    } else if (\strncmp($parameter_name, 'w_', 2) === 0) {
+                        $phan_flags |= Flags::IS_WRITE_REFERENCE;
+                        $parameter_name = \substr($parameter_name, 2);
+                    }
                 }
 
                 // Check to see if its variadic
@@ -222,6 +230,11 @@ class FunctionFactory {
                     $parameter_type,
                     $flags
                 );
+                $parameter->setPhanFlags(Flags::bitVectorWithState(
+                    $parameter->getPhanFlags(),
+                    $phan_flags,
+                    true
+                ));
 
                 if ($is_optional) {
                     // TODO: could check isDefaultValueAvailable and getDefaultValue, for a better idea.

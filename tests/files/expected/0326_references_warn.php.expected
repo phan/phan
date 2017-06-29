@@ -1,0 +1,3 @@
+%s:4 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \sort()
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (array_arg) is int but \sort() takes array
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 (stack) is string but \array_shift() takes array
