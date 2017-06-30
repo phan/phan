@@ -16,6 +16,15 @@ class Config
     const AST_VERSION = 40;
 
     /**
+     * The version of the Phan plugin system.
+     * Plugin files that wish to be backwards compatible may check this and return different classes based on its existence
+     * and the results of version_compare.
+     * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
+     * New features increment minor versions, and bug fixes increment patch versions.
+     */
+    const PHAN_PLUGIN_VERSION = '2.0.0';
+
+    /**
      * @var string|null
      * The root directory of the project. This is used to
      * store canonical path names and find project resources
