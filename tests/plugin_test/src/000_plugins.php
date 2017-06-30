@@ -59,3 +59,9 @@ testUnusedSuppressionPlugin();
 
 // Dead code detection should detect this
 function testUnreferencedFunction() {}
+
+// Dead code detection should not warn about built in error handlers
+function __autoload($className) {}
+// meaningless things with the same names
+class __autoload {}
+const __autoload = 3;

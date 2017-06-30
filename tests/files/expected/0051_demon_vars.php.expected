@@ -1,2 +1,3 @@
 %s:4 PhanCompatibleExpressionPHP7 $$a[] expression may not be PHP 7 compatible
-
+%s:6 PhanUndeclaredVariable Variable $b is undeclared
+%s:8 PhanCompatibleExpressionPHP7 $$$a[] expression may not be PHP 7 compatible

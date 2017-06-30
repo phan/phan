@@ -1,0 +1,5 @@
+%s:34 PhanUndeclaredClassAliasOriginal Reference to undeclared class \DoesNotExist for the original class of a class_alias for \Foo278\AliasedFromNonExisting
+%s:36 PhanRedefineClassAlias \Foo278\Dupe aliased at %s:36 was previously defined as \Foo278\Dupe at %s:29
+%s:38 PhanRedefineClassAlias \Foo278\Dupe2 aliased at %s:38 was previously defined as \Foo278\Dupe2 at %s:51
+%s:44 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo278\AliasedFromNonExisting
+%s:46 PhanUndeclaredClassMethod Call to method __construct from undeclared class \Foo278\DoesNotExist

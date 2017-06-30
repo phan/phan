@@ -94,7 +94,7 @@ abstract class ScopeVisitor extends AnalysisVisitor {
     public function visitGroupUse(Node $node) : Context {
         $children = $node->children ?? [];
 
-        $prefix = array_shift($children);
+        $prefix = \array_shift($children);
 
         $context = $this->context;
 
@@ -155,7 +155,7 @@ abstract class ScopeVisitor extends AnalysisVisitor {
         string $prefix = '',
         int $flags = 0
     ) : array {
-        assert($node->kind == \ast\AST_USE,
+        \assert($node->kind == \ast\AST_USE,
             'Method takes AST_USE nodes');
 
         $map = [];
@@ -164,8 +164,8 @@ abstract class ScopeVisitor extends AnalysisVisitor {
             $target = $child_node->children['name'];
 
             if(empty($child_node->children['alias'])) {
-                if(($pos = strrpos($target, '\\'))!==false) {
-                    $alias = substr($target, $pos + 1);
+                if(($pos = \strrpos($target, '\\'))!==false) {
+                    $alias = \substr($target, $pos + 1);
                 } else {
                     $alias = $target;
                 }
@@ -183,15 +183,15 @@ abstract class ScopeVisitor extends AnalysisVisitor {
                 : $child_node->flags;
 
             if ($use_flag === \ast\flags\USE_FUNCTION) {
-                $parts = explode('\\', $target);
-                $function_name = array_pop($parts);
+                $parts = \explode('\\', $target);
+                $function_name = \array_pop($parts);
                 $target = FullyQualifiedFunctionName::make(
                     $prefix . '\\' . implode('\\', $parts),
                     $function_name
                 );
             } else if ($use_flag === \ast\flags\USE_CONST) {
-                $parts = explode('\\', $target);
-                $name = array_pop($parts);
+                $parts = \explode('\\', $target);
+                $name = \array_pop($parts);
                 $target = FullyQualifiedGlobalConstantName::make(
                     $prefix . '\\' . implode('\\', $parts),
                     $name

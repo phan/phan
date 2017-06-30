@@ -32,6 +32,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use Phan\Library\ArraySet;
 use ast\Node;
 use ast\Node\Decl;
 
@@ -437,7 +438,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             case \ast\flags\TYPE_VOID:
                 return VoidType::instance(false)->asUnionType();
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . Debug::astFlagDescription($node->flags ?? 0, $node->kind)
@@ -491,7 +492,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return null;
         }
         // Otherwise, this is an int/float/string.
-        assert(is_scalar($node), 'node must be Node or scalar');
+        \assert(\is_scalar($node), 'node must be Node or scalar');
         return Type::fromObject($node)->asUnionType();
     }
 
@@ -524,7 +525,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // Otherwise, this is an int/float/string.
         // Use the exact same truthiness rules as PHP to check if the conditional is truthy.
         // (e.g. "0" and 0.0 and '' are false)
-        assert(is_scalar($cond), 'cond must be Node or scalar');
+        \assert(\is_scalar($cond), 'cond must be Node or scalar');
         return (bool)$cond;
     }
 
@@ -545,9 +546,9 @@ class UnionTypeVisitor extends AnalysisVisitor
         $cond_truthiness = $this->checkCondUnconditionalTruthiness($cond_node);
         // For the shorthand $a ?: $b, the cond node will be the truthy value.
         // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
-        $true_node = $node->children['true'] ??  $cond_node;
+        $true_node = $node->children['true'] ?? $cond_node;
 
-        // Rarely, an
+        // Rarely, a conditional will always be true or always be false.
         if ($cond_truthiness !== null) {
             // TODO: Add no-op checks in another PR, if they don't already exist for conditional.
             if ($cond_truthiness === true) {
@@ -555,7 +556,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
-                    $node->children['true'] ?? $cond_node
+                    $true_node
                 );
             } else {
                 // The condition is unconditionally false
@@ -567,6 +568,14 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $node->children['false'] ?? ''
                 );
             }
+        }
+        if ($true_node !== $cond_node) {
+            // Visit the condition to check for undefined variables.
+            UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $cond_node
+            );
         }
 
         // TODO: false_context once there is a NegatedConditionVisitor
@@ -659,10 +668,10 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
 
             $element_types =
-                array_values(array_unique($element_types));
+                \array_unique($element_types);
 
-            if (count($element_types) == 1) {
-                return $element_types[0]->asGenericArrayTypes();
+            if (\count($element_types) === 1) {
+                return \reset($element_types)->asGenericArrayTypes();
             }
         }
 
@@ -792,9 +801,12 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         $union_type = $this->visitClassNode($node->children['class']);
 
+        // TODO: re-use the underlying type set in the common case
+        // Maybe UnionType::fromMap
+
         // For any types that are templates, map them to concrete
         // types based on the parameters passed in.
-        return new UnionType(array_map(function (Type $type) use ($node) {
+        return new UnionType(\array_map(function (Type $type) use ($node) {
 
             // Get a fully qualified name for the type
             $fqsen = $type->asFQSEN();
@@ -804,7 +816,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return $type;
             }
 
-            assert($fqsen instanceof FullyQualifiedClassName);
+            \assert($fqsen instanceof FullyQualifiedClassName);
 
             // If we don't have the class, we'll catch that problem
             // elsewhere
@@ -831,7 +843,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $class->getMethodByName($this->code_base, '__construct');
 
             // Map each argument to its type
-            $arg_type_list = array_map(function($arg_node) {
+            $arg_type_list = \array_map(function($arg_node) {
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
@@ -850,7 +862,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // Create a new type that assigns concrete
             // types to template type identifiers.
             return Type::fromType($type, $template_type_list);
-        }, $union_type->getTypeSet()->toArray()));
+        }, $union_type->getTypeSet()));
     }
 
     /**
@@ -985,7 +997,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         // at its definition
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
-                $this->context
+                $this->context,
+                $node
             );
 
         $type = CallableType::instanceWithClosureFQSEN(
@@ -1013,14 +1026,14 @@ class UnionTypeVisitor extends AnalysisVisitor
         if (($name_node instanceof Node)) {
             // This is nonsense. Give up.
             $name_node_type = $this($name_node);
-            static $intOrStringType;
-            if ($intOrStringType === null) {
-                $intOrStringType = new UnionType();
-                $intOrStringType->addType(StringType::instance(false));
-                $intOrStringType->addType(IntType::instance(false));
-                $intOrStringType->addType(NullType::instance(false));
+            static $int_or_string_type;
+            if ($int_or_string_type === null) {
+                $int_or_string_type = new UnionType();
+                $int_or_string_type->addType(StringType::instance(false));
+                $int_or_string_type->addType(IntType::instance(false));
+                $int_or_string_type->addType(NullType::instance(false));
             }
-            if (!$name_node_type->canCastToUnionType($intOrStringType)) {
+            if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
                 Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
             }
 
@@ -1033,9 +1046,9 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         if (!$this->context->getScope()->hasVariableWithName($variable_name)) {
             if (Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())) {
-                return Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name, $this->context);
+                return Variable::getUnionTypeOfHardcodedGlobalVariableWithName($variable_name);
             }
-            if (!Config::get()->ignore_undeclared_variables_in_global_scope
+            if (!Config::getValue('ignore_undeclared_variables_in_global_scope')
                 || !$this->context->isInGlobalScope()
             ) {
                 throw new IssueException(
@@ -1150,9 +1163,6 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitClassConst(Node $node) : UnionType
     {
-
-        $constant_name = $node->children['const'];
-
         try {
             $constant = (new ContextNode(
                 $this->code_base,
@@ -1360,8 +1370,8 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // Method names can some times turn up being
         // other method calls.
-        assert(
-            is_string($method_name),
+        \assert(
+            \is_string($method_name),
             "Method name must be a string. Something else given."
         );
 
@@ -1418,7 +1428,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $union_type = clone($union_type);
 
                         // Find the static type on the list
-                        $static_type = $union_type->getTypeSet()->find(function (Type $type) : bool {
+                        $static_type = ArraySet::find($union_type->getTypeSet(), function (Type $type) : bool {
                             return (
                                 $type->isGenericArray()
                                 && $type->genericArrayElementType()->isStaticType()
@@ -1563,7 +1573,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         // class node and get its type
         $is_static_type_string = Type::isStaticTypeString($class_name);
         if (!($is_static_type_string || Type::isSelfTypeString($class_name))) {
-            // TODO: does anyone else call this method?
             return self::unionTypeFromClassNode(
                 $this->code_base,
                 $this->context,
@@ -1767,7 +1776,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         foreach ($union_type->nonNativeTypes()->getTypeSet() as $class_type) {
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
-            assert($class_fqsen instanceof FullyQualifiedClassName, 'Parsing a class node must return a class name fqsen');
+            \assert($class_fqsen instanceof FullyQualifiedClassName, 'Parsing a class node must return a class name fqsen');
 
             // See if the class exists
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {

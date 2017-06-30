@@ -19,7 +19,7 @@
 %s:90 PhanRedefineFunctionInternal Function strlen defined at %s:90 was previously defined internally
 %s:94 PhanStaticCallToNonStatic Static call to non-static method \C19::f() defined at %s:93
 %s:98 PhanNonClassMethodCall Call to method f on non-class type null
-%s:104 PhanTypeArraySuspicious Suspicious array access to bool
+%s:104 PhanTypeArraySuspicious Suspicious array access to false
 %s:107 PhanTypeComparisonFromArray array to string comparison
 %s:110 PhanTypeComparisonToArray int to array comparison
 %s:116 PhanTypeInstantiateAbstract Instantiation of abstract class \C6
@@ -27,7 +27,7 @@
 %s:129 PhanTypeMismatchArgument Argument 1 (i) is string but \f8() takes int defined at %s:128
 %s:132 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
 %s:138 PhanTypeMismatchForeach null passed to foreach instead of array
-%s:141 PhanTypeMismatchDefault Default value for int $p can't be bool
+%s:141 PhanTypeMismatchDefault Default value for int $p can't be false
 %s:144 PhanTypeMismatchReturn Returning type string but f() is declared to return int
 %s:147 PhanTypeMissingReturn Method \C9::f is declared to return int but has no return value
 %s:150 PhanUndeclaredClassMethod Call to method f from undeclared class \F

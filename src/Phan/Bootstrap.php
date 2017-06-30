@@ -42,11 +42,19 @@ set_exception_handler(function (Throwable $throwable) {
 });
 
 /**
+ * The error handler for PHP notices, etc.
+ * This is a named function instead of a closure to make stack traces easier to read.
+ *
  * @suppress PhanUnreferencedMethod
  */
 function phan_error_handler($errno, $errstr, $errfile, $errline)
 {
     error_log("$errfile:$errline [$errno] $errstr\n");
+    if (error_reporting() === 0) {
+        // https://secure.php.net/manual/en/language.operators.errorcontrol.php
+        // Don't make Phan terminate if the @-operator was being used on an expression.
+        return false;
+    }
 
     ob_start();
     debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);

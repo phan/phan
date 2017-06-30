@@ -10,6 +10,7 @@ use Phan\Issue;
 use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\ClassElement;
+use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Library\Map;
@@ -36,7 +37,7 @@ class ReferenceCountsAnalyzer
         // in mind that the results here are just a guess and
         // we can't tell with certainty that anything is
         // definitely unreferenced.
-        if (!Config::get()->dead_code_detection) {
+        if (!Config::getValue('dead_code_detection')) {
             return;
         }
 
@@ -48,7 +49,7 @@ class ReferenceCountsAnalyzer
         self::analyzeElementListReferenceCounts(
             $code_base,
             $code_base->getFunctionMap(),
-            Issue::UnreferencedMethod,
+            Issue::UnreferencedFunction,
             $total_count,
             $i
         );
@@ -236,12 +237,15 @@ class ReferenceCountsAnalyzer
 
             if ($element instanceof AddressableElement) {
                 $element_alt = self::findAlternateReferencedElementDeclaration($code_base, $element);
-                if (!is_null($element_alt)) {
+                if (!\is_null($element_alt)) {
                     if ($element_alt->getReferenceCount($code_base) >= 1) {
                         // If there is a reference to the "canonical" declaration (the one which was parsed first),
                         // then also treat it as a reference to the duplicate.
                         return;
                     }
+                }
+                if ($element instanceof Func && \strcasecmp($element->getName(), "__autoload") === 0) {
+                    return;
                 }
 
                 // If there are duplicate declarations, display issues for unreferenced elements on each declaration.

@@ -28,7 +28,7 @@ trait Memoize
      */
     protected function memoize(string $key, \Closure $fn)
     {
-        if (!array_key_exists($key, $this->memoized_data)) {
+        if (!\array_key_exists($key, $this->memoized_data)) {
             $this->memoized_data[$key] = $fn();
         }
 
@@ -45,7 +45,7 @@ trait Memoize
      */
     protected function isFirstExecution(string $key) : bool
     {
-        if (!array_key_exists($key, $this->memoized_data)) {
+        if (!\array_key_exists($key, $this->memoized_data)) {
             $this->memoized_data[$key] = true;
             return true;
         }
@@ -61,7 +61,7 @@ trait Memoize
      * The key to use for storing the result of the
      * computation.
      *
-     * @param Closure $fn
+     * @param \Closure $fn
      * A function to compute only once for the given
      * $key.
      *
@@ -72,7 +72,7 @@ trait Memoize
     {
         static $memoized_data = [];
 
-        if (!array_key_exists($key, $memoized_data)) {
+        if (!\array_key_exists($key, $memoized_data)) {
             $memoized_data[$key] = $fn();
         }
 

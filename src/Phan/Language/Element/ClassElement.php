@@ -43,7 +43,7 @@ abstract class ClassElement extends AddressableElement
      */
     public function getDefiningClassFQSEN() : FullyQualifiedClassName
     {
-        if (is_null($this->defining_fqsen)) {
+        if (\is_null($this->defining_fqsen)) {
             throw new CodeBaseException(
                 $this->getFQSEN(),
                 "No defining class for {$this->getFQSEN()}"

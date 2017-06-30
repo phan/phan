@@ -38,6 +38,13 @@ class NullType extends ScalarType
         );
     }
 
+    public function canCastToNonNullableType(Type $type) : bool
+    {
+        // null_casts_as_any_type means that null or nullable can cast to any type?
+        return Config::get()->null_casts_as_any_type
+            || parent::canCastToNonNullableType($type);
+    }
+
     /**
      * @return bool
      * True if this Type can be cast to the given Type
@@ -55,13 +62,21 @@ class NullType extends ScalarType
             return true;
         }
 
-        if (Config::get()->null_casts_as_any_type) {
+        if (Config::get_null_casts_as_any_type()) {
             return true;
         }
 
         // NullType is a sub-type of ScalarType. So it's affected by scalar_implicit_cast.
-        if (Config::get()->scalar_implicit_cast && $type->isScalar()) {
-            return true;
+        if ($type->isScalar()) {
+            if (Config::getValue('scalar_implicit_cast')) {
+                return true;
+            }
+            $scalar_implicit_partial = Config::getValue('scalar_implicit_partial');
+            // check if $type->getName() is in the list of permitted types $this->getName() can cast to.
+            if (\count($scalar_implicit_partial) > 0 &&
+                \in_array($type->getName(), $scalar_implicit_partial['null'] ?? [], true)) {
+                return true;
+            }
         }
 
         return false;
@@ -86,4 +101,13 @@ class NullType extends ScalarType
         return $this->name;
     }
 
+    public function getIsPossiblyFalsey() : bool
+    {
+        return true;  // Null is always falsey.
+    }
+
+    public function getIsAlwaysFalsey() : bool
+    {
+        return true;  // Null is always falsey.
+    }
 }

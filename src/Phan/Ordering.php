@@ -39,10 +39,10 @@ class Ordering
         array $analysis_file_list
     ) : array {
 
-        assert($process_count > 0,
+        \assert($process_count > 0,
             "The process count must be greater than zero.");
 
-        if (Config::get()->randomize_file_order) {
+        if (Config::getValue('randomize_file_order')) {
             $random_proc_file_map = [];
             $i = 0;
             shuffle($analysis_file_list);
@@ -53,7 +53,7 @@ class Ordering
         }
 
         // Construct a Hasher implementation based on config.
-        if (Config::get()->consistent_hashing_file_order) {
+        if (Config::getValue('consistent_hashing_file_order')) {
             sort($analysis_file_list, SORT_STRING);
             $hasher = new Consistent($process_count);
         } else {
@@ -91,7 +91,7 @@ class Ordering
             $file_names_for_classes[$file_name] = $class;
         }
 
-        if (Config::get()->consistent_hashing_file_order) {
+        if (Config::getValue('consistent_hashing_file_order')) {
             ksort($file_names_for_classes, SORT_STRING);
         }
 

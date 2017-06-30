@@ -6,7 +6,7 @@ use Phan\CodeBase;
 
 interface CodeBaseAwareTestInterface {
 
-    /** @param CodeBase $codeBase */
+    /** @param ?CodeBase $codeBase */
     public function setCodeBase(CodeBase $codeBase = null);
 
 }

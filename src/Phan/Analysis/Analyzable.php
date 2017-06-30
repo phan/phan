@@ -39,7 +39,7 @@ trait Analyzable
     public function setNode(Node $node)
     {
         // Don't waste the memory if we're in quick mode
-        if (Config::get()->quick_mode) {
+        if (Config::get_quick_mode()) {
             return;
         }
 
@@ -73,7 +73,7 @@ trait Analyzable
     {
         // Don't do anything if we care about being
         // fast
-        if (Config::get()->quick_mode) {
+        if (Config::get_quick_mode()) {
             return $context;
         }
 

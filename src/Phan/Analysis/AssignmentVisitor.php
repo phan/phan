@@ -3,6 +3,7 @@ namespace Phan\Analysis;
 
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
@@ -86,7 +87,7 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visit(Node $node) : Context
     {
-        assert(
+        \assert(
             false,
             "Unknown left side of assignment in {$this->context} with node type "
             . Debug::nodeName($node)
@@ -210,11 +211,17 @@ class AssignmentVisitor extends AnalysisVisitor
                         $this->context,
                         $exception->getIssueInstance()
                     );
-                    return $this->context;
+                    continue;
                 }
-
+            } else {
+                $this->context = (new AssignmentVisitor(
+                    $this->code_base,
+                    $this->context,
+                    $node,
+                    $element_type,
+                    false
+                ))($value_node);
             }
-
         }
 
         return $this->context;
@@ -246,6 +253,18 @@ class AssignmentVisitor extends AnalysisVisitor
             }
         }
 
+        // TODO: Check if the unionType is valid for the []
+        // For most types, it should be int|string, but SplObjectStorage and a few user-defined types will be exceptions.
+        // Infer it from offsetSet?
+        $dim_node = $node->children['dim'];
+        if ($dim_node instanceof Node) {
+            UnionTypeVisitor::unionTypeFromNode(
+                $this->code_base,
+                $this->context,
+                $node->children['dim']
+            );
+        }
+
         // Recurse into whatever we're []'ing
         $context = (new AssignmentVisitor(
             $this->code_base,
@@ -266,13 +285,13 @@ class AssignmentVisitor extends AnalysisVisitor
     private function analyzeSuperglobalDim(Node $node, string $variable_name) : Context {
         $dim = $node->children['dim'];
         if ('GLOBALS' === $variable_name) {
-            if (!is_string($dim)) {
+            if (!\is_string($dim)) {
                 // You're not going to believe this, but I just
                 // found a piece of code like $GLOBALS[mt_rand()].
                 // Super weird, right?
                 return $this->context;
             }
-            // assert(is_string($dim), "dim is not a string");
+            // assert(\is_string($dim), "dim is not a string");
 
             if (Variable::isHardcodedVariableInScopeWithName($dim, $this->context->isInGlobalScope())) {
                 // Don't override types of superglobals such as $_POST, $argv through $_GLOBALS['_POST'] = expr either. TODO: Warn.
@@ -307,11 +326,11 @@ class AssignmentVisitor extends AnalysisVisitor
         $property_name = $node->children['prop'];
 
         // Things like $foo->$bar
-        if (!is_string($property_name)) {
+        if (!\is_string($property_name)) {
             return $this->context;
         }
 
-        assert(is_string($property_name), "Property must be string");
+        \assert(\is_string($property_name), "Property must be string");
 
         try {
             $class_list = (new ContextNode(
@@ -356,31 +375,53 @@ class AssignmentVisitor extends AnalysisVisitor
                 return $this->context;
             }
 
-            if (!$this->right_type->canCastToExpandedUnionType(
-                    $property->getUnionType(),
-                    $this->code_base
-                )
-                && !$clazz->getHasDynamicProperties($this->code_base)
-            ) {
-                // TODO: optionally, change the message from "::" to "->"?
-                $this->emitIssue(
-                    Issue::TypeMismatchProperty,
-                    $node->lineno ?? 0,
-                    (string)$this->right_type,
-                    "{$clazz->getFQSEN()}::{$property->getName()}",
-                    (string)$property->getUnionType()
-                );
-
-                return $this->context;
-            } else {
-                // If we're assigning to an array element then we don't
-                // know what the constitutation of the parameter is
-                // outside of the scope of this assignment, so we add to
-                // its union type rather than replace it.
-                if ($this->is_dim_assignment) {
-                    $property->getUnionType()->addUnionType(
+            // If we're assigning to an array element then we don't
+            // know what the constitutation of the parameter is
+            // outside of the scope of this assignment, so we add to
+            // its union type rather than replace it.
+            $property_union_type = $property->getUnionType();
+            if ($this->is_dim_assignment) {
+                if ($this->right_type->canCastToExpandedUnionType(
+                        $property_union_type,
+                        $this->code_base
+                    )
+                ) {
+                    $property_union_type->addUnionType(
                         $this->right_type
                     );
+                } else if ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                    // Add any type if this is a subclass with array access.
+                    $property_union_type->addUnionType(
+                        $this->right_type
+                    );
+                } else {
+                    $this->emitIssue(
+                        Issue::TypeMismatchProperty,
+                        $node->lineno ?? 0,
+                        (string)$this->right_type,
+                        "{$clazz->getFQSEN()}::{$property->getName()}",
+                        (string)$property_union_type
+                    );
+                    return $this->context;
+                }
+            } else {
+                if (!$this->right_type->canCastToExpandedUnionType(
+                        $property_union_type,
+                        $this->code_base
+                    )
+                    && !($this->right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
+                    && !$clazz->getHasDynamicProperties($this->code_base)
+                ) {
+                    // TODO: optionally, change the message from "::" to "->"?
+                    $this->emitIssue(
+                        Issue::TypeMismatchProperty,
+                        $node->lineno ?? 0,
+                        (string)$this->right_type,
+                        "{$clazz->getFQSEN()}::{$property->getName()}",
+                        (string)$property_union_type
+                    );
+
+                    return $this->context;
                 }
             }
 
@@ -395,7 +436,7 @@ class AssignmentVisitor extends AnalysisVisitor
         // Check if it is a built in class with dynamic properties but (possibly) no __set, such as SimpleXMLElement or stdClass or V8Js
         $is_class_with_arbitrary_types = isset($class_list[0]) ? $class_list[0]->getHasDynamicProperties($this->code_base) : false;
 
-        if ($is_class_with_arbitrary_types || Config::get()->allow_missing_properties) {
+        if ($is_class_with_arbitrary_types || Config::getValue('allow_missing_properties')) {
             try {
                 // Create the property
                 $property = (new ContextNode(
@@ -439,11 +480,11 @@ class AssignmentVisitor extends AnalysisVisitor
         $property_name = $node->children['prop'];
 
         // Things like self::${$x}
-        if (!is_string($property_name)) {
+        if (!\is_string($property_name)) {
             return $this->context;
         }
 
-        assert(is_string($property_name), "Static property must be string");
+        \assert(\is_string($property_name), "Static property must be string");
 
         try {
             $class_list = (new ContextNode(
@@ -486,9 +527,10 @@ class AssignmentVisitor extends AnalysisVisitor
             }
 
             if (!$this->right_type->canCastToExpandedUnionType(
-                $property->getUnionType(),
-                $this->code_base
-            )) {
+                    $property->getUnionType(),
+                    $this->code_base)
+                && !($this->right_type->hasTypeInBoolFamily() && $property->getUnionType()->hasTypeInBoolFamily())
+            ) {
                 // Currently, same warning type for static and non-static property type mismatches.
                 $this->emitIssue(
                     Issue::TypeMismatchProperty,
@@ -558,6 +600,10 @@ class AssignmentVisitor extends AnalysisVisitor
             );
             return $this->context;
         }
+        // Don't analyze variables when we can't determine their names.
+        if ($variable_name === '') {
+            return $this->context;
+        }
 
         // Check to see if the variable already exists
         if ($this->context->getScope()->hasVariableWithName(
@@ -598,6 +644,15 @@ class AssignmentVisitor extends AnalysisVisitor
             );
 
             return $this->context;
+        } else {
+            // no such variable exists, check for invalid array Dim access
+            if ($this->is_dim_assignment) {
+                $this->emitIssue(
+                    Issue::UndeclaredVariableDim,
+                    $node->lineno ?? 0,
+                    $variable_name
+                );
+            }
         }
 
         $variable = Variable::fromNodeInContext(

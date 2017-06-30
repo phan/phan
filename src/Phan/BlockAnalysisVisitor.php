@@ -97,7 +97,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $this->code_base, $context, $node
         );
 
-        assert(!empty($context), 'Context cannot be null');
+        \assert(!empty($context), 'Context cannot be null');
 
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
@@ -180,7 +180,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
 
         $context = $this->preOrderAnalyze($context, $node);
 
-        assert(!empty($context), 'Context cannot be null');
+        \assert(!empty($context), 'Context cannot be null');
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
@@ -247,6 +247,131 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
      * @return Context
      * The updated context after visiting the node
      */
+    public function visitFor(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        $init_node = $node->children['init'];
+        if ($init_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext(
+                $context->withLineNumberStart($init_node->lineno ?? 0),
+                $node,
+                $init_node
+            );
+        }
+        $context = $this->preOrderAnalyze($context, $node);
+        \assert(!empty($context), 'Context cannot be null');
+
+        $condition_node = $node->children['cond'];
+        if ($condition_node instanceof Node) {
+            // The typical case is `for (init; $x; loop) {}`
+            // But `for (init; $x; loop) {}` is rare but possible, which requires evaluating those in order.
+            // Evaluate the list of cond expressions in order.
+            \assert($condition_node->kind === \ast\AST_EXPR_LIST);
+            foreach ($condition_node->children as $condition_subnode) {
+                if ($condition_subnode instanceof Node) {
+                    $context = $this->analyzeAndGetUpdatedContext(
+                        $context->withLineNumberStart($condition_subnode->lineno ?? 0),
+                        $node,  // TODO: condition_node?
+                        $condition_subnode
+                    );
+                }
+            }
+        }
+
+        if ($stmts_node = $node->children['stmts']) {
+            if ($stmts_node instanceof Node) {
+                $context = $this->analyzeAndGetUpdatedContext(
+                    $context->withScope(
+                        new BranchScope($context->getScope())
+                    )->withLineNumberStart($stmts_node->lineno ?? 0),
+                    $node,
+                    $stmts_node
+                );
+            }
+        }
+        // Analyze the loop after analyzing the statements, in case it uses variables defined within the statements.
+        $loop_node = $node->children['loop'];
+        if ($loop_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext(
+                $context->withLineNumberStart($loop_node->lineno ?? 0),
+                $node,
+                $loop_node
+            );
+        }
+
+        // Now that we know all about our context (like what
+        // 'self' means), we can analyze statements like
+        // assignments and method calls.
+        $context = $this->postOrderAnalyze($context, $node);
+
+        // When coming out of a scoped element, we pop the
+        // context to be the incoming context. Otherwise,
+        // we pass our new context up to our parent
+        return $context;
+    }
+
+    /**
+     * @param Node $node
+     * An AST node we'd like to analyze the statements for
+     *
+     * @return Context
+     * The updated context after visiting the node
+     */
+    public function visitWhile(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        $context = $this->preOrderAnalyze($context, $node);
+
+        \assert(!empty($context), 'Context cannot be null');
+
+        $condition_node = $node->children['cond'];
+        if ($condition_node instanceof Node) {
+            // The typical case is `for (init; $x; loop) {}`
+            // But `for (init; $x; loop) {}` is rare but possible, which requires evaluating those in order.
+            // Evaluate the list of cond expressions in order.
+            $context = $this->analyzeAndGetUpdatedContext(
+                $context->withLineNumberStart($condition_node->lineno ?? 0),
+                $node,
+                $condition_node
+            );
+        }
+
+        if ($stmts_node = $node->children['stmts']) {
+            if ($stmts_node instanceof Node) {
+                $context = $this->analyzeAndGetUpdatedContext(
+                    $context->withScope(
+                        new BranchScope($context->getScope())
+                    )->withLineNumberStart($stmts_node->lineno ?? 0),
+                    $node,
+                    $stmts_node
+                );
+            }
+        }
+
+        // Now that we know all about our context (like what
+        // 'self' means), we can analyze statements like
+        // assignments and method calls.
+        $context = $this->postOrderAnalyze($context, $node);
+
+        // When coming out of a scoped element, we pop the
+        // context to be the incoming context. Otherwise,
+        // we pass our new context up to our parent
+        return $context;
+    }
+
+    /**
+     * @param Node $node
+     * An AST node we'd like to analyze the statements for
+     *
+     * @return Context
+     * The updated context after visiting the node
+     */
     public function visitIfElem(Node $node) : Context
     {
         $context = $this->context->withLineNumberStart(
@@ -255,7 +380,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
 
         $context = $this->preOrderAnalyze($context, $node);
 
-        assert(!empty($context), 'Context cannot be null');
+        \assert(!empty($context), 'Context cannot be null');
 
         $condition_node = $node->children['cond'];
         if ($condition_node && $condition_node instanceof Node) {
@@ -322,7 +447,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
 
         $context = $this->preOrderAnalyze($context, $node);
 
-        assert(!empty($context), 'Context cannot be null');
+        \assert(!empty($context), 'Context cannot be null');
 
         // We collect all child context so that the
         // PostOrderAnalysisVisitor can optionally operate on
@@ -419,7 +544,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $this->code_base, $context, $node
         );
 
-        assert(!empty($context), 'Context cannot be null');
+        \assert(!empty($context), 'Context cannot be null');
 
         $true_node = $node->children['true'] ?? null;
         $false_node = $node->children['false'] ?? null;
@@ -452,7 +577,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $child_context = $this->analyzeAndGetUpdatedContext($context, $node, $false_node);
             $child_context_list[] = $child_context;
         }
-        if (count($child_context_list) >= 1) {
+        if (\count($child_context_list) >= 1) {
             $context = (new ContextMergeVisitor(
                 $this->code_base,
                 $context,
@@ -603,7 +728,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $this->code_base, $context, $node
         );
 
-        assert(!empty($context), 'Context cannot be null');
+        \assert(!empty($context), 'Context cannot be null');
 
         $context = $this->postOrderAnalyze($context, $node);
 

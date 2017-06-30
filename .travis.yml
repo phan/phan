@@ -15,6 +15,7 @@ env:
   - TEST_SUITE="__FakePluginTest"
 
 sudo: false
+dist: trusty
 
 cache:
   directories:

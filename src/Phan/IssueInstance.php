@@ -34,7 +34,7 @@ class IssueInstance
         $this->line = $line;
 
         // color_issue_message will interfere with some formatters, such as xml.
-        if (Config::get()->color_issue_messages) {
+        if (Config::getValue('color_issue_messages')) {
             $this->message = self::generateColorizedMessage($issue, $template_parameters);
         } else {
             $this->message = self::generatePlainMessage($issue, $template_parameters);
@@ -49,7 +49,7 @@ class IssueInstance
 
         // markdown_issue_messages doesn't make sense with color, unless you add <span style="color:red">msg</span>
         // Not sure if codeclimate supports that.
-        if (Config::get()->markdown_issue_messages) {
+        if (Config::getValue('markdown_issue_messages')) {
             $template = preg_replace(
                 '/([^ ]*%s[^ ]*)/', '`\1`',
                 $template

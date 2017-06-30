@@ -28,7 +28,13 @@ class CallableType extends NativeType
         // Avoids picking up changes to CallableType::instance(false) in the case that a result depends on asFQSEN()
         $instance = clone(self::callableInstance());
         $instance->fqsen = $fqsen;
+        $instance->memoizeFlushAll();
         return $instance;
+    }
+
+    public function __clone() {
+        assert($this->fqsen === null, 'should only clone null fqsen');
+        $result = new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
     }
 
     /**
@@ -50,9 +56,9 @@ class CallableType extends NativeType
      */
     protected function canCastToNonNullableType(Type $type) : bool
     {
-        $d = strtolower((string)$type);
+        $d = \strtolower((string)$type);
         if ($d[0] == '\\') {
-            $d = substr($d, 1);
+            $d = \substr($d, 1);
         }
 
         // TODO: you can have a callable that isn't a closure

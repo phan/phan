@@ -63,7 +63,7 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLASS`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -88,7 +88,7 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
 
-        assert(!empty($class_name),
+        \assert(!empty($class_name),
             "Class must have name in {$this->context}");
 
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
@@ -96,7 +96,7 @@ class ParseVisitor extends ScopeVisitor
             $this->context
         );
 
-        assert($class_fqsen instanceof FullyQualifiedClassName,
+        \assert($class_fqsen instanceof FullyQualifiedClassName,
             "The class FQSEN must be a FullyQualifiedClassName");
 
         // Hunt for an available alternate ID if necessary
@@ -202,7 +202,7 @@ class ParseVisitor extends ScopeVisitor
 
             // The name is fully qualified. Make sure it looks
             // like it is
-            if (0 !== strpos($parent_class_name, '\\')) {
+            if (0 !== \strpos($parent_class_name, '\\')) {
                 $parent_class_name = '\\' . $parent_class_name;
             }
 
@@ -286,7 +286,7 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_METHOD`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -327,7 +327,7 @@ class ParseVisitor extends ScopeVisitor
 
                 // Get the set of template type identifiers defined on
                 // the class
-                $template_type_identifiers = array_keys(
+                $template_type_identifiers = \array_keys(
                     $class->getTemplateTypeMap()
                 );
 
@@ -345,7 +345,7 @@ class ParseVisitor extends ScopeVisitor
                     }
                 }
 
-                $missing_template_type_identifiers = array_diff(
+                $missing_template_type_identifiers = \array_diff(
                     $template_type_identifiers,
                     $parameter_template_type_identifiers
                 );
@@ -418,7 +418,7 @@ class ParseVisitor extends ScopeVisitor
             ) {
                 continue;
             }
-            assert($child_node instanceof Node, 'expected property element to be Node');
+            \assert($child_node instanceof Node, 'expected property element to be Node');
 
             // If something goes wrong will getting the type of
             // a property, we'll store it as a future union
@@ -453,8 +453,8 @@ class ParseVisitor extends ScopeVisitor
 
             $property_name = $child_node->children['name'];
 
-            assert(
-                is_string($property_name),
+            \assert(
+                \is_string($property_name),
                 'Property name must be a string. '
                 . 'Got '
                 . print_r($property_name, true)
@@ -462,7 +462,7 @@ class ParseVisitor extends ScopeVisitor
                 . $this->context
             );
 
-            $property_name = is_string($child_node->children['name'])
+            $property_name = \is_string($child_node->children['name'])
                 ? $child_node->children['name']
                 : '_error_';
 
@@ -543,7 +543,7 @@ class ParseVisitor extends ScopeVisitor
         $class = $this->getContextClass();
 
         foreach ($node->children ?? [] as $child_node) {
-            assert($child_node instanceof Node, 'expected class const element to be a Node');
+            \assert($child_node instanceof Node, 'expected class const element to be a Node');
             $name = $child_node->children['name'];
 
             $fqsen = FullyQualifiedClassConstantName::fromStringInContext(
@@ -606,7 +606,7 @@ class ParseVisitor extends ScopeVisitor
     public function visitConstDecl(Node $node) : Context
     {
         foreach ($node->children ?? [] as $child_node) {
-            assert($child_node instanceof Node);
+            \assert($child_node instanceof Node);
             $this->addConstant(
                 $child_node,
                 $child_node->children['name'],
@@ -622,7 +622,7 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
@@ -669,6 +669,41 @@ class ParseVisitor extends ScopeVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_CLOSURE`
+     *
+     * @param Decl $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitClosure(Decl $node) : Context
+    {
+        $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
+            $this->context->withLineNumberStart($node->lineno ?? 0),
+            $node
+        );
+
+        $func = Func::fromNode(
+            $this->context,
+            $this->code_base,
+            $node,
+            $closure_fqsen
+        );
+
+        $this->code_base->addFunction($func);
+
+        // Send the context into the function and reset the scope
+        // (E.g. to properly check for the presence of `return` statements.
+        $context = $this->context->withScope(
+            $func->getInternalScope()
+        );
+
+        return $context;
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_CALL`
      *
      * @param Node $node
@@ -686,32 +721,36 @@ class ParseVisitor extends ScopeVisitor
         // it can be called with anything.
         $expression = $node->children['expr'];
 
-        if ($expression->kind === \ast\AST_NAME
-            && $this->context->isInFunctionLikeScope()
-            && in_array($expression->children['name'], [
+        if ($expression->kind === \ast\AST_NAME) {
+            $function_name = \strtolower($expression->children['name']);
+            if (\in_array($function_name, [
                 'func_get_args', 'func_get_arg', 'func_num_args'
-            ])
-        ) {
-            $this->context->getFunctionLikeInScope($this->code_base)
-                ->setNumberOfOptionalParameters(999999);
-        } else if ($expression->kind === \ast\AST_NAME
-            && $expression->children['name'] === 'define'
-        ) {
-            $args = $node->children['args'];
-            if ($args->kind === \ast\AST_ARG_LIST
-                && isset($args->children[0])
-                && is_string($args->children[0])
-            ) {
-                $this->addConstant(
-                    $node,
-                    $args->children[0],
-                    $args->children[1] ?? null,
-                    0,
-                    ''
-                );
+            ], true)) {
+                if ($this->context->isInFunctionLikeScope()) {
+                    $this->context->getFunctionLikeInScope($this->code_base)
+                                  ->setNumberOfOptionalParameters(999999);
+                }
+            } else if ($function_name === 'define') {
+                $args = $node->children['args'];
+                if ($args->kind === \ast\AST_ARG_LIST
+                    && isset($args->children[0])
+                    && \is_string($args->children[0])
+                ) {
+                    $this->addConstant(
+                        $node,
+                        $args->children[0],
+                        $args->children[1] ?? null,
+                        0,
+                        ''
+                    );
+                }
+            } else if ($function_name === 'class_alias') {
+                if (Config::getValue('enable_class_alias_support') && $this->context->isInGlobalScope()) {
+                    $this->recordClassAlias($node);
+                }
             }
         }
-        if (Config::get()->backward_compatibility_checks) {
+        if (Config::get_backward_compatibility_checks()) {
             $this->analyzeBackwardCompatibility($node);
 
             foreach ($node->children['args']->children ?? [] as $arg_node) {
@@ -742,7 +781,7 @@ class ParseVisitor extends ScopeVisitor
             if ($func_name == 'parent') {
                 // Make sure it is not a crazy dynamic parent method call
                 if (!($node->children['method'] instanceof Node)) {
-                    $meth = strtolower($node->children['method']);
+                    $meth = \strtolower($node->children['method']);
 
                     if ($meth == '__construct') {
                         $class = $this->getContextClass();
@@ -761,7 +800,7 @@ class ParseVisitor extends ScopeVisitor
      */
     private function analyzeBackwardCompatibility(Node $node)
     {
-        if (Config::get()->backward_compatibility_checks) {
+        if (Config::get_backward_compatibility_checks()) {
             (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -794,7 +833,7 @@ class ParseVisitor extends ScopeVisitor
             $this->code_base
         );
 
-        assert(!empty($method),
+        \assert(!empty($method),
             "We're supposed to be in either method or closure scope."
         );
 
@@ -858,7 +897,7 @@ class ParseVisitor extends ScopeVisitor
 
     public function visitAssign(Node $node) : Context
     {
-        if (!Config::get()->backward_compatibility_checks) {
+        if (!Config::get_backward_compatibility_checks()) {
             return $this->context;
         }
         // Analyze the assignment for compatibility with some
@@ -876,7 +915,7 @@ class ParseVisitor extends ScopeVisitor
 
     public function visitDim(Node $node) : Context
     {
-        if (!Config::get()->backward_compatibility_checks) {
+        if (!Config::get_backward_compatibility_checks()) {
             return $this->context;
         }
 
@@ -893,7 +932,7 @@ class ParseVisitor extends ScopeVisitor
             $temp = $node->children['expr']->children['name'];
             $depth = 1;
             while ($temp instanceof Node) {
-                assert(
+                \assert(
                     isset($temp->children['name']),
                     "Expected to find a name in context, something else found."
                 );
@@ -904,7 +943,7 @@ class ParseVisitor extends ScopeVisitor
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
-            assert(is_string($line));
+            \assert(\is_string($line));
             unset($ftemp);
             if (strpos($line, '{') === false
                 || strpos($line, '}') === false
@@ -926,10 +965,10 @@ class ParseVisitor extends ScopeVisitor
             $ftemp = new \SplFileObject($this->context->getFile());
             $ftemp->seek($node->lineno-1);
             $line = $ftemp->current();
-            assert(is_string($line));
+            \assert(\is_string($line));
             unset($ftemp);
-            if (strpos($line, '{') === false
-                || strpos($line, '}') === false
+            if (\strpos($line, '{') === false
+                || \strpos($line, '}') === false
             ) {
                 $this->emitIssue(
                     Issue::CompatiblePHP7,
@@ -1036,8 +1075,75 @@ class ParseVisitor extends ScopeVisitor
      */
     private function getContextClass() : Clazz
     {
-        assert($this->context->isInClassScope(),
+        \assert($this->context->isInClassScope(),
             "Must be in class scope");
         return $this->context->getClassInScope($this->code_base);
+    }
+
+    /**
+     * Return the existence of a class_alias from one FQSEN to the other.
+     * Modifies $this->codebase if successful.
+     *
+     * @param Node $node - An AST_CALL node with name 'class_alias' to attempt to resolve
+     * @return void
+     */
+    private function recordClassAlias(Node $node)
+    {
+        $args = $node->children['args']->children;
+        if (\count($args) < 2 || \count($args) > 3) {
+            return;
+        }
+        try {
+            $original_fqsen = $this->resolveClassNameInContext($args[0]);
+            $alias_fqsen = $this->resolveClassNameInContext($args[1]);
+        } catch (IssueException $exception) {
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $exception->getIssueInstance()
+            );
+            return;
+        }
+
+        if ($original_fqsen === null || $alias_fqsen === null) {
+            return;
+        }
+
+        // Add the class alias during parse phase.
+        // Figure out if any of the aliases are wrong after analysis phase.
+        $this->code_base->addClassAlias($original_fqsen, $alias_fqsen, $this->context, $node->lineno ?? 0);
+    }
+
+    /**
+     * @param Node|string|float|int $arg
+     * A function argument to resolve into an FQSEN
+     *
+     * @return ?FullyQualifiedClassName
+     * @throws IssueException if the list of possible classes couldn't be determined.
+     */
+    private function resolveClassNameInContext($arg)
+    {
+        if (\is_string($arg)) {
+            // Class_alias treats arguments as fully qualified strings.
+            return FullyQualifiedClassName::fromFullyQualifiedString($arg);
+        }
+        if ($arg instanceof Node
+            && $arg->kind === \ast\AST_CLASS_CONST
+            && \strcasecmp($arg->children['const'], 'class') === 0
+        ) {
+            $class_type = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $arg->children['class']
+            ))->getClassUnionType();
+
+            // If we find a class definition, then return it. There should be 0 or 1.
+            // (Expressions such as 'int::class' are syntactically valid, but would have 0 results).
+            foreach ($class_type->asClassFQSENList($this->code_base, $this->context) as $class_fqsen) {
+                return $class_fqsen;
+            }
+        }
+
+        return null;
     }
 }

@@ -25,7 +25,7 @@ class Daemon {
      * Callers should close after they are finished writing.
      */
     public static function run(CodeBase $code_base, \Closure $file_path_lister) {
-        assert($code_base->isUndoTrackingEnabled());
+        \assert($code_base->isUndoTrackingEnabled());
 
         $receivedSignal = false;
         // example requests over TCP
@@ -67,11 +67,11 @@ class Daemon {
                     restore_error_handler();
                 }
 
-                if (!is_resource($conn)) {
+                if (!\is_resource($conn)) {
                     // If we didn't get a connection, and it wasn't due
                     break;
                 }
-                assert(is_resource($conn));
+                \assert(\is_resource($conn));
                 $request = Request::accept($code_base, $file_path_lister, $conn);
                 if ($request instanceof Request) {
                     return $request;  // We forked off a worker process successfully, and this is the worker process
@@ -89,19 +89,12 @@ class Daemon {
      */
     private static function createDaemonStreamSocketServer() {
         $listen_url = null;
-        if (Config::get()->daemonize_socket) {
-            $listen_url = 'unix://' . Config::get()->daemonize_socket;
-        } else if (Config::get()->daemonize_tcp_port) {
-            $listen_url = sprintf('tcp://127.0.0.1:%d', Config::get()->daemonize_tcp_port);
+        if (Config::getValue('daemonize_socket')) {
+            $listen_url = 'unix://' . Config::getValue('daemonize_socket');
+        } else if (Config::getValue('daemonize_tcp_port')) {
+            $listen_url = sprintf('tcp://127.0.0.1:%d', Config::getValue('daemonize_tcp_port'));
         } else {
             throw new \InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
-        }
-        // Unless debugging Phan itself, these two configurations are unnecessarily adding slowness.
-        if (PHP_DEBUG) {
-            fwrite(STDERR, "Warning: This daemon is slower when php is compiled with --enable-debug\n");
-        }
-        if (extension_loaded('xdebug')) {
-            fwrite(STDERR, "Warning: This daemon is slower when xdebug is installed");
         }
         echo "Listening for Phan analysis requests at $listen_url\n";
         $socket_server = stream_socket_server($listen_url, $errno, $errstr);

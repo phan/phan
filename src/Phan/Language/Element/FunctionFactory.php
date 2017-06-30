@@ -174,7 +174,7 @@ class FunctionFactory {
         }
 
         $alternate_id = 0;
-        return array_map(function($map) use (
+        return \array_map(function($map) use (
             $function,
             &$alternate_id
         ) : FunctionInterface {
@@ -196,24 +196,32 @@ class FunctionFactory {
                 as $parameter_name => $parameter_type
             ) {
                 $flags = 0;
+                $phan_flags = 0;
                 $is_optional = false;
 
                 // Check to see if its a pass-by-reference parameter
-                if (strpos($parameter_name, '&') === 0) {
+                if (($parameter_name[0] ?? '') === '&') {
                     $flags |= \ast\flags\PARAM_REF;
-                    $parameter_name = substr($parameter_name, 1);
+                    $parameter_name = \substr($parameter_name, 1);
+                    if (\strncmp($parameter_name, 'rw_', 3) === 0) {
+                        $phan_flags |= Flags::IS_READ_REFERENCE | Flags::IS_WRITE_REFERENCE;
+                        $parameter_name = \substr($parameter_name, 3);
+                    } else if (\strncmp($parameter_name, 'w_', 2) === 0) {
+                        $phan_flags |= Flags::IS_WRITE_REFERENCE;
+                        $parameter_name = \substr($parameter_name, 2);
+                    }
                 }
 
                 // Check to see if its variadic
-                if (strpos($parameter_name, '...') !== false) {
+                if (\strpos($parameter_name, '...') !== false) {
                     $flags |= \ast\flags\PARAM_VARIADIC;
-                    $parameter_name = str_replace('...', '', $parameter_name);
+                    $parameter_name = \str_replace('...', '', $parameter_name);
                 }
 
                 // Check to see if its an optional parameter
-                if (strpos($parameter_name, '=') !== false) {
+                if (\strpos($parameter_name, '=') !== false) {
                     $is_optional = true;
-                    $parameter_name = str_replace('=', '', $parameter_name);
+                    $parameter_name = \str_replace('=', '', $parameter_name);
                 }
 
                 $parameter = new Parameter(
@@ -222,6 +230,11 @@ class FunctionFactory {
                     $parameter_type,
                     $flags
                 );
+                $parameter->setPhanFlags(Flags::bitVectorWithState(
+                    $parameter->getPhanFlags(),
+                    $phan_flags,
+                    true
+                ));
 
                 if ($is_optional) {
                     // TODO: could check isDefaultValueAvailable and getDefaultValue, for a better idea.
@@ -239,7 +252,7 @@ class FunctionFactory {
             // if this is out of sync with the extension's ReflectionMethod->getParameterList()?
             // (e.g. third party extensions may add more required parameters?)
             $alternate_function->setNumberOfRequiredParameters(
-                array_reduce($alternate_function->getParameterList(),
+                \array_reduce($alternate_function->getParameterList(),
                     function(int $carry, Parameter $parameter) : int {
                         return ($carry + (
                             $parameter->isOptional() ? 0 : 1
@@ -249,7 +262,7 @@ class FunctionFactory {
             );
 
             $alternate_function->setNumberOfOptionalParameters(
-                count($alternate_function->getParameterList()) -
+                \count($alternate_function->getParameterList()) -
                 $alternate_function->getNumberOfRequiredParameters()
             );
 

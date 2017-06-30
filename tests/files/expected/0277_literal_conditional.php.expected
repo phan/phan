@@ -1,8 +1,8 @@
 %s:10 PhanTypeArraySuspicious Suspicious array access to int
 %s:11 PhanTypeArraySuspicious Suspicious array access to int
-%s:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is bool but \intdiv() takes int
-%s:13 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is bool but \intdiv() takes int
-%s:17 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is bool but \intdiv() takes int
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is true but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is true but \intdiv() takes int
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is true but \intdiv() takes int
 %s:18 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:19 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
 %s:22 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is float but \intdiv() takes int

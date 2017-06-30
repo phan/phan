@@ -53,7 +53,7 @@ class PropertyTypesAnalyzer
 
                     // Make sure the class exists
                     $type_fqsen = $type->asFQSEN();
-                    assert($type_fqsen instanceof FullyQualifiedClassName, 'fqsens of non-native types must be class names');
+                    \assert($type_fqsen instanceof FullyQualifiedClassName, 'fqsens of non-native types must be class names');
 
                     if (!$code_base->hasClassWithFQSEN($type_fqsen)
                         && !($type instanceof TemplateType)

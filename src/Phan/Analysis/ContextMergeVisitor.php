@@ -8,7 +8,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\Library\Set;
+use Phan\Library\ArraySet;
 use ast\Node;
 
 class ContextMergeVisitor extends KindVisitorImplementation
@@ -75,14 +75,14 @@ class ContextMergeVisitor extends KindVisitorImplementation
         //            copy local to global
         //       }
 
-        return end($this->child_context_list) ?: $this->context;
+        return \end($this->child_context_list) ?: $this->context;
     }
 
     public function visitTry(Node $node) : Context
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = array_map(function (Context $context) {
+        $scope_list = \array_map(function (Context $context) {
             return $context->getScope();
         }, $this->child_context_list);
 
@@ -134,7 +134,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         if (!empty($node->children['finallyStmts'])
             || !empty($node->children['finally'])
         ) {
-            $finally_scope = $scope_list[count($scope_list)-1];
+            $finally_scope = $scope_list[\count($scope_list)-1];
 
             foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
                 if ($finally_scope->hasVariableWithName($variable_name)) {
@@ -176,11 +176,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = array_map(function (Context $context) {
+        $scope_list = \array_map(function (Context $context) {
             return $context->getScope();
         }, $this->child_context_list);
 
-        $has_else = array_reduce(
+        $has_else = \array_reduce(
             $node->children ?? [],
             function (bool $carry, $child_node) {
                 return $carry || (
@@ -199,8 +199,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // If there weren't multiple branches, continue on
         // as if the conditional never happened
-        if (count($scope_list) < 2) {
-            return array_values($this->child_context_list)[0];
+        if (\count($scope_list) < 2) {
+            return \array_values($this->child_context_list)[0];
         }
 
         // Get a list of all variables in all scopes
@@ -215,18 +215,12 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // every branch
         $is_defined_on_all_branches =
             function (string $variable_name) use ($scope_list) {
-                return array_reduce(
-                    $scope_list,
-                    function (bool $has_variable, Scope $scope)
-                    use ($variable_name) {
-
-                        return (
-                            $has_variable &&
-                            $scope->hasVariableWithName($variable_name)
-                        );
-                    },
-                    true
-                );
+                foreach ($scope_list as $scope) {
+                    if (!$scope->hasVariableWithName($variable_name)) {
+                        return false;
+                    }
+                }
+                return true;
             };
 
         // Get the intersection of all types for all versions of
@@ -236,7 +230,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
                 // Get a list of all variables with the given name from
                 // each scope
-                $variable_list = array_filter(array_map(
+                $variable_list = \array_filter(\array_map(
                     function (Scope $scope) use ($variable_name) {
                         if (!$scope->hasVariableWithName($variable_name)) {
                             return null;
@@ -248,16 +242,16 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 ));
 
                 // Get the list of types for each version of the variable
-                $type_set_list = array_map(function (Variable $variable) : Set {
+                $type_set_list = \array_map(function (Variable $variable) : array {
                     return $variable->getUnionType()->getTypeSet();
                 }, $variable_list);
 
-                if (count($type_set_list) < 2) {
-                    return new UnionType($type_set_list[0] ?? []);
+                if (\count($type_set_list) < 2) {
+                    return new UnionType($type_set_list[0] ?? [], true);
                 }
 
                 return new UnionType(
-                    Set::unionAll($type_set_list)
+                    ArraySet::unionAll($type_set_list), true
                 );
             };
 

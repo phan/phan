@@ -71,7 +71,7 @@ class FileRef implements \Serializable
     public static function getProjectRelativePathForPath($cwd_relative_path) {
         // Get a path relative to the project root
         $path = str_replace(
-            Config::get()->getProjectRootDirectory(),
+            Config::getProjectRootDirectory(),
             '',
             realpath($cwd_relative_path) ?: $cwd_relative_path
         );

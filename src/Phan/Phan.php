@@ -76,7 +76,8 @@ class Phan implements IgnoredFilesFilterInterface {
         CodeBase $code_base,
         \Closure $file_path_lister
     ) : bool {
-        $is_daemon_request = Config::get()->daemonize_socket || Config::get()->daemonize_tcp_port;
+        self::checkForSlowPHPOptions();
+        $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port');
         if ($is_daemon_request) {
             $code_base->enableUndoTracking();
         }
@@ -90,14 +91,14 @@ class Phan implements IgnoredFilesFilterInterface {
         // want to run an analysis on
         $analyze_file_path_list = [];
 
-        if (Config::get()->consistent_hashing_file_order) {
+        if (Config::getValue('consistent_hashing_file_order')) {
             // Parse the files in lexicographic order.
             // If there are duplicate class/function definitions,
             // this ensures they are added to the maps in the same order.
             sort($file_path_list, SORT_STRING);
         }
 
-        if (Config::get()->dump_parsed_file_list === true) {
+        if (Config::getValue('dump_parsed_file_list') === true) {
             // If --dump-parsed-file-list is provided,
             // print the files in the order they would be parsed.
             echo implode("\n", $file_path_list) . (count($file_path_list) > 0 ? "\n" : "");
@@ -142,19 +143,19 @@ class Phan implements IgnoredFilesFilterInterface {
 
         // Don't continue on to analysis if the user has
         // chosen to just dump the AST
-        if (Config::get()->dump_ast) {
+        if (Config::getValue('dump_ast')) {
             exit(EXIT_SUCCESS);
         }
 
-        if (is_string(Config::get()->dump_signatures_file)) {
-            exit(self::dumpSignaturesToFile($code_base, Config::get()->dump_signatures_file));
+        if (\is_string(Config::getValue('dump_signatures_file'))) {
+            exit(self::dumpSignaturesToFile($code_base, Config::getValue('dump_signatures_file')));
         }
 
         $temporary_file_mapping = [];
 
         $request = null;
         if ($is_daemon_request) {
-            assert($code_base->isUndoTrackingEnabled());
+            \assert($code_base->isUndoTrackingEnabled());
             // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
             // TODO: check for conflicts with other config options - incompatible with dump_ast, dump_signatures_file, output-file, etc.
             // incompatible with dead_code_detection
@@ -164,7 +165,7 @@ class Phan implements IgnoredFilesFilterInterface {
                 error_log("Finished serving requests, exiting");
                 exit(2);
             }
-            assert($request instanceof Request);
+            \assert($request instanceof Request);
             self::$printer = $request->getPrinter();
 
             // This is the list of all of the parsed files
@@ -195,12 +196,17 @@ class Phan implements IgnoredFilesFilterInterface {
         // lets us only need to do hydrate a subset of classes.
         $code_base->setShouldHydrateRequestedElements(true);
 
-
-        // TODO: consider filtering if Config::get()->include_analysis_file_list is set
+        // TODO: consider filtering if Config::getValue('include_analysis_file_list') is set
         // most of what needs considering is that Analysis::analyzeClasses() and Analysis:analyzeFunctions() have side effects
         // these side effects don't matter in daemon mode, but they do matter with this other form of incremental analysis
         // other parts of these analysis steps could be skipped, which would reduce the overall execution time
         $path_filter = isset($request) ? array_flip($analyze_file_path_list) : null;
+
+        // Tie class aliases together with the source class
+        if (Config::getValue('enable_class_alias_support')) {
+            $code_base->resolveClassAliases();
+        }
+
         // Take a pass over all functions verifying
         // various states now that we have the whole
         // state in memory
@@ -237,11 +243,14 @@ class Phan implements IgnoredFilesFilterInterface {
         // the given process should analyze in a stable order
         $process_file_list_map =
             (new Ordering($code_base))->orderForProcessCount(
-                Config::get()->processes,
+                Config::getValue('processes'),
                 $analyze_file_path_list
             );
 
-        // This worker takes a file and analyzes it
+        /**
+         * This worker takes a file and analyzes it
+         * @return void
+         */
         $analysis_worker = function($i, $file_path)
             use ($file_count, $code_base, $temporary_file_mapping) {
                 CLI::progress('analyze', ($i + 1) / $file_count);
@@ -253,8 +262,10 @@ class Phan implements IgnoredFilesFilterInterface {
         // excessively.
         $process_count = count($process_file_list_map);
 
-        assert($process_count > 0 && $process_count <= Config::get()->processes,
+        \assert($process_count > 0 && $process_count <= Config::getValue('processes'),
             "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used.");
+
+        $did_fork_pool_have_error = false;
 
         CLI::progress('analyze', 0.0);
         // Check to see if we're running as multiple processes
@@ -265,13 +276,14 @@ class Phan implements IgnoredFilesFilterInterface {
             // files up among a given number of child processes.
             $pool = new ForkPool(
                 $process_file_list_map,
-                function () {
+                /** @return void */
+                function() {
                     // Remove any issues that were collected prior to forking
                     // to prevent duplicate issues in the output.
                     self::getIssueCollector()->reset();
                 },
                 $analysis_worker,
-                function () {
+                function () : array {
                     // Return the collected issues to be serialized.
                     return self::getIssueCollector()->getCollectedIssues();
                 }
@@ -279,6 +291,7 @@ class Phan implements IgnoredFilesFilterInterface {
 
             // Wait for all tasks to complete and collect the results.
             self::collectSerializedResults($pool->wait());
+            $did_fork_pool_have_error = $pool->didHaveError();
 
         } else {
             // Get the task data from the 0th processor
@@ -305,7 +318,16 @@ class Phan implements IgnoredFilesFilterInterface {
         self::display();
         if ($request instanceof Request) {
             $request->respondWithIssues($issue_count);
-            exit(0);
+            exit(EXIT_SUCCESS);
+        }
+
+        if (Config::getValue('print_memory_usage_summary')) {
+            self::printMemoryUsageSummary();
+        }
+
+        if ($did_fork_pool_have_error) {
+            // Make fork pool errors (e.g. due to memory limits) easy to detect when running CI jobs.
+            return true;
         }
 
         return $is_issue_found;
@@ -372,9 +394,9 @@ class Phan implements IgnoredFilesFilterInterface {
                 fprintf(STDERR, "Daemon mode will not work with grpc extension enabled in 1.4.0-dev (1.3.2 should work), quitting. See Issue #889\n");
                 exit(EXIT_FAILURE);
             }
-            if (Config::get()->processes > 1) {
+            if (Config::getValue('processes') > 1) {
                 fprintf(STDERR, "Multi-process analysis will not work with grpc extension enabled in 1.4.0-dev (1.3.2 should work), limiting analysis to a single process. See Issue #889\n");
-                Config::get()->processes = 1;
+                Config::setValue('processes', 1);
             }
         }
     }
@@ -387,13 +409,13 @@ class Phan implements IgnoredFilesFilterInterface {
     private static function isExcludedAnalysisFile(
         string $file_path
     ) : bool {
-        $include_analysis_file_list = Config::get()->include_analysis_file_list;
+        $include_analysis_file_list = Config::getValue('include_analysis_file_list');
         if ($include_analysis_file_list) {
             return !in_array($file_path, $include_analysis_file_list, true);
         }
 
         $file_path = str_replace('\\', '/', $file_path);
-        foreach (Config::get()->exclude_analysis_directory_list
+        foreach (Config::getValue('exclude_analysis_directory_list')
                  as $directory
         ) {
             if (0 === strpos($file_path, $directory)
@@ -444,6 +466,16 @@ class Phan implements IgnoredFilesFilterInterface {
     /**
      * @return void
      */
+    private static function printMemoryUsageSummary()
+    {
+        $memory = memory_get_usage()/1024/1024;
+        $peak   = memory_get_peak_usage()/1024/1024;
+        fwrite(STDERR, sprintf("Memory usage after analysis completed: %.02dMB/%.02dMB\n", $memory, $peak));
+    }
+
+    /**
+     * @return void
+     */
     public static function setPrinter(
         IssuePrinterInterface $printer
     ) {
@@ -457,5 +489,28 @@ class Phan implements IgnoredFilesFilterInterface {
      */
     public function isFilenameIgnored(string $filename):bool {
         return self::isExcludedAnalysisFile($filename);
+    }
+
+    /**
+     * Logs slow php options to stdout
+     * @return void
+     */
+    private static function checkForSlowPHPOptions() {
+        if (Config::getValue('skip_slow_php_options_warning')) {
+            return;
+        }
+        $warned = false;
+        // Unless debugging Phan itself, these two configurations are unnecessarily adding slowness.
+        if (PHP_DEBUG) {
+            fwrite(STDERR, "Warning: Phan is around twice as slow when php is compiled with --enable-debug (That option is only needed when debugging Phan itself).\n");
+            $warned = true;
+        }
+        if (extension_loaded('xdebug')) {
+            fwrite(STDERR, "Warning: Phan is around five times as slow when xdebug is enabled (xdebug only makes sense when debugging Phan itself)\n");
+            $warned = true;
+        }
+        if ($warned) {
+            fwrite(STDERR, "(The above warnings about slow PHP settings can be disabled by setting 'skip_slow_php_options_warning' to true in .phan/config.php)\n");
+        }
     }
 }
