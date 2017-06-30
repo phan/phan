@@ -5,11 +5,11 @@ use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginV2;
+use Phan\PluginV2\LegacyAnalyzeNodeCapability;
 use ast\Node;
 
-class NonBoolInLogicalArithPlugin extends PluginImplementation {
+class NonBoolInLogicalArithPlugin extends PluginV2 implements LegacyAnalyzeNodeCapability {
 
     public function analyzeNode(
         CodeBase $code_base,
@@ -26,7 +26,7 @@ class NonBoolInLogicalArithPlugin extends PluginImplementation {
 
 class NonBoolInLogicalArithVisitor extends AnalysisVisitor {
 
-    /** @var Plugin */
+    /** @var PluginV2 */
     private $plugin;
 
     /** define boolean operator list */
@@ -39,7 +39,7 @@ class NonBoolInLogicalArithVisitor extends AnalysisVisitor {
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        Plugin $plugin
+        PluginV2 $plugin
     ) {
         parent::__construct($code_base, $context);
 

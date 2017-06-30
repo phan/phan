@@ -6,13 +6,16 @@ use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginV2;
+use Phan\PluginV2\AnalyzeClassCapability;
+use Phan\PluginV2\AnalyzeFunctionCapability;
+use Phan\PluginV2\AnalyzeMethodCapability;
+use Phan\PluginV2\LegacyAnalyzeNodeCapability;
 use ast\Node;
 
 /**
- * This file demonstrates plugins for Phan. Plugins hook into
- * four events;
+ * This file demonstrates plugins for Phan.
+ * This Plugin hooks into four events;
  *
  * - analyzeNode
  *   This method is called on every AST node from every
@@ -42,7 +45,11 @@ use ast\Node;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DemoPlugin extends PluginImplementation {
+class DemoPlugin extends PluginV2 implements
+    AnalyzeClassCapability,
+    AnalyzeFunctionCapability,
+    AnalyzeMethodCapability,
+    LegacyAnalyzeNodeCapability {
 
     /**
      * @param CodeBase $code_base
@@ -167,13 +174,13 @@ class DemoPlugin extends PluginImplementation {
  */
 class DemoNodeVisitor extends AnalysisVisitor {
 
-    /** @var Plugin */
+    /** @var PluginV2 */
     private $plugin;
 
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        Plugin $plugin
+        PluginV2 $plugin
     ) {
         // After constructing on parent, `$code_base` and
         // `$context` will be available as protected properties

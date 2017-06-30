@@ -4,8 +4,8 @@ use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginV2;
+use Phan\PluginV2\LegacyAnalyzeNodeCapability;
 use ast\Node;
 
 /**
@@ -13,7 +13,7 @@ use ast\Node;
  *
  * @see DollarDollarPlugin for generic plugin documentation.
  */
-class DuplicateArrayKeyPlugin extends PluginImplementation {
+class DuplicateArrayKeyPlugin extends PluginV2 implements LegacyAnalyzeNodeCapability {
 
     /**
      * @param CodeBase $code_base
@@ -55,13 +55,13 @@ class DuplicateArrayKeyPlugin extends PluginImplementation {
  */
 class DuplicateArrayKeyVisitor extends AnalysisVisitor {
 
-    /** @var Plugin */
+    /** @var PluginV2 */
     private $plugin;
 
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        Plugin $plugin
+        PluginV2 $plugin
     ) {
         // After constructing on parent, `$code_base` and
         // `$context` will be available as protected properties
@@ -114,6 +114,7 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
                 // Skip non-literal keys. (TODO: Could check for constants (e.g. A::B) being used twice)
                 continue;
             }
+            \assert(is_scalar($key));  // redundant Phan annotation.
             if (isset($keySet[$key])) {
                 $normalizedKey = self::normalizeKey($key);
                 $this->plugin->emitIssue(

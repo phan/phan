@@ -3,8 +3,8 @@
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginV2;
+use Phan\PluginV2\LegacyAnalyzeNodeCapability;
 use ast\Node;
 
 /**
@@ -39,7 +39,7 @@ use ast\Node;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DollarDollarPlugin extends PluginImplementation {
+class DollarDollarPlugin extends PluginV2 implements LegacyAnalyzeNodeCapability {
 
     /**
      * @param CodeBase $code_base
@@ -79,13 +79,13 @@ class DollarDollarPlugin extends PluginImplementation {
  */
 class DollarDollarVisitor extends AnalysisVisitor {
 
-    /** @var Plugin */
+    /** @var PluginV2 */
     private $plugin;
 
     public function __construct(
         CodeBase $code_base,
         Context $context,
-        Plugin $plugin
+        PluginV2 $plugin
     ) {
         // After constructing on parent, `$code_base` and
         // `$context` will be available as protected properties
