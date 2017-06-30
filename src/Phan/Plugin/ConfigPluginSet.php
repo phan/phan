@@ -165,7 +165,7 @@ class ConfigPluginSet extends Plugin {
 
     // Micro-optimization in tight loops: check for plugins before calling config plugin set
     public function hasPlugins() : bool {
-        return count($this->getPlugins()) > 0;
+        return \count($this->getPlugins()) > 0;
     }
 
     /**
@@ -173,21 +173,21 @@ class ConfigPluginSet extends Plugin {
      */
     private function getPlugins() : array
     {
-        if (is_null($this->pluginSet)) {
+        if (\is_null($this->pluginSet)) {
             $this->pluginSet = array_map(
                 function (string $plugin_file_name) : Plugin {
                     $plugin_instance =
                         require($plugin_file_name);
 
-                    assert(!empty($plugin_instance),
+                    \assert(!empty($plugin_instance),
                         "Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
 
-                    assert($plugin_instance instanceof Plugin,
+                    \assert($plugin_instance instanceof Plugin,
                         "Plugins must extend \Phan\Plugin. The plugin at $plugin_file_name does not.");
 
                     return $plugin_instance;
                 },
-                Config::get()->plugins
+                Config::getValue('plugins')
             );
         }
         return $this->pluginSet;

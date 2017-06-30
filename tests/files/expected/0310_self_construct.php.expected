@@ -5,4 +5,4 @@
 %s:20 PhanTypeMismatchArgument Argument 1 (arg) is string but \Foo310::__construct() takes int defined at %s:14
 %s:21 PhanParamTooMany Call with 1 arg(s) to \Bar310::__construct() which only takes 0 arg(s) defined at %s:7
 %s:25 PhanTypeMismatchArgument Argument 1 (arg) is string but \Foo310::__construct() takes int defined at %s:14
-%s:27 PhanParamTooMany Call with 1 arg(s) to \Baz310::__construct() which only takes 0 arg(s) defined at %s:27
+%s:27 PhanParamTooMany Call with 1 arg(s) to \Baz310::__construct() which only takes 0 arg(s) defined at %s:3

@@ -1,0 +1,2 @@
+%s:4 PhanAccessExtendsFinalClass Attempting to extend from final class \MyFinalClass317 defined at %s:2
+%s:6 PhanAccessExtendsFinalClassInternal Attempting to extend from final internal class \Closure

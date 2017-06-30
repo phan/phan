@@ -18,6 +18,9 @@ use ast\Node;
 
 class Parameter extends Variable
 {
+    const REFERENCE_DEFAULT = 1;
+    const REFERENCE_READ_WRITE = 2;
+    const REFERENCE_WRITE_ONLY = 3;
 
     /**
      * @var UnionType|null
@@ -32,7 +35,7 @@ class Parameter extends Variable
     private $default_value = null;
 
     /**
-     * @param \phan\Context $context
+     * @param Context $context
      * The context in which the structural element lives
      *
      * @param string $name
@@ -169,7 +172,7 @@ class Parameter extends Variable
         CodeBase $code_base,
         Node $node
     ) : array {
-        assert($node instanceof Node, "node was not an \\ast\\Node");
+        \assert($node instanceof Node, "node was not an \\ast\\Node");
 
         $parameter_list = [];
         $is_optional_seen = false;
@@ -204,7 +207,7 @@ class Parameter extends Variable
     public static function listFromReflectionParameterList(
         array $reflection_parameters
     ) : array {
-        return array_map(function(\ReflectionParameter $reflection_parameter) {
+        return \array_map(function(\ReflectionParameter $reflection_parameter) {
             return self::fromReflectionParameter($reflection_parameter);
         }, $reflection_parameters);
     }
@@ -251,7 +254,7 @@ class Parameter extends Variable
         Node $node
     ) : Parameter {
 
-        assert($node instanceof Node, "node was not an \\ast\\Node");
+        \assert($node instanceof Node, "node was not an \\ast\\Node");
 
         // Get the type of the parameter
         $union_type = UnionType::fromNode(
@@ -486,6 +489,17 @@ class Parameter extends Variable
             $this->getFlags(),
             \ast\flags\PARAM_REF
         );
+    }
+
+    public function getReferenceType() : int
+    {
+        $flags = $this->getPhanFlags();
+        if (Flags::bitVectorHasState($flags, Flags::IS_READ_REFERENCE)) {
+            return self::REFERENCE_READ_WRITE;
+        } else if (Flags::bitVectorHasState($flags, Flags::IS_WRITE_REFERENCE)) {
+            return self::REFERENCE_WRITE_ONLY;
+        }
+        return self::REFERENCE_DEFAULT;
     }
 
     public function __toString() : string

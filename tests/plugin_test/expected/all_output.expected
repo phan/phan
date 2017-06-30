@@ -9,4 +9,10 @@ src/000_plugins.php:40 PhanPluginNonBoolInLogicalArith Non bool value in logical
 src/000_plugins.php:47 PhanPluginNumericalComparison non numerical values compared by the operators '==' or '!=='
 src/000_plugins.php:49 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
 src/000_plugins.php:55 UnusedSuppression Element \testUnusedSuppressionPlugin suppresses issue PhanParamTooFew but does not use it
-src/000_plugins.php:61 PhanUnreferencedMethod Possibly zero references to method \testUnreferencedFunction
+src/000_plugins.php:61 PhanUnreferencedFunction Possibly zero references to function \testUnreferencedFunction
+src/000_plugins.php:66 PhanUnreferencedClass Possibly zero references to class \__autoload
+src/000_plugins.php:67 PhanUnreferencedConstant Possibly zero references to constant \__autoload
+src/001_globals_type_map.php:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Exception|\Throwable but \intdiv() takes int
+src/001_globals_type_map.php:8 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Error|\Throwable but \intdiv() takes int
+src/001_globals_type_map.php:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Exception|\Throwable but \intdiv() takes int
+src/001_globals_type_map.php:15 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Error|\Throwable but \intdiv() takes int

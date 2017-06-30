@@ -1,0 +1,7 @@
+%s:9 PhanAccessWrongInheritanceCategory Attempting to inherit Trait \Trait316 defined at %s:7 as if it were a Class
+%s:9 PhanAccessWrongInheritanceCategory Attempting to inherit abstract Class \Abstract316 defined at %s:3 as if it were a Interface
+%s:11 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal Class \Exception as if it were a Trait
+%s:11 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal Class \SplObjectStorage as if it were a Interface
+%s:11 PhanAccessWrongInheritanceCategory Attempting to inherit Interface \Interface316 defined at %s:5 as if it were a Trait
+%s:16 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal Class \Exception as if it were a Interface
+%s:20 PhanAccessWrongInheritanceCategoryInternal Attempting to inherit internal abstract Interface \ArrayAccess as if it were a Trait

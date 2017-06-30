@@ -60,6 +60,7 @@ class Colorizing {
     // In future PRs, it will be possible for users to add their own color schemes in .phan/config.php
     const default_color_for_template = [
         'CLASS'         => 'green',
+        'CLASSLIKE'     => 'green',
         'COMMENT'       => 'light_green',
         'CONST'         => 'light_red',
         'COUNT'         => 'light_magenta',
@@ -158,12 +159,12 @@ class Colorizing {
      */
     private static function initColorScheme() {
         self::$color_scheme = self::default_color_for_template;
-        foreach (Config::get()->color_scheme ?? [] as $template_type => $color_name) {
-            if (!is_scalar($color_name) || !array_key_exists($color_name, self::styles)) {
+        foreach (Config::getValue('color_scheme') ?? [] as $template_type => $color_name) {
+            if (!\is_scalar($color_name) || !\array_key_exists($color_name, self::styles)) {
                 error_log("Invalid color name ($color_name)");
                 continue;
             }
-            if (!array_key_exists($template_type, Colorizing::default_color_for_template)) {
+            if (!\array_key_exists($template_type, Colorizing::default_color_for_template)) {
                 error_log("Unknown template_type ($template_type)");
                 continue;
             }

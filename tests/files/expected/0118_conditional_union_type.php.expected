@@ -1,2 +1,2 @@
-%s:13 PhanTypeMismatchArgument Argument 1 (p) is bool|string but \f() takes int defined at %s:12
+%s:13 PhanTypeMismatchArgument Argument 1 (p) is false|string but \f() takes int defined at %s:12
 

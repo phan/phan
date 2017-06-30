@@ -7,6 +7,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
@@ -19,11 +20,20 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
+use Phan\Language\UnionType;
+use Phan\Library\ArraySet;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple4;
+
+use ast\Node;
+
+if (!function_exists('runkit_object_id')) {
+    require_once __DIR__ . '/../../runkit.php';
+}
 
 class Type
 {
@@ -77,6 +87,7 @@ class Type
         'array'     => true,
         'bool'      => true,
         'callable'  => true,
+        'false'     => true,
         'float'     => true,
         'int'       => true,
         'iterable'  => true,
@@ -86,6 +97,7 @@ class Type
         'resource'  => true,
         'static'    => true,
         'string'    => true,
+        'true'      => true,
         'void'      => true,
     ];
 
@@ -118,6 +130,8 @@ class Type
     /** For types copied from phpdoc, e.g. `(at)param integer $x` */
     const FROM_PHPDOC = 2;
 
+    /** To distinguish NativeType subclasses and classes with the same name. Overridden in subclasses */
+    const KEY_PREFIX = '';
     /**
      * @var string|null
      * The namespace of this type such as '\' or
@@ -145,6 +159,8 @@ class Type
      */
     protected $is_nullable = false;
 
+    private static $canonical_object_map = [];
+
     /**
      * @param string $name
      * The name of the type such as 'int' or 'MyClass'
@@ -170,6 +186,17 @@ class Type
         $this->name = $name;
         $this->template_parameter_type_list = $template_parameter_type_list;
         $this->is_nullable = $is_nullable;
+    }
+
+    // Override two magic methods to ensure that Type isn't being cloned accidentally.
+    // (It has previously been accidentally cloned in unit tests by phpunit (global_state helper),
+    //  which saves and restores some static properties)
+    public function __wakeup() {
+        throw new \Error("Cannot unserialize Type");
+    }
+
+    public function __clone() {
+        throw new \Error("Cannot clone Type");
     }
 
     /**
@@ -202,7 +229,7 @@ class Type
         int $source
     ) : Type {
 
-        $namespace = trim($namespace);
+        $namespace = \trim($namespace);
 
         if ('\\' === $namespace && $source) {
             $type_name = self::canonicalNameFromName($type_name);
@@ -211,34 +238,34 @@ class Type
         // If this looks like a generic type string, explicitly
         // make it as such
         if (self::isGenericArrayString($type_name)
-            && ($pos = strrpos($type_name, '[]')) !== false
+            && ($pos = \strrpos($type_name, '[]')) !== false
         ) {
             return GenericArrayType::fromElementType(Type::make(
                 $namespace,
-                substr($type_name, 0, $pos),
+                \substr($type_name, 0, $pos),
                 $template_parameter_type_list,
                 false,
                 $source
             ), $is_nullable);
         }
 
-        assert(
+        \assert(
             !empty($namespace),
             "Namespace cannot be empty"
         );
 
-        assert(
+        \assert(
             '\\' === $namespace[0],
             "Namespace must be fully qualified"
         );
 
-        assert(
+        \assert(
             !empty($type_name),
             "Type name cannot be empty"
         );
 
-        assert(
-            false === strpos(
+        \assert(
+            false === \strpos(
                 $type_name,
                 '|'
             ),
@@ -254,49 +281,25 @@ class Type
 
         // Make sure we only ever create exactly one
         // object for any unique type
-        $key = ($is_nullable ? '?' : '') . $namespace . '\\' . $type_name;
+        $key = ($is_nullable ? '?' : '') . static::KEY_PREFIX . $namespace . '\\' . $type_name;
 
         if ($template_parameter_type_list) {
-            $key .= '<' . implode(',', array_map(function (UnionType $union_type) {
+            $key .= '<' . \implode(',', \array_map(function (UnionType $union_type) {
                 return (string)$union_type;
             }, $template_parameter_type_list)) . '>';
         }
 
-        $key = strtolower($key);
+        $key = \strtolower($key);
 
-        return static::cachedGetInstanceHelper($namespace, $type_name, $template_parameter_type_list, $is_nullable, $key, false);
-    }
-
-    /**
-     * @return static
-     * @see static::__construct
-     */
-    protected static final function cachedGetInstanceHelper(
-        string $namespace,
-        string $name,
-        $template_parameter_type_list,
-        bool $is_nullable,
-        string $key,
-        bool $clear_all_memoize
-    ) : Type {
-        // TODO: Figure out why putting this into a static variable results in test failures.
-        static $canonical_object_map = [];
-        if ($clear_all_memoize) {
-            foreach ($canonical_object_map as $type) {
-                $type->memoizeFlushAll();
-            }
-            return NullType::instance(false);  // dummy
-        }
-        $value = $canonical_object_map[$key] ?? null;
+        $value = self::$canonical_object_map[$key] ?? null;
         if (!$value) {
-            $value =
-                new static(
-                    $namespace,
-                    $name,
-                    $template_parameter_type_list,
-                    $is_nullable
-                );
-            $canonical_object_map[$key] = $value;
+            $value = new static(
+                $namespace,
+                $type_name,
+                $template_parameter_type_list,
+                $is_nullable
+            );
+            self::$canonical_object_map[$key] = $value;
         }
         return $value;
     }
@@ -312,9 +315,9 @@ class Type
      */
     public static function clearAllMemoizations() {
         // Clear anything that has memoized state
-        Type::cachedGetInstanceHelper('', '', [], false, '', true);
-        TemplateType::cachedGetInstanceHelper('', '', [], false, '', true);
-        GenericArrayType::cachedGetInstanceHelper('', '', [], false, '', true);
+        foreach (self::$canonical_object_map as $type) {
+            $type->memoizeFlushAll();
+        }
     }
 
 
@@ -350,7 +353,7 @@ class Type
         if ($lookup === null) {
             $lookup = self::createReservedConstantNameLookup();
         }
-        $result = $lookup[strtoupper(ltrim($name, '\\'))] ?? null;
+        $result = $lookup[\strtoupper(\ltrim($name, '\\'))] ?? null;
         if (isset($result)) {
             return new Some($result);
         }
@@ -362,11 +365,13 @@ class Type
      * Uses the constants and types from https://secure.php.net/manual/en/reserved.constants.php
      */
     private static function createReservedConstantNameLookup() : array {
-        $int = IntType::instance(false);
-        $bool = BoolType::instance(false);
-        $null = NullType::instance(false);
-        $string = StringType::instance(false);
+        $false  = FalseType::instance(false);
         $float  = FloatType::instance(false);
+        $int    = IntType::instance(false);
+        $null   = NullType::instance(false);
+        $string = StringType::instance(false);
+        $true   = TrueType::instance(false);
+
         return [
             'PHP_VERSION'           => $string,
             'PHP_MAJOR_VERSION'     => $int,
@@ -420,8 +425,8 @@ class Type
             'E_ALL'                 => $int,
             'E_STRICT'              => $int,
             '__COMPILER_HALT_OFFSET__' => $int,
-            'TRUE'                  => $bool,
-            'FALSE'                 => $bool,
+            'TRUE'                  => $true,
+            'FALSE'                 => $false,
             'NULL'                  => $null,
         ];
     }
@@ -433,7 +438,7 @@ class Type
     public static function fromObject($object) : Type
     {
         // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
-        return Type::fromInternalTypeName(gettype($object), false, self::FROM_PHPDOC);
+        return Type::fromInternalTypeName(\gettype($object), false, self::FROM_PHPDOC);
     }
 
     /**
@@ -461,10 +466,10 @@ class Type
         // When there's a nullability operator such as in
         // `?int[]`, it applies to the array rather than
         // the int
-        if (false !== ($pos = strrpos($type_name, '[]'))) {
+        if (false !== ($pos = \strrpos($type_name, '[]'))) {
             return GenericArrayType::fromElementType(
                 self::fromInternalTypeName(
-                    substr($type_name, 0, $pos),
+                    \substr($type_name, 0, $pos),
                     false,
                     $source
                 ),
@@ -475,13 +480,16 @@ class Type
         $type_name =
             self::canonicalNameFromName($type_name);
 
-        switch (strtolower($type_name)) {
+        // TODO: Is this worth optimizing into a lookup table?
+        switch (\strtolower($type_name)) {
             case 'array':
                 return ArrayType::instance($is_nullable);
             case 'bool':
                 return BoolType::instance($is_nullable);
             case 'callable':
                 return CallableType::instance($is_nullable);
+            case 'false':
+                return FalseType::instance($is_nullable);
             case 'float':
                 return FloatType::instance($is_nullable);
             case 'int':
@@ -496,6 +504,8 @@ class Type
                 return ResourceType::instance($is_nullable);
             case 'string':
                 return StringType::instance($is_nullable);
+            case 'true':
+                return TrueType::instance($is_nullable);
             case 'void':
                 // TODO: This can't be nullable, right?
                 return VoidType::instance($is_nullable);
@@ -505,7 +515,7 @@ class Type
                 return StaticType::instance($is_nullable);
         }
 
-        assert(
+        \assert(
             false,
             "No internal type with name $type_name"
         );
@@ -555,7 +565,7 @@ class Type
         string $fully_qualified_string
     ) : Type {
 
-        assert(
+        \assert(
             !empty($fully_qualified_string),
             "Type cannot be empty"
         );
@@ -577,7 +587,7 @@ class Type
 
         // Map the names of the types to actual types in the
         // template parameter type list
-        $template_parameter_type_list = array_map(function (string $type_name) {
+        $template_parameter_type_list = \array_map(function (string $type_name) {
             return Type::fromFullyQualifiedString($type_name)->asUnionType();
         }, $template_parameter_type_name_list);
 
@@ -585,7 +595,7 @@ class Type
             $namespace = '\\' . $namespace;
         }
 
-        assert(
+        \assert(
             !empty($namespace) && !empty($type_name),
             "Type was not fully qualified"
         );
@@ -619,7 +629,7 @@ class Type
         int $source
     ) : Type {
 
-        assert(
+        \assert(
             $string !== '',
             "Type cannot be empty"
         );
@@ -648,10 +658,10 @@ class Type
         // the type of each element
         $non_generic_array_type_name = $type_name;
         if ($is_generic_array_type
-           && false !== ($pos = strrpos($type_name, '[]'))
+           && false !== ($pos = \strrpos($type_name, '[]'))
         ) {
             $non_generic_array_type_name =
-                substr($type_name, 0, $pos);
+                \substr($type_name, 0, $pos);
         }
 
         // Check to see if the type name is mapped via
@@ -720,7 +730,7 @@ class Type
             // to see if this type is a reference to 'parent' and
             // dealing with it there. We don't want to have this
             // method be dependent on the code base
-            assert(
+            \assert(
                 'parent' !== $non_generic_array_type_name,
                 __METHOD__ . " does not know how to handle the type name 'parent'"
             );
@@ -741,7 +751,7 @@ class Type
             // to see if this type is a reference to 'parent' and
             // dealing with it there. We don't want to have this
             // method be dependent on the code base
-            assert(
+            \assert(
                 'parent' !== $type_name,
                 __METHOD__ . " does not know how to handle the type name 'parent'"
             );
@@ -772,12 +782,36 @@ class Type
     }
 
     /**
+     * @var Type[][] - Maps runkit_object_id() to an array containing the type for that object id.
+     *                 The object id doesn't change as long as there's one reference to that object (including singleton_map)
+     * Note: this is static instead of instance because some subclasses can be cloned (e.g. ClosureType)
+     */
+    private static $singleton_map = [];
+
+    /**
      * @return UnionType
      * A UnionType representing this and only this type
      */
     public function asUnionType() : UnionType
     {
-        return new UnionType([$this]);
+        $object_id = \runkit_object_id($this);
+        $types_set = self::$singleton_map[$object_id] ?? null;
+        if ($types_set === null) {
+            $types_set = [$object_id => $this];  // same as ArraySet::singleton, but why bother recomputing object id.
+            self::$singleton_map[$object_id] = $types_set;
+        }
+        // var_export($types_set);
+        /**
+        if (!ArraySet::is_array_set($types_set)) {
+            printf("Assertion failed: %s %s %d %s %s %s\n", $this, json_encode($this instanceof StringType), $object_id, $old_hash, spl_object_hash($this), var_export($types_set, true));
+            debug_zval_dump([self::$singleton_map[$object_id], $types_set]);
+            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        }
+         */
+        // return new UnionType([$this]);
+        // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
+        // TODO: Figure out why this is buggy
+        return new UnionType($types_set, true);
     }
 
     /**
@@ -826,6 +860,51 @@ class Type
         return $this->is_nullable;
     }
 
+    public function getIsPossiblyFalsey() : bool
+    {
+        return $this->is_nullable;
+    }
+
+    public function getIsAlwaysFalsey() : bool
+    {
+        return false;  // overridden in FalseType and NullType
+    }
+
+    public function getIsPossiblyTruthy() : bool
+    {
+        return true;  // overridden in various types. This base class (Type) is implicitly the type of an object, which is always truthy.
+    }
+
+    public function getIsAlwaysTruthy() : bool
+    {
+        return true;  // overridden in various types. This base class (Type) is implicitly the type of an object, which is always truthy.
+    }
+
+    public function getIsPossiblyFalse() : bool
+    {
+        return false;
+    }
+
+    public function getIsAlwaysFalse() : bool
+    {
+        return false;  // overridden in FalseType
+    }
+
+    public function getIsPossiblyTrue() : bool
+    {
+        return false;
+    }
+
+    public function getIsAlwaysTrue() : bool
+    {
+        return false;  // overridden in TrueType
+    }
+
+    public function getIsInBoolFamily() : bool
+    {
+        return false;  // overridden in FalseType, TrueType, BoolType
+    }
+
     /**
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass
@@ -847,6 +926,30 @@ class Type
             $is_nullable,
             Type::FROM_TYPE
         );
+    }
+
+    public function asNonFalseyType() : Type
+    {
+        // Overridden by BoolType subclass to return TrueType
+        return $this->withIsNullable(false);
+    }
+
+    public function asNonTruthyType() : Type
+    {
+        // Overridden by ScalarType, BoolType, etc.
+        return NullType::instance(false);
+    }
+
+    public function asNonFalseType() : Type
+    {
+        // Overridden by BoolType, etc.
+        return $this;
+    }
+
+    public function asNonTrueType() : Type
+    {
+        // Overridden by BoolType, etc.
+        return $this;
     }
 
     /**
@@ -873,11 +976,11 @@ class Type
         if ($source === Type::FROM_PHPDOC) {
             $type_name = self::canonicalNameFromName($type_name);  // Have to convert boolean[] to bool
         }
-        if (!array_key_exists($type_name, self::_internal_type_set)) {
+        if (!\array_key_exists($type_name, self::_internal_type_set)) {
             return false;
         }
         // All values of $type_name exist as a valid phpdoc type, but some don't exist as real types.
-        if ($source === Type::FROM_NODE && array_key_exists($type_name, self::_soft_internal_type_set)) {
+        if ($source === Type::FROM_NODE && \array_key_exists($type_name, self::_soft_internal_type_set)) {
             return false;
         }
         return true;
@@ -898,10 +1001,11 @@ class Type
      * @return bool
      * True if this type is a type referencing the
      * class context 'static'.
+     * Overridden in the subclass StaticType
      */
     public function isStaticType() : bool
     {
-        return 'static' === strtolower(ltrim((string)$this, '\\'));
+        return false;
     }
 
     /**
@@ -1023,20 +1127,20 @@ class Type
      */
     public function genericArrayElementType() : Type
     {
-        assert(
+        \assert(
             $this->isGenericArray(),
             "Cannot call genericArrayElementType on non-generic array"
         );
 
         if (($pos = strrpos($this->getName(), '[]')) !== false) {
-            assert(
+            \assert(
                 $this->getName() !== '[]' && $this->getName() !== 'array',
                 "Non-generic type requested to be non-generic"
             );
 
             return Type::make(
                 $this->getNamespace(),
-                substr($this->getName(), 0, $pos),
+                \substr($this->getName(), 0, $pos),
                 $this->template_parameter_type_list,
                 $this->getIsNullable(),
                 self::FROM_TYPE
@@ -1100,7 +1204,7 @@ class Type
                 return [];
             }
 
-            assert($fqsen instanceof FullyQualifiedClassName);
+            \assert($fqsen instanceof FullyQualifiedClassName);
 
             if (!$code_base->hasClassWithFQSEN($fqsen)) {
                 return [];
@@ -1114,7 +1218,7 @@ class Type
                 $this->getTemplateParameterTypeList();
 
             $map = [];
-            foreach (array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
+            foreach (\array_keys($class->getTemplateTypeMap()) as $i => $identifier) {
                 if (isset($template_parameter_type_list[$i])) {
                     $map[$identifier] = $template_parameter_type_list[$i];
                 }
@@ -1144,7 +1248,7 @@ class Type
         // We're going to assume that if the type hierarchy
         // is taller than some value we probably messed up
         // and should bail out.
-        assert(
+        \assert(
             $recursion_depth < 20,
             "Recursion has gotten out of hand"
         );
@@ -1163,7 +1267,7 @@ class Type
             return $union_type;
         }
 
-        assert($class_fqsen instanceof FullyQualifiedClassName);
+        \assert($class_fqsen instanceof FullyQualifiedClassName);
 
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             return $union_type;
@@ -1192,6 +1296,18 @@ class Type
             }
         }
 
+        // Add in aliases
+        // (If enable_class_alias_support is false, this will do nothing)
+        $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
+        foreach ($fqsen_aliases as $alias_fqsen_record) {
+            $alias_fqsen = $alias_fqsen_record->alias_fqsen;
+            $recursive_union_type->addUnionType(
+                $this->isGenericArray()
+                    ? $alias_fqsen->asUnionType()->asGenericArrayTypes()
+                    : $alias_fqsen->asUnionType()
+            );
+        }
+
         return $recursive_union_type;
     }
 
@@ -1207,14 +1323,14 @@ class Type
     public function isSubclassOf(CodeBase $code_base, Type $parent) : bool
     {
         $fqsen = $this->asFQSEN();
-        assert($fqsen instanceof FullyQualifiedClassName);
+        \assert($fqsen instanceof FullyQualifiedClassName);
 
         $this_clazz = $code_base->getClassByFQSEN(
             $fqsen
         );
 
         $parent_fqsen = $parent->asFQSEN();
-        assert($parent_fqsen instanceof FullyQualifiedClassName);
+        \assert($parent_fqsen instanceof FullyQualifiedClassName);
 
         $parent_clazz = $code_base->getClassByFQSEN(
             $parent_fqsen
@@ -1243,9 +1359,11 @@ class Type
         if ($this->getIsNullable() && !$type->getIsNullable()) {
 
             // If this is nullable, but that isn't, and we've
-            // configured nulls to cast as anything, ignore
+            // configured nulls to cast as anything (or as arrays), ignore
             // the nullable part.
-            if (Config::get()->null_casts_as_any_type) {
+            if (Config::get_null_casts_as_any_type()) {
+                return $this->withIsNullable(false)->canCastToType($type);
+            } else if (Config::get_null_casts_as_array() && $type->isArrayLike()) {
                 return $this->withIsNullable(false)->canCastToType($type);
             }
 
@@ -1300,6 +1418,82 @@ class Type
         ];
 
         return $matrix[(string)$this][(string)$type] ?? false;
+    }
+
+    /**
+     * @param UnionType $union_type
+     * A union type to compare against. Resolve it before checking.
+     *
+     * @param Context $context
+     * The context in which this type exists.
+     *
+     * @param CodeBase $code_base
+     * The code base in which both this and the given union
+     * types exist.
+     *
+     * @return bool
+     * True if each type within this union type can cast
+     * to the given union type.
+     *
+     * @see StaticType->isExclusivelyNarrowedFormOrEquivalentTo for how it resolves static.
+     * TODO: Refactor.
+     *
+     * @see UnionType->isExclusivelyNarrowedFormOrEquivalentTo for a check on union types as a whole.
+     */
+    public function isExclusivelyNarrowedFormOrEquivalentTo(
+        UnionType $union_type,
+        Context $context,
+        CodeBase $code_base
+    ) : bool {
+
+        // Special rule: anything can cast to nothing
+        // and nothing can cast to anything
+        if ($union_type->isEmpty()) {
+            return true;
+        }
+
+        // Check to see if the other union type contains this
+        if ($union_type->hasType($this)) {
+            return true;
+        }
+        $this_resolved = $this->withStaticResolvedInContext($context);
+        // TODO: Allow casting MyClass<TemplateType> to MyClass (Without the template?
+
+
+        // TODO: Need to resolve expanded union types (parents, interfaces) of classes *before* this is called.
+
+        // Test to see if this (or any ancestor types) can cast to the given union type.
+        $expanded_types = $this_resolved->asExpandedTypes($code_base);
+        if ($expanded_types->canCastToUnionType(
+            $union_type
+        )) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return Type
+     * Either this or 'static' resolved in the given context.
+     */
+    public function withStaticResolvedInContext(
+        Context $context
+    ) : Type {
+        // TODO: Create SelfType, to go along with StaticType
+        if (strcasecmp($this->name, 'self') !== 0) {
+            return $this;
+        }
+
+        // If the context isn't in a class scope, there's nothing
+        // we can do
+        if (!$context->isInClassScope()) {
+            return $this;
+        }
+        $type = $context->getClassFQSEN()->asType();
+        if ($this->getIsNullable()) {
+            return $type->withIsNullable(true);
+        }
+        return $type;
     }
 
     /**
@@ -1359,15 +1553,13 @@ class Type
      * @return string
      * A canonical name for the given type name
      */
-    private static function canonicalNameFromName(
+    public static function canonicalNameFromName(
         string $name
     ) : string {
         static $map = [
             'boolean'  => 'bool',
             'callback' => 'callable',
             'double'   => 'float',
-            'false'    => 'bool',
-            'true'     => 'bool',
             'integer'  => 'int',
         ];
 
@@ -1390,14 +1582,14 @@ class Type
 
         $match = [];
         $is_nullable = false;
-        if (preg_match('/' . self::type_regex. '/', $type_string, $match)) {
+        if (\preg_match('/' . self::type_regex. '/', $type_string, $match)) {
             $type_string = $match[1];
 
             // Rip out the nullability indicator if it
             // exists and note its nullability
             $is_nullable = ($match[2] ?? '') == '?';
             if ($is_nullable) {
-                $type_string = substr($type_string, 1);
+                $type_string = \substr($type_string, 1);
             }
 
             // If we have a generic array symbol '[]', append that back
@@ -1405,28 +1597,28 @@ class Type
             if (isset($match[12])) {
                 // Figure out the dimensionality of the type array
                 $gmatch = [];
-                if (preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
+                if (\preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
                     $type_string .= $gmatch[0];
                 }
             }
 
             $template_parameter_type_name_list = !empty($match[4])
-                ?  preg_split('/\s*,\s*/', $match[4])
+                ? \preg_split('/\s*,\s*/', $match[4])
                 : [];
         }
 
         // Determine if the type name is fully qualified
         // (as specified by a leading backslash).
-        $is_fully_qualified = (0 === strpos($type_string, '\\'));
+        $is_fully_qualified = (0 === \strpos($type_string, '\\'));
 
         $fq_class_name_elements =
-            array_filter(explode('\\', $type_string));
+            \array_filter(\explode('\\', $type_string));
 
         $class_name =
-            (string)array_pop($fq_class_name_elements);
+            (string)\array_pop($fq_class_name_elements);
 
         $namespace = ($is_fully_qualified ? '\\' : '')
-            . implode('\\', array_filter(
+            . implode('\\', \array_filter(
                 $fq_class_name_elements
             ));
 

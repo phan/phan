@@ -14,7 +14,7 @@ class BoundClass264 {
 class TestFramework {
     /** @var string */
     protected $_frameworkProperty = 'value';
-    public function mockA() : string {
+    public function mockA() : string {  // mockA() is buggy, it didn't return anything.
         // BoundClass264::a_static_method(); // What? This should emit an issue.
 
         /**

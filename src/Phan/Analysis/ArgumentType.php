@@ -104,15 +104,15 @@ class ArgumentType
         }
 
         $arglist = $node->children['args'];
-        $argcount = count($arglist->children);
+        $argcount = \count($arglist->children);
 
         // Figure out if any version of this method has any
         // parameters that are variadic
-        $is_varargs = array_reduce(
+        $is_varargs = \array_reduce(
             iterator_to_array($method->alternateGenerator($code_base)),
             function (bool $carry, FunctionInterface $alternate_method) : bool {
                 return $carry || (
-                    array_reduce(
+                    \array_reduce(
                         $alternate_method->getParameterList(),
                         function (bool $carry, $parameter) {
                             return ($carry || $parameter->isVariadic());
@@ -125,7 +125,7 @@ class ArgumentType
         );
 
         // Figure out if any of the arguments are a call to unpack()
-        $is_unpack = array_reduce(
+        $is_unpack = \array_reduce(
             $arglist->children,
             function ($carry, $node) {
                 return ($carry || (
@@ -330,12 +330,12 @@ class ArgumentType
             ) {
                 // Get the parameter associated with this argument
                 $candidate_alternate_parameter = $alternate_method->getParameterForCaller($i);
-                if (is_null($candidate_alternate_parameter)) {
+                if (\is_null($candidate_alternate_parameter)) {
                     continue;
                 }
 
                 $alternate_parameter = $candidate_alternate_parameter;
-                assert($alternate_parameter instanceof Variable);
+                \assert($alternate_parameter instanceof Variable);
 
                 // See if the argument can be cast to the
                 // parameter
@@ -356,47 +356,54 @@ class ArgumentType
                     ? $alternate_parameter->getUnionType()
                     : 'unknown';
 
-                if (is_object($parameter_type) && $parameter_type->hasTemplateType()) {
-                    // Don't worry about template types
-                } elseif ($method->isPHPInternal()) {
-                    // If we are not in strict mode and we accept a string parameter
-                    // and the argument we are passing has a __toString method then it is ok
-                    if(!$context->getIsStrictTypes() && is_object($parameter_type) && $parameter_type->hasType(StringType::instance(false))) {
-                        try {
-                            foreach($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
-                                if($clazz->hasMethodWithName($code_base, "__toString")) {
-                                    return;
-                                }
-                            }
-                        } catch (CodeBaseException $e) {
-                            // Swallow "Cannot find class", go on to emit issue
-                        }
-                    }
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchArgumentInternal,
-                        $node->lineno ?? 0,
-                        ($i+1),
-                        $parameter_name,
-                        $argument_type_expanded,
-                        (string)$method->getFQSEN(),
-                        (string)$parameter_type
-                    );
+                if ($alternate_parameter instanceof Parameter) {
+                    $can_skip_type_check = $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY;
                 } else {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchArgument,
-                        $node->lineno ?? 0,
-                        ($i+1),
-                        $parameter_name,
-                        $argument_type_expanded,
-                        (string)$method->getFQSEN(),
-                        (string)$parameter_type,
-                        $method->getFileRef()->getFile(),
-                        $method->getFileRef()->getLineNumberStart()
-                    );
+                    $can_skip_type_check = false;  // is this possible?
+                }
+                if (!$can_skip_type_check) {
+                    if (\is_object($parameter_type) && $parameter_type->hasTemplateType()) {
+                        // Don't worry about template types
+                    } elseif ($method->isPHPInternal()) {
+                        // If we are not in strict mode and we accept a string parameter
+                        // and the argument we are passing has a __toString method then it is ok
+                        if(!$context->getIsStrictTypes() && \is_object($parameter_type) && $parameter_type->hasType(StringType::instance(false))) {
+                            try {
+                                foreach($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
+                                    if($clazz->hasMethodWithName($code_base, "__toString")) {
+                                        return;
+                                    }
+                                }
+                            } catch (CodeBaseException $e) {
+                                // Swallow "Cannot find class", go on to emit issue
+                            }
+                        }
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchArgumentInternal,
+                            $node->lineno ?? 0,
+                            ($i+1),
+                            $parameter_name,
+                            $argument_type_expanded,
+                            (string)$method->getFQSEN(),
+                            (string)$parameter_type
+                        );
+                    } else {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchArgument,
+                            $node->lineno ?? 0,
+                            ($i+1),
+                            $parameter_name,
+                            $argument_type_expanded,
+                            (string)$method->getFQSEN(),
+                            (string)$parameter_type,
+                            $method->getFileRef()->getFile(),
+                            $method->getFileRef()->getLineNumberStart()
+                        );
+                    }
                 }
             }
         }
@@ -483,7 +490,7 @@ class ArgumentType
         CodeBase $code_base
     ) {
         $arglist = $node->children['args'];
-        $argcount = count($arglist->children);
+        $argcount = \count($arglist->children);
 
         switch ($method->getName()) {
             case 'join':

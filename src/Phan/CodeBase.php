@@ -3,6 +3,8 @@ namespace Phan;
 
 use Phan\CodeBase\ClassMap;
 use Phan\CodeBase\UndoTracker;
+use Phan\Language\Context;
+use Phan\Language\Element\ClassAliasRecord;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -81,6 +83,12 @@ class CodeBase
 
     /**
      * @var Map
+     * A map from FQSEN to set of ClassAliasRecord objects
+     */
+    private $fqsen_alias_map;
+
+    /**
+     * @var Map
      * A map from FQSEN to a global constant
      */
     private $fqsen_global_constant_map;
@@ -140,6 +148,7 @@ class CodeBase
         array $internal_function_name_list
     ) {
         $this->fqsen_class_map = new Map;
+        $this->fqsen_alias_map = new Map;
         $this->fqsen_global_constant_map = new Map;
         $this->fqsen_func_map = new Map;
         $this->class_fqsen_class_map_map = new Map;
@@ -205,7 +214,7 @@ class CodeBase
     }
 
     /**
-     * @return string[] - The size of $this->getParsedFilePathList()
+     * @return int The size of $this->getParsedFilePathList()
      */
     public function getParsedFilePathCount() : int {
         if ($this->undo_tracker) {
@@ -257,7 +266,12 @@ class CodeBase
     private function addGlobalConstantsByNames(array $const_name_list)
     {
         foreach ($const_name_list as $const_name) {
-            $this->addGlobalConstant(GlobalConstant::fromGlobalConstantName($this, $const_name));
+            try {
+                $const_obj = GlobalConstant::fromGlobalConstantName($this, $const_name);
+                $this->addGlobalConstant($const_obj);
+            } catch (\InvalidArgumentException $e) {
+                fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", var_export($const_name, true), $e->getMessage());
+            }
         }
     }
 
@@ -310,6 +324,9 @@ class CodeBase
         $this->fqsen_class_map =
             $this->fqsen_class_map->deepCopy();
 
+        $this->fqsen_alias_map =
+            $this->fqsen_alias_map->deepCopy();
+
         $this->fqsen_global_constant_map =
             $this->fqsen_global_constant_map->deepCopy();
 
@@ -345,6 +362,8 @@ class CodeBase
         $code_base = new CodeBase([], [], [], [], []);
         $code_base->fqsen_class_map =
             clone($this->fqsen_class_map);
+        $code_base->fqsen_alias_map =
+            clone($this->fqsen_alias_map);
         $code_base->fqsen_global_constant_map =
             clone($this->fqsen_global_constant_map);
         $code_base->fqsen_func_map =
@@ -373,6 +392,108 @@ class CodeBase
                 unset($inner->fqsen_class_map[$fqsen]);
                 unset($inner->class_fqsen_class_map_map[$fqsen]);
             });
+        }
+    }
+
+    /**
+     * Call this to record the existence of a class_alias in the global scope.
+     * After parse phase is complete (And daemonize has split off a new process),
+     * call resolveClassAliases() to create FQSEN entries.
+     *
+     * @param FullyQualifiedClassName $original
+     *  an existing class to alias to
+     *
+     * @param FullyQualifiedClassName $alias
+     *  a name to alias $original to
+     *
+     *
+     * @return void
+     */
+    public function addClassAlias(
+        FullyQualifiedClassName $original,
+        FullyQualifiedClassName $alias,
+        Context $context,
+        int $lineno
+    ) {
+        if (!isset($this->fqsen_alias_map[$original])) {
+            $this->fqsen_alias_map[$original] = new Set();
+        }
+        $alias_record = new ClassAliasRecord($alias, $context, $lineno);
+        $this->fqsen_alias_map[$original]->attach($alias_record);
+
+        if ($this->undo_tracker) {
+            // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
+            // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($original, $alias_record) {
+                $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
+                if ($fqsen_alias_map) {
+                    $fqsen_alias_map->detach($alias_record);
+                    if ($fqsen_alias_map->count() == 0) {
+                        unset($inner->fqsen_alias_map[$original]);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function resolveClassAliases()
+    {
+        \assert(!$this->undo_tracker, 'should only call this after daemon mode is finished');
+        // loop through fqsen_alias_map and add entries to fqsen_class_map.
+        foreach ($this->fqsen_alias_map as $original_fqsen => $alias_set) {
+            $this->resolveClassAliasesForAliasSet($original_fqsen, $alias_set);
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function resolveClassAliasesForAliasSet(FullyQualifiedClassName $original_fqsen, Set $alias_set)
+    {
+        if (!$this->hasClassWithFQSEN($original_fqsen)) {
+            // The original class does not exist.
+            // Emit issues at the point of every single class_alias call with that original class.
+            foreach ($alias_set as $alias_record) {
+                \assert($alias_record instanceof ClassAliasRecord);
+                Issue::maybeEmit(
+                    $this,
+                    $alias_record->context,
+                    Issue::UndeclaredClassAliasOriginal,
+                    $alias_record->lineno,
+                    $original_fqsen,
+                    $alias_record->alias_fqsen
+                );
+            }
+            return;
+        }
+        // The original class exists. Attempt to create aliases of the original class.
+        $class = $this->getClassByFQSEN($original_fqsen);
+        foreach ($alias_set as $alias_record) {
+            \assert($alias_record instanceof ClassAliasRecord);
+            $alias_fqsen = $alias_record->alias_fqsen;
+            // Don't do anything if there is a real class, or if an earlier class_alias created an alias.
+            if ($this->hasClassWithFQSEN($alias_fqsen)) {
+                // Emit a different issue type to make filtering out false positives easier.
+                $clazz = $this->getClassByFQSEN($alias_fqsen);
+                $clazz_context = $clazz->getContext();
+                Issue::maybeEmit(
+                    $this,
+                    $alias_record->context,
+                    Issue::RedefineClassAlias,
+                    $alias_record->lineno,
+                    $alias_fqsen,
+                    $alias_record->context->getFile(),
+                    $alias_record->lineno,
+                    $clazz->getFQSEN(),
+                    $clazz->getFileRef()->getFile(),
+                    $clazz->getFileRef()->getLineNumberStart()
+                );
+            } else {
+                $this->fqsen_class_map[$alias_fqsen] = $class;
+            }
         }
     }
 
@@ -415,6 +536,24 @@ class CodeBase
     }
 
     /**
+     * @param FullyQualifiedClassName $original
+     * The FQSEN of class to get aliases of
+     *
+     * @return ClassAliasRecord[]
+     * A list of all aliases of $original (and their definitions)
+     */
+    public function getClassAliasesByFQSEN(
+        FullyQualifiedClassName $original
+    ) : array {
+        if (isset($this->fqsen_alias_map[$original])) {
+            return $this->fqsen_alias_map[$original]->toArray();
+        }
+
+        return [];
+    }
+
+
+    /**
      * @return Map
      * A list of all classes
      */
@@ -438,10 +577,10 @@ class CodeBase
 
         $this->func_and_method_set->attach($method);
 
-        // If we're doing dead code detection and this is a
+        // If we're doing dead code detection(or something else) and this is a
         // method, map the name to the FQSEN so we can do hail-
         // mary references.
-        if (Config::get()->dead_code_detection) {
+        if (Config::get_track_references()) {
             if (empty($this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()])) {
                 $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()] = new Set;
             }
@@ -500,9 +639,9 @@ class CodeBase
      */
     public function getMethodSetByName(string $name) : Set
     {
-        assert(Config::get()->dead_code_detection,
+        \assert(Config::get_track_references(),
             __METHOD__ . ' can only be called when dead code '
-            . ' detection is enabled.'
+            . ' detection (or force_tracking_references) is enabled.'
         );
 
         return $this->name_method_map[$name] ?? new Set;
@@ -847,7 +986,7 @@ class CodeBase
                 $this,
                 $fqsen,
                 $signature
-            ) as $i => $function) {
+            ) as $function) {
                 $this->addFunction($function);
             }
 
@@ -864,16 +1003,16 @@ class CodeBase
      */
     public function totalElementCount() : int {
         $sum = (
-            count($this->getFunctionMap())
-            + count($this->getGlobalConstantMap())
-            + count($this->getClassMap())
+            \count($this->getFunctionMap())
+            + \count($this->getGlobalConstantMap())
+            + \count($this->getClassMap())
         );
 
         foreach ($this->getClassMapMap() as $class_map) {
             $sum += (
-                count($class_map->getClassConstantMap())
-                + count($class_map->getPropertyMap())
-                + count($class_map->getMethodMap())
+                \count($class_map->getClassConstantMap())
+                + \count($class_map->getPropertyMap())
+                + \count($class_map->getMethodMap())
             );
         }
 

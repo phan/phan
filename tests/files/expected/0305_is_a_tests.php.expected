@@ -1,0 +1,4 @@
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \stdClass but \intdiv() takes int
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \stdClass but \intdiv() takes int
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is object but \intdiv() takes int
+%s:17 PhanParamTooFew Call with 3 arg(s) to \test305() which requires 4 arg(s) defined at %s:3

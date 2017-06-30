@@ -53,7 +53,7 @@ class Method extends ClassElement implements FunctionInterface
     ) {
         parent::__construct(
             $context,
-            $name,
+            FullyQualifiedMethodName::canonicalName($name),
             $type,
             $flags,
             $fqsen
@@ -69,6 +69,30 @@ class Method extends ClassElement implements FunctionInterface
         ));
     }
 
+    /**
+     * @return bool
+     * True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
+     */
+    public function isFromPHPDoc() : bool {
+        return Flags::bitVectorHasState(
+            $this->getPhanFlags(),
+            Flags::IS_FROM_PHPDOC
+        );
+    }
+
+    /**
+     * @param bool $from_phpdoc - True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
+     * @return void
+     */
+    public function setIsFromPHPDoc(bool $from_phpdoc) {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_FROM_PHPDOC,
+                true
+            )
+        );
+    }
 
     /**
      * @return bool
@@ -78,6 +102,17 @@ class Method extends ClassElement implements FunctionInterface
         return Flags::bitVectorHasState(
             $this->getFlags(),
             \ast\flags\MODIFIER_ABSTRACT
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this is a final method
+     */
+    public function isFinal() : bool {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\MODIFIER_FINAL
         );
     }
 
@@ -95,25 +130,19 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * @return bool
      * True if this is a magic method
+     * (Names are all normalized in FullyQualifiedMethodName::make())
      */
     public function getIsMagic() : bool {
-        return in_array($this->getName(), [
-            '__call',
-            '__callStatic',
-            '__clone',
-            '__construct',
-            '__debugInfo',
-            '__destruct',
-            '__get',
-            '__invoke',
-            '__isset',
-            '__set',
-            '__set_state',
-            '__sleep',
-            '__toString',
-            '__unset',
-            '__wakeup',
-        ]);
+        return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET);
+    }
+
+    /**
+     * @return bool
+     * True if this is a magic method which should have return type of void
+     * (Names are all normalized in FullyQualifiedMethodName::make())
+     */
+    public function getIsMagicAndVoid() : bool {
+        return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
     }
 
     /**
@@ -122,7 +151,7 @@ class Method extends ClassElement implements FunctionInterface
      * (Does not return true for php4 constructors)
      */
     public function getIsNewConstructor() : bool {
-        return strcasecmp('__construct', $this->getName()) === 0;
+        return ($this->getName() === '__construct');
     }
 
     /**
@@ -166,6 +195,11 @@ class Method extends ClassElement implements FunctionInterface
         Context $context,
         CodeBase $code_base
     ) : Method {
+        if ($clazz->hasMethodWithName($code_base, $clazz->getName())) {
+            $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
+        } else {
+            $old_style_constructor = null;
+        }
 
         $method_fqsen = FullyQualifiedMethodName::make(
             $clazz->getFQSEN(),
@@ -173,19 +207,20 @@ class Method extends ClassElement implements FunctionInterface
         );
 
         $method = new Method(
-            $context,
+            $old_style_constructor ? $old_style_constructor->getContext() : $clazz->getContext(),
             '__construct',
             $clazz->getUnionType(),
             0,
             $method_fqsen
         );
 
-        if ($clazz->hasMethodWithName($code_base, $clazz->getName())) {
-            $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
+        if ($old_style_constructor) {
             $method->setParameterList($old_style_constructor->getParameterList());
             $method->setRealParameterList($old_style_constructor->getRealParameterList());
             $method->setNumberOfRequiredParameters($old_style_constructor->getNumberOfRequiredParameters());
             $method->setNumberOfOptionalParameters($old_style_constructor->getNumberOfOptionalParameters());
+            $method->setRealReturnType($old_style_constructor->getRealReturnType());
+            $method->setUnionType($old_style_constructor->getUnionType());
         }
 
         return $method;
@@ -380,27 +415,6 @@ class Method extends ClassElement implements FunctionInterface
                 }
             }
 
-            if (Config::get()->check_docblock_signature_return_type_match) {
-                // Make sure that the commented type is a narrowed
-                // or equivalent form of the syntax-level declared
-                // return type.
-                if (!$comment_return_union_type->isExclusivelyNarrowedFormOrEquivalentTo(
-                        $return_union_type,
-                        $context,
-                        $code_base
-                    )
-                ) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchDeclaredReturn,
-                        $node->lineno ?? 0,
-                        $comment_return_union_type->__toString(),
-                        $return_union_type->__toString()
-                    );
-                }
-            }
-
             $method->getUnionType()->addUnionType($comment_return_union_type);
         }
 
@@ -464,12 +478,15 @@ class Method extends ClassElement implements FunctionInterface
      * @param CodeBase $code_base
      * The code base with which to look for classes
      *
-     * @return Method
-     * The Method that this Method is overriding
+     * @return Method[]
+     * The Methods that this Method is overriding
+     * (Abstract methods are returned before concrete methods)
+     *
+     * @throws CodeBaseException if 0 methods were found.
      */
-    public function getOverriddenMethod(
+    public function getOverriddenMethods(
         CodeBase $code_base
-    ) : Method {
+    ) : array {
         // Get the class that defines this method
         $class = $this->getClass($code_base);
 
@@ -478,27 +495,37 @@ class Method extends ClassElement implements FunctionInterface
             $code_base
         );
 
-        $first_method_match = null;
-        // Hunt for any ancestor class that defines a method with
-        // the same name as this one
+        $defining_fqsen = $this->getDefiningFQSEN();
+
+        $method_list = [];
+        $abstract_method_list = [];
+        // Hunt for any ancestor classes that define a method with
+        // the same name as this one.
         foreach ($ancestor_class_list as $ancestor_class) {
             // TODO: Handle edge cases in traits.
             // A trait may be earlier in $ancestor_class_list than the parent, but the parent may define abstract classes.
+            // TODO: What about trait aliasing rules?
             if ($ancestor_class->hasMethodWithName($code_base, $this->getName())) {
                 $method = $ancestor_class->getMethodByName(
                     $code_base,
                     $this->getName()
                 );
+                if ($method->getDefiningFQSEN() === $defining_fqsen) {
+                    // Skip it, this method **is** the one which defined this.
+                    continue;
+                }
                 if ($method->isAbstract()) {
-                    return $method;
+                    // TODO: check for trait conflicts, etc.
+                    $abstract_method_list[] = $method;
+                    continue;
                 }
-                if ($first_method_match === null) {
-                    $first_method_match = $method;
-                }
+                $method_list[] = $method;
             }
         }
-        if ($first_method_match !== null) {
-            return $first_method_match;
+        // Return abstract methods before concrete methods, in order to best check method compatibility.
+        $method_list = array_merge($abstract_method_list, $method_list);
+        if (count($method_list) > 0) {
+            return $method_list;
         }
 
         // Throw an exception if this method doesn't override
@@ -522,7 +549,7 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', $this->getParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->getParameterList()) . ')';
 
         if (!$this->getUnionType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getUnionType();
@@ -545,7 +572,7 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', $this->getRealParameterList()) . ')';
+        $string .= '(' . \implode(', ', $this->getRealParameterList()) . ')';
 
         if (!$this->getRealReturnType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getRealReturnType();

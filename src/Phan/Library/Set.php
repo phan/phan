@@ -25,7 +25,7 @@ class Set extends \SplObjectStorage
      */
     public function toArray() : array
     {
-        return iterator_to_array($this);
+        return \iterator_to_array($this);
     }
 
     /**
@@ -61,7 +61,7 @@ class Set extends \SplObjectStorage
             return new Set();
         }
 
-        $intersected_set = array_shift($set_list);
+        $intersected_set = \array_shift($set_list);
         foreach ($set_list as $set) {
             $intersected_set = $intersected_set->intersect($set);
         }
@@ -101,7 +101,7 @@ class Set extends \SplObjectStorage
             return new Set();
         }
 
-        $union_set = array_shift($set_list);
+        $union_set = \array_shift($set_list);
         foreach ($set_list as $set) {
             $union_set = $union_set->union($set);
         }
@@ -201,9 +201,9 @@ class Set extends \SplObjectStorage
     public function __toString() : string
     {
         $string = '['
-            . implode(',', array_map(function ($element) {
+            . \implode(',', \array_map(function ($element) {
                 return (string)$element;
-            }, iterator_to_array($this)))
+            }, \iterator_to_array($this)))
             . ']';
 
         return $string;

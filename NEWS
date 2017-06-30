@@ -7,17 +7,58 @@ Phan NEWS
 
 New Features (Analysis)
 + Automatically inherit `@param` and `@return` types from parent methods.
-  This is controlled by the boolean config `enable_phpdoc_types`, which is true by default.
+  This is controlled by the boolean config `inherit_phpdoc_types`, which is true by default.
   `analyze_signature_compatibility` must also be set to true (default is true) for this step to be performed.
 + Better analysis of calls to parent::__construct(). (Issue #852)
 + Warn with `PhanAccessOwnConstructor` if directly invoking self::__construct or static::__construct in some cases (partial).
++ Start analyzing the inside of for/while loops using the loop's condition (Issue #859)
+  (Inferences may leak to outside of those loops. `do{} while(cond)` is not specially analyzed yet)
++ Improve analysis of types in expressions within compound conditions (Issue #847)
+  (E.g. `if (is_array($x) && fn_expecting_array($x)) {...}`)
++ Evaluate the third part of a for loop with the context after the inner body is evaluated (Issue #477)
++ Emit `PhanUndeclaredVariableDim` if adding an array field to an undeclared variable. (Issue #841)
+  Better analyze `list($var['field']) = values`
++ Improve accuracy of `PhanTypeMismatchDeclaredReturn` (Move the check to after params are parsed)
++ Create `PhanTypeMismatchDeclaredParam` (Move the check to after params are parsed)
+  Also `prefer_narrowed_phpdoc_param_type` (See "New Features (CLI, Configs))
++ Detect undeclared return types at point of declaration, and emit `PhanUndeclaredTypeReturnType` (Issue #835)
++ Create `PhanParamSignaturePHPDocMismatch*` issue types, for mismatches between `@method` and real signature/other `@method` tag.
++ Create `PhanAccessWrongInheritanceCategory*` issue types to warn about classes extending a trait/interface instead of class, etc. (#873)
++ Create `PhanExtendsFinalClass*` issue types to warn about classes extending from final classes.
++ Create `PhanAccessOverridesFinalMethod*` issue types to warn about methods overriding final methods.
++ Create `PhanTypeMagicVoidWithReturn` to warn if `void` methods such as `__construct`, `__set`, etc return a value that would be ignored. (Issue #913)
++ Add check for `PhanTypeMissingReturn` within closures. Properly emit `PhanTypeMissingReturn` in functions/methods containing closures. (Issue #599)
++ Improved checking for `PhanUndeclaredVariable` in array keys and conditional conditions. (Issue #912)
++ Improved warnings and inferences about internal function references for functions such as `sort`, `preg_match` (Issue #871, #958)
+  Phan is now aware of many internal functions which normally ignore the original values of references passed in (E.g. `preg_match`)
 
 New Features (CLI, Configs)
++ Create `check_docblock_signature_param_type_match` (similar to `check_docblock_signature_return_type_match`) config setting
+  to enable warning if phpdoc types are incompatible with the real types. False by default.
+
+  Create `prefer_narrowed_phpdoc_param_type` config setting (requires `check_docblock_signature_return_type_match`).
+  This is off by default, set it to true to analyze phpdoc param types instead of provided signature types if the possible phpdoc types are narrower and compatible.
+  (E.g. indicate that subclasses are expected over base classes, indicate that non-nullable is expected instead of nullable)
+  This affects analysis both inside and outside the method.
++ Create `enable_class_alias_support` config setting (disabled by default), which enables analyzing basic usage of class_alias. (Issue #586)
+  Set it to true to enable it.
+  NOTE: this is still experimental.
++ Warn to stderr about running Phan analysis with XDebug (Issue #116)
+  The warning can be disabled by the Phan config setting `skip_slow_php_options_warning` to true.
++ Add a config setting 'scalar_implicit_partial' to allow moving away from 'scalar_implicit_cast' (Issue #541)
+  This allows users to list out (and gradually remove) permitted scalar type casts.
++ Add `null_casts_as_array` and `array_casts_as_null` settings, which can be used while migrating away from `null_casts_as_any_type`.
+  These will be checked if one of the types has a union type of `null`, as well as when checking if a nullable array can cast to a regular array.
 
 Maintenance
++ Reduce memory usage by around 15% by using a more efficient representation of union types (PR #729).
+  The optional extension https://github.com/runkit7/runkit_object_id can be installed to boost performance by around 10%.
++ Check method signatures compatibility against all overridden methods (e.g. interfaces with the same methods), not just the first ones (Issue #925)
 
 Bug Fixes
 + Work around known bugs in current releases of two PECL extensions (Issue #888, #889)
++ Fix typo - Change `PhanParamSignatureRealMismatch` to `PhanParamSignatureRealMismatchReturnType`
++ Consistently exit with non-zero exit code if there are multiple processes, and any process failed to return valid results. (Issue #868)
 
 Backwards Incompatible Changes
 

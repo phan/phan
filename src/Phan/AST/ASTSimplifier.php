@@ -121,7 +121,7 @@ class ASTSimplifier {
      * The resulting Node has kind AST_STMT_LIST.
      */
     private static function cloneStatementList(Node $stmt_list = null) : Node {
-        if (is_null($stmt_list)) {
+        if (\is_null($stmt_list)) {
             return self::buildStatementList(0);
         }
         if ($stmt_list->kind === \ast\AST_STMT_LIST) {
@@ -137,7 +137,7 @@ class ASTSimplifier {
      */
     private function normalizeStatementList(array $statements) : array {
         $modified = false;
-        for ($i = count($statements) - 1; $i >= 0; $i--) {
+        for ($i = \count($statements) - 1; $i >= 0; $i--) {
             $stmt = $statements[$i];
             if (!($stmt instanceof Node)) {
                 continue;
@@ -145,8 +145,8 @@ class ASTSimplifier {
             if ($stmt->kind !== \ast\AST_IF) {
                 continue;
             }
-            if (count($statements) > $i + 1) {
-                $N = count($stmt->children);
+            if (\count($statements) > $i + 1) {
+                $N = \count($stmt->children);
                 if ($N > 2) {
                     continue;  // early exit, no simplification rules apply
                 }
@@ -165,8 +165,8 @@ class ASTSimplifier {
                     $new_if = clone($stmt);
                     $new_if->children[0] = $new_if_elem;
                     // Replace the old `if` node (followed by statements) with the new `if` node
-                    while (count($statements) > $i) {
-                        array_pop($statements);
+                    while (\count($statements) > $i) {
+                        \array_pop($statements);
                     }
                     $statements[$i] = $new_if;
                     $modified = true;
@@ -185,7 +185,7 @@ class ASTSimplifier {
                         // Don't clone the original if statement - It might not be a statement list.
                         $new_else_elem->children['stmts'] = self::buildStatementList($stmt->children[0]->lineno ?? 0);
                     } else {
-                        assert($N === 2);
+                        \assert($N === 2);
                         $new_else_elem = clone($stmt->children[1]);
                         // Convert a singular statement (or null) into a statement list, if necessary.
                         $new_else_elem->children['stmts'] = self::cloneStatementList($new_else_elem->children['stmts']);
@@ -195,10 +195,10 @@ class ASTSimplifier {
                     $new_if_else->children[1] = $new_else_elem;
                     // We might end up undoing a negation as well, now that there is an else branch.
                     // Run normalizeIfStatement again.
-                    while (count($statements) > $i) {
-                        array_pop($statements);
+                    while (\count($statements) > $i) {
+                        \array_pop($statements);
                     }
-                    array_push($statements, ...$this->normalizeIfStatement($new_if_else));
+                    \array_push($statements, ...$this->normalizeIfStatement($new_if_else));
                     $modified = true;
                     continue;
                 }
@@ -214,7 +214,7 @@ class ASTSimplifier {
      * @return void
      */
     private static function replaceLastNodeWithNodeList(array &$nodes, Node... $new_statements) {
-        assert(count($nodes) > 0);
+        \assert(count($nodes) > 0);
         array_pop($nodes);
         foreach ($new_statements as $stmt) {
             $nodes[] = $stmt;
@@ -283,8 +283,8 @@ class ASTSimplifier {
      * Creates a new node with kind \ast\AST_IF from two branches
      */
     private function buildIfNode(Node $l, Node $r) : Node {
-        assert($l->kind === \ast\AST_IF_ELEM);
-        assert($r->kind === \ast\AST_IF_ELEM);
+        \assert($l->kind === \ast\AST_IF_ELEM);
+        \assert($r->kind === \ast\AST_IF_ELEM);
         $if_node = new Node();
         $if_node->kind = \ast\AST_IF;
         $if_node->lineno = $l->lineno ?? 0;
@@ -301,7 +301,7 @@ class ASTSimplifier {
         if (count($children) <= 2) {
             return $node;
         }
-        assert(is_array($children));
+        \assert(\is_array($children));
         while (count($children) > 2) {
             $r = array_pop($children);
             $l = array_pop($children);
@@ -328,7 +328,7 @@ class ASTSimplifier {
      * @return Node simplified node logically equivalent to $node, with kind \ast\AST_IF.
      */
     private function applyIfAndReduction(Node $node) : Node {
-        assert(count($node->children) == 1);
+        \assert(count($node->children) == 1);
         $inner_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $inner_node_elem->children['cond'] = $inner_node_elem->children['cond']->children['right'];
         $inner_node = clone($node);  // AST_IF
@@ -363,9 +363,9 @@ class ASTSimplifier {
      * This improves phan's analysis for cases such as `if (!is_string($x))`.
      */
     private function applyIfNegateReduction(Node $node) : Node {
-        assert(count($node->children) === 2);
-        assert($node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
-        assert($node->children[1]->children['cond'] === null);
+        \assert(count($node->children) === 2);
+        \assert($node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
+        \assert($node->children[1]->children['cond'] === null);
         $new_node = clone($node);
         $if_elem = $new_node->children[0];
         $new_node->children = [clone($new_node->children[1]), clone($new_node->children[0])];
@@ -379,8 +379,8 @@ class ASTSimplifier {
      * This improves phan's analysis for cases such as `if (!!x)`
      */
     private function _applyIfDoubleNegateReduction(Node $node) : Node {
-        assert($node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
-        assert($node->children[0]->children['cond']->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT);
+        \assert($node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
+        \assert($node->children[0]->children['cond']->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT);
 
         $new_cond = $node->children[0]->children['cond']->children['expr']->children['expr'];
         $new_node = clone($node);
@@ -431,7 +431,7 @@ class ASTSimplifier {
     public static function applyStatic(Node $node, string $filename = 'unknown') : Node {
         $rewriter = new self($filename);
         $nodes = $rewriter->apply($node);
-        assert(count($nodes) === 1);
+        \assert(\count($nodes) === 1);
         return $nodes[0];
     }
 }

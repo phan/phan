@@ -139,12 +139,12 @@ class Context extends FileRef
 
         $fqsen = $this->namespace_map[$map_flags][$name] ?? null;
 
-        assert(
+        \assert(
             !empty($fqsen),
             "No namespace defined for name"
         );
 
-        assert(
+        \assert(
             $fqsen instanceof FQSEN,
             "Namespace map was not an FQSEN"
         );
@@ -169,7 +169,7 @@ class Context extends FileRef
             );
         }
 
-        assert(false, "Unknown flag $flags");
+        \assert(false, "Unknown flag $flags");
         return $fqsen;
     }
 
@@ -327,7 +327,7 @@ class Context extends FileRef
      */
     public function getClassInScope(CodeBase $code_base) : Clazz
     {
-        assert($this->isInClassScope(),
+        \assert($this->isInClassScope(),
             "Must be in class scope to get class");
 
         if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
@@ -371,7 +371,7 @@ class Context extends FileRef
      */
     public function getFunctionLikeFQSEN()
     {
-        assert($this->getScope()->isInFunctionLikeScope());
+        \assert($this->getScope()->isInFunctionLikeScope());
         return $this->getScope()->getFunctionLikeFQSEN();
     }
 
@@ -385,24 +385,24 @@ class Context extends FileRef
     public function getFunctionLikeInScope(
         CodeBase $code_base
     ) : FunctionInterface {
-        assert($this->isInFunctionLikeScope(),
+        \assert($this->isInFunctionLikeScope(),
             "Must be in method scope to get method.");
 
         $fqsen = $this->getFunctionLikeFQSEN();
 
         if ($fqsen instanceof FullyQualifiedFunctionName) {
-            assert($code_base->hasFunctionWithFQSEN($fqsen),
+            \assert($code_base->hasFunctionWithFQSEN($fqsen),
                 "The function does not exist");
             return $code_base->getFunctionByFQSEN($fqsen);
         }
 
         if ($fqsen instanceof FullyQualifiedMethodName) {
-            assert($code_base->hasMethodWithFQSEN($fqsen),
+            \assert($code_base->hasMethodWithFQSEN($fqsen),
                 "Method does not exist");
             return $code_base->getMethodByFQSEN($fqsen);
         }
 
-        assert(false, "FQSEN must be for a function or method");
+        \assert(false, "FQSEN must be for a function or method");
     }
 
     /**
@@ -440,7 +440,7 @@ class Context extends FileRef
      */
     public function getElementInScope(CodeBase $code_base) : TypedElement
     {
-        assert($this->isInElementScope(),
+        \assert($this->isInElementScope(),
             "Cannot get element in scope if we're in the global scope");
 
         if ($this->isInFunctionLikeScope()) {

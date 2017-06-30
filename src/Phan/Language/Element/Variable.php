@@ -154,10 +154,10 @@ class Variable extends TypedElement
     public static function isSuperglobalVariableWithName(
         string $name
     ) : bool {
-        if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
+        if (\array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             return true;
         }
-        return in_array($name, Config::get()->runkit_superglobals);
+        return \in_array($name, Config::getValue('runkit_superglobals'));
     }
 
     /**
@@ -167,8 +167,8 @@ class Variable extends TypedElement
         string $name
     ) : bool {
         return self::isSuperglobalVariableWithName($name) ||
-            array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES) ||
-            array_key_exists($name, Config::get()->globals_type_map);
+            \array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES) ||
+            \array_key_exists($name, Config::getValue('globals_type_map'));
     }
 
     /**
@@ -189,20 +189,18 @@ class Variable extends TypedElement
      * otherwise.
      */
     public static function getUnionTypeOfHardcodedGlobalVariableWithName(
-        string $name,
-        Context $context
+        string $name
     ) {
-        if (array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES)) {
+        if (\array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES)) {
             // More efficient than using context.
             return UnionType::fromFullyQualifiedString(self::_BUILTIN_GLOBAL_TYPES[$name]);
         }
-        $config = Config::get();
-        if (array_key_exists($name, $config->globals_type_map)
-            || in_array($name, $config->runkit_superglobals)
+        if (\array_key_exists($name, Config::getValue('globals_type_map'))
+            || \in_array($name, Config::getValue('runkit_superglobals'))
         ) {
-            $type_string = $config->globals_type_map[$name] ?? '';
+            $type_string = Config::getValue('globals_type_map')[$name] ?? '';
             // Want to allow 'resource' or 'mixed' as a type here,
-            return UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
+            return UnionType::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC);
         }
 
         return null;

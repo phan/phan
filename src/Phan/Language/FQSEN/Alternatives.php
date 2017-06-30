@@ -68,7 +68,6 @@ trait Alternatives
     /**
      * @return static
      * A FQSEN with the given alternate_id set
-     *
      * @suppress PhanTypeMismatchDeclaredReturn
      */
     abstract public function withAlternateId(

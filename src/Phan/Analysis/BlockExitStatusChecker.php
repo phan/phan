@@ -39,7 +39,7 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
             return self::STATUS_PROCEED;
         }
         $result = $this($node);
-        assert(is_int($result), 'Expected int');
+        \assert(\is_int($result), 'Expected int');
         return $result;
     }
 
@@ -132,7 +132,7 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
             // A do-while statement and an if branch are executed at least once (or exactly once)
             // TODO: deduplicate
             $stmts = $node->children['stmts'];
-            if (is_null($stmts)) {
+            if (\is_null($stmts)) {
                 return self::STATUS_PROCEED;
             }
             // We can have a single statement in the 'stmts' field when no braces exist?
