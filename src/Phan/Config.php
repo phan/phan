@@ -8,6 +8,12 @@ namespace Phan;
  */
 class Config
 {
+    /**
+     * The version of the AST (defined in php-ast) that we're using.
+     * Other versions are likely to have edge cases we no longer support,
+     * and version 45 will probably get rid of Decl.
+     */
+    const AST_VERSION = 40;
 
     /**
      * @var string|null
@@ -301,10 +307,6 @@ class Config
         // The number of processes to fork off during the analysis
         // phase.
         'processes' => 1,
-
-        // The vesion of the AST (defined in php-ast)
-        // we're using
-        'ast_version' => 40,
 
         // Set to true to emit profiling data on how long various
         // parts of Phan took to run. You likely don't care to do

@@ -52,12 +52,12 @@ class Analysis
             if (\is_string($override_contents)) {
                 $node = \ast\parse_code(
                     $override_contents,
-                    Config::getValue('ast_version')
+                    Config::AST_VERSION
                 );
             } else {
                 $node = \ast\parse_file(
                     Config::projectPath($file_path),
-                    Config::getValue('ast_version')
+                    Config::AST_VERSION
                 );
             }
         } catch (\ParseError $parse_error) {
@@ -330,12 +330,12 @@ class Analysis
             if (\is_string($file_contents_override)) {
                 $node = \ast\parse_code(
                     $file_contents_override,
-                    Config::getValue('ast_version')
+                    Config::AST_VERSION
                 );
             } else {
                 $node = \ast\parse_file(
                     Config::projectPath($file_path),
-                    Config::getValue('ast_version')
+                    Config::AST_VERSION
                 );
             }
         } catch (\ParseError $parse_error) {
