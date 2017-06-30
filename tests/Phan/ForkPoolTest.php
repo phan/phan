@@ -30,8 +30,10 @@ class ForkPoolTest extends BaseTest
 
         $worker_data = [];
         $pool = new ForkPool($data,
-            function() : void { },
-            function($i, $data) use(&$worker_data) : void {
+            /** @return void */
+            function() { },
+            /** @return void */
+            function($i, $data) use(&$worker_data) {
                 $worker_data[] = $data;
             },
             function() use(&$worker_data) : array {
