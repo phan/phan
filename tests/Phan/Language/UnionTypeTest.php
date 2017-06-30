@@ -145,7 +145,7 @@ class UnionTypeTest extends BaseTest {
             $this->code_base,
             \ast\parse_code(
                 $code,
-                Config::getValue('ast_version')
+                Config::AST_VERSION
             )->children[0]
         )->asExpandedTypes($this->code_base)->__toString();
     }

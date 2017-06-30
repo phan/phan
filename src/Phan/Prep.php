@@ -27,7 +27,7 @@ class Prep {
             // of this method
             $node = \ast\parse_file(
                 $file_path,
-                Config::getValue('ast_version')
+                Config::AST_VERSION
             );
 
             // Skip empty files
