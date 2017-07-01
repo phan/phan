@@ -8,6 +8,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Plugin;
+use Phan\PluginV2;
 use Phan\PluginV2\LegacyPreAnalyzeNodeCapability;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
@@ -200,15 +201,15 @@ final class ConfigPluginSet extends Plugin {
             return;
         }
         $plugin_set = array_map(
-            function (string $plugin_file_name) : Plugin {
+            function (string $plugin_file_name) : PluginV2 {
                 $plugin_instance =
                     require($plugin_file_name);
 
                 \assert(!empty($plugin_instance),
                     "Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
 
-                \assert($plugin_instance instanceof Plugin,
-                    "Plugins must extend \Phan\Plugin. The plugin at $plugin_file_name does not.");
+                \assert($plugin_instance instanceof PluginV2,
+                    "Plugins must extend \Phan\PluginV2. The plugin at $plugin_file_name does not.");
 
                 return $plugin_instance;
             },
