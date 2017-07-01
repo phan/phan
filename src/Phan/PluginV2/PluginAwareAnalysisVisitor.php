@@ -12,8 +12,8 @@ use ast\Node;
  * Called on a node after PluginAwarePreAnalysisVisitor implementations.
  *
  * - visit<VisitSuffix>(...) (Override these methods)
- * - emitPluginIssue(...) (Call these methods)
- * - emitPluginIssueShort(...)
+ * - emitPluginIssue(CodeBase $code_base, Config $config, ...) (Call these methods)
+ * - emit(...)
  * - Public methods from Phan\AST\AnalysisVisitor
  *
  * NOTE: Subclasses should not implement the visit() method unless they absolutely need to.
@@ -52,7 +52,7 @@ abstract class PluginAwareAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
      * set {Issue:REMEDIATION_A, Issue:REMEDIATION_B, ...
      * Issue::REMEDIATION_F} with F being the hardest.
      */
-    public function emitPluginIssueShort(
+    public function emit(
         string $issue_type,
         string $issue_message_fmt,
         array $issue_message_args = [],

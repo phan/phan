@@ -55,14 +55,14 @@ class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor {
 
         // emit issue if name is not declared
         if (!$this->context->getScope()->hasVariableWithName($name)){
-            $this->emitPluginIssueShort(
+            $this->emit(
                 'PhanUndeclaredVariable',
                 "undeclared variables in isset()",
                 []
             );
         } elseif ($argument->kind !== ast\AST_DIM){
             // emit issue if argument is not array access
-            $this->emitPluginIssueShort(
+            $this->emit(
                 'PhanPluginInvalidVariableIsset',
                 "non array access in isset()",
                 []

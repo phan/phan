@@ -53,7 +53,7 @@ class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor {
 
             // if left or right type is NOT boolean, emit issue
             if($left_type->serialize() !== "bool" || $right_type->serialize() !== "bool"){
-                $this->emitPluginIssueShort(
+                $this->emit(
                     'PhanPluginNonBoolInLogicalArith',
                     'Non bool value in logical arithmetic',
                     []

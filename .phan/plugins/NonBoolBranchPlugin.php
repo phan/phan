@@ -36,7 +36,7 @@ class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor {
         $union_type = UnionType::fromNode($this->context, $this->code_base, $condition);
         // $condition === null will be appeared in else-clause, then avoid them
         if (($union_type->serialize() !== "bool") && $condition !== null) {
-            $this->emitPluginIssueShort(
+            $this->emit(
                 'PhanPluginNonBoolBranch',
                 'Non bool value evaluated in if clause',
                 []

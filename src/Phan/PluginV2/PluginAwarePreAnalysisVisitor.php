@@ -14,8 +14,8 @@ use ast\Node;
  * Public APIs for use by plugins:
  *
  * - visit<VisitSuffix>(...) (Override these methods)
- * - emitPluginIssue(...) (Call these methods)
- * - emitPluginIssueShort(...)
+ * - emitPluginIssue(CodeBase $code_base, Config $config, ...) (Call these methods)
+ * - emit(...)
  * - Public methods from Phan\AST\AnalysisVisitor
  *
  * NOTE: Subclasses should not implement the visit() method unless they absolutely need to.

@@ -10,7 +10,6 @@ use ast\Node;
 
 /**
  * This augments AnalysisVisitor with public and internal methods.
- *
  */
 abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor {
     use IssueEmitter;  // defines emitPluginIssue
@@ -50,7 +49,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor {
      * set {Issue:REMEDIATION_A, Issue:REMEDIATION_B, ...
      * Issue::REMEDIATION_F} with F being the hardest.
      */
-    public function emitPluginIssueShort(
+    public function emit(
         string $issue_type,
         string $issue_message_fmt,
         array $issue_message_args = [],

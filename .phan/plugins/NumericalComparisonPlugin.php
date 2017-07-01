@@ -48,7 +48,7 @@ class NumericalComparisonVisitor extends PluginAwareAnalysisVisitor {
                 !($this->isNumericalType($left_type->serialize())) &
                 !($this->isNumericalType($right_type->serialize()))
             ){
-                $this->emitPluginIssueShort(
+                $this->emit(
                     'PhanPluginNumericalComparison',
                     "non numerical values compared by the operators '==' or '!=='",
                     []
@@ -61,7 +61,7 @@ class NumericalComparisonVisitor extends PluginAwareAnalysisVisitor {
                 $this->isNumericalType($right_type->serialize())
             ){
                 // TODO: different name for this issue type?
-                $this->emitPluginIssueShort(
+                $this->emit(
                     'PhanPluginNumericalComparison',
                     "numerical values compared by the operators '===' or '!=='",
                     []

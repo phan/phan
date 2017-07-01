@@ -174,7 +174,7 @@ class DemoNodeVisitor extends PluginAwareAnalysisVisitor {
         // As an example, enforce that we cannot call
         // instanceof against 'object'.
         if ($class_name == 'object') {
-            $this->emitPluginIssueShort(
+            $this->emit(
                 'PhanPluginInstanceOfObject',
                 "Cannot call instanceof against `object`"
             );

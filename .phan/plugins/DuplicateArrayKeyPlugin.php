@@ -67,7 +67,7 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
             \assert(is_scalar($key));  // redundant Phan annotation.
             if (isset($keySet[$key])) {
                 $normalizedKey = self::normalizeKey($key);
-                $this->emitPluginIssueShort(
+                $this->emit(
                     'PhanPluginDuplicateArrayKey',
                     "Duplicate/Equivalent array key literal({VARIABLE}) detected in array - the earlier entry will be ignored.",
                     [(string)$normalizedKey],
@@ -81,7 +81,7 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
         if ($hasEntryWithoutKey && count($keySet) > 0) {
             // This is probably a typo in most codebases. (e.g. ['foo' => 'bar', 'baz'])
             // In phan, InternalFunctionSignatureMap.php does this deliberately with the first parameter being the return type.
-            $this->emitPluginIssueShort(
+            $this->emit(
                 'PhanPluginMixedKeyNoKey',
                 "Should not mix array entries of the form [key => value,] with entries of the form [value,].",
                 [],
