@@ -246,6 +246,7 @@ final class ConfigPluginSet extends PluginV2 implements
 
     /**
      * @return \Closure[] - [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
+     * @suppress PhanNonClassMethodCall
      */
     private static function filterPreAnalysisPlugins(array $plugin_set) : array
     {
@@ -262,8 +263,24 @@ final class ConfigPluginSet extends PluginV2 implements
                 if (!is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
                     throw new \TypeError(sprintf("Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not", get_class($plugin), PluginAwarePreAnalysisVisitor::class, $plugin_analysis_class));
                 }
-                $closure = (new \ReflectionMethod($plugin_analysis_class, 'staticInvoke'))->getClosure(null);
-                $record_closure($plugin_analysis_class::get_handled_node_kinds(), $closure);
+                $empty_object = (new \ReflectionClass($plugin_analysis_class))->newInstanceWithoutConstructor();
+                /**
+                 * @suppress PhanParamTooMany
+                 */
+                $closure = (static function(CodeBase $code_base, Context $context, Node $node) {
+                    (new static($code_base, $context))($node);
+                })->bindTo(null, $plugin_analysis_class);
+                $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
+                if (\count($handled_node_kinds) === 0) {
+                    fprintf(
+                        STDERR,
+                        "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
+                        get_class($plugin),
+                        $plugin_analysis_class,
+                        PluginAwarePreAnalysisVisitor::class
+                    );
+                }
+                $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
             }
         }
         return $closures_for_kind->getFlattenedClosures(static function(array $closure_list) : \Closure {
@@ -278,6 +295,7 @@ final class ConfigPluginSet extends PluginV2 implements
     /**
      * @return \Closure[][] - [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
      * @var \Closure[][] $closures_for_kind
+     * @suppress PhanNonClassMethodCall
      */
     private static function filterAnalysisPlugins(array $plugin_set) : array
     {
@@ -294,8 +312,26 @@ final class ConfigPluginSet extends PluginV2 implements
                 if (!is_subclass_of($plugin_analysis_class, PluginAwareAnalysisVisitor::class)) {
                     throw new \TypeError(sprintf("Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not", get_class($plugin), PluginAwareAnalysisVisitor::class, $plugin_analysis_class));
                 }
-                $closure = (new \ReflectionMethod($plugin_analysis_class, 'staticInvoke'))->getClosure(null);
-                $closures_for_kind->recordForKinds($plugin_analysis_class::get_handled_node_kinds(), $closure);
+                /**
+                 * @suppress PhanParamTooMany
+                 * @suppress PhanUndeclaredProperty
+                 */
+                $closure = (static function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null) {
+                    $visitor = new static($code_base, $context);
+                    $visitor->parent_node = $parent_node;
+                    $visitor($node);
+                })->bindTo(null, $plugin_analysis_class);
+                $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
+                if (\count($handled_node_kinds) === 0) {
+                    fprintf(
+                        STDERR,
+                        "Plugin %s has an analyzeNode visitor %s (subclass of %s) which doesn't override any known visit<Suffix>() methods, but expected at least one method to be overridden\n",
+                        get_class($plugin),
+                        $plugin_analysis_class,
+                        PluginAwareAnalysisVisitor::class
+                    );
+                }
+                $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
             }
         }
         return $closures_for_kind->getFlattenedClosures(static function(array $closure_list) : \Closure {

@@ -1,60 +1,41 @@
 <?php declare(strict_types=1);
 namespace Phan\PluginV2;
 
-use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
 use Phan\CodeBase;
+use Phan\Issue;
 use Phan\Language\Context;
 use ast\Node;
 
 /**
  * For plugins which define their own pre-order analysis behaviors in the analysis phase.
  * Called on a node before PluginAwareAnalysisVisitor implementations.
+ *
+ * Public APIs for use by plugins:
+ *
+ * - visit<VisitSuffix>(...) (Override these methods)
+ * - emitPluginIssue(...) (Call these methods)
+ * - emitPluginIssueShort(...)
+ * - Public methods from Phan\AST\AnalysisVisitor
+ *
+ * NOTE: Subclasses should not implement the visit() method unless they absolutely need to.
+ * (E.g. if the body would be empty, or if it could be replaced with a small number of more specific methods such as visitFuncDecl, visitVar, etc.)
+ *
+ * - Phan is able to figure out which methods a subclass implements, and only call the plugin's visitor for those types,
+ *   but only when the plugin's visitor does not override the fallback visit() method.
  */
-abstract class PluginAwarePreAnalysisVisitor extends AnalysisVisitor {
-    // Implementations should omit the constructor or call parent::__construct(CodeBase $code_base, Context $context)
+abstract class PluginAwarePreAnalysisVisitor extends PluginAwareBaseAnalysisVisitor {
+    // For backwards compatibility reasons, parent_node isn't available in PreAnalysis visitors
 
-    /**
-     * This is an empty visit() body.
-     * Don't override this unless you need to, analysis is more efficient if Phan knows it doesn't need to call a method.
-     * @see self::isDefinedInSubclass
-     *
-     * @return void
-     */
-    public function visit(Node $node)
-    {
-    }
-
-    /**
-     * @return int[] The list of $node->kind values this plugin is capable of analyzing.
-     */
-    public static final function getHandledNodeKinds() : array
-    {
-        $defines_visit = self::isDefinedInSubclass('visit');
-        $kinds = [];
-        foreach (Element::VISIT_LOOKUP_TABLE as $kind => $method_name) {
-            if ($defines_visit || self::isDefinedInSubclass($method_name)) {
-                $kinds[] = $kind;
-            }
-        }
-        return $kinds;
-    }
+    // Internal methods used by ConfigPluginSet are below.
+    // They aren't useful for plugins.
 
     /**
      * This is a utility function used by ConfigPluginSet
+     * @return void
      */
     public static final function staticInvoke(CodeBase $code_base, Context $context, Node $node)
     {
-        // For backwards compatibility reasons, PreAnalysisVisitor doesn't support parent_node
-        return (new static($code_base, $context))($node);
-    }
-
-    /**
-     * @return bool true if $method_name is defined by the subclass of PluginAwarePreAnalysisVisitor, and not by PluginAwarePreAnalysisVisitor or one of it's parents.
-     */
-    private static final function isDefinedInSubclass(string $method_name) : bool
-    {
-        $method = new \ReflectionMethod(static::class, $method_name);
-        return is_subclass_of($method->getDeclaringClass()->getName(), self::class);
+        (new static($code_base, $context))($node);
     }
 }
