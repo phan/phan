@@ -56,6 +56,7 @@ final class ConfigPluginSet extends Plugin {
         static $instance = null;
         if ($instance === null) {
             $instance = new self;
+            $instance->ensurePluginsExist();
         }
         return $instance;
     }
@@ -79,7 +80,6 @@ final class ConfigPluginSet extends Plugin {
         Context $context,
         Node $node
     ) {
-        $this->ensurePluginsExist();
         foreach ($this->preAnalyzeNodePluginSet as $plugin) {
             $plugin->preAnalyzeNode(
                 $code_base,
@@ -112,7 +112,6 @@ final class ConfigPluginSet extends Plugin {
         Node $node,
         Node $parent_node = null
     ) {
-        $this->ensurePluginsExist();
         foreach ($this->analyzeNodePluginSet as $plugin) {
             $plugin->analyzeNode(
                 $code_base,
@@ -136,7 +135,6 @@ final class ConfigPluginSet extends Plugin {
         CodeBase $code_base,
         Clazz $class
     ) {
-        $this->ensurePluginsExist();
         foreach ($this->analyzeClassPluginSet as $plugin) {
             $plugin->analyzeClass(
                 $code_base,
@@ -158,7 +156,6 @@ final class ConfigPluginSet extends Plugin {
         CodeBase $code_base,
         Method $method
     ) {
-        $this->ensurePluginsExist();
         foreach ($this->analyzeMethodPluginSet as $plugin) {
             $plugin->analyzeMethod(
                 $code_base,
@@ -180,7 +177,6 @@ final class ConfigPluginSet extends Plugin {
         CodeBase $code_base,
         Func $function
     ) {
-        $this->ensurePluginsExist();
         foreach ($this->analyzeFunctionPluginSet as $plugin) {
             $plugin->analyzeFunction(
                 $code_base,
@@ -191,7 +187,8 @@ final class ConfigPluginSet extends Plugin {
 
     // Micro-optimization in tight loops: check for plugins before calling config plugin set
     public function hasPlugins() : bool {
-        return \count($this->getPlugins()) > 0;
+        \assert(!\is_null($this->pluginSet));
+        return \count($this->pluginSet) > 0;
     }
 
     /** @return void */
@@ -240,9 +237,6 @@ final class ConfigPluginSet extends Plugin {
      */
     private function getPlugins() : array
     {
-        if (\is_null($this->pluginSet)) {
-            $this->ensurePluginsExist();
-        }
         return $this->pluginSet;
     }
 
