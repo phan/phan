@@ -7691,7 +7691,7 @@ return [
 'ReflectionMethod::__construct' => ['ReflectionMethod', 'class'=>'string|object', 'name'=>'string'],
 'ReflectionMethod::__construct\'1' => ['ReflectionMethod', 'class_method'=>'string'],
 'ReflectionMethod::export' => ['string', 'class'=>'', 'name'=>'string', 'return='=>'bool'],
-'ReflectionMethod::getClosure' => ['Closure', 'object'=>'object'],
+'ReflectionMethod::getClosure' => ['Closure', 'object'=>'object|null'],
 'ReflectionMethod::getDeclaringClass' => ['ReflectionClass'],
 'ReflectionMethod::getModifiers' => ['int'],
 'ReflectionMethod::getPrototype' => ['ReflectionMethod'],
