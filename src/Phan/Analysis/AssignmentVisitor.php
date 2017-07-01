@@ -13,6 +13,7 @@ use Phan\Exception\NodeException;
 use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -632,7 +633,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     } else {
                         $variable = clone($variable);
                     }
-                } else {
+                } else if (!($variable instanceof PassByReferenceVariable)) {
                     $variable = clone($variable);
                 }
 

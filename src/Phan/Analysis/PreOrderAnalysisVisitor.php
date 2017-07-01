@@ -174,10 +174,15 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Add each method parameter to the scope. We clone it
         // so that changes to the variable don't alter the
         // parameter definition
-        foreach ($method->getParameterList() as $parameter) {
-            $context->addScopeVariable(
-                $parameter->cloneAsNonVariadic()
-            );
+        if ($method->getRecursionDepth() === 0) {
+            // Add each method parameter to the scope. We clone it
+            // so that changes to the variable don't alter the
+            // parameter definition
+            foreach ($method->getParameterList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->cloneAsNonVariadic()
+                );
+            }
         }
 
         if ($this->analyzeFunctionLikeIsGenerator($node)) {
@@ -260,13 +265,15 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        // Add each method parameter to the scope. We clone it
-        // so that changes to the variable don't alter the
-        // parameter definition
-        foreach ($function->getParameterList() as $parameter) {
-            $context->addScopeVariable(
-                $parameter->cloneAsNonVariadic()
-            );
+        if ($function->getRecursionDepth() === 0) {
+            // Add each method parameter to the scope. We clone it
+            // so that changes to the variable don't alter the
+            // parameter definition
+            foreach ($function->getParameterList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->cloneAsNonVariadic()
+                );
+            }
         }
 
         if ($this->analyzeFunctionLikeIsGenerator($node)) {

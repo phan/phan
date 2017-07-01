@@ -1813,17 +1813,23 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        // Create a copy of the method's original parameter list
-        // and scope so that we can reset it after re-analyzing
-        // it.
-        $original_method_scope = clone($method->getInternalScope());
-        $original_parameter_list = \array_map(function (Variable $parameter) : Variable {
-            return clone($parameter);
-        }, $method->getParameterList());
+        // Create a copy of the method's original scope so that we can reset it
+        // after re-analyzing it.
+        // Don't modify the parameter list - We use that to know when to emit PhanTypeMismatchArgument,
+        // so issues would be incorrectly emitted if it was temporarily modified.
+        $original_parameter_list = $method->getParameterList();
 
         if (\count($original_parameter_list) === 0) {
             return;  // No point in recursing if there's no changed parameters.
         }
+
+        $original_method_scope = $method->getInternalScope();
+        $method->setInternalScope(clone($original_method_scope));
+        // Even though we don't modify the parameter list, we still need to know the types
+        // -- as an optimization, we don't run quick mode again if the types didn't change?
+        $parameter_list = \array_map(function (Variable $parameter) : Variable {
+            return clone($parameter);
+        }, $original_parameter_list);
 
         // always resolve all arguments outside of quick mode to detect undefined variables, other problems in call arguments.
         // Fixes https://github.com/etsy/phan/issues/583
@@ -1840,53 +1846,61 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
         }
 
-        // Get the list of parameters on the method
-        $parameter_list = $method->getParameterList();
-
-        foreach ($parameter_list as $i => $parameter) {
-
+        foreach ($parameter_list as $i => $parameter_clone) {
+            // Add the parameter to the scope
+            $method->getInternalScope()->addVariable(
+                $parameter_clone
+            );
             $argument = $argument_list_node->children[$i] ?? null;
 
             if (!$argument
-                && $parameter->hasDefaultValue()
+                && $parameter_clone->hasDefaultValue()
             ) {
-                $parameter_list = $method->getParameterList();
-                $parameter_list[$i] = clone($parameter);
-                $parameter_type = $parameter->getDefaultValueType();
+                $parameter_type = $parameter_clone->getDefaultValueType();
                 if ($parameter_type->isType(NullType::instance(false))) {
                     // Treat a parameter default of null the same way as passing null to that parameter
                     // (Add null to the list of possibilities)
-                    $parameter_list[$i]->addUnionType($parameter_type);
+                    $parameter_clone->addUnionType($parameter_type);
                 } else {
                     // For other types (E.g. string), just replace the union type.
-                    $parameter_list[$i]->setUnionType($parameter_type);
+                    $parameter_clone->setUnionType($parameter_type);
                 }
-                $method->setParameterList($parameter_list);
             }
 
             // If there's no parameter at that offset, we may be in
             // a ParamTooMany situation. That is caught elsewhere.
             if (!$argument
-                || !$parameter->getNonVariadicUnionType()->isEmpty()
+                || !$parameter_clone->getNonVariadicUnionType()->isEmpty()
             ) {
                 continue;
             }
 
             $this->updateParameterTypeByArgument(
                 $method,
-                $parameter,
+                $parameter_clone,
                 $argument,
                 $argument_types[$i],
+                $parameter_list,
                 $i
             );
+        }
+        foreach ($parameter_list as $parameter_clone) {
+            if ($parameter_clone->isVariadic()) {
+                // We're using this parameter clone to analyze the **inside** of the method, it's never seen on the outside.
+                // Convert it immediately.
+                // TODO: Add tests of variadic references, fix those if necessary.
+                $method->getInternalScope()->addVariable(
+                    $parameter_clone->cloneAsNonVariadic()
+                );
+            }
         }
 
         // Now that we know something about the parameters used
         // to call the method, we can reanalyze the method with
         // the types of the parameter
-        $method->analyzeWithNewParams($method->getContext(), $code_base);
+        $method->analyzeWithNewParams($method->getContext(), $code_base, $parameter_list);
 
-        // Reset to the original parameter list and scope after
+        // Reset to the original parameter scope after
         // having tested the parameters with the types passed in
         $method->setParameterList($original_parameter_list);
         $method->setInternalScope($original_method_scope);
@@ -1917,6 +1931,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         Variable $parameter,
         $argument,
         UnionType $argument_type,
+        array &$parameter_list,
         int $parameter_offset
     ) {
         // Then set the new type on that parameter based
@@ -1994,18 +2009,13 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $variable
             );
 
-        // Substitute the new type in for the parameter's type
-        $parameter_list = $method->getParameterList();
-        $parameter_list[$parameter_offset] =
-            $pass_by_reference_variable;
-        $method->setParameterList($parameter_list);
-
-        // Add it to the scope of the function wrapped
+        // Add it to the (cloned) scope of the function wrapped
         // in a way that makes it addressable as the
         // parameter its mimicking
         $method->getInternalScope()->addVariable(
             $pass_by_reference_variable
         );
+        $parameter_list[$parameter_offset] = $pass_by_reference_variable;
     }
 
     /**
