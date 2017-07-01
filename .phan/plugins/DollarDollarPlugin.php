@@ -4,15 +4,16 @@ use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\PluginV2;
-use Phan\PluginV2\LegacyAnalyzeNodeCapability;
+use Phan\PluginV2\AnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
 /**
  * This file demonstrates plugins for Phan. Plugins hook into
  * four events;
  *
- * - analyzeNode
- *   This method is called on every AST node from every
+ * - getAnalyzeNodeVisitorClassName
+ *   This method returns a visitor that is called on every AST node from every
  *   file being analyzed
  *
  * - analyzeClass
@@ -39,34 +40,13 @@ use ast\Node;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DollarDollarPlugin extends PluginV2 implements LegacyAnalyzeNodeCapability {
+class DollarDollarPlugin extends PluginV2 implements AnalyzeNodeCapability {
 
     /**
-     * @param CodeBase $code_base
-     * The code base in which the node exists
-     *
-     * @param Context $context
-     * The context in which the node exits. This is
-     * the context inside the given node rather than
-     * the context outside of the given node
-     *
-     * @param Node $node
-     * The php-ast Node being analyzed.
-     *
-     * @param Node $node
-     * The parent node of the given node (if one exists).
-     *
-     * @return void
+     * @return string - name of PluginAwareAnalysisVisitor subclass
      */
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        (new DollarDollarVisitor($code_base, $context, $this))(
-            $node
-        );
+    public static function getAnalyzeNodeVisitorClassName() : string {
+        return DollarDollarVisitor::class;
     }
 }
 
@@ -77,47 +57,20 @@ class DollarDollarPlugin extends PluginV2 implements LegacyAnalyzeNodeCapability
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DollarDollarVisitor extends AnalysisVisitor {
+class DollarDollarVisitor extends PluginAwareAnalysisVisitor {
 
-    /** @var PluginV2 */
-    private $plugin;
-
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        PluginV2 $plugin
-    ) {
-        // After constructing on parent, `$code_base` and
-        // `$context` will be available as protected properties
-        // `$this->code_base` and `$this->context`.
-        parent::__construct($code_base, $context);
-
-        // We take the plugin so that we can call
-        // `$this->plugin->emitIssue(...)` on it to emit issues
-        // to the user.
-        $this->plugin = $plugin;
-    }
-
-    /**
-     * Default visitor that does nothing
-     *
-     * @param Node $node
-     * A node to analyze
-     *
-     * @return void
-     */
-    public function visit(Node $node) {
-    }
+    // A plugin's visitors should not override visit() unless they need to.
 
     /**
      * @param Node $node
      * A node to analyze
      *
      * @return void
+     * @override
      */
     public function visitVar(Node $node) {
         if ($node->children['name'] instanceof Node) {
-            $this->plugin->emitIssue(
+            $this->emitPluginIssue(
                 $this->code_base,
                 $this->context,
                 'PhanPluginDollarDollar',

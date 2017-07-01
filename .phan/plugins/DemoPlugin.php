@@ -10,15 +10,16 @@ use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
-use Phan\PluginV2\LegacyAnalyzeNodeCapability;
+use Phan\PluginV2\AnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
 /**
  * This file demonstrates plugins for Phan.
  * This Plugin hooks into four events;
  *
- * - analyzeNode
- *   This method is called on every AST node from every
+ * - getPreAnalyzeNodeVisitorClassName
+ *   This method returns a class that is called on every AST node from every
  *   file being analyzed
  *
  * - analyzeClass
@@ -49,37 +50,14 @@ class DemoPlugin extends PluginV2 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
-    LegacyAnalyzeNodeCapability {
+    AnalyzeNodeCapability {
 
     /**
-     * @param CodeBase $code_base
-     * The code base in which the node exists
-     *
-     * @param Context $context
-     * The context in which the node exits. This is
-     * the context inside the given node rather than
-     * the context outside of the given node
-     *
-     * @param Node $node
-     * The php-ast Node being analyzed.
-     *
-     * @param Node $node
-     * The parent node of the given node (if one exists).
-     *
-     * @return void
+     * @return string - The name of the visitor that will be called (formerly analyzeNode)
      */
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        // Invoke the `DemoNodeVisitor` (defined later in
-        // this file) on the given node, allowing it to run
-        // a method based on the kind of the given node.
-        (new DemoNodeVisitor($code_base, $context, $this))(
-            $node
-        );
+    public static function getAnalyzeNodeVisitorClassName() : string
+    {
+        return DemoNodeVisitor::class;
     }
 
     /**
@@ -172,45 +150,8 @@ class DemoPlugin extends PluginV2 implements
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DemoNodeVisitor extends AnalysisVisitor {
-
-    /** @var PluginV2 */
-    private $plugin;
-
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        PluginV2 $plugin
-    ) {
-        // After constructing on parent, `$code_base` and
-        // `$context` will be available as protected properties
-        // `$this->code_base` and `$this->context`.
-        parent::__construct($code_base, $context);
-
-        // We take the plugin so that we can call
-        // `$this->plugin->emitIssue(...)` on it to emit issues
-        // to the user.
-        $this->plugin = $plugin;
-    }
-
-    /**
-     * Default visitor that does nothing
-     *
-     * @param Node $node
-     * A node to analyze
-     *
-     * @return void
-     */
-    public function visit(Node $node)
-    {
-        // This method will be called on all nodes for which
-        // there is no implementation of it's kind visitor.
-        //
-        // To see what kinds of nodes are passing through here,
-        // you can run `Debug::printNode($node)`.
-
-        // Debug::printNode($node);
-    }
+class DemoNodeVisitor extends PluginAwareAnalysisVisitor {
+    // A plugin's visitors should NOT implement visit(), unless they need to.
 
     /**
      * @param Node $node
@@ -233,9 +174,7 @@ class DemoNodeVisitor extends AnalysisVisitor {
         // As an example, enforce that we cannot call
         // instanceof against 'object'.
         if ($class_name == 'object') {
-            $this->plugin->emitIssue(
-                $this->code_base,
-                $this->context,
+            $this->emitPluginIssueShort(
                 'PhanPluginInstanceOfObject',
                 "Cannot call instanceof against `object`"
             );
