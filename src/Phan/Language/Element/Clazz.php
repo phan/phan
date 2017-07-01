@@ -792,15 +792,24 @@ class Clazz extends AddressableElement
             $property = $code_base->getPropertyByFQSEN(
                 $property_fqsen
             );
-            if ($is_static && !$property->isStatic()) {
-                // TODO: add additional warning about possible static/non-static confusion?
-                throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredStaticProperty)(
-                        $context->getFile(),
-                        $context->getLineNumberStart(),
-                        [ $name, (string)$this->getFQSEN() ]
-                    )
-                );
+            if ($is_static != $property->isStatic()) {
+                if ($is_static) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::AccessPropertyNonStaticAsStatic)(
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [ "{$this->getFQSEN()}->\${$property->getName()}" ]
+                        )
+                    );
+                } else {
+                    throw new IssueException(
+                        Issue::fromType(Issue::AccessPropertyStaticAsNonStatic)(
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [ "{$this->getFQSEN()}::\${$property->getName()}" ]
+                        )
+                    );
+                }
             }
 
             $is_remote_access = (
@@ -874,15 +883,6 @@ class Clazz extends AddressableElement
             if ($property->isProtected()) {
                 throw new IssueException(
                     Issue::fromType(Issue::AccessPropertyProtected)(
-                        $context->getFile(),
-                        $context->getLineNumberStart(),
-                        [ "{$this->getFQSEN()}::\${$property->getName()}" ]
-                    )
-                );
-            }
-            if (!$is_static && $property->isStatic()) {
-                throw new IssueException(
-                    Issue::fromType(Issue::AccessPropertyStaticAsNonStatic)(
                         $context->getFile(),
                         $context->getLineNumberStart(),
                         [ "{$this->getFQSEN()}::\${$property->getName()}" ]
