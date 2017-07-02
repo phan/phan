@@ -410,7 +410,7 @@ class Issue
                 self::UndeclaredInterface,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Class implements undeclared interface {CLASS}",
+                "Class implements undeclared interface {INTERFACE}",
                 self::REMEDIATION_B,
                 1004
             ),
@@ -766,7 +766,7 @@ class Issue
                 self::TypeInstantiateAbstract,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Instantiation of abstract class {TYPE}",
+                "Instantiation of abstract class {CLASS}",
                 self::REMEDIATION_B,
                 10013
             ),
