@@ -48,6 +48,14 @@ New Features (CLI, Configs)
 + Add `null_casts_as_array` and `array_casts_as_null` settings, which can be used while migrating away from `null_casts_as_any_type`.
   These will be checked if one of the types has a union type of `null`, as well as when checking if a nullable array can cast to a regular array.
 
+Plugins
+
++ Redesign plugin system to be more efficient. (Issue #600)
+  New plugins should extend `\Phan\PluginV2` and implement the interfaces for capabilities they need to have,
+  such as `\Phan\PluginV2\AnalyzeClassCapability`.
+  In the new plugin system, plugins will only be run when they need to (Phan no longer needs to invoke an empty method body).
+  Old subclasses of `\Phan\Plugin\PluginImplementation` will continue to work, but will be less efficient.
+
 Maintenance
 + Reduce memory usage by around 15% by using a more efficient representation of union types (PR #729).
   The optional extension https://github.com/runkit7/runkit_object_id can be installed to boost performance by around 10%.
