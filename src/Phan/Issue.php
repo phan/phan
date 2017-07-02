@@ -173,6 +173,7 @@ class Issue
     const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
     const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
     const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
+    const AccessPropertyNonStaticAsStatic = 'PhanAccessPropertyNonStaticAsStatic';
     const AccessOwnConstructor = 'PhanAccessOwnConstructor';
 
     const AccessConstantInternal    = 'PhanAccessConstantInternal';
@@ -1514,7 +1515,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Accessing own constructor directly via {CLASS}::__construct",
                 self::REMEDIATION_B,
-                1010
+                1020
             ),
             new Issue(
                 self::AccessMethodProtectedWithCallMagicMethod,
@@ -1587,6 +1588,14 @@ class Issue
                 "Declaration of phpdoc method {METHOD} is an unnecessary override of final method {METHOD} defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1019
+            ),
+            new Issue(
+                self::AccessPropertyNonStaticAsStatic,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Accessing non static property {PROPERTY} as static",
+                self::REMEDIATION_B,
+                1021
             ),
 
             // Issue::CATEGORY_COMPATIBLE

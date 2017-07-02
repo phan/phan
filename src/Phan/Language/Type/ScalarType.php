@@ -68,7 +68,7 @@ abstract class ScalarType extends NativeType
             $scalar_implicit_partial = Config::getValue('scalar_implicit_partial');
             if (\count($scalar_implicit_partial) > 0) {
                 // check if $type->getName() is in the list of permitted types $this->getName() can cast to.
-                if (\in_array($type->getName(), Config::get()->scalar_implicit_partial[$this->getName()] ?? [], true)) {
+                if (\in_array($type->getName(), $scalar_implicit_partial[$this->getName()] ?? [], true)) {
                     return true;
                 }
             }
