@@ -68,9 +68,9 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor {
             $issue_type_id
         );
     }
+
     // Internal methods used by ConfigPluginSet are below.
     // They aren't useful for plugins.
-
 
     /**
      * @return int[] The list of $node->kind values this plugin is capable of analyzing.

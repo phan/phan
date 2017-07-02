@@ -26,16 +26,4 @@ use ast\Node;
  */
 abstract class PluginAwarePreAnalysisVisitor extends PluginAwareBaseAnalysisVisitor {
     // For backwards compatibility reasons, parent_node isn't available in PreAnalysis visitors
-
-    // Internal methods used by ConfigPluginSet are below.
-    // They aren't useful for plugins.
-
-    /**
-     * This is a utility function used by ConfigPluginSet
-     * @return void
-     */
-    public static final function staticInvoke(CodeBase $code_base, Context $context, Node $node)
-    {
-        (new static($code_base, $context))($node);
-    }
 }

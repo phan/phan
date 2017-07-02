@@ -71,19 +71,4 @@ abstract class PluginAwareAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
             $issue_type_id
         );
     }
-
-    // Internal methods used by ConfigPluginSet are below.
-    // They aren't useful for plugins.
-
-    /**
-     * This is a utility function used by ConfigPluginSet
-     * @return void
-     */
-    public static final function staticInvoke(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null)
-    {
-        $visitor = new static($code_base, $context);
-        $visitor->parent_node = $parent_node;
-        $visitor($node);
-    }
-    // End of internal methods.
 }

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan\Plugin;
 
+use Phan\AST\Visitor\Element;
 use Phan\CodeBase;
 use Phan\Config;
-use Phan\Language\AST\Visitor\Element;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
@@ -270,7 +270,8 @@ final class ConfigPluginSet extends PluginV2 implements
                  * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
                  */
                 $closure = (static function(CodeBase $code_base, Context $context, Node $node) {
-                    (new static($code_base, $context))($node);
+                    $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                    return (new static($code_base, $context))->{$fn_name}($node);
                 })->bindTo(null, $plugin_analysis_class);
                 $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
                 if (\count($handled_node_kinds) === 0) {
@@ -322,7 +323,8 @@ final class ConfigPluginSet extends PluginV2 implements
                 $closure = (static function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null) {
                     $visitor = new static($code_base, $context);
                     $visitor->parent_node = $parent_node;
-                    $visitor($node);
+                    $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
+                    $visitor->{$fn_name}($node);
                 })->bindTo(null, $plugin_analysis_class);
                 $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
                 if (\count($handled_node_kinds) === 0) {
