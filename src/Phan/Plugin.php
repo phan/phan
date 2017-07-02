@@ -19,6 +19,8 @@ use ast\Node;
  *
  * Plugins must extends this class and return an instance
  * of themselves.
+ *
+ * @deprecated - Use PluginV2 instead
  */
 abstract class Plugin extends PluginV2 implements
     AnalyzeClassCapability,
@@ -46,6 +48,8 @@ abstract class Plugin extends PluginV2 implements
      * The parent node of the given node (if one exists).
      *
      * @return void
+     *
+     * @deprecated
      */
     abstract public function preAnalyzeNode(
         CodeBase $code_base,
@@ -72,6 +76,8 @@ abstract class Plugin extends PluginV2 implements
      * The parent node of the given node (if one exists).
      *
      * @return void
+     *
+     * @deprecated
      */
     abstract public function analyzeNode(
         CodeBase $code_base,

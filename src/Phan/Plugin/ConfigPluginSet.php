@@ -61,6 +61,7 @@ final class ConfigPluginSet extends PluginV2 implements
     /**
      * @return ConfigPluginSet
      * A shared single instance of this plugin
+     * @suppress PhanDeprecatedInterface
      */
     public static function instance() : ConfigPluginSet
     {
@@ -266,6 +267,7 @@ final class ConfigPluginSet extends PluginV2 implements
                 $empty_object = (new \ReflectionClass($plugin_analysis_class))->newInstanceWithoutConstructor();
                 /**
                  * @suppress PhanParamTooMany
+                 * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
                  */
                 $closure = (static function(CodeBase $code_base, Context $context, Node $node) {
                     (new static($code_base, $context))($node);
@@ -315,6 +317,7 @@ final class ConfigPluginSet extends PluginV2 implements
                 /**
                  * @suppress PhanParamTooMany
                  * @suppress PhanUndeclaredProperty
+                 * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
                  */
                 $closure = (static function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null) {
                     $visitor = new static($code_base, $context);

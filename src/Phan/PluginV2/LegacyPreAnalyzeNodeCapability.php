@@ -7,6 +7,9 @@ use Phan\Language\Element\Clazz;
 
 use ast\Node;
 
+/**
+ * @deprecated - New plugins should use PreAnalyzeNodeCapability
+ */
 interface LegacyPreAnalyzeNodeCapability {
     /**
      * Do a first-pass analysis of a node before Phan
@@ -27,6 +30,8 @@ interface LegacyPreAnalyzeNodeCapability {
      * The parent node of the given node (if one exists).
      *
      * @return void
+     *
+     * @deprecated
      */
     public function preAnalyzeNode(
         CodeBase $code_base,

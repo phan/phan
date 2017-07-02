@@ -6,6 +6,9 @@ use Phan\Language\Context;
 
 use ast\Node;
 
+/**
+ * @deprecated - New plugins should use AnalyzeNodeCapability
+ */
 interface LegacyAnalyzeNodeCapability {
     /**
      * Analyze the given node in the given context after
@@ -26,6 +29,8 @@ interface LegacyAnalyzeNodeCapability {
      * The parent node of the given node (if one exists).
      *
      * @return void
+     *
+     * @deprecated
      */
     public function analyzeNode(
         CodeBase $code_base,
