@@ -200,17 +200,26 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     // Micro-optimization in tight loops: check for plugins before calling config plugin set
-    public function hasPlugins() : bool {
+    public function hasPlugins() : bool
+    {
         \assert(!\is_null($this->pluginSet));
         return \count($this->pluginSet) > 0;
     }
 
-    public function hasAnalyzeFunctionPlugins() : bool {
+    /**
+     * Returns true if analyzeFunction() will execute any plugins.
+     */
+    public function hasAnalyzeFunctionPlugins() : bool
+    {
         \assert(!\is_null($this->pluginSet));
         return \count($this->analyzeFunctionPluginSet) > 0;
     }
 
-    public function hasAnalyzeMethodPlugins() : bool {
+    /**
+     * Returns true if analyzeMethod() will execute any plugins.
+     */
+    public function hasAnalyzeMethodPlugins() : bool
+    {
         \assert(!\is_null($this->pluginSet));
         return \count($this->analyzeMethodPluginSet) > 0;
     }
@@ -261,11 +270,13 @@ final class ConfigPluginSet extends PluginV2 implements
                 $closures_for_kind->recordForAllKinds($closure);
             } else if ($plugin instanceof PreAnalyzeNodeCapability) {
                 $plugin_analysis_class = $plugin->getPreAnalyzeNodeVisitorClassName();
-                if (!is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
+                if (!\is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
                     throw new \TypeError(sprintf("Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not", get_class($plugin), PluginAwarePreAnalysisVisitor::class, $plugin_analysis_class));
                 }
                 $empty_object = (new \ReflectionClass($plugin_analysis_class))->newInstanceWithoutConstructor();
                 /**
+                 * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+                 *
                  * @suppress PhanParamTooMany
                  * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
                  */
@@ -312,10 +323,12 @@ final class ConfigPluginSet extends PluginV2 implements
                 $closures_for_kind->recordForAllKinds($closure);
             } else if ($plugin instanceof AnalyzeNodeCapability) {
                 $plugin_analysis_class = $plugin->getAnalyzeNodeVisitorClassName();
-                if (!is_subclass_of($plugin_analysis_class, PluginAwareAnalysisVisitor::class)) {
+                if (!\is_subclass_of($plugin_analysis_class, PluginAwareAnalysisVisitor::class)) {
                     throw new \TypeError(sprintf("Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not", get_class($plugin), PluginAwareAnalysisVisitor::class, $plugin_analysis_class));
                 }
                 /**
+                 * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
+                 *
                  * @suppress PhanParamTooMany
                  * @suppress PhanUndeclaredProperty
                  * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
@@ -326,6 +339,7 @@ final class ConfigPluginSet extends PluginV2 implements
                     $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
                     $visitor->{$fn_name}($node);
                 })->bindTo(null, $plugin_analysis_class);
+
                 $handled_node_kinds = $plugin_analysis_class::getHandledNodeKinds();
                 if (\count($handled_node_kinds) === 0) {
                     fprintf(
