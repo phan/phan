@@ -86,6 +86,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor {
         }
         return $kinds;
     }
+
     /**
      * @return bool true if $method_name is defined by the subclass of PluginAwareAnalysisVisitor, and not by PluginAwareAnalysisVisitor or one of it's parents.
      */

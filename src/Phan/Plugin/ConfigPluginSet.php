@@ -9,6 +9,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Plugin;
+use Phan\Plugin\PluginImplementation;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PreAnalyzeNodeCapability;
@@ -249,9 +250,25 @@ final class ConfigPluginSet extends PluginV2 implements
 
         $this->preAnalyzeNodePluginSet      = self::filterPreAnalysisPlugins($plugin_set);
         $this->analyzeNodePluginSet         = self::filterAnalysisPlugins($plugin_set);
-        $this->analyzeMethodPluginSet       = self::filterByClass($plugin_set, AnalyzeMethodCapability::class);
-        $this->analyzeFunctionPluginSet     = self::filterByClass($plugin_set, AnalyzeFunctionCapability::class);
-        $this->analyzeClassPluginSet        = self::filterByClass($plugin_set, AnalyzeClassCapability::class);
+        $this->analyzeMethodPluginSet       = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeMethodCapability::class), 'analyzeMethod');
+        $this->analyzeFunctionPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeFunctionCapability::class), 'analyzeFunction');
+        $this->analyzeClassPluginSet        = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeClassCapability::class), 'analyzeClass');
+    }
+
+    /**
+     * @return array
+     */
+    private static function filterOutEmptyMethodBodies(array $plugin_set, string $method_name) : array {
+        return \array_values(\array_filter($plugin_set, function(PluginV2 $plugin) use($method_name) : bool {
+            if ($plugin instanceof PluginImplementation) {
+                if (!$plugin->isDefinedInSubclass($method_name)) {
+                    // PluginImplementation defines empty method bodies for each of the plugin $method_names
+                    // Don't execute $method_name for a plugin during analysis if the subclass didn't override the implementation for $method_name.
+                    return false;
+                }
+            }
+            return true;
+        }));
     }
 
     /**
@@ -265,6 +282,11 @@ final class ConfigPluginSet extends PluginV2 implements
             if ($plugin instanceof LegacyPreAnalyzeNodeCapability) {
                 if ($plugin instanceof PreAnalyzeNodeCapability) {
                     throw new \TypeError(sprintf("plugin %s should implement only one of LegacyPreAnalyzeNodeCapability and PreAnalyzeNodeCapability, not both", get_class($plugin)));
+                }
+                if ($plugin instanceof PluginImplementation) {
+                    if (!$plugin->isDefinedInSubclass('preAnalyzeNode')) {
+                        continue;
+                    }
                 }
                 $closure = (new \ReflectionMethod($plugin, 'preAnalyzeNode'))->getClosure($plugin);
                 $closures_for_kind->recordForAllKinds($closure);
@@ -319,6 +341,11 @@ final class ConfigPluginSet extends PluginV2 implements
                 if ($plugin instanceof AnalyzeNodeCapability) {
                     throw new \TypeError(sprintf("plugin %s should implement only one of LegacyAnalyzeNodeCapability and AnalyzeNodeCapability, not both", get_class($plugin)));
                 }
+                if ($plugin instanceof PluginImplementation) {
+                    if (!$plugin->isDefinedInSubclass('analyzeNode')) {
+                        continue;
+                    }
+                }
                 $closure = (new \ReflectionMethod($plugin, 'analyzeNode'))->getClosure($plugin);
                 $closures_for_kind->recordForAllKinds($closure);
             } else if ($plugin instanceof AnalyzeNodeCapability) {
@@ -372,7 +399,6 @@ final class ConfigPluginSet extends PluginV2 implements
         }
         return $result;
     }
-
 
     /**
      * @return Plugin[]
