@@ -13,6 +13,8 @@ class InvalidVariableIssetPlugin extends PluginV2 implements AnalyzeNodeCapabili
 
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
+     *
+     * @override
      */
     public static function getAnalyzeNodeVisitorClassName() : string {
         return InvalidVariableIssetVisitor::class;

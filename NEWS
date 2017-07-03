@@ -29,6 +29,9 @@ New Features (Analysis)
 + Improved warnings and inferences about internal function references for functions such as `sort`, `preg_match` (Issue #871, #958)
   Phan is now aware of many internal functions which normally ignore the original values of references passed in (E.g. `preg_match`)
 + Properly when code attempts to access static/non-static properties as if they were non-static/static. (Issue #936)
++ Create `PhanCommentOverrideOnNonOverrideMethod` and `PhanCommentOverrideOnNonOverrideConstant`. (Issue #926)
+  These issue types will be emitted if `@override` is part of doc comment of a method or class constant which doesn't override or implement anything.
+  (`@Override` and `@phan-override` can also be used as aliases of `@override`. `@override` is not currently part of any phpdoc standard.)
 
 New Features (CLI, Configs)
 + Create `check_docblock_signature_param_type_match` (similar to `check_docblock_signature_return_type_match`) config setting
@@ -67,6 +70,7 @@ Bug Fixes
 + Consistently exit with non-zero exit code if there are multiple processes, and any process failed to return valid results. (Issue #868)
 
 Backwards Incompatible Changes
++ Fix categories of some issue types, renumber error ids for the pylint error formatter to be unique and consistent.
 
 0.9.2 Jun 13, 2017
 ------------------

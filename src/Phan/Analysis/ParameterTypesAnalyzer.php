@@ -102,7 +102,13 @@ class ParameterTypesAnalyzer
 
         // Make sure we're actually overriding something
         // TODO(in another PR): check that signatures of magic methods are valid, if not done already (e.g. __get expects one param, most can't define return types, etc.)?
-        if (!$method->getIsOverride()) {
+        $is_actually_override = $method->getIsOverride();
+
+        if (!$is_actually_override && $method->isOverrideIntended()) {
+            self::analyzeOverrideComment($code_base, $method);
+        }
+
+        if (!$is_actually_override) {
             return;
         }
 
@@ -125,6 +131,29 @@ class ParameterTypesAnalyzer
         foreach ($o_method_list as $o_method) {
             self::analyzeOverrideSignatureForOverriddenMethod($code_base, $method, $class, $o_method);
         }
+    }
+
+    /**
+     * @return void
+     */
+    private static function analyzeOverrideComment(CodeBase $code_base, Method $method) {
+        if ($method->getIsMagic()) {
+            return;
+        }
+        // Only emit this issue on the base class, not for the subclass which inherited it
+        if ($method->getDefiningFQSEN() !== $method->getFQSEN()) {
+            return;
+        }
+        if ($method->hasSuppressIssue(Issue::CommentOverrideOnNonOverrideMethod)) {
+            return;
+        }
+        Issue::maybeEmit(
+            $code_base,
+            $method->getContext(),
+            Issue::CommentOverrideOnNonOverrideMethod,
+            $method->getFileRef()->getLineNumberStart(),
+            $method->getFQSEN()
+        );
     }
 
     /**
