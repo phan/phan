@@ -7,8 +7,10 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\AddressableElement;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginV2;
+use Phan\PluginV2\AnalyzeClassCapability;
+use Phan\PluginV2\AnalyzeFunctionCapability;
+use Phan\PluginV2\AnalyzeMethodCapability;
 use ast\Node;
 
 /**
@@ -17,7 +19,10 @@ use ast\Node;
  * NOTE! This plugin only produces correct results when Phan
  *       is run on a single processor (via the `-j1` flag).
  */
-class UnusedSuppressionPlugin extends PluginImplementation {
+class UnusedSuppressionPlugin extends PluginV2 implements
+    AnalyzeClassCapability,
+    AnalyzeFunctionCapability,
+    AnalyzeMethodCapability {
 
     /**
      * @param CodeBase $code_base

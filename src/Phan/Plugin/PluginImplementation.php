@@ -115,4 +115,16 @@ class PluginImplementation extends Plugin {
         Func $function
     ) {
     }
+
+    // Internal methods, for use by ConfigPluginSet
+
+    /**
+     * @return bool true if $method_name is defined by the subclass of PluginAwareAnalysisVisitor, and not by PluginAwareAnalysisVisitor or one of it's parents.
+     */
+    public static final function isDefinedInSubclass(string $method_name) : bool
+    {
+        $method = new \ReflectionMethod(static::class, $method_name);
+        return is_subclass_of($method->getDeclaringClass()->name, self::class);
+    }
+    // End of internal methods.
 }
