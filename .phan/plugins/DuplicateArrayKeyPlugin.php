@@ -17,6 +17,7 @@ use ast\Node;
 class DuplicateArrayKeyPlugin extends PluginV2 implements AnalyzeNodeCapability {
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
+     * @override
      */
     public static function getAnalyzeNodeVisitorClassName() : string {
         return DuplicateArrayKeyVisitor::class;
@@ -40,6 +41,8 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
      * A node to analyze
      *
      * @return void
+     *
+     * @override
      */
     public function visitArray(Node $node) {
         $children = $node->children;

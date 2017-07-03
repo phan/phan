@@ -71,6 +71,8 @@ class DemoPlugin extends PluginV2 implements
      * A class being analyzed
      *
      * @return void
+     *
+     * @override
      */
     public function analyzeClass(
         CodeBase $code_base,
@@ -99,6 +101,8 @@ class DemoPlugin extends PluginV2 implements
      * A method being analyzed
      *
      * @return void
+     *
+     * @override
      */
     public function analyzeMethod(
         CodeBase $code_base,
@@ -126,6 +130,8 @@ class DemoPlugin extends PluginV2 implements
      * A function being analyzed
      *
      * @return void
+     *
+     * @override
      */
     public function analyzeFunction(
         CodeBase $code_base,
@@ -161,6 +167,8 @@ class DemoNodeVisitor extends PluginAwareAnalysisVisitor {
      * A node to analyze
      *
      * @return void
+     *
+     * @override
      */
     public function visitInstanceof(Node $node)
     {

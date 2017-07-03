@@ -24,6 +24,10 @@ class Flags
     // These can be combined in 3 ways, see Parameter->getReferenceType()
     const IS_READ_REFERENCE            = (1 << 14);
     const IS_WRITE_REFERENCE           = (1 << 15);
+    // End of reference types
+
+    // This will be compared against IS_OVERRIDE
+    const IS_OVERRIDE_INTENDED         = (1 << 16);
 
     /**
      * Either enable or disable the given flag on

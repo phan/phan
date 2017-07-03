@@ -62,6 +62,8 @@ class DemoLegacyPlugin extends PluginImplementation {
      * The parent node of the given node (if one exists).
      *
      * @return void
+     *
+     * @override
      */
     public function analyzeNode(
         CodeBase $code_base,
@@ -85,6 +87,8 @@ class DemoLegacyPlugin extends PluginImplementation {
      * A class being analyzed
      *
      * @return void
+     *
+     * @override
      */
     public function analyzeClass(
         CodeBase $code_base,
@@ -113,6 +117,8 @@ class DemoLegacyPlugin extends PluginImplementation {
      * A method being analyzed
      *
      * @return void
+     *
+     * @override
      */
     public function analyzeMethod(
         CodeBase $code_base,
@@ -140,6 +146,8 @@ class DemoLegacyPlugin extends PluginImplementation {
      * A function being analyzed
      *
      * @return void
+     *
+     * @override
      */
     public function analyzeFunction(
         CodeBase $code_base,
@@ -195,6 +203,8 @@ class DemoLegacyNodeVisitor extends AnalysisVisitor {
      * A node to analyze
      *
      * @return void
+     *
+     * @override
      */
     public function visit(Node $node)
     {
@@ -212,6 +222,8 @@ class DemoLegacyNodeVisitor extends AnalysisVisitor {
      * A node to analyze
      *
      * @return void
+     *
+     * @override
      */
     public function visitInstanceof(Node $node)
     {

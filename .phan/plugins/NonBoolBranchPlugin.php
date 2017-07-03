@@ -13,6 +13,8 @@ use ast\Node;
 class NonBoolBranchPlugin extends PluginV2 implements AnalyzeNodeCapability {
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
+     *
+     * @override
      */
     public static function getAnalyzeNodeVisitorClassName() : string
     {
@@ -23,6 +25,7 @@ class NonBoolBranchPlugin extends PluginV2 implements AnalyzeNodeCapability {
 class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor {
     // A plugin's visitors should not override visit() unless they need to.
 
+    /** @override */
     public function visitIfelem(Node $node) : Context
     {
         $condition = $node->children['cond'];

@@ -14,6 +14,8 @@ class NonBoolInLogicalArithPlugin extends PluginV2 implements AnalyzeNodeCapabil
 
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
+     *
+     * @override
      */
     public static function getAnalyzeNodeVisitorClassName() : string {
         return NonBoolInLogicalArithVisitor::class;
@@ -31,6 +33,9 @@ class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor {
 
     // A plugin's visitors should not override visit() unless they need to.
 
+    /**
+     * @override
+     */
     public function visitBinaryop(Node $node) : Context{
         // check every boolean binary operation
         if(in_array($node->flags, self::BINARY_BOOL_OPERATORS, true)){

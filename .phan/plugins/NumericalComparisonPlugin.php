@@ -14,6 +14,8 @@ class NumericalComparisonPlugin extends PluginV2 implements AnalyzeNodeCapabilit
 
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
+     *
+     * @override
      */
     public static function getAnalyzeNodeVisitorClassName() : string {
         return NumericalComparisonVisitor::class;
@@ -35,6 +37,9 @@ class NumericalComparisonVisitor extends PluginAwareAnalysisVisitor {
 
     // A plugin's visitors should not override visit() unless they need to.
 
+    /**
+     * @override
+     */
     public function visitBinaryop(Node $node) : Context {
         // get the types of left and right values
         $left_node = $node->children['left'];
