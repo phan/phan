@@ -450,7 +450,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 \ast\AST_ASSIGN_REF     => true,  // Creates by reference?
                 \ast\AST_ASSIGN         => true,  // checked in visitAssign
                 \ast\AST_DIM            => true,  // should be checked elsewhere, as part of check for array access to non-array/string
+                \ast\AST_EMPTY          => true,  // TODO: Enable this in the future?
                 \ast\AST_GLOBAL         => true,  // global $var;
+                \ast\AST_ISSET          => true,  // TODO: Enable this in the future?
                 \ast\AST_PARAM_LIST     => true,  // this creates the variable
                 \ast\AST_STATIC         => true,  // static $var;
                 \ast\AST_STMT_LIST      => true,  // ;$var; (Implicitly creates the variable. Already checked to emit PhanNoopVariable)
