@@ -64,6 +64,8 @@ class Method extends ClassElement implements FunctionInterface
         // if it isn't.
         $this->setDefiningFQSEN($fqsen);
 
+        // Record the FQSEN of this method (With the current Clazz),
+        // to prevent recursing from a method into itself in non-quick mode.
         $this->setInternalScope(new FunctionLikeScope(
             $context->getScope(), $fqsen
         ));

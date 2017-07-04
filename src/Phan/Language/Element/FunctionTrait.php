@@ -478,95 +478,17 @@ trait FunctionTrait {
         $parameter_offset = 0;
         $function_parameter_list = $function->getParameterList();
         $real_parameter_name_set = [];
-        foreach ($function_parameter_list as $i => $parameter) {
-            $parameter_name = $parameter->getName();
-            $real_parameter_name_set[$parameter_name] = true;
-            if ($parameter->getUnionType()->isEmpty()) {
-                // If there is no type specified in PHP, check
-                // for a docComment with @param declarations. We
-                // assume order in the docComment matches the
-                // parameter order in the code
-                if ($comment->hasParameterWithNameOrOffset(
-                    $parameter_name,
-                    $parameter_offset
-                )) {
-                    $comment_param = $comment->getParameterWithNameOrOffset(
-                        $parameter_name,
-                        $parameter_offset
-                    );
-                    $comment_param_type = $comment_param->getUnionType();
-                    if ($parameter->isVariadic() !== $comment_param->isVariadic()) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $context,
-                            $parameter->isVariadic() ? Issue::TypeMismatchVariadicParam : Issue::TypeMismatchVariadicComment,
-                            $node->lineno ?? 0,
-                            $comment_param->__toString(),
-                            $parameter->__toString()
-                        );
-                    }
-
-                    $parameter->addUnionType($comment_param_type);
-                }
-            }
-
-            // If there's a default value on the parameter, check to
-            // see if the type of the default is cool with the
-            // specified type.
-            if ($parameter->hasDefaultValue()) {
-                $default_type = $parameter->getDefaultValueType();
-                $defaultIsNull = $default_type->isType(NullType::instance(false));
-                // If the default type isn't null and can't cast
-                // to the parameter's declared type, emit an
-                // issue.
-                if (!$defaultIsNull) {
-                    if (!$default_type->canCastToUnionType(
-                        $parameter->getUnionType()
-                    )) {
-                        Issue::maybeEmit(
-                            $code_base,
-                            $context,
-                            Issue::TypeMismatchDefault,
-                            $node->lineno ?? 0,
-                            (string)$parameter->getUnionType(),
-                            $parameter_name,
-                            (string)$default_type
-                        );
-                    }
-                }
-
-                // If there are no types on the parameter, the
-                // default shouldn't be treated as the one
-                // and only allowable type.
-                $wasEmpty = $parameter->getUnionType()->isEmpty();
-                if ($wasEmpty) {
-                    // TODO: Errors on usage of ?mixed are poorly defined and greatly differ from phan's old behavior.
-                    // Consider passing $defaultIsNull once this is fixed.
-                    $parameter->addUnionType(
-                        MixedType::instance(false)->asUnionType()
-                    );
-                }
-
-                // If we have no other type info about a parameter,
-                // just because it has a default value of null
-                // doesn't mean that is its type. Any type can default
-                // to null
-                if ($defaultIsNull) {
-                    // The parameter constructor or above check for wasEmpty already took care of null default case
-                } else {
-                    if ($wasEmpty) {
-                        $parameter->addUnionType($default_type);
-                    } else {
-                        // Don't add both `int` and `?int` to the same set.
-                        foreach ($default_type->getTypeSet() as $default_type_part) {
-                            if (!$parameter->getNonvariadicUnionType()->hasType($default_type_part->withIsNullable(true))) {
-                                $parameter->addType($default_type_part);
-                            }
-                        }
-                    }
-                }
-            }
-
+        foreach ($function_parameter_list as $parameter) {
+            $real_parameter_name_set[$parameter->getName()] = true;
+            self::addParamToScopeOfFunctionOrMethod(
+                $context,
+                $code_base,
+                $node,
+                $function,
+                $comment,
+                $parameter_offset,
+                $parameter
+            );
             ++$parameter_offset;
         }
 
@@ -595,6 +517,110 @@ trait FunctionTrait {
     }
 
     /**
+     * Internally used.
+     * @return void
+     */
+    public static function addParamToScopeOfFunctionOrMethod(
+        Context $context,
+        CodeBase $code_base,
+        Decl $node,
+        FunctionInterface $function,
+        Comment $comment,
+        int $parameter_offset,
+        Parameter $parameter
+    ) {
+        if ($function->isPHPInternal()) {
+            return;
+        }
+        $parameter_name = $parameter->getName();
+        if ($parameter->getUnionType()->isEmpty()) {
+            // If there is no type specified in PHP, check
+            // for a docComment with @param declarations. We
+            // assume order in the docComment matches the
+            // parameter order in the code
+            if ($comment->hasParameterWithNameOrOffset(
+                $parameter_name,
+                $parameter_offset
+            )) {
+                $comment_param = $comment->getParameterWithNameOrOffset(
+                    $parameter_name,
+                    $parameter_offset
+                );
+                $comment_param_type = $comment_param->getUnionType();
+                if ($parameter->isVariadic() !== $comment_param->isVariadic()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        $parameter->isVariadic() ? Issue::TypeMismatchVariadicParam : Issue::TypeMismatchVariadicComment,
+                        $node->lineno ?? 0,
+                        $comment_param->__toString(),
+                        $parameter->__toString()
+                    );
+                }
+
+                $parameter->addUnionType($comment_param_type);
+            }
+        }
+
+        // If there's a default value on the parameter, check to
+        // see if the type of the default is cool with the
+        // specified type.
+        if ($parameter->hasDefaultValue()) {
+            $default_type = $parameter->getDefaultValueType();
+            $default_is_null = $default_type->isType(NullType::instance(false));
+            // If the default type isn't null and can't cast
+            // to the parameter's declared type, emit an
+            // issue.
+            if (!$default_is_null) {
+                if (!$default_type->canCastToUnionType(
+                    $parameter->getUnionType()
+                )) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDefault,
+                        $node->lineno ?? 0,
+                        (string)$parameter->getUnionType(),
+                        $parameter_name,
+                        (string)$default_type
+                    );
+                }
+            }
+
+            // If there are no types on the parameter, the
+            // default shouldn't be treated as the one
+            // and only allowable type.
+            $wasEmpty = $parameter->getUnionType()->isEmpty();
+            if ($wasEmpty) {
+                // TODO: Errors on usage of ?mixed are poorly defined and greatly differ from phan's old behavior.
+                // Consider passing $default_is_null once this is fixed.
+                $parameter->addUnionType(
+                    MixedType::instance(false)->asUnionType()
+                );
+            }
+
+            // If we have no other type info about a parameter,
+            // just because it has a default value of null
+            // doesn't mean that is its type. Any type can default
+            // to null
+            if ($default_is_null) {
+                // The parameter constructor or above check for wasEmpty already took care of null default case
+            } else {
+                if ($wasEmpty) {
+                    $parameter->addUnionType($default_type);
+                } else {
+                    // Don't add both `int` and `?int` to the same set.
+                    foreach ($default_type->getTypeSet() as $default_type_part) {
+                        if (!$parameter->getNonvariadicUnionType()->hasType($default_type_part->withIsNullable(true))) {
+                            $parameter->addType($default_type_part);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * @param UnionType[] maps a subset of param names to the unmodified phpdoc parameter types. May differ from real parameter types
      * @return void
      */
@@ -615,13 +641,13 @@ trait FunctionTrait {
      * Returns true if the param list has an instance of PassByReferenceVariable
      * If it does, the method has to be analyzed even if the same parameter types were analyzed already
      */
-    private function hasPassByReferenceVariable() : bool
+    private function hasPassByReferenceVariable(array $parameter_list) : bool
     {
         // Common case: function doesn't have any references in parameter list
         if ($this->has_pass_by_reference_parameters === false) {
             return false;
         }
-        foreach ($this->parameter_list as $param) {
+        foreach ($parameter_list as $param) {
             if ($param instanceof PassByReferenceVariable) {
                 return true;
             }
@@ -635,14 +661,15 @@ trait FunctionTrait {
      * As an optimization, this refrains from re-analyzing the method/function it has already been analyzed for those param types
      * (With an equal or larger remaining recursion depth)
      *
+     * @param Variable[] $parameter_list
      */
-    public function analyzeWithNewParams(Context $context, CodeBase $code_base) : Context
+    public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context
     {
-        $hash = $this->computeParameterListHash($this->parameter_list);
+        $hash = $this->computeParameterListHash($parameter_list);
         $has_pass_by_reference_variable = null;
         // Nothing to do, except if PassByReferenceVariable was used
         if ($hash === $this->parameter_list_hash) {
-            if (!$this->hasPassByReferenceVariable()) {
+            if (!$this->hasPassByReferenceVariable($parameter_list)) {
                 // Have to analyze pass by reference variables anyway
                 return $context;
             }
@@ -655,7 +682,7 @@ trait FunctionTrait {
         $new_recursion_depth_for_hash = $this->getRecursionDepth();
         if ($old_recursion_depth_for_hash !== null) {
             if ($new_recursion_depth_for_hash >= $old_recursion_depth_for_hash) {
-                if (!($has_pass_by_reference_variable ?? $this->hasPassByReferenceVariable())) {
+                if (!($has_pass_by_reference_variable ?? $this->hasPassByReferenceVariable($parameter_list))) {
                     return $context;
                 }
                 // Have to analyze pass by reference variables anyway

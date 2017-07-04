@@ -184,7 +184,7 @@ interface FunctionInterface extends AddressableElementInterface {
      * in the given context.
      * This function's parameter list may or may not have been modified.
      */
-    public function analyzeWithNewParams(Context $context, CodeBase $code_base) : Context;
+    public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context;
 
     public function getElementNamespace(CodeBase $code_base) : string;
 

@@ -67,7 +67,7 @@ class Property extends ClassElement
             $union_type = new UnionType();
         }
 
-        $string .= "$union_type {$this->getName()}";
+        $string .= "$union_type \${$this->getName()}";
 
 
         return $string;
