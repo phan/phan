@@ -6,6 +6,7 @@ use Phan\Language\Type;
 // Not sure if it made sense to extend BoolType, so not doing that.
 final class TrueType extends ScalarType
 {
+    /** @phan-override */
     const NAME = 'true';
 
     public function getIsPossiblyTruthy() : bool

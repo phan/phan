@@ -6,6 +6,7 @@ use Phan\Language\Type;
 
 final class ObjectType extends NativeType
 {
+    /** @phan-override */
     const NAME = 'object';
 
     protected function canCastToNonNullableType(Type $type) : bool {
