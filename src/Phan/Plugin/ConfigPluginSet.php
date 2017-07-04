@@ -299,8 +299,7 @@ final class ConfigPluginSet extends PluginV2 implements
                 /**
                  * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
                  *
-                 * @suppress PhanParamTooMany
-                 * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
+                 * @phan-closure-scope PluginAwarePreAnalysisVisitor
                  */
                 $closure = (static function(CodeBase $code_base, Context $context, Node $node) {
                     $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];

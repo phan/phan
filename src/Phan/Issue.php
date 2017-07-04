@@ -552,7 +552,7 @@ class Issue
                 self::UndeclaredClosureScope,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Reference to undeclared class {CLASS} in PhanClosureScope",
+                "Reference to undeclared class {CLASS} in @phan-closure-scope",
                 self::REMEDIATION_B,
                 11021
             ),
@@ -788,7 +788,7 @@ class Issue
                 self::TypeInvalidClosureScope,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid PhanClosureScope: expected a class name, got {TYPE}",
+                "Invalid @phan-closure-scope: expected a class name, got {TYPE}",
                 self::REMEDIATION_B,
                 10024
             ),

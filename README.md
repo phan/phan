@@ -58,6 +58,7 @@ Phan is able to perform the following kinds of analysis.
 * Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#suppress).
 * Supports [magic property annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#property) (partial) (`@property <union_type> <variable_name>`)
 * Supports [`class_alias` annotations (experimental, off by default)](https://github.com/etsy/phan/pull/586), as of 0.9.3-dev
+* Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
 * [Can run in the background (daemon mode)](https://github.com/etsy/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file. (requires `pcntl`)

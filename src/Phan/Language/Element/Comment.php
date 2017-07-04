@@ -129,7 +129,7 @@ class Comment
 
     /**
      * @var Option<Type>
-     * An optional class name defined by an (at)PhanClosureScope directive.
+     * An optional class name defined by an (at)phan-closure-scope directive.
      * (overrides the class in which it is analyzed)
      */
     private $closure_scope;
@@ -342,7 +342,7 @@ class Comment
                         $magic_method_list[] = $magic_method;
                     }
                 }
-            } elseif (\stripos($line, '@PhanClosureScope') !== false) {
+            } elseif (\strpos($line, '@PhanClosureScope') !== false) {
                 // TODO: different type for closures
                 $check_compatible('@PhanClosureScope', Comment::FUNCTION_LIKE);
                 $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
@@ -353,7 +353,7 @@ class Comment
                 } elseif (\stripos($line, '@phan-forbid-undeclared-magic-methods') !== false) {
                     $check_compatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS]);
                     $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
-                } elseif (\stripos($line, '@phan-closure-scope') !== false) {
+                } elseif (\stripos($line, '@phan-closure-scope') !== false && \preg_match('/@phan-closure-scope\b/', $line)) {
                     $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE);
                     $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
                 } elseif (\stripos($line, '@phan-override') !== false) {
@@ -821,8 +821,8 @@ class Comment
         // a Closure would be bound with bind() or bindTo(), so using a custom tag.
         //
         // TODO: Also add a version which forbids using $this in the closure?
-        if (preg_match('/@PhanClosureScope\s+(' . UnionType::union_type_regex . '+)/', $line, $match)) {
-            $closure_scope_union_type_string = $match[1];
+        if (preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . UnionType::union_type_regex . '+)/', $line, $match)) {
+            $closure_scope_union_type_string = $match[2];
         }
 
         if ($closure_scope_union_type_string !== '') {
