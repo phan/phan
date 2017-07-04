@@ -5,6 +5,7 @@ use Phan\Language\Type;
 
 class IterableType extends NativeType
 {
+    /** @phan-override */
     const NAME = 'iterable';
 
     public function isIterable() : bool

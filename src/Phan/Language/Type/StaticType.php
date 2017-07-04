@@ -8,6 +8,7 @@ use Phan\Language\UnionType;
 
 final class StaticType extends Type
 {
+    /** Not an override */
     const NAME = 'static';
 
     /**

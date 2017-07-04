@@ -11,6 +11,7 @@ assert(class_exists(TrueType::class));
 
 final class BoolType extends ScalarType
 {
+    /** @phan-override */
     const NAME = 'bool';
     public static function unionTypeInstance(bool $is_nullable) : UnionType
     {

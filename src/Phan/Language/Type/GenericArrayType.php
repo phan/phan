@@ -5,6 +5,7 @@ use Phan\Language\Type;
 
 final class GenericArrayType extends ArrayType
 {
+    /** @phan-override */
     const NAME = 'array';
 
     /**
