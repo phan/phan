@@ -18,6 +18,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClassScope;
+use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -276,37 +277,71 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
+     * @return ?FullyQualifiedClassName
+     */
+    private static function getOverrideClassFQSEN(CodeBase $code_base, Context $context, Func $func)
+    {
+        $closure_scope = $func->getInternalScope();
+		if ($closure_scope instanceof ClosureScope) {
+            $class_fqsen = $closure_scope->getOverrideClassFQSEN();
+            if (!$class_fqsen) {
+                return null;
+            }
+            assert($class_fqsen instanceof FullyQualifiedClassName);
+
+            // Postponed the check for undeclared closure scopes to the analysis phase,
+            // because classes are still being parsed in the parse phase.
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                $func_context = $func->getContext();
+                Issue::maybeEmit(
+                    $code_base,
+                    $func_context,
+                    Issue::UndeclaredClosureScope,
+                    $func_context->getLineNumberStart(),
+                    (string)$class_fqsen
+                );
+                $closure_scope->overrideClassFQSEN(null);  // Avoid an uncaught CodeBaseException due to missing class for @phan-closure-scope
+                return null;
+            }
+            return $class_fqsen;
+        }
+        return null;
+    }
+
+    /**
      * If a Closure overrides the scope(class) it will be executed in (via doc comment)
      * then return a context with the new scope instead.
+     * @return void
      */
-    private function withOptionalClosureScope(
+    private static function addThisVariableToInternalScope(
+        CodeBase $code_base,
         Context $context,
-        Func $func,
-        Decl $node
-    ) : Context {
-        $closure_scope_option = $func->getClosureScopeOption();
-        if (!$closure_scope_option->isDefined()) {
-            return $context;
+        Func $func
+    ) {
+        $override_this_fqsen = self::getOverrideClassFQSEN($code_base, $context, $func);
+        if ($override_this_fqsen !== null) {
+            if ($context->getScope()->hasVariableWithName('this') || !$context->isInClassScope()) {
+                // Handle @phan-closure-scope - Should set $this to the overriden class, as well as handling self:: and parent::
+                $func->getInternalScope()->addVariable(
+                    new Variable(
+                        $context,
+                        'this',
+                        $override_this_fqsen->asUnionType(),
+                        0
+                    )
+                );
+            }
+            return;
         }
-        // The Func already checked that the $closure_scope is a class
-        // which exists in the codebase
-        $closure_scope = $closure_scope_option->get();
-
-        $class_fqsen = $closure_scope->asFQSEN();
-        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-            // shouldn't happen
-            return $context;
+        // If we have a 'this' variable in our current scope,
+        // pass it down into the closure
+        if ($context->getScope()->hasVariableWithName('this')) {
+            // Normal case: Closures inherit $this from parent scope.
+            $thisVarFromScope = $context->getScope()->getVariableByName('this');
+            $func->getInternalScope()->addVariable($thisVarFromScope);
         }
-        \assert($class_fqsen instanceof FullyQualifiedClassName);
-
-        $clazz = $this->code_base->getClassByFQSEN(
-            $class_fqsen
-        );
-
-        return $clazz->getContext()->withScope(
-            $clazz->getInternalScope()
-        );
     }
+
 
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
@@ -326,16 +361,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         );
         $func = $this->code_base->getFunctionByFQSEN($closure_fqsen);
 
-        // usually the same as $this->context, unless this Closure uses @PhanClosureScope
-        // Also need to override $this if bindTo is called?
-        $context = $this->withOptionalClosureScope($this->context, $func, $node);
+        $context = $this->context;
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
-        if ($context->getScope()->hasVariableWithName('this')) {
-            $thisVarFromScope = $context->getScope()->getVariableByName('this');
-            $func->getInternalScope()->addVariable($thisVarFromScope);
-        }
+        self::addThisVariableToInternalScope($this->code_base, $context, $func);
 
         // Make the closure reachable by FQSEN from anywhere
         $this->code_base->addFunction($func);
