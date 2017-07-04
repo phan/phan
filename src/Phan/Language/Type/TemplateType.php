@@ -3,7 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
-class TemplateType extends Type
+final class TemplateType extends Type
 {
     /** @var string */
     private $template_type_identifier;

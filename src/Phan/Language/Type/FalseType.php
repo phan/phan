@@ -3,7 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
-class FalseType extends ScalarType
+final class FalseType extends ScalarType
 {
     const NAME = 'false';
 

@@ -6,7 +6,7 @@ use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
-class MixedType extends NativeType
+final class MixedType extends NativeType
 {
     const NAME = 'mixed';
 

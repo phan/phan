@@ -5,7 +5,7 @@ use Phan\Config;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
-class NullType extends ScalarType
+final class NullType extends ScalarType
 {
     const NAME = 'null';
 
