@@ -4,7 +4,7 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
-class ObjectType extends NativeType
+final class ObjectType extends NativeType
 {
     const NAME = 'object';
 
