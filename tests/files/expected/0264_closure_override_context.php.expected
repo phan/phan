@@ -1,5 +1,9 @@
-%s:17 PhanTypeMissingReturn Method \closure264\TestFramework::mockA is declared to return string but has no return value
-%s:44 PhanUndeclaredProperty Reference to undeclared property \closure264\BoundClass264->d
-%s:50 PhanTypeInvalidClosureScope Invalid PhanClosureScope: expected a class name, got string
-%s:51 PhanUndeclaredProperty Reference to undeclared property \closure264\TestFramework->b
-%s:51 PhanUndeclaredProperty Reference to undeclared property \closure264\TestFramework->d
+%s:17 PhanTypeMissingReturn Method \NS264\TestFramework::mockA is declared to return string but has no return value
+%s:44 PhanUndeclaredProperty Reference to undeclared property \NS264\BoundClass264->d
+%s:50 PhanTypeInvalidClosureScope Invalid @phan-closure-scope: expected a class name, got string
+%s:51 PhanUndeclaredProperty Reference to undeclared property \NS264\TestFramework->b
+%s:51 PhanUndeclaredProperty Reference to undeclared property \NS264\TestFramework->d
+%s:60 PhanUndeclaredVariable Variable $prefix is undeclared
+%s:69 PhanUndeclaredClosureScope Reference to undeclared class \NS264\UndeclaredClass264 in @phan-closure-scope
+%s:70 PhanUndeclaredProperty Reference to undeclared property \NS264\TestFramework->b
+%s:80 PhanUndeclaredProperty Reference to undeclared property \NS264\BoundClass264->undefVar

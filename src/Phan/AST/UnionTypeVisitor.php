@@ -22,6 +22,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
@@ -1001,7 +1002,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $node
             );
 
-        $type = CallableType::instanceWithClosureFQSEN(
+        $type = ClosureType::instanceWithClosureFQSEN(
             $closure_fqsen
         )->asUnionType();
 
@@ -1775,8 +1776,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // have the constant we're looking for
         foreach ($union_type->nonNativeTypes()->getTypeSet() as $class_type) {
             // Get the class FQSEN
-            $class_fqsen = $class_type->asFQSEN();
-            \assert($class_fqsen instanceof FullyQualifiedClassName, 'Parsing a class node must return a class name fqsen');
+            $class_fqsen = $class_type->asClassFQSEN();
 
             // See if the class exists
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {

@@ -129,7 +129,7 @@ class Comment
 
     /**
      * @var Option<Type>
-     * An optional class name defined by an (at)PhanClosureScope directive.
+     * An optional class name defined by an (at)phan-closure-scope directive.
      * (overrides the class in which it is analyzed)
      */
     private $closure_scope;
@@ -274,6 +274,9 @@ class Comment
         };
 
         foreach ($lines as $line) {
+            if (\strpos($line, '@') === false) {
+                continue;
+            }
 
             if (\stripos($line, '@param') !== false) {
                 if (\preg_match('/@param\b/i', $line)) {
@@ -339,36 +342,53 @@ class Comment
                         $magic_method_list[] = $magic_method;
                     }
                 }
-            } elseif (\stripos($line, '@PhanClosureScope') !== false) {
+            } elseif (\strpos($line, '@PhanClosureScope') !== false) {
                 // TODO: different type for closures
                 $check_compatible('@PhanClosureScope', Comment::FUNCTION_LIKE);
                 $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
-            } elseif (\stripos($line, '@phan-forbid-undeclared-magic-properties') !== false) {
-                $check_compatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS]);
-                $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
-            } elseif (\stripos($line, '@phan-forbid-undeclared-magic-methods') !== false) {
-                $check_compatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS]);
-                $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
-            } else if (\stripos($line, '@phan-') !== false && preg_match('/@phan-\S*/', $line, $match)) {
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::MisspelledAnnotation,
-                    $lineno,
-                    $match[0],
-                    '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties'
-                );
+            } elseif (\stripos($line, '@phan-') !== false) {
+                if (\stripos($line, '@phan-forbid-undeclared-magic-properties') !== false) {
+                    $check_compatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS]);
+                    $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
+                } elseif (\stripos($line, '@phan-forbid-undeclared-magic-methods') !== false) {
+                    $check_compatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS]);
+                    $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
+                } elseif (\stripos($line, '@phan-closure-scope') !== false && \preg_match('/@phan-closure-scope\b/', $line)) {
+                    $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE);
+                    $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
+                } elseif (\stripos($line, '@phan-override') !== false) {
+                    $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST]);
+                    $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
+                } else if (\stripos($line, '@phan-') !== false) {
+                    preg_match('/@phan-\S*/', $line, $match);
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::MisspelledAnnotation,
+                        $lineno,
+                        $match[0],
+                        '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override'
+                    );
+                }
             }
 
             if (\stripos($line, '@deprecated') !== false) {
-                if (preg_match('/@deprecated\b/', $line, $match)) {
+                if (\preg_match('/@deprecated\b/', $line, $match)) {
                     $comment_flags |= Flags::IS_DEPRECATED;
                 }
             }
 
             if (\stripos($line, '@internal') !== false) {
-                if (preg_match('/@internal\s/', $line, $match)) {
+                if (\preg_match('/@internal\b/', $line, $match)) {
                     $comment_flags |= Flags::IS_NS_INTERNAL;
+                }
+            }
+
+            if (\stripos($line, 'override') !== false) {
+                if (\preg_match('/@([Oo]verride)\b/', $line, $match)) {
+                    // TODO: split class const and global const.
+                    $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST]);
+                    $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
                 }
             }
         }
@@ -801,8 +821,8 @@ class Comment
         // a Closure would be bound with bind() or bindTo(), so using a custom tag.
         //
         // TODO: Also add a version which forbids using $this in the closure?
-        if (preg_match('/@PhanClosureScope\s+(' . UnionType::union_type_regex . '+)/', $line, $match)) {
-            $closure_scope_union_type_string = $match[1];
+        if (preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . UnionType::union_type_regex . '+)/', $line, $match)) {
+            $closure_scope_union_type_string = $match[2];
         }
 
         if ($closure_scope_union_type_string !== '') {
@@ -823,6 +843,16 @@ class Comment
     public function isDeprecated() : bool
     {
         return ($this->comment_flags & Flags::IS_DEPRECATED) != 0;
+    }
+
+    /**
+     * @return bool
+     * Set to true if the comment contains an 'override'
+     * directive.
+     */
+    public function isOverrideIntended() : bool
+    {
+        return ($this->comment_flags & Flags::IS_OVERRIDE_INTENDED) != 0;
     }
 
     /**

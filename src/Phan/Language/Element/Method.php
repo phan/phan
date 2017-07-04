@@ -89,7 +89,33 @@ class Method extends ClassElement implements FunctionInterface
             Flags::bitVectorWithState(
                 $this->getPhanFlags(),
                 Flags::IS_FROM_PHPDOC,
-                true
+                $from_phpdoc
+            )
+        );
+    }
+
+    /**
+     * @return bool
+     * True if this method is intended to be an override of another method (contains (at)override)
+     */
+    public function isOverrideIntended() : bool {
+        return Flags::bitVectorHasState(
+            $this->getPhanFlags(),
+            Flags::IS_OVERRIDE_INTENDED
+        );
+    }
+
+    /**
+     * @param bool $is_override_intended - True if this method is intended to be an override of another method (contains (at)override)
+
+     * @return void
+     */
+    public function setIsOverrideIntended(bool $is_override_intended) {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_OVERRIDE_INTENDED,
+                $is_override_intended
             )
         );
     }
@@ -195,7 +221,7 @@ class Method extends ClassElement implements FunctionInterface
         Context $context,
         CodeBase $code_base
     ) : Method {
-        if ($clazz->hasMethodWithName($code_base, $clazz->getName())) {
+        if ($clazz->getFQSEN()->getNamespace() === '\\' && $clazz->hasMethodWithName($code_base, $clazz->getName())) {
             $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
         } else {
             $old_style_constructor = null;
@@ -375,6 +401,9 @@ class Method extends ClassElement implements FunctionInterface
         // the namespace.
         $method->setIsNSInternal($comment->isNSInternal());
 
+        // Set whether or not the comment indicates that the method is intended
+        // to override another method.
+        $method->setIsOverrideIntended($comment->isOverrideIntended());
         $method->setSuppressIssueList($comment->getSuppressIssueList());
 
         if ($method->getIsMagicCall() || $method->getIsMagicCallStatic()) {

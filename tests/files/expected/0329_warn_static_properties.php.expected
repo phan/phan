@@ -1,0 +1,2 @@
+%s:8 PhanAccessPropertyStaticAsNonStatic Accessing static property \A329::$prop as non static
+%s:9 PhanUndeclaredStaticProperty Static property 'instance_prop' on \A329 is undeclared

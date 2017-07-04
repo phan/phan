@@ -21,7 +21,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
-use Phan\Language\Type\CallableType;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
@@ -722,7 +722,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
 
                 foreach ($union_type->getTypeSet() as $type) {
-                    if (!($type instanceof CallableType)) {
+                    // TODO: Allow CallableType to have FQSENs as well, e.g. `$x = [MyClass::class, 'myMethod']` has an FQSEN in a sense.
+                    if (!($type instanceof ClosureType)) {
                         continue;
                     }
 

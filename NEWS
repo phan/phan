@@ -18,9 +18,13 @@ New Features (Analysis)
 + Evaluate the third part of a for loop with the context after the inner body is evaluated (Issue #477)
 + Emit `PhanUndeclaredVariableDim` if adding an array field to an undeclared variable. (Issue #841)
   Better analyze `list($var['field']) = values`
-+ Improve accuracy of `PhanTypeMismatchDeclaredReturn` (Move the check to after params are parsed)
-+ Create `PhanTypeMismatchDeclaredParam` (Move the check to after params are parsed)
-  Also `prefer_narrowed_phpdoc_param_type` (See "New Features (CLI, Configs))
++ Improve accuracy of `PhanTypeMismatchDeclaredReturn` (Move the check to after parse phase is finished)
++ Enable `check_docblock_signature_return_type_match` and `check_docblock_signature_param_type_match` by default.
+  Improve performance of those checks.
+  Switch to checking individual types (of the union type) of the phpdoc types and emitting issues for each invalid part.
++ Create `PhanTypeMismatchDeclaredParam` (Move the check to after parse phase is finished)
+  Also add config setting `prefer_narrowed_phpdoc_param_type` (See "New Features (CLI, Configs))
+  This config is enabled by default.
 + Detect undeclared return types at point of declaration, and emit `PhanUndeclaredTypeReturnType` (Issue #835)
 + Create `PhanParamSignaturePHPDocMismatch*` issue types, for mismatches between `@method` and real signature/other `@method` tag.
 + Create `PhanAccessWrongInheritanceCategory*` issue types to warn about classes extending a trait/interface instead of class, etc. (#873)
@@ -31,15 +35,26 @@ New Features (Analysis)
 + Improved checking for `PhanUndeclaredVariable` in array keys and conditional conditions. (Issue #912)
 + Improved warnings and inferences about internal function references for functions such as `sort`, `preg_match` (Issue #871, #958)
   Phan is now aware of many internal functions which normally ignore the original values of references passed in (E.g. `preg_match`)
++ Properly when code attempts to access static/non-static properties as if they were non-static/static. (Issue #936)
++ Create `PhanCommentOverrideOnNonOverrideMethod` and `PhanCommentOverrideOnNonOverrideConstant`. (Issue #926)
+  These issue types will be emitted if `@override` is part of doc comment of a method or class constant which doesn't override or implement anything.
+  (`@Override` and `@phan-override` can also be used as aliases of `@override`. `@override` is not currently part of any phpdoc standard.)
++ Add `@phan-closure-scope`, which can be used to annotate closure definitions with the namespaced class it will be bound to (Issue #309, #590, #790)
+  (E.g. if the intent was that Closure->bindTo or Closure->bind would be called to bind it to `\MyNS\MyClass` (or an instance of that class),
+  then a closure could be declared as `/** @phan-closure-scope \MyNS\MyClass */ function() { $this->somePrivateMyClassMethod(); }`
++ Add `Closure` as a first class type, (Previously, closures were treated as `callable` in some places) (Issue #978)
 
 New Features (CLI, Configs)
 + Create `check_docblock_signature_param_type_match` (similar to `check_docblock_signature_return_type_match`) config setting
-  to enable warning if phpdoc types are incompatible with the real types. False by default.
+  to enable warning if phpdoc types are incompatible with the real types. True(enabled) by default.
 
-  Create `prefer_narrowed_phpdoc_param_type` config setting (requires `check_docblock_signature_return_type_match`).
-  This is off by default, set it to true to analyze phpdoc param types instead of provided signature types if the possible phpdoc types are narrower and compatible.
+  Create `prefer_narrowed_phpdoc_param_type` config setting (True by default, requires `check_docblock_signature_return_type_match` to be enabled).
+  When it is true, Phan will analyze each function using the phpdoc param types instead of the provided signature types 
+  if the possible phpdoc types are narrower and compatible with the signature.
   (E.g. indicate that subclasses are expected over base classes, indicate that non-nullable is expected instead of nullable)
   This affects analysis both inside and outside the method.
+
+  Aside: Phan currently defaults to preferring phpdoc type over real return type, and emits `PhanTypeMismatchDeclaredReturn` if the two are incompatible.
 + Create `enable_class_alias_support` config setting (disabled by default), which enables analyzing basic usage of class_alias. (Issue #586)
   Set it to true to enable it.
   NOTE: this is still experimental.
@@ -49,6 +64,14 @@ New Features (CLI, Configs)
   This allows users to list out (and gradually remove) permitted scalar type casts.
 + Add `null_casts_as_array` and `array_casts_as_null` settings, which can be used while migrating away from `null_casts_as_any_type`.
   These will be checked if one of the types has a union type of `null`, as well as when checking if a nullable array can cast to a regular array.
+
+Plugins
+
++ Redesign plugin system to be more efficient. (Issue #600)
+  New plugins should extend `\Phan\PluginV2` and implement the interfaces for capabilities they need to have,
+  such as `\Phan\PluginV2\AnalyzeClassCapability`.
+  In the new plugin system, plugins will only be run when they need to (Phan no longer needs to invoke an empty method body).
+  Old subclasses of `\Phan\Plugin\PluginImplementation` will continue to work, but will be less efficient.
 
 Maintenance
 + Reduce memory usage by around 15% by using a more efficient representation of union types (PR #729).
@@ -61,6 +84,7 @@ Bug Fixes
 + Consistently exit with non-zero exit code if there are multiple processes, and any process failed to return valid results. (Issue #868)
 
 Backwards Incompatible Changes
++ Fix categories of some issue types, renumber error ids for the pylint error formatter to be unique and consistent.
 
 0.8.4 Jun 13, 2017
 ------------------

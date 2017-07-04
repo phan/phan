@@ -363,20 +363,20 @@ class ConditionVisitor extends KindVisitorImplementation
                     },
                     function(UnionType $union_type) use ($base_class_name) : UnionType {
                         $new_type = new UnionType();
-                        $hasNull = false;
-                        $hasOtherNullableTypes = false;
-                        // Add types which are
+                        $has_null = false;
+                        $has_other_nullable_types = false;
+                        // Add types which are not instances of $base_class_name
                         foreach ($union_type->getTypeSet() as $type) {
                             if ($type instanceof $base_class_name) {
-                                $hasNull = $hasNull || $type->getIsNullable();
+                                $has_null = $has_null || $type->getIsNullable();
                                 continue;
                             }
                             assert($type instanceof Type);
-                            $hasOtherNullableTypes = $hasOtherNullableTypes || $type->getIsNullable();
+                            $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
                             $new_type->addType($type);
                         }
                         // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                        if ($hasNull && !$hasOtherNullableTypes) {
+                        if ($has_null && !$has_other_nullable_types) {
                             $new_type->addType(NullType::instance(false));
                         }
                         return $new_type;
@@ -398,20 +398,53 @@ class ConditionVisitor extends KindVisitorImplementation
                 },
                 function(UnionType $union_type) : UnionType {
                     $new_type = new UnionType();
-                    $hasNull = false;
-                    $hasOtherNullableTypes = false;
-                    // Add types which are
+                    $has_null = false;
+                    $has_other_nullable_types = false;
+                    // Add types which are not scalars
                     foreach ($union_type->getTypeSet() as $type) {
                         if ($type instanceof ScalarType && !($type instanceof NullType)) {
-                            $hasNull = $hasNull || $type->getIsNullable();
+                            $has_null = $has_null || $type->getIsNullable();
                             continue;
                         }
                         assert($type instanceof Type);
-                        $hasOtherNullableTypes = $hasOtherNullableTypes || $type->getIsNullable();
+                        $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
                         $new_type->addType($type);
                     }
                     // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                    if ($hasNull && !$hasOtherNullableTypes) {
+                    if ($has_null && !$has_other_nullable_types) {
+                        $new_type->addType(NullType::instance(false));
+                    }
+                    return $new_type;
+                }
+            );
+        };
+        $remove_callable_callback = static function(ConditionVisitor $cv, Node $var_node, Context $context) : Context {
+            return $cv->updateVariableWithConditionalFilter(
+                $var_node,
+                $context,
+                // if (!is_callable($x)) removes non-callable/closure types from $x.
+                // TODO: Could check for __invoke()
+                function(UnionType $union_type) : bool {
+                    return $union_type->hasTypeMatchingCallback(function(Type $type) : bool {
+                        return $type->isCallable();
+                    });
+                },
+                function(UnionType $union_type) : UnionType {
+                    $new_type = new UnionType();
+                    $has_null = false;
+                    $has_other_nullable_types = false;
+                    // Add types which are not callable
+                    foreach ($union_type->getTypeSet() as $type) {
+                        if ($type->isCallable()) {
+                            $has_null = $has_null || $type->getIsNullable();
+                            continue;
+                        }
+                        assert($type instanceof Type);
+                        $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
+                        $new_type->addType($type);
+                    }
+                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
+                    if ($has_null && !$has_other_nullable_types) {
                         $new_type->addType(NullType::instance(false));
                     }
                     return $new_type;
@@ -424,7 +457,7 @@ class ConditionVisitor extends KindVisitorImplementation
             'is_null' => $remove_null_cb,
             'is_array' => $make_basic_negated_assertion_callback(ArrayType::class),
             // 'is_bool' => $make_basic_assertion_callback(BoolType::class),
-            'is_callable' => $make_basic_negated_assertion_callback(CallableType::class),
+            'is_callable' => $remove_callable_callback,
             'is_double' => $remove_float_callback,
             'is_float' => $remove_float_callback,
             'is_int' => $remove_int_callback,
@@ -847,6 +880,22 @@ class ConditionVisitor extends KindVisitorImplementation
             }
             $variable->setUnionType($newType);
         };
+        $callable_callback = static function(Variable $variable, array $args)
+        {
+            // Change the type to match the is_a relationship
+            // If we already have possible callable types, then keep those
+            // (E.g. Closure|false becomes Closure)
+            $newType = $variable->getUnionType()->callableTypes();
+            if ($newType->isEmpty()) {
+                // If there are no inferred types, or the only type we saw was 'null',
+                // assume there this can be any possible scalar.
+                // (Excludes `resource`, which is technically a scalar)
+                $newType->addType(CallableType::instance(false));
+            } else if ($newType->containsNullable()) {
+                $newType = $newType->nonNullableClone();
+            }
+            $variable->setUnionType($newType);
+        };
 
         $float_callback = $make_basic_assertion_callback('float');
         $int_callback = $make_basic_assertion_callback('int');
@@ -857,7 +906,7 @@ class ConditionVisitor extends KindVisitorImplementation
             'is_a' => $is_a_callback,
             'is_array' => $array_callback,
             'is_bool' => $make_basic_assertion_callback('bool'),
-            'is_callable' => $make_basic_assertion_callback('callable'),
+            'is_callable' => $callable_callback,
             'is_double' => $float_callback,
             'is_float' => $float_callback,
             'is_int' => $int_callback,
