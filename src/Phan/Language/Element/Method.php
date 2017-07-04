@@ -221,7 +221,7 @@ class Method extends ClassElement implements FunctionInterface
         Context $context,
         CodeBase $code_base
     ) : Method {
-        if ($clazz->hasMethodWithName($code_base, $clazz->getName())) {
+        if ($clazz->getFQSEN()->getNamespace() === '\\' && $clazz->hasMethodWithName($code_base, $clazz->getName())) {
             $old_style_constructor = $clazz->getMethodByName($code_base, $clazz->getName());
         } else {
             $old_style_constructor = null;
