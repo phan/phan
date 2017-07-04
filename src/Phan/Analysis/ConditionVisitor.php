@@ -365,7 +365,7 @@ class ConditionVisitor extends KindVisitorImplementation
                         $new_type = new UnionType();
                         $has_null = false;
                         $has_other_nullable_types = false;
-                        // Add types which are
+                        // Add types which are not instances of $base_class_name
                         foreach ($union_type->getTypeSet() as $type) {
                             if ($type instanceof $base_class_name) {
                                 $has_null = $has_null || $type->getIsNullable();
@@ -400,7 +400,7 @@ class ConditionVisitor extends KindVisitorImplementation
                     $new_type = new UnionType();
                     $has_null = false;
                     $has_other_nullable_types = false;
-                    // Add types which are
+                    // Add types which are not scalars
                     foreach ($union_type->getTypeSet() as $type) {
                         if ($type instanceof ScalarType && !($type instanceof NullType)) {
                             $has_null = $has_null || $type->getIsNullable();
@@ -433,7 +433,7 @@ class ConditionVisitor extends KindVisitorImplementation
                     $new_type = new UnionType();
                     $has_null = false;
                     $has_other_nullable_types = false;
-                    // Add types which are
+                    // Add types which are not callable
                     foreach ($union_type->getTypeSet() as $type) {
                         if ($type->isCallable()) {
                             $has_null = $has_null || $type->getIsNullable();
