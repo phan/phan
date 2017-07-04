@@ -16,6 +16,15 @@ class Config
     const AST_VERSION = 40;
 
     /**
+     * The version of the Phan plugin system.
+     * Plugin files that wish to be backwards compatible may check this and return different classes based on its existence
+     * and the results of version_compare.
+     * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
+     * New features increment minor versions, and bug fixes increment patch versions.
+     */
+    const PHAN_PLUGIN_VERSION = '2.0.0';
+
+    /**
      * @var string|null
      * The root directory of the project. This is used to
      * store canonical path names and find project resources
@@ -159,7 +168,7 @@ class Config
         // Issue::SEVERITY_CRITICAL. Setting it to only
         // critical issues is a good place to start on a big
         // sloppy mature code base.
-        'minimum_severity' => 0,
+        'minimum_severity' => Issue::SEVERITY_LOW,
 
         // If true, missing properties will be created when
         // they are first seen. If false, we'll report an
@@ -202,15 +211,13 @@ class Config
 
         // If true, check to make sure the return type declared
         // in the doc-block (if any) matches the return type
-        // declared in the method signature. This process is
-        // probably still slow.
-        'check_docblock_signature_return_type_match' => false,
+        // declared in the method signature.
+        'check_docblock_signature_return_type_match' => true,
 
         // If true, check to make sure the param types declared
         // in the doc-block (if any) matches the param types
-        // declared in the method signature. This process is
-        // probably still low.
-        'check_docblock_signature_param_type_match' => false,
+        // declared in the method signature.
+        'check_docblock_signature_param_type_match' => true,
 
         // (*Requires check_docblock_signature_param_type_match to be true*)
         // If true, make narrowed types from phpdoc override
@@ -218,7 +225,7 @@ class Config
         // (E.g. allows specifying desired lists of subclasses,
         //  or to indicate a preference for non-nullable types over nullable types)
         // Affects analysis of the body of the method and the param types passed in by callers.
-        'prefer_narrowed_phpdoc_param_type' => false,
+        'prefer_narrowed_phpdoc_param_type' => true,
 
         // Set to true in order to attempt to detect dead
         // (unreferenced) code. Keep in mind that the

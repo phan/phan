@@ -3,7 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
-class GenericArrayType extends ArrayType
+final class GenericArrayType extends ArrayType
 {
     const NAME = 'array';
 

@@ -19,7 +19,7 @@ abstract class Scope
     /**
      * @var FQSEN|null
      */
-    private $fqsen = null;
+    protected $fqsen = null;
 
     /**
      * @var Variable[]

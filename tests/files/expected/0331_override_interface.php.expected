@@ -1,0 +1,4 @@
+%s:46 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \Override331::offsetTypo, but could not find an overridden method and it is not a magic method
+%s:52 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \Override331::offsetTypo2, but could not find an overridden method and it is not a magic method
+%s:58 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \Override331::offsetTypo3, but could not find an overridden method and it is not a magic method
+%s:71 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \Override331::offsetTypoSuppressed, but could not find an overridden method and it is not a magic method

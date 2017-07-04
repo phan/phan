@@ -9,3 +9,7 @@ namespace B {
     f(function () {});
 }
 
+namespace C {
+    function f(\Closure $c) {}
+    function g(callable $d) { f($d); }
+}

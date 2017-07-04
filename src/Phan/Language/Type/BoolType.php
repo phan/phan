@@ -9,7 +9,7 @@ use Phan\Language\Type;
 assert(class_exists(FalseType::class));
 assert(class_exists(TrueType::class));
 
-class BoolType extends ScalarType
+final class BoolType extends ScalarType
 {
     const NAME = 'bool';
     public static function unionTypeInstance(bool $is_nullable) : UnionType

@@ -19,8 +19,9 @@ composer require --dev etsy/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This branch of Phan depends on PHP 7.0.x with pcntl enabled and the [php-ast](https://github.com/nikic/php-ast) extension. Take a look at later versions of Phan for PHP 7.1+ support.
+This branch of Phan depends on PHP 7.0.x with the [php-ast](https://github.com/nikic/php-ast) extension. Take a look at later versions of Phan for PHP 7.1+ support.
 It is unable to analyze code from PHP 7.1.x+.
+Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (or to support daemon mode).
 
 * **Alternative Installation Methods**<br />
   See [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for alternative methods of using
@@ -34,7 +35,7 @@ Phan and details on how to configure Phan for your project.<br />
 
 Phan is able to perform the following kinds of analysis.
 
-* Check for all methods, functions, classes, traits, interfaces, constants, properties and variables to be defined and accessible.
+* Check that all methods, functions, classes, traits, interfaces, constants, properties and variables are defined and accessible.
 * Check for type safety and arity issues on method/function/closure calls.
 * Check for PHP7/PHP5 backward compatibility
 * Check for sanity with array accesses
@@ -57,8 +58,10 @@ Phan is able to perform the following kinds of analysis.
 * Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#suppress).
 * Supports [magic property annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#property) (partial) (`@property <union_type> <variable_name>`)
 * Supports [`class_alias` annotations (experimental, off by default)](https://github.com/etsy/phan/pull/586), as of 0.9.3-dev
+* Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
-* Can be run on many cores.
+* Can be run on many cores. (requires `pcntl`)
+* [Can run in the background (daemon mode)](https://github.com/etsy/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file. (requires `pcntl`)
 * Output is emitted in text, checkstyle, json or codeclimate formats.
 * Can run user plugins on source for checks specific to your code.
 

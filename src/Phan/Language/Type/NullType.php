@@ -5,7 +5,7 @@ use Phan\Config;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
-class NullType extends ScalarType
+final class NullType extends ScalarType
 {
     const NAME = 'null';
 
@@ -41,7 +41,7 @@ class NullType extends ScalarType
     public function canCastToNonNullableType(Type $type) : bool
     {
         // null_casts_as_any_type means that null or nullable can cast to any type?
-        return Config::get()->null_casts_as_any_type
+        return Config::get_null_casts_as_any_type()
             || parent::canCastToNonNullableType($type);
     }
 

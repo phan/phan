@@ -792,15 +792,24 @@ class Clazz extends AddressableElement
             $property = $code_base->getPropertyByFQSEN(
                 $property_fqsen
             );
-            if ($is_static && !$property->isStatic()) {
-                // TODO: add additional warning about possible static/non-static confusion?
-                throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredStaticProperty)(
-                        $context->getFile(),
-                        $context->getLineNumberStart(),
-                        [ $name, (string)$this->getFQSEN() ]
-                    )
-                );
+            if ($is_static != $property->isStatic()) {
+                if ($is_static) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::AccessPropertyNonStaticAsStatic)(
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [ "{$this->getFQSEN()}->\${$property->getName()}" ]
+                        )
+                    );
+                } else {
+                    throw new IssueException(
+                        Issue::fromType(Issue::AccessPropertyStaticAsNonStatic)(
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [ "{$this->getFQSEN()}::\${$property->getName()}" ]
+                        )
+                    );
+                }
             }
 
             $is_remote_access = (
@@ -880,15 +889,6 @@ class Clazz extends AddressableElement
                     )
                 );
             }
-            if (!$is_static && $property->isStatic()) {
-                throw new IssueException(
-                    Issue::fromType(Issue::AccessPropertyStaticAsNonStatic)(
-                        $context->getFile(),
-                        $context->getLineNumberStart(),
-                        [ "{$this->getFQSEN()}::\${$property->getName()}" ]
-                    )
-                );
-            }
         }
 
         // Check to see if missing properties are allowed
@@ -929,6 +929,37 @@ class Clazz extends AddressableElement
         return $code_base->getPropertyMapByFullyQualifiedClassName(
             $this->getFQSEN()
         );
+    }
+
+    /**
+     * Inherit a class constant from an ancestor class
+     *
+     * @return void
+     */
+    public function inheritConstant(
+        CodeBase $code_base,
+        ClassConstant $constant
+    ) {
+        $constant_fqsen = FullyQualifiedClassConstantName::make(
+            $this->getFQSEN(),
+            $constant->getName()
+        );
+
+        if ($code_base->hasClassConstantWithFQSEN($constant_fqsen)) {
+            // If the constant with that name already exists, mark it as an override.
+            $overriding_constant = $code_base->getClassConstantByFQSEN($constant_fqsen);
+            $overriding_constant->setIsOverride(true);
+            return;
+        }
+
+        // Update the FQSEN if its not associated with this
+        // class yet (always true)
+        if ($constant->getFQSEN() !== $constant_fqsen) {
+            $constant = clone($constant);
+            $constant->setFQSEN($constant_fqsen);
+        }
+
+        $code_base->addClassConstant($constant);
     }
 
     /**
@@ -1977,7 +2008,7 @@ class Clazz extends AddressableElement
 
         // Copy constants
         foreach ($class->getConstantMap($code_base) as $constant) {
-            $this->addConstant($code_base, $constant);
+            $this->inheritConstant($code_base, $constant);
         }
 
         // Copy methods
@@ -2168,6 +2199,9 @@ class Clazz extends AddressableElement
             )
         );
 
+        // Fetch the constants declared within the class, to check if they have override annotations later.
+        $original_declared_class_constants = $this->getConstantMap($code_base);
+
         // Load parent methods, properties, constants
         $this->importAncestorClasses($code_base);
 
@@ -2175,6 +2209,31 @@ class Clazz extends AddressableElement
         AbstractMethodAnalyzer::analyzeAbstractMethodsAreImplemented(
             $code_base, $this
         );
+
+        self::analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
+    }
+
+    /**
+     * @param ClassConstant[] $original_declared_class_constants
+     * @return void
+     */
+    private function analyzeClassConstantOverrides(CodeBase $code_base, array $original_declared_class_constants)
+    {
+        foreach ($original_declared_class_constants as $constant) {
+            if ($constant->isOverrideIntended() && !$constant->getIsOverride()) {
+                if ($constant->hasSuppressIssue(Issue::CommentOverrideOnNonOverrideConstant)) {
+                    continue;
+                }
+                $context = $constant->getContext();
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::CommentOverrideOnNonOverrideConstant,
+                    $context->getLineNumberStart(),
+                    (string)$constant->getFQSEN()
+                );
+            }
+        }
     }
 
     /**

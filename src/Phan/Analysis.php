@@ -129,7 +129,7 @@ class Analysis
     /**
      * @see self::parseNodeInContext
      */
-    private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node) {
+    private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node) : Context {
         // Save a reference to the outer context
         $outer_context = $context;
 
@@ -193,7 +193,7 @@ class Analysis
     public static function analyzeFunctions(CodeBase $code_base, array $file_filter = null)
     {
         $plugin_set = ConfigPluginSet::instance();
-        $has_plugins = $plugin_set->hasPlugins();
+        $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
         $function_count = count($code_base->getFunctionAndMethodSet());
         $show_progress = CLI::shouldShowProgress();
         $i = 0;
@@ -231,7 +231,7 @@ class Analysis
             // Assumes that the given plugins will emit an issue in the same file as the function/method,
             // which isn't necessarily the case.
             // 0.06
-            if ($has_plugins) {
+            if ($has_function_or_method_plugins) {
                 if ($function_or_method instanceof Func) {
                     $plugin_set->analyzeFunction(
                         $code_base, $function_or_method

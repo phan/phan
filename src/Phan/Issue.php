@@ -8,6 +8,7 @@ use Phan\Language\Context;
  */
 class Issue
 {
+    // Issue::CATEGORY_SYNTAX
     const SyntaxError               = 'PhanSyntaxError';
 
     // Issue::CATEGORY_UNDEFINED
@@ -173,6 +174,7 @@ class Issue
     const AccessClassConstantPrivate     = 'PhanAccessClassConstantPrivate';
     const AccessClassConstantProtected   = 'PhanAccessClassConstantProtected';
     const AccessPropertyStaticAsNonStatic = 'PhanAccessPropertyStaticAsNonStatic';
+    const AccessPropertyNonStaticAsStatic = 'PhanAccessPropertyNonStaticAsStatic';
     const AccessOwnConstructor = 'PhanAccessOwnConstructor';
 
     const AccessConstantInternal    = 'PhanAccessConstantInternal';
@@ -206,6 +208,8 @@ class Issue
     const UnextractableAnnotationPart      = 'PhanUnextractableAnnotationPart';
     const CommentParamWithoutRealParam     = 'PhanCommentParamWithoutRealParam';
     const CommentParamOnEmptyParamList     = 'PhanCommentParamOnEmptyParamList';
+    const CommentOverrideOnNonOverrideMethod = 'PhanCommentOverrideOnNonOverrideMethod';
+    const CommentOverrideOnNonOverrideConstant = 'PhanCommentOverrideOnNonOverrideConstant';
 
 
     const CATEGORY_ACCESS            = 1 << 1;
@@ -224,6 +228,7 @@ class Issue
     const CATEGORY_GENERIC           = 1 << 14;
     const CATEGORY_INTERNAL          = 1 << 15;
     const CATEGORY_COMMENT           = 1 << 16;
+    const CATEGORY_SYNTAX            = 1 << 17;
 
     const CATEGORY_NAME = [
         self::CATEGORY_ACCESS            => 'AccessError',
@@ -241,6 +246,7 @@ class Issue
         self::CATEGORY_PLUGIN            => 'Plugin',
         self::CATEGORY_GENERIC           => 'Generic',
         self::CATEGORY_INTERNAL          => 'Internal',
+        self::CATEGORY_SYNTAX            => 'Syntax',
     ];
 
     const SEVERITY_LOW      = 0;
@@ -363,13 +369,14 @@ class Issue
          * If new type ids are added, existing ones should not be changed.
          */
         $error_list = [
+            // Issue::CATEGORY_SYNTAX
             new Issue(
                 self::SyntaxError,
-                self::CATEGORY_UNDEFINED,
+                self::CATEGORY_SYNTAX,
                 self::SEVERITY_CRITICAL,
                 "%s",
                 self::REMEDIATION_A,
-                1
+                17000
             ),
 
             // Issue::CATEGORY_UNDEFINED
@@ -379,7 +386,7 @@ class Issue
                 self::SEVERITY_LOW,
                 "Empty file {FILE}",
                 self::REMEDIATION_B,
-                1000
+                11000
             ),
             new Issue(
                 self::ParentlessClass,
@@ -387,7 +394,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Reference to parent of class {CLASS} that does not extend anything",
                 self::REMEDIATION_B,
-                1001
+                11001
             ),
             new Issue(
                 self::UndeclaredClass,
@@ -395,7 +402,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Reference to undeclared class {CLASS}",
                 self::REMEDIATION_B,
-                1002
+                11002
             ),
             new Issue(
                 self::UndeclaredExtendedClass,
@@ -403,15 +410,15 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Class extends undeclared class {CLASS}",
                 self::REMEDIATION_B,
-                1003
+                11003
             ),
             new Issue(
                 self::UndeclaredInterface,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_CRITICAL,
-                "Class implements undeclared interface {CLASS}",
+                "Class implements undeclared interface {INTERFACE}",
                 self::REMEDIATION_B,
-                1004
+                11004
             ),
             new Issue(
                 self::UndeclaredTrait,
@@ -419,7 +426,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Class uses undeclared trait {TRAIT}",
                 self::REMEDIATION_B,
-                1005
+                11005
             ),
             new Issue(
                 self::UndeclaredClassCatch,
@@ -427,7 +434,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Catching undeclared class {CLASS}",
                 self::REMEDIATION_B,
-                1006
+                11006
             ),
             new Issue(
                 self::UndeclaredClassConstant,
@@ -435,7 +442,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Reference to constant {CONST} from undeclared class {CLASS}",
                 self::REMEDIATION_B,
-                1007
+                11007
             ),
             new Issue(
                 self::UndeclaredClassInstanceof,
@@ -443,7 +450,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Checking instanceof against undeclared class {CLASS}",
                 self::REMEDIATION_B,
-                1008
+                11008
             ),
             new Issue(
                 self::UndeclaredClassMethod,
@@ -451,7 +458,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Call to method {METHOD} from undeclared class {CLASS}",
                 self::REMEDIATION_B,
-                1009
+                11009
             ),
             new Issue(
                 self::UndeclaredClassReference,
@@ -459,7 +466,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Reference to undeclared class {CLASS}",
                 self::REMEDIATION_B,
-                1010
+                11010
             ),
             new Issue(
                 self::UndeclaredConstant,
@@ -467,7 +474,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Reference to undeclared constant {CONST}",
                 self::REMEDIATION_B,
-                1011
+                11011
             ),
             new Issue(
                 self::UndeclaredFunction,
@@ -475,7 +482,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Call to undeclared function {FUNCTION}",
                 self::REMEDIATION_B,
-                1012
+                11012
             ),
             new Issue(
                 self::UndeclaredMethod,
@@ -483,7 +490,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Call to undeclared method {METHOD}",
                 self::REMEDIATION_B,
-                1013
+                11013
             ),
             new Issue(
                 self::UndeclaredStaticMethod,
@@ -491,7 +498,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Static call to undeclared method {METHOD}",
                 self::REMEDIATION_B,
-                1014
+                11014
             ),
             new Issue(
                 self::UndeclaredProperty,
@@ -499,7 +506,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Reference to undeclared property {PROPERTY}",
                 self::REMEDIATION_B,
-                1015
+                11015
             ),
             new Issue(
                 self::UndeclaredStaticProperty,
@@ -507,7 +514,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Static property '{PROPERTY}' on {CLASS} is undeclared",
                 self::REMEDIATION_B,
-                1016
+                11016
             ),
             new Issue(
                 self::TraitParentReference,
@@ -515,7 +522,7 @@ class Issue
                 self::SEVERITY_LOW,
                 "Reference to parent from trait {TRAIT}",
                 self::REMEDIATION_B,
-                1017
+                11017
             ),
             new Issue(
                 self::UndeclaredVariable,
@@ -523,7 +530,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Variable \${VARIABLE} is undeclared",
                 self::REMEDIATION_B,
-                1018
+                11018
             ),
             new Issue(
                 self::UndeclaredTypeParameter,
@@ -531,7 +538,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Parameter of undeclared type {TYPE}",
                 self::REMEDIATION_B,
-                1019
+                11019
             ),
             new Issue(
                 self::UndeclaredTypeProperty,
@@ -539,15 +546,15 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Property {PROPERTY} has undeclared type {TYPE}",
                 self::REMEDIATION_B,
-                1020
+                11020
             ),
             new Issue(
                 self::UndeclaredClosureScope,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Reference to undeclared class {CLASS} in PhanClosureScope",
+                "Reference to undeclared class {CLASS} in @phan-closure-scope",
                 self::REMEDIATION_B,
-                1021
+                11021
             ),
             new Issue(
                 self::ClassContainsAbstractMethod,
@@ -555,7 +562,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "non-abstract class {CLASS} contains abstract method {METHOD} declared at {FILE}:{LINE}",
                 self::REMEDIATION_B,
-                1022
+                11022
             ),
             new Issue(
                 self::ClassContainsAbstractMethodInternal,
@@ -563,7 +570,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "non-abstract class {CLASS} contains abstract internal method {METHOD}",
                 self::REMEDIATION_B,
-                1023
+                11023
             ),
             new Issue(
                 self::UndeclaredAliasedMethodOfTrait,
@@ -571,7 +578,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Alias {METHOD} was defined for a method {METHOD} which does not exist in trait {TRAIT}",
                 self::REMEDIATION_B,
-                1024
+                11024
             ),
             new Issue(
                 self::RequiredTraitNotAdded,
@@ -579,7 +586,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Required trait {TRAIT} for trait adaptation was not added to class",
                 self::REMEDIATION_B,
-                1025
+                11025
             ),
             new Issue(
                 self::AmbiguousTraitAliasSource,
@@ -587,7 +594,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Trait alias {METHOD} has an ambiguous source method {METHOD} with more than one possible source trait. Possibilities: {TRAIT}",
                 self::REMEDIATION_B,
-                1026
+                11026
             ),
             new Issue(
                 self::UndeclaredVariableDim,
@@ -595,7 +602,7 @@ class Issue
                 self::SEVERITY_LOW,
                 "Variable \${VARIABLE} was undeclared, but array fields are being added to it.",
                 self::REMEDIATION_B,
-                1027
+                11027
             ),
             new Issue(
                 self::UndeclaredTypeReturnType,
@@ -603,7 +610,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Return type of {METHOD} is undeclared type {TYPE}",
                 self::REMEDIATION_B,
-                1028
+                11028
             ),
             new Issue(
                 self::UndeclaredClassAliasOriginal,
@@ -611,7 +618,7 @@ class Issue
                 self::SEVERITY_CRITICAL,
                 "Reference to undeclared class {CLASS} for the original class of a class_alias for {CLASS}",
                 self::REMEDIATION_B,
-                1029
+                11029
             ),
 
             // Issue::CATEGORY_ANALYSIS
@@ -629,7 +636,7 @@ class Issue
                 self::SEVERITY_LOW,
                 "Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/etsy/phan/issues/new with a test case.",
                 self::REMEDIATION_B,
-                2000
+                2001
             ),
 
             // Issue::CATEGORY_TYPE
@@ -663,7 +670,7 @@ class Issue
                 self::SEVERITY_LOW,
                 "{PARAMETER} is not variadic in comment, but variadic in param ({PARAMETER})",
                 self::REMEDIATION_B,
-                10022
+                10023
             ),
             new Issue(
                 self::TypeMismatchArgument,
@@ -703,7 +710,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Doc-block of \${VARIABLE} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature",
                 self::REMEDIATION_B,
-                10021
+                10022
             ),
             new Issue(
                 self::TypeMissingReturn,
@@ -765,7 +772,7 @@ class Issue
                 self::TypeInstantiateAbstract,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Instantiation of abstract class {TYPE}",
+                "Instantiation of abstract class {CLASS}",
                 self::REMEDIATION_B,
                 10013
             ),
@@ -781,9 +788,9 @@ class Issue
                 self::TypeInvalidClosureScope,
                 self::CATEGORY_TYPE,
                 self::SEVERITY_NORMAL,
-                "Invalid PhanClosureScope: expected a class name, got {TYPE}",
+                "Invalid @phan-closure-scope: expected a class name, got {TYPE}",
                 self::REMEDIATION_B,
-                10023
+                10024
             ),
             new Issue(
                 self::TypeInvalidRightOperand,
@@ -839,7 +846,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 'Indirect variable ${(expr)} has invalid inner expression type {TYPE}, expected string/integer',
                 self::REMEDIATION_B,
-                10023
+                10025
             ),
             new Issue(
                 self::TypeMagicVoidWithReturn,
@@ -847,7 +854,7 @@ class Issue
                 self::SEVERITY_LOW,
                 'Found a return statement with a value in the implementation of the magic method {METHOD}, expected void return type',
                 self::REMEDIATION_B,
-                10024
+                10026
             ),
 
             // Issue::CATEGORY_VARIABLE
@@ -1514,7 +1521,7 @@ class Issue
                 self::SEVERITY_NORMAL,
                 "Accessing own constructor directly via {CLASS}::__construct",
                 self::REMEDIATION_B,
-                1010
+                1020
             ),
             new Issue(
                 self::AccessMethodProtectedWithCallMagicMethod,
@@ -1566,7 +1573,7 @@ class Issue
             ),
             new Issue(
                 self::AccessOverridesFinalMethod,
-                self::CATEGORY_PARAMETER,
+                self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Declaration of method {METHOD} overrides final method {METHOD} defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
@@ -1574,7 +1581,7 @@ class Issue
             ),
             new Issue(
                 self::AccessOverridesFinalMethodInternal,
-                self::CATEGORY_PARAMETER,
+                self::CATEGORY_ACCESS,
                 self::SEVERITY_CRITICAL,
                 "Declaration of method {METHOD} overrides final internal method {METHOD}",
                 self::REMEDIATION_B,
@@ -1582,11 +1589,19 @@ class Issue
             ),
             new Issue(
                 self::AccessOverridesFinalMethodPHPDoc,
-                self::CATEGORY_PARAMETER,
+                self::CATEGORY_ACCESS,
                 self::SEVERITY_LOW,
                 "Declaration of phpdoc method {METHOD} is an unnecessary override of final method {METHOD} defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 1019
+            ),
+            new Issue(
+                self::AccessPropertyNonStaticAsStatic,
+                self::CATEGORY_ACCESS,
+                self::SEVERITY_CRITICAL,
+                "Accessing non static property {PROPERTY} as static",
+                self::REMEDIATION_B,
+                1021
             ),
 
             // Issue::CATEGORY_COMPATIBLE
@@ -1704,7 +1719,7 @@ class Issue
                 self::MisspelledAnnotation,
                 self::CATEGORY_COMMENT,
                 self::SEVERITY_LOW,
-                "Saw misspelled annotation {COMMENT}, should be {COMMENT}",
+                "Saw misspelled annotation {COMMENT}, should be one of {COMMENT}",
                 self::REMEDIATION_B,
                 16001
             ),
@@ -1740,18 +1755,67 @@ class Issue
                 self::REMEDIATION_B,
                 16005
             ),
+            new Issue(
+                self::CommentOverrideOnNonOverrideMethod,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw an @override annotation for method {METHOD}, but could not find an overridden method and it is not a magic method",
+                self::REMEDIATION_B,
+                16006
+            ),
+            new Issue(
+                self::CommentOverrideOnNonOverrideConstant,
+                self::CATEGORY_COMMENT,
+                self::SEVERITY_LOW,
+                "Saw an @override annotation for class constant {CONST}, but could not find an overridden constant",
+                self::REMEDIATION_B,
+                16007
+            ),
         ];
 
-        $error_map = [];
-        foreach ($error_list as $i => $error) {
+        self::sanityCheckErrorList($error_list);
+        // Verified the error meets preconditions, now add it.
+        foreach ($error_list as $error) {
             $error_type = $error->getType();
-            \assert(!\array_key_exists($error_type, $error_map), "Issue of type $error_type has multiple definitions");
-            \assert(\strncmp($error_type, 'Phan', 4) === 0, "Issue of type $error_type should begin with 'Phan'");
             $error_map[$error_type] = $error;
         }
 
         return $error_map;
     }
+
+    /**
+     * @param Issue[] $error_list
+     * @return void
+     */
+    private static function sanityCheckErrorList(array $error_list)
+    {
+        $error_map = [];
+        $unique_type_id_set = [];
+        foreach ($error_list as $error) {
+            $error_type = $error->getType();
+            \assert(!\array_key_exists($error_type, $error_map), "Issue of type $error_type has multiple definitions");
+            \assert(\strncmp($error_type, 'Phan', 4) === 0, "Issue of type $error_type should begin with 'Phan'");
+
+            $error_type_id = $error->getTypeId();
+            \assert(!\array_key_exists($error_type_id, $unique_type_id_set), "Multiple issues exist with pylint error id $error_type_id");
+            $unique_type_id_set[$error_type_id] = $error;
+            $category = $error->getCategory();
+            $expected_category_for_type_id_bitpos = (int)floor($error_type_id / 1000);
+            $expected_category_for_type_id = 1 << $expected_category_for_type_id_bitpos;
+            if ($category !== $expected_category_for_type_id) {
+                assert(false, sprintf(
+                    "Expected error %s of type %d to be category %d(1<<%d), got 1<<%d\n",
+                    $error_type,
+                    $error_type_id,
+                    $category,
+                    (int)round(log($category, 2)),
+                    $expected_category_for_type_id_bitpos
+                ));
+            }
+            $error_map[$error_type] = $error;
+        }
+    }
+
 
     /**
      * @return string

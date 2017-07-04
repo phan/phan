@@ -4,8 +4,9 @@ use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginV2;
+use Phan\PluginV2\AnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
 /**
@@ -13,34 +14,13 @@ use ast\Node;
  *
  * @see DollarDollarPlugin for generic plugin documentation.
  */
-class DuplicateArrayKeyPlugin extends PluginImplementation {
-
+class DuplicateArrayKeyPlugin extends PluginV2 implements AnalyzeNodeCapability {
     /**
-     * @param CodeBase $code_base
-     * The code base in which the node exists
-     *
-     * @param Context $context
-     * The context in which the node exits. This is
-     * the context inside the given node rather than
-     * the context outside of the given node
-     *
-     * @param Node $node
-     * The php-ast Node being analyzed.
-     *
-     * @param Node $node
-     * The parent node of the given node (if one exists).
-     *
-     * @return void
+     * @return string - name of PluginAwareAnalysisVisitor subclass
+     * @override
      */
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        (new DuplicateArrayKeyVisitor($code_base, $context, $this))(
-            $node
-        );
+    public static function getAnalyzeNodeVisitorClassName() : string {
+        return DuplicateArrayKeyVisitor::class;
     }
 }
 
@@ -53,43 +33,16 @@ class DuplicateArrayKeyPlugin extends PluginImplementation {
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DuplicateArrayKeyVisitor extends AnalysisVisitor {
-
-    /** @var Plugin */
-    private $plugin;
-
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        Plugin $plugin
-    ) {
-        // After constructing on parent, `$code_base` and
-        // `$context` will be available as protected properties
-        // `$this->code_base` and `$this->context`.
-        parent::__construct($code_base, $context);
-
-        // We take the plugin so that we can call
-        // `$this->plugin->emitIssue(...)` on it to emit issues
-        // to the user.
-        $this->plugin = $plugin;
-    }
-
-    /**
-     * Default visitor that does nothing
-     *
-     * @param Node $node
-     * A node to analyze
-     *
-     * @return void
-     */
-    public function visit(Node $node) {
-    }
+class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
+    // Do not define the visit() method unless a plugin has code and needs to visit most/all node types.
 
     /**
      * @param Node $node
      * A node to analyze
      *
      * @return void
+     *
+     * @override
      */
     public function visitArray(Node $node) {
         $children = $node->children;
@@ -114,11 +67,10 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
                 // Skip non-literal keys. (TODO: Could check for constants (e.g. A::B) being used twice)
                 continue;
             }
+            \assert(is_scalar($key));  // redundant Phan annotation.
             if (isset($keySet[$key])) {
                 $normalizedKey = self::normalizeKey($key);
-                $this->plugin->emitIssue(
-                    $this->code_base,
-                    $this->context,
+                $this->emit(
                     'PhanPluginDuplicateArrayKey',
                     "Duplicate/Equivalent array key literal({VARIABLE}) detected in array - the earlier entry will be ignored.",
                     [(string)$normalizedKey],
@@ -132,9 +84,7 @@ class DuplicateArrayKeyVisitor extends AnalysisVisitor {
         if ($hasEntryWithoutKey && count($keySet) > 0) {
             // This is probably a typo in most codebases. (e.g. ['foo' => 'bar', 'baz'])
             // In phan, InternalFunctionSignatureMap.php does this deliberately with the first parameter being the return type.
-            $this->plugin->emitIssue(
-                $this->code_base,
-                $this->context,
+            $this->emit(
                 'PhanPluginMixedKeyNoKey',
                 "Should not mix array entries of the form [key => value,] with entries of the form [value,].",
                 [],

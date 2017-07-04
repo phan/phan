@@ -7,6 +7,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
@@ -159,6 +160,9 @@ class Type
      */
     protected $is_nullable = false;
 
+    /**
+     * @var Type[] - Maps a key to a Type or subclass of Type
+     */
     private static $canonical_object_map = [];
 
     /**
@@ -293,12 +297,21 @@ class Type
 
         $value = self::$canonical_object_map[$key] ?? null;
         if (!$value) {
-            $value = new static(
-                $namespace,
-                $type_name,
-                $template_parameter_type_list,
-                $is_nullable
-            );
+            if ($type_name === 'Closure' && $namespace === '\\') {
+                $value = new ClosureType(
+                    $namespace,
+                    $type_name,
+                    $template_parameter_type_list,
+                    $is_nullable
+                );
+            } else {
+                $value = new static(
+                    $namespace,
+                    $type_name,
+                    $template_parameter_type_list,
+                    $is_nullable
+                );
+            }
             self::$canonical_object_map[$key] = $value;
         }
         return $value;
@@ -488,6 +501,8 @@ class Type
                 return BoolType::instance($is_nullable);
             case 'callable':
                 return CallableType::instance($is_nullable);
+            case 'closure':
+                return ClosureType::instance($is_nullable);
             case 'false':
                 return FalseType::instance($is_nullable);
             case 'float':
@@ -826,6 +841,17 @@ class Type
     }
 
     /**
+     * @return FullyQualifiedClassName
+     * A fully-qualified class name derived from this type
+     * (This differs from asFQSEN() in ClosureType)
+     */
+    public function asClassFQSEN() : FullyQualifiedClassName
+    {
+        // Note: some subclasses, such as CallableType, return different subtypes of FQSEN
+        return FullyQualifiedClassName::fromType($this);
+    }
+
+    /**
      * @return string
      * The name associated with this type
      */
@@ -1050,6 +1076,15 @@ class Type
     public function isScalar() : bool
     {
         return false;  // Overridden in subclass ScalarType
+    }
+
+    /**
+     * @return bool
+     * True if this type is a callable or a Closure.
+     */
+    public function isCallable() : bool
+    {
+        return false;  // Overridden in subclass CallableType, ClosureType
     }
 
     /**
@@ -1559,6 +1594,7 @@ class Type
         static $map = [
             'boolean'  => 'bool',
             'callback' => 'callable',
+            'closure'  => 'Closure',
             'double'   => 'float',
             'integer'  => 'int',
         ];
