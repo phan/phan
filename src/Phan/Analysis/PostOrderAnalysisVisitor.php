@@ -226,34 +226,43 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             if ($child_node instanceof Node
                 && $child_node->kind == \ast\AST_VAR
             ) {
-                $variable_name = $child_node->children['name'];
-
-                // Ignore $$var type things
-                if (!\is_string($variable_name)) {
-                    continue;
-                }
-
-                // Don't worry about non-existent undeclared variables
-                // in the global scope if configured to do so
-                if (Config::getValue('ignore_undeclared_variables_in_global_scope')
-                    && $this->context->isInGlobalScope()
-                ) {
-                    continue;
-                }
-
-                if (!$this->context->getScope()->hasVariableWithName($variable_name)
-                    && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())
-                ) {
-                    $this->emitIssue(
-                        Issue::UndeclaredVariable,
-                        $child_node->lineno ?? 0,
-                        $variable_name
-                    );
-                }
             }
         }
 
         return $this->context;
+    }
+
+    /**
+     * Check if a given variable is undeclared.
+     * @param Node - Node with kind AST_VAR
+     * @return void
+     */
+    private function checkForUndeclaredVariable(Node $node)
+    {
+        $variable_name = $node->children['name'];
+
+        // Ignore $$var type things
+        if (!\is_string($variable_name)) {
+            return;
+        }
+
+        // Don't worry about non-existent undeclared variables
+        // in the global scope if configured to do so
+        if (Config::getValue('ignore_undeclared_variables_in_global_scope')
+            && $this->context->isInGlobalScope()
+        ) {
+            return;
+        }
+
+        if (!$this->context->getScope()->hasVariableWithName($variable_name)
+            && !Variable::isHardcodedVariableInScopeWithName($variable_name, $this->context->isInGlobalScope())
+        ) {
+            $this->emitIssue(
+                Issue::UndeclaredVariable,
+                $node->lineno ?? 0,
+                $variable_name
+            );
+        }
     }
 
     /**
@@ -426,8 +435,32 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitVar(Node $node) : Context
     {
-
         $this->analyzeNoOp($node, Issue::NoopVariable);
+        $parent_node = $this->parent_node;
+        if ($parent_node instanceof Node) {
+            $parent_kind = $parent_node->kind;
+            /**
+             * These types are either types which create variables,
+             * or types which will be checked in other parts of Phan
+             */
+            static $skip_var_check_types = [
+                \ast\AST_ARG_LIST       => true,  // may be a reference
+                \ast\AST_ARRAY_ELEM     => true,  // [$X, $y] = expr() is an AST_ARRAY_ELEM. visitArray() checks the right hand side.
+                \ast\AST_ASSIGN_OP      => true,  // checked in visitAssignOp
+                \ast\AST_ASSIGN_REF     => true,  // Creates by reference?
+                \ast\AST_ASSIGN         => true,  // checked in visitAssign
+                \ast\AST_DIM            => true,  // should be checked elsewhere, as part of check for array access to non-array/string
+                \ast\AST_GLOBAL         => true,  // global $var;
+                \ast\AST_PARAM_LIST     => true,  // this creates the variable
+                \ast\AST_STATIC         => true,  // static $var;
+                \ast\AST_STMT_LIST      => true,  // ;$var; (Implicitly creates the variable. Already checked to emit PhanNoopVariable)
+                \ast\AST_USE_ELEM       => true,  // may be a reference, checked elsewhere
+            ];
+
+            if (!\array_key_exists($parent_kind, $skip_var_check_types)) {
+                $this->checkForUndeclaredVariable($node);
+            }
+        }
         return $this->context;
     }
 
