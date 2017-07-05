@@ -201,6 +201,8 @@ class Func extends AddressableElement implements FunctionInterface
 
         // Set the parameter list on the function
         $func->setParameterList($parameter_list);
+        // Keep an copy of the original parameter list, to check for fatal errors later on.
+        $func->setRealParameterList($parameter_list);
 
         $func->setNumberOfRequiredParameters(\array_reduce(
             $parameter_list,

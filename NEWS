@@ -22,6 +22,10 @@ New Features (Analysis)
 + Create `PhanTypeMismatchDeclaredParam` (Move the check to after parse phase is finished)
   Also add config setting `prefer_narrowed_phpdoc_param_type` (See "New Features (CLI, Configs))
   This config is enabled by default.
+
+  Also create `PhanTypeMismatchDeclaredParamNullable` when params such as `function foo(string $x = null)`
+  are documented as the narrowed forms `@param null $x` or `@param string $x`.
+  Those should be changed to either `string|null` or `?string`.
 + Detect undeclared return types at point of declaration, and emit `PhanUndeclaredTypeReturnType` (Issue #835)
 + Create `PhanParamSignaturePHPDocMismatch*` issue types, for mismatches between `@method` and real signature/other `@method` tag.
 + Create `PhanAccessWrongInheritanceCategory*` issue types to warn about classes extending a trait/interface instead of class, etc. (#873)
@@ -81,6 +85,8 @@ Bug Fixes
 + Consistently exit with non-zero exit code if there are multiple processes, and any process failed to return valid results. (Issue #868)
 + Fixes #986 : PhanUndeclaredVariable used to fail to be emitted in some deeply nested expressions, such as `return $undefVar . 'suffix';`
 + Make Phan infer the return types of closures, both for closures invoked inline and closures declared then invoked later (Issue #564)
++ Phan now correctly analyze global functions for mismatches of phpdoc types and real parameter types.
+  Previously, it wouldn't emit warnings for global functions, only for methods.
 
 Backwards Incompatible Changes
 + Fix categories of some issue types, renumber error ids for the pylint error formatter to be unique and consistent.

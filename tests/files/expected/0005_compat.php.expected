@@ -1,3 +1,3 @@
 %s:16 PhanTypeMismatchDefault Default value for int $b can't be false
 %s:16 PhanTypeMismatchDefault Default value for string $c can't be int
-
+%s:25 PhanTypeMismatchDeclaredParamNullable Doc-block of $categories in fromCategories is phpdoc param type \A which is not a permitted replacement of the nullable param type ?\A declared in the signature ('?T' should be documented as 'T|null' or '?T')
