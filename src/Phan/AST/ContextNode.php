@@ -26,6 +26,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -555,6 +556,121 @@ class ContextNode
                 [ (string)$method_fqsen ]
             )
         );
+    }
+
+    /**
+     * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
+     * @return \Generator
+     */
+    public function getFunctionFromNode()
+    {
+        $expression = $this->node;
+
+        if ($expression->kind == \ast\AST_VAR) {
+            $variable_name = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $expression
+            ))->getVariableName();
+
+            if (empty($variable_name)) {
+                return;
+            }
+
+            // $var() - hopefully a closure, otherwise we don't know
+            if ($this->context->getScope()->hasVariableWithName(
+                $variable_name
+            )) {
+                $variable = $this->context->getScope()
+                    ->getVariableByName($variable_name);
+
+                $union_type = $variable->getUnionType();
+                if ($union_type->isEmpty()) {
+                    return;
+                }
+
+                foreach ($union_type->getTypeSet() as $type) {
+                    // TODO: Allow CallableType to have FQSENs as well, e.g. `$x = [MyClass::class, 'myMethod']` has an FQSEN in a sense.
+                    if (!($type instanceof ClosureType)) {
+                        continue;
+                    }
+
+                    $closure_fqsen =
+                        FullyQualifiedFunctionName::fromFullyQualifiedString(
+                            (string)$type->asFQSEN()
+                        );
+
+                    if ($this->code_base->hasFunctionWithFQSEN(
+                        $closure_fqsen
+                    )) {
+                        // Get the closure
+                        $function = $this->code_base->getFunctionByFQSEN(
+                            $closure_fqsen
+                        );
+
+                        yield $function;
+                    }
+                }
+            }
+        } elseif ($expression->kind == \ast\AST_NAME
+            // nothing to do
+        ) {
+            try {
+                $method = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $expression
+                ))->getFunction(
+                    $expression->children['name']
+                        ?? $expression->children['method']
+                );
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
+                return $this->context;
+            }
+
+            yield $method;
+        } elseif ($expression->kind == \ast\AST_CALL
+            || $expression->kind == \ast\AST_STATIC_CALL
+            || $expression->kind == \ast\AST_NEW
+            || $expression->kind == \ast\AST_METHOD_CALL
+        ) {
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $expression
+            ))->getClassList();
+
+            foreach ($class_list as $class) {
+                if (!$class->hasMethodWithName(
+                    $this->code_base,
+                    '__invoke'
+                )) {
+                    continue;
+                }
+
+                $method = $class->getMethodByNameInContext(
+                    $this->code_base,
+                    '__invoke',
+                    $this->context
+                );
+
+                // Check the call for parameter and argument types
+                yield $method;
+            }
+        } elseif ($expression->kind === \ast\AST_CLOSURE) {
+            $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
+                $this->context->withLineNumberStart($expression->lineno ?? 0),
+                $expression
+            );
+            $method = $this->code_base->getFunctionByFQSEN($closure_fqsen);
+            yield $method;
+        }
+        // TODO: AST_CLOSURE
     }
 
     /**

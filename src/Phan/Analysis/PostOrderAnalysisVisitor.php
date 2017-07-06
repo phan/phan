@@ -732,118 +732,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitCall(Node $node) : Context
     {
         $expression = $node->children['expr'];
+        $function_list_generator = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $expression
+        ))->getFunctionFromNode();
 
-        if ($expression->kind == \ast\AST_VAR) {
-            $variable_name = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $expression
-            ))->getVariableName();
-
-            if (empty($variable_name)) {
-                return $this->context;
-            }
-
-            // $var() - hopefully a closure, otherwise we don't know
-            if ($this->context->getScope()->hasVariableWithName(
-                $variable_name
-            )) {
-                $variable = $this->context->getScope()
-                    ->getVariableByName($variable_name);
-
-                $union_type = $variable->getUnionType();
-                if ($union_type->isEmpty()) {
-                    return $this->context;
-                }
-
-                foreach ($union_type->getTypeSet() as $type) {
-                    // TODO: Allow CallableType to have FQSENs as well, e.g. `$x = [MyClass::class, 'myMethod']` has an FQSEN in a sense.
-                    if (!($type instanceof ClosureType)) {
-                        continue;
-                    }
-
-                    $closure_fqsen =
-                        FullyQualifiedFunctionName::fromFullyQualifiedString(
-                            (string)$type->asFQSEN()
-                        );
-
-                    if ($this->code_base->hasFunctionWithFQSEN(
-                        $closure_fqsen
-                    )) {
-                        // Get the closure
-                        $function = $this->code_base->getFunctionByFQSEN(
-                            $closure_fqsen
-                        );
-
-                        // Check the call for paraemter and argument types
-                        $this->analyzeCallToMethod(
-                            $this->code_base,
-                            $function,
-                            $node
-                        );
-                    }
-                }
-            }
-        } elseif ($expression->kind == \ast\AST_NAME
-            // nothing to do
-        ) {
-            try {
-                $method = (new ContextNode(
-                    $this->code_base,
-                    $this->context,
-                    $expression
-                ))->getFunction(
-                    $expression->children['name']
-                        ?? $expression->children['method']
-                );
-            } catch (IssueException $exception) {
-                Issue::maybeEmitInstance(
-                    $this->code_base,
-                    $this->context,
-                    $exception->getIssueInstance()
-                );
-                return $this->context;
-            }
-
+        foreach ($function_list_generator as $function) {
+            assert($function instanceof FunctionInterface);
             // Check the call for paraemter and argument types
             $this->analyzeCallToMethod(
                 $this->code_base,
-                $method,
+                $function,
                 $node
             );
-        } elseif ($expression->kind == \ast\AST_CALL
-            || $expression->kind == \ast\AST_STATIC_CALL
-            || $expression->kind == \ast\AST_NEW
-            || $expression->kind == \ast\AST_METHOD_CALL
-        ) {
-            $class_list = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $expression
-            ))->getClassList();
-
-            foreach ($class_list as $class) {
-                if (!$class->hasMethodWithName(
-                    $this->code_base,
-                    '__invoke'
-                )) {
-                    continue;
-                }
-
-                $method = $class->getMethodByNameInContext(
-                    $this->code_base,
-                    '__invoke',
-                    $this->context
-                );
-
-                // Check the call for parameter and argument types
-                $this->analyzeCallToMethod(
-                    $this->code_base,
-                    $method,
-                    $node
-                );
-            }
-
         }
 
         return $this->context;
