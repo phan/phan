@@ -87,6 +87,8 @@ Bug Fixes
 + Make Phan infer the return types of closures, both for closures invoked inline and closures declared then invoked later (Issue #564)
 + Phan now correctly analyze global functions for mismatches of phpdoc types and real parameter types.
   Previously, it wouldn't emit warnings for global functions, only for methods.
++ Don't add `mixed` to inferred union types of properties which already have non-empty phpdoc types. (Issue #512)
+  mixed would just result in Phan failing to emit any types of issues.
 
 Backwards Incompatible Changes
 + Fix categories of some issue types, renumber error ids for the pylint error formatter to be unique and consistent.

@@ -15,8 +15,10 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\PassByReferenceVariable;
 use Phan\Language\Element\Parameter;
+use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type\MixedType;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -387,14 +389,10 @@ class AssignmentVisitor extends AnalysisVisitor
                         $this->code_base
                     )
                 ) {
-                    $property_union_type->addUnionType(
-                        $this->right_type
-                    );
+                    $this->addTypesToProperty($property);
                 } else if ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
                     // Add any type if this is a subclass with array access.
-                    $property_union_type->addUnionType(
-                        $this->right_type
-                    );
+                    $this->addTypesToProperty($property);
                 } else {
                     $this->emitIssue(
                         Issue::TypeMismatchProperty,
@@ -403,8 +401,8 @@ class AssignmentVisitor extends AnalysisVisitor
                         "{$clazz->getFQSEN()}::{$property->getName()}",
                         (string)$property_union_type
                     );
-                    return $this->context;
                 }
+                return $this->context;
             } else {
                 if (!$this->right_type->canCastToExpandedUnionType(
                         $property_union_type,
@@ -427,9 +425,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
 
             // After having checked it, add this type to it
-            $property->getUnionType()->addUnionType(
-                $this->right_type
-            );
+            $this->addTypesToProperty($property);
 
             return $this->context;
         }
@@ -446,9 +442,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $node
                 ))->getOrCreateProperty($property_name, false);
 
-                $property->getUnionType()->addUnionType(
-                    $this->right_type
-                );
+                $this->addTypesToProperty($property);
             } catch (\Exception $exception) {
                 // swallow it
             }
@@ -464,6 +458,29 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         return $this->context;
+    }
+
+    /**
+     * @param Property $property - The property which should have types added to it
+     *
+     * @return void
+     */
+    private function addTypesToProperty(Property $property)
+    {
+        $property_types = $property->getUnionType();
+        $new_types = $this->right_type;
+        if ($property_types->isEmpty()) {
+            $property_types->addUnionType($new_types);
+            return;
+        }
+        // Don't add MixedType to a non-empty property - It makes inferences on that property useless.
+        if ($new_types->hasType(MixedType::instance(false))) {
+            $new_types = clone($new_types);
+            $new_types->removeType(MixedType::instance(false));
+        }
+        // TODO: Add an option to check individual types, not just the whole union type?
+        //       If that is implemented, verify that generic arrays will properly cast to regular arrays (public $x = [];)
+        $property_types->addUnionType($new_types);
     }
 
     /**
