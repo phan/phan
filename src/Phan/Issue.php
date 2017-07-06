@@ -67,6 +67,7 @@ class Issue
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
     const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
     const TypeMismatchDeclaredParam = 'PhanTypeMismatchDeclaredParam';
+    const TypeMismatchDeclaredParamNullable = 'PhanTypeMismatchDeclaredParamNullable';
     const TypeMissingReturn         = 'PhanTypeMissingReturn';
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
@@ -711,6 +712,14 @@ class Issue
                 "Doc-block of \${VARIABLE} in {METHOD} contains phpdoc param type {TYPE} which is incompatible with the param type {TYPE} declared in the signature",
                 self::REMEDIATION_B,
                 10022
+            ),
+            new Issue(
+                self::TypeMismatchDeclaredParamNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Doc-block of \${VARIABLE} in {METHOD} is phpdoc param type {TYPE} which is not a permitted replacement of the nullable param type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')",
+                self::REMEDIATION_B,
+                10027
             ),
             new Issue(
                 self::TypeMissingReturn,

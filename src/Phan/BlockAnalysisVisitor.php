@@ -39,7 +39,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
-     * @param Node $parent_node
+     * @param ?Node $parent_node
      * The parent of the node being analyzed
      *
      * @param int $depth
