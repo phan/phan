@@ -89,6 +89,8 @@ Bug Fixes
   Previously, it wouldn't emit warnings for global functions, only for methods.
 + Don't add `mixed` to inferred union types of properties which already have non-empty phpdoc types. (Issue #512)
   mixed would just result in Phan failing to emit any types of issues.
++ When `simplify_ast` is true, simplify the ASTs parsed in the parse mode as well.
+  Makes analysis consistent when `quick_mode` is false (AST nodes from the parse phase would also be used in the analysis phase)
 
 Backwards Incompatible Changes
 + Fix categories of some issue types, renumber error ids for the pylint error formatter to be unique and consistent.
