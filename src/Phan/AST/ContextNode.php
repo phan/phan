@@ -390,7 +390,7 @@ class ContextNode
                 foreach ($union_type->asClassList(
                     $this->code_base,
                     $this->context
-                ) as $i => $clazz) {
+                ) as $clazz) {
                     $class_list[] = $clazz;
                 }
             } catch (CodeBaseException $exception) {
@@ -400,7 +400,7 @@ class ContextNode
             foreach ($union_type->asClassList(
                 $this->code_base,
                 $this->context
-            ) as $i => $clazz) {
+            ) as $clazz) {
                 $class_list[] = $clazz;
             }
         }

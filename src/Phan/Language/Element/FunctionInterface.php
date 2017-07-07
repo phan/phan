@@ -211,4 +211,10 @@ interface FunctionInterface extends AddressableElementInterface {
      * @return UnionType[] maps a subset of param names to the unmodified phpdoc parameter types.
      */
     public function getPHPDocParameterTypeMap();
+
+    /**
+     * @return bool
+     * True if this function or method returns a reference
+     */
+    public function returnsRef() : bool;
 }

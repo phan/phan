@@ -146,7 +146,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return bool
-     * True if this method returns reference
+     * True if this method returns a reference
      */
     public function returnsRef() : bool {
         return Flags::bitVectorHasState(

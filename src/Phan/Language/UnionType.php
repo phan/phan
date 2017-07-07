@@ -1184,7 +1184,7 @@ class UnionType implements \Serializable
                             $context->getFile(),
                             $context->getLineNumberStart(),
                             [
-                                (string)$class_type
+                                $class_type->getName()
                             ]
                         )
                     );
@@ -1236,7 +1236,7 @@ class UnionType implements \Serializable
                             $context->getFile(),
                             $context->getLineNumberStart(),
                             [
-                                (string)$class_type
+                                $class_type->getName()
                             ]
                         )
                     );
@@ -1244,6 +1244,25 @@ class UnionType implements \Serializable
                 }
                 yield $context->getClassInScope($code_base);
             } else {
+                if ($class_type->isSelfType()) {
+                    if (!$context->isInClassScope()) {
+                        throw new IssueException(
+                            Issue::fromType(Issue::ContextNotObject)(
+                                $context->getFile(),
+                                $context->getLineNumberStart(),
+                                [
+                                    $class_type->getName()
+                                ]
+                            )
+                        );
+                    }
+                    if (strcasecmp($class_type->getName(), 'self') === 0) {
+                        yield $context->getClassInScope($code_base);
+                    } else {
+                        yield $class_type;
+                    }
+                    continue;
+                }
                 // See if the class exists
                 if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                     throw new CodeBaseException(
