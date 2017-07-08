@@ -320,6 +320,9 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitMagicConst(Node $node) : UnionType
     {
+        if ($node->flags === \ast\flags\MAGIC_LINE) {
+            return IntType::instance(false)->asUnionType();
+        }
         // This is for things like __METHOD__
         return StringType::instance(false)->asUnionType();
     }
