@@ -33,6 +33,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\Some;
 use ast\Node;
@@ -1482,11 +1483,10 @@ class ContextNode
                 || $temp->kind == \ast\AST_NAME
             )
         ) {
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($this->node->lineno-1);
-            $line = $ftemp->current();
+            $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
+            $line = $cache_entry->getLine($this->node->lineno);
             \assert(\is_string($line));
-            unset($ftemp);
+            unset($cache_entry);
             if (strpos($line, '}[') === false
                 || strpos($line, ']}') === false
                 || strpos($line, '>{') === false

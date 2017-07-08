@@ -438,6 +438,7 @@ class Type
             'E_ALL'                 => $int,
             'E_STRICT'              => $int,
             '__COMPILER_HALT_OFFSET__' => $int,
+            '__LINE__'              => $int,
             'TRUE'                  => $true,
             'FALSE'                 => $false,
             'NULL'                  => $null,

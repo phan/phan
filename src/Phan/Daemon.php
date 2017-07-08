@@ -2,6 +2,7 @@
 namespace Phan;
 
 use Phan\Daemon\Request;
+use Phan\Library\FileCache;
 
 /**
  * an analyzing daemon, to be used by IDEs.
