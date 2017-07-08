@@ -300,4 +300,15 @@ class Func extends AddressableElement implements FunctionInterface
         return $string;
     }
 
+    /**
+     * @return bool
+     * True if this function returns a reference
+     */
+    public function returnsRef() : bool {
+        return Flags::bitVectorHasState(
+            $this->getFlags(),
+            \ast\flags\RETURNS_REF
+        );
+    }
+
 }

@@ -374,6 +374,17 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
             if ('parent' === $node->children['name']) {
+                if (!$this->context->isInClassScope()) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::ContextNotObject)(
+                            $this->context->getFile(),
+                            $this->context->getLineNumberStart(),
+                            [
+                                'parent'
+                            ]
+                        )
+                    );
+                }
                 $class = $this->context->getClassInScope($this->code_base);
 
                 if ($class->hasParentType()) {
@@ -1359,7 +1370,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $class_fqsen = null;
             foreach ($this->classListFromNode(
                     $node->children['class'] ?? $node->children['expr']
-                ) as $i => $class
+                ) as $class
             ) {
                 $class_fqsen = $class->getFQSEN();
 
@@ -1732,6 +1743,13 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return $type->asUnionType();
+    }
+
+    /**
+     * @return \Generator|Clazz
+     */
+    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node) {
+        return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node);
     }
 
     /**

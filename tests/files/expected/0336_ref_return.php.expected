@@ -1,0 +1,3 @@
+%s:32 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \getRef()
+%s:34 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \getRef()
+%s:36 PhanTypeNonVarPassByRef Only variables can be passed by reference at argument 1 of \getRef()

@@ -13,4 +13,4 @@
 %s:26 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
 %s:27 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
 %s:28 PhanUndeclaredFunction Call to undeclared function \expect_default_int_300()
-%s:31 PhanUndeclaredClassMethod Call to method missingAndNotInClassScope from undeclared class \self
+%s:31 PhanContextNotObject Cannot access self when not in object context
