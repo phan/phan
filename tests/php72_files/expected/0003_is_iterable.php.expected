@@ -1,0 +1,2 @@
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is bool but \intdiv() takes int
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is bool but \intdiv() takes int
