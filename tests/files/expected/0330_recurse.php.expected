@@ -1,0 +1,4 @@
+%s:6 PhanTypeMismatchArgument Argument 1 (x) is int but \callSelf() takes bool|false defined at %s:3
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is false but \intdiv() takes int
+%s:16 PhanTypeMismatchArgument Argument 1 (x) is int but \A330::callSelf() takes bool|false defined at %s:12
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is false but \intdiv() takes int

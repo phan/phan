@@ -6,6 +6,7 @@ use Phan\Language\Type;
 
 final class ClosureType extends Type
 {
+    /** Not an override */
     const NAME = 'Closure';
 
     /**

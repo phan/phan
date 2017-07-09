@@ -56,7 +56,8 @@ class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor {
         $name = $variable->children['name'];
 
         // emit issue if name is not declared
-        if (!$this->context->getScope()->hasVariableWithName($name)){
+        // Check for edge cases such as isset($$var)
+        if (is_string($name) && !$this->context->getScope()->hasVariableWithName($name)){
             $this->emit(
                 'PhanUndeclaredVariable',
                 "undeclared variables in isset()",

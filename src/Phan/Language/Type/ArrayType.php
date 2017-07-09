@@ -5,7 +5,9 @@ use Phan\Language\Type;
 
 class ArrayType extends IterableType
 {
+    /** @phan-override */
     const NAME = 'array';
+
     public function getIsAlwaysTruthy() : bool
     {
         return false;

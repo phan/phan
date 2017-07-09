@@ -22,15 +22,15 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
     const STATUS_THROW    = 4;  // All branches lead to a throw statement (Or possibly a return)
     const STATUS_RETURN   = 5;  // All branches lead to a return/exit statement
 
-    /** @var \SplObjectStorage */
+    /** @var \SplObjectStorage - A shared cache, re-used while analyzing a given file. */
     private $exit_status_cache;
-    /** @var string - filename, for debugging*/
-    private $_filename;
+    /** @var string - filename, for debugging */
+    private $filename;
 
-    public function __construct(string $filename = 'unknown')
+    public function __construct(\SplObjectStorage $exit_status_cache, string $filename = 'unknown')
     {
-        $this->exit_status_cache = new \SplObjectStorage();
-        $this->_filename = $filename;
+        $this->exit_status_cache = $exit_status_cache;
+        $this->filename = $filename;
     }
 
     public function check(Node $node = null) : int

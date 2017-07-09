@@ -299,7 +299,8 @@ class ConditionVisitor extends KindVisitorImplementation
         // Negation
         // TODO: negate instanceof, other checks
         // TODO: negation would also go in the else statement
-        if (($negatedNode->kind ?? 0) === \ast\AST_CALL) {
+        $kind = $negatedNode->kind ?? 0;
+        if ($kind === \ast\AST_CALL) {
             $args = $negatedNode->children['args']->children;
             foreach ($args as $arg) {
                 if ($arg instanceof Node) {
@@ -328,6 +329,8 @@ class ConditionVisitor extends KindVisitorImplementation
                 }
                 return $callback($this, $args[0], $context);
             }
+        } else if ($kind === \ast\AST_VAR) {
+            return $this->removeTruthyFromVariable($negatedNode, $context);
         }
         return $context;
     }

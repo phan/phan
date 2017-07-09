@@ -1,0 +1,11 @@
+%s:7 PhanCommentParamWithoutRealParam Saw an @param annotation for w, but it was not found in the param list of function badNarrowing334(?\DateTime $x = null);
+%s:7 PhanTypeMismatchDeclaredParamNullable Doc-block of $x in badNarrowing334 is phpdoc param type \DateTime which is not a permitted replacement of the nullable param type ?\DateTime declared in the signature ('?T' should be documented as 'T|null' or '?T')
+%s:12 PhanTypeMismatchArgument Argument 1 (x) is int but \badNarrowing334() takes ?\DateTime defined at %s:7
+%s:17 PhanTypeMismatchDeclaredParamNullable Doc-block of $x in badNarrowingAsNull334 is phpdoc param type null which is not a permitted replacement of the nullable param type ?int declared in the signature ('?T' should be documented as 'T|null' or '?T')
+%s:22 PhanTypeMismatchArgument Argument 1 (x) is string but \badNarrowingAsNull334() takes ?int defined at %s:17
+%s:28 PhanTypeMismatchDeclaredParam Doc-block of $x in badNarrowingAsNullComposite334 contains phpdoc param type int which is incompatible with the param type ?string declared in the signature
+%s:28 PhanTypeMismatchDeclaredParam Doc-block of $y in badNarrowingAsNullComposite334 contains phpdoc param type ?int which is incompatible with the param type ?string declared in the signature
+%s:32 PhanTypeMismatchArgument Argument 1 (x) is int but \badNarrowingAsNullComposite334() takes ?string defined at %s:28
+%s:32 PhanTypeMismatchArgument Argument 2 (y) is int but \badNarrowingAsNullComposite334() takes ?string defined at %s:28
+%s:38 PhanTypeMismatchDeclaredParam Doc-block of $x in badNarrowingAsNullComposite334B contains phpdoc param type int which is incompatible with the param type ?string declared in the signature
+%s:38 PhanTypeMismatchDeclaredParam Doc-block of $y in badNarrowingAsNullComposite334B contains phpdoc param type ?int which is incompatible with the param type ?string declared in the signature

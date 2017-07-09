@@ -35,8 +35,8 @@ abstract class Scope
     private $template_type_map = [];
 
     /**
-     * @param Scope $parent_scope
-     * @param FQSEN $fqsen
+     * @param ?Scope $parent_scope
+     * @param ?FQSEN $fqsen
      */
     public function __construct(
         Scope $parent_scope = null,

@@ -1,0 +1,1 @@
+%s:10 PhanTypeMismatchArgumentInternal Argument 2 (haystack) is int but \in_array() takes array
