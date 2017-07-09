@@ -64,6 +64,8 @@ class Method extends ClassElement implements FunctionInterface
         // if it isn't.
         $this->setDefiningFQSEN($fqsen);
 
+        // Record the FQSEN of this method (With the current Clazz),
+        // to prevent recursing from a method into itself in non-quick mode.
         $this->setInternalScope(new FunctionLikeScope(
             $context->getScope(), $fqsen
         ));
@@ -144,7 +146,7 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return bool
-     * True if this method returns reference
+     * True if this method returns a reference
      */
     public function returnsRef() : bool {
         return Flags::bitVectorHasState(

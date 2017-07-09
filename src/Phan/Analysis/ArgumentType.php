@@ -2,6 +2,7 @@
 namespace Phan\Analysis;
 
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
@@ -256,7 +257,6 @@ class ArgumentType
         }
 
         foreach ($node->children ?? [] as $i => $argument) {
-
             // Get the parameter associated with this argument
             $parameter = $method->getParameterForCaller($i);
 
@@ -265,24 +265,30 @@ class ArgumentType
                 continue;
             }
 
+            $argument_kind = $argument->kind ?? 0;
+
             // If this is a pass-by-reference parameter, make sure
             // we're passing an allowable argument
             if ($parameter->isPassByReference()) {
                 if ((!$argument instanceof \ast\Node)
-                    || ($argument->kind != \ast\AST_VAR
-                        && $argument->kind != \ast\AST_DIM
-                        && $argument->kind != \ast\AST_PROP
-                        && $argument->kind != \ast\AST_STATIC_PROP
+                    || ($argument_kind !== \ast\AST_VAR
+                        && $argument_kind !== \ast\AST_DIM
+                        && $argument_kind !== \ast\AST_PROP
+                        && $argument_kind !== \ast\AST_STATIC_PROP
                     )
                 ) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeNonVarPassByRef,
-                        $node->lineno ?? 0,
-                        ($i+1),
-                        (string)$method->getFQSEN()
-                    );
+                    $is_possible_reference = self::is_function_returning_reference($code_base, $context, $argument);
+
+                    if (!$is_possible_reference) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeNonVarPassByRef,
+                            $node->lineno ?? 0,
+                            ($i+1),
+                            (string)$method->getFQSEN()
+                        );
+                    }
                 } else {
                     $variable_name = (new ContextNode(
                         $code_base,
@@ -292,8 +298,7 @@ class ArgumentType
 
                     if (Type::isSelfTypeString($variable_name)
                         && !$context->isInClassScope()
-                        && $argument->kind == \ast\AST_STATIC_PROP
-                        && $argument->kind == \ast\AST_PROP
+                        && ($argument_kind === \ast\AST_STATIC_PROP || $argument_kind === \ast\AST_PROP)
                     ) {
                         Issue::maybeEmit(
                             $code_base,
@@ -407,6 +412,62 @@ class ArgumentType
                 }
             }
         }
+    }
+
+    /**
+     * Used to check if a place expecting a reference is actually getting a reference from a node.
+     * Obvious types which are always references (properties, variables) must be checked for before calling this.
+     *
+     * @return bool - True if this node is a call to a function that may return a reference?
+     */
+    private static function is_function_returning_reference(CodeBase $code_base, Context $context, $node) : bool
+    {
+        if (!($node instanceof Node)) {
+            return false;
+        }
+        $node_kind = $node->kind;
+        if ($node_kind === \ast\AST_CALL) {
+            foreach ((new ContextNode(
+                $code_base,
+                $context,
+                $node->children['expr']
+            ))->getFunctionFromNode() as $function) {
+                if ($function->returnsRef()) {
+                    return true;
+                }
+            }
+        } else if ($node_kind === \ast\AST_STATIC_CALL || $node_kind === \ast\AST_METHOD_CALL) {
+            $method_name = $node->children['method'] ?? null;
+            if (is_string($method_name)) {
+                foreach (UnionTypeVisitor::classListFromNodeAndContext(
+                    $code_base,
+                    $context,
+                    $node->children['class'] ?? $node->children['expr']
+                    ) as $class
+                ) {
+                    if (!$class->hasMethodWithName(
+                        $code_base,
+                        $method_name
+                    )) {
+                        continue;
+                    }
+
+                    try {
+                        $method = $class->getMethodByNameInContext(
+                            $code_base,
+                            $method_name,
+                            $context
+                        );
+                        // Return true if any of the possible methods (expect that just one is found) returns a reference.
+                        if ($method->returnsRef()) {
+                            return true;
+                        }
+                    } catch(IssueException $e) {
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

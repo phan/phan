@@ -5,6 +5,7 @@ use Phan\Language\Type;
 
 final class FalseType extends ScalarType
 {
+    /** @phan-override */
     const NAME = 'false';
 
     public function getIsPossiblyFalsey() : bool

@@ -7,6 +7,7 @@ use Phan\Language\UnionType;
 
 final class NullType extends ScalarType
 {
+    /** @phan-override */
     const NAME = 'null';
 
     /**

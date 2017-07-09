@@ -6,6 +6,7 @@ use Phan\Language\Type;
 
 final class CallableType extends NativeType
 {
+    /** @phan-override */
     const NAME = 'callable';
 
     /**

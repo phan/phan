@@ -3,5 +3,6 @@ namespace Phan\Language\Type;
 
 final class VoidType extends NativeType
 {
+    /** @phan-override */
     const NAME = 'void';
 }

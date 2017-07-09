@@ -26,9 +26,9 @@ testDuplicateArrayKeyPlugin();
 
 function testNoopIsset($Foo) {
     var_dump(isset($foo));
+    var_dump(isset($$Foo));  // should not crash
 }
 testNoopIsset('key');
-
 function testNonBoolBranchPlugin(array $args) {
     if ($args) {
         var_dump($args);

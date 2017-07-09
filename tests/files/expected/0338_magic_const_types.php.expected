@@ -1,0 +1,9 @@
+%s:9 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int338() takes int defined at %s:3
+%s:10 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int338() takes int defined at %s:3
+%s:16 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int338() takes int defined at %s:3
+%s:17 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string338() takes string defined at %s:4
+%s:18 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int338() takes int defined at %s:3
+%s:19 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int338() takes int defined at %s:3
+%s:20 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int338() takes int defined at %s:3
+%s:21 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int338() takes int defined at %s:3
+%s:22 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int338() takes int defined at %s:3

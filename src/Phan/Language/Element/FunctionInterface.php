@@ -184,7 +184,7 @@ interface FunctionInterface extends AddressableElementInterface {
      * in the given context.
      * This function's parameter list may or may not have been modified.
      */
-    public function analyzeWithNewParams(Context $context, CodeBase $code_base) : Context;
+    public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context;
 
     public function getElementNamespace(CodeBase $code_base) : string;
 
@@ -211,4 +211,10 @@ interface FunctionInterface extends AddressableElementInterface {
      * @return UnionType[] maps a subset of param names to the unmodified phpdoc parameter types.
      */
     public function getPHPDocParameterTypeMap();
+
+    /**
+     * @return bool
+     * True if this function or method returns a reference
+     */
+    public function returnsRef() : bool;
 }

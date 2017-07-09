@@ -2,6 +2,7 @@
 %s:9 PhanAccessPropertyProtected Cannot access protected property \C2::$p
 %s:14 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
 %s:14 PhanUndeclaredVariable Variable $v1 is undeclared
+%s:14 PhanUndeclaredVariable Variable $v2 is undeclared
 %s:17 PhanContextNotObject Cannot access parent when not in object context
 %s:22 PhanDeprecatedFunction Call to deprecated function \f1() defined at %s:21
 %s:25 PhanNoopArray Unused array

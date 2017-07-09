@@ -15,6 +15,7 @@ use Phan\Exception\UnanalyzableException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
@@ -319,6 +320,9 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitMagicConst(Node $node) : UnionType
     {
+        if ($node->flags === \ast\flags\MAGIC_LINE) {
+            return IntType::instance(false)->asUnionType();
+        }
         // This is for things like __METHOD__
         return StringType::instance(false)->asUnionType();
     }
@@ -373,6 +377,17 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
             if ('parent' === $node->children['name']) {
+                if (!$this->context->isInClassScope()) {
+                    throw new IssueException(
+                        Issue::fromType(Issue::ContextNotObject)(
+                            $this->context->getFile(),
+                            $this->context->getLineNumberStart(),
+                            [
+                                'parent'
+                            ]
+                        )
+                    );
+                }
                 $class = $this->context->getClassInScope($this->code_base);
 
                 if ($class->hasParentType()) {
@@ -1293,42 +1308,20 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitCall(Node $node) : UnionType
     {
-        // Things like `$func()`. We don't understand these.
-        if ($node->children['expr']->kind !== \ast\AST_NAME) {
-            return new UnionType();
+        $expression = $node->children['expr'];
+        $function_list_generator = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $expression
+        ))->getFunctionFromNode();
+
+        $possible_types = new UnionType();
+        foreach ($function_list_generator as $function) {
+            assert($function instanceof FunctionInterface);
+            $possible_types->addUnionType($function->getUnionType());
         }
 
-        $function_name =
-            $node->children['expr']->children['name'];
-
-        try {
-            $function = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $node->children['expr']
-            ))->getFunction($function_name);
-        } catch (CodeBaseException $exception) {
-            // If the function wasn't declared, it'll be caught
-            // and reported elsewhere
-            return new UnionType();
-        }
-
-        $function_fqsen = $function->getFQSEN();
-
-        // TODO: I don't believe we need this any more
-        // If this is an internal function, see if we can get
-        // its types from the static dataset.
-        if ($function->isPHPInternal()
-            && $function->getUnionType()->isEmpty()
-        ) {
-            $map = UnionType::internalFunctionSignatureMapForFQSEN(
-                $function_fqsen
-            );
-
-            return $map[$function_name] ?? new UnionType();
-        }
-
-        return $function->getUnionType();
+        return $possible_types;
     }
 
     /**
@@ -1380,7 +1373,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $class_fqsen = null;
             foreach ($this->classListFromNode(
                     $node->children['class'] ?? $node->children['expr']
-                ) as $i => $class
+                ) as $class
             ) {
                 $class_fqsen = $class->getFQSEN();
 
@@ -1753,6 +1746,13 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         return $type->asUnionType();
+    }
+
+    /**
+     * @return \Generator|Clazz
+     */
+    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node) {
+        return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node);
     }
 
     /**

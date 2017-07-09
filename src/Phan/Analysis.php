@@ -75,6 +75,21 @@ class Analysis
             return $context;
         }
 
+        if (Config::getValue('simplify_ast')) {
+            try {
+                $newNode = ASTSimplifier::applyStatic($node);  // Transform the original AST, leaving the original unmodified.
+                $node = $newNode;  // Analyze the new AST instead.
+            } catch (\Exception $e) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::SyntaxError,  // Not the right kind of error. I don't think it would throw, anyway.
+                    $e->getLine(),
+                    $e->getMessage()
+                );
+            }
+        }
+
         if (Config::getValue('dump_ast')) {
             echo $file_path . "\n"
                 . str_repeat("\u{00AF}", strlen($file_path))
