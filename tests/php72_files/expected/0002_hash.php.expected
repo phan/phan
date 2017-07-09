@@ -1,0 +1,2 @@
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \HashContext but \intdiv() takes int
+%s:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
