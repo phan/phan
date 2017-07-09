@@ -25,7 +25,7 @@ badNarrowingAsNull334("42");  // invalid
  * @param int|null $x (Wrong)
  * @param ?int $y (Wrong)
  */
-function badNarrowingAsNullComposite334(?string $x, string $y = null) {
+function badNarrowingAsNullComposite334(string $x = null, string $y = null) {
 }
 badNarrowingAsNullComposite334('a', 'b');
 badNarrowingAsNullComposite334(null, null);
@@ -35,7 +35,7 @@ badNarrowingAsNullComposite334(2, 3);  // invalid
  * @param int|null $x (Wrong)
  * @param ?int $y (Wrong)
  */
-function badNarrowingAsNullComposite334B(?string $x, string $y = null) {
+function badNarrowingAsNullComposite334B(string $x = null, string $y = null) {
 }
 
 interface X334 {

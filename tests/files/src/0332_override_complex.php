@@ -1,20 +1,20 @@
 <?php
 
 abstract class A332 {
-    /**
-     * In php 7.1, doc comments on class constants are recorded
-     */
-    const STATIC_CONST = 'value';
+    // Tests of constants omitted for php 7.0
 
-    /** @override - should warn here and only here */
-    const STATIC_CONST_2 = 22;
+
+
+
+
+
 
     public abstract function abstractMethodA();
     /** @override - should warn */
     public abstract function abstractMethodA2();
 
     public function methodA() {
-        return static::STATIC_CONST;
+        return 2;
     }
 }
 
@@ -41,15 +41,15 @@ trait T332 {
 }
 
 class Override332 extends A332 implements I332 {
-    /**
-     * @override (Analyze overrides of static constants as well)
-     */
-    const STATIC_CONST = 'otherValue';
 
-    /**
-     * @override (should warn)
-     */
-    const STATIC_CONST_TYPO = 'otherValue';
+
+
+
+
+
+
+
+
 
     use T332;
 
@@ -76,10 +76,4 @@ class Override332 extends A332 implements I332 {
 
     /** @override */
     public function notReallyAnOverride() {}
-
-    /**
-     * @override (should warn and be suppressed)
-     * @suppress PhanCommentOverrideOnNonOverrideConstant
-     */
-    const STATIC_CONST_TYPO_2 = 'otherValue';
 }
