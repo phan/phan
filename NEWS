@@ -1,4 +1,12 @@
 Phan NEWS
+?? ??? 2017, Phan for php 7.2 (version to be determined) (dev)
+-----------------------
+
+New Features (Analysis)
++ Support analyzing the 'object' type hint in real function/method signatures. (Issue #995)
+
+Based on Phan 0.9.3, see below:
+
 ?? ??? 2017, Phan 0.9.3 (dev)
 -----------------------
 

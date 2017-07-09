@@ -376,6 +376,12 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitName(Node $node) : UnionType
     {
         if ($node->flags & \ast\flags\NAME_NOT_FQ) {
+            if (strcasecmp('object', $node->children['name']) === 0) {
+                // Needed until AST version 45 is used.
+                // 'object' type hint must be unqualified.
+                // TODO: warn about php 7.1 incompatibility?
+                return ObjectType::instance(false)->asUnionType();
+            }
             if ('parent' === $node->children['name']) {
                 if (!$this->context->isInClassScope()) {
                     throw new IssueException(
