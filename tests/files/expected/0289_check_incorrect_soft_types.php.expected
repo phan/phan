@@ -1,5 +1,4 @@
 %s:3 PhanUndeclaredTypeParameter Parameter of undeclared type \resource
 %s:4 PhanTypeMismatchArgumentInternal Argument 1 (fp) is \resource but \fread() takes resource
 %s:10 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is false|resource but \intdiv() takes int
-%s:14 PhanUndeclaredTypeParameter Parameter of undeclared type \object
 %s:18 PhanUndeclaredTypeParameter Parameter of undeclared type \mixed
