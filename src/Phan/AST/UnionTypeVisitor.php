@@ -516,7 +516,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param int|float|string|Node $cond
      * @return ?bool
      */
-    private function checkCondUnconditionalTruthiness($cond) {
+    public static function checkCondUnconditionalTruthiness($cond) {
         if ($cond instanceof Node) {
             if ($cond->kind === \ast\AST_CONST) {
                 $name = $cond->children['name'];
@@ -559,7 +559,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitConditional(Node $node) : UnionType
     {
         $cond_node = $node->children['cond'];
-        $cond_truthiness = $this->checkCondUnconditionalTruthiness($cond_node);
+        $cond_truthiness = self::checkCondUnconditionalTruthiness($cond_node);
         // For the shorthand $a ?: $b, the cond node will be the truthy value.
         // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
         $true_node = $node->children['true'] ?? $cond_node;

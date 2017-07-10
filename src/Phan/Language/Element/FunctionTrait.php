@@ -106,6 +106,13 @@ trait FunctionTrait {
     private $phpdoc_parameter_type_map = [];
 
     /**
+     * @var ?UnionType
+     * The unmodified *phpdoc* union type for this method.
+     * Will be null without any (at)return statements.
+     */
+    private $phpdoc_return_type;
+
+    /**
      * @var UnionType
      * The *real* (not from phpdoc) return type from this method.
      * This does not change after initialization.
@@ -635,6 +642,23 @@ trait FunctionTrait {
     public function getPHPDocParameterTypeMap()
     {
         return $this->phpdoc_parameter_type_map;
+    }
+
+    /**
+     * @param ?UnionType $type the raw phpdoc union type
+     * @return void
+     */
+    public function setPHPDocReturnType($type)
+    {
+        $this->phpdoc_return_type = $type;
+    }
+
+    /**
+     * @return ?UnionType the raw phpdoc union type
+     */
+    public function getPHPDocReturnType()
+    {
+        return $this->phpdoc_return_type;
     }
 
     /**
