@@ -45,19 +45,19 @@ Phan is able to perform the following kinds of analysis.
 * Check for unused/dead code.
 * Check for classes, functions and methods being redefined
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).
-  As of 0.9.3-dev, Phan also checks for final classes/methods being overridden, and that the implemented interface is really a interface (and so on).
+  As of 0.9.3, Phan also checks for final classes/methods being overridden, and that the implemented interface is really a interface (and so on).
 * Supports namespaces, traits and variadics
 * Supports [Union Types](https://github.com/etsy/phan/wiki/About-Union-Types)
 * Supports generic arrays such as `int[]`, `UserObject[]`, etc..
 * Supports phpdoc [type annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
-* Supports inheriting phpdoc type annotations (in 0.9.3-dev)
-* Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures (in 0.9.3-dev)
+* Supports inheriting phpdoc type annotations (in 0.9.3)
+* Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures (in 0.9.3)
 * Supports inferring types from [assert() statements](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code) and conditionals in if elements/loops.
 * Supports [`@deprecated` annotation](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#deprecated) for deprecating classes, methods and functions
 * Supports [`@internal` annotation](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#internal) for elements (such as a constant, function, class, class constant, property or method) as internal to the package in which its defined.
 * Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#suppress).
 * Supports [magic property annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#property) (partial) (`@property <union_type> <variable_name>`)
-* Supports [`class_alias` annotations (experimental, off by default)](https://github.com/etsy/phan/pull/586), as of 0.9.3-dev
+* Supports [`class_alias` annotations (experimental, off by default)](https://github.com/etsy/phan/pull/586), as of 0.9.3
 * Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)

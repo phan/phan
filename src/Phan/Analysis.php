@@ -209,15 +209,20 @@ class Analysis
     {
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
-        $function_count = count($code_base->getFunctionAndMethodSet());
+        $function_and_method_set = $code_base->getFunctionAndMethodSet();
         $show_progress = CLI::shouldShowProgress();
         $i = 0;
 
         if ($show_progress) { CLI::progress('method', 0.0); }
 
-        foreach ($code_base->getFunctionAndMethodSet() as $function_or_method)
+        foreach ($function_and_method_set as $function_or_method)
         {
-            if ($show_progress) { CLI::progress('method', (++$i)/$function_count); }
+            if ($show_progress) {
+                // I suspect that method analysis is hydrating some of the classes,
+                // adding even more inherited methods to the end of the set.
+                // This recalculation is needed so that the progress bar is accurate.
+                CLI::progress('method', (++$i)/(\count($function_and_method_set)));
+            }
 
             if ($function_or_method->isPHPInternal()) {
                 continue;
