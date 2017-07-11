@@ -1,6 +1,9 @@
 Phan NEWS
-?? ??? 2017, Phan 0.9.3 (dev)
------------------------
+0.9.4 ??? ??, 2017 (dev)
+------------------
+
+0.9.3 Jul 11, 2017
+------------------
 
 New Features (Analysis)
 + Automatically inherit `@param` and `@return` types from parent methods.
