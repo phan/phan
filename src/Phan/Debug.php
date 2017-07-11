@@ -237,7 +237,7 @@ class Debug
                 }
             }
 
-            if (\ast\kind_uses_flags($ast->kind)) {
+            if (\ast\kind_uses_flags($ast->kind) || $ast->flags != 0) {
                 $result .= "\n    flags: " . self::formatFlags($ast->kind, $ast->flags);
             }
             if ($ast instanceof \ast\Node\Decl && isset($ast->name)) {

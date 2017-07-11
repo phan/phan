@@ -1,9 +1,9 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.8.5 (dev)
------------------------
+0.8.5 Jul 11, 2017
+------------------
 
-### Backported from Phan 0.9.3-dev
+### Backported from Phan 0.9.3
 
 New Features (Analysis)
 + Automatically inherit `@param` and `@return` types from parent methods.
@@ -43,6 +43,7 @@ New Features (Analysis)
 + Create `PhanCommentOverrideOnNonOverrideMethod` and `PhanCommentOverrideOnNonOverrideConstant`. (Issue #926)
   These issue types will be emitted if `@override` is part of doc comment of a method or class constant which doesn't override or implement anything.
   (`@Override` and `@phan-override` can also be used as aliases of `@override`. `@override` is not currently part of any phpdoc standard.)
+  NOTE: in Phan 0.8, annotations on class constants can't be read from `php-ast`
 + Add `@phan-closure-scope`, which can be used to annotate closure definitions with the namespaced class it will be bound to (Issue #309, #590, #790)
   (E.g. if the intent was that Closure->bindTo or Closure->bind would be called to bind it to `\MyNS\MyClass` (or an instance of that class),
   then a closure could be declared as `/** @phan-closure-scope \MyNS\MyClass */ function() { $this->somePrivateMyClassMethod(); }`
