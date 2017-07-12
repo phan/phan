@@ -253,6 +253,10 @@ class CodeBase
                 $const_obj = GlobalConstant::fromGlobalConstantName($this, $const_name);
                 $this->addGlobalConstant($const_obj);
             } catch (\InvalidArgumentException $e) {
+                // Workaround for windows bug in #1011
+                if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
+                    continue;
+                }
                 fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", var_export($const_name, true), $e->getMessage());
             }
         }
