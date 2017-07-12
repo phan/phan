@@ -1,5 +1,8 @@
 Phan NEWS
 
+Bug Fixes
++ Work around notice about COMPILER_HALT_OFFSET on windows.
+
 0.9.3 Jul 11, 2017
 ------------------
 
