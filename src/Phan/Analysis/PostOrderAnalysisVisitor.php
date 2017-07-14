@@ -635,78 +635,208 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         $method_return_type = $is_trait ? $method->getRealReturnType() : $method->getUnionType();
 
         // Figure out what is actually being returned
-        $expression_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $node->children['expr']
-        );
+        foreach ($this->getReturnTypes($this->context, $node->children['expr']) as $expression_type) {
+            if ($method->getHasYield()) {  // Function that is syntactically a Generator.
+                continue;  // Analysis was completed in PreOrderAnalysisVisitor
+            }
+            // This leaves functions which aren't syntactically generators.
 
-        if (null === $node->children['expr']) {
-            $expression_type = VoidType::instance(false)->asUnionType();
-        }
+            // If there is no declared type, see if we can deduce
+            // what it should be based on the return type
+            if ($method_return_type->isEmpty()
+                || $method->isReturnTypeUndefined()
+            ) {
+                if (!$is_trait) {
+                    $method->setIsReturnTypeUndefined(true);
 
-        if ($expression_type->hasStaticType()) {
-            $expression_type =
-                $expression_type->withStaticResolvedInContext(
-                    $this->context
+                    // Set the inferred type of the method based
+                    // on what we're returning
+                    $method->getUnionType()->addUnionType($expression_type);
+                }
+
+                // No point in comparing this type to the
+                // type we just set
+                continue;
+            }
+
+            // C
+            if (!$method->isReturnTypeUndefined()
+                && !$expression_type->canCastToExpandedUnionType(
+                    $method_return_type,
+                    $this->code_base
+                )
+            ) {
+                $this->emitIssue(
+                    Issue::TypeMismatchReturn,
+                    $node->lineno ?? 0,
+                    (string)$expression_type,
+                    $method->getName(),
+                    (string)$method_return_type
                 );
-        }
+            }
+            // For functions that aren't syntactically Generators,
+            // update the set/existence of return values.
 
-        if ($method->getHasYield()) {  // Function that is syntactically a Generator.
-            return $this->context;  // Analysis was completed in PreOrderAnalysisVisitor
-        }
-        // This leaves functions which aren't syntactically generators.
-
-        // If there is no declared type, see if we can deduce
-        // what it should be based on the return type
-        if ($method_return_type->isEmpty()
-            || $method->isReturnTypeUndefined()
-        ) {
-            if (!$is_trait) {
-                $method->setIsReturnTypeUndefined(true);
-
-                // Set the inferred type of the method based
-                // on what we're returning
+            if ($method->isReturnTypeUndefined()) {
+                // Add the new type to the set of values returned by the
+                // method
                 $method->getUnionType()->addUnionType($expression_type);
             }
 
-            // No point in comparing this type to the
-            // type we just set
-            return $this->context;
-        }
-
-        // C
-        if (!$method->isReturnTypeUndefined()
-            && !$expression_type->canCastToExpandedUnionType(
-                $method_return_type,
-                $this->code_base
-            )
-        ) {
-            $this->emitIssue(
-                Issue::TypeMismatchReturn,
-                $node->lineno ?? 0,
-                (string)$expression_type,
-                $method->getName(),
-                (string)$method_return_type
-            );
-        }
-        // For functions that aren't syntactically Generators,
-        // update the set/existence of return values.
-
-        if ($method->isReturnTypeUndefined()) {
-            // Add the new type to the set of values returned by the
-            // method
-            $method->getUnionType()->addUnionType($expression_type);
-        }
-
-        // Mark the method as returning something (even if void)
-        if (null !== $node->children['expr']) {
-            $method->setHasReturn(true);
+            // Mark the method as returning something (even if void)
+            if (null !== $node->children['expr']) {
+                $method->setHasReturn(true);
+            }
         }
 
         return $this->context;
     }
 
+    /**
+     * @return \Generator|UnionType[]
+     */
+    private function getReturnTypes(Context $context, $node)
+    {
+        if (!($node instanceof Node)) {
+            if (null === $node) {
+                yield VoidType::instance(false)->asUnionType();
+                return;
+            }
+            yield UnionType::fromNode(
+                $context,
+                $this->code_base,
+                $node
+            );
+            return;
+        }
+        \assert($node instanceof Node);
+        $kind = $node->kind;
+        if ($kind === \ast\AST_CONDITIONAL) {
+            yield from self::deduplicateUnionTypes($this->getReturnTypesOfConditional($context, $node));
+            return;
+        } else if ($kind === \ast\AST_ARRAY) {
+            foreach (self::deduplicateUnionTypes($this->getReturnTypesOfArray($context, $node)) as $elem_type) {
+                yield $elem_type->asGenericArrayTypes();
+            }
+            return;
+        }
+
+        $expression_type = UnionType::fromNode(
+            $context,
+            $this->code_base,
+            $node
+        );
+
+        if ($expression_type->hasStaticType()) {
+            $expression_type =
+                $expression_type->withStaticResolvedInContext(
+                    $context
+                );
+        }
+        yield $expression_type;
+    }
+
+    /**
+     * @return \Generator|UnionType[]
+     */
+    private function getReturnTypesOfConditional(Context $context, Node $node)
+    {
+        $cond_node = $node->children['cond'];
+        $cond_truthiness = UnionTypeVisitor::checkCondUnconditionalTruthiness($cond_node);
+        // For the shorthand $a ?: $b, the cond node will be the truthy value.
+        // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
+        $true_node = $node->children['true'] ?? $cond_node;
+
+        // Rarely, a conditional will always be true or always be false.
+        if ($cond_truthiness !== null) {
+            // TODO: Add no-op checks in another PR, if they don't already exist for conditional.
+            if ($cond_truthiness === true) {
+                // The condition is unconditionally true
+                yield from $this->getReturnTypes($context, $true_node);
+                return;
+            } else {
+                // The condition is unconditionally false
+
+                // Add the type for the 'false' side
+                yield from $this->getReturnTypes($context, $true_node);
+                return;
+            }
+        }
+
+        // TODO: false_context once there is a NegatedConditionVisitor
+        // TODO: emit no-op if $cond_node is a literal, such as `if (2)`
+        // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
+
+        if ($cond_node instanceof Node) {
+            $true_context = (new ConditionVisitor(
+                $this->code_base,
+                $context
+            ))($cond_node);
+        } else {
+            $true_context = $context;
+        }
+
+        // Allow nested ternary operators, or arrays within ternary operators
+        yield from $this->getReturnTypes($true_context, $true_node);
+
+        yield from $this->getReturnTypes($context, $node->children['false']);
+    }
+
+    /**
+     * @param \Generator|UnionType[] $types
+     * @return \Generator|UnionType[]
+     */
+    private static function deduplicateUnionTypes($types)
+    {
+        $unique_types = [];
+        foreach ($types as $type) {
+            foreach ($unique_types as $old_type) {
+                if ($type->isEqualTo($old_type)) {
+                    break;
+                }
+            }
+            yield $type;
+            $unique_types[] = $type;
+        }
+    }
+
+    /**
+     * @return \Generator|UnionType[]
+     */
+    private function getReturnTypesOfArray(Context $context, Node $node)
+    {
+        if (!empty($node->children)
+            && $node->children[0] instanceof Node
+            && $node->children[0]->kind == \ast\AST_ARRAY_ELEM
+        ) {
+            $element_types = [];
+
+            // Check the first 5 (completely arbitrary) elements
+            // and assume the rest are the same type
+            for ($i=0; $i<5; $i++) {
+                // Check to see if we're out of elements
+                if (empty($node->children[$i])) {
+                    return;
+                }
+
+                // Don't bother recursing more than one level to iterate over possible types.
+                if ($node->children[$i]->children['value'] instanceof Node) {
+                    yield UnionTypeVisitor::unionTypeFromNode(
+                        $this->code_base,
+                        $context,
+                        $node->children[$i]->children['value'],
+                        true
+                    );
+                } else {
+                    yield Type::fromObject(
+                        $node->children[$i]->children['value']
+                    )->asUnionType();
+                }
+            }
+            return;
+        }
+        yield ArrayType::instance(false)->asUnionType();
+    }
 
     /**
      * @param Node $node

@@ -447,6 +447,7 @@ class Method extends ClassElement implements FunctionInterface
             }
 
             $method->getUnionType()->addUnionType($comment_return_union_type);
+            $method->setPHPDocReturnType($comment_return_union_type);
         }
 
         // Add params to local scope for user functions

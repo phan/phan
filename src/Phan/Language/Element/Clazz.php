@@ -42,14 +42,14 @@ class Clazz extends AddressableElement
     private $parent_type = null;
 
     /**
-     * @var \Phan\Language\FQSEN[]
+     * @var \Phan\Language\FullyQualifiedClassName[]
      * A possibly empty list of interfaces implemented
      * by this class
      */
     private $interface_fqsen_list = [];
 
     /**
-     * @var \Phan\Language\FQSEN[]
+     * @var \Phan\Language\FullyQualifiedClassName[]
      * A possibly empty list of traits used by this class
      */
     private $trait_fqsen_list = [];
@@ -548,7 +548,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return FQSEN[]
+     * @return FullyQualifiedClassName[]
      * Get the list of interfaces implemented by this class
      */
     public function getInterfaceFQSENList() : array
@@ -1490,7 +1490,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return FQSEN[]
+     * @return FullyQualifiedClassName[]
      * A list of FQSEN's for included traits
      */
     public function getTraitFQSENList() : array

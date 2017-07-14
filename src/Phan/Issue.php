@@ -66,6 +66,7 @@ class Issue
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
     const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
+    const TypeMismatchDeclaredReturnNullable = 'PhanTypeMismatchDeclaredReturnNullable';
     const TypeMismatchDeclaredParam = 'PhanTypeMismatchDeclaredParam';
     const TypeMismatchDeclaredParamNullable = 'PhanTypeMismatchDeclaredParamNullable';
     const TypeMissingReturn         = 'PhanTypeMissingReturn';
@@ -704,6 +705,14 @@ class Issue
                 "Doc-block of {METHOD} contains declared return type {TYPE} which is incompatible with the return type {TYPE} declared in the signature",
                 self::REMEDIATION_B,
                 10020
+            ),
+            new Issue(
+                self::TypeMismatchDeclaredReturnNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Doc-block of {METHOD} has declared return type {TYPE} which is not a permitted replacement of the nullable return type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')",
+                self::REMEDIATION_B,
+                10028
             ),
             new Issue(
                 self::TypeMismatchDeclaredParam,
