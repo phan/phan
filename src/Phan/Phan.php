@@ -2,6 +2,7 @@
 namespace Phan;
 
 use Phan\Daemon\Request;
+use Phan\Library\FileCache;
 use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\IgnoredFilesFilterInterface;
@@ -76,6 +77,7 @@ class Phan implements IgnoredFilesFilterInterface {
         CodeBase $code_base,
         \Closure $file_path_lister
     ) : bool {
+        FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
         $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port');
         if ($is_daemon_request) {
