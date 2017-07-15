@@ -9,6 +9,8 @@ New Features (Analysis)
 + Check both sides of ternary conditionals against the declared return union types
   (E.g. `function foo($x) : int {return is_string($x) ? $x : 0; }` will now warn with `PhanTypeMismatchReturn`
   about returning a string).
++ Improved analysis of negations of conditions within ternary conditional operators and else/else if statements. (Issue #538)
+  Support analysis of negation of the `||` operator.
 
 New Features (CLI, Configs)
 + Add config setting `prefer_narrowed_phpdoc_return_type` (See "New Features (CLI, Configs)),

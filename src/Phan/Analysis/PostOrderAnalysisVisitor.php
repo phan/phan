@@ -862,20 +862,24 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     public function visitCall(Node $node) : Context
     {
         $expression = $node->children['expr'];
-        $function_list_generator = (new ContextNode(
-            $this->code_base,
-            $this->context,
-            $expression
-        ))->getFunctionFromNode();
-
-        foreach ($function_list_generator as $function) {
-            assert($function instanceof FunctionInterface);
-            // Check the call for paraemter and argument types
-            $this->analyzeCallToMethod(
+        try {
+            $function_list_generator = (new ContextNode(
                 $this->code_base,
-                $function,
-                $node
-            );
+                $this->context,
+                $expression
+            ))->getFunctionFromNode();
+
+            foreach ($function_list_generator as $function) {
+                assert($function instanceof FunctionInterface);
+                // Check the call for paraemter and argument types
+                $this->analyzeCallToMethod(
+                    $this->code_base,
+                    $function,
+                    $node
+                );
+            }
+        } catch (CodeBaseException $e) {
+            // ignore it.
         }
 
         return $this->context;
