@@ -31,6 +31,12 @@ New Features (CLI, Configs)
 Bug Fixes
 + Work around notice about COMPILER_HALT_OFFSET on windows.
 
+Changes In Emitted Issues
++ Improve `InvalidVariableIssetPlugin`. Change the names and messages for issue types.
+  Emit `PhanPluginUndeclaredVariableInIsset` and `PhanPluginComplexVariableIsset`
+  instead of `PhanUndeclaredVariable`.
+  Stop erroneously warning about valid property fetches and checks of fields of superglobals.
+
 0.9.3 Jul 11, 2017
 ------------------
 
