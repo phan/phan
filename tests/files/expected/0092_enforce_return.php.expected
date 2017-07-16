@@ -1,3 +1,3 @@
 %s:4 PhanTypeMissingReturn Method \A::f is declared to return int but has no return value
 %s:21 PhanTypeMissingReturn Method \h is declared to return int but has no return value
-
+%s:36 PhanTypeMissingReturn Method \j92 is declared to return int but has no return value

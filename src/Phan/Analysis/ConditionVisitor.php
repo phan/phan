@@ -535,12 +535,6 @@ class ConditionVisitor extends KindVisitorImplementation
             }
             \assert(!\is_null($variable));  // redundant annotation for phan.
 
-            if ($variable->getUnionType()->isEmpty()) {
-                $variable->getUnionType()->addType(
-                    NullType::instance(false)
-                );
-            }
-
             // Make a copy of the variable
             $variable = clone($variable);
 

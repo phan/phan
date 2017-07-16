@@ -276,6 +276,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
+        // TODO: no longer necessary, just call getHasYield()
         if ($this->analyzeFunctionLikeIsGenerator($node)) {
             $this->setReturnTypeOfGenerator($function, $node);
         }

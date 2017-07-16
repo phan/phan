@@ -14,6 +14,8 @@ src/000_plugins.php:55 UnusedSuppression Element \testUnusedSuppressionPlugin su
 src/000_plugins.php:61 PhanUnreferencedFunction Possibly zero references to function \testUnreferencedFunction
 src/000_plugins.php:66 PhanUnreferencedClass Possibly zero references to class \__autoload
 src/000_plugins.php:67 PhanUnreferencedConstant Possibly zero references to constant \__autoload
+src/000_plugins.php:69 PhanPluginAlwaysReturnFunction Function \missingReturnType has a return type of int, but may fail to return a value
+src/000_plugins.php:77 PhanPluginAlwaysReturnMethod Method \ReturnChecks::missingReturnTypeSwitch has a return type of int, but may fail to return a value
 src/001_globals_type_map.php:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Exception|\Throwable but \intdiv() takes int
 src/001_globals_type_map.php:8 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Error|\Throwable but \intdiv() takes int
 src/001_globals_type_map.php:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Exception|\Throwable but \intdiv() takes int

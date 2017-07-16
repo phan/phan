@@ -65,3 +65,55 @@ function __autoload($className) {}
 // meaningless things with the same names
 class __autoload {}
 const __autoload = 3;
+
+function missingReturnType(?int $x) : int {
+    if (is_int($x)) {
+        return $x;
+    }
+}
+missingReturnType(2);
+
+class ReturnChecks {
+    public static function missingReturnTypeSwitch(int $x) : int {
+        switch($x) {
+        case 2:
+            throw new \RuntimeException("saw 2");
+        case 3:
+            break;
+        default:
+            return $x ?? 3;
+        }
+    }
+
+    public static function missingReturnTypeSwitchGood(int $x) : int {
+        switch($x) {
+        case 2:
+            return 4;
+        case 3:
+            throw new \RuntimeException("saw 3");
+        default:
+            return $x ?? 3;
+        }
+    }
+
+    // should not falsely detect as missing a return type
+    public static function generator(int $x) : Traversable {
+        if ($x > 0) {
+            if (rand() % 2 > 0) {
+                yield from self::otherGenerator();
+            }
+        }
+    }
+
+    /**
+     * @return iterable
+     */
+    public static function otherGenerator() {
+        // should not falsely detect as missing a return type
+        echo "In generator\n";
+        $x = yield 2;
+    }
+}
+ReturnChecks::missingReturnTypeSwitchGood(3);
+ReturnChecks::missingReturnTypeSwitch(5);
+ReturnChecks::generator(3);

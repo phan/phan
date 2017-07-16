@@ -21,6 +21,7 @@ use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
+use Phan\Language\Type\IterableType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
@@ -168,16 +169,17 @@ class Clazz extends AddressableElement
 
         $context = new Context;
 
+        $class_name = $class->getName();
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
-            $class->getName(),
+            $class_name,
             $context
         );
 
         // Build a base class element
         $clazz = new Clazz(
             $context,
-            $class->getName(),
-            UnionType::fromStringInContext($class->getName(), $context, Type::FROM_TYPE),
+            $class_name,
+            UnionType::fromStringInContext($class_name, $context, Type::FROM_TYPE),
             $flags,
             $class_fqsen
         );
@@ -194,6 +196,11 @@ class Clazz extends AddressableElement
             $parent_type = $parent_class_fqsen->asType();
 
             $clazz->setParentType($parent_type);
+        }
+
+        if ($class_name === "Traversable") {
+            // Make sure that canCastToExpandedUnionType() works as expected for Traversable and its subclasses
+            $clazz->getUnionType()->addType(IterableType::instance(false));
         }
 
         // Note: If there are multiple calls to Clazz->addProperty(),

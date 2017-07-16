@@ -3,6 +3,7 @@ namespace Phan;
 
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\Visitor\Element;
+use Phan\Analysis\BlockExitStatusChecker;
 use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
 use Phan\Analysis\ContextMergeVisitor;
@@ -506,6 +507,8 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         $fallthrough_context = $context;
 
         $child_nodes = $node->children ?? [];
+        $excluded_elem_count = 0;
+
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
@@ -524,13 +527,19 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             // updated context for the node
             $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
 
-            // TODO(Issue #406): We can improve analysis of `if` blocks by using
+            // Issue #406: We can improve analysis of `if` blocks by using
             // a BlockExitStatusChecker to avoid propogating invalid inferences.
-            // However, we need to check for a try block between this line's scope
+            // TODO: we may wish to check for a try block between this line's scope
             // and the parent function's (or global) scope,
             // to reduce false positives.
             // (Variables will be available in `catch` and `finally`)
-            $child_context_list[] = $child_context;
+            // This is mitigated by finally and catch blocks being unaware of new variables from try{} blocks.
+            if (BlockExitStatusChecker::willUnconditionallyThrowOrReturn($child_node->children['stmts'])) {
+                // e.g. "if (!is_string($x)) { return; }"
+                $excluded_elem_count++;
+            } else {
+                $child_context_list[] = $child_context;
+            }
 
             $cond_node = $child_node->children['cond'];
             if ($cond_node instanceof Node) {
@@ -539,16 +548,22 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             // If cond_node was null, it would be an else statement.
         }
 
-        // TODO: Do something different if the statements aren't comprehensive?
+        if ($excluded_elem_count === count($child_nodes)) {
+            // If all of the AST_IF_ELEM bodies would unconditionally throw or return,
+            // then analyze the remaining statements with the negation of all of the conditions.
+            $context = $fallthrough_context;
+        } else {
+            // For if statements, we need to merge the contexts
+            // of all child context into a single scope based
+            // on any possible branching structure
 
-        // For if statements, we need to merge the contexts
-        // of all child context into a single scope based
-        // on any possible branching structure
-        $context = (new ContextMergeVisitor(
-            $this->code_base,
-            $context,
-            $child_context_list
-        ))($node);
+            // ContextMergeVisitor will include the incoming scope($context) if the if elements aren't comprehensive
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                $child_context_list
+            ))($node);
+        }
 
         $context = $this->postOrderAnalyze($context, $node);
 

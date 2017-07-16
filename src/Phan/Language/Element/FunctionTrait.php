@@ -282,6 +282,8 @@ trait FunctionTrait {
      */
     public function setHasYield(bool $has_yield)
     {
+        // TODO: In a future release of php-ast, this information will be part of the function node's flags.
+        // (PHP 7.1 only, not supported in PHP 7.0)
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
             Flags::HAS_YIELD,

@@ -15,8 +15,8 @@ class ASTSimplifier {
     /** @var string - for debugging purposes */
     private $_filename;
 
-    public function __construct(\SplObjectStorage $exit_status_cache, string $filename = 'unknown') {
-        $this->_blockChecker = new BlockExitStatusChecker($exit_status_cache, $filename);
+    public function __construct(string $filename = 'unknown') {
+        $this->_blockChecker = new BlockExitStatusChecker();
         $this->_filename = $filename;
     }
 
@@ -429,7 +429,7 @@ class ASTSimplifier {
     }
 
     public static function applyStatic(Node $node, string $filename = 'unknown') : Node {
-        $rewriter = new self(new \SplObjectStorage(), $filename);
+        $rewriter = new self($filename);
         $nodes = $rewriter->apply($node);
         \assert(\count($nodes) === 1);
         return $nodes[0];

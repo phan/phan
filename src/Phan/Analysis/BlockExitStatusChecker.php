@@ -11,27 +11,69 @@ use Phan\AST\Visitor\KindVisitorImplementation;
  * This caches the status for AST nodes, so references to this object
  * should be removed once the source transformation of a file/function is complete.
  *
+ * This uses the \ast\Node's themselves in order to cache the status.
+ * It reuses $node->flags whenever possible in order to avoid keeping around \ast\Node
+ * instances for longer than those would be used.
+ * This assumes that Nodes aren't manipulated, or manipulations to Nodes will preserve the semantics (including computed exit status) or clear $node->flags.
+ *
+ * - Creating an additional object property would increase overall memory usage, which is why properties are used.
+ * - AST_IF, AST_IF_ELEM, AST_DO_WHILE, AST_FOR, AST_WHILE, AST_STMT_LIST,
+ *   etc (e.g. switch and switch case, try/finally).
+ *   are node types which are known to not have flags in AST version 40.
+ * - In the future, add a new property such as $node->children['__exitStatus'] if used for a node type with flags, or use the higher bits.
+ *
  * TODO: Change to AnalysisVisitor if this ever emits issues.
  * TODO: Analyze switch (if there is a default) in another PR (And handle fallthrough)
  * TODO: Refactor this class to be able to express return values such as "This will return or break, but it won't throw".
  */
-class BlockExitStatusChecker extends KindVisitorImplementation {
-    const STATUS_PROCEED  = 1;  // At least one branch continues to completion.
-    const STATUS_CONTINUE = 2;  // All branches lead to a continue statement (Or possibly a break, throw, or return)
-    const STATUS_BREAK    = 3;  // All branches lead to a break statement (Or possibly a throw or return)
-    const STATUS_THROW    = 4;  // All branches lead to a throw statement (Or possibly a return)
-    const STATUS_RETURN   = 5;  // All branches lead to a return/exit statement
+final class BlockExitStatusChecker extends KindVisitorImplementation {
+    // These should be at most 1 << 31, in order to work in 32-bit php.
+    const STATUS_PROCEED        = (1 << 20);       // At least one branch continues to completion.
+    const STATUS_MAYBE_CONTINUE = (1 << 21);       // We are certain at least one branch does not continue to completion. At least one of those is a "continue;"
+    const STATUS_MAYBE_BREAK    = (1 << 22);       // We are certain at least one branch is a "break;", none are "continue;"
+    const STATUS_MAYBE_THROW    = (1 << 23);       // At least one branch is a "throw", none are break/continue
+    const STATUS_MAYBE_RETURN   = (1 << 24);       // At least one branch is a "return"/"exit", none are throw/break/continue
 
-    /** @var \SplObjectStorage - A shared cache, re-used while analyzing a given file. */
-    private $exit_status_cache;
-    /** @var string - filename, for debugging */
-    private $filename;
+    const STATUS_CONTINUE       = (1 << 25);       // All branches lead to a continue statement (Or possibly a break, throw, or return)
+    const STATUS_BREAK          = (1 << 26);       // All branches lead to a break statement (Or possibly a throw or return)
+    const STATUS_THROW          = (1 << 27);       // All branches lead to a throw statement (Or possibly a return)
+    const STATUS_RETURN         = (1 << 28);       // All branches lead to a return/exit statement
 
-    public function __construct(\SplObjectStorage $exit_status_cache, string $filename = 'unknown')
-    {
-        $this->exit_status_cache = $exit_status_cache;
-        $this->filename = $filename;
-    }
+    const STATUS_THROW_OR_RETURN_BITMASK = self::STATUS_THROW | self::STATUS_RETURN;
+
+    const STATUS_INTERESTING_SWITCH_BITMASK =
+        self::STATUS_MAYBE_THROW |
+        self::STATUS_MAYBE_RETURN |
+        self::STATUS_THROW |
+        self::STATUS_RETURN;
+
+    const STATUS_INTERESTING_TRY_BITMASK =
+        self::STATUS_MAYBE_CONTINUE |
+        self::STATUS_MAYBE_BREAK |
+        self::STATUS_CONTINUE |
+        self::STATUS_BREAK;
+
+    // Bitshift left by this to convert a possible status to a certain status;
+    const BITSHIFT_FOR_MAYBE = 4;
+
+    const STATUS_MAYBE_BITMASK =
+        self::STATUS_MAYBE_CONTINUE |
+        self::STATUS_MAYBE_BREAK |
+        self::STATUS_MAYBE_THROW |
+        self::STATUS_MAYBE_RETURN;
+
+    const STATUS_CERTAIN_BITMASK =
+        self::STATUS_CONTINUE |
+        self::STATUS_BREAK |
+        self::STATUS_THROW |
+        self::STATUS_RETURN;
+
+    const STATUS_BITMASK =
+        self::STATUS_PROCEED |
+        self::STATUS_MAYBE_BITMASK |
+        self::STATUS_CERTAIN_BITMASK;
+
+    public function __construct() { }
 
     public function check(Node $node = null) : int
     {
@@ -41,21 +83,6 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
         $result = $this($node);
         \assert(\is_int($result), 'Expected int');
         return $result;
-    }
-
-    /**
-     * @param Node $node - The node to fetch the status of.
-     * @param \Closure $cb - Callable accepting a node and returning an exit status.
-     * @return int
-     */
-    private function memoizedStatus(Node $node, \Closure $cb)
-    {
-        if (isset($this->exit_status_cache[$node])) {
-            return $this->exit_status_cache[$node];  // Can't use null coalescing operator for SplObjectStorage due to a php bug. Fixed in 7.0.14
-        }
-        $status = $cb($node);
-        $this->exit_status_cache->offsetSet($node, $status);  // TODO: Change to regular field assignment after https://github.com/etsy/phan/issues/254 is fixed.
-        return $status;
     }
 
     /**
@@ -69,7 +96,13 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
     private static function isTruthyLiteral($cond) : bool
     {
         if ($cond instanceof Node) {
-            // TODO: Could look up constants and inline expressions, but doing that has low value.
+            // TODO: Could look up values for remaining constants and inline expressions, but doing that has low value.
+            if ($cond->kind === \ast\AST_CONST) {
+                $condName = $cond->children['name'];
+                if ($condName->kind === \ast\AST_NAME) {
+                    return \strtolower($condName->children['name']) === 'true';
+                }
+            }
             return false;
         }
         // Cast string, int, etc. literal to a bool
@@ -94,6 +127,186 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
         return self::STATUS_THROW;
     }
 
+    public function visitTry(Node $node)
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfTry($node);
+        $node->flags = $status;
+        return $status;
+    }
+
+    private function computeStatusOfTry(Node $node) : int
+    {
+        $main_status = $this->check($node->children['try']);
+        if ($main_status === self::STATUS_RETURN) {
+            return self::STATUS_RETURN;
+        }
+        $finally_node = $node->children['finally'];
+        if ($finally_node) {
+            $finally_status = $this->check($finally_node);
+            if ($finally_status >= self::STATUS_THROW) {
+                return $finally_status;
+            }
+        } else {
+            $finally_status = self::STATUS_PROCEED;
+        }
+        $catch_node_list = $node->children['catches']->children;
+        if (\count($catch_node_list) === 0) {
+            return self::mergeFinallyStatus($main_status, $finally_status);
+        }
+        // TODO: Check if each catch statement unconditionally returns?
+        if (($main_status & self::STATUS_INTERESTING_TRY_BITMASK) !== 0) {
+            // Not 100% certain of any status. If anything threw, it could be caught by the 1 or more catch statements..
+            if (($main_status & self::STATUS_CERTAIN_BITMASK) !== 0) {
+                return $main_status >> self::BITSHIFT_FOR_MAYBE;
+            }
+            return $main_status;
+        }
+        // No idea.
+        return self::STATUS_PROCEED;
+    }
+
+    private static function mergeFinallyStatus(int $try_status, int $finally_status) : int
+    {
+        if (($try_status & self::STATUS_CERTAIN_BITMASK) !== 0) {
+            return \max($try_status, $finally_status);
+        }
+        if (($finally_status & self::STATUS_CERTAIN_BITMASK) !== 0) {
+            return $finally_status;
+        }
+        return min($try_status, $finally_status);
+    }
+
+    public function visitSwitch(Node $node)
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfSwitch($node);
+        $node->flags = $status;
+        return $status;
+    }
+
+    private function computeStatusOfSwitch(Node $node) : int
+    {
+        $has_default = false;
+        $status = null;
+        $normal_break_is_possible = false;
+        $switch_stmt_case_nodes = $node->children['stmts']->children;
+        foreach ($switch_stmt_case_nodes as $index => $case_node) {
+            if (!array_key_exists('cond', $case_node->children)) {
+                \Phan\Debug::printNode($case_node);
+                continue;
+            }
+            if ($case_node->children['cond'] === null) {
+                $has_default = true;
+            }
+            $case_status = self::getStatusOfSwitchCase($case_node, $index, $switch_stmt_case_nodes);
+            if ($case_status & self::STATUS_INTERESTING_SWITCH_BITMASK) {
+                if (is_null($status) || $case_status < $status) {
+                    $status = $case_status;
+                }
+            } else {
+                // One of the case statements will break, or fall through to the end.
+                $normal_break_is_possible = true;
+            }
+        }
+        if ($status === null) {
+            return self::STATUS_PROCEED;
+        }
+        if (($status & self::STATUS_INTERESTING_SWITCH_BITMASK) === 0) {
+            return self::STATUS_PROCEED;
+        }
+        if ($normal_break_is_possible || !$has_default) {
+            if (($status & self::STATUS_CERTAIN_BITMASK) !== 0) {
+                // E.g. some of the case statements throw unconditionally, others break normally.
+                // So, the final result is that an interesting outcome such as throw/return is possible but not certain.
+                return $status >> self::BITSHIFT_FOR_MAYBE;
+            } else {
+                return $status;
+            }
+        }
+        // Ignore statuses such as break/continue. They take effect inside, not outside.
+        return $status;
+    }
+
+    /**
+     * @param Node[] $siblings
+     */
+    private function getStatusOfSwitchCase(Node $case_node, int $index, array $siblings) : int
+    {
+        $status = $case_node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfSwitchCase($case_node, $index, $siblings);
+        $case_node->flags = $status;
+        return $status;
+    }
+
+    private function computeStatusOfSwitchCase(Node $case_node, int $index, array $siblings) : int
+    {
+        $status = $this->visitStmtList($case_node->children['stmts']);
+        if ($status & self::STATUS_CERTAIN_BITMASK) {
+            return $status;
+        }
+        $next_sibling = $siblings[$index + 1] ?? null;
+        if (!$next_sibling) {
+            return $status;
+        }
+        $next_status = self::getStatusOfSwitchCase($case_node, $index + 1, $siblings);
+        if ($status & self::STATUS_MAYBE_BITMASK) {
+            if ($next_status & self::STATUS_MAYBE_BITMASK) {
+                return min($status, $next_status);
+            } else if ($next_status & self::STATUS_CERTAIN_BITMASK) {
+                return min($status << self::BITSHIFT_FOR_MAYBE, $next_status);
+            }
+            // next_status === STATUS_PROCEED
+            return $status;
+        }
+        // STATUS_PROCEED | self::STATUS_CERTAIN_BITMASK
+        return $status;
+    }
+
+    public function visitWhile(Node $node)
+    {
+        return $this->analyzeLoop($node);
+    }
+
+    public function visitFor(Node $node)
+    {
+        return $this->analyzeLoop($node);
+    }
+
+    private function analyzeLoop(Node $node) : int
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfLoopWithTrueCond($node);
+        $node->flags = $status;
+        return $status;
+    }
+
+    private function computeStatusOfLoopWithTrueCond(Node $node) : int
+    {
+        // only know how to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
+        // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
+        if (!self::isTruthyLiteral($node->children['cond'])) {
+            return self::STATUS_PROCEED;
+        }
+        $status = $this->check($node->children['stmts']);
+        if ($status === self::STATUS_RETURN || $status === self::STATUS_THROW) {
+            return $status;
+        }
+        return self::STATUS_PROCEED;
+    }
+
     // A return statement unconditionally returns (Assume expression doesn't throw)
     public function visitReturn(Node $node)
     {
@@ -113,9 +326,13 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
      */
     public function visitStmtList(Node $node)
     {
-        return $this->memoizedStatus($node, function(Node $node) : int {
-            return $this->getStatusOfBlock($node->children ?? []);
-        });
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfBlock($node->children ?? []);
+        $node->flags = $status;
+        return $status;
     }
 
     // TODO: Check if for/while/foreach block will execute at least once.
@@ -128,26 +345,77 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
      */
     private function analyzeBranched(Node $node)
     {
-        return $this->memoizedStatus($node, function(Node $node) : int {
-            // A do-while statement and an if branch are executed at least once (or exactly once)
-            // TODO: deduplicate
-            $stmts = $node->children['stmts'];
-            if (\is_null($stmts)) {
-                return self::STATUS_PROCEED;
-            }
-            // We can have a single statement in the 'stmts' field when no braces exist?
-            if (!($stmts instanceof Node)) {
-                return self::STATUS_PROCEED;
-            }
-            // This may be a statement list (or in rare cases, a statement?)
-            $status = $this->check($stmts);
-            if ($node->kind === \ast\AST_DO_WHILE) {
-                // ignore break/continue within a do{}while ($cond);
-                return in_array($status, [self::STATUS_THROW, self::STATUS_RETURN]) ? $status : self::STATUS_PROCEED;
-            }
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
             return $status;
-        });
+        }
+        $status = $this->computeStatusOfBranched($node);
+        $node->flags = $status;
+        return $status;
     }
+
+    public function computeStatusOfBranched(Node $node) : int {
+        // A do-while statement and an if branch are executed at least once (or exactly once)
+        // TODO: deduplicate
+        $stmts = $node->children['stmts'];
+        if (\is_null($stmts)) {
+            return self::STATUS_PROCEED;
+        }
+        // We can have a single statement in the 'stmts' field when no braces exist?
+        // TODO: no longer the case in ast version 40?
+        if (!($stmts instanceof Node)) {
+            return self::STATUS_PROCEED;
+        }
+        // This may be a statement list (or in rare cases, a statement?)
+        $status = $this->check($stmts);
+        if ($node->kind === \ast\AST_DO_WHILE) {
+            // ignore break/continue within a do{}while ($cond);
+            return in_array($status, [self::STATUS_THROW, self::STATUS_RETURN]) ? $status : self::STATUS_PROCEED;
+        }
+        return $status;
+    }
+
+    /**
+     * Analyzes a node with kind \ast\AST_IF
+     * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
+     * @override
+     */
+    public function visitIf(Node $node)
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfIf($node);
+        $node->flags = $status;
+        return $status;
+    }
+
+    private function computeStatusOfIf(Node $node) : int {
+        $has_if_elems_for_all_cases = false;
+        $min_status = self::STATUS_RETURN;
+        foreach ($node->children as $child_node) {
+            $status = $this->check($child_node->children['stmts']);
+            if ($status < $min_status) {
+                $min_status = $status;
+            }
+            if ($min_status === self::STATUS_PROCEED) {
+                break;
+            }
+
+            $cond_node = $child_node->children['cond'];
+            // check for "else" or "elseif (true)"
+            if ($cond_node === null || self::isTruthyLiteral($cond_node)) {
+                $has_if_elems_for_all_cases = true;
+                break;
+            }
+        }
+        if (!$has_if_elems_for_all_cases) {
+            return self::STATUS_PROCEED;
+        }
+        return $min_status;
+    }
+
 
     /**
      * Analyzes a node with kind \ast\AST_DO_WHILE
@@ -160,11 +428,27 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
     }
 
     /**
+     * Analyzes a node with kind \ast\AST_IF_ELEM
+     * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
+     */
+    public function visitIfElem(Node $node)
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->visitStmtList($node->children['stmts']);
+        $node->flags = $status;
+        return $status;
+    }
+
+    /**
      * @param \ast\Node[] $block
      * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
      */
-    private function getStatusOfBlock(array $block) : int
+    private function computeStatusOfBlock(array $block) : int
     {
+        $maybe_status = 0;
         foreach ($block as $child) {
             if ($child === null) {
                 continue;
@@ -175,10 +459,27 @@ class BlockExitStatusChecker extends KindVisitorImplementation {
             }
             $status = $this->check($child);
             if ($status !== self::STATUS_PROCEED) {
-                // The statement after this one is unreachable, due to unconditional continue/break/throw/return.
-                return $status;
+                if ($status & self::STATUS_MAYBE_BITMASK) {
+                    if (!$maybe_status || $status < $maybe_status) {
+                        $maybe_status = $status;
+                    }
+                } else {
+                    if ($maybe_status) {
+                        // E.g. if this statement is guaranteed to throw, but an earlier statement may break,
+                        // then the statement list is guarenteed to break/throw.
+                        $equivalent_status = $maybe_status << self::BITSHIFT_FOR_MAYBE;
+                        return min($status, $equivalent_status);
+                    }
+                    // The statement after this one is unreachable, due to unconditional continue/break/throw/return.
+                    return $status;
+                }
             }
         }
         return self::STATUS_PROCEED;
+    }
+
+    public static function willUnconditionallyThrowOrReturn(Node $node) : bool
+    {
+        return ((new self())($node) & self::STATUS_THROW_OR_RETURN_BITMASK) !== 0;
     }
 }

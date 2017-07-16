@@ -395,6 +395,7 @@ return [
 
     // A list of plugin files to execute
     'plugins' => [
+        '.phan/plugins/AlwaysReturnPlugin.php',
         '.phan/plugins/DemoPlugin.php',
         '.phan/plugins/DollarDollarPlugin.php',
         // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without key as return type with values having keys deliberately.
