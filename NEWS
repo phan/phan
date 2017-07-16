@@ -30,6 +30,9 @@ New Features (CLI, Configs)
 
 Bug Fixes
 + Work around notice about COMPILER_HALT_OFFSET on windows.
++ Fixes #462 : Fix type inferences for instanceof for checks with dynamic class names are provided.
+  Valid class names are either a string or an instance of the class to check against.
+  Warn if the class name is definitely invalid.
 
 Changes In Emitted Issues
 + Improve `InvalidVariableIssetPlugin`. Change the names and messages for issue types.

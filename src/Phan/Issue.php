@@ -56,6 +56,7 @@ class Issue
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
+    const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
     const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
@@ -874,7 +875,14 @@ class Issue
                 self::REMEDIATION_B,
                 10026
             ),
-
+            new Issue(
+                self::TypeInvalidInstanceof,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Found an instanceof class name of type {TYPE}, but class name must be a valid object or a string',
+                self::REMEDIATION_B,
+                10029
+            ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,
@@ -2088,8 +2096,9 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param mixed ...$parameters
-     * Template parameters for the issue's error message
+     * @param string|int|float|bool|object ...$parameters
+     * Template parameters for the issue's error message.
+     * If these are objects, they should define __toString()
      *
      * @return void
      */
