@@ -79,7 +79,6 @@ final class FileCache {
         if (!\is_string($contents)) {
             throw new \RuntimeException("FileCache::getOrReadEntry: file_get_contents failed for '$file_name'\n");
         }
-        assert(\is_string($contents));
         $entry = self::addEntry($file_name, $contents);
         return $entry;
     }

@@ -169,8 +169,7 @@ class Context extends FileRef
             );
         }
 
-        \assert(false, "Unknown flag $flags");
-        return $fqsen;
+        throw new \AssertionError("Unknown flag $flags");
     }
 
     /**

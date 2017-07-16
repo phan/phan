@@ -828,8 +828,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return $type;
             }
 
-            \assert($fqsen instanceof FullyQualifiedClassName);
-
             // If we don't have the class, we'll catch that problem
             // elsewhere
             if (!$this->code_base->hasClassWithFQSEN($fqsen)) {

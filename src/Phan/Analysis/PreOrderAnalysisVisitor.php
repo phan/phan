@@ -295,7 +295,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             if (!$class_fqsen) {
                 return null;
             }
-            assert($class_fqsen instanceof FullyQualifiedClassName);
 
             // Postponed the check for undeclared closure scopes to the analysis phase,
             // because classes are still being parsed in the parse phase.

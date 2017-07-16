@@ -237,7 +237,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         if (!\is_string($raw_function_name)) {
             return $this->context;
         }
-        assert(\is_string($raw_function_name));
         $args = $node->children['args']->children;
         foreach ($args as $arg) {
             if ($arg instanceof Node) {

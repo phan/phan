@@ -709,7 +709,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             return;
         }
-        \assert($node instanceof Node);
         $kind = $node->kind;
         if ($kind === \ast\AST_CONDITIONAL) {
             yield from self::deduplicateUnionTypes($this->getReturnTypesOfConditional($context, $node));

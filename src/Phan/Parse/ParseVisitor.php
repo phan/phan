@@ -88,9 +88,6 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
 
-        \assert(!empty($class_name),
-            "Class must have name in {$this->context}");
-
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
             $class_name,
             $this->context
