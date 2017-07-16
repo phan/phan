@@ -185,7 +185,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+        if ($method->getHasYield()) {
             $this->setReturnTypeOfGenerator($method, $node);
         }
 
@@ -276,8 +276,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        // TODO: no longer necessary, just call getHasYield()
-        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+        if ($function->getHasYield()) {
             $this->setReturnTypeOfGenerator($function, $node);
         }
 
@@ -462,7 +461,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+        if ($func->getHasYield()) {
             $this->setReturnTypeOfGenerator($func, $node);
         }
 
@@ -504,57 +503,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
     }
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
-     * This must be called before visitReturn is called within a function.
-     *
-     * @return bool
-     * True if the node represents a yield, else false.
-     */
-    public static function analyzeFunctionLikeIsGenerator(Node $node) : bool
-    {
-        foreach ($node->children ?? [] as $child_node) {
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-            // Check for occurrences of `yield`, including statements such as `return [yield 2];`.
-            if (self::analyzeNodeHasYield($child_node)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static function analyzeNodeHasYield(Node $node)
-    {
-        // The ast module doesn't tell us if something has a yield statement.
-        // We want to stop if the type of a node is a closure or a anonymous class
-
-        // Get the method/function/closure we're in
-        switch ($node->kind) {
-        case \ast\AST_YIELD:
-        case \ast\AST_YIELD_FROM:
-            return true;
-        case \ast\AST_METHOD:
-        case \ast\AST_FUNC_DECL:
-        case \ast\AST_CLOSURE:
-        case \ast\AST_CLASS:
-            return false;
-        }
-        foreach ($node->children ?? [] as $child_node) {
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-            if (self::analyzeNodeHasYield($child_node)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 
     /**
      * @param Node $node
