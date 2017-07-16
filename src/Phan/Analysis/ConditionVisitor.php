@@ -292,7 +292,6 @@ class ConditionVisitor extends KindVisitorImplementation
             if (\is_null($variable)) {
                 return $context;
             }
-            \assert(!\is_null($variable));  // redundant annotation for phan.
 
             // Get the type that we're checking it against
             $type = UnionType::fromNode(
@@ -498,7 +497,6 @@ class ConditionVisitor extends KindVisitorImplementation
         if (!\is_string($raw_function_name)) {
             return $this->context;
         }
-        assert(\is_string($raw_function_name));
         $args = $node->children['args']->children;
         // Only look at things of the form
         // `\is_string($variable)`
@@ -532,13 +530,6 @@ class ConditionVisitor extends KindVisitorImplementation
 
             if (\is_null($variable)) {
                 return $context;
-            }
-            \assert(!\is_null($variable));  // redundant annotation for phan.
-
-            if ($variable->getUnionType()->isEmpty()) {
-                $variable->getUnionType()->addType(
-                    NullType::instance(false)
-                );
             }
 
             // Make a copy of the variable

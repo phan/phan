@@ -709,7 +709,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             );
             return;
         }
-        \assert($node instanceof Node);
         $kind = $node->kind;
         if ($kind === \ast\AST_CONDITIONAL) {
             yield from self::deduplicateUnionTypes($this->getReturnTypesOfConditional($context, $node));
@@ -2116,13 +2115,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * is the throw an exception
      *
      * @return bool
-     * True when the decl can only throw an exception
+     * True when the decl can only throw an exception or return or exit()
      */
-    private function declOnlyThrows(Decl $node) {
-        $stmts = $node->children['stmts'] ?? null;
-        return isset($stmts)
-            && $stmts->kind === \ast\AST_STMT_LIST
-            && \count($stmts->children) === 1
-            && $stmts->children[0]->kind === \ast\AST_THROW;
+    private function declOnlyThrows(Decl $node) : bool {
+        return BlockExitStatusChecker::willUnconditionallyThrowOrReturn($node->children['stmts']);
     }
 }

@@ -1878,7 +1878,7 @@ class Issue
 
     /**
      * @return string
-     * A descriptive name of the severity of hte issue
+     * A descriptive name of the severity of the issue
      */
     public function getSeverityName() : string
     {
@@ -1889,6 +1889,8 @@ class Issue
             return 'normal';
         case self::SEVERITY_CRITICAL:
             return 'critical';
+        default:
+            throw new \AssertionError('Unknown severity ' . $this->getSeverity());
         }
     }
 

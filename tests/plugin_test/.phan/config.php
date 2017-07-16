@@ -64,6 +64,7 @@ return [
     // A list of plugin files to execute
     // (Execute all of them.)
     'plugins' => [
+        '../../.phan/plugins/AlwaysReturnPlugin.php',
         '../../.phan/plugins/DemoPlugin.php',
         '../../.phan/plugins/DollarDollarPlugin.php',
         '../../.phan/plugins/DuplicateArrayKeyPlugin.php',

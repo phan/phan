@@ -114,7 +114,6 @@ class Func extends AddressableElement implements FunctionInterface
             // shouldn't happen
             return null;
         }
-        \assert($class_fqsen instanceof FullyQualifiedClassName);
 
         return $class_fqsen;
     }

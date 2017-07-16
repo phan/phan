@@ -4,13 +4,24 @@ Phan NEWS
 -----------------------
 
 New Features (Analysis)
-+ Check (the first 5) elements of returned arrays against the declared return union types, individually(#935)
++ Check (the first 5) elements of returned arrays against the declared return union types, individually (Issue #935)
   (E.g. `/** @return int[] */ function foo() {return [2, "x"]; }` will now warn with `PhanTypeMismatchReturn` about returning `string[]`)
 + Check both sides of ternary conditionals against the declared return union types
   (E.g. `function foo($x) : int {return is_string($x) ? $x : 0; }` will now warn with `PhanTypeMismatchReturn`
   about returning a string).
 + Improved analysis of negations of conditions within ternary conditional operators and else/else if statements. (Issue #538)
-  Support analysis of negation of the `||` operator.
+  Support analysis of negation of the `||` operator. (E.g. `if (!(is_string($x) || is_int($x))) {...}`)
++ Make phan aware of blocks of code which will unconditionally throw or return. (Issue #308, #817, #996, #956)
+
+  Don't infer variable types from blocks of code which unconditionally throw or return.
+
+  Infer the negation of type assertions from if statements that unconditionally throw/return/break/continue 
+  (E.g. `if (!is_string($x)) { return false; } functionUsingX($x);`)
+
+  When checking if a variable is defined by all branches of an if statement, ignore branches which inconditionally throw/return/break/continue.
++ Add a new plugin file `AlwaysReturnPlugin`. (Issue #996)
+  This will add a stricter check that a function with a non-null return type *unconditionally* returns a value (or explicitly throws, or exit()s).
+  Currently, Phan just checks if a function *may* return, or unconditionally throws.
 
 New Features (CLI, Configs)
 + Add config setting `prefer_narrowed_phpdoc_return_type` (See "New Features (CLI, Configs)),

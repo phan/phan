@@ -454,12 +454,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             case \ast\flags\TYPE_VOID:
                 return VoidType::instance(false)->asUnionType();
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . Debug::astFlagDescription($node->flags ?? 0, $node->kind)
-                );
-                break;
+                throw new \AssertionError("All flags must match. Found "
+                    . Debug::astFlagDescription($node->flags ?? 0, $node->kind));
         }
     }
 
@@ -831,8 +827,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!($fqsen instanceof FullyQualifiedClassName)) {
                 return $type;
             }
-
-            \assert($fqsen instanceof FullyQualifiedClassName);
 
             // If we don't have the class, we'll catch that problem
             // elsewhere

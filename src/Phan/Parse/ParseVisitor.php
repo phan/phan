@@ -88,9 +88,6 @@ class ParseVisitor extends ScopeVisitor
             return $this->context;
         }
 
-        \assert(!empty($class_name),
-            "Class must have name in {$this->context}");
-
         $class_fqsen = FullyQualifiedClassName::fromStringInContext(
             $class_name,
             $this->context
@@ -840,9 +837,74 @@ class ParseVisitor extends ScopeVisitor
         );
 
         // Mark the method as returning something
-        $method->setHasReturn(
-            ($node->children['expr'] ?? null) !== null
+        if (($node->children['expr'] ?? null) !== null) {
+            $method->setHasReturn(true);
+        }
+
+        return $this->context;
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_YIELD`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitYield(Node $node) : Context
+    {
+        return $this->analyzeYield($node);
+    }
+
+    /**
+     * Visit a node with kind `\ast\AST_YIELD_FROM`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitYieldFrom(Node $node) : Context
+    {
+        return $this->analyzeYield($node);
+    }
+
+
+    /**
+     * Visit a node with kind `\ast\AST_YIELD_FROM` or kind `\ast_YIELD`
+     *
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    private function analyzeYield(Node $node) : Context {
+        $this->analyzeBackwardCompatibility($node);
+
+        // Make sure we're actually returning from a method.
+        if (!$this->context->isInFunctionLikeScope()) {
+            return $this->context;
+        }
+
+        // Get the method/function/closure we're in
+        $method = $this->context->getFunctionLikeInScope(
+            $this->code_base
         );
+
+        \assert(!empty($method),
+            "We're supposed to be in either method or closure scope."
+        );
+
+        // Mark the method as yielding something (and returning a generator)
+        $method->setHasYield(true);
+        $method->setHasReturn(true);
 
         return $this->context;
     }

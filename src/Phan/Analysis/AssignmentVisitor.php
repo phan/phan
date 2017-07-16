@@ -90,13 +90,10 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visit(Node $node) : Context
     {
-        \assert(
-            false,
+        throw new \AssertionError(
             "Unknown left side of assignment in {$this->context} with node type "
             . Debug::nodeName($node)
         );
-
-        return $this->visitVar($node);
     }
 
     /**
@@ -294,7 +291,6 @@ class AssignmentVisitor extends AnalysisVisitor
                 // Super weird, right?
                 return $this->context;
             }
-            // assert(\is_string($dim), "dim is not a string");
 
             if (Variable::isHardcodedVariableInScopeWithName($dim, $this->context->isInGlobalScope())) {
                 // Don't override types of superglobals such as $_POST, $argv through $_GLOBALS['_POST'] = expr either. TODO: Warn.
@@ -332,8 +328,6 @@ class AssignmentVisitor extends AnalysisVisitor
         if (!\is_string($property_name)) {
             return $this->context;
         }
-
-        \assert(\is_string($property_name), "Property must be string");
 
         try {
             $class_list = (new ContextNode(
@@ -501,8 +495,6 @@ class AssignmentVisitor extends AnalysisVisitor
         if (!\is_string($property_name)) {
             return $this->context;
         }
-
-        \assert(\is_string($property_name), "Static property must be string");
 
         try {
             $class_list = (new ContextNode(

@@ -168,7 +168,6 @@ class Phan implements IgnoredFilesFilterInterface {
                 error_log("Finished serving requests, exiting");
                 exit(2);
             }
-            \assert($request instanceof Request);
             self::$printer = $request->getPrinter();
 
             // This is the list of all of the parsed files

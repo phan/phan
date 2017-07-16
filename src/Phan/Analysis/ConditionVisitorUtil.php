@@ -125,7 +125,6 @@ trait ConditionVisitorUtil {
             if (\is_null($variable)) {
                 return $context;
             }
-            \assert(!\is_null($variable));  // redundant annotation for phan.
 
             $union_type = $variable->getUnionType();
             if (!$should_filter_cb($union_type)) {
@@ -163,7 +162,6 @@ trait ConditionVisitorUtil {
             if (\is_null($variable)) {
                 return $context;
             }
-            \assert(!\is_null($variable));  // redundant annotation for phan.
 
             // Make a copy of the variable
             $variable = clone($variable);
@@ -206,7 +204,6 @@ trait ConditionVisitorUtil {
                     if (\is_null($variable)) {
                         return $context;
                     }
-                    \assert(!\is_null($variable));  // redundant annotation for phan.
 
                     // Make a copy of the variable
                     $variable = clone($variable);

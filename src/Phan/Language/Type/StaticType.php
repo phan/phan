@@ -36,9 +36,9 @@ final class StaticType extends Type
         if (empty($instance)) {
             $instance = static::make('\\', static::NAME, [], false, Type::FROM_TYPE);
             \assert($instance instanceof static);
+        } else {
+            \assert($instance instanceof static);
         }
-
-        \assert($instance instanceof static);
         return $instance;
     }
 
