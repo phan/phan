@@ -398,6 +398,7 @@ return [
         '.phan/plugins/AlwaysReturnPlugin.php',
         '.phan/plugins/DemoPlugin.php',
         '.phan/plugins/DollarDollarPlugin.php',
+        '.phan/plugins/UnreachableCodePlugin.php',
         // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without key as return type with values having keys deliberately.
         // '.phan/plugins/DuplicateArrayKeyPlugin.php',
 

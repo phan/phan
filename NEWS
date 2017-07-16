@@ -22,6 +22,10 @@ New Features (Analysis)
 + Add a new plugin file `AlwaysReturnPlugin`. (Issue #996)
   This will add a stricter check that a function with a non-null return type *unconditionally* returns a value (or explicitly throws, or exit()s).
   Currently, Phan just checks if a function *may* return, or unconditionally throws.
++ Add a new plugin file `UnreachableCodePlugin` (in development).
+  This will warn about statements that appear to be unreachable
+  (statements occurring after unconditional return/break/throw/return/exit statements)
+
 
 New Features (CLI, Configs)
 + Add config setting `prefer_narrowed_phpdoc_return_type` (See "New Features (CLI, Configs)),
