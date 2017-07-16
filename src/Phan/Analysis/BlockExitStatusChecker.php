@@ -141,9 +141,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
     private function computeStatusOfTry(Node $node) : int
     {
         $main_status = $this->check($node->children['try']);
-        if ($main_status === self::STATUS_RETURN) {
-            return self::STATUS_RETURN;
-        }
+        // Finding good heuristics is difficult.
+        // e.g. "return someFunctionThatMayThrow()" in try{} block would be inferred as STATUS_RETURN, but may actually be STATUS_THROW
+        $main_status = min($main_status, self::STATUS_THROW);
+
         $finally_node = $node->children['finally'];
         if ($finally_node) {
             $finally_status = $this->check($finally_node);
@@ -198,10 +199,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         $normal_break_is_possible = false;
         $switch_stmt_case_nodes = $node->children['stmts']->children;
         foreach ($switch_stmt_case_nodes as $index => $case_node) {
-            if (!array_key_exists('cond', $case_node->children)) {
-                \Phan\Debug::printNode($case_node);
-                continue;
-            }
             if ($case_node->children['cond'] === null) {
                 $has_default = true;
             }
@@ -258,7 +255,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         if (!$next_sibling) {
             return $status;
         }
-        $next_status = self::getStatusOfSwitchCase($case_node, $index + 1, $siblings);
+        $next_status = self::getStatusOfSwitchCase($next_sibling, $index + 1, $siblings);
         if ($status & self::STATUS_MAYBE_BITMASK) {
             if ($next_status & self::STATUS_MAYBE_BITMASK) {
                 return min($status, $next_status);
@@ -269,7 +266,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
             return $status;
         }
         // STATUS_PROCEED | self::STATUS_CERTAIN_BITMASK
-        return $status;
+        return $next_status;
     }
 
     public function visitWhile(Node $node)

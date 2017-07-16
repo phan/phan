@@ -55,6 +55,13 @@ Warns about common errors in php array keys. Has the following checks (Doesn't t
 Checks if a function or method with a non-void return type will **unconditionally** return or throw.
 This is stricter than Phan's default checks (Phan accepts a function or method that **may** return something, or functions that unconditionally throw).
 
+#### UnconditionalCodePlugin.php
+
+Checks for syntactically unreachable statements in the global scope or function bodies.
+(E.g. function calls after unconditional continue/break/throw/return/exit())
+
+This is in development, and has some edge cases related to try blocks.
+
 ### 3. Plugins Specific to Code Styles
 
 These plugins may be useful to enforce certain code styles,
