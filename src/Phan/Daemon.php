@@ -69,7 +69,7 @@ class Daemon {
                 }
 
                 if (!\is_resource($conn)) {
-                    // If we didn't get a connection, and it wasn't due
+                    // If we didn't get a connection, and it wasn't due to a signal from a child process, then stop the daemon.
                     break;
                 }
                 $request = Request::accept($code_base, $file_path_lister, $conn);

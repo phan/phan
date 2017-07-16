@@ -113,7 +113,22 @@ class ReturnChecks {
         echo "In generator\n";
         $x = yield 2;
     }
+
+    /**
+     * @param int[]|string[] $x
+     */
+    public static function skippingWithBreak($x) {
+        // should not falsely detect as missing a return type
+        for ($i = 0; $i < count($x); $i++) {
+            $a = $x[$i];
+            if (!is_int($a)) {
+                break;
+            }
+            echo strlen($a);  // Phan should warn about $a being an int.
+        }
+    }
 }
 ReturnChecks::missingReturnTypeSwitchGood(3);
 ReturnChecks::missingReturnTypeSwitch(5);
 ReturnChecks::generator(3);
+ReturnChecks::skippingWithBreak([3, 4, "strval"]);

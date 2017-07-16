@@ -534,7 +534,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             // to reduce false positives.
             // (Variables will be available in `catch` and `finally`)
             // This is mitigated by finally and catch blocks being unaware of new variables from try{} blocks.
-            if (BlockExitStatusChecker::willUnconditionallyThrowOrReturn($child_node->children['stmts'])) {
+            if (BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($child_node->children['stmts'])) {
                 // e.g. "if (!is_string($x)) { return; }"
                 $excluded_elem_count++;
             } else {

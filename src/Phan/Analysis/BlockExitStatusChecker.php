@@ -478,6 +478,11 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         return self::STATUS_PROCEED;
     }
 
+    public static function willUnconditionallySkipRemainingStatements(Node $node) : bool
+    {
+        return ((new self())($node) & self::STATUS_CERTAIN_BITMASK) !== 0;
+    }
+
     public static function willUnconditionallyThrowOrReturn(Node $node) : bool
     {
         return ((new self())($node) & self::STATUS_THROW_OR_RETURN_BITMASK) !== 0;
