@@ -183,9 +183,6 @@ class Phan implements IgnoredFilesFilterInterface {
             $code_base->disableUndoTracking();
         }
 
-        global $start_time;
-        $start_time = microtime(true);
-
         // With parsing complete, we need to tell the code base to
         // start hydrating any requested elements on their way out.
         // Hydration expands class types, imports parent methods,

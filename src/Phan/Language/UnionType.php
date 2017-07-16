@@ -121,7 +121,7 @@ class UnionType implements \Serializable
         }
 
         return new UnionType(
-            \array_map(function (string $type_name) use ($context, $type_string, $source) {
+            \array_map(function (string $type_name) use ($context, $source) {
                 \assert($type_name !== '', "Type cannot be empty.");
                 return Type::fromStringInContext(
                     $type_name,
@@ -1144,9 +1144,6 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base in which to find classes
-     *
      * @param Context $context
      * The context in which we're resolving this union
      * type.
@@ -1167,7 +1164,6 @@ class UnionType implements \Serializable
      * TODO: Add a method to ContextNode to directly get FQSEN instead?
      */
     public function asClassFQSENList(
-        CodeBase $code_base,
         Context $context
     ) {
         // Iterate over each viable class type to see if any

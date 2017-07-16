@@ -38,18 +38,18 @@ final class PlainTextPrinter implements IssuePrinterInterface
                 break;
             }
             $issue = Colorizing::colorizeTemplate("{FILE}:{LINE} $issue_type_template %s", [
-                $instance->getFile(),
-                $instance->getLine(),
-                $instance->getIssue()->getType(),
-                $instance->getMessage(),
+                $file,
+                $line,
+                $type,
+                $message
             ]);
         } else {
             $issue = sprintf(
                 '%s:%d %s %s',
-                $instance->getFile(),
-                $instance->getLine(),
-                $instance->getIssue()->getType(),
-                $instance->getMessage()
+                $file,
+                $line,
+                $type,
+                $message
             );
         }
 

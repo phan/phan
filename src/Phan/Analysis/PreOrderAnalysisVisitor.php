@@ -41,7 +41,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         parent::__construct($code_base, $context);
     }
 
-    public function visit(Node $node) : Context
+    public function visit(Node $unused_node) : Context
     {
         return $this->context;
     }
@@ -131,10 +131,9 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        $method = $clazz->getMethodByNameInContext(
+        $method = $clazz->getMethodByName(
             $this->code_base,
-            $method_name,
-            $this->context
+            $method_name
         );
 
         // Parse the comment above the method to get
@@ -286,7 +285,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * @return ?FullyQualifiedClassName
      */
-    private static function getOverrideClassFQSEN(CodeBase $code_base, Context $context, Func $func)
+    private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func)
     {
         $closure_scope = $func->getInternalScope();
 		if ($closure_scope instanceof ClosureScope) {
@@ -324,7 +323,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Context $context,
         Func $func
     ) {
-        $override_this_fqsen = self::getOverrideClassFQSEN($code_base, $context, $func);
+        $override_this_fqsen = self::getOverrideClassFQSEN($code_base, $func);
         if ($override_this_fqsen !== null) {
             if ($context->getScope()->hasVariableWithName('this') || !$context->isInClassScope()) {
                 // Handle @phan-closure-scope - Should set $this to the overriden class, as well as handling self:: and parent::
@@ -528,7 +527,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if ($node->children['value']->kind == \ast\AST_ARRAY) {
             foreach ($node->children['value']->children ?? [] as $child_node) {
 
-                $key_node = $child_node->children['key'] ?? null;
+                // $key_node = $child_node->children['key'] ?? null;
                 $value_node = $child_node->children['value'] ?? null;
 
                 // for syntax like: foreach ([] as list(, $a));

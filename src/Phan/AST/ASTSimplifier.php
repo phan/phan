@@ -367,7 +367,6 @@ class ASTSimplifier {
         \assert($node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
         \assert($node->children[1]->children['cond'] === null);
         $new_node = clone($node);
-        $if_elem = $new_node->children[0];
         $new_node->children = [clone($new_node->children[1]), clone($new_node->children[0])];
         $new_node->children[0]->children['cond'] = $node->children[0]->children['cond']->children['expr'];
         $new_node->children[1]->children['cond'] = null;

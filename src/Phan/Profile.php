@@ -40,7 +40,6 @@ trait Profile
 
         // Emit a log message
         $delta = ($end_time - $start_time);
-        $message = "$label\t$delta\n";
 
         self::$label_delta_map[$label][] = $delta;
 

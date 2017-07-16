@@ -21,9 +21,9 @@ final class NullType extends ScalarType
      * @param UnionType[] $template_parameter_type_list
      * A (possibly empty) list of template parameter types
      *
-     * @param bool $is_nullable
+     * @param bool $is_nullable (@phan-unused-param)
      * True if this type can be null, false if it cannot
-     * be null.
+     * be null. (NullType can always be null)
      */
     protected function __construct(
         string $namespace,
@@ -84,7 +84,7 @@ final class NullType extends ScalarType
     }
 
     /**
-     * @param bool $is_nullable
+     * @param bool $is_nullable (@phan-unused-param)
      * Set to true if the type should be nullable, else pass
      * false
      *

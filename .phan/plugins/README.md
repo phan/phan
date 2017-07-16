@@ -62,6 +62,10 @@ Checks for syntactically unreachable statements in the global scope or function 
 
 This is in development, and has some edge cases related to try blocks.
 
+#### Unused variable detection
+
+See https://github.com/etsy/phan/issues/345
+
 ### 3. Plugins Specific to Code Styles
 
 These plugins may be useful to enforce certain code styles,

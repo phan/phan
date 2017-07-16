@@ -47,7 +47,7 @@ class ArgumentVisitor extends KindVisitorImplementation
      * Default visitor for node kinds that do not have
      * an overriding method
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node to parse
      *
      * @return void
@@ -58,22 +58,25 @@ class ArgumentVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node to parse
      *
      * @return void
      */
     public function visitVar(Node $node)
     {
+        /*
         try {
             $variable = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
             ))->getOrCreateVariable();
+            // Not going to add a reference to $variable
         } catch (\Exception $exception) {
             // Swallow it
         }
+         */
     }
 
     /**
