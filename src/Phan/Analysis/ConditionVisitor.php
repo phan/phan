@@ -294,19 +294,34 @@ class ConditionVisitor extends KindVisitorImplementation
             }
 
             // Get the type that we're checking it against
+            $class_node = $node->children['class'];
             $type = UnionType::fromNode(
                 $this->context,
                 $this->code_base,
-                $node->children['class']
+                $class_node
             );
-
             // Make a copy of the variable
             $variable = clone($variable);
+            $object_types = $type->objectTypes();
+            if (!$object_types->isEmpty()) {
+                // See https://secure.php.net/instanceof -
 
-            // Add the type to the variable
-            // $variable->getUnionType()->addUnionType($type);
-            $variable->setUnionType($type);
-
+                // Add the type to the variable
+                // $variable->getUnionType()->addUnionType($type);
+                $variable->setUnionType($object_types);
+            } else {
+                if ($class_node->kind !== \ast\AST_NAME &&
+                        !$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $context,
+                        Issue::TypeInvalidInstanceof,
+                        $context->getLineNumberStart(),
+                        (string)$type
+                    );
+                }
+                $this->analyzeIsObjectAssertion($variable);
+            }
             // Overwrite the variable with its new type
             $context = $context->withScopeVariable(
                 $variable
