@@ -453,10 +453,9 @@ class ArgumentType
                     }
 
                     try {
-                        $method = $class->getMethodByNameInContext(
+                        $method = $class->getMethodByName(
                             $code_base,
-                            $method_name,
-                            $context
+                            $method_name
                         );
                         // Return true if any of the possible methods (expect that just one is found) returns a reference.
                         if ($method->returnsRef()) {
@@ -565,8 +564,8 @@ class ArgumentType
                         $context,
                         $code_base,
                         ArrayType::instance(false)->asUnionType(),
-                        function (UnionType $node_type) use ($context, $method) {
-                        // "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
+                        function (UnionType $unused_node_type) use ($context, $method) {
+                            // "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
                             return Issue::fromType(Issue::ParamSpecial2)(
                                 $context->getFile(),
                                 $context->getLineNumberStart(), [
@@ -660,8 +659,8 @@ class ArgumentType
                     $context,
                     $code_base,
                     CallableType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method) {
-                    // "The last argument to {$method->getFQSEN()} must be a callable"
+                    function (UnionType $unused_node_type) use ($context, $method) {
+                        // "The last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial3)(
                         $context->getFile(),
                         $context->getLineNumberStart(), [
@@ -717,7 +716,7 @@ class ArgumentType
                     $context,
                     $code_base,
                     CallableType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method) {
+                    function (UnionType $unused_node_type) use ($context, $method) {
                     // "The last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial3)(
                         $context->getFile(),
@@ -734,7 +733,7 @@ class ArgumentType
                     $context,
                     $code_base,
                     CallableType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method) {
+                    function (UnionType $unused_node_type) use ($context, $method) {
                     // "The second last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial4)(
                         $context->getFile(),

@@ -26,15 +26,15 @@ class PluginImplementation extends Plugin {
      * update types in the CodeBase before analysis
      * happens.
      *
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param)
      * The code base in which the node exists
      *
-     * @param Context $context
+     * @param Context $context (@phan-unused-param)
      * The context in which the node exits. This is
      * the context inside the given node rather than
      * the context outside of the given node
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * The php-ast Node being analyzed.
      *
      * @return void
@@ -47,18 +47,18 @@ class PluginImplementation extends Plugin {
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param)
      * The code base in which the node exists
      *
-     * @param Context $context
+     * @param Context $context (@phan-unused-param)
      * The context in which the node exits. This is
      * the context inside the given node rather than
      * the context outside of the given node
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * The php-ast Node being analyzed.
      *
-     * @param Node $node
+     * @param ?Node $parent_node (@phan-unused-param)
      * The parent node of the given node (if one exists).
      *
      * @return void
@@ -72,10 +72,10 @@ class PluginImplementation extends Plugin {
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param)
      * The code base in which the class exists
      *
-     * @param Clazz $class
+     * @param Clazz $class (@phan-unused-param)
      * A class being analyzed
      *
      * @return void
@@ -87,10 +87,10 @@ class PluginImplementation extends Plugin {
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param)
      * The code base in which the method exists
      *
-     * @param Method $method
+     * @param Method $method (@phan-unused-param)
      * A method being analyzed
      *
      * @return void
@@ -102,10 +102,10 @@ class PluginImplementation extends Plugin {
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param)
      * The code base in which the function exists
      *
-     * @param Func $function
+     * @param Func $function (@phan-unused-param)
      * A function being analyzed
      *
      * @return void

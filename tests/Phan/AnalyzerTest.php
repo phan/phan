@@ -57,10 +57,9 @@ class AnalyzerTest extends BaseTest {
 
     public function testClassInCodeBase() {
 
-        $context =
-            $this->contextForCode("
-                Class A {}
-            ");
+        $this->contextForCode("
+            Class A {}
+        ");
 
         self::assertTrue(
             $this->code_base->hasClassWithFQSEN(
@@ -70,11 +69,10 @@ class AnalyzerTest extends BaseTest {
     }
 
     public function testNamespaceClassInCodeBase() {
-        $context =
-            $this->contextForCode("
-                namespace A;
-                Class B {}
-            ");
+        $this->contextForCode("
+            namespace A;
+            Class B {}
+        ");
 
         self::assertTrue(
             $this->code_base->hasClassWithFQSEN(
@@ -84,15 +82,14 @@ class AnalyzerTest extends BaseTest {
     }
 
     public function testMethodInCodeBase() {
-        $context =
-            $this->contextForCode("
-                namespace A;
-                Class B {
-                    public function c() {
-                        return 42;
-                    }
+        $this->contextForCode("
+            namespace A;
+            Class B {
+                public function c() {
+                    return 42;
                 }
-            ");
+            }
+        ");
 
         $class_fqsen =
             FullyQualifiedClassName::fromFullyQualifiedString('\A\B');

@@ -314,14 +314,12 @@ class ContextNode
         }
 
         $node = $this->node;
-        $parent = $node;
 
         while (($node instanceof \ast\Node)
             && ($node->kind != \ast\AST_VAR)
             && ($node->kind != \ast\AST_STATIC)
             && ($node->kind != \ast\AST_MAGIC_CONST)
         ) {
-            $parent = $node;
             $node = \array_values($node->children ?? [])[0];
         }
 
@@ -522,10 +520,9 @@ class ContextNode
         // looking for
         foreach ($class_list as $i => $class) {
             if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
-                return $class->getMethodByNameInContext(
+                return $class->getMethodByName(
                     $this->code_base,
-                    $method_name,
-                    $this->context
+                    $method_name
                 );
             } else if (!$is_static && $class->allowsCallingUndeclaredInstanceMethod($this->code_base)) {
                 return $class->getCallMethod($this->code_base);
@@ -654,10 +651,9 @@ class ContextNode
                     continue;
                 }
 
-                $method = $class->getMethodByNameInContext(
+                $method = $class->getMethodByName(
                     $this->code_base,
-                    '__invoke',
-                    $this->context
+                    '__invoke'
                 );
 
                 // Check the call for parameter and argument types

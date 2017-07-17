@@ -13,20 +13,20 @@ final class MixedType extends NativeType
 
     // mixed or ?mixed can cast to/from anything.
     // For purposes of analysis, there's no difference between mixed and nullable mixed.
-    public function canCastToType(Type $type) : bool {
+    public function canCastToType(Type $unused_type) : bool {
         return true;
     }
 
     // mixed or ?mixed can cast to/from anything.
     // For purposes of analysis, there's no difference between mixed and nullable mixed.
-    protected function canCastToNonNullableType(Type $type) : bool {
+    protected function canCastToNonNullableType(Type $unused_type) : bool {
         return true;
     }
 
     public function isExclusivelyNarrowedFormOrEquivalentTo(
         UnionType $union_type,
-        Context $context,
-        CodeBase $code_base
+        Context $unused_context,
+        CodeBase $unused_code_base
     ) : bool {
         // Type casting rules allow mixed to cast to anything.
         // But we don't want `@param mixed $x` to take precedence over `int $x` in the signature.

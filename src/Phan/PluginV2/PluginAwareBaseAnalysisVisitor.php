@@ -18,6 +18,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor {
      * This is an empty visit() body.
      * Don't override this unless you need to, analysis is more efficient if Phan knows it doesn't need to call a plugin on a node type.
      * @see self::isDefinedInSubclass
+     * @param $node @phan-unused-param (unused because the body is empty)
      *
      * @return void
      */

@@ -1203,7 +1203,7 @@ class ParseVisitor extends ScopeVisitor
 
             // If we find a class definition, then return it. There should be 0 or 1.
             // (Expressions such as 'int::class' are syntactically valid, but would have 0 results).
-            foreach ($class_type->asClassFQSENList($this->code_base, $this->context) as $class_fqsen) {
+            foreach ($class_type->asClassFQSENList($this->context) as $class_fqsen) {
                 return $class_fqsen;
             }
         }

@@ -19,6 +19,7 @@ class Sequential implements Hasher {
     }
 
     /**
+     * @param string $key (Used by sibling class Consistent) (@phan-unused-param)
      * @return int - an integer between 0 and $this->_groupCount - 1, inclusive
      */
     public function getGroup(string $key) : int {

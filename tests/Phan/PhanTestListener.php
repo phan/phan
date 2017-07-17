@@ -56,6 +56,9 @@ class PhanTestListener
         }
     }
 
+    /**
+     * @param $time @phan-unused-param
+     */
     public function endTest(Test $test, $time) {
         if ($test instanceof CodeBaseAwareTestInterface) {
             $test->setCodeBase(null);

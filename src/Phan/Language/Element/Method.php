@@ -218,9 +218,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return Method
      * A default constructor for the given class
      */
-    public static function defaultConstructorForClassInContext(
+    public static function defaultConstructorForClass(
         Clazz $clazz,
-        Context $context,
         CodeBase $code_base
     ) : Method {
         if ($clazz->getFQSEN()->getNamespace() === '\\' && $clazz->hasMethodWithName($code_base, $clazz->getName())) {
@@ -261,7 +260,6 @@ class Method extends ClassElement implements FunctionInterface
      */
     public function createUseAlias(
         Clazz $clazz,
-        CodeBase $code_base,
         string $alias_method_name,
         int $new_visibility_flags
     ) : Method {
