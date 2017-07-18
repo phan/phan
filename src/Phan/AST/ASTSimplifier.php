@@ -10,13 +10,10 @@ use ast\Node;
  * The original \ast\Node objects are not modified.
  */
 class ASTSimplifier {
-    /** @var BlockExitStatusChecker */
-    private $_blockChecker;
     /** @var string - for debugging purposes */
     private $_filename;
 
     public function __construct(string $filename = 'unknown') {
-        $this->_blockChecker = new BlockExitStatusChecker();
         $this->_filename = $filename;
     }
 
@@ -155,7 +152,7 @@ class ASTSimplifier {
                 if ($N === 2 &&
                         ($stmt->children[1]->children['stmts'] instanceof Node) &&
                         $stmt->children[1]->children['cond'] === null &&  // cannot be elseif
-                        $this->_blockChecker->check($stmt->children[1]->children['stmts']) !== BlockExitStatusChecker::STATUS_PROCEED) {
+                        BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmt->children[1]->children['stmts'])) {
                     // If the else statement is guaranteed to break/continue/return/throw,
                     // then merge the remaining statements following that into the `if` block.
                     $new_if_elem = clone($stmt->children[0]);
@@ -174,7 +171,7 @@ class ASTSimplifier {
                 }
                 if (($N == 1 || ($N == 2 && $stmt->children[1]->children['cond'] === null)) &&
                         $stmt->children[0]->children['stmts'] instanceof Node &&  // Why does php-ast sometime return string.
-                        $this->_blockChecker->check($stmt->children[0]->children['stmts']) !== BlockExitStatusChecker::STATUS_PROCEED) {
+                        BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmt->children[0]->children['stmts'])) {
                     // If the if statement is guaranteed to break/continue/return/throw,
                     // then merge the remaining statements following that into the `else` block (not `elseif`)
                     // Create an `else` block if necessary.
