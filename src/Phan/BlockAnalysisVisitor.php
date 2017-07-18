@@ -11,6 +11,7 @@ use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\Analysis\PreOrderAnalysisVisitor;
 use Phan\Language\Context;
 use Phan\Language\Scope\BranchScope;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
 use ast\Node\Decl;
@@ -630,14 +631,20 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             // (e.g. there may be assignments such as '($x = foo()) ? $a : $b)
             $context = $this->analyzeAndGetUpdatedContext($context, $node, $cond_node);
 
-            // TODO: false_context once there is a NegatedConditionVisitor
+            // TODO: Use different contexts and merge those, in case there were assignments or assignments by reference in both sides of the conditional?
+            // Reuse the BranchScope (sort of unintuitive). The ConditionVisitor returns a clone and doesn't modify the original.
+            $base_context = $context;
+            $base_context_scope = $base_context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $context->withScope(new BranchScope($base_context_scope));
+            }
             $true_context = (new ConditionVisitor(
                 $this->code_base,
-                $this->context
+                isset($true_node) ? $base_context : $context  // special case: (($d = foo()) ?: 'fallback')
             ))($cond_node);
             $false_context = (new NegatedConditionVisitor(
                 $this->code_base,
-                $this->context
+                $base_context
             ))($cond_node);
         } else {
             $true_context = $context;

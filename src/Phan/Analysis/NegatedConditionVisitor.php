@@ -8,8 +8,9 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
-use Phan\Language\Type;
 use Phan\Language\Context;
+use Phan\Language\Element\Variable;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
@@ -20,7 +21,6 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -406,7 +406,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             'is_integer' => $remove_int_callback,
             'is_iterable' => $make_basic_negated_assertion_callback(IterableType::class),  // TODO: Could keep basic array types and classes extending iterable
             'is_long' => $remove_int_callback,
-            'is_null' => $remove_null_cb,
             // 'is_numeric' => $make_basic_assertion_callback('string|int|float'),
             // TODO 'is_object' => $remove_object_callback,
             'is_real' => $remove_float_callback,
