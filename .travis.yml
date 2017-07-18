@@ -4,11 +4,10 @@ php:
   - 7.1
 
 env:
-  - TEST_SUITE="AnalyzerTest"
   - TEST_SUITE="PhanTest"
   - TEST_SUITE="RasmusTest"
   - TEST_SUITE="LanguageTest"
-  - TEST_SUITE="OutputPrinterTest"
+  - TEST_SUITE="UtilTest"
   - TEST_SUITE="__FakeSelfTest"
   - TEST_SUITE="__FakeRewritingTest"
   - TEST_SUITE="__FakePluginTest"

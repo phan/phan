@@ -28,41 +28,28 @@ use Phan\AST\Visitor\KindVisitorImplementation;
  */
 final class BlockExitStatusChecker extends KindVisitorImplementation {
     // These should be at most 1 << 31, in order to work in 32-bit php.
+    // NOTE: Any exit status must be a combination of at least one of these bits
+    // E.g. if STATUS_PROCEED is mixed with STATUS_RETURN, it would mean it is possible both to go to completion or return.
     const STATUS_PROCEED        = (1 << 20);       // At least one branch continues to completion.
-    const STATUS_MAYBE_CONTINUE = (1 << 21);       // We are certain at least one branch does not continue to completion. At least one of those is a "continue;"
-    const STATUS_MAYBE_BREAK    = (1 << 22);       // We are certain at least one branch is a "break;", none are "continue;"
-    const STATUS_MAYBE_THROW    = (1 << 23);       // At least one branch is a "throw", none are break/continue
-    const STATUS_MAYBE_RETURN   = (1 << 24);       // At least one branch is a "return"/"exit", none are throw/break/continue
+    const STATUS_CONTINUE       = (1 << 21);       // At least one branch leads to a continue statement
+    const STATUS_BREAK          = (1 << 22);       // At least one branch leads to a break statement
+    const STATUS_THROW          = (1 << 23);       // At least one branch leads to a throw statement
+    const STATUS_RETURN         = (1 << 24);       // At least one branch leads to a return/exit() statement (or an infinite loop)
 
-    const STATUS_CONTINUE       = (1 << 25);       // All branches lead to a continue statement (Or possibly a break, throw, or return)
-    const STATUS_BREAK          = (1 << 26);       // All branches lead to a break statement (Or possibly a throw or return)
-    const STATUS_THROW          = (1 << 27);       // All branches lead to a throw statement (Or possibly a return)
-    const STATUS_RETURN         = (1 << 28);       // All branches lead to a return/exit statement
-
-    const STATUS_THROW_OR_RETURN_BITMASK = self::STATUS_THROW | self::STATUS_RETURN;
+    const STATUS_THROW_OR_RETURN_BITMASK =
+        self::STATUS_THROW |
+        self::STATUS_RETURN;
 
     const STATUS_INTERESTING_SWITCH_BITMASK =
-        self::STATUS_MAYBE_THROW |
-        self::STATUS_MAYBE_RETURN |
         self::STATUS_THROW |
         self::STATUS_RETURN;
 
     const STATUS_INTERESTING_TRY_BITMASK =
-        self::STATUS_MAYBE_CONTINUE |
-        self::STATUS_MAYBE_BREAK |
         self::STATUS_CONTINUE |
         self::STATUS_BREAK;
 
-    // Bitshift left by this to convert a possible status to a certain status;
-    const BITSHIFT_FOR_MAYBE = 4;
-
-    const STATUS_MAYBE_BITMASK =
-        self::STATUS_MAYBE_CONTINUE |
-        self::STATUS_MAYBE_BREAK |
-        self::STATUS_MAYBE_THROW |
-        self::STATUS_MAYBE_RETURN;
-
-    const STATUS_CERTAIN_BITMASK =
+    // Any status which doesn't lead to proceeding.
+    const STATUS_NOT_PROCEED_BITMASK =
         self::STATUS_CONTINUE |
         self::STATUS_BREAK |
         self::STATUS_THROW |
@@ -70,8 +57,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
 
     const STATUS_BITMASK =
         self::STATUS_PROCEED |
-        self::STATUS_MAYBE_BITMASK |
-        self::STATUS_CERTAIN_BITMASK;
+        self::STATUS_NOT_PROCEED_BITMASK;
 
     public function __construct() { }
 
@@ -82,6 +68,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         }
         $result = $this($node);
         \assert(\is_int($result), 'Expected int');
+        \assert($result > 0, 'Expected positive int');
         return $result;
     }
 
@@ -100,7 +87,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
             if ($cond->kind === \ast\AST_CONST) {
                 $condName = $cond->children['name'];
                 if ($condName->kind === \ast\AST_NAME) {
-                    return \strtolower($condName->children['name']) === 'true';
+                    return strcasecmp($condName->children['name'], 'true') === 0;
                 }
             }
             return false;
@@ -143,12 +130,14 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         $main_status = $this->check($node->children['try']);
         // Finding good heuristics is difficult.
         // e.g. "return someFunctionThatMayThrow()" in try{} block would be inferred as STATUS_RETURN, but may actually be STATUS_THROW
-        $main_status = min($main_status, self::STATUS_THROW);
 
         $finally_node = $node->children['finally'];
         if ($finally_node) {
             $finally_status = $this->check($finally_node);
-            if ($finally_status >= self::STATUS_THROW) {
+            // TODO: Could emit an issue as a side effect
+            // Having any sort of status in a finally statement is
+            // likely to have unintuitive behavior.
+            if ($finally_status & (~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
                 return $finally_status;
             }
         } else {
@@ -158,27 +147,25 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         if (\count($catch_node_list) === 0) {
             return self::mergeFinallyStatus($main_status, $finally_status);
         }
-        // TODO: Check if each catch statement unconditionally returns?
-        if (($main_status & self::STATUS_INTERESTING_TRY_BITMASK) !== 0) {
-            // Not 100% certain of any status. If anything threw, it could be caught by the 1 or more catch statements..
-            if (($main_status & self::STATUS_CERTAIN_BITMASK) !== 0) {
-                return $main_status >> self::BITSHIFT_FOR_MAYBE;
-            }
-            return $main_status;
+        // TODO: Could enhance slightly by checking for catch nodes with the exact same types (or subclasses) as names of exception thrown.
+        $combined_status = $main_status;
+        // Try to cover all possible cases, such as try { return throwsException(); } catch(Exception $e) { break; }
+        foreach ($catch_node_list as $catch_node) {
+            $catch_node_status = $this->check($catch_node->children['stmts']);
+            $combined_status = $combined_status | $catch_node_status;
         }
         // No idea.
-        return self::STATUS_PROCEED;
+        return $combined_status;
     }
 
     private static function mergeFinallyStatus(int $try_status, int $finally_status) : int
     {
-        if (($try_status & self::STATUS_CERTAIN_BITMASK) !== 0) {
-            return \max($try_status, $finally_status);
+        // If at least one of try or finally are guaranteed not to proceed to completion,
+        // then combine those possibilities.
+        if (($try_status & $finally_status & self::STATUS_PROCEED) === 0) {
+            return ($try_status | $finally_status) & ~self::STATUS_PROCEED;
         }
-        if (($finally_status & self::STATUS_CERTAIN_BITMASK) !== 0) {
-            return $finally_status;
-        }
-        return min($try_status, $finally_status);
+        return $try_status | $finally_status;
     }
 
     public function visitSwitch(Node $node)
@@ -194,41 +181,27 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
 
     private function computeStatusOfSwitch(Node $node) : int
     {
-        $has_default = false;
-        $status = null;
-        $normal_break_is_possible = false;
         $switch_stmt_case_nodes = $node->children['stmts']->children;
+        if (\count($switch_stmt_case_nodes) === 0) {
+            return self::STATUS_PROCEED;
+        }
+        $has_default = false;
+        $combined_statuses = 0;
         foreach ($switch_stmt_case_nodes as $index => $case_node) {
             if ($case_node->children['cond'] === null) {
                 $has_default = true;
             }
             $case_status = self::getStatusOfSwitchCase($case_node, $index, $switch_stmt_case_nodes);
-            if ($case_status & self::STATUS_INTERESTING_SWITCH_BITMASK) {
-                if (is_null($status) || $case_status < $status) {
-                    $status = $case_status;
-                }
-            } else {
-                // One of the case statements will break, or fall through to the end.
-                $normal_break_is_possible = true;
+            if (($case_status & self::STATUS_CONTINUE_OR_BREAK) !== 0) {
+                // Ignore statuses such as break/continue. They take effect inside, but are a proceed status outside
+                $case_status = ($case_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
             }
+            $combined_statuses |= $case_status;
         }
-        if ($status === null) {
-            return self::STATUS_PROCEED;
+        if (!$has_default) {
+            $combined_statuses |= self::STATUS_PROCEED;
         }
-        if (($status & self::STATUS_INTERESTING_SWITCH_BITMASK) === 0) {
-            return self::STATUS_PROCEED;
-        }
-        if ($normal_break_is_possible || !$has_default) {
-            if (($status & self::STATUS_CERTAIN_BITMASK) !== 0) {
-                // E.g. some of the case statements throw unconditionally, others break normally.
-                // So, the final result is that an interesting outcome such as throw/return is possible but not certain.
-                return $status >> self::BITSHIFT_FOR_MAYBE;
-            } else {
-                return $status;
-            }
-        }
-        // Ignore statuses such as break/continue. They take effect inside, not outside.
-        return $status;
+        return $combined_statuses;
     }
 
     /**
@@ -248,7 +221,8 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
     private function computeStatusOfSwitchCase(Node $case_node, int $index, array $siblings) : int
     {
         $status = $this->visitStmtList($case_node->children['stmts']);
-        if ($status & self::STATUS_CERTAIN_BITMASK) {
+        if (($status & self::STATUS_PROCEED) === 0) {
+            // Check if the current switch case will not fall through.
             return $status;
         }
         $next_sibling = $siblings[$index + 1] ?? null;
@@ -256,61 +230,102 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
             return $status;
         }
         $next_status = self::getStatusOfSwitchCase($next_sibling, $index + 1, $siblings);
-        if ($status & self::STATUS_MAYBE_BITMASK) {
-            if ($next_status & self::STATUS_MAYBE_BITMASK) {
-                return min($status, $next_status);
-            } else if ($next_status & self::STATUS_CERTAIN_BITMASK) {
-                return min($status << self::BITSHIFT_FOR_MAYBE, $next_status);
-            }
-            // next_status === STATUS_PROCEED
-            return $status;
-        }
-        // STATUS_PROCEED | self::STATUS_CERTAIN_BITMASK
-        return $next_status;
+        // Combine the possibilities.
+        // e.g. `case 1: if (cond()) { return; } case 2: throw;`, case 1 will either break or throw,
+        // but won't proceed normally to the outside of the switch statement.
+        return ($status & ~self::STATUS_PROCEED) | $next_status;
     }
 
+    const UNEXITABLE_LOOP_INNER_STATUS = self::STATUS_PROCEED | self::STATUS_CONTINUE;
+
+    const STATUS_CONTINUE_OR_BREAK = self::STATUS_CONTINUE | self::STATUS_BREAK;
+
+    /**
+     * @return int
+     */
+    public function visitForeach(Node $node)
+    {
+        // We assume foreach loops are over a finite sequence, and that it's possible for that sequence to have at least one element.
+        $inner_status = $this->check($node->children['stmts']);
+
+
+        // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
+        // 2. We assume that it's possible that any given loop can have 0 iterations.
+        //    A TODO exists above to check for special cases.
+        return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
+    }
+
+    /**
+     * @return int
+     */
     public function visitWhile(Node $node)
     {
-        return $this->analyzeLoop($node);
+        $inner_status = $this->check($node->children['stmts']);
+        // TODO: Check for unconditionally false conditions.
+        if (self::isTruthyLiteral($node->children['cond'])) {
+            // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
+            // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
+            return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
+        }
+        // This is (to our awareness) **not** an infinite loop
+
+
+        // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
+        // 2. We assume that it's possible that any given loop can have 0 iterations.
+        //    A TODO exists above to check for special cases.
+        return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
     }
 
     public function visitFor(Node $node)
     {
-        return $this->analyzeLoop($node);
+        $inner_status = $this->check($node->children['stmts']);
+        // for loops have an expression list as a condition.
+        $cond_nodes = $node->children['cond']->children ?? [];
+        // TODO: Check for unconditionally false conditions.
+        if (count($cond_nodes) === 0 || self::isTruthyLiteral(end($cond_nodes))) {
+            // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
+            // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
+            return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
+        }
+        // This is (to our awareness) **not** an infinite loop
+
+
+        // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
+        // 2. We assume that it's possible that any given loop can have 0 iterations.
+        //    A TODO exists above to check for special cases.
+        return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
+        // TODO: Improve this by checking for loops which almost definitely have at least one iteration,
+        // such as "foreach ([$val] as $v)" or "for ($i = 0; $i < 10; $i++)"
+
+        // if (($inner_status & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
+        //     // The inside of the loop will unconditionally throw or return.
+        //     return $inner_status
+        // }
     }
 
-    private function analyzeLoop(Node $node) : int
+    // Logic to determine status of "while (1) {exprs}" or "for (; true; ) {exprs}"
+    // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
+    private function computeDerivedStatusOfInfiniteLoop(int $inner_status) : int
     {
-        $status = $node->flags & self::STATUS_BITMASK;
-        if ($status) {
-            return $status;
+        $status = $inner_status & ~self::UNEXITABLE_LOOP_INNER_STATUS;
+        if ($status === 0) {
+            return self::STATUS_RETURN;  // this is an infinite loop, it didn't contain break/throw/return statements?
         }
-        $status = $this->computeStatusOfLoopWithTrueCond($node);
-        $node->flags = $status;
+        if (($status & self::STATUS_BREAK) !== 0) {
+            // if the inside of "while (true) {} contains a break statement,
+            // then execution can proceed past the end of the loop.
+            return ($status & ~self::STATUS_BREAK) | self::STATUS_PROCEED;
+        }
         return $status;
     }
 
-    private function computeStatusOfLoopWithTrueCond(Node $node) : int
-    {
-        // only know how to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
-        // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
-        if (!self::isTruthyLiteral($node->children['cond'])) {
-            return self::STATUS_PROCEED;
-        }
-        $status = $this->check($node->children['stmts']);
-        if ($status === self::STATUS_RETURN || $status === self::STATUS_THROW) {
-            return $status;
-        }
-        return self::STATUS_PROCEED;
-    }
-
-    // A return statement unconditionally returns (Assume expression doesn't throw)
+    // A return statement unconditionally returns (Assume expression passed in doesn't throw)
     public function visitReturn(Node $node)
     {
         return self::STATUS_RETURN;
     }
 
-    // A exit statement unconditionally exits (Assume expression doesn't throw)
+    // A exit statement unconditionally exits (Assume expression passed in doesn't throw)
     public function visitExit(Node $node)
     {
         return self::STATUS_RETURN;
@@ -354,11 +369,13 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
     public function computeStatusOfBranched(Node $node) : int {
         // A do-while statement and an if branch are executed at least once (or exactly once)
         // TODO: deduplicate
+        // TODO: check for do{} while (true)
         $stmts = $node->children['stmts'];
         if (\is_null($stmts)) {
             return self::STATUS_PROCEED;
         }
-        // We can have a single statement in the 'stmts' field when no braces exist?
+        // We can have a single non-Node statement in the 'stmts' field when no braces exist?
+        // E.g. `if (cond) "Not a statement";`
         // TODO: no longer the case in ast version 40?
         if (!($stmts instanceof Node)) {
             return self::STATUS_PROCEED;
@@ -390,15 +407,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
 
     private function computeStatusOfIf(Node $node) : int {
         $has_if_elems_for_all_cases = false;
-        $min_status = self::STATUS_RETURN;
+        $combined_statuses = 0;
         foreach ($node->children as $child_node) {
             $status = $this->check($child_node->children['stmts']);
-            if ($status < $min_status) {
-                $min_status = $status;
-            }
-            if ($min_status === self::STATUS_PROCEED) {
-                break;
-            }
+            $combined_statuses |= $status;
 
             $cond_node = $child_node->children['cond'];
             // check for "else" or "elseif (true)"
@@ -408,9 +420,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
             }
         }
         if (!$has_if_elems_for_all_cases) {
-            return self::STATUS_PROCEED;
+            $combined_statuses |= self::STATUS_PROCEED;
         }
-        return $min_status;
+        return $combined_statuses;
     }
 
 
@@ -420,8 +432,24 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
      */
     public function visitDoWhile(Node $node)
     {
-        // TODO: Also account for conditionals, e.g. do{ }while(true); with no break statement.
-        return $this->analyzeBranched($node);
+        $inner_status = $this->check($node->children['stmts']);
+        if (($inner_status & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
+            // The inner block throws or returns before the end can be reached.
+            return $inner_status;
+        }
+        // TODO: Check for unconditionally false conditions.
+        if (self::isTruthyLiteral($node->children['cond'])) {
+            // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
+            // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
+            return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
+        }
+        // This is (to our awareness) **not** an infinite loop
+
+
+        // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
+        // 2. We assume that it's possible that any given loop can have 0 iterations.
+        //    A TODO exists above to check for special cases.
+        return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
     }
 
     /**
@@ -455,33 +483,23 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
                 continue;
             }
             $status = $this->check($child);
-            if ($status !== self::STATUS_PROCEED) {
-                if ($status & self::STATUS_MAYBE_BITMASK) {
-                    if (!$maybe_status || $status < $maybe_status) {
-                        $maybe_status = $status;
-                    }
-                } else {
-                    if ($maybe_status) {
-                        // E.g. if this statement is guaranteed to throw, but an earlier statement may break,
-                        // then the statement list is guarenteed to break/throw.
-                        $equivalent_status = $maybe_status << self::BITSHIFT_FOR_MAYBE;
-                        return min($status, $equivalent_status);
-                    }
-                    // The statement after this one is unreachable, due to unconditional continue/break/throw/return.
-                    return $status;
-                }
+            if (($status & self::STATUS_PROCEED) === 0) {
+                // If it's guaranteed we won't stop after this statement,
+                // then skip the subsequent statements.
+                return $status | ($maybe_status & ~self::STATUS_PROCEED);
             }
+            $maybe_status |= $status;
         }
-        return self::STATUS_PROCEED;
+        return self::STATUS_PROCEED | $maybe_status;;
     }
 
     public static function willUnconditionallySkipRemainingStatements(Node $node) : bool
     {
-        return ((new self())($node) & self::STATUS_CERTAIN_BITMASK) !== 0;
+        return ((new self())($node) & self::STATUS_PROCEED) === 0;
     }
 
     public static function willUnconditionallyThrowOrReturn(Node $node) : bool
     {
-        return ((new self())($node) & self::STATUS_THROW_OR_RETURN_BITMASK) !== 0;
+        return ((new self())($node) & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0;
     }
 }
