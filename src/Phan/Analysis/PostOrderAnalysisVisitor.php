@@ -757,7 +757,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // The condition is unconditionally false
 
                 // Add the type for the 'false' side
-                yield from $this->getReturnTypes($context, $true_node);
+                yield from $this->getReturnTypes($context, $node->children['false']);
                 return;
             }
         }
@@ -771,14 +771,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $this->code_base,
                 $context
             ))($cond_node);
+            $false_context = (new NegatedConditionVisitor(
+                $this->code_base,
+                $this->context
+            ))($cond_node);
         } else {
             $true_context = $context;
+            $false_context = $this->context;
         }
 
         // Allow nested ternary operators, or arrays within ternary operators
         yield from $this->getReturnTypes($true_context, $true_node);
 
-        yield from $this->getReturnTypes($context, $node->children['false']);
+        yield from $this->getReturnTypes($false_context, $node->children['false']);
     }
 
     /**

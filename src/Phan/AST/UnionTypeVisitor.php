@@ -4,6 +4,7 @@ namespace Phan\AST;
 use Phan\Analysis\AssignOperatorFlagVisitor;
 use Phan\Analysis\BinaryOperatorFlagVisitor;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\NegatedConditionVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
@@ -590,7 +591,6 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        // TODO: false_context once there is a NegatedConditionVisitor
         // TODO: emit no-op if $cond_node is a literal, such as `if (2)`
         // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
 
@@ -599,8 +599,13 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context
             ))($cond_node);
+            $false_context = (new NegatedConditionVisitor(
+                $this->code_base,
+                $this->context
+            ))($cond_node);
         } else {
             $true_context = $this->context;
+            $false_context = $this->context;
         }
 
         $true_type = UnionTypeVisitor::unionTypeFromNode(
@@ -611,7 +616,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         $false_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
-            $this->context,
+            $false_context,
             $node->children['false'] ?? ''
         );
 

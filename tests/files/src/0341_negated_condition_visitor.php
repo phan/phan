@@ -35,3 +35,21 @@ function testNegate341C(?int $x) {
         echo strlen($x);  // should infer $x is int and warn
     }
 }
+
+/**
+ * @param int|string $x
+ */
+function testNegate341D($x) {
+    return is_string($x)
+        ? intdiv($x, 2)  // wrong, a string
+        : strlen($x);  // wrong, an int
+}
+
+/**
+ * @param int|string $x
+ */
+function testNegate341E($x) {
+    is_string($x)
+        ? intdiv($x, 2)  // wrong, a string
+        : strlen($x);  // wrong, an int
+}
