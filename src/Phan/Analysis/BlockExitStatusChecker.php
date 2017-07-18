@@ -432,8 +432,24 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
      */
     public function visitDoWhile(Node $node)
     {
-        // TODO: Also account for conditionals, e.g. do{ }while(true); with no break statement.
-        return $this->analyzeBranched($node);
+        $inner_status = $this->check($node->children['stmts']);
+        if (($inner_status & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
+            // The inner block throws or returns before the end can be reached.
+            return $inner_status;
+        }
+        // TODO: Check for unconditionally false conditions.
+        if (self::isTruthyLiteral($node->children['cond'])) {
+            // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
+            // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
+            return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
+        }
+        // This is (to our awareness) **not** an infinite loop
+
+
+        // 1. break/continue apply to the inside of a loop, not outside. Not going to analyze "break 2;", may emit an info level issue in the future.
+        // 2. We assume that it's possible that any given loop can have 0 iterations.
+        //    A TODO exists above to check for special cases.
+        return ($inner_status & ~self::STATUS_CONTINUE_OR_BREAK) | self::STATUS_PROCEED;
     }
 
     /**

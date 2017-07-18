@@ -108,6 +108,38 @@ class BlockExitStatusCheckerTest extends BaseTest
                 'while (1) {foo();}'
             ],
             [
+                'proceed',
+                'while (1) {break;}'
+            ],
+            [
+                'proceed',
+                'do {break;}while (1);'
+            ],
+            [
+                'proceed',
+                'while (cond()) {foo();}'
+            ],
+            [
+                'return',
+                'do {foo();} while (1);'
+            ],
+            [
+                'proceed',
+                'do {} while (0);'
+            ],
+            [
+                'return',
+                'do {} while (1);'
+            ],
+            [
+                'proceed',
+                'do {foo();} while (cond());'
+            ],
+            [
+                'return',
+                'do {return "value";} while (cond());'
+            ],
+            [
                 'return',
                 'while (true) {foo();}'
             ],
@@ -118,6 +150,10 @@ class BlockExitStatusCheckerTest extends BaseTest
             [
                 'throw',
                 'while (1) {if (cond) continue; else if (foo()) { throw new RuntimeException("");}}'
+            ],
+            [
+                'throw',
+                'do {if (cond) continue; else if (foo()) { throw new RuntimeException("");}}while (1);'
             ],
             [
                 'proceed/throw',
