@@ -635,8 +635,13 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
                 $this->code_base,
                 $this->context
             ))($cond_node);
+            $false_context = (new NegatedConditionVisitor(
+                $this->code_base,
+                $this->context
+            ))($cond_node);
         } else {
             $true_context = $context;
+            $false_context = $context;
         }
 
         $child_context_list = [];
@@ -648,7 +653,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         }
 
         if ($false_node instanceof Node) {
-            $child_context = $this->analyzeAndGetUpdatedContext($context, $node, $false_node);
+            $child_context = $this->analyzeAndGetUpdatedContext($false_context, $node, $false_node);
             $child_context_list[] = $child_context;
         }
         if (\count($child_context_list) >= 1) {
