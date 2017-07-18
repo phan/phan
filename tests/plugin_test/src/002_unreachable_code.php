@@ -4,7 +4,10 @@ function unreachableCode() {
     throw new \RuntimeException("Exception");
     return null;
 }
-unreachableCode();
+try {
+    unreachableCode();
+} catch (Exception $e) {
+}
 
 class testUnreachableCode {
     public function __construct($x) {
@@ -51,3 +54,14 @@ class testUnreachableCode {
 }
 $c = new testUnreachableCode(0);
 $c->unreachableSwitch(4);
+
+$d = new ReachableClass();
+reachableFunction();
+return;
+
+class ReachableClass {
+}
+echo "Not reached\n";
+
+function reachableFunction() {
+}
