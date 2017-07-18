@@ -63,7 +63,7 @@ class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor {
                     !$this->context->getScope()->hasVariableWithName($name)) {
                 $this->emit(
                     'PhanPluginUndeclaredVariableIsset',
-                    'undeclared variable ${NAME} in isset()',
+                    'undeclared variable ${VARIABLE} in isset()',
                     [$name]
                 );
             }

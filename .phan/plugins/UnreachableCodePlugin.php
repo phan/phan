@@ -54,6 +54,12 @@ final class UnreachableCodePlugin extends PluginV2
 final class UnreachableCodeVisitor extends PluginAwareAnalysisVisitor {
     // A plugin's visitors should NOT implement visit(), unless they need to.
 
+    const DECL_KIND_SET = [
+        \ast\AST_CLASS      => true,
+        \ast\AST_FUNC_DECL  => true,
+        \ast\AST_CONST      => true,
+    ];
+
     /**
      * @param Node $node
      * A node to analyze
@@ -81,17 +87,23 @@ final class UnreachableCodeVisitor extends PluginAwareAnalysisVisitor {
             // Skip over empty statements and scalar statements.
             for ($j = $i + 1; array_key_exists($j, $child_nodes); $j++) {
                 $next_node = $child_nodes[$j];
-                if ($next_node instanceof Node && $next_node->lineno > 0) {
-                    $context = clone($this->context)->withLineNumberStart($next_node->lineno);
-                    $this->emitPluginIssue(
-                        $this->code_base,
-                        $context,
-                        'PhanPluginUnreachableCode',
-                        'Unreachable statement detected',
-                        []
-                    );
-                    break;
+                if (!($next_node instanceof Node && $next_node->lineno > 0)) {
+                    continue;
                 }
+                if (array_key_exists($next_node->kind, self::DECL_KIND_SET)) {
+                    if ($this->context->isInGlobalScope()) {
+                        continue;
+                    }
+                }
+                $context = clone($this->context)->withLineNumberStart($next_node->lineno);
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    $context,
+                    'PhanPluginUnreachableCode',
+                    'Unreachable statement detected',
+                    []
+                );
+                break;
             }
             break;
         }
