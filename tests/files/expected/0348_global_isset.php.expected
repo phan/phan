@@ -1,0 +1,2 @@
+%s:6 PhanUndeclaredVariable Variable $global348 is undeclared
+%s:12 PhanUndeclaredVariable Variable $globalC348 is undeclared

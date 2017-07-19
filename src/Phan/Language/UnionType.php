@@ -1639,6 +1639,11 @@ class UnionType implements \Serializable
                     $new_type_set[\runkit_object_id($nullable_type)] = $nullable_type;
                 }
             }
+            static $nullable_id = null;
+            if ($nullable_id === null) {
+                $nullable_id = \runkit_object_id(NullType::instance(false));
+            }
+            unset($new_type_set[$nullable_id]);
         }
         // If this contains both true and false types, filter out both and add "bool" (or "?bool" for nullable)
         if (($flags & Type::_bit_bool_combination) === Type::_bit_bool_combination) {
