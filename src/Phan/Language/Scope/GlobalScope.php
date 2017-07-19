@@ -4,6 +4,8 @@ namespace Phan\Language\Scope;
 use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 
+// TODO: Warn if __clone() is called, the code is doing something wrong.
+//       the underlying static $global_variable_map isn't cloned, so it's a no-op.
 class GlobalScope extends Scope {
 
     /**

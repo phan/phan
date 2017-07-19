@@ -20,6 +20,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Scope\BranchScope;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
@@ -595,13 +597,20 @@ class UnionTypeVisitor extends AnalysisVisitor
         // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
 
         if ($cond_node instanceof Node) {
+            $base_context = $this->context;
+            // TODO: Use different contexts and merge those, in case there were assignments or assignments by reference in both sides of the conditional?
+            // Reuse the BranchScope (sort of unintuitive). The ConditionVisitor returns a clone and doesn't modify the original.
+            $base_context_scope = $this->context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $base_context->withScope(new BranchScope($base_context_scope));
+            }
             $true_context = (new ConditionVisitor(
                 $this->code_base,
-                $this->context
+                isset($node->children['true']) ? $base_context : $this->context  // special case: $c = (($d = foo()) ?: 'fallback')
             ))($cond_node);
             $false_context = (new NegatedConditionVisitor(
                 $this->code_base,
-                $this->context
+                $base_context
             ))($cond_node);
         } else {
             $true_context = $this->context;

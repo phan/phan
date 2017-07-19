@@ -767,13 +767,19 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
 
         if ($cond_node instanceof Node) {
+            // TODO: Use different contexts and merge those, in case there were assignments or assignments by reference in both sides of the conditional?
+            // Reuse the BranchScope (sort of unintuitive). The ConditionVisitor returns a clone and doesn't modify the original.
+            $base_context = $this->context;
+            // We don't bother analyzing visitReturn in PostOrderAnalysisVisitor, right now.
+            // This may eventually change, just to ensure the expression is checked for issues
+            assert($base_context->isInFunctionLikeScope());
             $true_context = (new ConditionVisitor(
                 $this->code_base,
-                $context
+                $base_context
             ))($cond_node);
             $false_context = (new NegatedConditionVisitor(
                 $this->code_base,
-                $this->context
+                $base_context
             ))($cond_node);
         } else {
             $true_context = $context;
