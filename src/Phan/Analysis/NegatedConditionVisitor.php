@@ -271,7 +271,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
 
     public function visitVar(Node $node) {
         $this->checkVariablesDefined($node);
-        return $this->removeTruthyFromVariable($node, $this->context);
+        return $this->removeTruthyFromVariable($node, $this->context, false);
     }
 
     // TODO: empty, isset
@@ -289,7 +289,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      */
     private static function createNegationCallbackMap() : array {
         $remove_null_cb = function(NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
-            return $cv->removeNullFromVariable($var_node, $context);
+            return $cv->removeNullFromVariable($var_node, $context, false);
         };
 
         // Remove any Types from UnionType that are subclasses of $base_class_name
@@ -323,7 +323,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             $new_type->addType(NullType::instance(false));
                         }
                         return $new_type;
-                    }
+                    },
+                    false
                 );
             };
         };
@@ -358,7 +359,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         $new_type->addType(NullType::instance(false));
                     }
                     return $new_type;
-                }
+                },
+                false
             );
         };
         $remove_callable_callback = static function(NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
@@ -391,7 +393,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         $new_type->addType(NullType::instance(false));
                     }
                     return $new_type;
-                }
+                },
+                false
             );
         };
 
@@ -440,7 +443,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     public function visitIsset(Node $node) : Context
     {
         // if (!isset($x))
-        return $this->updateVariableWithNewType($node->children['var'], $this->context, NullType::instance(false)->asUnionType());
+        return $this->updateVariableWithNewType($node->children['var'], $this->context, NullType::instance(false)->asUnionType(), true);
     }
 
     /**
@@ -453,13 +456,34 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      */
     public function visitEmpty(Node $node) : Context
     {
-        $this->checkVariablesDefined($node);
+        $context = $this->context;
         $var_node = $node->children['expr'];
         // if (!empty($x))
         if ($var_node->kind === \ast\AST_VAR) {
-            return $this->removeFalseyFromVariable($var_node, $this->context);
+            // Don't check if variables are defined - don't emit notices for if (!empty($x)) {}, etc.
+            $var_name = $var_node->children['name'];
+            if (is_string($var_name)) {
+                if (!$context->getScope()->hasVariableWithName($var_name)) {
+                    // Support analyzing cases such as `if (!empty($x)) { use($x); }`, or `assert(!empty($x))`
+                    // (In the PHP language, empty($x) is equivalent to (!isset($x) || !$x))
+                    $context->setScope($context->getScope()->withVariable(new Variable(
+                        $context->withLineNumberStart($var_node->lineno ?? 0),
+                        $var_name,
+                        new UnionType(),
+                        $var_node->flags ?? 0
+                    )));
+                }
+                $context->setScope($context->getScope()->withVariable(new Variable(
+                    $context->withLineNumberStart($var_node->lineno ?? 0),
+                    $var_name,
+                    new UnionType(),
+                    $var_node->flags ?? 0
+                )));
+                return $this->removeFalseyFromVariable($var_node, $context, true);
+            }
         }
-        return $this->context;
+        $this->checkVariablesDefined($node);
+        return $context;
     }
 
     /**

@@ -243,13 +243,28 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitIsset(Node $node) : Context
     {
+        $context = $this->context;
         $var_node = $node->children['var'];
-        $this->checkVariablesDefined($var_node);
         if ($var_node->kind !== \ast\AST_VAR) {
-            return $this->context;
+            $this->checkVariablesDefined($var_node);
+            return $context;
         }
 
-        return $this->removeNullFromVariable($var_node, $this->context);
+        $var_name = $var_node->children['name'];
+        if (!\is_string($var_name)) {
+            $this->checkVariablesDefined($var_node);
+            return $context;
+        }
+        if (!$context->getScope()->hasVariableWithName($var_name)) {
+            // Support analyzing cases such as `if (isset($x)) { use($x); }`, or `assert(isset($x))`
+            $context->setScope($context->getScope()->withVariable(new Variable(
+                $context->withLineNumberStart($var_node->lineno ?? 0),
+                $var_name,
+                new UnionType(),
+                $var_node->flags ?? 0
+            )));
+        }
+        return $this->removeNullFromVariable($var_node, $context, true);
     }
 
     /**
@@ -263,7 +278,7 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitVar(Node $node) : Context
     {
         $this->checkVariablesDefined($node);
-        return $this->removeFalseyFromVariable($node, $this->context);
+        return $this->removeFalseyFromVariable($node, $this->context, false);
     }
 
     /**
@@ -577,11 +592,12 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitEmpty(Node $node) : Context
     {
-        $this->checkVariablesDefined($node);
         $var_node = $node->children['expr'];
         if ($var_node->kind === \ast\AST_VAR) {
-            return $this->removeTruthyFromVariable($var_node, $this->context);
+            // Don't emit notices for if (empty($x)) {}, etc.
+            return $this->removeTruthyFromVariable($var_node, $this->context, true);
         }
+        $this->checkVariablesDefined($node);
         return $this->context;
     }
 
