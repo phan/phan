@@ -77,13 +77,15 @@ final class AlwaysReturnPlugin extends PluginV2 implements
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
-            $this->emitIssue(
-                $code_base,
-                $method->getContext(),
-                'PhanPluginAlwaysReturnMethod',
-                "Method {METHOD} has a return type of {TYPE}, but may fail to return a value",
-                [(string)$method->getFQSEN(), (string)$return_type]
-            );
+            if (!$method->hasSuppressIssue('PhanPluginAlwaysReturnMethod')) {
+                $this->emitIssue(
+                    $code_base,
+                    $method->getContext(),
+                    'PhanPluginAlwaysReturnMethod',
+                    "Method {METHOD} has a return type of {TYPE}, but may fail to return a value",
+                    [(string)$method->getFQSEN(), (string)$return_type]
+                );
+            }
         }
     }
 
@@ -114,13 +116,15 @@ final class AlwaysReturnPlugin extends PluginV2 implements
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
-            $this->emitIssue(
-                $code_base,
-                $function->getContext(),
-                'PhanPluginAlwaysReturnFunction',
-                "Function {FUNCTION} has a return type of {TYPE}, but may fail to return a value",
-                [(string)$function->getFQSEN(), (string)$return_type]
-            );
+            if (!$function->hasSuppressIssue('PhanPluginAlwaysReturnFunction')) {
+                $this->emitIssue(
+                    $code_base,
+                    $function->getContext(),
+                    'PhanPluginAlwaysReturnFunction',
+                    "Function {FUNCTION} has a return type of {TYPE}, but may fail to return a value",
+                    [(string)$function->getFQSEN(), (string)$return_type]
+                );
+            }
         }
     }
 
