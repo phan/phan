@@ -1716,7 +1716,7 @@ class UnionType implements \Serializable
             if (!$type->getIsNullable()) {
                 unset($type_set[$type_id]);
                 $nullable_type = $type->withIsNullable(true);
-                $new_types_set[runkit_object_id($nullable)] = $nullable_type;
+                $new_types_set[\runkit_object_id($nullable)] = $nullable_type;
             }
         }
         return $new_types_set;

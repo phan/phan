@@ -1089,9 +1089,10 @@ class ContextNode
             );
         }
 
-        $class = reset($class_list);
+        $class = \reset($class_list);
 
         if (!($class instanceof Clazz)) {
+            // empty list
             throw new UnanalyzableException(
                 $this->node,
                 "Could not get class name from node"
