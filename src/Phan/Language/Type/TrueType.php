@@ -32,11 +32,18 @@ final class TrueType extends ScalarType
     public function asNonTrueType() : Type
     {
         assert($this->is_nullable, 'should only call on ?true');
-        return NullType::instance(false);
+        return NullType::instance(true);
     }
 
     public function getIsInBoolFamily() : bool
     {
         return true;
+    }
+
+    /**
+     * Helper function for internal use by UnionType
+     */
+    public function getNormalizationFlags() : int {
+        return $this->is_nullable ? (self::_bit_nullable | self::_bit_true) : self::_bit_true;
     }
 }

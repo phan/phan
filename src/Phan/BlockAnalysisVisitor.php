@@ -505,7 +505,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         // them
         $child_context_list = [];
 
-        $fallthrough_context = $context;
+        $scope = $context->getScope();
+        if ($scope instanceof GlobalScope) {
+            $fallthrough_context = $context->withScope(new BranchScope($scope));
+        } else {
+            $fallthrough_context = $context;
+        }
 
         $child_nodes = $node->children ?? [];
         $excluded_elem_count = 0;
@@ -561,7 +566,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             // ContextMergeVisitor will include the incoming scope($context) if the if elements aren't comprehensive
             $context = (new ContextMergeVisitor(
                 $this->code_base,
-                $context,
+                $fallthrough_context,  // e.g. "if (!is_string($x)) { $x = ''; }" should result in inferring $x is a string.
                 $child_context_list
             ))($node);
         }

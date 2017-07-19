@@ -1089,14 +1089,14 @@ class ContextNode
             );
         }
 
-        if (empty($class_list)) {
+        $class = reset($class_list);
+
+        if (!($class instanceof Clazz)) {
             throw new UnanalyzableException(
                 $this->node,
                 "Could not get class name from node"
             );
         }
-
-        $class = \array_values($class_list)[0];
 
         $flags = 0;
         if ($this->node->kind == \ast\AST_STATIC_PROP) {
