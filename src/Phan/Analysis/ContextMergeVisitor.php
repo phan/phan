@@ -207,6 +207,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         $variable_map = [];
         foreach ($scope_list as $i => $scope) {
             foreach ($scope->getVariableMap() as $name => $variable) {
+                printf("Scope %d has %s: %s\n", runkit_object_id($scope), $name, $variable);
                 $variable_map[$name] = $variable;
             }
         }
@@ -217,9 +218,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
             function (string $variable_name) use ($scope_list) {
                 foreach ($scope_list as $scope) {
                     if (!$scope->hasVariableWithName($variable_name)) {
+                        printf("Scope %d does not define %s\n", runkit_object_id($scope), $variable_name);
                         return false;
                     }
                 }
+                printf("Each scope defines %s\n", $variable_name);
                 return true;
             };
 
