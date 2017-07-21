@@ -12,6 +12,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
@@ -20,6 +21,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\TrueType;
 use Phan\Library\ArraySet;
 use ast\Node;
 
@@ -78,16 +80,16 @@ class UnionType implements \Serializable
         }
 
         static $memoize_map = [];
-        $types_set = $memoize_map[$fully_qualified_string] ?? null;
+        $type_set = $memoize_map[$fully_qualified_string] ?? null;
 
-        if (!isset($types_set)) {
-            $types_set = ArraySet::from_list(\array_map(function (string $type_name) {
+        if (!isset($type_set)) {
+            $type_set = ArraySet::from_list(\array_map(function (string $type_name) {
                 return Type::fromFullyQualifiedString($type_name);
             }, \explode('|', $fully_qualified_string)));
-            $memoize_map[$fully_qualified_string] = $types_set;
+            $memoize_map[$fully_qualified_string] = $type_set;
         }
 
-        return new UnionType($types_set, true);
+        return new UnionType($type_set, true);
     }
 
     /**
@@ -1594,5 +1596,129 @@ class UnionType implements \Serializable
         }
 
         return $map;
+    }
+
+    /**
+     * @return UnionType - A normalized version of this union type (May or may not be the same object, if no modifications were made)
+     *
+     * The following normalization rules apply
+     *
+     * 1. If one of the types is null or nullable, convert all types to nullable and remove "null" from the union type
+     * 2. If both "true" and "false" (possibly nullable) coexist, or either coexists with "bool" (possibly nullable),
+     *    then remove "true" and "false"
+     */
+    public function asNormalizedTypes() : UnionType {
+        $type_set = $this->type_set;
+        if (count($type_set) <= 1) {
+            // Optimization: can't simplify if there's only one type
+            return $this;
+        }
+        $flags = 0;
+        foreach ($type_set as $type) {
+            $flags |= $type->getNormalizationFlags();
+        }
+        if ($flags === 0) {
+            // Optimization: nothing to do if no types are null/nullable or booleans
+            return $this;
+        }
+        return self::asNormalizedTypesInner($type_set, $flags);
+    }
+
+    /**
+     * @param Type[] $type_set
+     * @param int $flags non-zero
+     */
+    public static function asNormalizedTypesInner(array $type_set, int $flags) : UnionType {
+        $new_type_set = $type_set;
+        $nullable = ($flags & Type::_bit_nullable) !== 0;
+        if ($nullable) {
+            foreach ($type_set as $type_id => $type) {
+                if (!$type->getIsNullable()) {
+                    unset($new_type_set[$type_id]);
+                    $nullable_type = $type->withIsNullable(true);
+                    $new_type_set[\runkit_object_id($nullable_type)] = $nullable_type;
+                }
+            }
+            static $nullable_id = null;
+            if ($nullable_id === null) {
+                $nullable_id = \runkit_object_id(NullType::instance(false));
+            }
+            unset($new_type_set[$nullable_id]);
+        }
+        // If this contains both true and false types, filter out both and add "bool" (or "?bool" for nullable)
+        if (($flags & Type::_bit_bool_combination) === Type::_bit_bool_combination) {
+            if ($nullable) {
+                $new_type_set = self::asTypeSetWithNormalizedNullableBools($new_type_set);
+            } else {
+                $new_type_set = self::asTypeSetWithNormalizedNonNullableBools($new_type_set);
+            }
+        }
+        return new UnionType($new_type_set);
+    }
+
+    /**
+     * Must be called after converting nullable to non-nullable.
+     * Removes false|true types and adds bool
+     *
+     * @param Type[] $type_set (Containing only non-nullable values)
+     * return Type[] possibly modified $type_set
+     */
+    private static function asTypeSetWithNormalizedNonNullableBools(array $type_set) : array
+    {
+        static $true_id = null;
+        static $false_id = null;
+        static $bool_id = null;
+        static $bool_type = null;
+        if ($bool_type === null) {
+            $true_id = \runkit_object_id(TrueType::instance(false));
+            $false_id = \runkit_object_id(FalseType::instance(false));
+            $bool_type = BoolType::instance(false);
+            $bool_id = \runkit_object_id($bool_type);
+        }
+        unset($type_set[$true_id]);
+        unset($type_set[$false_id]);
+        if (!isset($type_set[$bool_id])) {
+            $type_set[$bool_id] = $bool_type;
+        }
+        return $type_set;
+    }
+
+    /**
+     * Must be called after converting all types to null.
+     * Removes ?false|?true types and adds ?bool
+     *
+     * @param Type[] $type_set (Containing only non-nullable values)
+     * return Type[] possibly modified $type_set
+     */
+    private static function asTypeSetWithNormalizedNullableBools(array $type_set) : array
+    {
+        static $true_id = null;
+        static $false_id = null;
+        static $bool_id = null;
+        static $bool_type = null;
+        if ($bool_type === null) {
+            $true_id = \runkit_object_id(TrueType::instance(true));
+            $false_id = \runkit_object_id(FalseType::instance(true));
+            $bool_type = BoolType::instance(true);
+            $bool_id = \runkit_object_id($bool_type);
+        }
+        unset($type_set[$true_id]);
+        unset($type_set[$false_id]);
+        if (!isset($type_set[$bool_id])) {
+            $type_set[$bool_id] = $bool_type;
+        }
+        return $type_set;
+    }
+
+    private static function asNullableTypeSet(array $type_set) {
+        $new_types_set = $type_set;
+        foreach ($type_set as $type_id => $type) {
+            if (!$type->getIsNullable()) {
+                unset($type_set[$type_id]);
+                $nullable_type = $type->withIsNullable(true);
+                $new_types_set[\runkit_object_id($nullable_type)] = $nullable_type;
+            }
+        }
+        return $new_types_set;
     }
 }

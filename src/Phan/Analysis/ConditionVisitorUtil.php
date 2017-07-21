@@ -33,7 +33,7 @@ trait ConditionVisitorUtil {
      * Note that Phan can't know some scalars are not an int/string/float, since 0/""/"0"/0.0/[] are empty.
      * (Remove arrays anyway)
      */
-    protected final function removeTruthyFromVariable(Node $var_node, Context $context) : Context
+    protected final function removeTruthyFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
@@ -43,12 +43,13 @@ trait ConditionVisitorUtil {
             },
             function(UnionType $type) : UnionType {
                 return $type->nonTruthyClone();
-            }
+            },
+            false
         );
     }
 
     // Remove any types which are definitely falsey from that variable (NullType, FalseType)
-    protected final function removeFalseyFromVariable(Node $var_node, Context $context) : Context
+    protected final function removeFalseyFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
@@ -58,12 +59,13 @@ trait ConditionVisitorUtil {
             },
             function(UnionType $type) : UnionType {
                 return $type->nonFalseyClone();
-            }
+            },
+            $suppress_issues
         );
     }
 
 
-    protected final function removeNullFromVariable(Node $var_node, Context $context) : Context
+    protected final function removeNullFromVariable(Node $var_node, Context $context, bool $suppress_issues) : Context
     {
         return $this->updateVariableWithConditionalFilter(
             $var_node,
@@ -73,7 +75,8 @@ trait ConditionVisitorUtil {
             },
             function(UnionType $type) : UnionType {
                 return $type->nonNullableClone();
-            }
+            },
+            $suppress_issues
         );
     }
 
@@ -87,7 +90,8 @@ trait ConditionVisitorUtil {
             },
             function(UnionType $type) : UnionType {
                 return $type->nonFalseClone();
-            }
+            },
+            false
         );
     }
 
@@ -101,7 +105,8 @@ trait ConditionVisitorUtil {
             },
             function(UnionType $type) : UnionType {
                 return $type->nonTrueClone();
-            }
+            },
+            false
         );
     }
 
@@ -117,7 +122,8 @@ trait ConditionVisitorUtil {
         Node $var_node,
         Context $context,
         \Closure $should_filter_cb,
-        \Closure $filter_union_type_cb
+        \Closure $filter_union_type_cb,
+        bool $suppress_issues
     ) : Context {
         try {
             // Get the variable we're operating on
@@ -144,7 +150,9 @@ trait ConditionVisitorUtil {
                 $variable
             );
         } catch (IssueException $exception) {
-            Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
+            if (!$suppress_issues) {
+                Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
+            }
         } catch (\Exception $exception) {
             // Swallow it
         }
@@ -154,7 +162,8 @@ trait ConditionVisitorUtil {
     protected final function updateVariableWithNewType(
         Node $var_node,
         Context $context,
-        UnionType $new_union_type
+        UnionType $new_union_type,
+        bool $suppress_issues
     ) : Context {
         try {
             // Get the variable we're operating on
@@ -176,7 +185,9 @@ trait ConditionVisitorUtil {
                 $variable
             );
         } catch (IssueException $exception) {
-            Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
+            if (!$suppress_issues) {
+                Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
+            }
         } catch (\Exception $exception) {
             // Swallow it
         }
@@ -244,7 +255,7 @@ trait ConditionVisitorUtil {
                         $exprName = $exprNameNode->children['name'];
                         switch(\strtolower($exprName)) {
                         case 'null':
-                            return $this->removeNullFromVariable($var_node, $context);
+                            return $this->removeNullFromVariable($var_node, $context, false);
                         case 'false':
                             return $this->removeFalseFromVariable($var_node, $context);
                         case 'true':

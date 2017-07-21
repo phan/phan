@@ -123,6 +123,7 @@ class Colorizing {
         if ($fmt_directive === null) {
             error_log(sprintf("Unknown template type '%s'. Known template types: %s",
                     implode(', ', array_keys(Issue::uncolored_format_string_for_template))));
+            return (string)$arg;
         }
         // TODO: Add more complicated color coding, e.g. MyClass::method should have the option for multiple colors.
         // TODO: Allow choosing color schemes via .phan/config.php

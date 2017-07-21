@@ -37,6 +37,7 @@ function h344($x) : int {
             return 4;
         } else {
             echo "Some code\n";
+            $x = 'alternative';
         }
     }
     echo intdiv($x, 2);  // currently, doesn't warn, because the type is uncertain.
