@@ -19,13 +19,15 @@ New Features (Analysis)
   (E.g. `if (!is_string($x)) { return false; } functionUsingX($x);`)
 
   When checking if a variable is defined by all branches of an if statement, ignore branches which inconditionally throw/return/break/continue.
++ To reduce the false positives from analysis of the negation of type assertions,
+  normalize nullable/boolean union types after analyzing code branches (E.g. if/else) affecting the types of those variables.
+  (e.g. convert "bool|false|null" to "?bool")
 + Add a new plugin file `AlwaysReturnPlugin`. (Issue #996)
   This will add a stricter check that a function with a non-null return type *unconditionally* returns a value (or explicitly throws, or exit()s).
   Currently, Phan just checks if a function *may* return, or unconditionally throws.
 + Add a new plugin file `UnreachableCodePlugin` (in development).
   This will warn about statements that appear to be unreachable
   (statements occurring after unconditional return/break/throw/return/exit statements)
-
 
 New Features (CLI, Configs)
 + Add config setting `prefer_narrowed_phpdoc_return_type` (See "New Features (CLI, Configs)),
@@ -37,6 +39,8 @@ Bug Fixes
 + Fixes #462 : Fix type inferences for instanceof for checks with dynamic class names are provided.
   Valid class names are either a string or an instance of the class to check against.
   Warn if the class name is definitely invalid.
++ Fix false positives about undefined variables in isset()/empty() (Issue #1039)
+  (Fixes bug introduced in Phan 0.9.3)
 
 Changes In Emitted Issues
 + Improve `InvalidVariableIssetPlugin`. Change the names and messages for issue types.
