@@ -20,7 +20,7 @@ use Phan\Phan;
 class UndoTracker {
 
     /**
-     * @var string|null absolute path to currently parsed file, when in parse phase.
+     * @var ?string absolute path to currently parsed file, when in parse phase.
      * TODO: Does the Context->getFile() make keeping this redundant?
      */
     private $current_parsed_file;
