@@ -1155,7 +1155,9 @@ class Clazz extends AddressableElement
             // TODO: Consider all permutations of abstract and real methods on classes, interfaces, and traits.
             $existing_method =
                 $code_base->getMethodByFQSEN($method_fqsen);
-            if ($method->getDefiningFQSEN() === $existing_method->getDefiningFQSEN()) {
+            // Note: For private/protected methods, the defining FQSEN is set to the FQSEN of the inheriting class.
+            // So, when multiple traits are inherited, they may identical defining FQSENs, but some may be abstract, and others may be implemented.
+            if ($method->getDefiningFQSEN() === $existing_method->getDefiningFQSEN() && $method->isAbstract() === $existing_method->isAbstract()) {
                 return;
             }
 
@@ -1976,8 +1978,13 @@ class Clazz extends AddressableElement
             // Workaround: For private methods, copy the method with a new defining class.
             // If you import a trait's private method, it becomes private **to the class which used the trait** in PHP code.
             // (But preserving the defining FQSEN is fine for this)
-            if ($is_trait && Flags::bitVectorHasState($method->getFlags(), \ast\flags\MODIFIER_PRIVATE)) {
-                $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PRIVATE);
+            if ($is_trait) {
+                $method_flags = $method->getFlags();
+                if (Flags::bitVectorHasState($method_flags, \ast\flags\MODIFIER_PRIVATE)) {
+                    $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PRIVATE);
+                } elseif (Flags::bitVectorHasState($method_flags, \ast\flags\MODIFIER_PROTECTED)) {
+                    $method = $method->createUseAlias($this, $method->getName(), \ast\flags\MODIFIER_PROTECTED);
+                }
             }
             $this->addMethod(
                 $code_base,
@@ -2024,7 +2031,7 @@ class Clazz extends AddressableElement
             }
             $source_method = $class->getMethodByName($code_base, $source_method_name);
             $alias_method = $source_method->createUseAlias(
-                $class,
+                $this,
                 $alias_method_name,
                 $original_trait_alias_source->getAliasVisibilityFlags()
             );

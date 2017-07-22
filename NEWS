@@ -41,6 +41,10 @@ Bug Fixes
   Warn if the class name is definitely invalid.
 + Fix false positives about undefined variables in isset()/empty() (Issue #1039)
   (Fixes bug introduced in Phan 0.9.3)
++ Fix false positive warnings about accessing protected methods from traits (Issue #1033)
+  Act as though the class which used a trait is the place where the method was defined,
+  so that method visibility checks work properly.
+  Additionally, fix false positive warnings about visibility of method aliases from traits.
 
 Changes In Emitted Issues
 + Improve `InvalidVariableIssetPlugin`. Change the names and messages for issue types.

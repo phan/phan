@@ -254,9 +254,15 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * @param Clazz $clazz - The class to treat as the defining class of the alias. (i.e. the inheriting class)
+     * @param string $alias_method_name - The alias method name.
      * @param int $new_visibility_flags (0 if unchanged)
      * @return Method
-     * An alias from a trait use
+     *
+     * An alias from a trait use, which is treated as though it was defined in $clazz
+     * E.g. if you import a trait's method as private/protected, it becomes private/protected **to the class which used the trait**
+     *
+     * The resulting alias doesn't inherit the \ast\Node of the method body, so aliases won't have a redundant analysis step.
      */
     public function createUseAlias(
         Clazz $clazz,
@@ -295,15 +301,10 @@ class Method extends ClassElement implements FunctionInterface
             break;
         }
 
-        // Workaround: If you import a trait's method as private, it becomes private **to the class which used the trait**
-        // (But preserving the defining FQSEN is fine for this)
-        if (!Flags::bitVectorHasState($method->getFlags(), \ast\flags\MODIFIER_PRIVATE)) {
-            $method->setDefiningFQSEN($method_fqsen);
+        if ($method->isPublic()) {
+            $method->setDefiningFQSEN($this->getDefiningFQSEN());
         }
 
-        // TODO: setDefiningFQSEN?
-
-        // TODO: Update and add setNumberOfRealRequiredParameters once other PR is merged?
         $method->setParameterList($this->getParameterList());
         $method->setRealParameterList($this->getRealParameterList());
         $method->setRealReturnType($this->getRealReturnType());
