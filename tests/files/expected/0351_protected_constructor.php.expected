@@ -1,0 +1,3 @@
+%s:6 PhanTypeMismatchArgument Argument 1 (x) is string but \Foo351::__construct() takes int defined at %s:4
+%s:10 PhanAccessMethodProtected Cannot access protected method \Foo351::__construct defined at %s:4
+%s:11 PhanAccessMethodProtected Cannot access protected method \Foo351::__construct defined at %s:4

@@ -45,6 +45,7 @@ Bug Fixes
   Act as though the class which used a trait is the place where the method was defined,
   so that method visibility checks work properly.
   Additionally, fix false positive warnings about visibility of method aliases from traits.
++ Warn about instantiation of class with inaccessible constructor (Issue #1043)
 
 Changes In Emitted Issues
 + Improve `InvalidVariableIssetPlugin`. Change the names and messages for issue types.
