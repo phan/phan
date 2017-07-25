@@ -954,6 +954,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
             }
 
+            $this->analyzeMethodVisibility(
+                $method,
+                $node
+            );
+
             $this->analyzeCallToMethod(
                 $method,
                 $node
