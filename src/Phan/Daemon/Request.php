@@ -7,6 +7,7 @@ use Phan\Config;
 use Phan\Daemon;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
+use Phan\Library\FileCache;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -87,8 +88,8 @@ class Request {
         $rawIssues = $this->bufferedOutput->fetch();
         if (($this->config[self::PARAM_FORMAT] ?? null) === 'json') {
             $issues = json_decode($rawIssues, true);
-            if (!is_array($issues)) {
-                $issues = "(Failed to decode) " . $rawIssues;
+            if (!\is_array($issues)) {
+                $issues = "(Failed to decode) " . json_last_error_msg() . ': ' . $rawIssues;
             }
         } else {
             $issues = $rawIssues;
@@ -115,7 +116,7 @@ class Request {
      */
     public function filterFilesToAnalyze(array $analyze_file_path_list) : array {
 
-        if (is_null($this->files)) {
+        if (\is_null($this->files)) {
             Daemon::debugf("No files to filter in filterFilesToAnalyze");
             return $analyze_file_path_list;
         }
@@ -126,7 +127,7 @@ class Request {
             // Must be relative to project, allow absolute paths to be passed in.
             $file = FileRef::getProjectRelativePathForPath($file);
 
-            if (array_key_exists($file, $analyze_file_path_set)) {
+            if (\array_key_exists($file, $analyze_file_path_set)) {
                 $filteredFiles[] = $file;
             } else {
                 // TODO: Reload file list once before processing request?
@@ -153,7 +154,6 @@ class Request {
      * Currently supports only JSON.
      * TODO: HTTP protocol.
      *
-     * @param resource $conn
      * @param array $response
      * @return void
      */
@@ -207,7 +207,7 @@ class Request {
         Daemon::debugf("Got signal pid=%s", json_encode($pid));
 
         while ($pid > 0) {
-            if (array_key_exists($pid, self::$child_pids)) {
+            if (\array_key_exists($pid, self::$child_pids)) {
                 $exit_code = pcntl_wexitstatus($status);
                 if ($exit_code != 0) {
                     error_log(sprintf("child process %d exited with status %d\n", $pid, $exit_code));
@@ -225,11 +225,12 @@ class Request {
 
     /**
      * @param CodeBase $code_base
-     * @param \Closure $file_path_list
+     * @param \Closure $file_path_lister
      * @param resource $conn
      * @return Request|null - non-null if this is a worker process with work to do. null if request failed or this is the master.
      */
     public static function accept(CodeBase $code_base, \Closure $file_path_lister, $conn) {
+        FileCache::clear();
         Daemon::debugf("Got a connection");  // debugging code
         // Efficient for large strings, e.g. long file lists.
         $data = [];
@@ -238,7 +239,8 @@ class Request {
         }
         $request_bytes = implode('', $data);
         $request = json_decode($request_bytes, true);
-        if (!is_array($request)) {
+
+        if (!\is_array($request)) {
             Daemon::debugf("Received invalid request, expected JSON: %s", json_encode($request_bytes));
             self::sendJSONResponseOverSocket($conn, [
                 'status'  => self::STATUS_INVALID_REQUEST,
@@ -265,9 +267,9 @@ class Request {
             $files = $request[self::PARAM_FILES] ?? null;
             $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
             $error_message = null;
-            if (is_array($files) && count($files)) {
+            if (\is_array($files) && count($files)) {
                 foreach ($files as $file) {
-                    if (!is_string($file)) {
+                    if (!\is_string($file)) {
                         $error_message = 'Passed non-string in list of files';
                         break;
                     }
@@ -275,18 +277,18 @@ class Request {
             } else {
                 $error_message = 'Must pass a non-empty array of file paths for field files';
             }
-            if (is_null($error_message)) {
+            if (\is_null($error_message)) {
                 $file_mapping_contents = $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
-                if (!is_array($file_mapping_contents)) {
+                if (!\is_array($file_mapping_contents)) {
                     $error_message = 'Invalid value of temporary_file_mapping_contents';
                 }
                 $new_file_mapping_contents = [];
                 foreach ($file_mapping_contents ?? [] as $file => $contents) {
                     $new_file_mapping_contents[FileRef::getProjectRelativePathForPath($file)] = $contents;
-                    if (!is_string($file)) {
+                    if (!\is_string($file)) {
                         $error_message = 'Passed non-string in list of files to map';
                         break;
-                    } else if (!is_string($contents)) {
+                    } else if (!\is_string($contents)) {
                         $error_message = 'Passed non-string in as new file contents';
                     }
                 }
@@ -357,7 +359,7 @@ class Request {
 
         $file_list = $file_path_lister();
 
-        if (Config::get()->consistent_hashing_file_order) {
+        if (Config::getValue('consistent_hashing_file_order')) {
             // Parse the files in lexicographic order.
             // If there are duplicate class/function definitions,
             // this ensures they are added to the maps in the same order.

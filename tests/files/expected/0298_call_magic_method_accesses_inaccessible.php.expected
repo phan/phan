@@ -1,0 +1,4 @@
+%s:74 PhanAccessMethodPrivateWithCallMagicMethod Cannot access private method \A298::hidden defined at %s:5 (if this call should be handled by __call, consider adding a @method tag to the class)
+%s:80 PhanAccessMethodProtectedWithCallMagicMethod Cannot access protected method \C298::hidden defined at %s:41 (if this call should be handled by __call, consider adding a @method tag to the class)
+%s:83 PhanAccessMethodProtectedWithCallMagicMethod Cannot access protected method \D298::hidden defined at %s:41 (if this call should be handled by __call, consider adding a @method tag to the class)
+%s:85 PhanAccessMethodPrivate Cannot access private method \E298::hidden defined at %s:60

@@ -9,7 +9,7 @@ echo "Running phan in '$PWD' ..."
 rm $ACTUAL_PATH -f || exit 1
 ../../phan | tee $ACTUAL_PATH
 # diff returns a non-zero exit code if files differ or are missing
-# This outputs the 
+# This outputs the difference between actual and expected output.
 echo
 echo "Comparing the output:"
 diff $EXPECTED_PATH $ACTUAL_PATH

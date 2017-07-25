@@ -9,7 +9,7 @@ use Phan\Phan;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 abstract class AbstractPhanFileTest
-    extends \PHPUnit_Framework_TestCase
+    extends BaseTest
     implements CodeBaseAwareTestInterface
 {
     const EXPECTED_SUFFIX = '.expected';
@@ -48,7 +48,7 @@ abstract class AbstractPhanFileTest
 
         // Reinstate the original config
         foreach ($this->original_config as $key => $value) {
-            Config::get()->__set($key, $value);
+            Config::setValue($key, $value);
         }
     }
 
@@ -103,7 +103,7 @@ abstract class AbstractPhanFileTest
         // Overlay any test-specific config modifiers
         if ($config_file_path) {
             foreach (require($config_file_path) as $key => $value) {
-                Config::get()->__set($key, $value);
+                Config::setValue($key, $value);
             }
         }
 

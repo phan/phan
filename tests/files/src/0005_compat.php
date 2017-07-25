@@ -25,4 +25,13 @@ class A {
     public static function fromCategories(
         A $categories = null, A $context
     ) {}
+
+    /**
+     * @param A|null $categories
+     * @param A $context
+     * @return A|void
+     */
+    public static function fromCategoriesValid(
+        A $categories = null, A $context
+    ) {}
 }

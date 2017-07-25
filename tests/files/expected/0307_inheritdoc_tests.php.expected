@@ -1,0 +1,8 @@
+%s:18 PhanTypeMissingReturn Method \B307::offsetExists is declared to return bool but has no return value
+%s:22 PhanTypeMissingReturn Method \B307::offsetGet is declared to return mixed but has no return value
+%s:34 PhanTypeMismatchReturn Returning type int but serialize() is declared to return string
+%s:40 PhanTypeMismatchReturn Returning type true but unserialize() is declared to return void
+%s:51 PhanTypeMismatchArgument Argument 1 (offset) is null but \B307::offsetExists() takes string defined at %s:18
+%s:52 PhanTypeMismatchArgument Argument 1 (offset) is null but \B307::offsetGet() takes string defined at %s:22
+%s:53 PhanTypeMismatchArgument Argument 1 (offset) is null but \B307::offsetSet() takes string defined at %s:26
+%s:54 PhanTypeMismatchArgument Argument 1 (offset) is null but \B307::offsetUnset() takes string defined at %s:30

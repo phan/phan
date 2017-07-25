@@ -1,7 +1,158 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.9.2 (dev)
+?? ??? 2017, Phan 0.9.4 (dev)
 -----------------------
+
+New Features (Analysis)
++ Check (the first 5) elements of returned arrays against the declared return union types, individually (Issue #935)
+  (E.g. `/** @return int[] */ function foo() {return [2, "x"]; }` will now warn with `PhanTypeMismatchReturn` about returning `string[]`)
++ Check both sides of ternary conditionals against the declared return union types
+  (E.g. `function foo($x) : int {return is_string($x) ? $x : 0; }` will now warn with `PhanTypeMismatchReturn`
+  about returning a string).
++ Improved analysis of negations of conditions within ternary conditional operators and else/else if statements. (Issue #538)
+  Support analysis of negation of the `||` operator. (E.g. `if (!(is_string($x) || is_int($x))) {...}`)
++ Make phan aware of blocks of code which will unconditionally throw or return. (Issue #308, #817, #996, #956)
+
+  Don't infer variable types from blocks of code which unconditionally throw or return.
+
+  Infer the negation of type assertions from if statements that unconditionally throw/return/break/continue 
+  (E.g. `if (!is_string($x)) { return false; } functionUsingX($x);`)
+
+  When checking if a variable is defined by all branches of an if statement, ignore branches which inconditionally throw/return/break/continue.
++ To reduce the false positives from analysis of the negation of type assertions,
+  normalize nullable/boolean union types after analyzing code branches (E.g. if/else) affecting the types of those variables.
+  (e.g. convert "bool|false|null" to "?bool")
++ Add a new plugin file `AlwaysReturnPlugin`. (Issue #996)
+  This will add a stricter check that a function with a non-null return type *unconditionally* returns a value (or explicitly throws, or exit()s).
+  Currently, Phan just checks if a function *may* return, or unconditionally throws.
++ Add a new plugin file `UnreachableCodePlugin` (in development).
+  This will warn about statements that appear to be unreachable
+  (statements occurring after unconditional return/break/throw/return/exit statements)
+
+New Features (CLI, Configs)
++ Add config setting `prefer_narrowed_phpdoc_return_type` (See "New Features (CLI, Configs)),
+  which will use only the phpdoc return types for inferences, if they're narrowed.
+  This config is enabled by default, and requires `check_docblock_signature_return_type_match` to be enabled.
+
+Bug Fixes
++ Work around notice about COMPILER_HALT_OFFSET on windows.
++ Fixes #462 : Fix type inferences for instanceof for checks with dynamic class names are provided.
+  Valid class names are either a string or an instance of the class to check against.
+  Warn if the class name is definitely invalid.
++ Fix false positives about undefined variables in isset()/empty() (Issue #1039)
+  (Fixes bug introduced in Phan 0.9.3)
++ Fix false positive warnings about accessing protected methods from traits (Issue #1033)
+  Act as though the class which used a trait is the place where the method was defined,
+  so that method visibility checks work properly.
+  Additionally, fix false positive warnings about visibility of method aliases from traits.
++ Warn about instantiation of class with inaccessible constructor (Issue #1043)
+
+Changes In Emitted Issues
++ Improve `InvalidVariableIssetPlugin`. Change the names and messages for issue types.
+  Emit `PhanPluginUndeclaredVariableInIsset` and `PhanPluginComplexVariableIsset`
+  instead of `PhanUndeclaredVariable`.
+  Stop erroneously warning about valid property fetches and checks of fields of superglobals.
+
+0.9.3 Jul 11, 2017
+------------------
+
+New Features (Analysis)
++ Automatically inherit `@param` and `@return` types from parent methods.
+  This is controlled by the boolean config `inherit_phpdoc_types`, which is true by default.
+  `analyze_signature_compatibility` must also be set to true (default is true) for this step to be performed.
++ Better analysis of calls to parent::__construct(). (Issue #852)
++ Warn with `PhanAccessOwnConstructor` if directly invoking self::__construct or static::__construct in some cases (partial).
++ Start analyzing the inside of for/while loops using the loop's condition (Issue #859)
+  (Inferences may leak to outside of those loops. `do{} while(cond)` is not specially analyzed yet)
++ Improve analysis of types in expressions within compound conditions (Issue #847)
+  (E.g. `if (is_array($x) && fn_expecting_array($x)) {...}`)
++ Evaluate the third part of a for loop with the context after the inner body is evaluated (Issue #477)
++ Emit `PhanUndeclaredVariableDim` if adding an array field to an undeclared variable. (Issue #841)
+  Better analyze `list($var['field']) = values`
++ Improve accuracy of `PhanTypeMismatchDeclaredReturn` (Move the check to after parse phase is finished)
++ Enable `check_docblock_signature_return_type_match` and `check_docblock_signature_param_type_match` by default.
+  Improve performance of those checks.
+  Switch to checking individual types (of the union type) of the phpdoc types and emitting issues for each invalid part.
++ Create `PhanTypeMismatchDeclaredParam` (Move the check to after parse phase is finished)
+  Also add config setting `prefer_narrowed_phpdoc_param_type` (See "New Features (CLI, Configs))
+  This config is enabled by default.
+
+  Also create `PhanTypeMismatchDeclaredParamNullable` when params such as `function foo(string $x = null)`
+  are documented as the narrowed forms `@param null $x` or `@param string $x`.
+  Those should be changed to either `string|null` or `?string`.
++ Detect undeclared return types at point of declaration, and emit `PhanUndeclaredTypeReturnType` (Issue #835)
++ Create `PhanParamSignaturePHPDocMismatch*` issue types, for mismatches between `@method` and real signature/other `@method` tag.
++ Create `PhanAccessWrongInheritanceCategory*` issue types to warn about classes extending a trait/interface instead of class, etc. (#873)
++ Create `PhanExtendsFinalClass*` issue types to warn about classes extending from final classes.
++ Create `PhanAccessOverridesFinalMethod*` issue types to warn about methods overriding final methods.
++ Create `PhanTypeMagicVoidWithReturn` to warn if `void` methods such as `__construct`, `__set`, etc return a value that would be ignored. (Issue #913)
++ Add check for `PhanTypeMissingReturn` within closures. Properly emit `PhanTypeMissingReturn` in functions/methods containing closures. (Issue #599)
++ Improved checking for `PhanUndeclaredVariable` in array keys and conditional conditions. (Issue #912)
++ Improved warnings and inferences about internal function references for functions such as `sort`, `preg_match` (Issue #871, #958)
+  Phan is now aware of many internal functions which normally ignore the original values of references passed in (E.g. `preg_match`)
++ Properly when code attempts to access static/non-static properties as if they were non-static/static. (Issue #936)
++ Create `PhanCommentOverrideOnNonOverrideMethod` and `PhanCommentOverrideOnNonOverrideConstant`. (Issue #926)
+  These issue types will be emitted if `@override` is part of doc comment of a method or class constant which doesn't override or implement anything.
+  (`@Override` and `@phan-override` can also be used as aliases of `@override`. `@override` is not currently part of any phpdoc standard.)
++ Add `@phan-closure-scope`, which can be used to annotate closure definitions with the namespaced class it will be bound to (Issue #309, #590, #790)
+  (E.g. if the intent was that Closure->bindTo or Closure->bind would be called to bind it to `\MyNS\MyClass` (or an instance of that class),
+  then a closure could be declared as `/** @phan-closure-scope \MyNS\MyClass */ function() { $this->somePrivateMyClassMethod(); }`
++ Add `Closure` as a first class type, (Previously, closures were treated as `callable` in some places) (Issue #978)
+
+New Features (CLI, Configs)
++ Create `check_docblock_signature_param_type_match` (similar to `check_docblock_signature_return_type_match`) config setting
+  to enable warning if phpdoc types are incompatible with the real types. True(enabled) by default.
+
+  Create `prefer_narrowed_phpdoc_param_type` config setting (True by default, requires `check_docblock_signature_return_type_match` to be enabled).
+  When it is true, Phan will analyze each function using the phpdoc param types instead of the provided signature types 
+  if the possible phpdoc types are narrower and compatible with the signature.
+  (E.g. indicate that subclasses are expected over base classes, indicate that non-nullable is expected instead of nullable)
+  This affects analysis both inside and outside the method.
+
+  Aside: Phan currently defaults to preferring phpdoc type over real return type, and emits `PhanTypeMismatchDeclaredReturn` if the two are incompatible.
++ Create `enable_class_alias_support` config setting (disabled by default), which enables analyzing basic usage of class_alias. (Issue #586)
+  Set it to true to enable it.
+  NOTE: this is still experimental.
++ Warn to stderr about running Phan analysis with XDebug (Issue #116)
+  The warning can be disabled by the Phan config setting `skip_slow_php_options_warning` to true.
++ Add a config setting 'scalar_implicit_partial' to allow moving away from 'scalar_implicit_cast' (Issue #541)
+  This allows users to list out (and gradually remove) permitted scalar type casts.
++ Add `null_casts_as_array` and `array_casts_as_null` settings, which can be used while migrating away from `null_casts_as_any_type`.
+  These will be checked if one of the types has a union type of `null`, as well as when checking if a nullable array can cast to a regular array.
+
+Plugins
+
++ Redesign plugin system to be more efficient. (Issue #600)
+  New plugins should extend `\Phan\PluginV2` and implement the interfaces for capabilities they need to have,
+  such as `\Phan\PluginV2\AnalyzeClassCapability`.
+  In the new plugin system, plugins will only be run when they need to (Phan no longer needs to invoke an empty method body).
+  Old subclasses of `\Phan\Plugin\PluginImplementation` will continue to work, but will be less efficient.
+
+Maintenance
++ Reduce memory usage by around 15% by using a more efficient representation of union types (PR #729).
+  The optional extension https://github.com/runkit7/runkit_object_id can be installed to boost performance by around 10%.
++ Check method signatures compatibility against all overridden methods (e.g. interfaces with the same methods), not just the first ones (Issue #925)
+
+Bug Fixes
++ Work around known bugs in current releases of two PECL extensions (Issue #888, #889)
++ Fix typo - Change `PhanParamSignatureRealMismatch` to `PhanParamSignatureRealMismatchReturnType`
++ Consistently exit with non-zero exit code if there are multiple processes, and any process failed to return valid results. (Issue #868)
++ Fixes #986 : PhanUndeclaredVariable used to fail to be emitted in some deeply nested expressions, such as `return $undefVar . 'suffix';`
++ Make Phan infer the return types of closures, both for closures invoked inline and closures declared then invoked later (Issue #564)
++ Phan now correctly analyze global functions for mismatches of phpdoc types and real parameter types.
+  Previously, it wouldn't emit warnings for global functions, only for methods.
++ Don't add `mixed` to inferred union types of properties which already have non-empty phpdoc types. (Issue #512)
+  mixed would just result in Phan failing to emit any types of issues.
++ When `simplify_ast` is true, simplify the ASTs parsed in the parse mode as well.
+  Makes analysis consistent when `quick_mode` is false (AST nodes from the parse phase would also be used in the analysis phase)
++ Don't emit PhanTypeNonVarPassByRef on arguments that are function/method calls returning references. (Issue #236)
++ Emit PhanContextNotObject more reliably when not in class scope.
+
+Backwards Incompatible Changes
++ Fix categories of some issue types, renumber error ids for the pylint error formatter to be unique and consistent.
+
+0.9.2 Jun 13, 2017
+------------------
 
 New Features (Analysis)
 + Add `PhanParamSignatureRealMismatch*` (e.g. `ParamSignatureRealMismatchTooManyRequiredParameters`),
@@ -24,6 +175,25 @@ New Features (Analysis)
 + Make conditionals such as `is_string` start applying to the condition in ternary operators (`$a ? $b : $c`)
 + Treat `resource`, `object`, and `mixed` as native types only when they occur in phpdoc.
   Outside of phpdoc (e.g. `$x instanceof resource`), analyze those names as if they were class names.
++ Emit low severity issues if Phan can't extract types from phpdoc,
+  the phpdoc `@param` is out of sync with the code,
+  or if the phpdoc annotation doesn't apply to an element type (Issue #778)
++ Allow inferring the type of variables from `===` conditionals such as `if ($x === true)`
++ Add issue type for non-abstract classes containing abstract methods from itself or its ancestors
+  (`PhanClassContainsAbstractMethod`, `PhanClassContainsAbstractMethodInternal`)
++ Partial support for handling trait adaptations (`as`/`insteadof`) when using traits (Issue #312)
++ Start checking if uses of private/protected class methods *defined in a trait* are visible outside of that class.
+  Before, Phan would always assume they were visible, to reduce false positives.
++ If Phan has inferred/been provided generic array types for a variable (e.g. `int[]`),
+  then analysis of the code within `if (is_array($x))` will act as though the type is `int[]`.
+  The checks `is_object` and `is_scalar` now also preserve known sub-types of the group of types.
+  (If Phan isn't aware of any sub-types, it will infer the generic version, e.g. `object`)
++ Start checking if unanalyzable variable accesses such as `$$x` are very likely to be invalid or typos (e.g. $x is an object or array or null)
+  Emit `PhanTypeSuspiciousIndirectVariable` if those are seen. (PR #809)
++ Add partial support for inferring the union types of the results of expressions such as `$x ^= 5` (e.g. in `foo($x ^= 5)`) (PR #809)
++ Thoroughly analyze the methods declared within traits,
+  using only the information available within the trait. (Issue #800, PR #815)
+  If new emitted issues are seen, users can (1) add abstract methods to traits, (2) add `@method` annotations, or (3) add `@suppress` annotations.
 
 New Features (CLI, Configs)
 + (Linux/Unix only) Add Experimental Phan Daemon mode (PR #563 for Issue #22), which allows phan to run in the background, and accept TCP requests to analyze single files.
@@ -39,6 +209,9 @@ New Features (CLI, Configs)
   (E.g. handles some variable declarations within `if ()` statements.
    Infers that $x is a string for constructs such as `if (!is_string($x)) {return;} function_using_x($x);`)
   This is slow, and disabled by default.
++ Add `--include-analysis-file-list` option to define files that will be included in static analysis, to the exclusion of others.
++ Start emitting `PhanDeprecatedFunctionInternal` if an internal (to PHP) function/method is deprecated.
+  (Phan emits `PhanUndeclaredFunction` if a function/method was removed; Functions deprecated in PHP 5.x were removed in 7.0)
 
 Maintenance
 + Update function signature map to analyze `iterable` and `is_iterable` from php 7.1
@@ -51,6 +224,10 @@ Bug Fixes
 - Existence of __get() no longer affects analyzing static properties. (Issue #610)
 - Phan can now detect the declaration of constants relative to a `use`d namespace (Issue #509)
 - Phan can now detect the declaration of functions relative to a `use`d namespace (Issue #510)
+- Fix a bug where the JSON output printer accidentally escaped some output ("<"), causing invalid JSON.
+- Fix a bug where a print/echo/method call erroneously marked methods/functions as having a return value. (Issue #811)
+- Improve analysis of SimpleXMLElement (Issues #542, #539)
+- Fix crash handling trait use aliases which change only the method's visibility (Issue #861)
 
 Backwards Incompatible Changes
 - Declarations of user-defined constants are now consistently

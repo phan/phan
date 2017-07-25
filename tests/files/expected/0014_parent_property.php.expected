@@ -1,1 +1,1 @@
-%s:11 PhanUndeclaredStaticProperty Static property 'beta' on \A is undeclared
+%s:11 PhanAccessPropertyNonStaticAsStatic Accessing non static property \A->$beta as static

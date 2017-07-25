@@ -18,6 +18,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClassScope;
+use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
@@ -40,7 +41,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         parent::__construct($code_base, $context);
     }
 
-    public function visit(Node $node) : Context
+    public function visit(Node $unused_node) : Context
     {
         return $this->context;
     }
@@ -68,7 +69,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $class_name = (string)$node->name;
         }
 
-        assert(!empty($class_name), "Class name cannot be empty");
+        \assert(!empty($class_name), "Class name cannot be empty");
 
         $alternate_id = 0;
 
@@ -115,7 +116,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     {
         $method_name = (string)$node->name;
 
-        assert($this->context->isInClassScope(),
+        \assert($this->context->isInClassScope(),
             "Must be in class context to see a method");
 
         $clazz = $this->getContextClass();
@@ -130,17 +131,19 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        $method = $clazz->getMethodByNameInContext(
+        $method = $clazz->getMethodByName(
             $this->code_base,
-            $method_name,
-            $this->context
+            $method_name
         );
 
         // Parse the comment above the method to get
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
-            $this->context
+            $this->code_base,
+            $this->context,
+            $node->lineno ?? 0,
+            Comment::ON_METHOD
         );
 
         $context = $this->context->withScope(
@@ -157,7 +160,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // Add $this to the scope of non-static methods
         if (!($node->flags & \ast\flags\MODIFIER_STATIC)) {
-            assert(
+            \assert(
                 $clazz->getInternalScope()->hasVariableWithName('this'),
                 "Classes must have a \$this variable."
             );
@@ -170,13 +173,18 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Add each method parameter to the scope. We clone it
         // so that changes to the variable don't alter the
         // parameter definition
-        foreach ($method->getParameterList() as $parameter) {
-            $context->addScopeVariable(
-                $parameter->cloneAsNonVariadic()
-            );
+        if ($method->getRecursionDepth() === 0) {
+            // Add each method parameter to the scope. We clone it
+            // so that changes to the variable don't alter the
+            // parameter definition
+            foreach ($method->getParameterList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->cloneAsNonVariadic()
+                );
+            }
         }
 
-        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+        if ($method->getHasYield()) {
             $this->setReturnTypeOfGenerator($method, $node);
         }
 
@@ -232,17 +240,20 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        assert($function instanceof Func);
+        \assert($function instanceof Func);
 
         $context = $this->context->withScope(
             $function->getInternalScope()
         );
 
-        // Parse the comment above the method to get
+        // Parse the comment above the function to get
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
-            $this->context
+            $this->code_base,
+            $this->context,
+            $node->lineno ?? 0,
+            Comment::ON_FUNCTION
         );
 
         // For any @var references in the method declaration,
@@ -253,16 +264,18 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        // Add each method parameter to the scope. We clone it
-        // so that changes to the variable don't alter the
-        // parameter definition
-        foreach ($function->getParameterList() as $parameter) {
-            $context->addScopeVariable(
-                $parameter->cloneAsNonVariadic()
-            );
+        if ($function->getRecursionDepth() === 0) {
+            // Add each method parameter to the scope. We clone it
+            // so that changes to the variable don't alter the
+            // parameter definition
+            foreach ($function->getParameterList() as $parameter) {
+                $context->addScopeVariable(
+                    $parameter->cloneAsNonVariadic()
+                );
+            }
         }
 
-        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+        if ($function->getHasYield()) {
             $this->setReturnTypeOfGenerator($function, $node);
         }
 
@@ -270,37 +283,70 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     }
 
     /**
+     * @return ?FullyQualifiedClassName
+     */
+    private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func)
+    {
+        $closure_scope = $func->getInternalScope();
+		if ($closure_scope instanceof ClosureScope) {
+            $class_fqsen = $closure_scope->getOverrideClassFQSEN();
+            if (!$class_fqsen) {
+                return null;
+            }
+
+            // Postponed the check for undeclared closure scopes to the analysis phase,
+            // because classes are still being parsed in the parse phase.
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                $func_context = $func->getContext();
+                Issue::maybeEmit(
+                    $code_base,
+                    $func_context,
+                    Issue::UndeclaredClosureScope,
+                    $func_context->getLineNumberStart(),
+                    (string)$class_fqsen
+                );
+                $closure_scope->overrideClassFQSEN(null);  // Avoid an uncaught CodeBaseException due to missing class for @phan-closure-scope
+                return null;
+            }
+            return $class_fqsen;
+        }
+        return null;
+    }
+
+    /**
      * If a Closure overrides the scope(class) it will be executed in (via doc comment)
      * then return a context with the new scope instead.
+     * @return void
      */
-    private function withOptionalClosureScope(
+    private static function addThisVariableToInternalScope(
+        CodeBase $code_base,
         Context $context,
-        Func $func,
-        Decl $node
-    ) : Context {
-        $closure_scope_option = $func->getClosureScopeOption();
-        if (!$closure_scope_option->isDefined()) {
-            return $context;
+        Func $func
+    ) {
+        $override_this_fqsen = self::getOverrideClassFQSEN($code_base, $func);
+        if ($override_this_fqsen !== null) {
+            if ($context->getScope()->hasVariableWithName('this') || !$context->isInClassScope()) {
+                // Handle @phan-closure-scope - Should set $this to the overriden class, as well as handling self:: and parent::
+                $func->getInternalScope()->addVariable(
+                    new Variable(
+                        $context,
+                        'this',
+                        $override_this_fqsen->asUnionType(),
+                        0
+                    )
+                );
+            }
+            return;
         }
-        // The Func already checked that the $closure_scope is a class
-        // which exists in the codebase
-        $closure_scope = $closure_scope_option->get();
-
-        $class_fqsen = $closure_scope->asFQSEN();
-        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-            // shouldn't happen
-            return $context;
+        // If we have a 'this' variable in our current scope,
+        // pass it down into the closure
+        if ($context->getScope()->hasVariableWithName('this')) {
+            // Normal case: Closures inherit $this from parent scope.
+            $thisVarFromScope = $context->getScope()->getVariableByName('this');
+            $func->getInternalScope()->addVariable($thisVarFromScope);
         }
-        assert($class_fqsen instanceof FullyQualifiedClassName);
-
-        $clazz = $this->code_base->getClassByFQSEN(
-            $class_fqsen
-        );
-
-        return $clazz->getContext()->withScope(
-            $clazz->getInternalScope()
-        );
     }
+
 
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
@@ -315,26 +361,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     public function visitClosure(Decl $node) : Context
     {
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
-            $this->context->withLineNumberStart($node->lineno ?? 0)
+            $this->context->withLineNumberStart($node->lineno ?? 0),
+            $node
         );
+        $func = $this->code_base->getFunctionByFQSEN($closure_fqsen);
 
-        $func = Func::fromNode(
-            $this->context,
-            $this->code_base,
-            $node,
-            $closure_fqsen
-        );
-
-        // usually the same as $this->context, unless this Closure uses @PhanClosureScope
-        // Also need to override $this if bindTo is called?
-        $context = $this->withOptionalClosureScope($this->context, $func, $node);
+        $context = $this->context;
 
         // If we have a 'this' variable in our current scope,
         // pass it down into the closure
-        if ($context->getScope()->hasVariableWithName('this')) {
-            $thisVarFromScope = $context->getScope()->getVariableByName('this');
-            $func->getInternalScope()->addVariable($thisVarFromScope);
-        }
+        self::addThisVariableToInternalScope($this->code_base, $context, $func);
 
         // Make the closure reachable by FQSEN from anywhere
         $this->code_base->addFunction($func);
@@ -424,7 +460,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+        if ($func->getHasYield()) {
             $this->setReturnTypeOfGenerator($func, $node);
         }
 
@@ -471,57 +507,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @param Node $node
      * A node to parse
      *
-     * This must be called before visitReturn is called within a function.
-     *
-     * @return bool
-     * True if the node represents a yield, else false.
-     */
-    public static function analyzeFunctionLikeIsGenerator(Node $node) : bool
-    {
-        foreach ($node->children ?? [] as $child_node) {
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-            // Technically, `return [yield 2];` is a valid php use of yield. So Analysis::shouldVisit doesn't help much.
-            if (self::analyzeNodeHasYield($child_node)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static function analyzeNodeHasYield(Node $node)
-    {
-        // The ast module doesn't tell us if something has a yield statement.
-        // We want to stop if the type of a node is a closure or a anonymous class
-
-        // Get the method/function/closure we're in
-        switch ($node->kind) {
-        case \ast\AST_YIELD:
-        case \ast\AST_YIELD_FROM:
-            return true;
-        case \ast\AST_METHOD:
-        case \ast\AST_FUNC_DECL:
-        case \ast\AST_CLOSURE:
-        case \ast\AST_CLASS:
-            return false;
-        }
-        foreach ($node->children ?? [] as $child_node) {
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-            if (self::analyzeNodeHasYield($child_node)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
@@ -542,14 +527,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if ($node->children['value']->kind == \ast\AST_ARRAY) {
             foreach ($node->children['value']->children ?? [] as $child_node) {
 
-                $key_node = $child_node->children['key'] ?? null;
+                // $key_node = $child_node->children['key'] ?? null;
                 $value_node = $child_node->children['value'] ?? null;
 
                 // for syntax like: foreach ([] as list(, $a));
                 if ($value_node === null) {
                     continue;
                 }
-                assert($value_node instanceof Node);
+                \assert($value_node instanceof Node);
 
                 $variable = Variable::fromNodeInContext(
                     $value_node,
@@ -694,19 +679,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitIfElem(Node $node) : Context
     {
-        if (!isset($node->children['cond'])
-            || !($node->children['cond'] instanceof Node)
-        ) {
+        $cond = $node->children['cond'] ?? null;
+        if (!($cond instanceof Node)) {
             return $this->context;
         }
-
-        // Get the type just to make sure everything
-        // is defined.
-        $expression_type = UnionType::fromNode(
-            $this->context,
-            $this->code_base,
-            $node->children['cond']
-        );
 
         // Look to see if any proofs we do within the condition
         // can say anything about types within the statement
@@ -714,7 +690,55 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return (new ConditionVisitor(
             $this->code_base,
             $this->context
-        ))($node->children['cond']);
+        ))($cond);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitWhile(Node $node) : Context
+    {
+        $cond = $node->children['cond'];
+        if (!($cond instanceof Node)) {
+            return $this->context;
+        }
+
+        // Look to see if any proofs we do within the condition of the while
+        // can say anything about types within the statement
+        // list.
+        return (new ConditionVisitor(
+            $this->code_base,
+            $this->context
+        ))($cond);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitFor(Node $node) : Context
+    {
+        $cond = $node->children['cond'];
+        if (!($cond instanceof Node)) {
+            return $this->context;
+        }
+
+        // Look to see if any proofs we do within the condition of the while
+        // can say anything about types within the statement
+        // list.
+        return (new ConditionVisitor(
+            $this->code_base,
+            $this->context
+        ))($cond);
     }
 
     /**
@@ -727,12 +751,13 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      */
     public function visitCall(Node $node) : Context
     {
+        $name = $node->children['expr']->children['name'] ?? null;
         // Look only at nodes of the form `assert(expr, ...)`.
-        if (!isset($node->children['expr'])
-            || !isset($node->children['expr']->children['name'])
-            || $node->children['expr']->children['name'] !== 'assert'
-            || !isset($node->children['args'])
-            || !isset($node->children['args']->children[0])
+        if ($name !== 'assert') {
+            return $this->context;
+        }
+        $args = $node->children['args'];
+        if (!isset($node->children['args']->children[0])
             || !($node->children['args']->children[0] instanceof Node)
         ) {
             return $this->context;
@@ -743,7 +768,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         return (new ConditionVisitor(
             $this->code_base,
             $this->context
-        ))($node->children['args']->children[0]);
+        ))($args->children[0]);
     }
 
     /**

@@ -1,0 +1,5 @@
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string[] but \intdiv() takes int
+%s:10 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type true, expected string/integer
+%s:11 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type bool, expected string/integer
+%s:12 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type int[], expected string/integer
+%s:13 PhanTypeSuspiciousIndirectVariable Indirect variable ${(expr)} has invalid inner expression type int[], expected string/integer

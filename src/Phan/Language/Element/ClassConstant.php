@@ -31,7 +31,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
      */
     public function getFQSEN() : FullyQualifiedClassConstantName
     {
-        assert(!empty($this->fqsen), "FQSEN must be defined");
+        \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 
@@ -50,4 +50,29 @@ class ClassConstant extends ClassElement implements ConstantInterface
         return $string . 'const ' . $this->getName();
     }
 
+    /**
+     * @return bool
+     * True if this class constant is intended to be an override of another class constant (contains (at)override)
+     */
+    public function isOverrideIntended() : bool {
+        return Flags::bitVectorHasState(
+            $this->getPhanFlags(),
+            Flags::IS_OVERRIDE_INTENDED
+        );
+    }
+
+    /**
+     * @param bool $is_override_intended - True if this class constant is intended to be an override of another class constant (contains (at)override)
+
+     * @return void
+     */
+    public function setIsOverrideIntended(bool $is_override_intended) {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                $this->getPhanFlags(),
+                Flags::IS_OVERRIDE_INTENDED,
+                $is_override_intended
+            )
+        );
+    }
 }

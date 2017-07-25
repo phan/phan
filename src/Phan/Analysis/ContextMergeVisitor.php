@@ -8,7 +8,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\Library\Set;
+use Phan\Library\ArraySet;
 use ast\Node;
 
 class ContextMergeVisitor extends KindVisitorImplementation
@@ -75,19 +75,20 @@ class ContextMergeVisitor extends KindVisitorImplementation
         //            copy local to global
         //       }
 
-        return end($this->child_context_list) ?: $this->context;
+        return \end($this->child_context_list) ?: $this->context;
     }
 
     public function visitTry(Node $node) : Context
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = array_map(function (Context $context) {
+        $scope_list = \array_map(function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
         // The 0th scope is the scope from Try
         $try_scope = $scope_list[0];
+        assert($try_scope instanceof Scope);
 
         $catch_scope_list = [];
         foreach ($node->children['catches'] ?? [] as $i => $catch_node) {
@@ -96,6 +97,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // Merge in the types for any variables found in a catch.
         foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
+            $variable_name = (string)$variable_name;  // e.g. ${42}
             foreach ($catch_scope_list as $catch_scope) {
 
                 // Merge types if try and catch have a variable in common
@@ -114,6 +116,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // Look for variables that exist in catch, but not try
         foreach ($catch_scope_list as $catch_scope) {
             foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
+                $variable_name = (string)$variable_name;
                 if (!$try_scope->hasVariableWithName($variable_name)) {
 
                     // Note that it can be null
@@ -127,12 +130,13 @@ class ContextMergeVisitor extends KindVisitorImplementation
             }
         }
 
-        // If we have a finally, overwite types for each
+        // If we have a finally, overwrite types for each
         // element
         if (!empty($node->children['finallyStmts'])
             || !empty($node->children['finally'])
         ) {
-            $finally_scope = $scope_list[count($scope_list)-1];
+            $finally_scope = $scope_list[\count($scope_list)-1];
+            assert($finally_scope instanceof Scope);
 
             foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
                 if ($finally_scope->hasVariableWithName($variable_name)) {
@@ -174,11 +178,11 @@ class ContextMergeVisitor extends KindVisitorImplementation
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = array_map(function (Context $context) {
+        $scope_list = \array_map(function (Context $context) {
             return $context->getScope();
         }, $this->child_context_list);
 
-        $has_else = array_reduce(
+        $has_else = \array_reduce(
             $node->children ?? [],
             function (bool $carry, $child_node) {
                 return $carry || (
@@ -197,8 +201,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // If there weren't multiple branches, continue on
         // as if the conditional never happened
-        if (count($scope_list) < 2) {
-            return array_values($this->child_context_list)[0];
+        if (\count($scope_list) < 2) {
+            return \array_values($this->child_context_list)[0];
         }
 
         // Get a list of all variables in all scopes
@@ -213,18 +217,12 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // every branch
         $is_defined_on_all_branches =
             function (string $variable_name) use ($scope_list) {
-                return array_reduce(
-                    $scope_list,
-                    function (bool $has_variable, Scope $scope)
-                    use ($variable_name) {
-
-                        return (
-                            $has_variable &&
-                            $scope->hasVariableWithName($variable_name)
-                        );
-                    },
-                    true
-                );
+                foreach ($scope_list as $scope) {
+                    if (!$scope->hasVariableWithName($variable_name)) {
+                        return false;
+                    }
+                }
+                return true;
             };
 
         // Get the intersection of all types for all versions of
@@ -234,7 +232,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
                 // Get a list of all variables with the given name from
                 // each scope
-                $variable_list = array_filter(array_map(
+                $variable_list = \array_filter(\array_map(
                     function (Scope $scope) use ($variable_name) {
                         if (!$scope->hasVariableWithName($variable_name)) {
                             return null;
@@ -246,17 +244,30 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 ));
 
                 // Get the list of types for each version of the variable
-                $type_set_list = array_map(function (Variable $variable) : Set {
+                $type_set_list = \array_map(function (Variable $variable) : array {
                     return $variable->getUnionType()->getTypeSet();
                 }, $variable_list);
 
-                if (count($type_set_list) < 2) {
-                    return new UnionType($type_set_list[0] ?? []);
+                if (\count($type_set_list) < 2) {
+                    return new UnionType($type_set_list[0] ?? [], true);
                 }
+                // compute the un-normalized types
+                $result = (new UnionType(
+                    ArraySet::unionAll($type_set_list), true
+                ));
+                $result_count = $result->typeCount();
+                foreach ($type_set_list as $type_set) {
+                    if (\count($type_set) < $result_count) {
+                        // normalize it if any of the types varied
+                        // (i.e. one of the types lacks types in the type union)
+                        //
+                        // This is useful to avoid ending up with "bool|?false|true" (Will convert to "?bool")
+                        return $result->asNormalizedTypes();
+                    }
+                }
+                // Otherwise, don't normalize it - The different contexts didn't differ in the union types
+                return $result;
 
-                return new UnionType(
-                    Set::unionAll($type_set_list)
-                );
             };
 
         // Clone the incoming scope so we can modify it
@@ -269,9 +280,23 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 if ($this->context->getIsStrictTypes()) {
                     continue;
                 } else {
+                    // Limit the type of the variable to the subset
+                    // of types that are common to all branches
+                    // Record that it can be null, as the best available equivalent for undefined.
+                    $variable = clone($variable);
+
+                    $variable->setUnionType(
+                        $union_type($name)
+                    );
+
+                    // TODO: convert to nullable?
                     $variable->getUnionType()->addType(
                         NullType::instance(false)
                     );
+
+                    // Add the variable to the outgoing scope
+                    $scope->addVariable($variable);
+                    continue;
                 }
             }
 

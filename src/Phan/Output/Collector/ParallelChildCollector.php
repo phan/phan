@@ -25,11 +25,11 @@ class ParallelChildCollector implements IssueCollectorInterface
      */
     public function __construct()
     {
-        assert(extension_loaded('sysvsem'),
+        \assert(extension_loaded('sysvsem'),
             'PHP must be compiled with --enable-sysvsem in order to use -j(>=2).'
         );
 
-        assert(extension_loaded('sysvmsg'),
+        \assert(extension_loaded('sysvmsg'),
             'PHP must be compiled with --enable-sysvmsg in order to use -j(>=2).'
         );
 
@@ -66,7 +66,7 @@ class ParallelChildCollector implements IssueCollectorInterface
 
         // Make sure that the message was successfully
         // sent
-        assert($success,
+        \assert($success,
             "msg_send failed with error code '$error_code'");
     }
 
@@ -76,7 +76,7 @@ class ParallelChildCollector implements IssueCollectorInterface
     public function getCollectedIssues():array
     {
         // This collector should not be used for collecting
-        // issues. Intead, it proxies all messages on to a
+        // issues. Instead, it proxies all messages on to a
         // message queue.
         return [];
     }

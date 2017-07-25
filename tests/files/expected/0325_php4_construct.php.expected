@@ -1,0 +1,7 @@
+%s:7 PhanUndeclaredStaticMethod Static call to undeclared method \Bar325::__construct
+%s:7 PhanUndeclaredStaticMethod Static call to undeclared method self::__construct()
+%s:15 PhanTypeMismatchArgument Argument 1 (arg) is int but \Bar325::Bar325() takes array defined at %s:6
+%s:19 PhanTypeMismatchArgument Argument 1 (arg) is int but \Bar325::__construct() takes array defined at %s:6
+%s:34 PhanUndeclaredStaticMethod Static call to undeclared method \NS325\X325::__construct
+%s:35 PhanTypeMismatchArgument Argument 1 (arg) is int but \NS325\X325::X325() takes array defined at %s:26
+%s:39 PhanParamTooMany Call with 1 arg(s) to \NS325\X325::__construct() which only takes 0 arg(s) defined at %s:24

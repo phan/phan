@@ -67,7 +67,7 @@ class Debug
      */
     public static function nodeName($node) : string
     {
-        if (is_string($node)) {
+        if (\is_string($node)) {
             return 'string';
         }
 
@@ -99,7 +99,7 @@ class Debug
             $string .= "$name => ";
         }
 
-        if (is_string($node)) {
+        if (\is_string($node)) {
             return $string . $node . "\n";
         }
 
@@ -107,7 +107,7 @@ class Debug
             return $string . 'null' . "\n";
         }
 
-        if (!is_object($node)) {
+        if (!\is_object($node)) {
             return $string . $node . "\n";
         }
 
@@ -237,7 +237,7 @@ class Debug
                 }
             }
 
-            if (\ast\kind_uses_flags($ast->kind)) {
+            if (\ast\kind_uses_flags($ast->kind) || $ast->flags != 0) {
                 $result .= "\n    flags: " . self::formatFlags($ast->kind, $ast->flags);
             }
             if ($ast instanceof \ast\Node\Decl && isset($ast->name)) {
@@ -252,7 +252,7 @@ class Debug
             return $result;
         } else if ($ast === null) {
             return 'null';
-        } else if (is_string($ast)) {
+        } else if (\is_string($ast)) {
             return "\"$ast\"";
         } else {
             return (string) $ast;

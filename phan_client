@@ -148,9 +148,9 @@ class PhanPHPLinter {
         // TODO: check if the folder is within a folder with subdirectory .phan/config.php
         // TODO: Check if there is a lock before attempting to connect?
         $client = @stream_socket_client($opts->url, $errno, $errstr, 20.0);
-        if (!is_resource($client)) {
+        if (!\is_resource($client)) {
             // TODO: This should attempt to start up the phan daemon for the given folder?
-            self::debugError("Phan daemon not running on port 4846");
+            self::debugError("Phan daemon not running on " . ($opts->url));
             exit(0);
         }
         $request = [
@@ -173,7 +173,6 @@ class PhanPHPLinter {
         }
         stream_socket_shutdown($client, STREAM_SHUT_RD);
         fclose($client);
-        $client = null;
         $response_bytes = implode('', $response_lines);
         // This uses the 'phplike' format imitating php's error format. "%s in %s on line %d"
         $response = json_decode($response_bytes, true);
@@ -188,11 +187,21 @@ class PhanPHPLinter {
     /**
      * @param array[] $response
      * @param string[] $file_mapping
+     * @return void
      */
     private static function dumpJSONIssues(array $response, array $file_mapping) {
         $did_debug = false;
         // if ($response['issue_count'] > 0)
-        foreach ($response['issues'] as $issue) {
+        $issues = $response['issues'];
+        if (!\is_array($issues)) {
+            if (\is_string($issues)) {
+                self::debugError(sprintf("Invalid issues response from phan: %s\n", $issues));
+            } else {
+                self::debugError(sprintf("Invalid type for issues response from phan: %s\n", gettype($issues)));
+            }
+            return;
+        }
+        foreach ($issues as $issue) {
             if ($issue['type'] !== 'issue') {
                 continue;
             }
@@ -247,8 +256,9 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
  --daemonize-socket </path/to/file.sock>
   Unix socket which a Phan daemon is listening for requests on.
 
- --daemonize-tcp-port <1024-65535>
-  TCP port which a Phan daemon is listening for JSON requests on, in daemon mode. (E.g. 4846)
+ --daemonize-tcp-port <default|1024-65535>
+  TCP port which a Phan daemon is listening for JSON requests on, in daemon mode. (E.g. 'default', which is an alias for port 4846)
+  If no option is specified for the daemon's address, phan_client defaults to connecting on port 4846.
 
  -l, --syntax-check <file.php>
   Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working ditectory)
@@ -259,7 +269,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
 
  -f, --flycheck-file '/path/to/tmp/file_copy.php'
   A simpler way to specify a file mapping when checking a single files.
-  Pass this after the only occurence of --syntax-check.
+  Pass this after the only occurrence of --syntax-check.
 
  -v, --verbose
   Whether to emit debugging output of this client.
@@ -270,6 +280,9 @@ EOB;
         exit($exit_code);
     }
 
+    /**
+     * @suppress PhanParamTooManyInternal - `getopt` added an optional third parameter in php 7.1
+     */
     public function __construct()  {
         global $argv;
 
@@ -284,8 +297,10 @@ EOB;
             'flycheck-file:',
             'verbose',
         ];
-        if (PHP_VERSION_ID >= 70100) {
+        $getopt_reflection = new ReflectionFunction('getopt');
+        if ($getopt_reflection->getNumberOfParameters() >= 3) {
             // optind support is only in php 7.1+.
+            // hhvm doesn't expect a third parameter, but reports a version of php 7.1, even in the latest version.
             $opts = getopt($shortopts, $longopts, $optind);
         } else {
             $opts = getopt($shortopts, $longopts);
@@ -301,7 +316,7 @@ EOB;
         }
 
         $url = null;
-        foreach ((is_array($opts) ? $opts : []) as $key => $value) {
+        foreach ((\is_array($opts) ? $opts : []) as $key => $value) {
             switch($key) {
             case 's':
             case 'daemonize-socket':
@@ -322,10 +337,10 @@ EOB;
             case 'f':
             case 'flycheck-file':
                 // Add alias, for use in flycheck
-                if (is_array($this->temporary_file_map)) {
+                if (\is_array($this->temporary_file_map)) {
                     $this->usage('--flycheck-file should be specified only once.', 1);
                 }
-                if (!is_array($this->file_list) || count($this->file_list) !== 1) {
+                if (!\is_array($this->file_list) || count($this->file_list) !== 1) {
                     $this->usage('--flycheck-file should be specified after the first occurrence of -l.', 1);
                 }
                 $this->temporary_file_map = [
@@ -334,11 +349,11 @@ EOB;
                 break;
             case 't':
             case 'temporary-file-map':
-                if (is_array($this->temporary_file_map)) {
+                if (\is_array($this->temporary_file_map)) {
                     $this->usage('--temporary-file-map should be specified only once.', 1);
                 }
                 $mapping = json_decode($value, true);
-                if (!is_array($mapping)) {
+                if (!\is_array($mapping)) {
                     $this->usage('--temporary-file-map should be a JSON encoded map from source file to temporary file to analyze instead', 1);
                 }
                 $this->temporary_file_map = $mapping;
@@ -347,11 +362,15 @@ EOB;
             case 'p':
             case 'daemonize-tcp-port':
                 $this->checkCanConnectToDaemon('tcp');
-                $port = filter_var($value, FILTER_VALIDATE_INT);
+                if (strcasecmp($value, 'default') === 0) {
+                    $port = 4846;
+                } else {
+                    $port = filter_var($value, FILTER_VALIDATE_INT);
+                }
                 if ($port >= 1024 && $port <= 65535) {
                     $this->url = sprintf('tcp://127.0.0.1:%d', $port);
                 } else {
-                    $this->usage("daemonize-tcp-port must be between 1024 and 65535, got '$value'", 1);
+                    $this->usage("daemonize-tcp-port must be the string 'default' or an integer between 1024 and 65535, got '$value'", 1);
                 }
                 break;
             case 'l':
@@ -379,7 +398,7 @@ EOB;
         if (count($this->file_list) === 0) {
             $this->usage("This requires at least one file to analyze (with -l path/to/file", 1);
         }
-        if (is_array($this->temporary_file_map)) {
+        if (\is_array($this->temporary_file_map)) {
             foreach ($this->temporary_file_map as $original_path => $temporary_path) {
                 if (!in_array($original_path, $this->file_list)) {
                     $this->usage("Need to specify -l '$original_path' if a mapping is included", 1);

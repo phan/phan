@@ -25,9 +25,9 @@ class ASTRewriterTest extends AbstractPhanFileTest {
      * to the ASTs of the counterparts in
      * `tests/files/expected`
      *
-     * @param string[] $test_file_list (unused)
+     * @param string[] $test_file_list @phan-unused-param
      * @param string $expected_file_path
-     * @param ?string $config_file_path
+     * @param ?string $config_file_path @phan-unused-param
      * @dataProvider getTestFiles
      * @override
      */
@@ -41,7 +41,7 @@ class ASTRewriterTest extends AbstractPhanFileTest {
         $this->assertNotEquals(false, $original_src);
         $this->assertNotEquals(false, $expected_src);
 
-        $ast_version = Config::get()->ast_version;
+        $ast_version = Config::AST_VERSION;
         $expected = \ast\parse_code($expected_src, $ast_version);
         $beforeTransform = \ast\parse_code($original_src, $ast_version);
 

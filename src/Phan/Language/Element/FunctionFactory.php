@@ -13,7 +13,7 @@ class FunctionFactory {
 
     /**
      * @return Func[]
-     * One or more (alternate) methods begotten from
+     * One or more (alternate) functions/methods begotten from
      * reflection info and internal method data
      */
     public static function functionListFromName(
@@ -28,8 +28,8 @@ class FunctionFactory {
 
     /**
      * @return Func[]
-     * One or more (alternate) methods begotten from
-     * reflection info and internal method data
+     * One or more (alternate) functions begotten from
+     * reflection info and internal functions data
      */
     public static function functionListFromReflectionFunction(
         CodeBase $code_base,
@@ -39,11 +39,11 @@ class FunctionFactory {
         $context = new Context();
 
         $parts = explode('\\', $reflection_function->getName());
-        $method_name = array_pop($parts);
+        $function_name = array_pop($parts);
         $namespace = '\\' . implode('\\', $parts);
 
         $fqsen = FullyQualifiedFunctionName::make(
-            $namespace, $method_name
+            $namespace, $function_name
         );
 
         $function = new Func(
@@ -62,6 +62,7 @@ class FunctionFactory {
             $reflection_function->getNumberOfParameters()
             - $reflection_function->getNumberOfRequiredParameters()
         );
+        $function->setIsDeprecated($reflection_function->isDeprecated());
 
         return self::functionListFromFunction($function, $code_base);
     }
@@ -105,14 +106,14 @@ class FunctionFactory {
         \ReflectionClass $class,
         \ReflectionMethod $reflection_method
     ) : array {
-
         $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
             $reflection_method->getName(),
             $context
         );
 
+        $class_name = $class->getName();
         $reflection_method = new \ReflectionMethod(
-            $class->getName(),
+            $class_name,
             $reflection_method->name
         );
 
@@ -137,9 +138,12 @@ class FunctionFactory {
             $method->setNumberOfOptionalParameters(999);
             $method->setNumberOfRequiredParameters(0);
         }
-        // FIXME: make this from ReflectionMethod->getReturnType
-        $method->setRealReturnType(UnionType::fromReflectionType($reflection_method->getReturnType()));
-        $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
+        $method->setIsDeprecated($reflection_method->isDeprecated());
+        // https://github.com/etsy/phan/issues/888 - Reflection for that class's parameters causes php to throw/hang
+        if ($class_name !== 'ServerResponse') {
+            $method->setRealReturnType(UnionType::fromReflectionType($reflection_method->getReturnType()));
+            $method->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_method->getParameters()));
+        }
 
         return self::functionListFromFunction($method, $code_base);
     }
@@ -170,7 +174,7 @@ class FunctionFactory {
         }
 
         $alternate_id = 0;
-        return array_map(function($map) use (
+        return \array_map(function($map) use (
             $function,
             &$alternate_id
         ) : FunctionInterface {
@@ -192,24 +196,32 @@ class FunctionFactory {
                 as $parameter_name => $parameter_type
             ) {
                 $flags = 0;
+                $phan_flags = 0;
                 $is_optional = false;
 
                 // Check to see if its a pass-by-reference parameter
-                if (strpos($parameter_name, '&') === 0) {
+                if (($parameter_name[0] ?? '') === '&') {
                     $flags |= \ast\flags\PARAM_REF;
-                    $parameter_name = substr($parameter_name, 1);
+                    $parameter_name = \substr($parameter_name, 1);
+                    if (\strncmp($parameter_name, 'rw_', 3) === 0) {
+                        $phan_flags |= Flags::IS_READ_REFERENCE | Flags::IS_WRITE_REFERENCE;
+                        $parameter_name = \substr($parameter_name, 3);
+                    } else if (\strncmp($parameter_name, 'w_', 2) === 0) {
+                        $phan_flags |= Flags::IS_WRITE_REFERENCE;
+                        $parameter_name = \substr($parameter_name, 2);
+                    }
                 }
 
                 // Check to see if its variadic
-                if (strpos($parameter_name, '...') !== false) {
+                if (\strpos($parameter_name, '...') !== false) {
                     $flags |= \ast\flags\PARAM_VARIADIC;
-                    $parameter_name = str_replace('...', '', $parameter_name);
+                    $parameter_name = \str_replace('...', '', $parameter_name);
                 }
 
                 // Check to see if its an optional parameter
-                if (strpos($parameter_name, '=') !== false) {
+                if (\strpos($parameter_name, '=') !== false) {
                     $is_optional = true;
-                    $parameter_name = str_replace('=', '', $parameter_name);
+                    $parameter_name = \str_replace('=', '', $parameter_name);
                 }
 
                 $parameter = new Parameter(
@@ -218,6 +230,11 @@ class FunctionFactory {
                     $parameter_type,
                     $flags
                 );
+                $parameter->setPhanFlags(Flags::bitVectorWithState(
+                    $parameter->getPhanFlags(),
+                    $phan_flags,
+                    true
+                ));
 
                 if ($is_optional) {
                     // TODO: could check isDefaultValueAvailable and getDefaultValue, for a better idea.
@@ -235,7 +252,7 @@ class FunctionFactory {
             // if this is out of sync with the extension's ReflectionMethod->getParameterList()?
             // (e.g. third party extensions may add more required parameters?)
             $alternate_function->setNumberOfRequiredParameters(
-                array_reduce($alternate_function->getParameterList(),
+                \array_reduce($alternate_function->getParameterList(),
                     function(int $carry, Parameter $parameter) : int {
                         return ($carry + (
                             $parameter->isOptional() ? 0 : 1
@@ -245,7 +262,7 @@ class FunctionFactory {
             );
 
             $alternate_function->setNumberOfOptionalParameters(
-                count($alternate_function->getParameterList()) -
+                \count($alternate_function->getParameterList()) -
                 $alternate_function->getNumberOfRequiredParameters()
             );
 

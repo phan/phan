@@ -1,0 +1,5 @@
+%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetExists
+%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetGet
+%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetSet
+%s:2 PhanClassContainsAbstractMethodInternal non-abstract class \C188 contains abstract internal method \ArrayAccess::offsetUnset
+%s:10 PhanUndeclaredProperty Reference to undeclared property \C188->key

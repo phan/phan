@@ -1,7 +1,7 @@
 <?php
 class ClassMissingStaticProps {
     public function __get($name) { return 42; }  // __get should have no impact on analyzing static properties
-    public function __set($name, $value) { return 42; }  // __set should have no impact on analyzing static properties.
+    public function __set($name, $value) { return; }  // __set should have no impact on analyzing static properties.
 }
 function checkMissingStaticProps() {
     ClassMissingStaticProps::$prop = 2;  // Causes Error to be thrown if executed.

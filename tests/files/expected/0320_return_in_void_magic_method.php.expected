@@ -1,0 +1,6 @@
+%s:6 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__construct, expected void return type
+%s:16 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__clone, expected void return type
+%s:31 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__destruct, expected void return type
+%s:51 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__set, expected void return type
+%s:71 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__unset, expected void return type
+%s:77 PhanTypeMagicVoidWithReturn Found a return statement with a value in the implementation of the magic method \MyClass::__wakeup, expected void return type

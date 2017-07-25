@@ -2,6 +2,7 @@
 namespace Phan\Language\Element;
 
 use Phan\CodeBase;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
@@ -29,14 +30,14 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @param Context $context
      * The context in which the structural element lives
      *
-     * @param string $name,
+     * @param string $name
      * The name of the typed structural element
      *
-     * @param UnionType $type,
+     * @param UnionType $type
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
-     * @param int $flags,
+     * @param int $flags
      * The flags property contains node specific flags. It is
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
@@ -68,7 +69,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * structural element
      */
     public function getFQSEN() {
-        assert(!empty($this->fqsen), "FQSEN must be defined");
+        \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
 
@@ -120,7 +121,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param, may be used by subclasses)
      * The code base in which this element exists.
      *
      * @return bool
@@ -158,11 +159,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         CodeBase $code_base,
         Context $context
     ) : bool {
-        $element_fqsen = $this->getFQSEN();
-        assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);
-
         // Figure out which namespace this element is within
-        $element_namespace = $element_fqsen->getNamespace();
+        $element_namespace = $this->getElementNamespace($code_base);
 
         // Get our current namespace from the context
         $context_namespace = $context->getNamespace();
@@ -181,7 +179,9 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      */
     public function addReference(FileRef $file_ref)
     {
-        $this->reference_list[] = $file_ref;
+        if (Config::get_track_references()) {
+            $this->reference_list[] = $file_ref;
+        }
     }
 
     /**
@@ -198,7 +198,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param)
      * Some elements may need access to the code base to
      * figure out their total reference count.
      *
@@ -227,8 +227,17 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         $this->hydrateOnce($code_base);
     }
 
-    protected function hydrateOnce(CodeBase $code_base)
+    protected function hydrateOnce(CodeBase $unused_code_base)
     {
         // Do nothing unless overridden
+    }
+
+    public function getElementNamespace(CodeBase $unused_code_base) : string
+    {
+        $element_fqsen = $this->getFQSEN();
+        \assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);
+
+        // Figure out which namespace this element is within
+        return $element_fqsen->getNamespace();
     }
 }

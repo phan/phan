@@ -5,8 +5,9 @@ use Phan\Config;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 
-class NullType extends ScalarType
+final class NullType extends ScalarType
 {
+    /** @phan-override */
     const NAME = 'null';
 
     /**
@@ -20,9 +21,9 @@ class NullType extends ScalarType
      * @param UnionType[] $template_parameter_type_list
      * A (possibly empty) list of template parameter types
      *
-     * @param bool $is_nullable
+     * @param bool $is_nullable (@phan-unused-param)
      * True if this type can be null, false if it cannot
-     * be null.
+     * be null. (NullType can always be null)
      */
     protected function __construct(
         string $namespace,
@@ -36,6 +37,13 @@ class NullType extends ScalarType
             $template_parameter_type_list,
             true
         );
+    }
+
+    public function canCastToNonNullableType(Type $type) : bool
+    {
+        // null_casts_as_any_type means that null or nullable can cast to any type?
+        return Config::get_null_casts_as_any_type()
+            || parent::canCastToNonNullableType($type);
     }
 
     /**
@@ -55,20 +63,28 @@ class NullType extends ScalarType
             return true;
         }
 
-        if (Config::get()->null_casts_as_any_type) {
+        if (Config::get_null_casts_as_any_type()) {
             return true;
         }
 
         // NullType is a sub-type of ScalarType. So it's affected by scalar_implicit_cast.
-        if (Config::get()->scalar_implicit_cast && $type->isScalar()) {
-            return true;
+        if ($type->isScalar()) {
+            if (Config::getValue('scalar_implicit_cast')) {
+                return true;
+            }
+            $scalar_implicit_partial = Config::getValue('scalar_implicit_partial');
+            // check if $type->getName() is in the list of permitted types $this->getName() can cast to.
+            if (\count($scalar_implicit_partial) > 0 &&
+                \in_array($type->getName(), $scalar_implicit_partial['null'] ?? [], true)) {
+                return true;
+            }
         }
 
         return false;
     }
 
     /**
-     * @param bool $is_nullable
+     * @param bool $is_nullable (@phan-unused-param)
      * Set to true if the type should be nullable, else pass
      * false
      *
@@ -86,4 +102,13 @@ class NullType extends ScalarType
         return $this->name;
     }
 
+    public function getIsPossiblyFalsey() : bool
+    {
+        return true;  // Null is always falsey.
+    }
+
+    public function getIsAlwaysFalsey() : bool
+    {
+        return true;  // Null is always falsey.
+    }
 }

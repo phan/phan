@@ -2,6 +2,7 @@
 namespace Phan\Analysis;
 
 use Phan\AST\ContextNode;
+use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
@@ -23,7 +24,7 @@ class ArgumentType
 
     /**
      * @param FunctionInterface $method
-     * The method we're analyzing arguments for
+     * The function/method we're analyzing arguments for
      *
      * @param Node $node
      * The node holding the method call we're looking at
@@ -48,7 +49,17 @@ class ArgumentType
         // Special common cases where we want slightly
         // better multi-signature error messages
         if ($method->isPHPInternal()) {
-            if(self::analyzeInternalArgumentType(
+            // Emit an error if this internal method is marked as deprecated
+            if ($method->isDeprecated()) {
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::DeprecatedFunctionInternal,
+                    $context->getLineNumberStart(),
+                    (string)$method->getFQSEN()
+                );
+            }
+            if (self::analyzeInternalArgumentType(
                 $method,
                 $node,
                 $context,
@@ -56,19 +67,21 @@ class ArgumentType
             )) {
                 return;
             }
-        }
-
-        // Emit an error if this method is marked as deprecated
-        if ($method->isDeprecated()) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::DeprecatedFunction,
-                $context->getLineNumberStart(),
-                (string)$method->getFQSEN(),
-                $method->getFileRef()->getFile(),
-                $method->getFileRef()->getLineNumberStart()
-            );
+        } else {
+            // Emit an error if this user-defined method is marked as deprecated
+            if ($method->isDeprecated()) {
+                if (!$method->isPHPInternal()) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::DeprecatedFunction,
+                        $context->getLineNumberStart(),
+                        (string)$method->getFQSEN(),
+                        $method->getFileRef()->getFile(),
+                        $method->getFileRef()->getLineNumberStart()
+                    );
+                }
+            }
         }
 
         // Emit an issue if this is an externally accessed internal method
@@ -84,21 +97,23 @@ class ArgumentType
                 Issue::AccessMethodInternal,
                 $context->getLineNumberStart(),
                 (string)$method->getFQSEN(),
+                $method->getElementNamespace($code_base) ?: '\\',
                 $method->getFileRef()->getFile(),
-                $method->getFileRef()->getLineNumberStart()
+                $method->getFileRef()->getLineNumberStart(),
+                ($context->getNamespace()) ?: '\\'
             );
         }
 
         $arglist = $node->children['args'];
-        $argcount = count($arglist->children);
+        $argcount = \count($arglist->children);
 
         // Figure out if any version of this method has any
         // parameters that are variadic
-        $is_varargs = array_reduce(
+        $is_varargs = \array_reduce(
             iterator_to_array($method->alternateGenerator($code_base)),
             function (bool $carry, FunctionInterface $alternate_method) : bool {
                 return $carry || (
-                    array_reduce(
+                    \array_reduce(
                         $alternate_method->getParameterList(),
                         function (bool $carry, $parameter) {
                             return ($carry || $parameter->isVariadic());
@@ -111,7 +126,7 @@ class ArgumentType
         );
 
         // Figure out if any of the arguments are a call to unpack()
-        $is_unpack = array_reduce(
+        $is_unpack = \array_reduce(
             $arglist->children,
             function ($carry, $node) {
                 return ($carry || (
@@ -242,7 +257,6 @@ class ArgumentType
         }
 
         foreach ($node->children ?? [] as $i => $argument) {
-
             // Get the parameter associated with this argument
             $parameter = $method->getParameterForCaller($i);
 
@@ -251,24 +265,30 @@ class ArgumentType
                 continue;
             }
 
+            $argument_kind = $argument->kind ?? 0;
+
             // If this is a pass-by-reference parameter, make sure
             // we're passing an allowable argument
             if ($parameter->isPassByReference()) {
                 if ((!$argument instanceof \ast\Node)
-                    || ($argument->kind != \ast\AST_VAR
-                        && $argument->kind != \ast\AST_DIM
-                        && $argument->kind != \ast\AST_PROP
-                        && $argument->kind != \ast\AST_STATIC_PROP
+                    || ($argument_kind !== \ast\AST_VAR
+                        && $argument_kind !== \ast\AST_DIM
+                        && $argument_kind !== \ast\AST_PROP
+                        && $argument_kind !== \ast\AST_STATIC_PROP
                     )
                 ) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeNonVarPassByRef,
-                        $node->lineno ?? 0,
-                        ($i+1),
-                        (string)$method->getFQSEN()
-                    );
+                    $is_possible_reference = self::is_function_returning_reference($code_base, $context, $argument);
+
+                    if (!$is_possible_reference) {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeNonVarPassByRef,
+                            $node->lineno ?? 0,
+                            ($i+1),
+                            (string)$method->getFQSEN()
+                        );
+                    }
                 } else {
                     $variable_name = (new ContextNode(
                         $code_base,
@@ -278,8 +298,7 @@ class ArgumentType
 
                     if (Type::isSelfTypeString($variable_name)
                         && !$context->isInClassScope()
-                        && $argument->kind == \ast\AST_STATIC_PROP
-                        && $argument->kind == \ast\AST_PROP
+                        && ($argument_kind === \ast\AST_STATIC_PROP || $argument_kind === \ast\AST_PROP)
                     ) {
                         Issue::maybeEmit(
                             $code_base,
@@ -316,12 +335,12 @@ class ArgumentType
             ) {
                 // Get the parameter associated with this argument
                 $candidate_alternate_parameter = $alternate_method->getParameterForCaller($i);
-                if (is_null($candidate_alternate_parameter)) {
+                if (\is_null($candidate_alternate_parameter)) {
                     continue;
                 }
 
                 $alternate_parameter = $candidate_alternate_parameter;
-                assert($alternate_parameter instanceof Variable);
+                \assert($alternate_parameter instanceof Variable);
 
                 // See if the argument can be cast to the
                 // parameter
@@ -342,50 +361,112 @@ class ArgumentType
                     ? $alternate_parameter->getUnionType()
                     : 'unknown';
 
-                if (is_object($parameter_type) && $parameter_type->hasTemplateType()) {
-                    // Don't worry about template types
-                } elseif ($method->isPHPInternal()) {
-                    // If we are not in strict mode and we accept a string parameter
-                    // and the argument we are passing has a __toString method then it is ok
-                    if(!$context->getIsStrictTypes() && is_object($parameter_type) && $parameter_type->hasType(StringType::instance(false))) {
-                        try {
-                            foreach($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
-                                if($clazz->hasMethodWithName($code_base, "__toString")) {
-                                    return;
-                                }
-                            }
-                        } catch (CodeBaseException $e) {
-                            // Swallow "Cannot find class", go on to emit issue
-                        }
-                    }
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchArgumentInternal,
-                        $node->lineno ?? 0,
-                        ($i+1),
-                        $parameter_name,
-                        $argument_type_expanded,
-                        (string)$method->getFQSEN(),
-                        (string)$parameter_type
-                    );
+                if ($alternate_parameter instanceof Parameter) {
+                    $can_skip_type_check = $alternate_parameter->isPassByReference() && $alternate_parameter->getReferenceType() === Parameter::REFERENCE_WRITE_ONLY;
                 } else {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::TypeMismatchArgument,
-                        $node->lineno ?? 0,
-                        ($i+1),
-                        $parameter_name,
-                        $argument_type_expanded,
-                        (string)$method->getFQSEN(),
-                        (string)$parameter_type,
-                        $method->getFileRef()->getFile(),
-                        $method->getFileRef()->getLineNumberStart()
-                    );
+                    $can_skip_type_check = false;  // is this possible?
+                }
+                if (!$can_skip_type_check) {
+                    if (\is_object($parameter_type) && $parameter_type->hasTemplateType()) {
+                        // Don't worry about template types
+                    } elseif ($method->isPHPInternal()) {
+                        // If we are not in strict mode and we accept a string parameter
+                        // and the argument we are passing has a __toString method then it is ok
+                        if(!$context->getIsStrictTypes() && \is_object($parameter_type) && $parameter_type->hasType(StringType::instance(false))) {
+                            try {
+                                foreach($argument_type_expanded->asClassList($code_base, $context) as $clazz) {
+                                    if($clazz->hasMethodWithName($code_base, "__toString")) {
+                                        return;
+                                    }
+                                }
+                            } catch (CodeBaseException $e) {
+                                // Swallow "Cannot find class", go on to emit issue
+                            }
+                        }
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchArgumentInternal,
+                            $node->lineno ?? 0,
+                            ($i+1),
+                            $parameter_name,
+                            $argument_type_expanded,
+                            (string)$method->getFQSEN(),
+                            (string)$parameter_type
+                        );
+                    } else {
+                        Issue::maybeEmit(
+                            $code_base,
+                            $context,
+                            Issue::TypeMismatchArgument,
+                            $node->lineno ?? 0,
+                            ($i+1),
+                            $parameter_name,
+                            $argument_type_expanded,
+                            (string)$method->getFQSEN(),
+                            (string)$parameter_type,
+                            $method->getFileRef()->getFile(),
+                            $method->getFileRef()->getLineNumberStart()
+                        );
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Used to check if a place expecting a reference is actually getting a reference from a node.
+     * Obvious types which are always references (properties, variables) must be checked for before calling this.
+     *
+     * @return bool - True if this node is a call to a function that may return a reference?
+     */
+    private static function is_function_returning_reference(CodeBase $code_base, Context $context, $node) : bool
+    {
+        if (!($node instanceof Node)) {
+            return false;
+        }
+        $node_kind = $node->kind;
+        if ($node_kind === \ast\AST_CALL) {
+            foreach ((new ContextNode(
+                $code_base,
+                $context,
+                $node->children['expr']
+            ))->getFunctionFromNode() as $function) {
+                if ($function->returnsRef()) {
+                    return true;
+                }
+            }
+        } else if ($node_kind === \ast\AST_STATIC_CALL || $node_kind === \ast\AST_METHOD_CALL) {
+            $method_name = $node->children['method'] ?? null;
+            if (is_string($method_name)) {
+                foreach (UnionTypeVisitor::classListFromNodeAndContext(
+                    $code_base,
+                    $context,
+                    $node->children['class'] ?? $node->children['expr']
+                    ) as $class
+                ) {
+                    if (!$class->hasMethodWithName(
+                        $code_base,
+                        $method_name
+                    )) {
+                        continue;
+                    }
+
+                    try {
+                        $method = $class->getMethodByName(
+                            $code_base,
+                            $method_name
+                        );
+                        // Return true if any of the possible methods (expect that just one is found) returns a reference.
+                        if ($method->returnsRef()) {
+                            return true;
+                        }
+                    } catch(IssueException $e) {
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -469,7 +550,7 @@ class ArgumentType
         CodeBase $code_base
     ) {
         $arglist = $node->children['args'];
-        $argcount = count($arglist->children);
+        $argcount = \count($arglist->children);
 
         switch ($method->getName()) {
             case 'join':
@@ -483,8 +564,8 @@ class ArgumentType
                         $context,
                         $code_base,
                         ArrayType::instance(false)->asUnionType(),
-                        function (UnionType $node_type) use ($context, $method) {
-                        // "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
+                        function (UnionType $unused_node_type) use ($context, $method) {
+                            // "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
                             return Issue::fromType(Issue::ParamSpecial2)(
                                 $context->getFile(),
                                 $context->getLineNumberStart(), [
@@ -578,8 +659,8 @@ class ArgumentType
                     $context,
                     $code_base,
                     CallableType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method) {
-                    // "The last argument to {$method->getFQSEN()} must be a callable"
+                    function (UnionType $unused_node_type) use ($context, $method) {
+                        // "The last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial3)(
                         $context->getFile(),
                         $context->getLineNumberStart(), [
@@ -635,7 +716,7 @@ class ArgumentType
                     $context,
                     $code_base,
                     CallableType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method) {
+                    function (UnionType $unused_node_type) use ($context, $method) {
                     // "The last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial3)(
                         $context->getFile(),
@@ -652,7 +733,7 @@ class ArgumentType
                     $context,
                     $code_base,
                     CallableType::instance(false)->asUnionType(),
-                    function (UnionType $node_type) use ($context, $method) {
+                    function (UnionType $unused_node_type) use ($context, $method) {
                     // "The second last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial4)(
                         $context->getFile(),

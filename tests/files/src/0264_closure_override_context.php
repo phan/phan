@@ -1,5 +1,5 @@
 <?php
-namespace closure264;
+namespace NS264;
 
 class BoundClass264 {
     /** @var string $b */
@@ -14,12 +14,12 @@ class BoundClass264 {
 class TestFramework {
     /** @var string */
     protected $_frameworkProperty = 'value';
-    public function mockA() : string {
+    public function mockA() : string {  // mockA() is buggy, it didn't return anything.
         // BoundClass264::a_static_method(); // What? This should emit an issue.
 
         /**
          * blank, should be ignored?
-         * @PhanClosureScope
+         * @phan-closure-scope
          */
         $w = function() : string {
             // BoundClass264::a_static_method();  // should emit an issue?
@@ -27,7 +27,7 @@ class TestFramework {
         };
 
         /**
-         * @PhanClosureScope BoundClass264
+         * @phan-closure-scope BoundClass264
          */
         $x = function() : string {
             BoundClass264::a_static_method();
@@ -36,7 +36,7 @@ class TestFramework {
         };
 
         /**
-         * @PhanClosureScope \closure264\BoundClass264
+         * @phan-closure-scope \NS264\BoundClass264
          */
         $y = function() : string {
             BoundClass264::a_static_method();
@@ -45,10 +45,37 @@ class TestFramework {
         };
         /**
          * BoundClass264 scope of a native type(string, array, object, bool, etc.) makes no sense. Phan should warn.
-         * @PhanClosureScope string
+         * @phan-closure-scope string
          */
         $z = function() : string {
             return $this->b . $this->d;
         };
+        $prefix = 'NotExplicitlyUsed';
+        $suffix = 'Suf';
+        /**
+         * BoundClass264 scope of a native type(string, array, object, bool, etc.) makes no sense. Phan should warn.
+         * @phan-closure-scope BoundClass264
+         */
+        $a = function() use($suffix) : string {
+            $str = $prefix;
+            $str .= $this->b;
+            $str .= $suffix;
+            return $str;
+        };
+
+        /**
+         * @phan-closure-scope UndeclaredClass264
+         */
+        $b = function() use($suffix) : string {
+            $str = $this->b;
+            $str .= $suffix;
+            return $str;
+        };
     }
 }
+/**
+ * @phan-closure-scope BoundClass264
+ */
+$global264 = function() : string {
+    return $this->b . $this->undefVar;
+};

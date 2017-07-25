@@ -1,0 +1,8 @@
+%s:22 PhanAccessOverridesFinalMethod Declaration of method \B317::bar overrides final method \A317::bar defined in %s:4
+%s:26 PhanAccessOverridesFinalMethod Declaration of method \B317::bar2 overrides final method \A317::bar2 defined in %s:4
+%s:42 PhanAccessOverridesFinalMethod Declaration of method \PlainOverride317::baz overrides final method \PlainBase317::baz defined in %s:34
+%s:43 PhanAccessOverridesFinalMethod Declaration of method \PlainOverride317::FinalMETHOD overrides final method \PlainBase317::finalMethod defined in %s:35
+%s:45 PhanAccessOverridesFinalMethod Declaration of method \PlainOverride317::myStaticMethod overrides final method \PlainBase317::myStaticMethod defined in %s:37
+%s:51 PhanAccessOverridesFinalMethodPHPDoc Declaration of phpdoc method \PHPDocOverride317::baz is an unnecessary override of final method \PlainBase317::baz defined in %s:34
+%s:65 PhanAccessOverridesFinalMethod Declaration of method \SubclassOverridingFinalConstruct317::__construct overrides final method \BaseHasFinalConstruct317::__construct defined in %s:62
+%s:70 PhanAccessOverridesFinalMethodInternal Declaration of method \MyReflectionMethod::__clone overrides final internal method \ReflectionMethod::__clone

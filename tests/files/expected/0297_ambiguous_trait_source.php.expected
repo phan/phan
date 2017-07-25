@@ -1,0 +1,1 @@
+%s:7 PhanAmbiguousTraitAliasSource Trait alias bar has an ambiguous source method foo with more than one possible source trait. Possibilities: [\X297, \Y297]

@@ -1,0 +1,5 @@
+%s:34 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \stdClass but \intdiv() takes int
+%s:35 PhanTypeMismatchArgumentInternal Argument 1 (obj) is int but \spl_object_hash() takes object
+%s:51 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:52 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:53 PhanTypeMismatchReturn Returning type true but foo() is declared to return void

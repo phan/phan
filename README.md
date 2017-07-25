@@ -19,7 +19,9 @@ composer require --dev etsy/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This version (branch) of Phan depends on PHP 7.1.x with pcntl enabled as well as the [php-ast](https://github.com/nikic/php-ast) extension and supports PHP version 7.1+ syntax. For PHP 7.0.x use the [0.8 branch](https://github.com/etsy/phan/tree/0.8).
+This version (branch) of Phan depends on PHP 7.1.x with the [php-ast](https://github.com/nikic/php-ast) extension and supports PHP version 7.1+ syntax.
+For PHP 7.0.x use the [0.8 branch](https://github.com/etsy/phan/tree/0.8).
+Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (or to support daemon mode).
 
 * **Alternative Installation Methods**<br />
   See [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for alternative methods of using
@@ -33,7 +35,7 @@ Phan and details on how to configure Phan for your project.<br />
 
 Phan is able to perform the following kinds of analysis.
 
-* Check for all methods, functions, classes, traits, interfaces, constants, properties and variables to be defined and accessible.
+* Check that all methods, functions, classes, traits, interfaces, constants, properties and variables are defined and accessible.
 * Check for type safety and arity issues on method/function/closure calls.
 * Check for PHP7/PHP5 backward compatibility
 * Check for sanity with array accesses
@@ -42,17 +44,24 @@ Phan is able to perform the following kinds of analysis.
 * Check for No-Ops on arrays, closures, constants, properties, variables.
 * Check for unused/dead code.
 * Check for classes, functions and methods being redefined
+* Check for sanity with class inheritance (e.g. checks method signature compatibility).
+  As of 0.9.3, Phan also checks for final classes/methods being overridden, and that the implemented interface is really a interface (and so on).
 * Supports namespaces, traits and variadics
 * Supports [Union Types](https://github.com/etsy/phan/wiki/About-Union-Types)
 * Supports generic arrays such as `int[]`, `UserObject[]`, etc..
 * Supports phpdoc [type annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
-* Supports inferring types from [assert() statements](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
+* Supports inheriting phpdoc type annotations (in 0.9.3)
+* Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures (in 0.9.3)
+* Supports inferring types from [assert() statements](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code) and conditionals in if elements/loops.
 * Supports [`@deprecated` annotation](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#deprecated) for deprecating classes, methods and functions
 * Supports [`@internal` annotation](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#internal) for elements (such as a constant, function, class, class constant, property or method) as internal to the package in which its defined.
 * Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#suppress).
-* Supports [magic property annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#property) as of Phan 0.9.1 (partial) (`@property <union_type> <variable_name>`)
+* Supports [magic property annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#property) (partial) (`@property <union_type> <variable_name>`)
+* Supports [`class_alias` annotations (experimental, off by default)](https://github.com/etsy/phan/pull/586), as of 0.9.3
+* Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
-* Can be run on many cores.
+* Can be run on many cores. (requires `pcntl`)
+* [Can run in the background (daemon mode)](https://github.com/etsy/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file. (requires `pcntl`)
 * Output is emitted in text, checkstyle, json or codeclimate formats.
 * Can run user plugins on source for checks specific to your code.
 
@@ -147,6 +156,13 @@ Usage: ./phan [options] [files...]
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
 
+ --include-analysis-file-list <file_list>
+  A comma-separated list of files that will be included in
+  static analysis. All others won't be analyzed.
+
+  This is primarily intended for performing standalone
+  incremental analysis.
+
  -d, --project-root-directory
   Hunt for a directory named .phan in the current or parent
   directory and read configuration file config.php from that
@@ -167,15 +183,11 @@ Usage: ./phan [options] [files...]
  -o, --output <filename>
   Output filename
 
+ --color
+  Add colors to the outputted issues. Tested for Unix, recommended for only the default --output-mode ('text')
+
  -p, --progress-bar
   Show progress bar
-
- -a, --dump-ast
-  Emit an AST for each file rather than analyze
-
- --dump-signatures-file <filename>
-  Emit JSON serialized signatures to the given file.
-  This uses a method signature format similar to FunctionSignatureMap.php.
 
  -q, --quick
   Quick mode - doesn't recurse into all function calls
@@ -207,8 +219,20 @@ Usage: ./phan [options] [files...]
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
 
- -h,--help
+ -s, --daemonize-socket </path/to/file.sock>
+  Unix socket for Phan to listen for requests on, in daemon mode.
+
+ --daemonize-tcp-port <1024-65535>
+  TCP port for Phan to listen for JSON requests on, in daemon mode. (e.g. 4846)
+
+ -v, --version
+  Print phan's version number
+
+ -h, --help
   This help information
+
+ --extended-help
+  This help information, plus less commonly used flags
 ```
 
 ## Annotating Your Source Code

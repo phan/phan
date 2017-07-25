@@ -131,58 +131,18 @@ class Element
     /**
      * Accepts a visitor that differentiates on the kind value
      * of the AST node.
-     */
-    public function acceptKindVisitor(KindVisitor $visitor)
-    {
-        $fn_name = self::VISIT_LOOKUP_TABLE[$this->node->kind] ?? null;
-        if (is_string($fn_name)) {
-            return $visitor->{$fn_name}($this->node);
-        } else {
-            Debug::printNode($this->node);
-            assert(false, 'All node kinds must match');
-        }
-    }
-
-    /**
-     * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * NOTE: This was turned into a static method for performance
+     * because it was called extremely frequently.
      */
-    public function acceptAssignFlagVisitor(FlagVisitor $visitor)
+    public static function acceptNodeAndKindVisitor(Node $node, KindVisitor $visitor)
     {
-        switch ($this->node->flags) {
-            case \ast\flags\ASSIGN_ADD:
-                return $visitor->visitAssignAdd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_AND:
-                return $visitor->visitAssignBitwiseAnd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_OR:
-                return $visitor->visitAssignBitwiseOr($this->node);
-            case \ast\flags\ASSIGN_BITWISE_XOR:
-                return $visitor->visitAssignBitwiseXor($this->node);
-            case \ast\flags\ASSIGN_CONCAT:
-                return $visitor->visitAssignConcat($this->node);
-            case \ast\flags\ASSIGN_DIV:
-                return $visitor->visitAssignDiv($this->node);
-            case \ast\flags\ASSIGN_MOD:
-                return $visitor->visitAssignMod($this->node);
-            case \ast\flags\ASSIGN_MUL:
-                return $visitor->visitAssignMul($this->node);
-            case \ast\flags\ASSIGN_POW:
-                return $visitor->visitAssignPow($this->node);
-            case \ast\flags\ASSIGN_SHIFT_LEFT:
-                return $visitor->visitAssignShiftLeft($this->node);
-            case \ast\flags\ASSIGN_SHIFT_RIGHT:
-                return $visitor->visitAssignShiftRight($this->node);
-            case \ast\flags\ASSIGN_SUB:
-                return $visitor->visitAssignSub($this->node);
-            default:
-                assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
+        $fn_name = self::VISIT_LOOKUP_TABLE[$node->kind] ?? null;
+        if (\is_string($fn_name)) {
+            return $visitor->{$fn_name}($node);
+        } else {
+            Debug::printNode($node);
+            \assert(false, 'All node kinds must match');
         }
     }
 
@@ -244,7 +204,7 @@ class Element
             case \ast\flags\BINARY_IS_GREATER_OR_EQUAL:
                 return $visitor->visitBinaryIsGreaterOrEqual($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -273,38 +233,7 @@ class Element
             case \ast\flags\CLASS_ANONYMOUS:
                 return $visitor->visitClassAnonymous($this->node);
             default:
-                assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
-        }
-    }
-
-    /**
-     * Accepts a visitor that differentiates on the flag value
-     * of the AST node.
-     *
-     * @suppress PhanUnreferencedMethod
-     */
-    public function acceptModifierFlagVisitor(FlagVisitor $visitor)
-    {
-        switch ($this->node->flags) {
-            case \ast\flags\MODIFIER_ABSTRACT:
-                return $visitor->visitModifierAbstract($this->node);
-            case \ast\flags\MODIFIER_FINAL:
-                return $visitor->visitModifierFinal($this->node);
-            case \ast\flags\MODIFIER_PRIVATE:
-                return $visitor->visitModifierPrivate($this->node);
-            case \ast\flags\MODIFIER_PROTECTED:
-                return $visitor->visitModifierProtected($this->node);
-            case \ast\flags\MODIFIER_PUBLIC:
-                return $visitor->visitModifierPublic($this->node);
-            case \ast\flags\MODIFIER_STATIC:
-                return $visitor->visitModifierStatic($this->node);
-            default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -329,7 +258,7 @@ class Element
             case \ast\flags\NAME_RELATIVE:
                 return $visitor->visitNameRelative($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -352,7 +281,7 @@ class Element
             case \ast\flags\PARAM_VARIADIC:
                 return $visitor->visitParamVariadic($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -387,7 +316,7 @@ class Element
             case \ast\flags\TYPE_STRING:
                 return $visitor->visitUnionTypeString($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -416,7 +345,7 @@ class Element
             case \ast\flags\UNARY_SILENCE:
                 return $visitor->visitUnarySilence($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -445,7 +374,7 @@ class Element
             case \ast\flags\EXEC_REQUIRE_ONCE:
                 return $visitor->visitExecRequireOnce($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -480,7 +409,7 @@ class Element
             case \ast\flags\MAGIC_TRAIT:
                 return $visitor->visitMagicTrait($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -505,7 +434,7 @@ class Element
             case \ast\flags\USE_NORMAL:
                 return $visitor->visitUseNormal($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)
@@ -523,30 +452,6 @@ class Element
     public function acceptAnyFlagVisitor(FlagVisitor $visitor)
     {
         switch ($this->node->flags) {
-            case \ast\flags\ASSIGN_ADD:
-                return $visitor->visitAssignAdd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_AND:
-                return $visitor->visitAssignBitwiseAnd($this->node);
-            case \ast\flags\ASSIGN_BITWISE_OR:
-                return $visitor->visitAssignBitwiseOr($this->node);
-            case \ast\flags\ASSIGN_BITWISE_XOR:
-                return $visitor->visitAssignBitwiseXor($this->node);
-            case \ast\flags\ASSIGN_CONCAT:
-                return $visitor->visitAssignConcat($this->node);
-            case \ast\flags\ASSIGN_DIV:
-                return $visitor->visitAssignDiv($this->node);
-            case \ast\flags\ASSIGN_MOD:
-                return $visitor->visitAssignMod($this->node);
-            case \ast\flags\ASSIGN_MUL:
-                return $visitor->visitAssignMul($this->node);
-            case \ast\flags\ASSIGN_POW:
-                return $visitor->visitAssignPow($this->node);
-            case \ast\flags\ASSIGN_SHIFT_LEFT:
-                return $visitor->visitAssignShiftLeft($this->node);
-            case \ast\flags\ASSIGN_SHIFT_RIGHT:
-                return $visitor->visitAssignShiftRight($this->node);
-            case \ast\flags\ASSIGN_SUB:
-                return $visitor->visitAssignSub($this->node);
             case \ast\flags\BINARY_ADD:
                 return $visitor->visitBinaryAdd($this->node);
             case \ast\flags\BINARY_BITWISE_AND:
@@ -688,7 +593,7 @@ class Element
             case \ast\flags\USE_NORMAL:
                 return $visitor->visitUseNormal($this->node);
             default:
-                assert(
+                \assert(
                     false,
                     "All flags must match. Found "
                     . self::flagDescription($this->node)

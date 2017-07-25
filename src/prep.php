@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 // Phan does a ton of GC and this offers a major speed
-// improvment if your system can handle it (which it
+// improvement if your system can handle it (which it
 // should be able to)
 gc_disable();
 
@@ -27,7 +27,7 @@ $visit_node = function(\ast\Node $node, string $file_path) {
 
         // Debug::printNode($node);
 
-        if (is_string($node->children['const'])) {
+        if (\is_string($node->children['const'])) {
             $name = $node->children['const'];
             if (preg_match('/.*SEARCH.*/', $name)) {
                 print "$file_path:{$node->lineno} $name\n";

@@ -1,19 +1,26 @@
 <?php declare(strict_types = 1);
-namespace Phan\Test;
+namespace Phan\Tests;
 
 use Phan\ForkPool;
 
 /**
  * @requires extension pcntl
  */
-class ForkPoolTest extends \PHPUnit_Framework_TestCase
+class ForkPoolTest extends BaseTest
 {
+    private function checkIfShouldSkipForkingTests() {
+        if (extension_loaded('grpc')) {
+            $this->markTestSkipped('The latest grpc extension (1.4.0RC2) has issues with forking. Disabling tests with all versions until it is fixed');
+        }
+    }
+
     /**
      * Test that workers are able to send their data back
      * to the parent process.
      */
     public function testBasicForkJoin()
     {
+        $this->checkIfShouldSkipForkingTests();
         $data = [
             [1, 2, 3, 4],
             [5, 6, 7, 8],
@@ -23,11 +30,13 @@ class ForkPoolTest extends \PHPUnit_Framework_TestCase
 
         $worker_data = [];
         $pool = new ForkPool($data,
+            /** @return void */
             function() { },
-            function($i, $data) use(&$worker_data) {
+            /** @return void */
+            function($unused_i, $data) use(&$worker_data) {
                 $worker_data[] = $data;
             },
-            function() use(&$worker_data) {
+            function() use(&$worker_data) : array {
                 return $worker_data;
             });
 
@@ -39,20 +48,23 @@ class ForkPoolTest extends \PHPUnit_Framework_TestCase
      */
     public function testStartupFunction()
     {
+        $this->checkIfShouldSkipForkingTests();
         $did_startup = false;
         $pool = new ForkPool(
             [[1], [2], [3], [4]],
+            /** @return void */
             function() use(&$did_startup) {
                 $did_startup = true;
             },
-            function($i, $data) {
+            /** @return void */
+            function($unused_i, $unused_data) {
             },
-            function() use(&$did_startup){
-                return $did_startup;
+            function() use(&$did_startup) : array {
+                return [$did_startup];
             });
 
         $this->assertEquals(
-            [true, true, true, true],
+            [[true], [true], [true], [true]],
             $pool->wait());
     }
 }

@@ -28,6 +28,7 @@ class Consistent implements Hasher {
             }
         }
         $hashRingIds = [];
+        $hashRingGroups = [];
         ksort($map);
         foreach ($map as $key => $group) {
             $hashRingIds[] = $key;

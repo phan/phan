@@ -5,30 +5,24 @@ use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\PluginV2;
+use Phan\PluginV2\AnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
-class NumericalComparisonPlugin extends PluginImplementation {
+class NumericalComparisonPlugin extends PluginV2 implements AnalyzeNodeCapability {
 
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        (new NumericalComparisonVisitor($code_base, $context, $this))(
-            $node
-        );
+    /**
+     * @return string - name of PluginAwareAnalysisVisitor subclass
+     *
+     * @override
+     */
+    public static function getAnalyzeNodeVisitorClassName() : string {
+        return NumericalComparisonVisitor::class;
     }
-
 }
 
-class NumericalComparisonVisitor extends AnalysisVisitor {
-
-    /** @var Plugin */
-    private $plugin;
-
+class NumericalComparisonVisitor extends PluginAwareAnalysisVisitor {
     /** define equal operator list */
     const BINARY_EQUAL_OPERATORS = [
         ast\flags\BINARY_IS_EQUAL,
@@ -41,19 +35,11 @@ class NumericalComparisonVisitor extends AnalysisVisitor {
         ast\flags\BINARY_IS_NOT_IDENTICAL,
     ];
 
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        Plugin $plugin
-    ) {
-        parent::__construct($code_base, $context);
+    // A plugin's visitors should not override visit() unless they need to.
 
-        $this->plugin = $plugin;
-    }
-
-    public function visit(Node $node){
-    }
-
+    /**
+     * @override
+     */
     public function visitBinaryop(Node $node) : Context {
         // get the types of left and right values
         $left_node = $node->children['left'];
@@ -67,9 +53,7 @@ class NumericalComparisonVisitor extends AnalysisVisitor {
                 !($this->isNumericalType($left_type->serialize())) &
                 !($this->isNumericalType($right_type->serialize()))
             ){
-                $this->plugin->emitIssue(
-                    $this->code_base,
-                    $this->context,
+                $this->emit(
                     'PhanPluginNumericalComparison',
                     "non numerical values compared by the operators '==' or '!=='",
                     []
@@ -81,9 +65,8 @@ class NumericalComparisonVisitor extends AnalysisVisitor {
                 $this->isNumericalType($left_type->serialize()) |
                 $this->isNumericalType($right_type->serialize())
             ){
-                $this->plugin->emitIssue(
-                    $this->code_base,
-                    $this->context,
+                // TODO: different name for this issue type?
+                $this->emit(
                     'PhanPluginNumericalComparison',
                     "numerical values compared by the operators '===' or '!=='",
                     []

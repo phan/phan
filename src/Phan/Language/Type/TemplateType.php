@@ -3,7 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
-class TemplateType extends Type
+final class TemplateType extends Type
 {
     /** @var string */
     private $template_type_identifier;
@@ -45,4 +45,10 @@ class TemplateType extends Type
         return '';
     }
 
+    public function isObject() : bool
+    {
+        // Return true because we don't know, it may or may not be an object.
+        // Not sure if this will be called.
+        return true;
+    }
 }

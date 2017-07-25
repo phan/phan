@@ -1,0 +1,6 @@
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string[] but \intdiv() takes int
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is float but \intdiv() takes int
+%s:22 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is null but \intdiv() takes int
+%s:25 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is false but \intdiv() takes int
+%s:28 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is true but \intdiv() takes int

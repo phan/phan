@@ -1,6 +1,7 @@
 <?php
-
 trait B {
+    abstract function f();
+    /** @return static (Phan recognizes that `static` is a narrower form of `self`) */
     public function g(): self
     {
         return $this;
@@ -14,6 +15,7 @@ class A {
     {
     }
 
+    /** @return static */
     public function h() : self {
         return $this;
     }

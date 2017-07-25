@@ -4,28 +4,25 @@
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
-use Phan\Plugin;
-use Phan\Plugin\PluginImplementation;
+use Phan\Language\Element\Variable;
+use Phan\PluginV2;
+use Phan\PluginV2\AnalyzeNodeCapability;
+use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
-class InvalidVariableIssetPlugin extends PluginImplementation {
+class InvalidVariableIssetPlugin extends PluginV2 implements AnalyzeNodeCapability {
 
-    public function analyzeNode(
-        CodeBase $code_base,
-        Context $context,
-        Node $node,
-        Node $parent_node = null
-    ) {
-        (new InvalidVariableIssetVisitor($code_base, $context, $this))(
-            $node
-        );
+    /**
+     * @return string - name of PluginAwareAnalysisVisitor subclass
+     *
+     * @override
+     */
+    public static function getAnalyzeNodeVisitorClassName() : string {
+        return InvalidVariableIssetVisitor::class;
     }
 }
 
-class InvalidVariableIssetVisitor extends AnalysisVisitor {
-
-    /** @var Plugin */
-    private $plugin;
+class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor {
 
     /** define classes to parse */
     const CLASSES = [
@@ -42,56 +39,51 @@ class InvalidVariableIssetVisitor extends AnalysisVisitor {
         ast\AST_PROP,
     ];
 
-    public function __construct(
-        CodeBase $code_base,
-        Context $context,
-        Plugin $plugin
-    ) {
-        parent::__construct($code_base, $context);
+    // A plugin's visitors should not override visit() unless they need to.
 
-        $this->plugin = $plugin;
-    }
-
-    public function visit(Node $node){
-    }
-
+    /** @override */
     public function visitIsset(Node $node) : Context {
         $argument = $node->children['var'];
         $variable = $argument;
 
         // get variable name from argument
-        while(!isset($variable->children['name'])){
-            if(in_array($variable->kind, self::EXPRESSIONS)){
+        while (!isset($variable->children['name'])){
+            if (in_array($variable->kind, self::EXPRESSIONS)){
                 $variable = $variable->children['expr'];
-            }elseif(in_array($variable->kind, self::CLASSES)){
-                    $variable = $variable->children['class'];
+            } elseif (in_array($variable->kind, self::CLASSES)){
+                $variable = $variable->children['class'];
             }
         }
         $name = $variable->children['name'];
 
         // emit issue if name is not declared
-        if(!$this->context->getScope()->hasVariableWithName($name)){
-            $this->plugin->emitIssue(
-                $this->code_base,
-                $this->context,
-                'PhanUndeclaredVariable',
-                "undeclared variables in isset()",
+        // Check for edge cases such as isset($$var)
+        if (is_string($name) && $name) {
+            if (!Variable::isHardcodedVariableInScopeWithName($name, $this->context->isInGlobalScope()) &&
+                    !$this->context->getScope()->hasVariableWithName($name)) {
+                $this->emit(
+                    'PhanPluginUndeclaredVariableIsset',
+                    'undeclared variable ${VARIABLE} in isset()',
+                    [$name]
+                );
+            }
+        } elseif ($argument->kind !== ast\AST_VAR) {
+            // emit issue if argument is not array access
+            $this->emit(
+                'PhanPluginInvalidVariableIsset',
+                "non array/property access in isset()",
                 []
             );
-        }
-        // emit issue if argument is not array access
-        elseif($argument->kind !== ast\AST_DIM){
-            $this->plugin->emitIssue(
-                $this->code_base,
-                $this->context,
-                'PhanPluginInvalidVariableIsset',
-                "non array access in isset()",
+        } else if (!is_string($name)) {
+            // emit issue if argument is not array access
+            $this->emit(
+                'PhanPluginComplexVariableIsset',
+                "Unanalyzable complex variable expression in isset",
                 []
             );
         }
         return $this->context;
     }
-
 }
 
 return new InvalidVariableIssetPlugin;

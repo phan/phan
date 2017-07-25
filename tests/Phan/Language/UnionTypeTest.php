@@ -19,8 +19,9 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
+use Phan\Tests\BaseTest;
 
-class UnionTypeTest extends \PHPUnit_Framework_TestCase {
+class UnionTypeTest extends BaseTest {
 
     /** @var Context|null */
     protected $context = null;
@@ -86,7 +87,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
     public function testInternalObject() {
         $this->assertUnionTypeStringEqual(
             'new SplStack();',
-            '\\ArrayAccess|\\Countable|\\Iterator|\\Serializable|\\SplDoublyLinkedList|\\SplStack|\\Traversable'
+            '\\ArrayAccess|\\Countable|\\Iterator|\\Serializable|\\SplDoublyLinkedList|\\SplStack|\\Traversable|iterable'
         );
     }
 
@@ -144,7 +145,7 @@ class UnionTypeTest extends \PHPUnit_Framework_TestCase {
             $this->code_base,
             \ast\parse_code(
                 $code,
-                Config::get()->ast_version
+                Config::AST_VERSION
             )->children[0]
         )->asExpandedTypes($this->code_base)->__toString();
     }

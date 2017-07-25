@@ -43,7 +43,7 @@ abstract class ClassElement extends AddressableElement
      */
     public function getDefiningClassFQSEN() : FullyQualifiedClassName
     {
-        if (is_null($this->defining_fqsen)) {
+        if (\is_null($this->defining_fqsen)) {
             throw new CodeBaseException(
                 $this->getFQSEN(),
                 "No defining class for {$this->getFQSEN()}"
@@ -176,29 +176,12 @@ abstract class ClassElement extends AddressableElement
         );
     }
 
-    /**
-     * @param CodeBase $code_base
-     * The code base in which this element exists.
-     *
-     * @return bool
-     * True if this element is intern
-     */
-    public function isNSInternalAccessFromContext(
-        CodeBase $code_base,
-        Context $context
-    ) : bool {
+    public function getElementNamespace(CodeBase $code_base) : string
+    {
         // Get the class that this element is defined on
         $class = $this->getClass($code_base);
 
         // Get the namespace that the class is within
-        $element_namespace = $class->getFQSEN()->getNamespace();
-
-        // Get our current namespace
-        $context_namespace = $context->getNamespace();
-
-        // Test to see if the context is within the same
-        // namespace as where the element is defined
-        return (0 === strcasecmp($context_namespace, $element_namespace));
+        return $class->getFQSEN()->getNamespace() ?: '\\';
     }
-
 }

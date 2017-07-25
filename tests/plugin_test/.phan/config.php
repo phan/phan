@@ -47,6 +47,8 @@ return [
     // Test dead code detection
     'dead_code_detection' => true,
 
+    'globals_type_map' => ['test_global_exception' => 'Exception', 'test_global_error' => '\\Error'],
+
     "quick_mode" => false,
 
     'generic_types_enabled' => true,
@@ -62,6 +64,7 @@ return [
     // A list of plugin files to execute
     // (Execute all of them.)
     'plugins' => [
+        '../../.phan/plugins/AlwaysReturnPlugin.php',
         '../../.phan/plugins/DemoPlugin.php',
         '../../.phan/plugins/DollarDollarPlugin.php',
         '../../.phan/plugins/DuplicateArrayKeyPlugin.php',
@@ -69,6 +72,7 @@ return [
         '../../.phan/plugins/NonBoolBranchPlugin.php',
         '../../.phan/plugins/NonBoolInLogicalArithPlugin.php',
         '../../.phan/plugins/NumericalComparisonPlugin.php',
+        '../../.phan/plugins/UnreachableCodePlugin.php',
         '../../.phan/plugins/UnusedSuppressionPlugin.php',
     ],
 

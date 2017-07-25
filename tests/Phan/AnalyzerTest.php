@@ -17,7 +17,7 @@ use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
-class AnalyzerTest extends \PHPUnit_Framework_TestCase {
+class AnalyzerTest extends BaseTest {
 
     private $class_name_list;
     private $interface_name_list;
@@ -57,10 +57,9 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
 
     public function testClassInCodeBase() {
 
-        $context =
-            $this->contextForCode("
-                Class A {}
-            ");
+        $this->contextForCode("
+            Class A {}
+        ");
 
         self::assertTrue(
             $this->code_base->hasClassWithFQSEN(
@@ -70,11 +69,10 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testNamespaceClassInCodeBase() {
-        $context =
-            $this->contextForCode("
-                namespace A;
-                Class B {}
-            ");
+        $this->contextForCode("
+            namespace A;
+            Class B {}
+        ");
 
         self::assertTrue(
             $this->code_base->hasClassWithFQSEN(
@@ -84,15 +82,14 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testMethodInCodeBase() {
-        $context =
-            $this->contextForCode("
-                namespace A;
-                Class B {
-                    public function c() {
-                        return 42;
-                    }
+        $this->contextForCode("
+            namespace A;
+            Class B {
+                public function c() {
+                    return 42;
                 }
-            ");
+            }
+        ");
 
         $class_fqsen =
             FullyQualifiedClassName::fromFullyQualifiedString('\A\B');
@@ -125,7 +122,7 @@ class AnalyzerTest extends \PHPUnit_Framework_TestCase {
                 new Context,
                 \ast\parse_code(
                     '<?php ' . $code_stub,
-                    Config::get()->ast_version
+                    Config::AST_VERSION
                 )
             );
     }

@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
-class VoidType extends NativeType
+final class VoidType extends NativeType
 {
+    /** @phan-override */
     const NAME = 'void';
 }

@@ -16,8 +16,6 @@ class Variable extends TypedElement
      * @var string[] - Maps from a built in superglobal name to a UnionType spec string.
      */
     const _BUILTIN_SUPERGLOBAL_TYPES = [
-        'argv' => 'string[]',
-        'argc' => 'int',
         '_GET' => 'string[]|string[][]',
         '_POST' => 'string[]|string[][]',
         '_COOKIE' => 'string[]|string[][]',
@@ -27,21 +25,36 @@ class Variable extends TypedElement
         '_FILES' => 'int[][]|string[][]|int[][][]|string[][][]',  // Can have multiple files with the same name.
         '_SESSION' => 'array',
         'GLOBALS' => 'array',
-        'http_response_header' => 'string[]|null' // Revisit when we implement sub-block type refining
+        'http_response_header' => 'string[]|null', // Revisit when we implement sub-block type refining
+    ];
+
+    const _BUILTIN_GLOBAL_TYPES = [
+        '_GET' => 'string[]|string[][]',
+        '_POST' => 'string[]|string[][]',
+        '_COOKIE' => 'string[]|string[][]',
+        '_REQUEST' => 'string[]|string[][]',
+        '_SERVER' => 'array',
+        '_ENV' => 'string[]',
+        '_FILES' => 'int[][]|string[][]|int[][][]|string[][][]',  // Can have multiple files with the same name.
+        '_SESSION' => 'array',
+        'GLOBALS' => 'array',
+        'http_response_header' => 'string[]|null', // Revisit when we implement sub-block type refining
+        'argv' => 'string[]',
+        'argc' => 'int',
     ];
 
     /**
-     * @param \phan\Context $context
+     * @param Context $context
      * The context in which the structural element lives
      *
-     * @param string $name,
+     * @param string $name
      * The name of the typed structural element
      *
-     * @param UnionType $type,
+     * @param UnionType $type
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
-     * @param int $flags,
+     * @param int $flags
      * The flags property contains node specific flags. It is
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
@@ -141,10 +154,10 @@ class Variable extends TypedElement
     public static function isSuperglobalVariableWithName(
         string $name
     ) : bool {
-        if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
+        if (\array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
             return true;
         }
-        return in_array($name, Config::get()->runkit_superglobals);
+        return \in_array($name, Config::getValue('runkit_superglobals'));
     }
 
     /**
@@ -153,36 +166,41 @@ class Variable extends TypedElement
     public static function isHardcodedGlobalVariableWithName(
         string $name
     ) : bool {
-        return (
-            self::isSuperglobalVariableWithName($name)
-            || array_key_exists($name, Config::get()->globals_type_map)
-        );
+        return self::isSuperglobalVariableWithName($name) ||
+            \array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES) ||
+            \array_key_exists($name, Config::getValue('globals_type_map'));
     }
 
     /**
-     * @return UnionType|null
+     * Returns true for all superglobals (if is_in_global_scope, also for variables in globals_type_map/built in globals)
+     */
+    public static function isHardcodedVariableInScopeWithName(
+        string $name,
+        bool $is_in_global_scope
+    ) : bool {
+        return $is_in_global_scope ? self::isHardcodedGlobalVariableWithName($name)
+                                   : self::isSuperglobalVariableWithName($name);
+    }
+
+    /**
+     * @return ?UnionType
      * Returns UnionType (Possible with empty set) if and only
      * if isHardcodedGlobalVariableWithName is true. Returns null
      * otherwise.
      */
     public static function getUnionTypeOfHardcodedGlobalVariableWithName(
-        string $name,
-        Context $context
+        string $name
     ) {
-        if (array_key_exists($name, self::_BUILTIN_SUPERGLOBAL_TYPES)) {
+        if (\array_key_exists($name, self::_BUILTIN_GLOBAL_TYPES)) {
             // More efficient than using context.
-            return UnionType::fromFullyQualifiedString(
-                self::_BUILTIN_SUPERGLOBAL_TYPES[$name]
-            );
+            return UnionType::fromFullyQualifiedString(self::_BUILTIN_GLOBAL_TYPES[$name]);
         }
-
-        $config = Config::get();
-        if (array_key_exists($name, $config->globals_type_map)
-            || in_array($name, $config->runkit_superglobals)
+        if (\array_key_exists($name, Config::getValue('globals_type_map'))
+            || \in_array($name, Config::getValue('runkit_superglobals'))
         ) {
-            $type_string = $config->globals_type_map[$name] ?? '';
+            $type_string = Config::getValue('globals_type_map')[$name] ?? '';
             // Want to allow 'resource' or 'mixed' as a type here,
-            return UnionType::fromStringInContext($type_string, $context, Type::FROM_PHPDOC);
+            return UnionType::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC);
         }
 
         return null;

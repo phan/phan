@@ -1,0 +1,8 @@
+%s:38 PhanAccessMethodPrivate Cannot access private method \B296::asPrivateAlias defined at %s:5
+%s:55 PhanAccessMethodPrivate Cannot access private method \A296::fPrivateAsPublic defined at %s:10
+%s:56 PhanAccessMethodPrivate Cannot access private method \A296::fPrivateAsProtected defined at %s:11
+%s:57 PhanAccessMethodProtected Cannot access protected method \A296::fProtectedAsPublic defined at %s:12
+%s:62 PhanAccessMethodProtected Cannot access protected method \A296::asProtectedAlias defined at %s:6
+%s:63 PhanAccessMethodPrivate Cannot access private method \A296::asPrivateAlias defined at %s:5
+%s:65 PhanUndeclaredMethod Call to undeclared method \A296::fMissing
+%s:67 PhanAccessMethodPrivate Cannot access private method \A296::privateNonTrait defined at %s:32

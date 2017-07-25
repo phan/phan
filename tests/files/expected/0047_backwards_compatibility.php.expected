@@ -1,9 +1,12 @@
 %s:2 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
+%s:2 PhanUndeclaredVariable Variable $bar is undeclared
 %s:2 PhanUndeclaredVariable Variable $foo is undeclared
 %s:3 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
 %s:4 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
+%s:4 PhanUndeclaredVariable Variable $bar is undeclared
 %s:4 PhanUndeclaredVariable Variable $foo is undeclared
 %s:5 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
+%s:5 PhanUndeclaredVariable Variable $bar is undeclared
 %s:5 PhanUndeclaredVariable Variable $foo is undeclared
 %s:15 PhanCompatiblePHP7 Expression may not be PHP 7 compatible
-
+%s:28 PhanAccessPropertyStaticAsNonStatic Accessing static property \Test::$vals as non static

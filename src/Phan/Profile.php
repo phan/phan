@@ -23,7 +23,7 @@ trait Profile
     protected static function time(string $label, \Closure $closure)
     {
 
-        if (!Config::get()->profiler_enabled) {
+        if (!Config::getValue('profiler_enabled')) {
             return $closure();
         }
 
@@ -40,7 +40,6 @@ trait Profile
 
         // Emit a log message
         $delta = ($end_time - $start_time);
-        $message = "$label\t$delta\n";
 
         self::$label_delta_map[$label][] = $delta;
 

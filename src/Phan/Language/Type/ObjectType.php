@@ -4,8 +4,9 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 
-class ObjectType extends NativeType
+final class ObjectType extends NativeType
 {
+    /** @phan-override */
     const NAME = 'object';
 
     protected function canCastToNonNullableType(Type $type) : bool {

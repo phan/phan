@@ -17,20 +17,27 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
+use Phan\Language\Element\TraitAdaptations;
+use Phan\Language\Element\TraitAliasSource;
 use Phan\Language\Element\Variable;
+use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\Some;
 use ast\Node;
+use ast\Node\Decl;
 
 /**
  * Methods for an AST node in context
@@ -44,7 +51,7 @@ class ContextNode
     /** @var Context */
     private $context;
 
-    /** @var Node|string|null */
+    /** @var Decl|Node|string|null */
     private $node;
 
     /**
@@ -73,7 +80,7 @@ class ContextNode
             return [];
         }
 
-        return array_map(function ($name_node) {
+        return \array_map(function ($name_node) {
             return (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -93,40 +100,257 @@ class ContextNode
     }
 
     /**
+     * Gets the FQSEN for a trait.
+     * NOTE: does not validate that it is really used on a trait
+     * @return FQSEN[]
+     */
+    public function getTraitFQSENList() : array
+    {
+        if (!($this->node instanceof Node)) {
+            return [];
+        }
+
+        return \array_map(function($name_node) : FQSEN {
+            return (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $name_node
+            ))->getTraitFQSEN([]);
+        }, $this->node->children ?? []);
+    }
+
+    /**
+     * Gets the FQSEN for a trait.
+     * NOTE: does not validate that it is really used on a trait
+     * @param TraitAdaptations[] $adaptations_map
+     * @return ?FQSEN (If this returns null, the caller is responsible for emitting an issue or falling back)
+     */
+    public function getTraitFQSEN(array $adaptations_map)
+    {
+        // TODO: In a subsequent PR, try to make trait analysis work when $adaptations_map has multiple possible traits.
+        $trait_fqsen_string = $this->getQualifiedName();
+        if ($trait_fqsen_string === '') {
+            if (\count($adaptations_map) === 1) {
+                return \reset($adaptations_map)->getTraitFQSEN();
+            } else {
+                return null;
+            }
+        }
+        return FullyQualifiedClassName::fromStringInContext(
+            $trait_fqsen_string,
+            $this->context
+        );
+    }
+
+    /**
+     * Get a list of traits adaptations from a node of kind \ast\AST_TRAIT_ADAPTATIONS
+     * (with fully qualified names and `as`/`instead` info)
+     *
+     * @param FQSEN[] $trait_fqsen_list TODO: use this for sanity check
+     *
+     * @return TraitAdaptations[] maps the lowercase trait fqsen to the corresponding adaptations.
+     */
+    public function getTraitAdaptationsMap(array $trait_fqsen_list) : array
+    {
+        $node = $this->node;
+        if (!($node instanceof Node)) {
+            return [];
+        }
+        \assert($node->kind === \ast\AST_TRAIT_ADAPTATIONS);
+
+        // NOTE: This fetches fully qualified names more than needed,
+        // but this isn't optimized, since traits aren't frequently used in classes.
+
+        $adaptations_map = [];
+        foreach ($trait_fqsen_list as $trait_fqsen) {
+            $adaptations_map[strtolower($trait_fqsen->__toString())] = new TraitAdaptations($trait_fqsen);
+        }
+
+        foreach ($this->node->children ?? [] as $adaptation_node) {
+            \assert($adaptation_node instanceof Node);
+            if ($adaptation_node->kind === \ast\AST_TRAIT_ALIAS) {
+                $this->handleTraitAlias($adaptations_map, $adaptation_node);
+            } else if ($adaptation_node->kind === \ast\AST_TRAIT_PRECEDENCE) {
+                $this->handleTraitPrecedence($adaptations_map, $adaptation_node);
+            } else {
+                \assert(false, ("Unknown adaptation node kind " . $adaptation_node->kind));
+            }
+        }
+        return $adaptations_map;
+    }
+
+    /**
+     * Handles a node of kind \ast\AST_TRAIT_ALIAS, modifying the corresponding TraitAdaptations instance
+     * @param TraitAdaptations[] $adaptations_map
+     * @param Node $adaptation_node
+     * @return void
+     */
+    private function handleTraitAlias(array $adaptations_map, Node $adaptation_node)
+    {
+        $trait_method_node = $adaptation_node->children['method'];
+        $trait_original_class_name_node = $trait_method_node->children['class'];
+        $trait_original_method_name = $trait_method_node->children['method'];
+        $trait_new_method_name = $adaptation_node->children['alias'] ?? $trait_original_method_name;
+        \assert(\is_string($trait_original_method_name));
+        \assert(\is_string($trait_new_method_name));
+        $trait_fqsen = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $trait_original_class_name_node
+        ))->getTraitFQSEN($adaptations_map);
+        if ($trait_fqsen === null) {
+            // TODO: try to analyze this rare special case instead of giving up in a subsequent PR?
+            // E.g. `use A, B{foo as bar}` is valid PHP, but hard to analyze.
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::AmbiguousTraitAliasSource,
+                $trait_method_node->lineno ?? 0,
+                $trait_new_method_name,
+                $trait_original_method_name,
+                '[' . implode(', ', \array_map(function(TraitAdaptations $t) : string {
+                    return (string) $t->getTraitFQSEN();
+                }, $adaptations_map)) . ']'
+            );
+            return;
+        }
+
+        $fqsen_key = strtolower($trait_fqsen->__toString());
+
+        $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
+        if ($adaptations_info === null) {
+            // This will probably correspond to a PHP fatal error, but keep going anyway.
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::RequiredTraitNotAdded,
+                $trait_original_class_name_node->lineno ?? 0,
+                $trait_fqsen->__toString()
+            );
+            return;
+        }
+        // TODO: Could check for duplicate alias method occurrences, but `php -l` would do that for you in some cases
+        $adaptations_info->alias_methods[$trait_new_method_name] = new TraitAliasSource($trait_original_method_name, $adaptation_node->lineno ?? 0, $adaptation_node->flags ?? 0);
+        // Handle `use MyTrait { myMethod as private; }` by skipping the original method.
+        // TODO: Do this a cleaner way.
+        if (strcasecmp($trait_new_method_name, $trait_original_method_name) === 0) {
+            $adaptations_info->hidden_methods[strtolower($trait_original_method_name)] = true;
+        }
+    }
+
+    /**
+     * Handles a node of kind \ast\AST_TRAIT_PRECEDENCE, modifying the corresponding TraitAdaptations instance
+     * @param TraitAdaptations[] $adaptations_map
+     * @param Node $adaptation_node
+     * @return void
+     */
+    private function handleTraitPrecedence(array $adaptations_map, Node $adaptation_node) {
+        // TODO: Should also verify that the original method exists, in a future PR?
+        $trait_method_node = $adaptation_node->children['method'];
+        // $trait_chosen_class_name_node = $trait_method_node->children['class'];
+        $trait_chosen_method_name = $trait_method_node->children['method'];
+        $trait_chosen_class_name_node = $trait_method_node->children['class'];
+
+        $trait_chosen_fqsen = (new ContextNode(
+            $this->code_base,
+            $this->context,
+            $trait_chosen_class_name_node
+        ))->getTraitFQSEN($adaptations_map);
+
+
+        if (!$trait_chosen_fqsen) {
+            throw new UnanalyzableException($trait_chosen_class_name_node, "This shouldn't happen. Could not determine trait fqsen for trait with higher precedence for method $trait_chosen_method_name");
+        }
+
+        if (($adaptations_map[strtolower($trait_chosen_fqsen->__toString())] ?? null) === null) {
+            // This will probably correspond to a PHP fatal error, but keep going anyway.
+            Issue::maybeEmit(
+                $this->code_base,
+                $this->context,
+                Issue::RequiredTraitNotAdded,
+                $trait_chosen_class_name_node->lineno ?? 0,
+                $trait_chosen_fqsen->__toString()
+            );
+        }
+
+        // This is the class which will have the method hidden
+        foreach ($adaptation_node->children['insteadof']->children as $trait_insteadof_class_name) {
+            \assert(\is_string($trait_chosen_method_name));
+            $trait_insteadof_fqsen = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $trait_insteadof_class_name
+            ))->getTraitFQSEN($adaptations_map);
+            if (!$trait_insteadof_fqsen) {
+                throw new UnanalyzableException($trait_insteadof_class_name, "This shouldn't happen. Could not determine trait fqsen for trait with lower precedence for method $trait_chosen_method_name");
+            }
+
+            $fqsen_key = strtolower($trait_insteadof_fqsen->__toString());
+
+            $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
+            if ($adaptations_info === null) {
+                // TODO: Make this into an issue type
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::RequiredTraitNotAdded,
+                    $trait_insteadof_class_name->lineno ?? 0,
+                    $trait_insteadof_fqsen->__toString()
+                );
+                continue;
+            }
+            $adaptations_info->hidden_methods[strtolower($trait_chosen_method_name)] = true;
+        }
+    }
+
+    /**
      * @return string
      * A variable name associated with the given node
      */
     public function getVariableName() : string
     {
-        if (!$this->node instanceof \ast\Node) {
+        if (!($this->node instanceof \ast\Node)) {
             return (string)$this->node;
         }
 
         $node = $this->node;
-        $parent = $node;
 
         while (($node instanceof \ast\Node)
             && ($node->kind != \ast\AST_VAR)
             && ($node->kind != \ast\AST_STATIC)
             && ($node->kind != \ast\AST_MAGIC_CONST)
         ) {
-            $parent = $node;
-            $node = array_values($node->children ?? [])[0];
+            $node = \array_values($node->children ?? [])[0];
         }
 
-        if (!$node instanceof \ast\Node) {
+        if (!($node instanceof \ast\Node)) {
             return (string)$node;
         }
 
-        if (empty($node->children['name'])) {
+        $name_node = $node->children['name'] ?? null;
+        if (empty($name_node)) {
             return '';
         }
 
-        if ($node->children['name'] instanceof \ast\Node) {
+        if ($name_node instanceof \ast\Node) {
+            // This is nonsense. Give up, but check if it's a type other than int/string.
+            // (e.g. to catch typos such as $$this->foo = bar;)
+            $name_node_type = (new UnionTypeVisitor($this->code_base, $this->context, true))($name_node);
+            static $int_or_string_type;
+            if ($int_or_string_type === null) {
+                $int_or_string_type = new UnionType();
+                $int_or_string_type->addType(StringType::instance(false));
+                $int_or_string_type->addType(IntType::instance(false));
+                $int_or_string_type->addType(NullType::instance(false));
+            }
+            if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
+                Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
+            }
+
             return '';
         }
 
-        return (string)$node->children['name'];
+        return (string)$name_node;
     }
 
     /**
@@ -165,7 +389,7 @@ class ContextNode
                 foreach ($union_type->asClassList(
                     $this->code_base,
                     $this->context
-                ) as $i => $clazz) {
+                ) as $clazz) {
                     $class_list[] = $clazz;
                 }
             } catch (CodeBaseException $exception) {
@@ -175,7 +399,7 @@ class ContextNode
             foreach ($union_type->asClassList(
                 $this->code_base,
                 $this->context
-            ) as $i => $clazz) {
+            ) as $clazz) {
                 $class_list[] = $clazz;
             }
         }
@@ -190,6 +414,9 @@ class ContextNode
      *
      * @param bool $is_static
      * Set to true if this is a static method call
+     *
+     * @param bool $is_direct
+     * Set to true if this is directly invoking the method (guaranteed not to be special syntax)
      *
      * @return Method
      * A method with the given name on the class referenced
@@ -210,7 +437,8 @@ class ContextNode
      */
     public function getMethod(
         $method_name,
-        bool $is_static
+        bool $is_static,
+        bool $is_direct = false
     ) : Method {
 
         if ($method_name instanceof Node) {
@@ -223,12 +451,12 @@ class ContextNode
             );
         }
 
-        assert(
-            is_string($method_name),
+        \assert(
+            \is_string($method_name),
             "Method name must be a string. Found non-string in context."
         );
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -269,7 +497,7 @@ class ContextNode
                     StringType::instance(false)
                 ])
                 && !(
-                    Config::get()->null_casts_as_any_type
+                    Config::get_null_casts_as_any_type()
                     && $union_type->hasType(NullType::instance(false))
                 )
             ) {
@@ -291,11 +519,10 @@ class ContextNode
         // Hunt to see if any of them have the method we're
         // looking for
         foreach ($class_list as $i => $class) {
-            if ($class->hasMethodWithName($this->code_base, $method_name)) {
-                return $class->getMethodByNameInContext(
+            if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
+                return $class->getMethodByName(
                     $this->code_base,
-                    $method_name,
-                    $this->context
+                    $method_name
                 );
             } else if (!$is_static && $class->allowsCallingUndeclaredInstanceMethod($this->code_base)) {
                 return $class->getCallMethod($this->code_base);
@@ -327,6 +554,120 @@ class ContextNode
                 [ (string)$method_fqsen ]
             )
         );
+    }
+
+    /**
+     * Yields a list of FunctionInterface objects for the 'expr' of an AST_CALL.
+     * @return \Generator
+     */
+    public function getFunctionFromNode()
+    {
+        $expression = $this->node;
+
+        if ($expression->kind == \ast\AST_VAR) {
+            $variable_name = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $expression
+            ))->getVariableName();
+
+            if (empty($variable_name)) {
+                return;
+            }
+
+            // $var() - hopefully a closure, otherwise we don't know
+            if ($this->context->getScope()->hasVariableWithName(
+                $variable_name
+            )) {
+                $variable = $this->context->getScope()
+                    ->getVariableByName($variable_name);
+
+                $union_type = $variable->getUnionType();
+                if ($union_type->isEmpty()) {
+                    return;
+                }
+
+                foreach ($union_type->getTypeSet() as $type) {
+                    // TODO: Allow CallableType to have FQSENs as well, e.g. `$x = [MyClass::class, 'myMethod']` has an FQSEN in a sense.
+                    if (!($type instanceof ClosureType)) {
+                        continue;
+                    }
+
+                    $closure_fqsen =
+                        FullyQualifiedFunctionName::fromFullyQualifiedString(
+                            (string)$type->asFQSEN()
+                        );
+
+                    if ($this->code_base->hasFunctionWithFQSEN(
+                        $closure_fqsen
+                    )) {
+                        // Get the closure
+                        $function = $this->code_base->getFunctionByFQSEN(
+                            $closure_fqsen
+                        );
+
+                        yield $function;
+                    }
+                }
+            }
+        } elseif ($expression->kind == \ast\AST_NAME
+            // nothing to do
+        ) {
+            try {
+                $method = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $expression
+                ))->getFunction(
+                    $expression->children['name']
+                        ?? $expression->children['method']
+                );
+            } catch (IssueException $exception) {
+                Issue::maybeEmitInstance(
+                    $this->code_base,
+                    $this->context,
+                    $exception->getIssueInstance()
+                );
+                return $this->context;
+            }
+
+            yield $method;
+        } elseif ($expression->kind == \ast\AST_CALL
+            || $expression->kind == \ast\AST_STATIC_CALL
+            || $expression->kind == \ast\AST_NEW
+            || $expression->kind == \ast\AST_METHOD_CALL
+        ) {
+            $class_list = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $expression
+            ))->getClassList();
+
+            foreach ($class_list as $class) {
+                if (!$class->hasMethodWithName(
+                    $this->code_base,
+                    '__invoke'
+                )) {
+                    continue;
+                }
+
+                $method = $class->getMethodByName(
+                    $this->code_base,
+                    '__invoke'
+                );
+
+                // Check the call for parameter and argument types
+                yield $method;
+            }
+        } elseif ($expression->kind === \ast\AST_CLOSURE) {
+            $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
+                $this->context->withLineNumberStart($expression->lineno ?? 0),
+                $expression
+            );
+            $method = $this->code_base->getFunctionByFQSEN($closure_fqsen);
+            yield $method;
+        }
+        // TODO: AST_CLOSURE
     }
 
     /**
@@ -374,7 +715,7 @@ class ContextNode
             }
         }
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -406,7 +747,7 @@ class ContextNode
      */
     public function getVariable() : Variable
     {
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -452,7 +793,7 @@ class ContextNode
             // Swallow it
         }
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -503,7 +844,7 @@ class ContextNode
         bool $is_static
     ) : Property {
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -511,7 +852,7 @@ class ContextNode
         $property_name = $this->node->children['prop'];
 
         // Give up for things like C::$prop_name
-        if (!is_string($property_name)) {
+        if (!\is_string($property_name)) {
             throw new NodeException(
                 $this->node,
                 "Cannot figure out non-string property name"
@@ -603,8 +944,10 @@ class ContextNode
                         $this->node->lineno ?? 0,
                         [
                             (string)$property->getFQSEN(),
+                            $property->getElementNamespace($this->code_base),
                             $property->getFileRef()->getFile(),
                             $property->getFileRef()->getLineNumberStart(),
+                            $this->context->getNamespace(),
                         ]
                     )
                 );
@@ -618,7 +961,7 @@ class ContextNode
         // properties
         if (!$is_static) {
             foreach ($class_list as $i => $class) {
-                if (Config::get()->allow_missing_properties
+                if (Config::getValue('allow_missing_properties')
                     || $class->getHasDynamicProperties($this->code_base)
                 ) {
                     return $class->getPropertyByNameInContext(
@@ -638,7 +981,7 @@ class ContextNode
         // If missing properties are cool, create it on
         // the first class we found
         if (!$is_static && ($class_fqsen && ($class_fqsen === $std_class_fqsen))
-            || Config::get()->allow_missing_properties
+            || Config::getValue('allow_missing_properties')
         ) {
             if (count($class_list) > 0) {
                 $class = $class_list[0];
@@ -725,7 +1068,7 @@ class ContextNode
             // because we'll create our own property
         }
 
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
@@ -746,14 +1089,15 @@ class ContextNode
             );
         }
 
-        if (empty($class_list)) {
+        $class = \reset($class_list);
+
+        if (!($class instanceof Clazz)) {
+            // empty list
             throw new UnanalyzableException(
                 $this->node,
                 "Could not get class name from node"
             );
         }
-
-        $class = array_values($class_list)[0];
 
         $flags = 0;
         if ($this->node->kind == \ast\AST_STATIC_PROP) {
@@ -794,12 +1138,12 @@ class ContextNode
     public function getConst() : GlobalConstant
     {
         $node = $this->node;
-        assert(
+        \assert(
             $node instanceof \ast\Node,
             '$node must be a node'
         );
 
-        assert(
+        \assert(
             $node->kind === \ast\AST_CONST,
             "Node must be of type \ast\AST_CONST"
         );
@@ -850,8 +1194,10 @@ class ContextNode
                     $node->lineno ?? 0,
                     [
                         (string)$constant->getFQSEN(),
+                        $constant->getElementNamespace($this->code_base),
                         $constant->getFileRef()->getFile(),
                         $constant->getFileRef()->getLineNumberStart(),
+                        $this->context->getNamespace()
                     ]
                 )
             );
@@ -882,12 +1228,12 @@ class ContextNode
      */
     public function getClassConst() : ClassConstant
     {
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
 
-        assert(
+        \assert(
             $this->node->kind === \ast\AST_CLASS_CONST,
             "Node must be of type \ast\AST_CLASS_CONST"
         );
@@ -974,18 +1320,18 @@ class ContextNode
      */
     public function getUnqualifiedNameForAnonymousClass() : string
     {
-        assert(
+        \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
 
-        assert(
+        \assert(
             (bool)($this->node->flags & \ast\flags\CLASS_ANONYMOUS),
             "Node must be an anonymous class node"
         );
 
         $class_name = 'anonymous_class_'
-            . substr(md5(implode('|', [
+            . \substr(\md5(\implode('|', [
                 $this->context->getFile(),
                 $this->context->getLineNumberStart()
             ])), 0, 8);
@@ -1000,7 +1346,8 @@ class ContextNode
     {
         $closure_fqsen =
             FullyQualifiedFunctionName::fromClosureInContext(
-                $this->context
+                $this->context,
+                $this->node
             );
 
         if (!$this->code_base->hasFunctionWithFQSEN($closure_fqsen)) {
@@ -1014,13 +1361,15 @@ class ContextNode
     }
 
     /**
-     * Perform some backwards compatibility checks on a node
+     * Perform some backwards compatibility checks on a node.
+     * This ignores union types, and can be run in the parse phase.
+     * (It often should, because outside quick mode, it may be run multiple times per node)
      *
      * @return void
      */
     public function analyzeBackwardCompatibility()
     {
-        if (!Config::get()->backward_compatibility_checks) {
+        if (!Config::get_backward_compatibility_checks()) {
             return;
         }
 
@@ -1077,7 +1426,7 @@ class ContextNode
 
             // Lets just hope the 0th is the expression
             // we want
-            $temp = array_values($temp->children)[0];
+            $temp = \array_values($temp->children)[0];
         }
 
         if (!($temp instanceof Node)) {
@@ -1131,11 +1480,10 @@ class ContextNode
                 || $temp->kind == \ast\AST_NAME
             )
         ) {
-            $ftemp = new \SplFileObject($this->context->getFile());
-            $ftemp->seek($this->node->lineno-1);
-            $line = $ftemp->current();
-            assert(is_string($line));
-            unset($ftemp);
+            $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
+            $line = $cache_entry->getLine($this->node->lineno);
+            \assert(\is_string($line));
+            unset($cache_entry);
             if (strpos($line, '}[') === false
                 || strpos($line, ']}') === false
                 || strpos($line, '>{') === false

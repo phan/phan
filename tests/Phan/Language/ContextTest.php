@@ -9,9 +9,10 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\FunctionLikeScope;
+use Phan\Tests\BaseTest;
 use Phan\Parse\ParseVisitor;
 
-class ContextTest extends \PHPUnit_Framework_TestCase {
+class ContextTest extends BaseTest {
 
     /** @var CodeBase|null */
     protected $code_base = null;
@@ -60,7 +61,7 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
 
         $stmt_list_node = \ast\parse_code(
             $code,
-            Config::get()->ast_version
+            Config::AST_VERSION
         );
 
         $class_node = $stmt_list_node->children[0];
@@ -77,9 +78,11 @@ class ContextTest extends \PHPUnit_Framework_TestCase {
         $context = (new ParseVisitor(
             $this->code_base, $context
         ))($method_node);
+
+        $this->assertSame('\C::f', (string)$context->getScope()->getFQSEN());
     }
 
-    public function testNamespaceMap() {
+    public function disabled_testNamespaceMap() {
         // ...
     }
 

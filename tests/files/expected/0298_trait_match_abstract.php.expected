@@ -1,0 +1,8 @@
+%s:14 PhanParamSignatureMismatch Declaration of function foo1(string $arg) : void should be compatible with function foo1(int $arg) : void defined in %s:5
+%s:14 PhanParamSignatureRealMismatchParamType Declaration of function foo1(string $arg) : void should be compatible with function foo1(int $arg) : void (parameter #1 of type 'string' cannot replace original parameter of type 'int') defined in %s:5
+%s:18 PhanParamSignatureMismatch Declaration of function foo2() : bool should be compatible with function foo2() : void defined in %s:6
+%s:18 PhanParamSignatureRealMismatchReturnType Declaration of function foo2() : bool should be compatible with function foo2() : void (method returning 'bool' cannot override method returning 'void') defined in %s:6
+%s:23 PhanParamSignatureMismatch Declaration of function foo3($requiredArg) should be compatible with function foo3() defined in %s:7
+%s:23 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function foo3($requiredArg) should be compatible with function foo3() (the method override requires 1 parameter(s), but the overridden method requires only 0) defined in %s:7
+%s:33 PhanParamSignatureMismatch Declaration of function fooOverrideByAliasBad(int $arg) : bool should be compatible with function fooOverrideByAliasBad(int $arg) : void defined in %s:8
+%s:33 PhanParamSignatureRealMismatchReturnType Declaration of function fooOverrideByAliasBad(int $arg) : bool should be compatible with function fooOverrideByAliasBad(int $arg) : void (method returning 'bool' cannot override method returning 'void') defined in %s:8

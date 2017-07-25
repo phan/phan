@@ -5,10 +5,10 @@ namespace Phan\Tests\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\CSVPrinter;
-use PHPUnit_Framework_TestCase;
+use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class CSVPrinterTest extends PHPUnit_Framework_TestCase {
+class CSVPrinterTest extends BaseTest {
 
     public function testHeaderCorrespondsToData() {
         $output = new BufferedOutput();
@@ -24,7 +24,7 @@ class CSVPrinterTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(0, $fields["line"]);
         $this->assertEquals(10, $fields["severity_ord"]);
         $this->assertEquals("critical", $fields["severity_name"]);
-        $this->assertEquals("UndefError", $fields["category"]);
+        $this->assertEquals("Syntax", $fields["category"]);
         $this->assertEquals("PhanSyntaxError", $fields["check_name"]);
         $this->assertEquals("foo", $fields["message"]);
     }
@@ -43,7 +43,7 @@ class CSVPrinterTest extends PHPUnit_Framework_TestCase {
         $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 0, [$string]));
         $printer->flush();
 
-        $expected = 'test.php,0,10,critical,UndefError,PhanSyntaxError,' . $messageExpected;
+        $expected = 'test.php,0,10,critical,Syntax,PhanSyntaxError,' . $messageExpected;
         $actual = explode("\n", $output->fetch())[1]; // Ignore header
         $this->assertEquals($expected, $actual);
     }

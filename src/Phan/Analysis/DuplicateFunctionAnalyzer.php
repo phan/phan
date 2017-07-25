@@ -46,8 +46,8 @@ class DuplicateFunctionAnalyzer
 
         $method_name = $method->getName();
 
-        if (!$method->hasSuppressIssue(Issue::RedefineFunction)) {
-            if ($original_method->isPHPInternal()) {
+        if ($original_method->isPHPInternal()) {
+            if (!$method->hasSuppressIssue(Issue::RedefineFunctionInternal)) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),
@@ -57,7 +57,9 @@ class DuplicateFunctionAnalyzer
                     $method->getFileRef()->getFile(),
                     $method->getFileRef()->getLineNumberStart()
                 );
-            } else {
+            }
+        } else {
+            if (!$method->hasSuppressIssue(Issue::RedefineFunction)) {
                 Issue::maybeEmit(
                     $code_base,
                     $method->getContext(),

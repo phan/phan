@@ -5,10 +5,10 @@ namespace Phan\Tests\Output\Printer;
 use Phan\Issue;
 use Phan\IssueInstance;
 use Phan\Output\Printer\CheckstylePrinter;
-use PHPUnit_Framework_TestCase;
+use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class CheckstylePrinterTest extends PHPUnit_Framework_TestCase {
+class CheckstylePrinterTest extends BaseTest {
 
     /**
      * @param string $string String to check against
@@ -22,6 +22,7 @@ class CheckstylePrinterTest extends PHPUnit_Framework_TestCase {
         $printer->configureOutput($output);
         $printer->print(new IssueInstance(Issue::fromType(Issue::SyntaxError), 'test.php', 0, [$string]));
         $printer->flush();
+        $this->assertContains('PhanSyntaxError', $output->fetch());
     }
 
     public function invalidUTF8StringsProvider() {

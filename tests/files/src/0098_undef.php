@@ -42,3 +42,8 @@ class G { function f() { parent::f(); } }
 // Issue::UndeclaredParentClass
 class H extends Undef {}
 
+// Issue::UndeclaredTypeReturnType
+function j() : Undef {throw new RuntimeException('not implemented');}
+
+// Issue::UndeclaredTypeReturnType
+function k() : self {throw new RuntimeException('not implemented');}

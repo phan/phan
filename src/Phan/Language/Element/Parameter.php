@@ -18,6 +18,9 @@ use ast\Node;
 
 class Parameter extends Variable
 {
+    const REFERENCE_DEFAULT = 1;
+    const REFERENCE_READ_WRITE = 2;
+    const REFERENCE_WRITE_ONLY = 3;
 
     /**
      * @var UnionType|null
@@ -32,17 +35,17 @@ class Parameter extends Variable
     private $default_value = null;
 
     /**
-     * @param \phan\Context $context
+     * @param Context $context
      * The context in which the structural element lives
      *
-     * @param string $name,
+     * @param string $name
      * The name of the typed structural element
      *
-     * @param UnionType $type,
+     * @param UnionType $type
      * A '|' delimited set of types satisfyped by this
      * typed structural element.
      *
-     * @param int $flags,
+     * @param int $flags
      * The flags property contains node specific flags. It is
      * always defined, but for most nodes it is always zero.
      * ast\kind_uses_flags() can be used to determine whether
@@ -134,7 +137,6 @@ class Parameter extends Variable
     }
 
     /**
-     * @param string $value
      * If the value's default is null, or a constant evaluating to null,
      * then the parameter type should be converted to nullable
      * (E.g. `int $x = null` and `?int $x = null` are equivalent.
@@ -170,8 +172,6 @@ class Parameter extends Variable
         CodeBase $code_base,
         Node $node
     ) : array {
-        assert($node instanceof Node, "node was not an \\ast\\Node");
-
         $parameter_list = [];
         $is_optional_seen = false;
         foreach ($node->children ?? [] as $i => $child_node) {
@@ -205,7 +205,7 @@ class Parameter extends Variable
     public static function listFromReflectionParameterList(
         array $reflection_parameters
     ) : array {
-        return array_map(function(\ReflectionParameter $reflection_parameter) {
+        return \array_map(function(\ReflectionParameter $reflection_parameter) {
             return self::fromReflectionParameter($reflection_parameter);
         }, $reflection_parameters);
     }
@@ -251,9 +251,6 @@ class Parameter extends Variable
         CodeBase $code_base,
         Node $node
     ) : Parameter {
-
-        assert($node instanceof Node, "node was not an \\ast\\Node");
-
         // Get the type of the parameter
         $union_type = UnionType::fromNode(
             $context,
@@ -487,6 +484,17 @@ class Parameter extends Variable
             $this->getFlags(),
             \ast\flags\PARAM_REF
         );
+    }
+
+    public function getReferenceType() : int
+    {
+        $flags = $this->getPhanFlags();
+        if (Flags::bitVectorHasState($flags, Flags::IS_READ_REFERENCE)) {
+            return self::REFERENCE_READ_WRITE;
+        } else if (Flags::bitVectorHasState($flags, Flags::IS_WRITE_REFERENCE)) {
+            return self::REFERENCE_WRITE_ONLY;
+        }
+        return self::REFERENCE_DEFAULT;
     }
 
     public function __toString() : string

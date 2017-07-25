@@ -2,6 +2,8 @@
 namespace Phan\Language\FQSEN;
 
 use Phan\Language\Context;
+use ast\Node\Decl;
+use ast\Node;
 
 /**
  * A Fully-Qualified Function Name
@@ -23,7 +25,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
      * @return string
      * The canonical representation of the name of the object. Functions
      * and Methods, for instance, lowercase their names.
-     * TODO: Separate the funciton used to render names in phan errors
+     * TODO: Separate the function used to render names in phan errors
      *       from the ones used for generating array keys.
      */
     public static function canonicalName(string $name) : string
@@ -44,19 +46,19 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
     ) : FullyQualifiedFunctionName {
 
         // Check to see if we're fully qualified
-        if (0 === strpos($fqsen_string, '\\')) {
+        if (0 === \strpos($fqsen_string, '\\')) {
             return static::fromFullyQualifiedString($fqsen_string);
         }
 
         // Split off the alternate ID
-        $parts = explode(',', $fqsen_string);
+        $parts = \explode(',', $fqsen_string);
         $fqsen_string = $parts[0];
         $alternate_id = (int)($parts[1] ?? 0);
 
-        $parts = explode('\\', $fqsen_string);
-        $name = array_pop($parts);
+        $parts = \explode('\\', $fqsen_string);
+        $name = \array_pop($parts);
 
-        assert(
+        \assert(
             !empty($name),
             "The name cannot be empty"
         );
@@ -81,12 +83,23 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
     }
 
     public static function fromClosureInContext(
-        Context $context
+        Context $context,
+        Decl $node
     ) : FullyQualifiedFunctionName {
-        $name = 'closure_' . substr(md5(implode('|', [
+        $hash_material = implode('|', [
             $context->getFile(),
-            $context->getLineNumberStart()
-        ])), 0, 12);
+            $context->getLineNumberStart(),
+            $node->docComment ?? '',
+            implode(',', array_map(function(Node $arg) : string {
+                return serialize([$arg->children['type'], $arg->children['name'], $arg->children['default']]);
+            }, $node->children['params']->children)),
+            implode(',', array_map(function(Node $use) : string {
+                return $use->children['name'];
+            }, $node->children['uses']->children ?? [])),
+            serialize($node->children['returnType']),
+        ]);
+        // TODO: hash args
+        $name = 'closure_' . substr(md5($hash_material), 0, 12);
 
         return static::fromStringInContext(
             $name,
@@ -99,7 +112,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
      * True if this FQSEN represents a closure
      */
     public function isClosure() : bool {
-        return (preg_match('/^closure_/', $this->getName()) === 1);
+        return (\preg_match('/^closure_/', $this->getName()) === 1);
     }
 
 }

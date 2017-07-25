@@ -9,7 +9,7 @@ use Phan\Config;
 class Colorizing {
     const styles = [
         'none'             => '0',  // Alias of 'reset'
-        'reset'            => '0',  // Use 'reset' for the absense of color.
+        'reset'            => '0',  // Use 'reset' for the absence of color.
         'bold'             => '1',
         'dark'             => '2',
         'italic'           => '3',
@@ -60,6 +60,8 @@ class Colorizing {
     // In future PRs, it will be possible for users to add their own color schemes in .phan/config.php
     const default_color_for_template = [
         'CLASS'         => 'green',
+        'CLASSLIKE'     => 'green',
+        'COMMENT'       => 'light_green',
         'CONST'         => 'light_red',
         'COUNT'         => 'light_magenta',
         'FILE'          => 'light_cyan',
@@ -72,6 +74,7 @@ class Colorizing {
         'ISSUETYPE_NORMAL' => 'light_red',  // for normal issues
         'LINE'          => 'light_gray',
         'METHOD'        => 'light_yellow',
+        'NAMESPACE'     => 'green',
         'PARAMETER'     => 'cyan',
         'PROPERTY'      => 'cyan',
         'TYPE'          => 'light_gray',
@@ -87,7 +90,6 @@ class Colorizing {
     /**
      * @param string $template
      * @param int[]|string[] $template_parameters
-     * @param int $severity (Issue::SEVERITY_*)
      */
     public static function colorizeTemplate(
         string $template,
@@ -121,6 +123,7 @@ class Colorizing {
         if ($fmt_directive === null) {
             error_log(sprintf("Unknown template type '%s'. Known template types: %s",
                     implode(', ', array_keys(Issue::uncolored_format_string_for_template))));
+            return (string)$arg;
         }
         // TODO: Add more complicated color coding, e.g. MyClass::method should have the option for multiple colors.
         // TODO: Allow choosing color schemes via .phan/config.php
@@ -157,12 +160,12 @@ class Colorizing {
      */
     private static function initColorScheme() {
         self::$color_scheme = self::default_color_for_template;
-        foreach (Config::get()->color_scheme ?? [] as $template_type => $color_name) {
-            if (!is_scalar($color_name) || !array_key_exists($color_name, self::styles)) {
+        foreach (Config::getValue('color_scheme') ?? [] as $template_type => $color_name) {
+            if (!\is_scalar($color_name) || !\array_key_exists($color_name, self::styles)) {
                 error_log("Invalid color name ($color_name)");
                 continue;
             }
-            if (!array_key_exists($template_type, Colorizing::default_color_for_template)) {
+            if (!\array_key_exists($template_type, Colorizing::default_color_for_template)) {
                 error_log("Unknown template_type ($template_type)");
                 continue;
             }

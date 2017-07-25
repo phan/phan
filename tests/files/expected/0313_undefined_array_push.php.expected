@@ -1,0 +1,6 @@
+%s:8 PhanUndeclaredVariableDim Variable $myvar was undeclared, but array fields are being added to it.
+%s:9 PhanUndeclaredVariableDim Variable $myvAR was undeclared, but array fields are being added to it.
+%s:11 PhanUndeclaredProperty Reference to undeclared property \Foo313->prop
+%s:12 PhanUndeclaredStaticProperty Static property 'undef_static_prop' on \Foo313 is undeclared
+%s:13 PhanUndeclaredProperty Reference to undeclared property \Foo313->otherProp
+%s:13 PhanUndeclaredVariableDim Variable $myUndefListVar was undeclared, but array fields are being added to it.

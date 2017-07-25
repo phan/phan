@@ -22,7 +22,7 @@ trait ElementFutureUnionType
      * @param UnionType $type
      * Set the type of this element
      *
-     * @return null
+     * @return void
      */
     abstract public function setUnionType(UnionType $type);
 
@@ -55,7 +55,7 @@ trait ElementFutureUnionType
 
         $union_type = $future_union_type->get();
 
-        // Don't set 'null' as the type if thats the default
+        // Don't set 'null' as the type if that's the default
         // given that its the default default.
         if ($union_type->isType(NullType::instance(false))) {
             $union_type = new UnionType();

@@ -16,7 +16,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.9.2-dev';
+    const PHAN_VERSION = '0.9.4-dev';
 
     /**
      * @var OutputInterface
@@ -72,6 +72,7 @@ class CLI
                 'dump-signatures-file:',
                 'exclude-directory-list:',
                 'exclude-file:',
+                'include-analysis-file-list:',
                 'file-list-only:',
                 'file-list:',
                 'help',
@@ -87,6 +88,7 @@ class CLI
                 'processes:',
                 'config-file:',
                 'signature-compatibility',
+                'print-memory-usage-summary',
                 'markdown-issue-messages',
                 'disable-plugins',
                 'daemonize-socket:',
@@ -95,20 +97,20 @@ class CLI
             ]
         );
 
-        if (array_key_exists('extended-help', $opts ?? [])) {
+        if (\array_key_exists('extended-help', $opts ?? [])) {
             $this->usage('', EXIT_SUCCESS, true);  // --help prints help and calls exit(0)
         }
-        if (array_key_exists('h', $opts ?? []) || array_key_exists('help', $opts ?? [])) {
+        if (\array_key_exists('h', $opts ?? []) || \array_key_exists('help', $opts ?? [])) {
             $this->usage();  // --help prints help and calls exit(0)
         }
-        if (array_key_exists('v', $opts ?? []) || array_key_exists('version', $opts ?? [])) {
+        if (\array_key_exists('v', $opts ?? []) || \array_key_exists('version', $opts ?? [])) {
             printf("Phan %s\n", self::PHAN_VERSION);
             exit(EXIT_SUCCESS);
         }
 
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
-        Config::get()->setProjectRootDirectory(
+        Config::setProjectRootDirectory(
             $opts['d'] ?? $opts['project-root-directory'] ?? getcwd()
         );
 
@@ -127,7 +129,7 @@ class CLI
         $this->output = new ConsoleOutput();
         $factory = new PrinterFactory();
         $printer_type = 'text';
-        $minimum_severity = Config::get()->minimum_severity;
+        $minimum_severity = Config::getValue('minimum_severity');
         $mask = -1;
 
         foreach ($opts ?? [] as $key => $value) {
@@ -145,7 +147,7 @@ class CLI
                     // file list
                 case 'f':
                 case 'file-list':
-                    $file_list = is_array($value) ? $value : [$value];
+                    $file_list = \is_array($value) ? $value : [$value];
                     foreach ($file_list as $file_name) {
                         $file_path = Config::projectPath($file_name);
                         if (is_file($file_path) && is_readable($file_path)) {
@@ -162,7 +164,7 @@ class CLI
                 case 'l':
                 case 'directory':
                     if (!$this->file_list_only) {
-                        $directory_list = is_array($value) ? $value : [$value];
+                        $directory_list = \is_array($value) ? $value : [$value];
                         foreach ($directory_list as $directory_name) {
                             $this->file_list = array_merge(
                                 $this->file_list,
@@ -193,30 +195,29 @@ class CLI
                     break;
                 case 'c':
                 case 'parent-constructor-required':
-                    Config::get()->parent_constructor_required =
-                    explode(',', $value);
+                    Config::setValue('parent_constructor_required', explode(',', $value));
                     break;
                 case 'q':
                 case 'quick':
-                    Config::get()->quick_mode = true;
+                    Config::setValue('quick_mode', true);
                     break;
                 case 'b':
                 case 'backward-compatibility-checks':
-                    Config::get()->backward_compatibility_checks = true;
+                    Config::setValue('backward_compatibility_checks', true);
                     break;
                 case 'p':
                 case 'progress-bar':
-                    Config::get()->progress_bar = true;
+                    Config::setValue('progress_bar', true);
                     break;
                 case 'a':
                 case 'dump-ast':
-                    Config::get()->dump_ast = true;
+                    Config::setValue('dump_ast', true);
                     break;
                 case 'dump-parsed-file-list':
-                    Config::get()->dump_parsed_file_list = true;
+                    Config::setValue('dump_parsed_file_list', true);
                     break;
                 case 'dump-signatures-file':
-                    Config::get()->dump_signatures_file = $value;
+                    Config::setValue('dump_signatures_file', $value);
                     break;
                 case 'o':
                 case 'output':
@@ -228,21 +229,24 @@ class CLI
                     break;
                 case '3':
                 case 'exclude-directory-list':
-                    Config::get()->exclude_analysis_directory_list = explode(',', $value);
+                    Config::setValue('exclude_analysis_directory_list', explode(',', $value));
                     break;
                 case 'exclude-file':
-                    Config::get()->exclude_file_list = array_merge(
-                        Config::get()->exclude_file_list,
-                        is_array($value) ? $value : [$value]
-                    );
+                    Config::setValue('exclude_file_list', array_merge(
+                        Config::getValue('exclude_file_list'),
+                        \is_array($value) ? $value : [$value]
+                    ));
+                    break;
+                case 'include-analysis-file-list':
+                    Config::setValue('include_analysis_file_list', explode(',', $value));
                     break;
                 case 'j':
                 case 'processes':
-                    Config::get()->processes = (int)$value;
+                    Config::setValue('processes', (int)$value);
                     break;
                 case 'z':
                 case 'signature-compatibility':
-                    Config::get()->analyze_signature_compatibility = (bool)$value;
+                    Config::setValue('analyze_signature_compatibility', (bool)$value);
                     break;
                 case 'y':
                 case 'minimum-severity':
@@ -256,7 +260,7 @@ class CLI
                     break;
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
-                    Config::get()->plugins = [];
+                    Config::setValue('plugins', []);
                     break;
                 case 's':
                 case 'daemonize-socket':
@@ -266,28 +270,35 @@ class CLI
                         $msg = sprintf('Requested to create unix socket server in %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
                         $this->usage($msg, 1);
                     } else {
-                        Config::get()->daemonize_socket = $value;  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
+                        Config::setValue('daemonize_socket', $value);  // Daemonize. Assumes the file list won't change. Accepts requests over a Unix socket, or some other IPC mechanism.
                     }
                     break;
                     // TODO: HTTP server binding to 127.0.0.1, daemonize-port.
                 case 'daemonize-tcp-port':
                     $this->checkCanDaemonize('tcp');
-                    $port = filter_var($value, FILTER_VALIDATE_INT);
-                    if ($port >= 1024 && $port <= 65535) {
-                        Config::get()->daemonize_tcp_port = $port;
+                    if (strcasecmp($value, 'default') === 0) {
+                        $port = 4846;
                     } else {
-                        $this->usage("daemonize-tcp-port must be between 1024 and 65535, got '$value'", 1);
+                        $port = filter_var($value, FILTER_VALIDATE_INT);
+                    }
+                    if ($port >= 1024 && $port <= 65535) {
+                        Config::setValue('daemonize_tcp_port', $port);
+                    } else {
+                        $this->usage("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
                     }
                     break;
                 case 'x':
                 case 'dead-code-detection':
-                    Config::get()->dead_code_detection = true;
+                    Config::setValue('dead_code_detection', true);
+                    break;
+                case 'print-memory-usage-summary':
+                    Config::setValue('print_memory_usage_summary', true);
                     break;
                 case 'markdown-issue-messages':
-                    Config::get()->markdown_issue_messages = true;
+                    Config::setValue('markdown_issue_messages', true);
                     break;
                 case 'color':
-                    Config::get()->color_issue_messages = true;
+                    Config::setValue('color_issue_messages', true);
                     break;
                 default:
                     $this->usage("Unknown option '-$key'", EXIT_FAILURE);
@@ -312,7 +323,7 @@ class CLI
                 $regex = '/^'. (isset($opt[1]) ? '--' : '-') . $opt . '/';
 
                 if (($chunk == $value
-                    || (is_array($value) && in_array($chunk, $value))
+                    || (\is_array($value) && in_array($chunk, $value))
                     )
                     && $argv[$key-1][0] == '-'
                     || preg_match($regex, $chunk)
@@ -343,11 +354,11 @@ class CLI
             /** @var string[] */
             $this->file_list = array_merge(
                 $this->file_list,
-                Config::get()->file_list
+                Config::getValue('file_list')
             );
 
             // Merge in any directories given in the config
-            foreach (Config::get()->directory_list as $directory_name) {
+            foreach (Config::getValue('directory_list') as $directory_name) {
                 $this->file_list = array_merge(
                     $this->file_list,
                     $this->directoryNameToFileList($directory_name)
@@ -360,9 +371,9 @@ class CLI
 
         // Exclude any files that should be excluded from
         // parsing and analysis (not read at all)
-        if (count(Config::get()->exclude_file_list) > 0) {
+        if (count(Config::getValue('exclude_file_list')) > 0) {
             $exclude_file_set = [];
-            foreach (Config::get()->exclude_file_list as $file) {
+            foreach (Config::getValue('exclude_file_list') as $file) {
                 $exclude_file_set[$file] = true;
             }
 
@@ -378,8 +389,8 @@ class CLI
         // way during analysis. With our parallelization mechanism, there
         // is no shared state between processes, making it impossible to
         // have a complete set of reference lists.
-        assert(Config::get()->processes === 1
-            || !Config::get()->dead_code_detection,
+        \assert(Config::getValue('processes') === 1
+            || !Config::getValue('dead_code_detection'),
             "We cannot run dead code detection on more than one core.");
     }
 
@@ -392,7 +403,7 @@ class CLI
         if (!function_exists('pcntl_fork')) {
             $this->usage("The pcntl extension is not available to fork a new process, so $opt will not be able to create workers to respond to requests.", 1);
         }
-        if (Config::get()->daemonize_socket || Config::get()->daemonize_tcp_port) {
+        if (Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port')) {
             $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
         }
     }
@@ -445,6 +456,13 @@ Usage: {$argv[0]} [options] [files...]
 
   Generally, you'll want to include the directories for
   third-party code (such as "vendor/") in this list.
+
+ --include-analysis-file-list <file_list>
+  A comma-separated list of files that will be included in
+  static analysis. All others won't be analyzed.
+
+  This is primarily intended for performing standalone
+  incremental analysis.
 
  -d, --project-root-directory
   Hunt for a directory named .phan in the current or parent
@@ -505,8 +523,9 @@ Usage: {$argv[0]} [options] [files...]
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
- --daemonize-tcp-port <1024-65535>
-  TCP port for Phan to listen for JSON requests on, in daemon mode. (e.g. 4846)
+ --daemonize-tcp-port <default|1024-65535>
+  TCP port for Phan to listen for JSON requests on, in daemon mode.
+  (e.g. 'default', which is an alias for port 4846.)
 
  -v, --version
   Print phan's version number
@@ -534,6 +553,10 @@ Extended help:
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
 
+ --print-memory-usage-summary
+  Emit JSON serialized signatures to the given file.
+  This uses a method signature format similar to FunctionSignatureMap.php.
+
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
 
@@ -555,15 +578,15 @@ EOB;
         $file_list = [];
 
         try {
-            $file_extensions = Config::get()->analyzed_file_extensions;
+            $file_extensions = Config::getValue('analyzed_file_extensions');
 
-            if (!is_array($file_extensions) || count($file_extensions) === 0) {
+            if (!\is_array($file_extensions) || count($file_extensions) === 0) {
                 throw new \InvalidArgumentException(
                     'Empty list in config analyzed_file_extensions. Nothing to analyze.'
                 );
             }
 
-            $exclude_file_regex = Config::get()->exclude_file_regex;
+            $exclude_file_regex = Config::getValue('exclude_file_regex');
             $iterator = new \CallbackFilterIterator(
                 new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator(
@@ -601,7 +624,7 @@ EOB;
             // to work around some file systems not returning results lexicographically.
             // Keep directories together by replacing directory separators with the null byte
             // (E.g. "a.b" is lexicographically less than "a/b", but "aab" is greater than "a/b")
-            return strcmp(preg_replace("@[/\\\\]+@", "\0", $a), preg_replace("@[/\\\\]+@", "\0", $b));
+            return \strcmp(\preg_replace("@[/\\\\]+@", "\0", $a), \preg_replace("@[/\\\\]+@", "\0", $b));
         });
 
         return $file_list;
@@ -609,8 +632,10 @@ EOB;
 
     public static function shouldShowProgress() : bool
     {
-        $config = Config::get();
-        return $config->progress_bar && !$config->dump_ast && !$config->daemonize_tcp_port && !$config->daemonize_socket;
+        return Config::getValue('progress_bar') &&
+            !Config::getValue('dump_ast') &&
+            !Config::getValue('daemonize_tcp_port') &&
+            !Config::getValue('daemonize_socket');
     }
 
     /**
@@ -644,10 +669,6 @@ EOB;
      * @param float $p
      * The percentage to display
      *
-     * @param float $sample_rate
-     * How frequently we should update the progress
-     * bar, randomly sampled
-     *
      * @return void
      */
     public static function progress(
@@ -665,7 +686,7 @@ EOB;
         // super fast
         if ($p > 0.0
             && $p < 1.0
-            && rand(0, 1000) > (1000 * Config::get()->progress_bar_sample_rate
+            && rand(0, 1000) > (1000 * Config::getValue('progress_bar_sample_rate')
             )) {
             return;
         }
@@ -705,7 +726,7 @@ EOB;
             !empty($this->config_file)
             ? realpath($this->config_file)
             : implode(DIRECTORY_SEPARATOR, [
-                Config::get()->getProjectRootDirectory(),
+                Config::getProjectRootDirectory(),
                 '.phan',
                 'config.php'
             ]);
@@ -720,7 +741,7 @@ EOB;
 
         // Write each value to the config
         foreach ($config as $key => $value) {
-            Config::get()->__set($key, $value);
+            Config::setValue($key, $value);
         }
     }
 }

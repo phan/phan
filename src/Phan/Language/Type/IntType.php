@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
-class IntType extends ScalarType
+final class IntType extends ScalarType
 {
+    /** @phan-override */
     const NAME = 'int';
 }
