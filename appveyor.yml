@@ -34,7 +34,7 @@ build_script:
 
     buildconf.bat
 
-    configure.bat --disable-all --enable-phar --enable-json --enable-hash --enable-ctype --enable-filter --enable-tokenizer --enable-zip --with-iconv --with-openssl --with-dom --with-libxml --enable-cli --enable-mbstring --enable-xmlwriter --with-xml --enable-ast=shared --with-prefix=C:\projects\php\bin --with-php-build=deps
+    configure.bat --disable-all --enable-phar --enable-json --enable-hash --enable-ctype --enable-filter --enable-tokenizer --enable-zip --with-iconv --with-openssl --with-dom --with-simplexml --with-libxml --enable-cli --enable-mbstring --enable-xmlwriter --with-xml --enable-ast=shared --with-prefix=C:\projects\php\bin --with-php-build=deps
 
     nmake
 
