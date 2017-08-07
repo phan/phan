@@ -72,4 +72,4 @@ test_script:
 # Verify that a phar can be built and executed under windows
 - cmd: mkdir build
 - cmd: php -d phar.readonly=0 package.php
-- cmd: php build/phan.phar --quick
+- cmd: php build/phan.phar --directory C:\projects\phan --quick
