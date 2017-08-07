@@ -51,10 +51,11 @@ class Analysis
         // before passing it on to the recursive version
         // of this method
         try {
+            $real_file_path = Config::projectPath($file_path);
             if (\is_string($override_contents)) {
-                $cache_entry = FileCache::addEntry($file_path, $override_contents);
+                $cache_entry = FileCache::addEntry($real_file_path, $override_contents);
             } else {
-                $cache_entry = FileCache::getOrReadEntry($file_path);
+                $cache_entry = FileCache::getOrReadEntry($real_file_path);
             }
             $file_contents = $cache_entry->getContents();
             if ($file_contents === '') {
@@ -364,10 +365,11 @@ class Analysis
         // before passing it on to the recursive version
         // of this method
         try {
+            $real_file_path = Config::projectPath($file_path);
             if (\is_string($override_contents)) {
-                $cache_entry = FileCache::addEntry($file_path, $override_contents);
+                $cache_entry = FileCache::addEntry($real_file_path, $override_contents);
             } else {
-                $cache_entry = FileCache::getOrReadEntry($file_path);
+                $cache_entry = FileCache::getOrReadEntry($real_file_path);
             }
             $file_contents = $cache_entry->getContents();
             if ($file_contents === '') {

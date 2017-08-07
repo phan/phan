@@ -196,6 +196,7 @@ class Request {
      * @param int|null $pid
      * @return void
      * @suppress PhanTypeMismatchArgumentInternal - bad function signature map - status is really an array
+     * @suppress PhanUndeclaredConstant pcntl unavailable on windows
      */
     public static function childSignalHandler($signo, $status = null, $pid = null) {
         if ($signo !== SIGCHLD) {
@@ -228,6 +229,7 @@ class Request {
      * @param \Closure $file_path_lister
      * @param resource $conn
      * @return Request|null - non-null if this is a worker process with work to do. null if request failed or this is the master.
+     * @suppress PhanUndeclaredConstant (pcntl unavailable on windows)
      */
     public static function accept(CodeBase $code_base, \Closure $file_path_lister, $conn) {
         FileCache::clear();
