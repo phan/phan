@@ -67,5 +67,5 @@ build_script:
 test_script:
 - cmd: cd C:\projects\phan
 - cmd: php composer.phar install
-- cmd: php vendor\bin\phpunit
 - cmd: php phan
+- cmd: .\vendor\bin\phpunit --verbose
