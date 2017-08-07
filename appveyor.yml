@@ -1,0 +1,71 @@
+# Based on igbinary and php-ast's appveyor config.
+# This tests against the latest stable minor version of PHP 7 (Currently 7.1)
+# The project name is the same as the build id used, e.g. https://www.appveyor.com/docs/environment-variables/
+
+version: '{branch}.{build}'
+clone_folder: C:\projects\phan
+# Don't include full git history
+clone_depth: 1
+# Test 32-builds
+platform: x86
+
+install:
+- cmd: choco feature enable -n=allowGlobalConfirmation
+- cmd: mkdir %APPVEYOR_BUILD_FOLDER%\bin
+build_script:
+- cmd: >-
+    "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\vcvars32.bat"
+
+    appveyor DownloadFile http://windows.php.net/downloads/php-sdk/php-sdk-binary-tools-20110915.zip
+
+    7z x -y php-sdk-binary-tools-20110915.zip -oC:\projects\php-sdk
+
+    C:\projects\php-sdk\bin\phpsdk_setvars.bat
+
+    git clone --depth=1 --branch=PHP-7.1 https://github.com/php/php-src C:\projects\php-src
+
+    git clone --depth=1 --branch=master https://github.com/nikic/php-ast C:\projects\php-src\ext\ast
+
+    appveyor DownloadFile http://windows.php.net/downloads/php-sdk/deps-7.1-vc14-x86.7z
+
+    7z x -y deps-7.1-vc14-x86.7z -oC:\projects\php-src
+
+    cd C:\projects\php-src
+
+    buildconf.bat
+
+    configure.bat --disable-all --enable-phar --enable-json --enable-hash --enable-ctype --enable-filter --enable-tokenizer --enable-zip --with-iconv --with-openssl --with-dom --with-libxml --enable-cli --enable-ast=shared --with-prefix=C:\projects\php\bin --with-php-build=deps
+
+    nmake
+
+    nmake install
+
+    dir
+
+    cd C:\projects\php\bin
+
+    echo [PHP] > php.ini
+
+    echo extension_dir = "ext" >> php.ini
+
+    echo extension=php_ast.dll >> php.ini
+
+    echo extension=php_openssl.dll >> php.ini
+
+    SET PATH=c:\projects\php\bin;%PATH%
+
+    echo %PATH%
+
+    php -v
+
+    php -m
+
+    cd C:\projects\phan
+
+    appveyor DownloadFile https://getcomposer.org/composer.phar
+
+test_script:
+- cmd: cd C:\projects\phan
+- cmd: php composer.phar install
+- cmd: php phan
+- cmd: php vendor\bin\phpunit
