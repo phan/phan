@@ -8,19 +8,12 @@ use Phan\ForkPool;
  */
 class ForkPoolTest extends BaseTest
 {
-    private function checkIfShouldSkipForkingTests() {
-        if (extension_loaded('grpc')) {
-            $this->markTestSkipped('The latest grpc extension (1.4.0RC2) has issues with forking. Disabling tests with all versions until it is fixed');
-        }
-    }
-
     /**
      * Test that workers are able to send their data back
      * to the parent process.
      */
     public function testBasicForkJoin()
     {
-        $this->checkIfShouldSkipForkingTests();
         $data = [
             [1, 2, 3, 4],
             [5, 6, 7, 8],
@@ -48,7 +41,6 @@ class ForkPoolTest extends BaseTest
      */
     public function testStartupFunction()
     {
-        $this->checkIfShouldSkipForkingTests();
         $did_startup = false;
         $pool = new ForkPool(
             [[1], [2], [3], [4]],
