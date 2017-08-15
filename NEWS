@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.9.4 (dev)
+15 Aug 2017, Phan 0.9.4
 -----------------------
 
 New Features (Analysis)
@@ -46,6 +46,7 @@ Bug Fixes
   so that method visibility checks work properly.
   Additionally, fix false positive warnings about visibility of method aliases from traits.
 + Warn about instantiation of class with inaccessible constructor (Issue #1043)
++ Fix rare uncaught exceptions (Various)
 
 Changes In Emitted Issues
 + Improve `InvalidVariableIssetPlugin`. Change the names and messages for issue types.
