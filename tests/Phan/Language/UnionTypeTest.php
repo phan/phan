@@ -87,7 +87,7 @@ class UnionTypeTest extends BaseTest {
     public function testInternalObject() {
         $this->assertUnionTypeStringEqual(
             'new SplStack();',
-            '\\ArrayAccess|\\Countable|\\Iterator|\\Serializable|\\SplDoublyLinkedList|\\SplStack|\\Traversable'
+            '\\ArrayAccess|\\Countable|\\Iterator|\\Serializable|\\SplDoublyLinkedList|\\SplStack|\\Traversable|iterable'
         );
     }
 

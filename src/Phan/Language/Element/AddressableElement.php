@@ -121,7 +121,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param, may be used by subclasses)
      * The code base in which this element exists.
      *
      * @return bool
@@ -198,7 +198,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param)
      * Some elements may need access to the code base to
      * figure out their total reference count.
      *
@@ -227,12 +227,12 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         $this->hydrateOnce($code_base);
     }
 
-    protected function hydrateOnce(CodeBase $code_base)
+    protected function hydrateOnce(CodeBase $unused_code_base)
     {
         // Do nothing unless overridden
     }
 
-    public function getElementNamespace(CodeBase $code_base) : string
+    public function getElementNamespace(CodeBase $unused_code_base) : string
     {
         $element_fqsen = $this->getFQSEN();
         \assert($element_fqsen instanceof FullyQualifiedGlobalStructuralElement);

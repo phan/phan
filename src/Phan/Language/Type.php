@@ -133,6 +133,13 @@ class Type
 
     /** To distinguish NativeType subclasses and classes with the same name. Overridden in subclasses */
     const KEY_PREFIX = '';
+
+    /** To normalize combinations of union types */
+    const _bit_false    = (1 << 0);
+    const _bit_true     = (1 << 1);
+    const _bit_bool_combination = self::_bit_false | self::_bit_true;
+    const _bit_nullable = (1 << 2);
+
     /**
      * @var string|null
      * The namespace of this type such as '\' or
@@ -141,10 +148,10 @@ class Type
     protected $namespace = null;
 
     /**
-     * @var string|null
+     * @var string
      * The name of this type such as 'int' or 'MyClass'
      */
-    protected $name = null;
+    protected $name = '';
 
     /**
      * @var UnionType[]
@@ -438,6 +445,7 @@ class Type
             'E_ALL'                 => $int,
             'E_STRICT'              => $int,
             '__COMPILER_HALT_OFFSET__' => $int,
+            '__LINE__'              => $int,
             'TRUE'                  => $true,
             'FALSE'                 => $false,
             'NULL'                  => $null,
@@ -530,10 +538,7 @@ class Type
                 return StaticType::instance($is_nullable);
         }
 
-        \assert(
-            false,
-            "No internal type with name $type_name"
-        );
+        throw new \AssertionError("No internal type with name $type_name");
     }
 
     /**
@@ -1444,6 +1449,9 @@ class Type
         }
         // A matrix of allowable type conversions
         static $matrix = [
+            '\Generator' => [
+                'iterable' => true,
+            ],
             '\Traversable' => [
                 'iterable' => true,
             ],
@@ -1664,5 +1672,13 @@ class Type
             $template_parameter_type_name_list,
             $is_nullable
         );
+    }
+
+    /**
+     * Helper function for internal use by UnionType.
+     * Overridden by subclasses.
+     */
+    public function getNormalizationFlags() : int {
+        return $this->is_nullable ? self::_bit_nullable : 0;
     }
 }

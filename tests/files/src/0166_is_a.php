@@ -37,9 +37,6 @@ function check($var) {
 		emitType($var);
 	} elseif (is_string($var)) {
 		emitType($var);
-	} elseif (is_iterable($var)) {
-		emitType($var);
-		foreach ($var as $v) { }  // sanity check that iteration works
 	}
 }
 

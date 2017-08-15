@@ -26,3 +26,15 @@ function k() : int {
 function l() : int {
     throw new \Exception();
 }
+function i92() : int {
+    if (rand() % 2) {
+        throw new \Exception();
+    } else {
+        throw new \Exception();
+    }
+}
+function j92() : int {
+    if (rand() % 2) {
+        throw new \Exception();
+    } else;
+}

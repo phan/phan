@@ -37,6 +37,7 @@ class ParallelParentCollector implements IssueCollectorInterface
      * @param IssueCollectorInterface $base_collector
      * A collector must be given to which collected issues
      * will be passed
+     * @suppress PhanUndeclaredConstant pcntl unavailable on windows
      */
     public function __construct(
         IssueCollectorInterface $base_collector
@@ -135,7 +136,7 @@ class ParallelParentCollector implements IssueCollectorInterface
      * Remove all collected issues (from the parse phase) for the given file paths.
      * Called from daemon mode.
      *
-     * @param string[] $files - the relative paths to those files
+     * @param string[] $files - the relative paths to those files (@phan-unused-param)
      * @return void
      */
     public function removeIssuesForFiles(array $files) {

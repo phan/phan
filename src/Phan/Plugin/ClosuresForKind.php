@@ -60,17 +60,17 @@ class ClosuresForKind {
      */
     public function getFlattenedClosures(\Closure $flattener)
     {
-        ksort($this->closures);
+        \ksort($this->closures);
         $merged_closures = [];
         foreach ($this->closures as $kind => $closure_list) {
-            assert(\count($closure_list) > 0);
+            \assert(\count($closure_list) > 0);
             if (\count($closure_list) === 1) {
                 // If there's exactly one closure for a given kind, then execute it directly.
                 $merged_closures[$kind] = $closure_list[0];
             } else {
                 // Create a closure which will execute 2 or more closures.
                 $closure = $flattener($closure_list);
-                assert($closure instanceof \Closure);
+                \assert($closure instanceof \Closure);
                 $merged_closures[$kind] = $closure;
             }
         }

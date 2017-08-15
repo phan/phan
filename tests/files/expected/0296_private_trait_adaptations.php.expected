@@ -1,4 +1,3 @@
-%s:29 PhanAccessMethodPrivate Cannot access private method \A296::asPrivateAlias defined at %s:5
 %s:38 PhanAccessMethodPrivate Cannot access private method \B296::asPrivateAlias defined at %s:5
 %s:55 PhanAccessMethodPrivate Cannot access private method \A296::fPrivateAsPublic defined at %s:10
 %s:56 PhanAccessMethodPrivate Cannot access private method \A296::fPrivateAsProtected defined at %s:11

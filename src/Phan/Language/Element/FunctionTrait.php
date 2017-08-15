@@ -106,6 +106,13 @@ trait FunctionTrait {
     private $phpdoc_parameter_type_map = [];
 
     /**
+     * @var ?UnionType
+     * The unmodified *phpdoc* union type for this method.
+     * Will be null without any (at)return statements.
+     */
+    private $phpdoc_return_type;
+
+    /**
      * @var UnionType
      * The *real* (not from phpdoc) return type from this method.
      * This does not change after initialization.
@@ -275,6 +282,8 @@ trait FunctionTrait {
      */
     public function setHasYield(bool $has_yield)
     {
+        // TODO: In a future release of php-ast, this information will be part of the function node's flags.
+        // (PHP 7.1 only, not supported in PHP 7.0)
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
             Flags::HAS_YIELD,
@@ -635,6 +644,23 @@ trait FunctionTrait {
     public function getPHPDocParameterTypeMap()
     {
         return $this->phpdoc_parameter_type_map;
+    }
+
+    /**
+     * @param ?UnionType $type the raw phpdoc union type
+     * @return void
+     */
+    public function setPHPDocReturnType($type)
+    {
+        $this->phpdoc_return_type = $type;
+    }
+
+    /**
+     * @return ?UnionType the raw phpdoc union type
+     */
+    public function getPHPDocReturnType()
+    {
+        return $this->phpdoc_return_type;
     }
 
     /**

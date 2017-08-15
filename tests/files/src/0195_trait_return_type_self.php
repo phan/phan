@@ -1,7 +1,7 @@
 <?php
 trait B {
     abstract function f();
-    /** @return static : TODO: Make phan recognize that @return static overrides real type of self */
+    /** @return static (Phan recognizes that `static` is a narrower form of `self`) */
     public function g(): self
     {
         return $this;

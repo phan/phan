@@ -8,8 +8,9 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
-use Phan\Language\Type;
 use Phan\Language\Context;
+use Phan\Language\Element\Variable;
+use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\FloatType;
@@ -20,7 +21,6 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
-use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -29,11 +29,7 @@ use ast\Node;
 // TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
 class ConditionVisitor extends KindVisitorImplementation
 {
-
-    /**
-     * @var CodeBase
-     */
-    private $code_base;
+    use ConditionVisitorUtil;
 
     /**
      * @var Context
@@ -113,7 +109,7 @@ class ConditionVisitor extends KindVisitorImplementation
     {
         $flags = ($node->flags ?? 0);
         if ($flags === \ast\flags\BINARY_BOOL_AND) {
-            return $this->visitShortCircuitingAnd($node->children['left'], $node->children['right']);
+            return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
         } else if ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
             $this->checkVariablesDefined($node);
             return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
@@ -135,9 +131,11 @@ class ConditionVisitor extends KindVisitorImplementation
     private function analyzeIsIdentical($left, $right) : Context
     {
         if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            return $this->analyzeVarIsIdentical($left, $right);
+            // e.g. if ($x === null)
+            return $this->updateVariableToBeIdentical($left, $right, $this->context);
         } else if (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            return $this->analyzeVarIsIdentical($right, $left);
+            // e.g. if (null === $x)
+            return $this->updateVariableToBeIdentical($right, $left, $this->context);
         }
         return $this->context;
     }
@@ -150,86 +148,14 @@ class ConditionVisitor extends KindVisitorImplementation
     private function analyzeIsNotIdentical($left, $right) : Context
     {
         if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
-            return $this->analyzeVarIsNotIdentical($left, $right);
+            // e.g. if ($x !== null)
+            return $this->updateVariableToBeNotIdentical($left, $right, $this->context);
         } else if (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
-            return $this->analyzeVarIsNotIdentical($right, $left);
+            // e.g. if (null !== $x)
+            return $this->updateVariableToBeNotIdentical($right, $left, $this->context);
         }
         return $this->context;
     }
-
-    /**
-     * @param Node $var_node
-     * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
-     */
-    private function analyzeVarIsIdentical(Node $var_node, $expr) : Context
-    {
-        $var_name = $var_node->children['name'] ?? null;
-        $context = $this->context;
-        // Don't analyze variables such as $$a
-        if (\is_string($var_name) && $var_name) {
-            try {
-                $exprType = UnionTypeVisitor::unionTypeFromLiteralOrConstant($this->code_base, $this->context, $expr);
-                if ($exprType) {
-                    // Get the variable we're operating on
-                    $variable = $this->getVariableFromScope($var_node);
-                    if (\is_null($variable)) {
-                        return $context;
-                    }
-                    \assert(!\is_null($variable));  // redundant annotation for phan.
-
-                    // Make a copy of the variable
-                    $variable = clone($variable);
-
-                    $variable->setUnionType($exprType);
-
-                    // Overwrite the variable with its new type in this
-                    // scope without overwriting other scopes
-                    $context = $context->withScopeVariable(
-                        $variable
-                    );
-                    return $context;
-                }
-            } catch (\Exception $e) {
-                // Swallow it (E.g. IssueException for undefined variable)
-            }
-        }
-        return $context;
-    }
-
-    /**
-     * @param Node $var_node
-     * @param Node|int|float|string $expr
-     * @return Context - Constant after inferring type from an expression such as `if ($x === 'literal')`
-     */
-    private function analyzeVarIsNotIdentical(Node $var_node, $expr) : Context
-    {
-        $var_name = $var_node->children['name'] ?? null;
-        $context = $this->context;
-        if (\is_string($var_name)) {
-            try {
-                if ($expr instanceof Node && $expr->kind === \ast\AST_CONST) {
-                    $exprNameNode = $expr->children['name'];
-                    if ($exprNameNode->kind === \ast\AST_NAME) {
-                        // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
-                        $exprName = $exprNameNode->children['name'];
-                        switch(\strtolower($exprName)) {
-                        case 'null':
-                            return $this->removeNullFromVariable($var_node, $context);
-                        case 'false':
-                            return $this->removeFalseFromVariable($var_node, $context);
-                        case 'true':
-                            return $this->removeTrueFromVariable($var_node, $context);
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                // Swallow it (E.g. IssueException for undefined variable)
-            }
-        }
-        return $context;
-    }
-
 
     /**
      * @param Node $node
@@ -241,7 +167,7 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitAnd(Node $node) : Context
     {
-        return $this->visitShortCircuitingAnd($node->children['left'], $node->children['right']);
+        return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
     }
 
     /**
@@ -256,7 +182,7 @@ class ConditionVisitor extends KindVisitorImplementation
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    private function visitShortCircuitingAnd($left, $right) : Context
+    private function analyzeShortCircuitingAnd($left, $right) : Context
     {
         // Aside: If left/right is not a node, left/right is a literal such as a number/string, and is either always truthy or always falsey.
         // Inside of this conditional may be dead or redundant code.
@@ -288,193 +214,9 @@ class ConditionVisitor extends KindVisitorImplementation
         }
         // TODO: Emit dead code issue for non-nodes
         if ($expr_node instanceof Node) {
-            return $this->updateContextWithNegation($expr_node, $this->context);
+            return (new NegatedConditionVisitor($this->code_base, $this->context))($expr_node);
         }
         return $this->context;
-    }
-
-    private function updateContextWithNegation(Node $negatedNode, Context $context) : Context
-    {
-        $this->checkVariablesDefined($negatedNode);
-        // Negation
-        // TODO: negate instanceof, other checks
-        // TODO: negation would also go in the else statement
-        $kind = $negatedNode->kind ?? 0;
-        if ($kind === \ast\AST_CALL) {
-            $args = $negatedNode->children['args']->children;
-            foreach ($args as $arg) {
-                if ($arg instanceof Node) {
-                    $this->checkVariablesDefined($arg);
-                }
-            }
-
-            if (self::isArgumentListWithVarAsFirstArgument($args)) {
-                $function_name = strtolower(ltrim($negatedNode->children['expr']->children['name'], '\\'));
-                if (\count($args) !== 1) {
-                    if (\strcasecmp($function_name, 'is_a') === 0) {
-                        return $this->analyzeNegationOfVariableIsA($args, $context);
-                    }
-                    return $context;
-                }
-                static $map;
-                if ($map === null) {
-                    $map = self::createNegationCallbackMap();
-                }
-                // TODO: Make this generic to all type assertions? E.g. if (!is_string($x)) removes 'string' from type, makes '?string' (nullable) into 'null'.
-                // This may be redundant in some places if AST canonicalization is used, but still useful in some places
-                // TODO: Make this generic so that it can be used in the 'else' branches?
-                $callback = $map[$function_name] ?? null;
-                if ($callback === null) {
-                    return $context;
-                }
-                return $callback($this, $args[0], $context);
-            }
-        } else if ($kind === \ast\AST_VAR) {
-            return $this->removeTruthyFromVariable($negatedNode, $context);
-        }
-        return $context;
-    }
-
-    private function analyzeNegationOfVariableIsA(array $args, Context $context) : Context
-    {
-        // TODO: implement
-        return $context;
-    }
-
-    /**
-     * @return \Closure[] (ConditionVisitor $cv, Node $var_node, Context $context) -> Context
-     */
-    private static function createNegationCallbackMap() : array {
-        $remove_empty_cb = function(ConditionVisitor $cv, Node $var_node, Context $context) : Context {
-            return $cv->removeFalseyFromVariable($var_node, $context);
-        };
-        $remove_null_cb = function(ConditionVisitor $cv, Node $var_node, Context $context) : Context {
-            return $cv->removeNullFromVariable($var_node, $context);
-        };
-
-        // Remove any Types from UnionType that are subclasses of $base_class_name
-        $make_basic_negated_assertion_callback = static function(string $base_class_name) : \Closure
-        {
-            return static function(ConditionVisitor $cv, Node $var_node, Context $context) use($base_class_name) : Context {
-                return $cv->updateVariableWithConditionalFilter(
-                    $var_node,
-                    $context,
-                    function(UnionType $union_type) use($base_class_name) : bool {
-                        return $union_type->hasTypeMatchingCallback(function(Type $type) use($base_class_name) : bool {
-                            return $type instanceof $base_class_name;
-                        });
-                    },
-                    function(UnionType $union_type) use ($base_class_name) : UnionType {
-                        $new_type = new UnionType();
-                        $has_null = false;
-                        $has_other_nullable_types = false;
-                        // Add types which are not instances of $base_class_name
-                        foreach ($union_type->getTypeSet() as $type) {
-                            if ($type instanceof $base_class_name) {
-                                $has_null = $has_null || $type->getIsNullable();
-                                continue;
-                            }
-                            assert($type instanceof Type);
-                            $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                            $new_type->addType($type);
-                        }
-                        // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                        if ($has_null && !$has_other_nullable_types) {
-                            $new_type->addType(NullType::instance(false));
-                        }
-                        return $new_type;
-                    }
-                );
-            };
-        };
-        $remove_float_callback = $make_basic_negated_assertion_callback(FloatType::class);
-        $remove_int_callback = $make_basic_negated_assertion_callback(IntType::class);
-        $remove_scalar_callback = static function(ConditionVisitor $cv, Node $var_node, Context $context) : Context {
-            return $cv->updateVariableWithConditionalFilter(
-                $var_node,
-                $context,
-                // if (!is_scalar($x)) removes scalar types from $x, but $x can still be null.
-                function(UnionType $union_type) : bool {
-                    return $union_type->hasTypeMatchingCallback(function(Type $type) : bool {
-                        return ($type instanceof ScalarType) && !($type instanceof NullType);
-                    });
-                },
-                function(UnionType $union_type) : UnionType {
-                    $new_type = new UnionType();
-                    $has_null = false;
-                    $has_other_nullable_types = false;
-                    // Add types which are not scalars
-                    foreach ($union_type->getTypeSet() as $type) {
-                        if ($type instanceof ScalarType && !($type instanceof NullType)) {
-                            $has_null = $has_null || $type->getIsNullable();
-                            continue;
-                        }
-                        assert($type instanceof Type);
-                        $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                        $new_type->addType($type);
-                    }
-                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                    if ($has_null && !$has_other_nullable_types) {
-                        $new_type->addType(NullType::instance(false));
-                    }
-                    return $new_type;
-                }
-            );
-        };
-        $remove_callable_callback = static function(ConditionVisitor $cv, Node $var_node, Context $context) : Context {
-            return $cv->updateVariableWithConditionalFilter(
-                $var_node,
-                $context,
-                // if (!is_callable($x)) removes non-callable/closure types from $x.
-                // TODO: Could check for __invoke()
-                function(UnionType $union_type) : bool {
-                    return $union_type->hasTypeMatchingCallback(function(Type $type) : bool {
-                        return $type->isCallable();
-                    });
-                },
-                function(UnionType $union_type) : UnionType {
-                    $new_type = new UnionType();
-                    $has_null = false;
-                    $has_other_nullable_types = false;
-                    // Add types which are not callable
-                    foreach ($union_type->getTypeSet() as $type) {
-                        if ($type->isCallable()) {
-                            $has_null = $has_null || $type->getIsNullable();
-                            continue;
-                        }
-                        assert($type instanceof Type);
-                        $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                        $new_type->addType($type);
-                    }
-                    // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
-                    if ($has_null && !$has_other_nullable_types) {
-                        $new_type->addType(NullType::instance(false));
-                    }
-                    return $new_type;
-                }
-            );
-        };
-
-        return [
-            'empty' => $remove_empty_cb,
-            'is_null' => $remove_null_cb,
-            'is_array' => $make_basic_negated_assertion_callback(ArrayType::class),
-            // 'is_bool' => $make_basic_assertion_callback(BoolType::class),
-            'is_callable' => $remove_callable_callback,
-            'is_double' => $remove_float_callback,
-            'is_float' => $remove_float_callback,
-            'is_int' => $remove_int_callback,
-            'is_integer' => $remove_int_callback,
-            'is_iterable' => $make_basic_negated_assertion_callback(IterableType::class),  // TODO: Could keep basic array types and classes extending iterable
-            'is_long' => $remove_int_callback,
-            'is_null' => $remove_null_cb,
-            // 'is_numeric' => $make_basic_assertion_callback('string|int|float'),
-            // TODO 'is_object' => $remove_object_callback,
-            'is_real' => $remove_float_callback,
-            'is_resource' => $make_basic_negated_assertion_callback(ResourceType::class),
-            'is_scalar' => $remove_scalar_callback,
-            'is_string' => $make_basic_negated_assertion_callback(StringType::class),
-        ];
     }
 
     /**
@@ -501,12 +243,28 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitIsset(Node $node) : Context
     {
-        $this->checkVariablesDefined($node);
-        if ($node->children['var']->kind !== \ast\AST_VAR) {
-            return $this->context;
+        $context = $this->context;
+        $var_node = $node->children['var'];
+        if ($var_node->kind !== \ast\AST_VAR) {
+            $this->checkVariablesDefined($var_node);
+            return $context;
         }
 
-        return $this->removeNullFromVariable($node->children['var'], $this->context);
+        $var_name = $var_node->children['name'];
+        if (!\is_string($var_name)) {
+            $this->checkVariablesDefined($var_node);
+            return $context;
+        }
+        if (!$context->getScope()->hasVariableWithName($var_name)) {
+            // Support analyzing cases such as `if (isset($x)) { use($x); }`, or `assert(isset($x))`
+            $context->setScope($context->getScope()->withVariable(new Variable(
+                $context->withLineNumberStart($var_node->lineno ?? 0),
+                $var_name,
+                new UnionType(),
+                $var_node->flags ?? 0
+            )));
+        }
+        return $this->removeNullFromVariable($var_node, $context, true);
     }
 
     /**
@@ -520,187 +278,7 @@ class ConditionVisitor extends KindVisitorImplementation
     public function visitVar(Node $node) : Context
     {
         $this->checkVariablesDefined($node);
-        return $this->removeFalseyFromVariable($node, $this->context);
-    }
-
-    // Remove any types which are definitely falsey from that variable (NullType, FalseType)
-    private function removeFalseyFromVariable(Node $var_node, Context $context) : Context
-    {
-        return $this->updateVariableWithConditionalFilter(
-            $var_node,
-            $context,
-            function(UnionType $type) : bool {
-                return $type->containsFalsey();
-            },
-            function(UnionType $type) : UnionType {
-                return $type->nonFalseyClone();
-            }
-        );
-    }
-
-    /**
-     * Remove any types which are definitely truthy from that variable (objects, TrueType, ResourceType, etc.)
-     * E.g. if (empty($x)) {} would result in this.
-     * Note that Phan can't know some scalars are not an int/string/float, since 0/""/"0"/0.0/[] are empty.
-     * (Remove arrays anyway)
-     */
-    private function removeTruthyFromVariable(Node $var_node, Context $context) : Context
-    {
-        return $this->updateVariableWithConditionalFilter(
-            $var_node,
-            $context,
-            function(UnionType $type) : bool {
-                return $type->containsTruthy();
-            },
-            function(UnionType $type) : UnionType {
-                return $type->nonTruthyClone();
-            }
-        );
-    }
-
-    private function removeNullFromVariable(Node $var_node, Context $context) : Context
-    {
-        return $this->updateVariableWithConditionalFilter(
-            $var_node,
-            $context,
-            function(UnionType $type) : bool {
-                return $type->containsNullable();
-            },
-            function(UnionType $type) : UnionType {
-                return $type->nonNullableClone();
-            }
-        );
-    }
-
-    private function removeFalseFromVariable(Node $var_node, Context $context) : Context
-    {
-        return $this->updateVariableWithConditionalFilter(
-            $var_node,
-            $context,
-            function(UnionType $type) : bool {
-                return $type->containsFalse();
-            },
-            function(UnionType $type) : UnionType {
-                return $type->nonFalseClone();
-            }
-        );
-    }
-
-    private function removeTrueFromVariable(Node $var_node, Context $context) : Context
-    {
-        return $this->updateVariableWithConditionalFilter(
-            $var_node,
-            $context,
-            function(UnionType $type) : bool {
-                return $type->containsTrue();
-            },
-            function(UnionType $type) : UnionType {
-                return $type->nonTrueClone();
-            }
-        );
-    }
-
-    /**
-     * If the inferred UnionType makes $should_filter_cb return true
-     * (indicating there are Types to be removed from the UnionType or altered),
-     * then replace the UnionType with the modified UnionType which $filter_union_type_cb returns,
-     * and update the context.
-     *
-     * Note: It's expected that $should_filter_cb returns false on the new UnionType of that variable.
-     */
-    private function updateVariableWithConditionalFilter(
-        Node $var_node,
-        Context $context,
-        \Closure $should_filter_cb,
-        \Closure $filter_union_type_cb
-    ) : Context {
-        try {
-            // Get the variable we're operating on
-            $variable = $this->getVariableFromScope($var_node);
-            if (\is_null($variable)) {
-                return $context;
-            }
-            \assert(!\is_null($variable));  // redundant annotation for phan.
-
-            $union_type = $variable->getUnionType();
-            if (!$should_filter_cb($union_type)) {
-                return $context;
-            }
-
-            // Make a copy of the variable
-            $variable = clone($variable);
-
-            $variable->setUnionType(
-                $filter_union_type_cb($union_type)
-            );
-
-            // Overwrite the variable with its new type in this
-            // scope without overwriting other scopes
-            $context = $context->withScopeVariable(
-                $variable
-            );
-        } catch (IssueException $exception) {
-            Issue::maybeEmitInstance($this->code_base, $context, $exception->getIssueInstance());
-        } catch (\Exception $exception) {
-            // Swallow it
-        }
-        return $context;
-    }
-
-    /**
-     * @return ?Variable - Returns null if the variable is undeclared and ignore_undeclared_variables_in_global_scope applies.
-     *                     or if assertions won't be applied?
-     * @throws IssueException if variable is undeclared and not ignored.
-     * @see UnionTypeVisitor->visitVar
-     *
-     * TODO: support assertions on superglobals, within the current file scope?
-     */
-    private function getVariableFromScope(Node $var_node) {
-        if (!($var_node instanceof Node || $var_node->kind !== \ast\AST_VAR)) {
-            return null;
-        }
-        $var_name_node = $var_node->children['name'] ?? null;
-
-        if ($var_name_node instanceof Node) {
-            // This is nonsense. Give up, but check if it's a type other than int/string.
-            // (e.g. to catch typos such as $$this->foo = bar;)
-            $name_node_type = (new UnionTypeVisitor($this->code_base, $this->context, true))($var_name_node);
-            static $int_or_string_type;
-            if ($int_or_string_type === null) {
-                $int_or_string_type = new UnionType();
-                $int_or_string_type->addType(StringType::instance(false));
-                $int_or_string_type->addType(IntType::instance(false));
-                $int_or_string_type->addType(NullType::instance(false));
-            }
-            if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
-                Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $var_name_node->lineno ?? 0, (string)$name_node_type);
-            }
-
-            return null;
-        }
-
-        $var_name = (string)$var_name_node;
-
-        if (!$this->context->getScope()->hasVariableWithName($var_name)) {
-            if (Variable::isHardcodedVariableInScopeWithName($var_name, $this->context->isInGlobalScope())) {
-                return null;
-            }
-            if (!Config::getValue('ignore_undeclared_variables_in_global_scope')
-                || !$this->context->isInGlobalScope()
-            ) {
-                throw new IssueException(
-                    Issue::fromType(Issue::UndeclaredVariable)(
-                        $this->context->getFile(),
-                        $var_node->lineno ?? 0,
-                        [$var_name]
-                    )
-                );
-            }
-            return null;
-        }
-        return $this->context->getScope()->getVariableByName(
-            $var_name
-        );
+        return $this->removeFalseyFromVariable($node, $this->context, false);
     }
 
     /**
@@ -725,26 +303,40 @@ class ConditionVisitor extends KindVisitorImplementation
 
         try {
             // Get the variable we're operating on
-            $variable = $this->getVariableFromScope($expr_node);
+            $variable = $this->getVariableFromScope($expr_node, $context);
             if (\is_null($variable)) {
                 return $context;
             }
-            \assert(!\is_null($variable));  // redundant annotation for phan.
 
             // Get the type that we're checking it against
+            $class_node = $node->children['class'];
             $type = UnionType::fromNode(
                 $this->context,
                 $this->code_base,
-                $node->children['class']
+                $class_node
             );
-
             // Make a copy of the variable
             $variable = clone($variable);
+            $object_types = $type->objectTypes();
+            if (!$object_types->isEmpty()) {
+                // See https://secure.php.net/instanceof -
 
-            // Add the type to the variable
-            // $variable->getUnionType()->addUnionType($type);
-            $variable->setUnionType($type);
-
+                // Add the type to the variable
+                // $variable->getUnionType()->addUnionType($type);
+                $variable->setUnionType($object_types);
+            } else {
+                if ($class_node->kind !== \ast\AST_NAME &&
+                        !$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                    Issue::maybeEmit(
+                        $this->code_base,
+                        $context,
+                        Issue::TypeInvalidInstanceof,
+                        $context->getLineNumberStart(),
+                        (string)$type
+                    );
+                }
+                $this->analyzeIsObjectAssertion($variable);
+            }
             // Overwrite the variable with its new type
             $context = $context->withScopeVariable(
                 $variable
@@ -756,15 +348,6 @@ class ConditionVisitor extends KindVisitorImplementation
         }
 
         return $context;
-    }
-
-    private static function isArgumentListWithVarAsFirstArgument(array $args) : bool
-    {
-        if (\count($args) >= 1) {
-            $arg = $args[0];
-            return ($arg instanceof Node) && ($arg->kind === \ast\AST_VAR);
-        }
-        return false;
     }
 
     /**
@@ -927,22 +510,6 @@ class ConditionVisitor extends KindVisitorImplementation
     }
 
     /**
-     * Fetches the function name. Does not check for function uses or namespaces.
-     * @return ?string (null if function name could not be found)
-     */
-    private static function getFunctionName(Node $node) {
-        $expr = $node->children['expr'];
-        if (!($expr instanceof Node)) {
-            return null;
-        }
-        $raw_function_name = $expr->children['name'] ?? null;
-        if (!(\is_string($raw_function_name) && $raw_function_name)) {
-            return null;
-        }
-        return $raw_function_name;
-    }
-
-    /**
      * Look at elements of the form `is_array($v)` and modify
      * the type of the variable.
      *
@@ -959,7 +526,6 @@ class ConditionVisitor extends KindVisitorImplementation
         if (!\is_string($raw_function_name)) {
             return $this->context;
         }
-        assert(\is_string($raw_function_name));
         $args = $node->children['args']->children;
         // Only look at things of the form
         // `\is_string($variable)`
@@ -989,17 +555,10 @@ class ConditionVisitor extends KindVisitorImplementation
 
         try {
             // Get the variable we're operating on
-            $variable = $this->getVariableFromScope($args[0]);
+            $variable = $this->getVariableFromScope($args[0], $context);
 
             if (\is_null($variable)) {
                 return $context;
-            }
-            \assert(!\is_null($variable));  // redundant annotation for phan.
-
-            if ($variable->getUnionType()->isEmpty()) {
-                $variable->getUnionType()->addType(
-                    NullType::instance(false)
-                );
             }
 
             // Make a copy of the variable
@@ -1032,20 +591,12 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     public function visitEmpty(Node $node) : Context
     {
-        $this->checkVariablesDefined($node);
         $var_node = $node->children['expr'];
         if ($var_node->kind === \ast\AST_VAR) {
-            return $this->updateVariableWithConditionalFilter(
-                $var_node,
-                $this->context,
-                function(UnionType $type) : bool {
-                    return $type->containsTruthy();
-                },
-                function(UnionType $type) : UnionType {
-                    return $type->nonTruthyClone();
-                }
-            );
+            // Don't emit notices for if (empty($x)) {}, etc.
+            return $this->removeTruthyFromVariable($var_node, $this->context, true);
         }
+        $this->checkVariablesDefined($node);
         return $this->context;
     }
 

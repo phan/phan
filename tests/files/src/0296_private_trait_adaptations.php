@@ -26,7 +26,7 @@ class A296 {
     }
 
     public function accessAPrivate() {
-        return $this->asPrivateAlias();
+        return $this->asPrivateAlias();  // should not warn.
     }
 
     private function privateNonTrait() {

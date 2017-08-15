@@ -10,13 +10,10 @@ use ast\Node;
  * The original \ast\Node objects are not modified.
  */
 class ASTSimplifier {
-    /** @var BlockExitStatusChecker */
-    private $_blockChecker;
     /** @var string - for debugging purposes */
     private $_filename;
 
-    public function __construct(\SplObjectStorage $exit_status_cache, string $filename = 'unknown') {
-        $this->_blockChecker = new BlockExitStatusChecker($exit_status_cache, $filename);
+    public function __construct(string $filename = 'unknown') {
         $this->_filename = $filename;
     }
 
@@ -155,7 +152,7 @@ class ASTSimplifier {
                 if ($N === 2 &&
                         ($stmt->children[1]->children['stmts'] instanceof Node) &&
                         $stmt->children[1]->children['cond'] === null &&  // cannot be elseif
-                        $this->_blockChecker->check($stmt->children[1]->children['stmts']) !== BlockExitStatusChecker::STATUS_PROCEED) {
+                        BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmt->children[1]->children['stmts'])) {
                     // If the else statement is guaranteed to break/continue/return/throw,
                     // then merge the remaining statements following that into the `if` block.
                     $new_if_elem = clone($stmt->children[0]);
@@ -174,7 +171,7 @@ class ASTSimplifier {
                 }
                 if (($N == 1 || ($N == 2 && $stmt->children[1]->children['cond'] === null)) &&
                         $stmt->children[0]->children['stmts'] instanceof Node &&  // Why does php-ast sometime return string.
-                        $this->_blockChecker->check($stmt->children[0]->children['stmts']) !== BlockExitStatusChecker::STATUS_PROCEED) {
+                        BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmt->children[0]->children['stmts'])) {
                     // If the if statement is guaranteed to break/continue/return/throw,
                     // then merge the remaining statements following that into the `else` block (not `elseif`)
                     // Create an `else` block if necessary.
@@ -367,7 +364,6 @@ class ASTSimplifier {
         \assert($node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
         \assert($node->children[1]->children['cond'] === null);
         $new_node = clone($node);
-        $if_elem = $new_node->children[0];
         $new_node->children = [clone($new_node->children[1]), clone($new_node->children[0])];
         $new_node->children[0]->children['cond'] = $node->children[0]->children['cond']->children['expr'];
         $new_node->children[1]->children['cond'] = null;
@@ -429,7 +425,7 @@ class ASTSimplifier {
     }
 
     public static function applyStatic(Node $node, string $filename = 'unknown') : Node {
-        $rewriter = new self(new \SplObjectStorage(), $filename);
+        $rewriter = new self($filename);
         $nodes = $rewriter->apply($node);
         \assert(\count($nodes) === 1);
         return $nodes[0];

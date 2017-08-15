@@ -266,10 +266,19 @@ class CodeBase
     private function addGlobalConstantsByNames(array $const_name_list)
     {
         foreach ($const_name_list as $const_name) {
+            if (!$const_name) {
+                // #1015 workaround for empty constant names ('' and '0').
+                fprintf(STDERR, "Saw constant with empty name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", var_export($const_name, true));
+                continue;
+            }
             try {
                 $const_obj = GlobalConstant::fromGlobalConstantName($this, $const_name);
                 $this->addGlobalConstant($const_obj);
             } catch (\InvalidArgumentException $e) {
+                // Workaround for windows bug in #1011
+                if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
+                    continue;
+                }
                 fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", var_export($const_name, true), $e->getMessage());
             }
         }
