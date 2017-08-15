@@ -16,7 +16,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.8.6-dev';
+    const PHAN_VERSION = '0.8.6';
 
     /**
      * @var OutputInterface
@@ -26,7 +26,7 @@ class CLI
     /**
      * @return OutputInterface
      */
-    public function getOutput():OutputInterface
+    public function getOutput() : OutputInterface
     {
         return $this->output;
     }
