@@ -1,0 +1,6 @@
+%s:16 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \A347 but \intdiv() takes int
+%s:17 PhanTypeMismatchArgumentInternal Argument 2 (divisor) is null but \intdiv() takes int
+%s:20 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \A347 but \intdiv() takes int
+%s:22 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is null but \intdiv() takes int
+%s:27 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is null but \intdiv() takes int
+%s:28 PhanTypeMismatchArgumentInternal Argument 2 (divisor) is null but \intdiv() takes int

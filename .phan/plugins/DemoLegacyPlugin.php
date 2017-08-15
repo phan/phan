@@ -69,7 +69,7 @@ class DemoLegacyPlugin extends PluginImplementation {
         CodeBase $code_base,
         Context $context,
         Node $node,
-        Node $parent_node = null
+        Node $unused_parent_node = null
     ) {
         // Invoke the `DemoLegacyNodeVisitor` (defined later in
         // this file) on the given node, allowing it to run
@@ -199,22 +199,22 @@ class DemoLegacyNodeVisitor extends AnalysisVisitor {
     /**
      * Default visitor that does nothing
      *
-     * @param Node $node
+     * @param Node $unused_node
      * A node to analyze
      *
      * @return void
      *
      * @override
      */
-    public function visit(Node $node)
+    public function visit(Node $unused_node)
     {
         // This method will be called on all nodes for which
         // there is no implementation of it's kind visitor.
         //
         // To see what kinds of nodes are passing through here,
-        // you can run `Debug::printNode($node)`.
+        // you can run `Debug::printNode($unused_node)`.
 
-        // Debug::printNode($node);
+        // Debug::printNode($unused_node);
     }
 
     /**

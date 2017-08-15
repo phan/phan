@@ -295,7 +295,6 @@ final class ConfigPluginSet extends PluginV2 implements
                 if (!\is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
                     throw new \TypeError(sprintf("Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not", get_class($plugin), PluginAwarePreAnalysisVisitor::class, $plugin_analysis_class));
                 }
-                $empty_object = (new \ReflectionClass($plugin_analysis_class))->newInstanceWithoutConstructor();
                 /**
                  * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
                  *
@@ -328,7 +327,7 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[][] - [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
+     * @return \Closure[] - [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
      * @var \Closure[][] $closures_for_kind
      * @suppress PhanNonClassMethodCall
      */

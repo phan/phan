@@ -169,8 +169,7 @@ class Context extends FileRef
             );
         }
 
-        \assert(false, "Unknown flag $flags");
-        return $fqsen;
+        throw new \AssertionError("Unknown flag $flags");
     }
 
     /**
@@ -402,7 +401,7 @@ class Context extends FileRef
             return $code_base->getMethodByFQSEN($fqsen);
         }
 
-        \assert(false, "FQSEN must be for a function or method");
+        throw new \AssertionError("FQSEN must be for a function or method");
     }
 
     /**

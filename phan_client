@@ -173,7 +173,6 @@ class PhanPHPLinter {
         }
         stream_socket_shutdown($client, STREAM_SHUT_RD);
         fclose($client);
-        $client = null;
         $response_bytes = implode('', $response_lines);
         // This uses the 'phplike' format imitating php's error format. "%s in %s on line %d"
         $response = json_decode($response_bytes, true);

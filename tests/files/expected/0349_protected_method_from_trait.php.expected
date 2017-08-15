@@ -1,0 +1,4 @@
+%s:38 PhanUndeclaredProperty Reference to undeclared property \AbstractClass->missingProp
+%s:47 PhanAccessMethodProtected Cannot access protected method \ExtendingClass::protectedAlias defined at %s:18
+%s:48 PhanAccessMethodProtected Cannot access protected method \ExtendingClass::foo3 defined at %s:15
+%s:50 PhanAccessPropertyProtected Cannot access protected property \ExtendingClass::$prop

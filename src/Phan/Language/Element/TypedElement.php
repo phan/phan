@@ -308,7 +308,7 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public function hydrate(CodeBase $code_base)
+    public function hydrate(CodeBase $unused_code_base)
     {
         // Do nothing unless overridden
     }

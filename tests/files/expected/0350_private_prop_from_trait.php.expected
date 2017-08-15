@@ -1,0 +1,2 @@
+%s:8 PhanUndeclaredProperty Reference to undeclared property \T350->b
+%s:19 PhanTypeMismatchArgument Argument 1 (x) is string but \C350::foo2() takes int defined at %s:5

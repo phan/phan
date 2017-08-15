@@ -1,5 +1,60 @@
 Phan NEWS
 
+0.8.6 Aug 15, 2017 (dev)
+------------------
+
+### Backported from Phan 0.9.4
+
+New Features (Analysis)
++ Check (the first 5) elements of returned arrays against the declared return union types, individually (Issue #935)
+  (E.g. `/** @return int[] */ function foo() {return [2, "x"]; }` will now warn with `PhanTypeMismatchReturn` about returning `string[]`)
++ Check both sides of ternary conditionals against the declared return union types
+  (E.g. `function foo($x) : int {return is_string($x) ? $x : 0; }` will now warn with `PhanTypeMismatchReturn`
+  about returning a string).
++ Improved analysis of negations of conditions within ternary conditional operators and else/else if statements. (Issue #538)
+  Support analysis of negation of the `||` operator. (E.g. `if (!(is_string($x) || is_int($x))) {...}`)
++ Make phan aware of blocks of code which will unconditionally throw or return. (Issue #308, #817, #996, #956)
+
+  Don't infer variable types from blocks of code which unconditionally throw or return.
+
+  Infer the negation of type assertions from if statements that unconditionally throw/return/break/continue 
+  (E.g. `if (!is_string($x)) { return false; } functionUsingX($x);`)
+
+  When checking if a variable is defined by all branches of an if statement, ignore branches which inconditionally throw/return/break/continue.
++ To reduce the false positives from analysis of the negation of type assertions,
+  normalize nullable/boolean union types after analyzing code branches (E.g. if/else) affecting the types of those variables.
+  (e.g. convert "bool|false|null" to "?bool")
++ Add a new plugin file `AlwaysReturnPlugin`. (Issue #996)
+  This will add a stricter check that a function with a non-null return type *unconditionally* returns a value (or explicitly throws, or exit()s).
+  Currently, Phan just checks if a function *may* return, or unconditionally throws.
++ Add a new plugin file `UnreachableCodePlugin` (in development).
+  This will warn about statements that appear to be unreachable
+  (statements occurring after unconditional return/break/throw/return/exit statements)
+
+New Features (CLI, Configs)
++ Add config setting `prefer_narrowed_phpdoc_return_type` (See "New Features (CLI, Configs)),
+  which will use only the phpdoc return types for inferences, if they're narrowed.
+  This config is enabled by default, and requires `check_docblock_signature_return_type_match` to be enabled.
+
+Bug Fixes
++ Work around notice about COMPILER_HALT_OFFSET on windows.
++ Fixes #462 : Fix type inferences for instanceof for checks with dynamic class names are provided.
+  Valid class names are either a string or an instance of the class to check against.
+  Warn if the class name is definitely invalid.
++ Fix false positives about undefined variables in isset()/empty() (Issue #1039)
+  (Fixes bug introduced in Phan 0.9.3)
++ Fix false positive warnings about accessing protected methods from traits (Issue #1033)
+  Act as though the class which used a trait is the place where the method was defined,
+  so that method visibility checks work properly.
+  Additionally, fix false positive warnings about visibility of method aliases from traits.
++ Warn about instantiation of class with inaccessible constructor (Issue #1043)
+
+Changes In Emitted Issues
++ Improve `InvalidVariableIssetPlugin`. Change the names and messages for issue types.
+  Emit `PhanPluginUndeclaredVariableInIsset` and `PhanPluginComplexVariableIsset`
+  instead of `PhanUndeclaredVariable`.
+  Stop erroneously warning about valid property fetches and checks of fields of superglobals.
+
 0.8.5 Jul 11, 2017
 ------------------
 
@@ -167,6 +222,7 @@ New Features (CLI, Configs)
 
 Maintenance
 + Update function signature map to analyze `iterable` and `is_iterable` from php 7.1
+  (is_iterable is ignored in phan 0.8)
 + Improve type inferences on functions with nullable default values.
 + Update miscellaneous new functions in php 7.1 standard library (e.g. `getenv`)
 

@@ -114,6 +114,8 @@ class Variable extends TypedElement
      *
      * @return Variable
      * A variable begotten from a node
+     *
+     * @throws IssueException
      */
     public static function fromNodeInContext(
         Node $node,

@@ -34,7 +34,7 @@ or if the relevant parts of the codebase fixed the bug/added annotations)
 
 - **UnusedSuppression**: "Element func/class/etc. suppresses issue Phan... but does not use it"
 
-### 2. General-Use Plugins 
+### 2. General-Use Plugins
 
 These plugins are useful across a wide variety of code styles, and should give low false positives.
 Also see [DollarDollarPlugin.php](#dollardollarpluginphp) for a meaningful real-world example.
@@ -43,12 +43,28 @@ Also see [DollarDollarPlugin.php](#dollardollarpluginphp) for a meaningful real-
 
 Warns about common errors in php array keys. Has the following checks (Doesn't try to resolve constants).
 
-- **PhanPluginDuplicateArrayKey**: a duplicate or equivalent array key literal 
+- **PhanPluginDuplicateArrayKey**: a duplicate or equivalent array key literal
 
   (E.g `[2 => "value", "other" => "s", "2" => "value2"]` duplicates the key `2`)
-- **PhanPluginMixedKeyNoKey**: mixing array entries of the form [key => value,] with entries of the form [value,]. 
+- **PhanPluginMixedKeyNoKey**: mixing array entries of the form [key => value,] with entries of the form [value,].
 
   (E.g. `['key' => 'value', 'othervalue']` is often found in code because the key for `'othervalue'` was forgotten)
+
+#### AlwaysReturnPlugin.php
+
+Checks if a function or method with a non-void return type will **unconditionally** return or throw.
+This is stricter than Phan's default checks (Phan accepts a function or method that **may** return something, or functions that unconditionally throw).
+
+#### UnconditionalCodePlugin.php
+
+Checks for syntactically unreachable statements in the global scope or function bodies.
+(E.g. function calls after unconditional continue/break/throw/return/exit())
+
+This is in development, and has some edge cases related to try blocks.
+
+#### Unused variable detection
+
+See https://github.com/etsy/phan/issues/345
 
 ### 3. Plugins Specific to Code Styles
 

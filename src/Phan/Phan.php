@@ -2,6 +2,7 @@
 namespace Phan;
 
 use Phan\Daemon\Request;
+use Phan\Library\FileCache;
 use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\IgnoredFilesFilterInterface;
@@ -76,6 +77,7 @@ class Phan implements IgnoredFilesFilterInterface {
         CodeBase $code_base,
         \Closure $file_path_lister
     ) : bool {
+        FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
         $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port');
         if ($is_daemon_request) {
@@ -166,7 +168,6 @@ class Phan implements IgnoredFilesFilterInterface {
                 error_log("Finished serving requests, exiting");
                 exit(2);
             }
-            \assert($request instanceof Request);
             self::$printer = $request->getPrinter();
 
             // This is the list of all of the parsed files
@@ -181,9 +182,6 @@ class Phan implements IgnoredFilesFilterInterface {
             // Stop tracking undo operations, now that the parse phase is done.
             $code_base->disableUndoTracking();
         }
-
-        global $start_time;
-        $start_time = microtime(true);
 
         // With parsing complete, we need to tell the code base to
         // start hydrating any requested elements on their way out.

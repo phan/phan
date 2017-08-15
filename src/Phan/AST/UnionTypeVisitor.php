@@ -4,6 +4,7 @@ namespace Phan\AST;
 use Phan\Analysis\AssignOperatorFlagVisitor;
 use Phan\Analysis\BinaryOperatorFlagVisitor;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\NegatedConditionVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
@@ -19,6 +20,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Scope\BranchScope;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
@@ -139,7 +142,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * Default visitor for node kinds that do not have
      * an overriding method
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * An AST node we'd like to determine the UnionType
      * for
      *
@@ -260,7 +263,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_EMPTY`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -276,7 +279,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_ISSET`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -292,7 +295,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_INCLUDE_OR_EVAL`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -349,7 +352,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_SHELL_EXEC`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -454,12 +457,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             case \ast\flags\TYPE_VOID:
                 return VoidType::instance(false)->asUnionType();
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . Debug::astFlagDescription($node->flags ?? 0, $node->kind)
-                );
-                break;
+                throw new \AssertionError("All flags must match. Found "
+                    . Debug::astFlagDescription($node->flags ?? 0, $node->kind));
         }
     }
 
@@ -516,7 +515,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param int|float|string|Node $cond
      * @return ?bool
      */
-    private function checkCondUnconditionalTruthiness($cond) {
+    public static function checkCondUnconditionalTruthiness($cond) {
         if ($cond instanceof Node) {
             if ($cond->kind === \ast\AST_CONST) {
                 $name = $cond->children['name'];
@@ -559,7 +558,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitConditional(Node $node) : UnionType
     {
         $cond_node = $node->children['cond'];
-        $cond_truthiness = $this->checkCondUnconditionalTruthiness($cond_node);
+        $cond_truthiness = self::checkCondUnconditionalTruthiness($cond_node);
         // For the shorthand $a ?: $b, the cond node will be the truthy value.
         // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
         $true_node = $node->children['true'] ?? $cond_node;
@@ -594,17 +593,28 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        // TODO: false_context once there is a NegatedConditionVisitor
         // TODO: emit no-op if $cond_node is a literal, such as `if (2)`
         // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
 
         if ($cond_node instanceof Node) {
+            $base_context = $this->context;
+            // TODO: Use different contexts and merge those, in case there were assignments or assignments by reference in both sides of the conditional?
+            // Reuse the BranchScope (sort of unintuitive). The ConditionVisitor returns a clone and doesn't modify the original.
+            $base_context_scope = $this->context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $base_context->withScope(new BranchScope($base_context_scope));
+            }
             $true_context = (new ConditionVisitor(
                 $this->code_base,
-                $this->context
+                isset($node->children['true']) ? $base_context : $this->context  // special case: $c = (($d = foo()) ?: 'fallback')
+            ))($cond_node);
+            $false_context = (new NegatedConditionVisitor(
+                $this->code_base,
+                $base_context
             ))($cond_node);
         } else {
             $true_context = $this->context;
+            $false_context = $this->context;
         }
 
         $true_type = UnionTypeVisitor::unionTypeFromNode(
@@ -615,7 +625,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         $false_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
-            $this->context,
+            $false_context,
             $node->children['false'] ?? ''
         );
 
@@ -832,8 +842,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return $type;
             }
 
-            \assert($fqsen instanceof FullyQualifiedClassName);
-
             // If we don't have the class, we'll catch that problem
             // elsewhere
             if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
@@ -898,7 +906,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
         try {
             // Confirm that the right-side exists
-            $union_type = $this->visitClassNode(
+            // Compute the union type but don't use it.
+            $this->visitClassNode(
                 $node->children['class']
             );
         } catch (TypeException $exception) {
@@ -1089,7 +1098,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_ENCAPS_LIST`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -1370,13 +1379,10 @@ class UnionTypeVisitor extends AnalysisVisitor
         );
 
         try {
-            $class_fqsen = null;
             foreach ($this->classListFromNode(
                     $node->children['class'] ?? $node->children['expr']
                 ) as $class
             ) {
-                $class_fqsen = $class->getFQSEN();
-
                 if (!$class->hasMethodWithName(
                     $this->code_base,
                     $method_name
@@ -1385,10 +1391,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
 
                 try {
-                    $method = $class->getMethodByNameInContext(
+                    $method = $class->getMethodByName(
                         $this->code_base,
-                        $method_name,
-                        $this->context
+                        $method_name
                     );
 
                     $union_type = $method->getUnionType();

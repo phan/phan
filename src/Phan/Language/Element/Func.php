@@ -114,7 +114,6 @@ class Func extends AddressableElement implements FunctionInterface
             // shouldn't happen
             return null;
         }
-        \assert($class_fqsen instanceof FullyQualifiedClassName);
 
         return $class_fqsen;
     }
@@ -251,6 +250,7 @@ class Func extends AddressableElement implements FunctionInterface
                 "Function referencing self in $context");
 
             $func->getUnionType()->addUnionType($union_type);
+            $func->setPHPDocReturnType($union_type);
         }
 
         // Add params to local scope for user functions

@@ -33,7 +33,7 @@ class ForkPoolTest extends BaseTest
             /** @return void */
             function() { },
             /** @return void */
-            function($i, $data) use(&$worker_data) {
+            function($unused_i, $data) use(&$worker_data) {
                 $worker_data[] = $data;
             },
             function() use(&$worker_data) : array {
@@ -57,7 +57,7 @@ class ForkPoolTest extends BaseTest
                 $did_startup = true;
             },
             /** @return void */
-            function($i, $data) {
+            function($unused_i, $unused_data) {
             },
             function() use(&$did_startup) : array {
                 return [$did_startup];

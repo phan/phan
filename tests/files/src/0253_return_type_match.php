@@ -27,7 +27,7 @@ class C253_1 {
     }
     /** @return Traversable (narrowing, allowed) */
     public function a7() : iterable {
-        return array('a', 'b', 'c');
+        yield 'a';
     }
     /** @return string (incompatible, not allowed) */
     public function a8() : iterable {
@@ -44,6 +44,7 @@ class C253_1 {
     }
 
     // php7.1 syntax omitted.
+
 
 
 }

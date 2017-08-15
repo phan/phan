@@ -48,4 +48,11 @@ final class FalseType extends ScalarType
     {
         return true;
     }
+
+    /**
+     * Helper function for internal use by UnionType
+     */
+    public function getNormalizationFlags() : int {
+        return $this->is_nullable ? (self::_bit_nullable | self::_bit_false) : self::_bit_false;
+    }
 }

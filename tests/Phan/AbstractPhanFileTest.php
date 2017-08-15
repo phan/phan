@@ -135,6 +135,7 @@ abstract class AbstractPhanFileTest
             trim(file_get_contents($expected_file_path));
         */
 
+        $output    = preg_replace('/\r\n/', "\n", $output);
         $wanted_re = preg_replace('/\r\n/', "\n", $expected_output);
         // do preg_quote, but miss out any %r delimited sections
         $temp = "";
