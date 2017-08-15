@@ -83,7 +83,6 @@ class Phan implements IgnoredFilesFilterInterface {
         if ($is_daemon_request) {
             $code_base->enableUndoTracking();
         }
-        self::checkExtensionCompatibility($is_daemon_request);
 
         $file_path_list = $file_path_lister();
 
@@ -375,29 +374,6 @@ class Phan implements IgnoredFilesFilterInterface {
         }
 
         return array_unique($dependency_file_path_list);
-    }
-
-    /**
-     * Prints error messages if this is incompatible with various PHP modules. (e.g. grpc)
-     * Modifies global config if possible to work around those.
-     * Exits on failure.
-     *
-     * @param bool $is_daemon_request - Is the user attempting to run this in daemon mode
-     * @return void
-     */
-    private static function checkExtensionCompatibility(bool $is_daemon_request) {
-        if (extension_loaded('grpc')) {
-            // https://github.com/etsy/phan/issues/889
-            // In version 1.3.2, ReflectionExtension said the version was 0.10. Give up on version checking
-            if ($is_daemon_request) {
-                fprintf(STDERR, "Daemon mode will not work with grpc extension enabled in 1.4.0-dev (1.3.2 should work), quitting. See Issue #889\n");
-                exit(EXIT_FAILURE);
-            }
-            if (Config::getValue('processes') > 1) {
-                fprintf(STDERR, "Multi-process analysis will not work with grpc extension enabled in 1.4.0-dev (1.3.2 should work), limiting analysis to a single process. See Issue #889\n");
-                Config::setValue('processes', 1);
-            }
-        }
     }
 
     /**
