@@ -3,6 +3,13 @@ Phan NEWS
 ?? ??? 2017, Phan 0.9.5 (dev)
 -----------------------
 
+Maintenance
++ Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.
+
+Plugins
++ Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.
+  Third party plugins will need to create a different version, Decls were changed into regular Nodes
+
 15 Aug 2017, Phan 0.9.4
 -----------------------
 

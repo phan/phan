@@ -402,6 +402,7 @@ return [
         'flags' => 'int',
         'lineno' => 'int',
         'children' => 'array',  // NOTE: in the latest version, this is consistently an array, even for edge cases like statement lists of single statements.
+        'endLineno' => 'int',
     ],
     'ast\node\decl' => [
         'kind' => 'int',

@@ -2,7 +2,6 @@
 namespace Phan\AST\Visitor;
 
 use ast\Node;
-use ast\Node\Decl;
 
 /**
  * A visitor of AST nodes based on the node's kind value
@@ -68,7 +67,7 @@ interface KindVisitor
     /**
      * Visit a node with kind `\ast\AST_CLASS`
      */
-    public function visitClass(Decl $node);
+    public function visitClass(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_CLASS_CONST`
@@ -83,7 +82,7 @@ interface KindVisitor
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      */
-    public function visitClosure(Decl $node);
+    public function visitClosure(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_CLOSURE_USES`
@@ -163,7 +162,7 @@ interface KindVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      */
-    public function visitFuncDecl(Decl $node);
+    public function visitFuncDecl(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_ISSET`
@@ -213,7 +212,7 @@ interface KindVisitor
     /**
      * Visit a node with kind `\ast\AST_METHOD`
      */
-    public function visitMethod(Decl $node);
+    public function visitMethod(Node $node);
 
     /**
      * Visit a node with kind `\ast\AST_METHOD_CALL`
