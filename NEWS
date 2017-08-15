@@ -222,6 +222,7 @@ New Features (CLI, Configs)
 
 Maintenance
 + Update function signature map to analyze `iterable` and `is_iterable` from php 7.1
+  (is_iterable is ignored in phan 0.8)
 + Improve type inferences on functions with nullable default values.
 + Update miscellaneous new functions in php 7.1 standard library (e.g. `getenv`)
 

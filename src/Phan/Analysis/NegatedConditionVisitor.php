@@ -407,7 +407,6 @@ class NegatedConditionVisitor extends KindVisitorImplementation
             'is_float' => $remove_float_callback,
             'is_int' => $remove_int_callback,
             'is_integer' => $remove_int_callback,
-            'is_iterable' => $make_basic_negated_assertion_callback(IterableType::class),  // TODO: Could keep basic array types and classes extending iterable
             'is_long' => $remove_int_callback,
             // 'is_numeric' => $make_basic_assertion_callback('string|int|float'),
             // TODO 'is_object' => $remove_object_callback,
