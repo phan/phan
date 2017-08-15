@@ -65,8 +65,8 @@ function __autoload($className) {}
 // meaningless things with the same names
 class __autoload {}
 const __autoload = 3;
-
-function missingReturnType(?int $x) : int {
+/** @param ?int $x */
+function missingReturnType($x) : int {
     if (is_int($x)) {
         return $x;
     }
