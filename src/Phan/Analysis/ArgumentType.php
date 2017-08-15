@@ -439,20 +439,20 @@ class ArgumentType
         } else if ($node_kind === \ast\AST_STATIC_CALL || $node_kind === \ast\AST_METHOD_CALL) {
             $method_name = $node->children['method'] ?? null;
             if (is_string($method_name)) {
-                foreach (UnionTypeVisitor::classListFromNodeAndContext(
-                    $code_base,
-                    $context,
-                    $node->children['class'] ?? $node->children['expr']
-                    ) as $class
-                ) {
-                    if (!$class->hasMethodWithName(
+                try {
+                    foreach (UnionTypeVisitor::classListFromNodeAndContext(
                         $code_base,
-                        $method_name
-                    )) {
-                        continue;
-                    }
+                        $context,
+                        $node->children['class'] ?? $node->children['expr']
+                        ) as $class
+                    ) {
+                        if (!$class->hasMethodWithName(
+                            $code_base,
+                            $method_name
+                        )) {
+                            continue;
+                        }
 
-                    try {
                         $method = $class->getMethodByName(
                             $code_base,
                             $method_name
@@ -461,8 +461,9 @@ class ArgumentType
                         if ($method->returnsRef()) {
                             return true;
                         }
-                    } catch(IssueException $e) {
                     }
+                } catch(IssueException $e) {
+                    // Swallow any issue esceptions here. They'll be caught elsewhere.
                 }
             }
         }
