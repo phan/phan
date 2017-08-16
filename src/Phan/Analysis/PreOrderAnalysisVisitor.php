@@ -22,6 +22,7 @@ use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
+use ast\Node\Decl;
 
 class PreOrderAnalysisVisitor extends ScopeVisitor
 {
@@ -48,14 +49,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLASS`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClass(Node $node) : Context
+    public function visitClass(Decl $node) : Context
     {
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name =
@@ -65,7 +66,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $node
                 ))->getUnqualifiedNameForAnonymousClass();
         } else {
-            $class_name = (string)$node->children['name'];
+            $class_name = (string)$node->name;
         }
 
         \assert(!empty($class_name), "Class name cannot be empty");
@@ -104,16 +105,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_METHOD`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Node $node) : Context
+    public function visitMethod(Decl $node) : Context
     {
-        $method_name = (string)$node->children['name'];
+        $method_name = (string)$node->name;
 
         \assert($this->context->isInClassScope(),
             "Must be in class context to see a method");
@@ -138,7 +139,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Parse the comment above the method to get
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
-            $node->children['docComment'] ?? '',
+            $node->docComment ?? '',
             $this->code_base,
             $this->context,
             $node->lineno ?? 0,
@@ -193,16 +194,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Node $node) : Context
+    public function visitFuncDecl(Decl $node) : Context
     {
-        $function_name = (string)$node->children['name'];
+        $function_name = (string)$node->name;
 
         try {
             $canonical_function = (new ContextNode(
@@ -248,7 +249,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Parse the comment above the function to get
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
-            $node->children['docComment'] ?? '',
+            $node->docComment ?? '',
             $this->code_base,
             $this->context,
             $node->lineno ?? 0,
@@ -350,14 +351,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClosure(Node $node) : Context
+    public function visitClosure(Decl $node) : Context
     {
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
             $this->context->withLineNumberStart($node->lineno ?? 0),

@@ -39,6 +39,7 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Library\ArraySet;
 use ast\Node;
+use ast\Node\Decl;
 
 /**
  * Determine the UnionType associated with a
@@ -1007,7 +1008,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -1015,7 +1016,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitClosure(Node $node) : UnionType
+    public function visitClosure(Decl $node) : UnionType
     {
         // The type of a closure is the fqsen pointing
         // at its definition

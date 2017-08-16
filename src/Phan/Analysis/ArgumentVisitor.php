@@ -8,6 +8,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use ast\Node;
+use ast\Node\Decl;
 
 class ArgumentVisitor extends KindVisitorImplementation
 {
@@ -139,12 +140,12 @@ class ArgumentVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return void
      */
-    public function visitClosure(Node $node)
+    public function visitClosure(Decl $node)
     {
         try {
             $method = (new ContextNode(

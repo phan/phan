@@ -26,6 +26,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use ast\Node;
+use ast\Node\Decl;
 
 class PostOrderAnalysisVisitor extends AnalysisVisitor
 {
@@ -569,14 +570,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClosure(Node $node) : Context
+    public function visitClosure(Decl $node) : Context
     {
         $func = $this->context->getFunctionLikeInScope($this->code_base);
 
@@ -1279,14 +1280,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Node $node) : Context
+    public function visitMethod(Decl $node) : Context
     {
         \assert($this->context->isInFunctionLikeScope(),
             "Must be in function-like scope to get method");
@@ -1362,14 +1363,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Node $node
+     * @param Decl $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Node $node) : Context
+    public function visitFuncDecl(Decl $node) : Context
     {
         $method =
             $this->context->getFunctionLikeInScope($this->code_base);
@@ -2112,14 +2113,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * A decl to check to see if it's only effect
      * is the throw an exception
      *
      * @return bool
      * True when the decl can only throw an exception or return or exit()
      */
-    private function declOnlyThrows(Node $node) : bool {
+    private function declOnlyThrows(Decl $node) : bool {
         return BlockExitStatusChecker::willUnconditionallyThrowOrReturn($node->children['stmts']);
     }
 }

@@ -37,6 +37,7 @@ use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\Some;
 use ast\Node;
+use ast\Node\Decl;
 
 /**
  * Methods for an AST node in context
@@ -50,7 +51,7 @@ class ContextNode
     /** @var Context */
     private $context;
 
-    /** @var Node|string|null */
+    /** @var Decl|Node|string|null */
     private $node;
 
     /**

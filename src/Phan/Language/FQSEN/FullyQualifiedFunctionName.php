@@ -2,6 +2,7 @@
 namespace Phan\Language\FQSEN;
 
 use Phan\Language\Context;
+use ast\Node\Decl;
 use ast\Node;
 
 /**
@@ -83,12 +84,12 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
 
     public static function fromClosureInContext(
         Context $context,
-        Node $node
+        Decl $node
     ) : FullyQualifiedFunctionName {
         $hash_material = implode('|', [
             $context->getFile(),
             $context->getLineNumberStart(),
-            $node->children['docComment'] ?? '',
+            $node->docComment ?? '',
             implode(',', array_map(function(Node $arg) : string {
                 return serialize([$arg->children['type'], $arg->children['name'], $arg->children['default']]);
             }, $node->children['params']->children)),

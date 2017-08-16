@@ -14,6 +14,7 @@ use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
+use ast\Node\Decl;
 
 /**
  * Analyze blocks of code
@@ -681,49 +682,49 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * An AST node we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitClass(Node $node) : Context
+    public function visitClass(Decl $node) : Context
     {
         return $this->visitClosedContext($node);
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * An AST node we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitMethod(Node $node) : Context
+    public function visitMethod(Decl $node) : Context
     {
         return $this->visitClosedContext($node);
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * An AST node we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitFuncDecl(Node $node) : Context
+    public function visitFuncDecl(Decl $node) : Context
     {
         return $this->visitClosedContext($node);
     }
 
     /**
-     * @param Node $node
+     * @param Decl $node
      * An AST node we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitClosure(Node $node) : Context
+    public function visitClosure(Decl $node) : Context
     {
         return $this->visitClosedContext($node);
     }
