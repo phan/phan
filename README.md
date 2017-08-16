@@ -20,7 +20,8 @@ composer require --dev etsy/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This version (branch) of Phan depends on PHP 7.1.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer) and supports PHP version 7.1+ syntax.
+This version (branch) of Phan depends on PHP 7.1.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50) and supports PHP version 7.1+ syntax.
+The 0.9.x releases work with older versions of php-ast (0.1.4 or newer, Phan uses AST version 40. Use this if third party integrations (e.g. plugins) are still expecting AST version 40 (`\ast\Node\Decl`)).
 For PHP 7.0.x use the [0.8 branch](https://github.com/etsy/phan/tree/0.8).
 Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (or to support daemon mode).
 
