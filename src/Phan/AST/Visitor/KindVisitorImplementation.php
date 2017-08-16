@@ -2,7 +2,6 @@
 namespace Phan\AST\Visitor;
 
 use ast\Node;
-use ast\Node\Decl;
 
 /**
  * A visitor of AST nodes based on the node's kind value
@@ -77,7 +76,7 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitClass(Decl $node)
+    public function visitClass(Node $node)
     {
         return $this->visit($node);
     }
@@ -92,7 +91,7 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitClosure(Decl $node)
+    public function visitClosure(Node $node)
     {
         return $this->visit($node);
     }
@@ -172,7 +171,7 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitFuncDecl(Decl $node)
+    public function visitFuncDecl(Node $node)
     {
         return $this->visit($node);
     }
@@ -222,7 +221,7 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->visit($node);
     }
 
-    public function visitMethod(Decl $node)
+    public function visitMethod(Node $node)
     {
         return $this->visit($node);
     }

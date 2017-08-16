@@ -8,6 +8,7 @@ use Phan\Config;
 use Phan\Daemon;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\Util;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
@@ -31,7 +32,6 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\UnionType;
 use Phan\Library\None;
 use ast\Node;
-use ast\Node\Decl;
 
 /**
  * The class is a visitor for AST nodes that does parsing. Each
@@ -63,14 +63,14 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLASS`
      *
-     * @param Decl $node
+     * @param Node $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClass(Decl $node) : Context
+    public function visitClass(Node $node) : Context
     {
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name = (new ContextNode(
@@ -79,7 +79,7 @@ class ParseVisitor extends ScopeVisitor
                 $node
             ))->getUnqualifiedNameForAnonymousClass();
         } else {
-            $class_name = (string)$node->name;
+            $class_name = (string)$node->children['name'];
         }
 
         // This happens now and then and I have no idea
@@ -109,7 +109,7 @@ class ParseVisitor extends ScopeVisitor
         // Build the class from what we know so far
         $class_context = $this->context
             ->withLineNumberStart($node->lineno ?? 0)
-            ->withLineNumberEnd($node->endLineno ?? -1);
+            ->withLineNumberEnd(Util::getEndLineno($node) ?? 0);
 
         $class = new Clazz(
             $class_context,
@@ -127,7 +127,7 @@ class ParseVisitor extends ScopeVisitor
 
         // Get a comment on the class declaration
         $comment = Comment::fromStringInContext(
-            $node->docComment ?? '',
+            $node->children['docComment'] ?? '',
             $this->code_base,
             $this->context,
             $node->lineno ?? 0,
@@ -283,19 +283,19 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_METHOD`
      *
-     * @param Decl $node
+     * @param Node $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Decl $node) : Context
+    public function visitMethod(Node $node) : Context
     {
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
 
-        $method_name = (string)$node->name;
+        $method_name = (string)$node->children['name'];
 
         $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
             $method_name, $this->context
@@ -394,10 +394,9 @@ class ParseVisitor extends ScopeVisitor
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
         $docComment = '';
-        // TODO: Can other
         $first_child_node = $node->children[0] ?? null;
         if ($first_child_node instanceof Node) {
-            $docComment = $first_child_node->docComment ?? '';
+            $docComment = $first_child_node->children['docComment'] ?? '';
         }
         // Get a comment on the property declaration
         $comment = Comment::fromStringInContext(
@@ -550,7 +549,7 @@ class ParseVisitor extends ScopeVisitor
 
             // Get a comment on the declaration
             $comment = Comment::fromStringInContext(
-                $child_node->docComment ?? '',
+                $child_node->children['docComment'] ?? '',
                 $this->code_base,
                 $this->context,
                 $child_node->lineno ?? 0,
@@ -611,7 +610,7 @@ class ParseVisitor extends ScopeVisitor
                 $child_node->children['name'],
                 $child_node->children['value'],
                 $child_node->flags ?? 0,
-                $child_node->docComment ?? ''
+                $child_node->children['docComment'] ?? ''
             );
         }
 
@@ -621,16 +620,16 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Decl $node
+     * @param Node $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Decl $node) : Context
+    public function visitFuncDecl(Node $node) : Context
     {
-        $function_name = (string)$node->name;
+        $function_name = (string)$node->children['name'];
 
         // Hunt for an un-taken alternate ID
         $alternate_id = 0;
@@ -651,7 +650,7 @@ class ParseVisitor extends ScopeVisitor
         $func = Func::fromNode(
             $this->context
                 ->withLineNumberStart($node->lineno ?? 0)
-                ->withLineNumberEnd($node->endLineno ?? 0),
+                ->withLineNumberEnd(Util::getEndLineno($node) ?? 0),
             $this->code_base,
             $node,
             $function_fqsen
@@ -670,14 +669,14 @@ class ParseVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
-     * @param Decl $node
+     * @param Node $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClosure(Decl $node) : Context
+    public function visitClosure(Node $node) : Context
     {
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
             $this->context->withLineNumberStart($node->lineno ?? 0),
