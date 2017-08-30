@@ -14,7 +14,7 @@ and does not attempt to track values.
 The easiest way to use Phan is via Composer.
 
 ```
-composer require --dev phan/phan
+composer require --dev etsy/phan
 ```
 
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
