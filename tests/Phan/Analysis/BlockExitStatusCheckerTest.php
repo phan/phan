@@ -65,163 +65,179 @@ class BlockExitStatusCheckerTest extends BaseTest
         return [
             [
                 'proceed',
-                ''
+                '',
             ],
             [
                 'proceed',
-                '"inline string";;;'
+                '"inline string";;;',
             ],
             [
                 'return',
-                'return 4;'
+                'return 4;',
             ],
             [
                 'return',
-                'echo "hello, world\n"; return 4;'
+                'echo "hello, world\n"; return 4;',
             ],
             [
                 'return',
-                'exit(1);'
+                'exit(1);',
             ],
             [
                 'return',
-                'for ($i = 0; true; $i++) {}'
+                'for ($i = 0; true; $i++) {}',
             ],
             [
                 'return',
-                'for ($i = 0; ; $i++) {}'
+                'for ($i = 0; ; $i++) {}',
             ],
             [
                 'throw',
-                'for ($i = 0; ; $i++) {throw new RuntimeException("throw");}'
+                'for ($i = 0; ; $i++) {throw new RuntimeException("throw");}',
             ],
             [
                 'throw',
-                'for ($i = 0; foo($i), true; $i++) {throw new RuntimeException("throw");}'
+                'for ($i = 0; foo($i), true; $i++) {throw new RuntimeException("throw");}',
             ],
             [
                 'proceed/throw',
-                'for ($i = 0; true, foo($i); $i++) {throw new RuntimeException("throw");}'
+                'for ($i = 0; true, foo($i); $i++) {throw new RuntimeException("throw");}',
             ],
             [
                 'return',
-                'while (1) {foo();}'
+                'while (1) {foo();}',
             ],
             [
                 'proceed',
-                'while (1) {break;}'
+                'while (1) {break;}',
             ],
             [
                 'proceed',
-                'do {break;}while (1);'
+                'do {break;}while (1);',
             ],
             [
                 'proceed',
-                'while (cond()) {foo();}'
+                'while (cond()) {foo();}',
             ],
             [
                 'return',
-                'do {foo();} while (1);'
+                'do {foo();} while (1);',
             ],
             [
                 'proceed',
-                'do {} while (0);'
+                'do {} while (0);',
             ],
             [
                 'return',
-                'do {} while (1);'
+                'do {} while (1);',
             ],
             [
                 'proceed',
-                'do {foo();} while (cond());'
+                'do {foo();} while (cond());',
             ],
             [
                 'return',
-                'do {return "value";} while (cond());'
+                'do {return "value";} while (cond());',
             ],
             [
                 'return',
-                'while (true) {foo();}'
+                'while (true) {foo();}',
             ],
             [
                 'return',
-                'while (1) {if (cond) {continue;} }'
+                'while (1) {if (cond) {continue;} }',
             ],
             [
                 'throw',
-                'while (1) {if (cond) continue; else if (foo()) { throw new RuntimeException("");}}'
+                'while (1) {if (cond) continue; else if (foo()) { throw new RuntimeException("");}}',
             ],
             [
                 'throw',
-                'do {if (cond) continue; else if (foo()) { throw new RuntimeException("");}}while (1);'
+                'do {if (cond) continue; else if (foo()) { throw new RuntimeException("");}}while (1);',
             ],
             [
                 'proceed/throw',
-                'foreach ($seq as $x) { if ($x) { throw new Exception("e"); }}'
+                'foreach ($seq as $x) { if ($x) { throw new Exception("e"); }}',
             ],
             [
                 'proceed/return',
-                'foreach ($seq as $x) { if ($x) { break; } return null;}'
+                'foreach ($seq as $x) { if ($x) { break; } return null;}',
             ],
             [
                 'proceed',
-                'foreach ($seq as $x) { if ($x) { echo $x; }}'
+                'foreach ($seq as $x) { if ($x) { echo $x; }}',
             ],
             [
                 'throw',
-                'throw new RuntimeException("message");'
+                'throw new RuntimeException("message");',
             ],
             [
                 'proceed',
-                'yield;'
+                'yield;',
             ],
             [
                 'proceed/throw',
-                'if ($argc) { throw new RuntimeException("message"); }'
+                'if ($argc) { throw new RuntimeException("message"); }',
             ],
             [
                 'proceed',
-                'switch($a) {}'
+                'switch($a) {}',
             ],
             [
                 'proceed/return',
-                'switch($a) { case 2: return -1; }'
+                'switch($a) { case 2: return -1; }',
             ],
             [
                 'return',
-                'switch($a) { case 2: default: return -1; }'
+                'switch($a) { case 2: default: return -1; }',
             ],
             [
                 'return',
-                'switch($a) { case 2: case 4: default: echo "V"; return -1; }'
+                'switch($a) { case 2: case 4: default: echo "V"; return -1; }',
             ],
             [
                 'proceed',
-                'switch($a) { case 2: case 4: default: echo "V"; break; }'
+                'switch($a) { case 2: case 4: default: echo "V"; break; }',
             ],
             [
                 'throw/return',
-                'switch($a) { case 2: throw new RuntimeException("message"); case 3: default: return 4;}'
+                'switch($a) { case 2: throw new RuntimeException("message"); case 3: default: return 4;}',
             ],
             [
                 'proceed',
-                'if ($argc) { foo();} else { echo "expr"; }'
+                'if ($argc) { foo();} else { echo "expr"; }',
             ],
             [
                 'continue',
-                'if ($argc) { continue;} else { continue; }'
+                'if ($argc) { continue;} else { continue; }',
             ],
             [
                 'break/throw/return',
-                'try {return foo();} catch(RuntimeException $e) { break; } catch (InvalidArgumentException $e) { throw new Exception("rethrow", 0, $e); } catch (Exception $e) { return null; }'
+                'try {return foo();} catch(RuntimeException $e) { break; } catch (InvalidArgumentException $e) { throw new Exception("rethrow", 0, $e); } catch (Exception $e) { return null; }',
             ],
             [
                 'return',
-                'try {} finally { return 4;}'
+                'try {} finally { return 4;}',
             ],
             [
                 'proceed/continue/return',
-                'try {foo();} catch(RuntimeException $e) { continue; } catch (Exception $e) { return null; }'
+                'try {foo();} catch(RuntimeException $e) { continue; } catch (Exception $e) { return null; }',
+            ],
+            [
+                'proceed/return',
+                'try { $a = foo(); } catch(RuntimeException $e) { return; }',
+            ],
+            [
+                'throw/return',
+                'try { $a = foo(); throw new InvalidArgumentException("msg");} catch(RuntimeException $e) { return; }',
+            ],
+            [
+                'proceed/return',
+                'try { return foo(); } catch(RuntimeException $e) { $x = foo(); }',
+            ],
+            [
+                'proceed/return',
+                'try { foo(); } catch(RuntimeException $e) { return; } finally { $a = $otherFn(); }',
             ],
         ];
     }

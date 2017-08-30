@@ -200,13 +200,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
 
             // The conditions need to communicate to the outter
             // scope for things like assigning veriables.
-            if ($child_node->kind != \ast\AST_IF_ELEM) {
-                $child_context = $context->withScope(
-                    new BranchScope($context->getScope())
-                );
-            } else {
-                $child_context = $context;
-            }
+            $child_context = $context->withScope(
+                new BranchScope($context->getScope())
+            );
 
             $child_context->withLineNumberStart(
                 $child_node->lineno ?? 0
@@ -215,17 +211,21 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             // Step into each child node and get an
             // updated context for the node
             $child_context = $this->analyzeAndGetUpdatedContext($child_context, $node, $child_node);
-            $child_context_list[] = $child_context;
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($child_node)) {
+                $child_context_list[] = $child_context;
+            }
         }
 
-        // For if statements, we need to merge the contexts
-        // of all child context into a single scope based
-        // on any possible branching structure
-        $context = (new ContextMergeVisitor(
-            $this->code_base,
-            $context,
-            $child_context_list
-        ))($node);
+        if (count($child_context_list) > 0) {
+            // For switch/try statements, we need to merge the contexts
+            // of all child context into a single scope based
+            // on any possible branching structure
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                $child_context_list
+            ))($node);
+        }
 
         $context = $this->postOrderAnalyze($context, $node);
 
@@ -599,7 +599,100 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
      */
     public function visitTry(Node $node) : Context
     {
-        return $this->visitBranchedContext($node);
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        $context = $this->preOrderAnalyze($context, $node);
+
+        \assert(!empty($context), 'Context cannot be null');
+
+        // We collect all child context so that the
+        // PostOrderAnalysisVisitor can optionally operate on
+        // them
+        $child_context_list = [];
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
+
+        $try_node = $node->children['try'];
+        // Skip any non Node children.
+        assert($try_node instanceof Node);
+
+        // The conditions need to communicate to the outer
+        // scope for things like assigning veriables.
+        $try_context = $context->withScope(
+            new BranchScope($context->getScope())
+        );
+
+        $try_context->withLineNumberStart(
+            $try_node->lineno ?? 0
+        );
+
+        // Step into each try node and get an
+        // updated context for the node
+        $try_context = $this->analyzeAndGetUpdatedContext($try_context, $node, $try_node);
+        // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
+        $child_context_list[] = $try_context;
+
+        foreach ($node->children['catches']->children ?? [] as $catch_node) {
+            // Note: ContextMergeVisitor expects to get each individual catch
+            assert($catch_node instanceof Node);
+            // The conditions need to communicate to the outer
+            // scope for things like assigning veriables.
+            $catch_context = $context->withScope(
+                new BranchScope($context->getScope())
+            );
+
+            $catch_context->withLineNumberStart(
+                $catch_node->lineno ?? 0
+            );
+
+            // Step into each catch node and get an
+            // updated context for the node
+            $catch_context = $this->analyzeAndGetUpdatedContext($catch_context, $node, $catch_node);
+            // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
+            $child_context_list[] = $catch_context;
+        }
+
+        $finally_node = $node->children['finally'] ?? null;
+        if ($finally_node) {
+            assert($finally_node instanceof Node);
+            // The conditions need to communicate to the outer
+            // scope for things like assigning veriables.
+            $finally_context = $context->withScope(
+                new BranchScope($context->getScope())
+            );
+
+            $finally_context->withLineNumberStart(
+                $finally_node->lineno ?? 0
+            );
+
+            // Step into each finally node and get an
+            // updated context for the node
+            $finally_context = $this->analyzeAndGetUpdatedContext($finally_context, $node, $finally_node);
+            // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
+            $child_context_list[] = $finally_context;
+        }
+
+        if (count($child_context_list) > 0) {
+            // For switch/try statements, we need to merge the contexts
+            // of all child context into a single scope based
+            // on any possible branching structure
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                $child_context_list
+            ))($node);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        // When coming out of a scoped element, we pop the
+        // context to be the incoming context. Otherwise,
+        // we pass our new context up to our parent
+        return $context;
     }
 
     public function visitConditional(Node $node) : Context

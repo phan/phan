@@ -143,15 +143,41 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         } else {
             $finally_status = self::STATUS_PROCEED;
         }
-        $catch_node_list = $node->children['catches']->children;
-        if (\count($catch_node_list) === 0) {
+        $catches_node = $node->children['catches'];
+        if (\count($catches_node->children) == 0) {
             return self::mergeFinallyStatus($main_status, $finally_status);
         }
         // TODO: Could enhance slightly by checking for catch nodes with the exact same types (or subclasses) as names of exception thrown.
-        $combined_status = $main_status;
+        $combined_status = self::mergeFinallyStatus($main_status, $finally_status) | $this->visitCatchList($catches_node);
+        if (($finally_status & self::STATUS_PROCEED) === 0) {
+            $combined_status &= ~self::STATUS_PROCEED;
+        }
+        // No idea.
+        return $combined_status;
+    }
+
+    public function visitCatchList(Node $node)
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfCatchList($node);
+        $node->flags = $status;
+        return $status;
+    }
+
+    private function computeStatusOfCatchList(Node $node) : int
+    {
+        $catch_list = $node->children;
+        if (count($catch_list) === 0) {
+            return self::STATUS_PROCEED;  // status probably won't matter
+        }
+        // TODO: Could enhance slightly by checking for catch nodes with the exact same types (or subclasses) as names of exception thrown.
+        $combined_status = 0;
         // Try to cover all possible cases, such as try { return throwsException(); } catch(Exception $e) { break; }
-        foreach ($catch_node_list as $catch_node) {
-            $catch_node_status = $this->check($catch_node->children['stmts']);
+        foreach ($node->children as $catch_node) {
+            $catch_node_status = $this->visitStmtList($catch_node->children['stmts']);
             $combined_status = $combined_status | $catch_node_status;
         }
         // No idea.
@@ -347,48 +373,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         return $status;
     }
 
-    // TODO: Check if for/while/foreach block will execute at least once.
-    // (e.g. for ($i = 0; $i < 10; $i++) is guaranteed to work)
-    // For now, assume it's possible they may execute 0 times.
-
-    /**
-     * Analyzes any type of node with a statement list
-     * @return int - the exit status code
-     */
-    private function analyzeBranched(Node $node)
-    {
-        $status = $node->flags & self::STATUS_BITMASK;
-        if ($status) {
-            return $status;
-        }
-        $status = $this->computeStatusOfBranched($node);
-        $node->flags = $status;
-        return $status;
-    }
-
-    public function computeStatusOfBranched(Node $node) : int {
-        // A do-while statement and an if branch are executed at least once (or exactly once)
-        // TODO: deduplicate
-        // TODO: check for do{} while (true)
-        $stmts = $node->children['stmts'];
-        if (\is_null($stmts)) {
-            return self::STATUS_PROCEED;
-        }
-        // We can have a single non-Node statement in the 'stmts' field when no braces exist?
-        // E.g. `if (cond) "Not a statement";`
-        // TODO: no longer the case in ast version 40?
-        if (!($stmts instanceof Node)) {
-            return self::STATUS_PROCEED;
-        }
-        // This may be a statement list (or in rare cases, a statement?)
-        $status = $this->check($stmts);
-        if ($node->kind === \ast\AST_DO_WHILE) {
-            // ignore break/continue within a do{}while ($cond);
-            return in_array($status, [self::STATUS_THROW, self::STATUS_RETURN]) ? $status : self::STATUS_PROCEED;
-        }
-        return $status;
-    }
-
     /**
      * Analyzes a node with kind \ast\AST_IF
      * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
@@ -409,7 +393,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         $has_if_elems_for_all_cases = false;
         $combined_statuses = 0;
         foreach ($node->children as $child_node) {
-            $status = $this->check($child_node->children['stmts']);
+            $status = $this->visitStmtList($child_node->children['stmts']);
             $combined_statuses |= $status;
 
             $cond_node = $child_node->children['cond'];
@@ -432,7 +416,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
      */
     public function visitDoWhile(Node $node)
     {
-        $inner_status = $this->check($node->children['stmts']);
+        $inner_status = $this->visitStmtList($node->children['stmts']);
         if (($inner_status & ~self::STATUS_THROW_OR_RETURN_BITMASK) === 0) {
             // The inner block throws or returns before the end can be reached.
             return $inner_status;
