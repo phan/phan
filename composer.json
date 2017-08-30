@@ -6,6 +6,9 @@
     "license": "MIT",
     "authors": [
         {
+            "name": "Tyson Andre"
+        },
+        {
             "name": "Rasmus Lerdorf"
         },
         {
