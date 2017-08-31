@@ -269,11 +269,12 @@ class CodeBase
 
     /**
      * @param string[] $new_file_list
+     * @param string[] $file_mapping_contents maps relative path to absolute paths
      * @return string[] - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(array $new_file_list) {
+    public function updateFileList(array $new_file_list, array $file_mapping_contents = []) {
         if ($this->undo_tracker) {
-            return $this->undo_tracker->updateFileList($this, $new_file_list);
+            return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents);
         }
         throw new \RuntimeException("Calling updateFileList without undo tracker");
     }

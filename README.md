@@ -64,7 +64,9 @@ Phan is able to perform the following kinds of analysis.
 * Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
-* [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file. (requires `pcntl`)
+* [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file.
+  Phan also has experimental support for the language server protocol.
+* In progress: can use open language server protocol(requires `pcntl`). Parts of the code are based on https://github.com/felixfbecker/php-language-server (requires `pcntl`)
 * Output is emitted in text, checkstyle, json or codeclimate formats.
 * Can run user plugins on source for checks specific to your code.
 
@@ -236,6 +238,17 @@ Usage: ./phan [options] [files...]
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
   (e.g. 'default', which is an alias for port 4846.)
+  `phan_client` can be used to communicate with the Phan Daemon.
+
+ --language-server-on-stdin
+  Start the language server (For the Language Server protocol).
+  This is a different protocol from --daemonize, clients for various IDEs already exist.
+
+ --language-server-tcp-server <addr>
+  Start the language server listening for TCP connections on <addr> (e.g. 127.0.0.1:<port>)
+
+ --language-server-tcp-connect <addr>
+  Start the language server and connect to the client listening on <addr> (e.g. 127.0.0.1:<port>)
 
  -v, --version
   Print phan's version number

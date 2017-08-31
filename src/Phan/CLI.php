@@ -94,6 +94,10 @@ class CLI
                 'use-fallback-parser',
                 'daemonize-socket:',
                 'daemonize-tcp-port:',
+                'language-server-on-stdin',
+                'language-server-tcp-server:',
+                'language-server-tcp-connect:',
+                'language-server-verbose',
                 'extended-help',
             ]
         );
@@ -290,6 +294,19 @@ class CLI
                     } else {
                         $this->usage("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
                     }
+                    break;
+                case 'language-server-on-stdin':
+                    Config::setValue('language_server_config', ['stdin' => true]);
+                    break;
+                case 'language-server-tcp-server':
+                    // TODO: could validate?
+                    Config::setValue('language_server_config', ['tcp-server' => $value]);
+                    break;
+                case 'language-server-tcp-connect':
+                    Config::setValue('language_server_config', ['tcp' => $value]);
+                    break;
+                case 'language-server-verbose':
+                    Config::setValue('language_server_debug_level', 'info');
                     break;
                 case 'x':
                 case 'dead-code-detection':
@@ -538,6 +555,17 @@ Usage: {$argv[0]} [options] [files...]
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
   (e.g. 'default', which is an alias for port 4846.)
+  `phan_client` can be used to communicate with the Phan Daemon.
+
+ --language-server-on-stdin
+  Start the language server (For the Language Server protocol).
+  This is a different protocol from --daemonize, clients for various IDEs already exist.
+
+ --language-server-tcp-server <addr>
+  Start the language server listening for TCP connections on <addr> (e.g. 127.0.0.1:<port>)
+
+ --language-server-tcp-connect <addr>
+  Start the language server and connect to the client listening on <addr> (e.g. 127.0.0.1:<port>)
 
  -v, --version
   Print phan's version number
@@ -571,6 +599,10 @@ Extended help:
 
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
+
+ --language-server-verbose
+  Emit verbose logging messages related to the language server implementation to stderr.
+  This is useful when developing or debugging language server clients.
 
 EOB;
         }

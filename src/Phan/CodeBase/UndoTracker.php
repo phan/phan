@@ -136,14 +136,18 @@ class UndoTracker {
      * @param string[] $new_file_list
      * @return string[] - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(CodeBase $code_base, array $new_file_list) {
+    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents) {
         $new_file_set = [];
         foreach ($new_file_list as $path) {
             $new_file_set[$path] = true;
         }
+        foreach ($file_mapping_contents as $path => $_) {
+            $new_file_set[$path] = true;
+        }
+        unset($new_file_list);
         $removed_file_list = [];
         $changed_or_added_file_list = [];
-        foreach ($new_file_list as $path) {
+        foreach ($new_file_set as $path => $_) {
             if (!isset($this->fileModificationState[$path])) {
                 $changed_or_added_file_list[] = $path;
             }
@@ -155,7 +159,12 @@ class UndoTracker {
                 unset($this->fileModificationState[$path]);
                 continue;
             }
-            $newState = self::getFileState($path);
+            if (isset($file_mapping_contents[$path])) {
+                // TODO: Move updateFileList to be called before fork()?
+                $newState = 'daemon:' . sha1($file_mapping_contents[$path]);
+            } else {
+                $newState = self::getFileState($path);
+            }
             if ($newState !== $state) {
                 $removed_file_list[] = $path;
                 $this->undoFileChanges($code_base, $path);
