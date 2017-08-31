@@ -715,8 +715,10 @@ class CodeBase
             return $has_function;
         }
 
-        // Check to see if this is an internal function that hasn't
-        // been loaded yet.
+        // Make the following checks:
+        //
+        // 1. this is an internal function that hasn't been loaded yet.
+        // 2. Unless 'ignore_undeclared_functions_with_known_signatures' is true, require that the current php binary or it's extensions define this function before that.
         return $this->hasInternalFunctionWithFQSEN($fqsen);
     }
 
@@ -959,10 +961,17 @@ class CodeBase
             return false;
         }
 
+        if (!Config::get()->ignore_undeclared_functions_with_known_signatures) {
+            // Act as though functions don't exist if they aren't loaded into the php binary
+            // running phan (or that binary's extensions), even if the signature map contains them.
+            // (All of the functions were loaded during initialization)
+            return false;
+        }
+
         // For elements in the root namespace, check to see if
         // there's a static method signature for something that
         // hasn't been loaded into memory yet and create a
-        // method out of it as its requested
+        // method out of it as it's requested
 
         $function_signature_map =
             UnionType::internalFunctionSignatureMap();
