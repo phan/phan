@@ -61,7 +61,7 @@ return [
     ],
     'eventbuffer' => [
         'length' => 'int',
-        'contiguous-space' => 'int'
+        'contiguous_space' => 'int'
     ],
     'mongocursor' => [
         'slaveokay' => 'bool',
@@ -81,7 +81,7 @@ return [
     'splminheap' => [
         'name' => 'string'
     ],
-    'mongodb-driver-exception-writeexception' => [
+    'mongodb\driver\exception\writeexception' => [
         'writeresult' => 'MongoDBDriverWriteResult'
     ],
     'ziparchive' => [
@@ -94,7 +94,7 @@ return [
     'solrexception' => [
         'sourceline' => 'int',
         'sourcefile' => 'string',
-        'zif-name' => 'string'
+        'zif_name' => 'string'
     ],
     'arrayiterator' => [
         'name' => 'string'
@@ -226,13 +226,13 @@ return [
     'normalizer' => [
         'name' => 'string'
     ],
-    'mysqli-driver' => [
-        'client-info' => 'string',
-        'client-version' => 'string',
-        'driver-version' => 'string',
+    'mysqli_driver' => [
+        'client_info' => 'string',
+        'client_version' => 'string',
+        'driver_version' => 'string',
         'embedded' => 'string',
         'reconnect' => 'bool',
-        'report-mode' => 'int'
+        'report_mode' => 'int'
     ],
     'norewinditerator' => [
         'name' => 'string'
@@ -294,21 +294,21 @@ return [
         'name' => 'string'
     ],
     'solrresponse' => [
-        'http-status' => 'int',
-        'parser-mode' => 'int',
+        'http_status' => 'int',
+        'parser_mode' => 'int',
         'success' => 'bool',
-        'http-status-message' => 'string',
-        'http-request-url' => 'string',
-        'http-raw-request-headers' => 'string',
-        'http-raw-request' => 'string',
-        'http-raw-response-headers' => 'string',
-        'http-raw-response' => 'string',
-        'http-digested-response' => 'string'
+        'http_status_message' => 'string',
+        'http_request_url' => 'string',
+        'http_raw_request_headers' => 'string',
+        'http_raw_request' => 'string',
+        'http_raw_response_headers' => 'string',
+        'http_raw_response' => 'string',
+        'http_digested_response' => 'string'
     ],
     'domnamednodemap' => [
         'length' => 'int'
     ],
-    'mysqli-sql-exception' => [
+    'mysqli_sql_exception' => [
         'sqlstate' => 'string'
     ],
     'splstack' => [
@@ -318,8 +318,8 @@ return [
         'name' => 'string'
     ],
     'eventsslcontext' => [
-        'local-cert' => 'string',
-        'local-pk' => 'string'
+        'local_cert' => 'string',
+        'local_pk' => 'string'
     ],
     'pdoexception' => [
         'errorinfo' => 'array',
@@ -354,33 +354,33 @@ return [
         'name' => 'string'
     ],
     'snmp' => [
-        'max-oids' => 'int',
+        'max_oids' => 'int',
         'valueretrieval' => 'int',
-        'quick-print' => 'bool',
-        'enum-print' => 'bool',
-        'oid-output-format' => 'int',
-        'oid-increasing-check' => 'bool',
-        'exceptions-enabled' => 'int',
+        'quick_print' => 'bool',
+        'enum_print' => 'bool',
+        'oid_output_format' => 'int',
+        'oid_increasing_check' => 'bool',
+        'exceptions_enabled' => 'int',
         'info' => 'array'
     ],
     'mongoint32' => [
         'value' => 'string'
     ],
     'xmlreader' => [
-        'attributecount' => 'int',
-        'baseuri' => 'string',
+        'attributeCount' => 'int',
+        'baseURI' => 'string',
         'depth' => 'int',
-        'hasattributes' => 'bool',
-        'hasvalue' => 'bool',
-        'isdefault' => 'bool',
-        'isemptyelement' => 'bool',
-        'localname' => 'string',
+        'hasAttributes' => 'bool',
+        'hasValue' => 'bool',
+        'isDefault' => 'bool',
+        'isEmptyElement' => 'bool',
+        'localName' => 'string',
         'name' => 'string',
-        'namespaceuri' => 'string',
-        'nodetype' => 'int',
+        'namespaceURI' => 'string',
+        'nodeType' => 'int',
         'prefix' => 'string',
         'value' => 'string',
-        'xmllang' => 'string'
+        'xmlLang' => 'string'
     ],
     'eventbufferevent' => [
         'fd' => 'int',
