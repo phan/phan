@@ -4,10 +4,10 @@ Phan looks for common issues and will verify type compatibility on various opera
 information is available or can be deduced. Phan does not have a strong understanding of flow control
 and does not attempt to track values.
 
-[![Code Climate](https://codeclimate.com/github/etsy/phan/badges/gpa.svg)](https://codeclimate.com/github/etsy/phan) [![Build Status](https://travis-ci.org/etsy/phan.svg?branch=master)](https://travis-ci.org/etsy/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/etsy/phan?branch=master&svg=true)](https://ci.appveyor.com/project/morria/phan/branch/master)
+[![Code Climate](https://codeclimate.com/github/etsy/phan/badges/gpa.svg)](https://codeclimate.com/github/etsy/phan) [![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/etsy/phan?branch=master&svg=true)](https://ci.appveyor.com/project/morria/phan/branch/master)
 [![Gitter](https://badges.gitter.im/etsy/phan.svg)](https://gitter.im/etsy/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://poser.pugx.org/etsy/phan/v/stable)](https://packagist.org/packages/etsy/phan)
-[![License](https://poser.pugx.org/etsy/phan/license)](https://github.com/etsy/phan/blob/master/LICENSE)
+[![License](https://poser.pugx.org/etsy/phan/license)](https://github.com/phan/phan/blob/master/LICENSE)
 
 # Getting Started
 
