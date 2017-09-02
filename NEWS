@@ -5,6 +5,7 @@ Phan NEWS
 
 Maintenance
 + Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.
++ Update links to project from github.com/etsy/phan to github.com/phan/phan.
 
 Plugins
 + Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.
