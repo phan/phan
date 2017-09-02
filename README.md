@@ -243,7 +243,7 @@ Phan reads and understands most [PHPDoc](http://www.phpdoc.org/docs/latest/guide
 type annotations including [Union Types](https://github.com/phan/phan/wiki/About-Union-Types)
 (like `int|MyClass|string|null`) and generic array types (like `int[]` or `string[]|MyClass[]`).
 
-Take a look at [Annotating Your Source Code](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
+Take a look at [Annotating Your Source Code](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code)
 and [About Union Types](https://github.com/phan/phan/wiki/About-Union-Types) for some help
 getting started with defining types in your code.
 

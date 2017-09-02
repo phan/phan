@@ -344,7 +344,7 @@ class CodeBase
      *
      * Updates to elements will bleed through code bases
      * with only shallow clones. See
-     * https://github.com/etsy/phan/issues/257
+     * https://github.com/phan/phan/issues/257
      */
     public function shallowClone() : CodeBase
     {

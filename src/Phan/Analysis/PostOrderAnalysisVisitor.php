@@ -1903,7 +1903,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }, $original_parameter_list);
 
         // always resolve all arguments outside of quick mode to detect undefined variables, other problems in call arguments.
-        // Fixes https://github.com/etsy/phan/issues/583
+        // Fixes https://github.com/phan/phan/issues/583
         $argument_types = [];
         foreach ($argument_list_node->children as $i => $argument) {
             if (!$argument) {
