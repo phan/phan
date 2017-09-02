@@ -629,7 +629,7 @@ class Issue
                 self::Unanalyzable,
                 self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
-                "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/etsy/phan/issues/new.",
+                "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/phan/phan/issues/new.",
                 self::REMEDIATION_B,
                 2000
             ),
@@ -637,7 +637,7 @@ class Issue
                 self::UnanalyzableInheritance,
                 self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
-                "Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/etsy/phan/issues/new with a test case.",
+                "Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/phan/phan/issues/new with a test case.",
                 self::REMEDIATION_B,
                 2001
             ),
