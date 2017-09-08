@@ -1066,9 +1066,24 @@ class UnionType implements \Serializable
             return false;
         }
 
-        // TODO: change check to "any", not "each"?
-        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
-            return !$type->isArrayLike();
+        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+            return $type->isArrayLike();
+        });
+    }
+
+    /**
+     * @return bool
+     * True if this union has array-like types (is of type array, is
+     * a generic array, or implements ArrayAccess).
+     */
+    public function hasGenericArray() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+            return $type->isGenericArray();
         });
     }
 
@@ -1083,7 +1098,6 @@ class UnionType implements \Serializable
             return false;
         }
 
-        // TODO: change check to "any", not "each"?
         return ArraySet::exists($this->type_set, function (Type $type) : bool {
             return $type->isArrayAccess();
         });
@@ -1404,21 +1418,6 @@ class UnionType implements \Serializable
 
     /**
      * @return bool
-     * True if this type has any generic types
-     */
-    public function hasGenericArray() : bool
-    {
-        if ($this->isEmpty()) {
-            return false;
-        }
-
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
-            return $type->isGenericArray();
-        });
-    }
-
-    /**
-     * @return bool
      * True if any of the types in this UnionType made $matcher_callback return true
      */
     public function hasTypeMatchingCallback(\Closure $matcher_callback) : bool
@@ -1662,6 +1661,7 @@ class UnionType implements \Serializable
      *
      * @param Type[] $type_set (Containing only non-nullable values)
      * return Type[] possibly modified $type_set
+     * @var int $bool_id
      */
     private static function asTypeSetWithNormalizedNonNullableBools(array $type_set) : array
     {
@@ -1675,6 +1675,9 @@ class UnionType implements \Serializable
             $bool_type = BoolType::instance(false);
             $bool_id = \runkit_object_id($bool_type);
         }
+        \assert(\is_int($bool_id));
+        \assert(\is_int($true_id));
+        \assert(\is_int($false_id));
         unset($type_set[$true_id]);
         unset($type_set[$false_id]);
         if (!isset($type_set[$bool_id])) {
@@ -1702,6 +1705,9 @@ class UnionType implements \Serializable
             $bool_type = BoolType::instance(true);
             $bool_id = \runkit_object_id($bool_type);
         }
+        \assert(\is_int($bool_id));
+        \assert(\is_int($true_id));
+        \assert(\is_int($false_id));
         unset($type_set[$true_id]);
         unset($type_set[$false_id]);
         if (!isset($type_set[$bool_id])) {

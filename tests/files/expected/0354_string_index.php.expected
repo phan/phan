@@ -1,0 +1,12 @@
+%s:9 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:10 PhanTypeMismatchDimEmpty Assigning to an empty array index of a value of type string, but expected the index to exist and be of type int
+%s:10 PhanTypeMismatchProperty Assigning string[] to property but \A354::foo is string
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
+%s:14 PhanTypeMismatchDimEmpty Assigning to an empty array index of a value of type string, but expected the index to exist and be of type int
+%s:16 PhanTypeMismatchDimAssignment When appending to a value of type string, found an array access index of type string, but expected the index to be of type int
+%s:16 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type string, but expected the index to be of type int
+%s:22 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type array, but expected the index to be of type int
+%s:23 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type string, but expected the index to be of type int
+%s:24 PhanTypeMismatchDimFetch When fetching an array index from a value of type string, found an array index of type null, but expected the index to be of type int
+%s:27 PhanTypeMismatchDimFetch When fetching an array index from a value of type string[], found an array index of type array, but expected the index to be of type int|string
+%s:28 PhanTypeMismatchDimFetch When fetching an array index from a value of type string[], found an array index of type null, but expected the index to be of type int|string

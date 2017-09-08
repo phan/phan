@@ -940,6 +940,34 @@ class UnionTypeVisitor extends AnalysisVisitor
             return $union_type;
         }
 
+        // If none of the types we found were arrays with elements,
+        // then check for ArrayAccess
+        static $array_access_type;
+        static $simple_xml_element_type;  // SimpleXMLElement doesn't `implement` ArrayAccess, but can be accessed that way. See #542
+        static $null_type;
+        static $string_type;
+        static $int_or_string_union_type;
+        static $int_union_type;
+        if ($array_access_type === null) {
+            // array offsets work on strings, unfortunately
+            // Double check that any classes in the type don't
+            // have ArrayAccess
+            $array_access_type =
+                Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
+            $simple_xml_element_type =
+                Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
+            $null_type = NullType::instance(false);
+            $string_type = StringType::instance(false);
+            $int_or_string_union_type = UnionType::fromFullyQualifiedString('int|string');
+            $int_union_type = IntType::instance(false)->asUnionType();
+        }
+        $dim_type = self::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['dim'],
+            true
+        );
+
         // Figure out what the types of accessed array
         // elements would be
         $generic_types =
@@ -947,12 +975,23 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
+            if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_or_string_union_type)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchDimFetch,
+                        $node->lineno ?? 0,
+                        $union_type,
+                        (string)$dim_type,
+                        $int_or_string_union_type
+                    );
+                }
+            }
             return $generic_types;
         }
 
         // If the only type is null, we don't know what
         // accessed items will be
-        if ($union_type->isType(NullType::instance(false))) {
+        if ($union_type->isType($null_type)) {
             return new UnionType();
         }
 
@@ -961,26 +1000,25 @@ class UnionTypeVisitor extends AnalysisVisitor
         // You can access string characters via array index,
         // so we'll add the string type to the result if we're
         // indexing something that could be a string
-        if ($union_type->isType(StringType::instance(false))
-            || $union_type->canCastToUnionType(StringType::instance(false)->asUnionType())
+        if ($union_type->isType($string_type)
+            || $union_type->canCastToUnionType($string_type->asUnionType())
         ) {
-            $element_types->addType(StringType::instance(false));
+            if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type)) {
+                // TODO: Efficient implementation of asExpandedTypes()->hasArrayAccess()?
+                if (!$union_type->isEmpty() && !$union_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchDimFetch,
+                        $node->lineno ?? 0,
+                        $union_type,
+                        (string)$dim_type,
+                        $int_union_type
+                    );
+                }
+            }
+            $element_types->addType($string_type);
         }
 
         if ($element_types->isEmpty()) {
-            // If none of the types we found were arrays with elements,
-            // then check for ArrayAccess
-            static $array_access_type;
-            static $simple_xml_element_type;  // SimpleXMLElement doesn't `implement` ArrayAccess, but can be accessed that way. See #542
-            if ($array_access_type === null) {
-                // array offsets work on strings, unfortunately
-                // Double check that any classes in the type don't
-                // have ArrayAccess
-                $array_access_type =
-                    Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
-                $simple_xml_element_type =
-                    Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
-            }
 
             // Hunt for any types that are viable class names and
             // see if they inherit from ArrayAccess

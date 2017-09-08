@@ -87,7 +87,7 @@ class DemoPlugin extends PluginV2 implements
                 $code_base,
                 $class->getContext(),
                 'DemoPluginClassName',
-                "Class {CLASS} cannot be called `Class`"
+                "Class {CLASS} cannot be called `Class`",
                 [(string)$class->getFQSEN()]
             );
         }
