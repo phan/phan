@@ -18,7 +18,10 @@ use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -41,7 +44,18 @@ class AssignmentVisitor extends AnalysisVisitor
      * if we're replacing the union type or if we're adding a
      * type to the union type.
      */
-    private $is_dim_assignment = false;
+    private $is_dim_assignment;
+
+    /**
+     * @var ?UnionType
+     * Non-null if this this assignment is to an array parameter such as
+     * in `$foo[3] = 42` (type would be int). We need to know this in order to decide
+     * to type check the assignment (e.g. array keys are int|string, string offsets are int)
+     * type to the union type.
+     *
+     * Null for `$foo[] = 42` or when is_dim_assignment is false.
+     */
+    private $dim_type;
 
     /**
      * @param CodeBase $code_base
@@ -68,13 +82,15 @@ class AssignmentVisitor extends AnalysisVisitor
         Context $context,
         Node $assignment_node,
         UnionType $right_type,
-        bool $is_dim_assignment = false
+        bool $is_dim_assignment = false,
+        UnionType $dim_type = null
     ) {
         parent::__construct($code_base, $context);
 
         $this->assignment_node = $assignment_node;
         $this->right_type = $right_type;
         $this->is_dim_assignment = $is_dim_assignment;
+        $this->dim_type = $dim_type;  // null for `$x[] =` or when is_dim_assignment is false.
     }
 
     /**
@@ -281,11 +297,15 @@ class AssignmentVisitor extends AnalysisVisitor
         // Infer it from offsetSet?
         $dim_node = $node->children['dim'];
         if ($dim_node instanceof Node) {
-            UnionTypeVisitor::unionTypeFromNode(
+            $dim_type = UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
                 $this->context,
                 $node->children['dim']
             );
+        } else if (\is_scalar($dim_node) && $dim_node !== null) {
+            $dim_type = Type::fromObject($dim_node)->asUnionType();
+        } else {
+            $dim_type = null;
         }
 
         // Recurse into whatever we're []'ing
@@ -294,7 +314,8 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->context,
             $node,
             $right_type,
-            true
+            true,
+            $dim_type
         ))($node->children['expr']);
 
         return $context;
@@ -406,18 +427,27 @@ class AssignmentVisitor extends AnalysisVisitor
                         $this->code_base
                     )
                 ) {
-                    $this->addTypesToProperty($property);
+                    $this->addTypesToProperty($property, $node);
                 } else if ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
                     // Add any type if this is a subclass with array access.
-                    $this->addTypesToProperty($property);
+                    $this->addTypesToProperty($property, $node);
                 } else {
-                    $this->emitIssue(
-                        Issue::TypeMismatchProperty,
-                        $node->lineno ?? 0,
-                        (string)$this->right_type,
-                        "{$clazz->getFQSEN()}::{$property->getName()}",
-                        (string)$property_union_type
-                    );
+                    $new_types = $this->typeCheckDimAssignment($property_union_type, $node);
+                    if ($new_types === $this->right_type || !$new_types->canCastToExpandedUnionType(
+                        $property_union_type,
+                        $this->code_base
+                    )) {
+                        $this->emitIssue(
+                            Issue::TypeMismatchProperty,
+                            $node->lineno ?? 0,
+                            (string)$new_types,
+                            "{$clazz->getFQSEN()}::{$property->getName()}",
+                            (string)$property_union_type
+                        );
+                    } else {
+                        $this->right_type = $new_types;
+                        $this->addTypesToProperty($property, $node);
+                    }
                 }
                 return $this->context;
             } else {
@@ -442,7 +472,7 @@ class AssignmentVisitor extends AnalysisVisitor
             }
 
             // After having checked it, add this type to it
-            $this->addTypesToProperty($property);
+            $this->addTypesToProperty($property, $node);
 
             return $this->context;
         }
@@ -459,7 +489,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     $node
                 ))->getOrCreateProperty($property_name, false);
 
-                $this->addTypesToProperty($property);
+                $this->addTypesToProperty($property, $node);
             } catch (\Exception $exception) {
                 // swallow it
             }
@@ -482,13 +512,17 @@ class AssignmentVisitor extends AnalysisVisitor
      *
      * @return void
      */
-    private function addTypesToProperty(Property $property)
+    private function addTypesToProperty(Property $property, Node $node)
     {
         $property_types = $property->getUnionType();
-        $new_types = $this->right_type;
         if ($property_types->isEmpty()) {
-            $property_types->addUnionType($new_types);
+            $property_types->addUnionType($this->right_type);
             return;
+        }
+        if ($this->is_dim_assignment) {
+            $new_types = $this->typeCheckDimAssignment($property_types, $node);
+        } else {
+            $new_types = $this->right_type;
         }
         // Don't add MixedType to a non-empty property - It makes inferences on that property useless.
         if ($new_types->hasType(MixedType::instance(false))) {
@@ -580,9 +614,11 @@ class AssignmentVisitor extends AnalysisVisitor
                 // outside of the scope of this assignment, so we add to
                 // its union type rather than replace it.
                 if ($this->is_dim_assignment) {
+                    $right_type = $this->typeCheckDimAssignment($property->getUnionType(), $node);
                     $property->getUnionType()->addUnionType(
-                        $this->right_type
+                        $right_type
                     );
+                    return $this->context;
                 }
             }
 
@@ -652,8 +688,9 @@ class AssignmentVisitor extends AnalysisVisitor
             // outside of the scope of this assignment, so we add to
             // its union type rather than replace it.
             if ($this->is_dim_assignment) {
+                $right_type = $this->typeCheckDimAssignment($variable->getUnionType(), $node);
                 $variable->getUnionType()->addUnionType(
-                    $this->right_type
+                    $right_type
                 );
 
             } else {
@@ -705,5 +742,63 @@ class AssignmentVisitor extends AnalysisVisitor
         $this->context->addScopeVariable($variable);
 
         return $this->context;
+    }
+
+    /**
+     * @param UnionType $assign_type - The type which is being added to
+     * @return UnionType - Usually the unmodified UnionType. Sometimes, the adjusted type, e.g. for string modification.
+     */
+    public function typeCheckDimAssignment(UnionType $assign_type, Node $node) : UnionType {
+        static $int_or_string_type = null;
+        static $int_type = null;
+        static $string_array_type = null;
+        if ($int_or_string_type === null) {
+            // clone these if they're returned by the function, they may be modified by callers.
+            $int_or_string_type = UnionType::fromFullyQualifiedString('int|string');
+            $int_type = IntType::instance(false);
+            $string_array_type = UnionType::fromFullyQualifiedString('string[]');
+        }
+        $dim_type = $this->dim_type;
+        $right_type = $this->right_type;
+        if ($assign_type->isEmpty() || ($assign_type->hasGenericArray() && !$assign_type->asExpandedTypes($this->code_base)->hasArrayAccess())) {
+            // For empty union types or 'array', expect the provided dimension to be able to cast to int|string
+            if ($dim_type && !$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_or_string_type)) {
+                $this->emitIssue(
+                    Issue::TypeMismatchDimAssignment,
+                    $node->lineno ?? 0,
+                    (string)$assign_type,
+                    (string)$dim_type,
+                    (string)$int_or_string_type
+                );
+            }
+            return $right_type;
+        }
+        if ($assign_type->hasType(StringType::instance(false)) && !$assign_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
+            // Are we assigning to a variable/property of type 'string' (with no ArrayAccess or array types)?
+            if (\is_null($dim_type)) {
+                $this->emitIssue(
+                    Issue::TypeMismatchDimEmpty,
+                    $node->lineno ?? 0,
+                    (string)$assign_type,
+                    (string)$int_type
+                );
+            } else if (!$dim_type->isEmpty() && !$dim_type->hasType($int_type)) {
+                $this->emitIssue(
+                    Issue::TypeMismatchDimAssignment,
+                    $node->lineno ?? 0,
+                    (string)$assign_type,
+                    (string)$dim_type,
+                    (string)$int_type
+                );
+            } else {
+                if ($right_type->canCastToUnionType($string_array_type)) {
+                    // e.g. $a = 'aaa'; $a[0] = 'x';
+                    // (Currently special casing this, not handling deeper dimensions)
+                    return StringType::instance(false)->asUnionType();
+                }
+            }
+            return $right_type;
+        }
+        return $right_type;
     }
 }

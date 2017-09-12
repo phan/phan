@@ -61,6 +61,9 @@ class Issue
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
+    const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
+    const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
+    const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
     const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
@@ -882,6 +885,30 @@ class Issue
                 'Found an instanceof class name of type {TYPE}, but class name must be a valid object or a string',
                 self::REMEDIATION_B,
                 10029
+            ),
+            new Issue(
+                self::TypeMismatchDimAssignment,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When appending to a value of type {TYPE}, found an array access index of type {TYPE}, but expected the index to be of type {TYPE}',
+                self::REMEDIATION_B,
+                10030
+            ),
+            new Issue(
+                self::TypeMismatchDimEmpty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Assigning to an empty array index of a value of type {TYPE}, but expected the index to exist and be of type {TYPE}',
+                self::REMEDIATION_B,
+                10031
+            ),
+            new Issue(
+                self::TypeMismatchDimFetch,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When fetching an array index from a value of type {TYPE}, found an array index of type {TYPE}, but expected the index to be of type {TYPE}',
+                self::REMEDIATION_B,
+                10032
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

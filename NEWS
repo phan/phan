@@ -3,6 +3,10 @@ Phan NEWS
 ?? ??? 2017, Phan 0.10.0 (dev)
 -----------------------
 
+New Features(Analysis)
++ Check types of dimensions when using array access syntax (#406, #1093)
+  (E.g. for an `array`, check that the array dimension can cast to `int|string`)
+
 Maintenance
 + Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.
 + Update links to project from github.com/etsy/phan to github.com/phan/phan.
