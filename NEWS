@@ -6,6 +6,10 @@ Phan NEWS
 New Features(Analysis)
 + Check types of dimensions when using array access syntax (#406, #1093)
   (E.g. for an `array`, check that the array dimension can cast to `int|string`)
++ Add option `ignore_undeclared_functions_with_known_signatures` which can be set to `false`
+  to always warn about global functions Phan has signatures for
+  but are unavailable in the current PHP process (and enabled extensions, and the project being analyzed) (#1080)
+  The default was/is to not warn, to reduce false positives.
 
 Maintenance
 + Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.
