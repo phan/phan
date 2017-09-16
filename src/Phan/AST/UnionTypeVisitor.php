@@ -4,6 +4,7 @@ namespace Phan\AST;
 use Phan\Analysis\AssignOperatorFlagVisitor;
 use Phan\Analysis\BinaryOperatorFlagVisitor;
 use Phan\Analysis\ConditionVisitor;
+use Phan\Analysis\NegatedConditionVisitor;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
@@ -19,6 +20,8 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\Scope\BranchScope;
+use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
@@ -36,7 +39,6 @@ use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Library\ArraySet;
 use ast\Node;
-use ast\Node\Decl;
 
 /**
  * Determine the UnionType associated with a
@@ -139,7 +141,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * Default visitor for node kinds that do not have
      * an overriding method
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * An AST node we'd like to determine the UnionType
      * for
      *
@@ -260,7 +262,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_EMPTY`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -276,7 +278,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_ISSET`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -292,7 +294,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_INCLUDE_OR_EVAL`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -349,7 +351,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_SHELL_EXEC`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -460,12 +462,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             case \ast\flags\TYPE_VOID:
                 return VoidType::instance(false)->asUnionType();
             default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . Debug::astFlagDescription($node->flags ?? 0, $node->kind)
-                );
-                break;
+                throw new \AssertionError("All flags must match. Found "
+                    . Debug::astFlagDescription($node->flags ?? 0, $node->kind));
         }
     }
 
@@ -522,7 +520,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param int|float|string|Node $cond
      * @return ?bool
      */
-    private function checkCondUnconditionalTruthiness($cond) {
+    public static function checkCondUnconditionalTruthiness($cond) {
         if ($cond instanceof Node) {
             if ($cond->kind === \ast\AST_CONST) {
                 $name = $cond->children['name'];
@@ -565,7 +563,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     public function visitConditional(Node $node) : UnionType
     {
         $cond_node = $node->children['cond'];
-        $cond_truthiness = $this->checkCondUnconditionalTruthiness($cond_node);
+        $cond_truthiness = self::checkCondUnconditionalTruthiness($cond_node);
         // For the shorthand $a ?: $b, the cond node will be the truthy value.
         // Note: an ast node will never be null(can be unset), it will be a const AST node with the name null.
         $true_node = $node->children['true'] ?? $cond_node;
@@ -600,17 +598,28 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        // TODO: false_context once there is a NegatedConditionVisitor
         // TODO: emit no-op if $cond_node is a literal, such as `if (2)`
         // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
 
         if ($cond_node instanceof Node) {
+            $base_context = $this->context;
+            // TODO: Use different contexts and merge those, in case there were assignments or assignments by reference in both sides of the conditional?
+            // Reuse the BranchScope (sort of unintuitive). The ConditionVisitor returns a clone and doesn't modify the original.
+            $base_context_scope = $this->context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $base_context->withScope(new BranchScope($base_context_scope));
+            }
             $true_context = (new ConditionVisitor(
                 $this->code_base,
-                $this->context
+                isset($node->children['true']) ? $base_context : $this->context  // special case: $c = (($d = foo()) ?: 'fallback')
+            ))($cond_node);
+            $false_context = (new NegatedConditionVisitor(
+                $this->code_base,
+                $base_context
             ))($cond_node);
         } else {
             $true_context = $this->context;
+            $false_context = $this->context;
         }
 
         $true_type = UnionTypeVisitor::unionTypeFromNode(
@@ -621,7 +630,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         $false_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
-            $this->context,
+            $false_context,
             $node->children['false'] ?? ''
         );
 
@@ -838,8 +847,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 return $type;
             }
 
-            \assert($fqsen instanceof FullyQualifiedClassName);
-
             // If we don't have the class, we'll catch that problem
             // elsewhere
             if (!$this->code_base->hasClassWithFQSEN($fqsen)) {
@@ -904,7 +911,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
         try {
             // Confirm that the right-side exists
-            $union_type = $this->visitClassNode(
+            // Compute the union type but don't use it.
+            $this->visitClassNode(
                 $node->children['class']
             );
         } catch (TypeException $exception) {
@@ -938,6 +946,34 @@ class UnionTypeVisitor extends AnalysisVisitor
             return $union_type;
         }
 
+        // If none of the types we found were arrays with elements,
+        // then check for ArrayAccess
+        static $array_access_type;
+        static $simple_xml_element_type;  // SimpleXMLElement doesn't `implement` ArrayAccess, but can be accessed that way. See #542
+        static $null_type;
+        static $string_type;
+        static $int_or_string_union_type;
+        static $int_union_type;
+        if ($array_access_type === null) {
+            // array offsets work on strings, unfortunately
+            // Double check that any classes in the type don't
+            // have ArrayAccess
+            $array_access_type =
+                Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
+            $simple_xml_element_type =
+                Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
+            $null_type = NullType::instance(false);
+            $string_type = StringType::instance(false);
+            $int_or_string_union_type = UnionType::fromFullyQualifiedString('int|string');
+            $int_union_type = IntType::instance(false)->asUnionType();
+        }
+        $dim_type = self::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['dim'],
+            true
+        );
+
         // Figure out what the types of accessed array
         // elements would be
         $generic_types =
@@ -945,12 +981,23 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
+            if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_or_string_union_type)) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchDimFetch,
+                        $node->lineno ?? 0,
+                        $union_type,
+                        (string)$dim_type,
+                        $int_or_string_union_type
+                    );
+                }
+            }
             return $generic_types;
         }
 
         // If the only type is null, we don't know what
         // accessed items will be
-        if ($union_type->isType(NullType::instance(false))) {
+        if ($union_type->isType($null_type)) {
             return new UnionType();
         }
 
@@ -959,26 +1006,25 @@ class UnionTypeVisitor extends AnalysisVisitor
         // You can access string characters via array index,
         // so we'll add the string type to the result if we're
         // indexing something that could be a string
-        if ($union_type->isType(StringType::instance(false))
-            || $union_type->canCastToUnionType(StringType::instance(false)->asUnionType())
+        if ($union_type->isType($string_type)
+            || $union_type->canCastToUnionType($string_type->asUnionType())
         ) {
-            $element_types->addType(StringType::instance(false));
+            if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_union_type)) {
+                // TODO: Efficient implementation of asExpandedTypes()->hasArrayAccess()?
+                if (!$union_type->isEmpty() && !$union_type->asExpandedTypes($this->code_base)->hasArrayLike()) {
+                    $this->emitIssue(
+                        Issue::TypeMismatchDimFetch,
+                        $node->lineno ?? 0,
+                        $union_type,
+                        (string)$dim_type,
+                        $int_union_type
+                    );
+                }
+            }
+            $element_types->addType($string_type);
         }
 
         if ($element_types->isEmpty()) {
-            // If none of the types we found were arrays with elements,
-            // then check for ArrayAccess
-            static $array_access_type;
-            static $simple_xml_element_type;  // SimpleXMLElement doesn't `implement` ArrayAccess, but can be accessed that way. See #542
-            if ($array_access_type === null) {
-                // array offsets work on strings, unfortunately
-                // Double check that any classes in the type don't
-                // have ArrayAccess
-                $array_access_type =
-                    Type::fromNamespaceAndName('\\', 'ArrayAccess', false);
-                $simple_xml_element_type =
-                    Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
-            }
 
             // Hunt for any types that are viable class names and
             // see if they inherit from ArrayAccess
@@ -1005,7 +1051,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
-     * @param Decl $node
+     * @param Node $node
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -1013,7 +1059,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * The set of types that are possibly produced by the
      * given node
      */
-    public function visitClosure(Decl $node) : UnionType
+    public function visitClosure(Node $node) : UnionType
     {
         // The type of a closure is the fqsen pointing
         // at its definition
@@ -1095,7 +1141,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * Visit a node with kind `\ast\AST_ENCAPS_LIST`
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node of the type indicated by the method name that we'd
      * like to figure out the type that it produces.
      *
@@ -1376,13 +1422,10 @@ class UnionTypeVisitor extends AnalysisVisitor
         );
 
         try {
-            $class_fqsen = null;
             foreach ($this->classListFromNode(
                     $node->children['class'] ?? $node->children['expr']
                 ) as $class
             ) {
-                $class_fqsen = $class->getFQSEN();
-
                 if (!$class->hasMethodWithName(
                     $this->code_base,
                     $method_name
@@ -1391,10 +1434,9 @@ class UnionTypeVisitor extends AnalysisVisitor
                 }
 
                 try {
-                    $method = $class->getMethodByNameInContext(
+                    $method = $class->getMethodByName(
                         $this->code_base,
-                        $method_name,
-                        $this->context
+                        $method_name
                     );
 
                     $union_type = $method->getUnionType();

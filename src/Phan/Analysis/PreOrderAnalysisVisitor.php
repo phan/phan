@@ -22,7 +22,6 @@ use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
 use Phan\Language\UnionType;
 use ast\Node;
-use ast\Node\Decl;
 
 class PreOrderAnalysisVisitor extends ScopeVisitor
 {
@@ -41,7 +40,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         parent::__construct($code_base, $context);
     }
 
-    public function visit(Node $node) : Context
+    public function visit(Node $unused_node) : Context
     {
         return $this->context;
     }
@@ -49,14 +48,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLASS`
      *
-     * @param Decl $node
+     * @param Node $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClass(Decl $node) : Context
+    public function visitClass(Node $node) : Context
     {
         if ($node->flags & \ast\flags\CLASS_ANONYMOUS) {
             $class_name =
@@ -66,7 +65,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                     $node
                 ))->getUnqualifiedNameForAnonymousClass();
         } else {
-            $class_name = (string)$node->name;
+            $class_name = (string)$node->children['name'];
         }
 
         \assert(!empty($class_name), "Class name cannot be empty");
@@ -105,16 +104,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_METHOD`
      *
-     * @param Decl $node
+     * @param Node $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethod(Decl $node) : Context
+    public function visitMethod(Node $node) : Context
     {
-        $method_name = (string)$node->name;
+        $method_name = (string)$node->children['name'];
 
         \assert($this->context->isInClassScope(),
             "Must be in class context to see a method");
@@ -131,16 +130,15 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             );
         }
 
-        $method = $clazz->getMethodByNameInContext(
+        $method = $clazz->getMethodByName(
             $this->code_base,
-            $method_name,
-            $this->context
+            $method_name
         );
 
         // Parse the comment above the method to get
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
-            $node->docComment ?? '',
+            $node->children['docComment'] ?? '',
             $this->code_base,
             $this->context,
             $node->lineno ?? 0,
@@ -185,7 +183,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+        if ($method->getHasYield()) {
             $this->setReturnTypeOfGenerator($method, $node);
         }
 
@@ -195,16 +193,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_FUNC_DECL`
      *
-     * @param Decl $node
+     * @param Node $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitFuncDecl(Decl $node) : Context
+    public function visitFuncDecl(Node $node) : Context
     {
-        $function_name = (string)$node->name;
+        $function_name = (string)$node->children['name'];
 
         try {
             $canonical_function = (new ContextNode(
@@ -250,7 +248,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Parse the comment above the function to get
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
-            $node->docComment ?? '',
+            $node->children['docComment'] ?? '',
             $this->code_base,
             $this->context,
             $node->lineno ?? 0,
@@ -276,7 +274,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+        if ($function->getHasYield()) {
             $this->setReturnTypeOfGenerator($function, $node);
         }
 
@@ -286,7 +284,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * @return ?FullyQualifiedClassName
      */
-    private static function getOverrideClassFQSEN(CodeBase $code_base, Context $context, Func $func)
+    private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func)
     {
         $closure_scope = $func->getInternalScope();
 		if ($closure_scope instanceof ClosureScope) {
@@ -294,7 +292,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             if (!$class_fqsen) {
                 return null;
             }
-            assert($class_fqsen instanceof FullyQualifiedClassName);
 
             // Postponed the check for undeclared closure scopes to the analysis phase,
             // because classes are still being parsed in the parse phase.
@@ -325,7 +322,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         Context $context,
         Func $func
     ) {
-        $override_this_fqsen = self::getOverrideClassFQSEN($code_base, $context, $func);
+        $override_this_fqsen = self::getOverrideClassFQSEN($code_base, $func);
         if ($override_this_fqsen !== null) {
             if ($context->getScope()->hasVariableWithName('this') || !$context->isInClassScope()) {
                 // Handle @phan-closure-scope - Should set $this to the overriden class, as well as handling self:: and parent::
@@ -353,14 +350,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
-     * @param Decl $node
+     * @param Node $node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitClosure(Decl $node) : Context
+    public function visitClosure(Node $node) : Context
     {
         $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
             $this->context->withLineNumberStart($node->lineno ?? 0),
@@ -462,7 +459,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             }
         }
 
-        if ($this->analyzeFunctionLikeIsGenerator($node)) {
+        if ($func->getHasYield()) {
             $this->setReturnTypeOfGenerator($func, $node);
         }
 
@@ -509,57 +506,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * @param Node $node
      * A node to parse
      *
-     * This must be called before visitReturn is called within a function.
-     *
-     * @return bool
-     * True if the node represents a yield, else false.
-     */
-    public static function analyzeFunctionLikeIsGenerator(Node $node) : bool
-    {
-        foreach ($node->children ?? [] as $child_node) {
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-            // Check for occurrences of `yield`, including statements such as `return [yield 2];`.
-            if (self::analyzeNodeHasYield($child_node)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static function analyzeNodeHasYield(Node $node)
-    {
-        // The ast module doesn't tell us if something has a yield statement.
-        // We want to stop if the type of a node is a closure or a anonymous class
-
-        // Get the method/function/closure we're in
-        switch ($node->kind) {
-        case \ast\AST_YIELD:
-        case \ast\AST_YIELD_FROM:
-            return true;
-        case \ast\AST_METHOD:
-        case \ast\AST_FUNC_DECL:
-        case \ast\AST_CLOSURE:
-        case \ast\AST_CLASS:
-            return false;
-        }
-        foreach ($node->children ?? [] as $child_node) {
-            if (!($child_node instanceof Node)) {
-                continue;
-            }
-            if (self::analyzeNodeHasYield($child_node)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    /**
-     * @param Node $node
-     * A node to parse
-     *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
@@ -580,7 +526,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         if ($node->children['value']->kind == \ast\AST_ARRAY) {
             foreach ($node->children['value']->children ?? [] as $child_node) {
 
-                $key_node = $child_node->children['key'] ?? null;
+                // $key_node = $child_node->children['key'] ?? null;
                 $value_node = $child_node->children['value'] ?? null;
 
                 // for syntax like: foreach ([] as list(, $a));

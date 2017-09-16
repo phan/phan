@@ -15,7 +15,6 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
-use ast\Node\Decl;
 
 class Method extends ClassElement implements FunctionInterface
 {
@@ -218,9 +217,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return Method
      * A default constructor for the given class
      */
-    public static function defaultConstructorForClassInContext(
+    public static function defaultConstructorForClass(
         Clazz $clazz,
-        Context $context,
         CodeBase $code_base
     ) : Method {
         if ($clazz->getFQSEN()->getNamespace() === '\\' && $clazz->hasMethodWithName($code_base, $clazz->getName())) {
@@ -255,13 +253,18 @@ class Method extends ClassElement implements FunctionInterface
     }
 
     /**
+     * @param Clazz $clazz - The class to treat as the defining class of the alias. (i.e. the inheriting class)
+     * @param string $alias_method_name - The alias method name.
      * @param int $new_visibility_flags (0 if unchanged)
      * @return Method
-     * An alias from a trait use
+     *
+     * An alias from a trait use, which is treated as though it was defined in $clazz
+     * E.g. if you import a trait's method as private/protected, it becomes private/protected **to the class which used the trait**
+     *
+     * The resulting alias doesn't inherit the \ast\Node of the method body, so aliases won't have a redundant analysis step.
      */
     public function createUseAlias(
         Clazz $clazz,
-        CodeBase $code_base,
         string $alias_method_name,
         int $new_visibility_flags
     ) : Method {
@@ -297,15 +300,10 @@ class Method extends ClassElement implements FunctionInterface
             break;
         }
 
-        // Workaround: If you import a trait's method as private, it becomes private **to the class which used the trait**
-        // (But preserving the defining FQSEN is fine for this)
-        if (!Flags::bitVectorHasState($method->getFlags(), \ast\flags\MODIFIER_PRIVATE)) {
-            $method->setDefiningFQSEN($method_fqsen);
+        if ($method->isPublic()) {
+            $method->setDefiningFQSEN($this->getDefiningFQSEN());
         }
 
-        // TODO: setDefiningFQSEN?
-
-        // TODO: Update and add setNumberOfRealRequiredParameters once other PR is merged?
         $method->setParameterList($this->getParameterList());
         $method->setRealParameterList($this->getRealParameterList());
         $method->setRealReturnType($this->getRealReturnType());
@@ -321,7 +319,7 @@ class Method extends ClassElement implements FunctionInterface
      *
      * @param CodeBase $code_base
      *
-     * @param Decl $node
+     * @param Node $node
      * An AST node representing a method
      *
      * @return Method
@@ -331,7 +329,7 @@ class Method extends ClassElement implements FunctionInterface
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
-        Decl $node,
+        Node $node,
         FullyQualifiedMethodName $fqsen
     ) : Method {
 
@@ -339,7 +337,7 @@ class Method extends ClassElement implements FunctionInterface
         // we know so far
         $method = new Method(
             $context,
-            (string)$node->name,
+            (string)$node->children['name'],
             new UnionType(),
             $node->flags ?? 0,
             $fqsen
@@ -348,7 +346,7 @@ class Method extends ClassElement implements FunctionInterface
         // Parse the comment above the method to get
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
-            $node->docComment ?? '',
+            $node->children['docComment'] ?? '',
             $code_base,
             $context,
             $node->lineno ?? 0,
@@ -447,6 +445,7 @@ class Method extends ClassElement implements FunctionInterface
             }
 
             $method->getUnionType()->addUnionType($comment_return_union_type);
+            $method->setPHPDocReturnType($comment_return_union_type);
         }
 
         // Add params to local scope for user functions

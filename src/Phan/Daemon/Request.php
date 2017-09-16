@@ -7,6 +7,7 @@ use Phan\Config;
 use Phan\Daemon;
 use Phan\Language\FileRef;
 use Phan\Language\Type;
+use Phan\Library\FileCache;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -194,7 +195,7 @@ class Request {
      * @param array|null $status
      * @param int|null $pid
      * @return void
-     * @suppress PhanTypeMismatchArgumentInternal - bad function signature map - status is really an array
+     * @suppress PhanUndeclaredConstant pcntl unavailable on windows
      */
     public static function childSignalHandler($signo, $status = null, $pid = null) {
         if ($signo !== SIGCHLD) {
@@ -227,8 +228,10 @@ class Request {
      * @param \Closure $file_path_lister
      * @param resource $conn
      * @return Request|null - non-null if this is a worker process with work to do. null if request failed or this is the master.
+     * @suppress PhanUndeclaredConstant (pcntl unavailable on windows)
      */
     public static function accept(CodeBase $code_base, \Closure $file_path_lister, $conn) {
+        FileCache::clear();
         Daemon::debugf("Got a connection");  // debugging code
         // Efficient for large strings, e.g. long file lists.
         $data = [];
@@ -237,6 +240,7 @@ class Request {
         }
         $request_bytes = implode('', $data);
         $request = json_decode($request_bytes, true);
+
         if (!\is_array($request)) {
             Daemon::debugf("Received invalid request, expected JSON: %s", json_encode($request_bytes));
             self::sendJSONResponseOverSocket($conn, [

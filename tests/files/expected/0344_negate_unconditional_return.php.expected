@@ -1,0 +1,5 @@
+%s:6 PhanTypeMismatchReturn Returning type null but f344() is declared to return int
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:11 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:27 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array but \intdiv() takes int
+%s:43 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array|string but \intdiv() takes int

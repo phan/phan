@@ -25,9 +25,9 @@ class ASTRewriterTest extends AbstractPhanFileTest {
      * to the ASTs of the counterparts in
      * `tests/files/expected`
      *
-     * @param string[] $test_file_list (unused)
+     * @param string[] $test_file_list @phan-unused-param
      * @param string $expected_file_path
-     * @param ?string $config_file_path
+     * @param ?string $config_file_path @phan-unused-param
      * @dataProvider getTestFiles
      * @override
      */

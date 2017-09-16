@@ -4,6 +4,7 @@
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Element\Variable;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;
@@ -57,17 +58,27 @@ class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor {
 
         // emit issue if name is not declared
         // Check for edge cases such as isset($$var)
-        if (is_string($name) && !$this->context->getScope()->hasVariableWithName($name)){
-            $this->emit(
-                'PhanUndeclaredVariable',
-                "undeclared variables in isset()",
-                []
-            );
-        } elseif ($argument->kind !== ast\AST_DIM){
+        if (is_string($name) && $name) {
+            if (!Variable::isHardcodedVariableInScopeWithName($name, $this->context->isInGlobalScope()) &&
+                    !$this->context->getScope()->hasVariableWithName($name)) {
+                $this->emit(
+                    'PhanPluginUndeclaredVariableIsset',
+                    'undeclared variable ${VARIABLE} in isset()',
+                    [$name]
+                );
+            }
+        } elseif ($argument->kind !== ast\AST_VAR) {
             // emit issue if argument is not array access
             $this->emit(
                 'PhanPluginInvalidVariableIsset',
-                "non array access in isset()",
+                "non array/property access in isset()",
+                []
+            );
+        } else if (!is_string($name)) {
+            // emit issue if argument is not array access
+            $this->emit(
+                'PhanPluginComplexVariableIsset',
+                "Unanalyzable complex variable expression in isset",
                 []
             );
         }

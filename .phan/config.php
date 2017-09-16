@@ -78,13 +78,20 @@ return [
     'check_docblock_signature_param_type_match' => true,
 
     // (*Requires check_docblock_signature_param_type_match to be true*)
-    // If true, make narrowed types from phpdoc override
+    // If true, make narrowed types from phpdoc params override
     // the real types from the signature, when real types exist.
-    // Ignore incompatible or wider phpdoc union types.
     // (E.g. allows specifying desired lists of subclasses,
     //  or to indicate a preference for non-nullable types over nullable types)
     // Affects analysis of the body of the method and the param types passed in by callers.
-    'prefer_narrowed_phpdoc_param_types' => true,
+    'prefer_narrowed_phpdoc_param_type' => true,
+
+    // (*Requires check_docblock_signature_return_type_match to be true*)
+    // If true, make narrowed types from phpdoc returns override
+    // the real types from the signature, when real types exist.
+    // (E.g. allows specifying desired lists of subclasses,
+    //  or to indicate a preference for non-nullable types over nullable types)
+    // Affects analysis of return statements in the body of the method and the return types passed in by callers.
+    'prefer_narrowed_phpdoc_return_type' => true,
 
     // If enabled, check all methods that override a
     // parent method to make sure its signature is
@@ -386,10 +393,18 @@ return [
     // (e.g. PHP is compiled with --enable-debug or when using XDebug)
     'skip_slow_php_options_warning' => false,
 
+    // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
+    // but aren't available in the codebase, or the internal functions used to run phan (may lead to false positives if an extension isn't loaded)
+    // If this is true(default), then Phan will not warn.
+    // (Would like to override to false for phan self-analysis, but Windows self-tests would fail)
+    'ignore_undeclared_functions_with_known_signatures' => true,
+
     // A list of plugin files to execute
     'plugins' => [
+        '.phan/plugins/AlwaysReturnPlugin.php',
         '.phan/plugins/DemoPlugin.php',
         '.phan/plugins/DollarDollarPlugin.php',
+        '.phan/plugins/UnreachableCodePlugin.php',
         // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without key as return type with values having keys deliberately.
         // '.phan/plugins/DuplicateArrayKeyPlugin.php',
 

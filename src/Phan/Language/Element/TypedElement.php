@@ -267,6 +267,15 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
+     * Increments the number of times $issue_name was suppressed.
+     * @return void
+     */
+    public function incrementSuppressIssueCount(string $issue_name)
+    {
+        ++$this->suppress_issue_list[$issue_name];
+    }
+
+    /**
      * return bool
      * True if this element would like to suppress the given
      * issue name
@@ -308,7 +317,7 @@ abstract class TypedElement implements TypedElementInterface
      *
      * @return void
      */
-    public function hydrate(CodeBase $code_base)
+    public function hydrate(CodeBase $unused_code_base)
     {
         // Do nothing unless overridden
     }

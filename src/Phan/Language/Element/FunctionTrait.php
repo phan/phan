@@ -8,7 +8,7 @@ use Phan\Language\Context;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use ast\Node\Decl;
+use ast\Node;
 
 trait FunctionTrait {
 
@@ -104,6 +104,13 @@ trait FunctionTrait {
      * This does not change after initialization.
      */
     private $phpdoc_parameter_type_map = [];
+
+    /**
+     * @var ?UnionType
+     * The unmodified *phpdoc* union type for this method.
+     * Will be null without any (at)return statements.
+     */
+    private $phpdoc_return_type;
 
     /**
      * @var UnionType
@@ -275,6 +282,8 @@ trait FunctionTrait {
      */
     public function setHasYield(bool $has_yield)
     {
+        // TODO: In a future release of php-ast, this information will be part of the function node's flags.
+        // (PHP 7.1 only, not supported in PHP 7.0)
         $this->setPhanFlags(Flags::bitVectorWithState(
             $this->getPhanFlags(),
             Flags::HAS_YIELD,
@@ -424,7 +433,7 @@ trait FunctionTrait {
     public function getRealReturnType() : UnionType
     {
         if (!$this->real_return_type) {
-            // Incomplete patch for https://github.com/etsy/phan/issues/670
+            // Incomplete patch for https://github.com/phan/phan/issues/670
             return new UnionType();
             // throw new \Error(sprintf("Failed to get real return type in %s method %s", (string)$this->getClassFQSEN(), (string)$this));
         }
@@ -456,7 +465,7 @@ trait FunctionTrait {
      *
      * @param CodeBase $code_base
      *
-     * @param Decl $node
+     * @param Node $node
      * An AST node representing a method
      *
      * @param FunctionInterface $function - A Func or Method to add params to the local scope of.
@@ -468,7 +477,7 @@ trait FunctionTrait {
     public static function addParamsToScopeOfFunctionOrMethod(
         Context $context,
         CodeBase $code_base,
-        Decl $node,
+        Node $node,
         FunctionInterface $function,
         Comment $comment
     ) {
@@ -523,7 +532,7 @@ trait FunctionTrait {
     public static function addParamToScopeOfFunctionOrMethod(
         Context $context,
         CodeBase $code_base,
-        Decl $node,
+        Node $node,
         FunctionInterface $function,
         Comment $comment,
         int $parameter_offset,
@@ -635,6 +644,23 @@ trait FunctionTrait {
     public function getPHPDocParameterTypeMap()
     {
         return $this->phpdoc_parameter_type_map;
+    }
+
+    /**
+     * @param ?UnionType $type the raw phpdoc union type
+     * @return void
+     */
+    public function setPHPDocReturnType($type)
+    {
+        $this->phpdoc_return_type = $type;
+    }
+
+    /**
+     * @return ?UnionType the raw phpdoc union type
+     */
+    public function getPHPDocReturnType()
+    {
+        return $this->phpdoc_return_type;
     }
 
     /**

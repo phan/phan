@@ -3,7 +3,6 @@ namespace Phan\AST\Visitor;
 
 use Phan\Debug;
 use ast\Node;
-use ast\Node\Decl;
 
 class Element
 {

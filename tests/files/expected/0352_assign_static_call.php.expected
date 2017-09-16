@@ -1,0 +1,2 @@
+%s:10 PhanTypeMissingReturn Method \Container352::offsetGet is declared to return mixed but has no return value
+%s:12 PhanTypeMissingReturn Method \Container352::offsetExists is declared to return bool but has no return value

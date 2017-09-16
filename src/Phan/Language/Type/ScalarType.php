@@ -40,9 +40,9 @@ abstract class ScalarType extends NativeType
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $code_base (@phan-unused-param)
      *
-     * @param Type $parent
+     * @param Type $parent (@phan-unused-param)
      *
      * @return bool
      * True if this type represents a class which is a sub-type of
@@ -82,8 +82,8 @@ abstract class ScalarType extends NativeType
      */
     public function isExclusivelyNarrowedFormOrEquivalentTo(
         UnionType $union_type,
-        Context $context,
-        CodeBase $code_base
+        Context $unused_context,
+        CodeBase $unused_code_base
     ) : bool {
         return $union_type->hasType($this) || $this->asUnionType()->canCastToUnionType($union_type);
     }

@@ -16,6 +16,14 @@ class FunctionLikeScope extends ClosedScope {
     }
 
     /**
+     * @return bool
+     * True if we're in a function scope
+     */
+    public function isInPropertyScope() : bool {
+        return false;
+    }
+
+    /**
      * @return FullyQualifiedMethodName|FullyQualifiedFunctionName
      * Get the FQSEN for the closure, method or function we're in
      */
@@ -31,7 +39,7 @@ class FunctionLikeScope extends ClosedScope {
             return $fqsen;
         }
 
-        \assert(false, "FQSEN must be a function-like FQSEN");
+        throw new \AssertionError("FQSEN must be a function-like FQSEN");
     }
 
 }

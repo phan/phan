@@ -3,18 +3,21 @@
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
-use Phan\Language\Element\AddressableElement;
+use Phan\Language\Element\Property;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
+use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
+use Phan\PluginV2\FinalizeProcessCapability;
 use ast\Node;
 
 /**
- * Check for unused `@suppress` annotations.
+ * Check for unused (at)suppress annotations.
  *
  * NOTE! This plugin only produces correct results when Phan
  *       is run on a single processor (via the `-j1` flag).
@@ -22,7 +25,20 @@ use ast\Node;
 class UnusedSuppressionPlugin extends PluginV2 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
-    AnalyzeMethodCapability {
+    AnalyzeMethodCapability,
+    AnalyzePropertyCapability,
+    FinalizeProcessCapability {
+
+    /**
+     * @var AddressableElement[] - Analysis is postponed until finalizeProcess.
+     * Issues may have been emitted after `$this->analyze*()` were called,
+     * which is why those methods postpone the check until analysis is finished.
+     *
+     * Also, looping over all elements again would be slow.
+     *
+     * These are currently unique, even when quick_mode is false.
+     */
+    private $elements_for_postponed_analysis = [];
 
     /**
      * @param CodeBase $code_base
@@ -41,6 +57,11 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         // Get the set of suppressed issues on the element
         $suppress_issue_list =
             $element->getSuppressIssueList();
+
+        if (\array_key_exists('UnusedSuppression', $suppress_issue_list)) {
+            // The element's doc comment is suppressing everything emitted by this plugin.
+            return;
+        }
 
         // Check to see if any are unused
         foreach ($suppress_issue_list as $issue_type => $use_count) {
@@ -71,7 +92,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         CodeBase $code_base,
         Clazz $class
     ) {
-        $this->analyzeAddressableElement($code_base, $class);
+        $this->elements_for_postponed_analysis[] = $class;
     }
 
     /**
@@ -95,7 +116,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
             return;
         }
 
-        $this->analyzeAddressableElement($code_base, $method);
+        $this->elements_for_postponed_analysis[] = $method;
     }
 
     /**
@@ -113,9 +134,38 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         CodeBase $code_base,
         Func $function
     ) {
-        $this->analyzeAddressableElement($code_base, $function);
+        $this->elements_for_postponed_analysis[] = $function;
     }
 
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the function exists
+     *
+     * @param Property $property
+     * A property being analyzed
+     *
+     * @return void
+     *
+     * @override
+     */
+    public function analyzeProperty(
+        CodeBase $code_base,
+        Property $property
+    ) {
+        $this->elements_for_postponed_analysis[] = $property;
+    }
+
+    /**
+     * NOTE! This plugin only produces correct results when Phan
+     *       is run on a single processor (via the `-j1` flag).
+     *       Putting this hook in finalizeProcess() just minimizes the incorrect result counts.
+     * @override
+     */
+    public function finalizeProcess(CodeBase $code_base) {
+        foreach ($this->elements_for_postponed_analysis as $element) {
+            $this->analyzeAddressableElement($code_base, $element);
+        }
+    }
 }
 
 // Every plugin needs to return an instance of itself at the

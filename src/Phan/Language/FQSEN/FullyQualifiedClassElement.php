@@ -82,8 +82,6 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * @return static
      * Get the canonical (non-alternate) FQSEN associated
      * with this FQSEN
-     *
-     * @suppress PhanTypeMismatchDeclaredReturn
      */
     public function getCanonicalFQSEN() : FQSEN
     {

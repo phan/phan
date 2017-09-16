@@ -12,6 +12,7 @@ use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\IntType;
@@ -20,6 +21,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\TrueType;
 use Phan\Library\ArraySet;
 use ast\Node;
 
@@ -78,16 +80,16 @@ class UnionType implements \Serializable
         }
 
         static $memoize_map = [];
-        $types_set = $memoize_map[$fully_qualified_string] ?? null;
+        $type_set = $memoize_map[$fully_qualified_string] ?? null;
 
-        if (!isset($types_set)) {
-            $types_set = ArraySet::from_list(\array_map(function (string $type_name) {
+        if (!isset($type_set)) {
+            $type_set = ArraySet::from_list(\array_map(function (string $type_name) {
                 return Type::fromFullyQualifiedString($type_name);
             }, \explode('|', $fully_qualified_string)));
-            $memoize_map[$fully_qualified_string] = $types_set;
+            $memoize_map[$fully_qualified_string] = $type_set;
         }
 
-        return new UnionType($types_set, true);
+        return new UnionType($type_set, true);
     }
 
     /**
@@ -121,7 +123,7 @@ class UnionType implements \Serializable
         }
 
         return new UnionType(
-            \array_map(function (string $type_name) use ($context, $type_string, $source) {
+            \array_map(function (string $type_name) use ($context, $source) {
                 \assert($type_name !== '', "Type cannot be empty.");
                 return Type::fromStringInContext(
                     $type_name,
@@ -314,7 +316,7 @@ class UnionType implements \Serializable
     /**
      * @return Type[]
      * The set of simple types associated with this
-     * union type. The key is based on runkit_object_id()
+     * union type. The key is based on spl_object_id()
      */
     public function getTypeSet() : array
     {
@@ -328,7 +330,7 @@ class UnionType implements \Serializable
      */
     public function addType(Type $type)
     {
-        $this->type_set[\runkit_object_id($type)] = $type;
+        $this->type_set[\spl_object_id($type)] = $type;
     }
 
     /**
@@ -338,7 +340,7 @@ class UnionType implements \Serializable
      */
     public function removeType(Type $type)
     {
-        unset($this->type_set[\runkit_object_id($type)]);
+        unset($this->type_set[\spl_object_id($type)]);
     }
 
     /**
@@ -348,7 +350,7 @@ class UnionType implements \Serializable
      */
     public function hasType(Type $type) : bool
     {
-        return isset($this->type_set[\runkit_object_id($type)]);
+        return isset($this->type_set[\spl_object_id($type)]);
     }
 
     /**
@@ -1064,9 +1066,24 @@ class UnionType implements \Serializable
             return false;
         }
 
-        // TODO: change check to "any", not "each"?
-        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
-            return !$type->isArrayLike();
+        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+            return $type->isArrayLike();
+        });
+    }
+
+    /**
+     * @return bool
+     * True if this union has array-like types (is of type array, is
+     * a generic array, or implements ArrayAccess).
+     */
+    public function hasGenericArray() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+            return $type->isGenericArray();
         });
     }
 
@@ -1081,7 +1098,6 @@ class UnionType implements \Serializable
             return false;
         }
 
-        // TODO: change check to "any", not "each"?
         return ArraySet::exists($this->type_set, function (Type $type) : bool {
             return $type->isArrayAccess();
         });
@@ -1144,9 +1160,6 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @param CodeBase $code_base
-     * The code base in which to find classes
-     *
      * @param Context $context
      * The context in which we're resolving this union
      * type.
@@ -1167,7 +1180,6 @@ class UnionType implements \Serializable
      * TODO: Add a method to ContextNode to directly get FQSEN instead?
      */
     public function asClassFQSENList(
-        CodeBase $code_base,
         Context $context
     ) {
         // Iterate over each viable class type to see if any
@@ -1406,21 +1418,6 @@ class UnionType implements \Serializable
 
     /**
      * @return bool
-     * True if this type has any generic types
-     */
-    public function hasGenericArray() : bool
-    {
-        if ($this->isEmpty()) {
-            return false;
-        }
-
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
-            return $type->isGenericArray();
-        });
-    }
-
-    /**
-     * @return bool
      * True if any of the types in this UnionType made $matcher_callback return true
      */
     public function hasTypeMatchingCallback(\Closure $matcher_callback) : bool
@@ -1598,5 +1595,136 @@ class UnionType implements \Serializable
         }
 
         return $map;
+    }
+
+    /**
+     * @return UnionType - A normalized version of this union type (May or may not be the same object, if no modifications were made)
+     *
+     * The following normalization rules apply
+     *
+     * 1. If one of the types is null or nullable, convert all types to nullable and remove "null" from the union type
+     * 2. If both "true" and "false" (possibly nullable) coexist, or either coexists with "bool" (possibly nullable),
+     *    then remove "true" and "false"
+     */
+    public function asNormalizedTypes() : UnionType {
+        $type_set = $this->type_set;
+        if (count($type_set) <= 1) {
+            // Optimization: can't simplify if there's only one type
+            return $this;
+        }
+        $flags = 0;
+        foreach ($type_set as $type) {
+            $flags |= $type->getNormalizationFlags();
+        }
+        if ($flags === 0) {
+            // Optimization: nothing to do if no types are null/nullable or booleans
+            return $this;
+        }
+        return self::asNormalizedTypesInner($type_set, $flags);
+    }
+
+    /**
+     * @param Type[] $type_set
+     * @param int $flags non-zero
+     */
+    public static function asNormalizedTypesInner(array $type_set, int $flags) : UnionType {
+        $new_type_set = $type_set;
+        $nullable = ($flags & Type::_bit_nullable) !== 0;
+        if ($nullable) {
+            foreach ($type_set as $type_id => $type) {
+                if (!$type->getIsNullable()) {
+                    unset($new_type_set[$type_id]);
+                    $nullable_type = $type->withIsNullable(true);
+                    $new_type_set[\spl_object_id($nullable_type)] = $nullable_type;
+                }
+            }
+            static $nullable_id = null;
+            if ($nullable_id === null) {
+                $nullable_id = \spl_object_id(NullType::instance(false));
+            }
+            unset($new_type_set[$nullable_id]);
+        }
+        // If this contains both true and false types, filter out both and add "bool" (or "?bool" for nullable)
+        if (($flags & Type::_bit_bool_combination) === Type::_bit_bool_combination) {
+            if ($nullable) {
+                $new_type_set = self::asTypeSetWithNormalizedNullableBools($new_type_set);
+            } else {
+                $new_type_set = self::asTypeSetWithNormalizedNonNullableBools($new_type_set);
+            }
+        }
+        return new UnionType($new_type_set);
+    }
+
+    /**
+     * Must be called after converting nullable to non-nullable.
+     * Removes false|true types and adds bool
+     *
+     * @param Type[] $type_set (Containing only non-nullable values)
+     * return Type[] possibly modified $type_set
+     * @var int $bool_id
+     */
+    private static function asTypeSetWithNormalizedNonNullableBools(array $type_set) : array
+    {
+        static $true_id = null;
+        static $false_id = null;
+        static $bool_id = null;
+        static $bool_type = null;
+        if ($bool_type === null) {
+            $true_id = \spl_object_id(TrueType::instance(false));
+            $false_id = \spl_object_id(FalseType::instance(false));
+            $bool_type = BoolType::instance(false);
+            $bool_id = \spl_object_id($bool_type);
+        }
+        \assert(\is_int($bool_id));
+        \assert(\is_int($true_id));
+        \assert(\is_int($false_id));
+        unset($type_set[$true_id]);
+        unset($type_set[$false_id]);
+        if (!isset($type_set[$bool_id])) {
+            $type_set[$bool_id] = $bool_type;
+        }
+        return $type_set;
+    }
+
+    /**
+     * Must be called after converting all types to null.
+     * Removes ?false|?true types and adds ?bool
+     *
+     * @param Type[] $type_set (Containing only non-nullable values)
+     * return Type[] possibly modified $type_set
+     */
+    private static function asTypeSetWithNormalizedNullableBools(array $type_set) : array
+    {
+        static $true_id = null;
+        static $false_id = null;
+        static $bool_id = null;
+        static $bool_type = null;
+        if ($bool_type === null) {
+            $true_id = \spl_object_id(TrueType::instance(true));
+            $false_id = \spl_object_id(FalseType::instance(true));
+            $bool_type = BoolType::instance(true);
+            $bool_id = \spl_object_id($bool_type);
+        }
+        \assert(\is_int($bool_id));
+        \assert(\is_int($true_id));
+        \assert(\is_int($false_id));
+        unset($type_set[$true_id]);
+        unset($type_set[$false_id]);
+        if (!isset($type_set[$bool_id])) {
+            $type_set[$bool_id] = $bool_type;
+        }
+        return $type_set;
+    }
+
+    private static function asNullableTypeSet(array $type_set) {
+        $new_types_set = $type_set;
+        foreach ($type_set as $type_id => $type) {
+            if (!$type->getIsNullable()) {
+                unset($type_set[$type_id]);
+                $nullable_type = $type->withIsNullable(true);
+                $new_types_set[\spl_object_id($nullable_type)] = $nullable_type;
+            }
+        }
+        return $new_types_set;
     }
 }

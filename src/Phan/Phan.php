@@ -2,11 +2,13 @@
 namespace Phan;
 
 use Phan\Daemon\Request;
+use Phan\Library\FileCache;
 use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
+use Phan\Plugin\ConfigPluginSet;
 
 class Phan implements IgnoredFilesFilterInterface {
 
@@ -76,12 +78,12 @@ class Phan implements IgnoredFilesFilterInterface {
         CodeBase $code_base,
         \Closure $file_path_lister
     ) : bool {
+        FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
         $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port');
         if ($is_daemon_request) {
             $code_base->enableUndoTracking();
         }
-        self::checkExtensionCompatibility($is_daemon_request);
 
         $file_path_list = $file_path_lister();
 
@@ -166,7 +168,6 @@ class Phan implements IgnoredFilesFilterInterface {
                 error_log("Finished serving requests, exiting");
                 exit(2);
             }
-            \assert($request instanceof Request);
             self::$printer = $request->getPrinter();
 
             // This is the list of all of the parsed files
@@ -181,9 +182,6 @@ class Phan implements IgnoredFilesFilterInterface {
             // Stop tracking undo operations, now that the parse phase is done.
             $code_base->disableUndoTracking();
         }
-
-        global $start_time;
-        $start_time = microtime(true);
 
         // With parsing complete, we need to tell the code base to
         // start hydrating any requested elements on their way out.
@@ -284,7 +282,11 @@ class Phan implements IgnoredFilesFilterInterface {
                     self::getIssueCollector()->reset();
                 },
                 $analysis_worker,
-                function () : array {
+                function () use($code_base) : array {
+                    // This closure is run once, after running analysis_worker on each input.
+                    // If there are any plugins defining finalizeProcess(), run those.
+                    ConfigPluginSet::instance()->finalizeProcess($code_base);
+
                     // Return the collected issues to be serialized.
                     return self::getIssueCollector()->getCollectedIssues();
                 }
@@ -308,6 +310,9 @@ class Phan implements IgnoredFilesFilterInterface {
             // in the code base and emit errors for dead
             // code.
             Analysis::analyzeDeadCode($code_base);
+
+            // If there are any plugins defining finalizeProcess(), run those.
+            ConfigPluginSet::instance()->finalizeProcess($code_base);
         }
 
         // Get a count of the number of issues that were found
@@ -377,29 +382,6 @@ class Phan implements IgnoredFilesFilterInterface {
         }
 
         return array_unique($dependency_file_path_list);
-    }
-
-    /**
-     * Prints error messages if this is incompatible with various PHP modules. (e.g. grpc)
-     * Modifies global config if possible to work around those.
-     * Exits on failure.
-     *
-     * @param bool $is_daemon_request - Is the user attempting to run this in daemon mode
-     * @return void
-     */
-    private static function checkExtensionCompatibility(bool $is_daemon_request) {
-        if (extension_loaded('grpc')) {
-            // https://github.com/etsy/phan/issues/889
-            // In version 1.3.2, ReflectionExtension said the version was 0.10. Give up on version checking
-            if ($is_daemon_request) {
-                fprintf(STDERR, "Daemon mode will not work with grpc extension enabled in 1.4.0-dev (1.3.2 should work), quitting. See Issue #889\n");
-                exit(EXIT_FAILURE);
-            }
-            if (Config::getValue('processes') > 1) {
-                fprintf(STDERR, "Multi-process analysis will not work with grpc extension enabled in 1.4.0-dev (1.3.2 should work), limiting analysis to a single process. See Issue #889\n");
-                Config::setValue('processes', 1);
-            }
-        }
     }
 
     /**

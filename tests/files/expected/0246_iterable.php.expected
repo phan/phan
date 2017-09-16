@@ -6,5 +6,5 @@
 %s:29 PhanTypeMismatchArgument Argument 1 (p) is \ArrayAccess but \f246_0() takes iterable defined at %s:2
 %s:30 PhanTypeMismatchArgument Argument 1 (p) is \ArrayAccess but \f246_1() takes array defined at %s:5
 %s:32 PhanTypeMismatchArgument Argument 1 (p) is \ArrayAccess but \f246_3() takes \Traversable defined at %s:11
-%s:50 PhanTypeMismatchArgument Argument 1 (p) is \Traversable but \f246_1() takes array defined at %s:5
-%s:51 PhanTypeMismatchArgument Argument 1 (p) is \Traversable but \f246_2() takes \ArrayAccess defined at %s:8
+%s:50 PhanTypeMismatchArgument Argument 1 (p) is \Traversable|iterable but \f246_1() takes array defined at %s:5
+%s:51 PhanTypeMismatchArgument Argument 1 (p) is \Traversable|iterable but \f246_2() takes \ArrayAccess defined at %s:8

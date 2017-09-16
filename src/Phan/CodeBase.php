@@ -249,10 +249,19 @@ class CodeBase
     private function addGlobalConstantsByNames(array $const_name_list)
     {
         foreach ($const_name_list as $const_name) {
+            if (!$const_name) {
+                // #1015 workaround for empty constant names ('' and '0').
+                fprintf(STDERR, "Saw constant with empty name of %s. There may be a bug in a PECL extension you are using (php -m will list those)\n", var_export($const_name, true));
+                continue;
+            }
             try {
                 $const_obj = GlobalConstant::fromGlobalConstantName($this, $const_name);
                 $this->addGlobalConstant($const_obj);
             } catch (\InvalidArgumentException $e) {
+                // Workaround for windows bug in #1011
+                if (\strncmp($const_name, "\0__COMPILER_HALT_OFFSET__\0", 26) === 0) {
+                    continue;
+                }
                 fprintf(STDERR, "Failed to load global constant value for %s, continuing: %s\n", var_export($const_name, true), $e->getMessage());
             }
         }
@@ -335,7 +344,7 @@ class CodeBase
      *
      * Updates to elements will bleed through code bases
      * with only shallow clones. See
-     * https://github.com/etsy/phan/issues/257
+     * https://github.com/phan/phan/issues/257
      */
     public function shallowClone() : CodeBase
     {
@@ -706,8 +715,10 @@ class CodeBase
             return $has_function;
         }
 
-        // Check to see if this is an internal function that hasn't
-        // been loaded yet.
+        // Make the following checks:
+        //
+        // 1. this is an internal function that hasn't been loaded yet.
+        // 2. Unless 'ignore_undeclared_functions_with_known_signatures' is true, require that the current php binary or it's extensions define this function before that.
         return $this->hasInternalFunctionWithFQSEN($fqsen);
     }
 
@@ -950,10 +961,17 @@ class CodeBase
             return false;
         }
 
+        if (!Config::get()->ignore_undeclared_functions_with_known_signatures) {
+            // Act as though functions don't exist if they aren't loaded into the php binary
+            // running phan (or that binary's extensions), even if the signature map contains them.
+            // (All of the functions were loaded during initialization)
+            return false;
+        }
+
         // For elements in the root namespace, check to see if
         // there's a static method signature for something that
         // hasn't been loaded into memory yet and create a
-        // method out of it as its requested
+        // method out of it as it's requested
 
         $function_signature_map =
             UnionType::internalFunctionSignatureMap();

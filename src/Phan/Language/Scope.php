@@ -7,6 +7,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Type\TemplateType;
 
 abstract class Scope
@@ -104,6 +105,28 @@ abstract class Scope
             "Cannot get class FQSEN on scope");
 
         return $this->getParentScope()->getClassFQSEN();
+    }
+
+    /**
+     * @return bool
+     * True if we're in a property scope
+     */
+    public function isInPropertyScope() : bool
+    {
+        return $this->hasParentScope()
+            ? $this->getParentScope()->isInPropertyScope() : false;
+    }
+
+    /**
+     * @return FullyQualifiedPropertyName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     */
+    public function getPropertyFQSEN() : FullyQualifiedPropertyName
+    {
+        \assert($this->hasParentScope(),
+            "Cannot get class FQSEN on scope");
+
+        return $this->getParentScope()->getPropertyFQSEN();
     }
 
     /**

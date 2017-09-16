@@ -8,7 +8,6 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use ast\Node;
-use ast\Node\Decl;
 
 class ArgumentVisitor extends KindVisitorImplementation
 {
@@ -47,7 +46,7 @@ class ArgumentVisitor extends KindVisitorImplementation
      * Default visitor for node kinds that do not have
      * an overriding method
      *
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node to parse
      *
      * @return void
@@ -58,22 +57,25 @@ class ArgumentVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @param Node $node
+     * @param Node $node (@phan-unused-param)
      * A node to parse
      *
      * @return void
      */
     public function visitVar(Node $node)
     {
+        /*
         try {
             $variable = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node
             ))->getOrCreateVariable();
+            // Not going to add a reference to $variable
         } catch (\Exception $exception) {
             // Swallow it
         }
+         */
     }
 
     /**
@@ -137,12 +139,12 @@ class ArgumentVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @param Decl $node
+     * @param Node $node
      * A node to parse
      *
      * @return void
      */
-    public function visitClosure(Decl $node)
+    public function visitClosure(Node $node)
     {
         try {
             $method = (new ContextNode(

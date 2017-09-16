@@ -36,9 +36,6 @@
     </php>
 
     <testsuites>
-        <testsuite name="AnalyzerTest">
-            <file>tests/Phan/AnalyzerTest.php</file>
-        </testsuite>
         <testsuite name="ForkPoolTest">
             <file>tests/Phan/ForkPoolTest.php</file>
         </testsuite>
@@ -60,14 +57,12 @@
         <testsuite name="LanguageTest">
             <directory>tests/Phan/Language</directory>
         </testsuite>
-        <testsuite name="OutputPrinterTest">
+        <testsuite name="UtilTest">
+            <file>tests/Phan/AnalyzerTest.php</file>
             <directory>tests/Phan/Output/Printer</directory>
-        </testsuite>
-        <testsuite name="TupleTest">
             <file>tests/Phan/Library/TupleTest.php</file>
-        </testsuite>
-        <testsuite name="PHP72Test">
             <file>tests/Phan/PHP72Test.php</file>
+            <file>tests/Phan/Analysis/BlockExitStatusCheckerTest.php</file>
         </testsuite>
     </testsuites>
     <filter>

@@ -1,0 +1,2 @@
+%s:6 PhanTypeMismatchReturn Returning type int[][] but testarrayreturn() is declared to return int[]
+%s:6 PhanTypeMismatchReturn Returning type string[] but testarrayreturn() is declared to return int[]

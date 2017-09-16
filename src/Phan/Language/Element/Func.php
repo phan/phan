@@ -16,7 +16,6 @@ use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Option;
 use ast\Node;
-use ast\Node\Decl;
 
 class Func extends AddressableElement implements FunctionInterface
 {
@@ -83,7 +82,7 @@ class Func extends AddressableElement implements FunctionInterface
         CodeBase $code_base,
         Context $context,
         Type $closure_scope,
-        Decl $node
+        Node $node
     ) {
         if ($node->kind !== \ast\AST_CLOSURE) {
             return null;
@@ -114,7 +113,6 @@ class Func extends AddressableElement implements FunctionInterface
             // shouldn't happen
             return null;
         }
-        \assert($class_fqsen instanceof FullyQualifiedClassName);
 
         return $class_fqsen;
     }
@@ -126,7 +124,7 @@ class Func extends AddressableElement implements FunctionInterface
      *
      * @param CodeBase $code_base
      *
-     * @param Decl $node
+     * @param Node $node
      * An AST node representing a function
      *
      * @param FullyQualifiedFunctionName $fqsen
@@ -139,7 +137,7 @@ class Func extends AddressableElement implements FunctionInterface
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
-        Decl $node,
+        Node $node,
         FullyQualifiedFunctionName $fqsen
     ) : Func {
 
@@ -147,7 +145,7 @@ class Func extends AddressableElement implements FunctionInterface
         // we know so far
         $func = new Func(
             $context,
-            (string)$node->name,
+            (string)$node->children['name'],
             new UnionType(),
             $node->flags ?? 0,
             $fqsen
@@ -156,7 +154,7 @@ class Func extends AddressableElement implements FunctionInterface
         // Parse the comment above the function to get
         // extra meta information about the function.
         $comment = Comment::fromStringInContext(
-            $node->docComment ?? '',
+            (string)$node->children['docComment'],
             $code_base,
             $context,
             $node->lineno ?? 0,
@@ -251,6 +249,7 @@ class Func extends AddressableElement implements FunctionInterface
                 "Function referencing self in $context");
 
             $func->getUnionType()->addUnionType($union_type);
+            $func->setPHPDocReturnType($union_type);
         }
 
         // Add params to local scope for user functions

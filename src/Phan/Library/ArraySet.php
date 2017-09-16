@@ -19,7 +19,7 @@ final class ArraySet {
     public static function singleton($object) : array
     {
         return [
-            \runkit_object_id($object) => $object,
+            \spl_object_id($object) => $object,
         ];
     }
 
@@ -33,7 +33,7 @@ final class ArraySet {
         foreach ($object_list ?? [] as $object) {
             \assert(\is_object($object),
                    'ArraySet should contain only objects');
-            $result[\runkit_object_id($object)] = $object;
+            $result[\spl_object_id($object)] = $object;
         }
         return $result;
     }
@@ -72,7 +72,7 @@ final class ArraySet {
      */
     public static function containsAny(array $object_set, array $candidate_type_list) : bool {
         foreach ($candidate_type_list as $type) {
-            if (isset($object_set[\runkit_object_id($type)])) {
+            if (isset($object_set[\spl_object_id($type)])) {
                 return true;
             }
         }
@@ -99,7 +99,7 @@ final class ArraySet {
             $new_object = $cb($object);
             \assert(\is_object($new_object),
                    'ArraySet should contain only objects');
-            $result[\runkit_object_id($new_object)] = $new_object;
+            $result[\spl_object_id($new_object)] = $new_object;
         }
         return $result;
     }
@@ -110,7 +110,7 @@ final class ArraySet {
      * @return bool
      */
     public static function contains(array $object_set, $object) : bool {
-        return isset($object_set[\runkit_object_id($object)]);
+        return isset($object_set[\spl_object_id($object)]);
     }
 
     /**
@@ -139,7 +139,7 @@ final class ArraySet {
      */
     public static function is_array_set(array $object_set) {
         foreach ($object_set as $key => $object) {
-            if (!\is_object($object) || \runkit_object_id($object) !== $key) {
+            if (!\is_object($object) || \spl_object_id($object) !== $key) {
                 return false;
             }
         }

@@ -797,7 +797,7 @@ class ParameterTypesAnalyzer
      *           if Phan should proceed using phpdoc type instead of real types. (Converting T|null to ?T)
      *         - null if the type is an invalid narrowing, and Phan should warn.
      */
-    private static function normalizeNarrowedParamType(UnionType $phpdoc_param_union_type, UnionType $real_param_type)
+    public static function normalizeNarrowedParamType(UnionType $phpdoc_param_union_type, UnionType $real_param_type)
     {
         // "@param null $x" is almost always a mistake. Forbid it for now.
         // But allow "@param T|null $x"

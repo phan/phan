@@ -56,16 +56,21 @@ class Issue
     const TypeInvalidClosureScope   = 'PhanTypeInvalidClosureScope';
     const TypeInvalidLeftOperand    = 'PhanTypeInvalidLeftOperand';
     const TypeInvalidRightOperand   = 'PhanTypeInvalidRightOperand';
+    const TypeInvalidInstanceof     = 'PhanTypeInvalidInstanceof';
     const TypeMagicVoidWithReturn   = 'PhanTypeMagicVoidWithReturn';
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
+    const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
+    const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
+    const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
     const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
     const TypeMismatchProperty      = 'PhanTypeMismatchProperty';
     const TypeMismatchReturn        = 'PhanTypeMismatchReturn';
     const TypeMismatchDeclaredReturn = 'PhanTypeMismatchDeclaredReturn';
+    const TypeMismatchDeclaredReturnNullable = 'PhanTypeMismatchDeclaredReturnNullable';
     const TypeMismatchDeclaredParam = 'PhanTypeMismatchDeclaredParam';
     const TypeMismatchDeclaredParamNullable = 'PhanTypeMismatchDeclaredParamNullable';
     const TypeMissingReturn         = 'PhanTypeMissingReturn';
@@ -627,7 +632,7 @@ class Issue
                 self::Unanalyzable,
                 self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
-                "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/etsy/phan/issues/new.",
+                "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/phan/phan/issues/new.",
                 self::REMEDIATION_B,
                 2000
             ),
@@ -635,7 +640,7 @@ class Issue
                 self::UnanalyzableInheritance,
                 self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
-                "Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/etsy/phan/issues/new with a test case.",
+                "Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/phan/phan/issues/new with a test case.",
                 self::REMEDIATION_B,
                 2001
             ),
@@ -704,6 +709,14 @@ class Issue
                 "Doc-block of {METHOD} contains declared return type {TYPE} which is incompatible with the return type {TYPE} declared in the signature",
                 self::REMEDIATION_B,
                 10020
+            ),
+            new Issue(
+                self::TypeMismatchDeclaredReturnNullable,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                "Doc-block of {METHOD} has declared return type {TYPE} which is not a permitted replacement of the nullable return type {TYPE} declared in the signature ('?T' should be documented as 'T|null' or '?T')",
+                self::REMEDIATION_B,
+                10028
             ),
             new Issue(
                 self::TypeMismatchDeclaredParam,
@@ -865,7 +878,38 @@ class Issue
                 self::REMEDIATION_B,
                 10026
             ),
-
+            new Issue(
+                self::TypeInvalidInstanceof,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Found an instanceof class name of type {TYPE}, but class name must be a valid object or a string',
+                self::REMEDIATION_B,
+                10029
+            ),
+            new Issue(
+                self::TypeMismatchDimAssignment,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When appending to a value of type {TYPE}, found an array access index of type {TYPE}, but expected the index to be of type {TYPE}',
+                self::REMEDIATION_B,
+                10030
+            ),
+            new Issue(
+                self::TypeMismatchDimEmpty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Assigning to an empty array index of a value of type {TYPE}, but expected the index to exist and be of type {TYPE}',
+                self::REMEDIATION_B,
+                10031
+            ),
+            new Issue(
+                self::TypeMismatchDimFetch,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When fetching an array index from a value of type {TYPE}, found an array index of type {TYPE}, but expected the index to be of type {TYPE}',
+                self::REMEDIATION_B,
+                10032
+            ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,
@@ -1869,7 +1913,7 @@ class Issue
 
     /**
      * @return string
-     * A descriptive name of the severity of hte issue
+     * A descriptive name of the severity of the issue
      */
     public function getSeverityName() : string
     {
@@ -1880,6 +1924,8 @@ class Issue
             return 'normal';
         case self::SEVERITY_CRITICAL:
             return 'critical';
+        default:
+            throw new \AssertionError('Unknown severity ' . $this->getSeverity());
         }
     }
 
@@ -2077,8 +2123,9 @@ class Issue
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param mixed ...$parameters
-     * Template parameters for the issue's error message
+     * @param string|int|float|bool|object ...$parameters
+     * Template parameters for the issue's error message.
+     * If these are objects, they should define __toString()
      *
      * @return void
      */

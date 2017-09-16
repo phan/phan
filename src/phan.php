@@ -39,8 +39,8 @@ if (extension_loaded('ast')) {
     // Warn if the php-ast version is too low.
     // (It's remotely possible \ast\parse_code could a pure PHP substitute for php-ast in the future)
     $ast_version = (new ReflectionExtension('ast'))->getVersion();
-    if (version_compare($ast_version, '0.1.4') < 0) {
-        fprintf(STDERR, "Phan supports php-ast version 0.1.4 or newer, but the installed php-ast version is $ast_version. You may see bugs in some edge cases\n");
+    if (version_compare($ast_version, '0.1.5') < 0) {
+        fprintf(STDERR, "Phan supports php-ast version 0.1.5 or newer, but the installed php-ast version is $ast_version. You may see bugs in some edge cases\n");
     }
 }
 

@@ -10,6 +10,7 @@ use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
+use Phan\Library\FileCache;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
@@ -42,6 +43,7 @@ class Analysis
      */
     public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null) : Context
     {
+
         $code_base->setCurrentParsedFile($file_path);
         $context = (new Context)->withFile($file_path);
 
@@ -49,17 +51,30 @@ class Analysis
         // before passing it on to the recursive version
         // of this method
         try {
+            $real_file_path = Config::projectPath($file_path);
             if (\is_string($override_contents)) {
-                $node = \ast\parse_code(
-                    $override_contents,
-                    Config::AST_VERSION
-                );
+                $cache_entry = FileCache::addEntry($real_file_path, $override_contents);
             } else {
-                $node = \ast\parse_file(
-                    Config::projectPath($file_path),
-                    Config::AST_VERSION
-                );
+                $cache_entry = FileCache::getOrReadEntry($real_file_path);
             }
+            $file_contents = $cache_entry->getContents();
+            if ($file_contents === '') {
+                // php-ast would return null for 0 byte files as an implementation detail.
+                // Make Phan consistently emit this warning.
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::EmptyFile,
+                    0,
+                    $file_path
+                );
+
+                return $context;
+            }
+            $node = \ast\parse_code(
+                $file_contents,
+                Config::AST_VERSION
+            );
         } catch (\ParseError $parse_error) {
             if ($suppress_parse_errors) {
                 return $context;
@@ -70,6 +85,27 @@ class Analysis
                 Issue::SyntaxError,
                 $parse_error->getLine(),
                 $parse_error->getMessage()
+            );
+
+            return $context;
+        }
+
+        if (Config::getValue('dump_ast')) {
+            echo $file_path . "\n"
+                . str_repeat("\u{00AF}", strlen($file_path))
+                . "\n";
+            Debug::printNode($node);
+            return $context;
+        }
+
+        if (empty($node)) {
+            // php-ast would return an empty node for 0 byte files.
+            Issue::maybeEmit(
+                $code_base,
+                $context,
+                Issue::EmptyFile,
+                0,
+                $file_path
             );
 
             return $context;
@@ -90,25 +126,6 @@ class Analysis
             }
         }
 
-        if (Config::getValue('dump_ast')) {
-            echo $file_path . "\n"
-                . str_repeat("\u{00AF}", strlen($file_path))
-                . "\n";
-            Debug::printNode($node);
-            return $context;
-        }
-
-        if (empty($node)) {
-            Issue::maybeEmit(
-                $code_base,
-                $context,
-                Issue::EmptyFile,
-                0,
-                $file_path
-            );
-
-            return $context;
-        }
 
         return self::parseNodeInContext(
             $code_base,
@@ -209,15 +226,20 @@ class Analysis
     {
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
-        $function_count = count($code_base->getFunctionAndMethodSet());
+        $function_and_method_set = $code_base->getFunctionAndMethodSet();
         $show_progress = CLI::shouldShowProgress();
         $i = 0;
 
         if ($show_progress) { CLI::progress('method', 0.0); }
 
-        foreach ($code_base->getFunctionAndMethodSet() as $function_or_method)
+        foreach ($function_and_method_set as $function_or_method)
         {
-            if ($show_progress) { CLI::progress('method', (++$i)/$function_count); }
+            if ($show_progress) {
+                // I suspect that method analysis is hydrating some of the classes,
+                // adding even more inherited methods to the end of the set.
+                // This recalculation is needed so that the progress bar is accurate.
+                CLI::progress('method', (++$i)/(\count($function_and_method_set)));
+            }
 
             if ($function_or_method->isPHPInternal()) {
                 continue;
@@ -325,15 +347,16 @@ class Analysis
      * @param CodeBase $code_base
      * The global code base holding all state
      *
-     * @param string $file_path
-     * A list of files to scan
+     * @param ?string $override_contents
+     * If this is not null, this function will act as if $file_path's contents
+     * were $override_contents
      *
      * @return Context
      */
     public static function analyzeFile(
         CodeBase $code_base,
         string $file_path,
-        string $file_contents_override = null
+        string $override_contents = null
     ) : Context {
         // Set the file on the context
         $context = (new Context)->withFile($file_path);
@@ -342,17 +365,30 @@ class Analysis
         // before passing it on to the recursive version
         // of this method
         try {
-            if (\is_string($file_contents_override)) {
-                $node = \ast\parse_code(
-                    $file_contents_override,
-                    Config::AST_VERSION
-                );
+            $real_file_path = Config::projectPath($file_path);
+            if (\is_string($override_contents)) {
+                $cache_entry = FileCache::addEntry($real_file_path, $override_contents);
             } else {
-                $node = \ast\parse_file(
-                    Config::projectPath($file_path),
-                    Config::AST_VERSION
-                );
+                $cache_entry = FileCache::getOrReadEntry($real_file_path);
             }
+            $file_contents = $cache_entry->getContents();
+            if ($file_contents === '') {
+                // php-ast would return null for 0 byte files as an implementation detail.
+                // Make Phan consistently emit this warning.
+                Issue::maybeEmit(
+                    $code_base,
+                    $context,
+                    Issue::EmptyFile,
+                    0,
+                    $file_path
+                );
+
+                return $context;
+            }
+            $node = \ast\parse_code(
+                $file_contents,
+                Config::AST_VERSION
+            );
         } catch (\ParseError $parse_error) {
             Issue::maybeEmit(
                 $code_base,

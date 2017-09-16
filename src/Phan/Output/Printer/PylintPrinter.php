@@ -40,6 +40,8 @@ final class PylintPrinter implements IssuePrinterInterface
             return 'W' . $categoryId;
         case Issue::SEVERITY_CRITICAL:
             return 'E' . $categoryId;
+        default:
+            throw new \AssertionError("Unrecognized severity for " . __METHOD__ . ": " . $issue->getSeverity());
         }
     }
 

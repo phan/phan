@@ -82,17 +82,22 @@ class ContextMergeVisitor extends KindVisitorImplementation
     {
         // Get the list of scopes for each branch of the
         // conditional
-        $scope_list = \array_map(function (Context $context) {
+        $scope_list = \array_map(function (Context $context) : Scope {
             return $context->getScope();
         }, $this->child_context_list);
 
         // The 0th scope is the scope from Try
         $try_scope = $scope_list[0];
+        assert($try_scope instanceof Scope);
 
         $catch_scope_list = [];
-        foreach ($node->children['catches'] ?? [] as $i => $catch_node) {
-            $catch_scope_list[] = $scope_list[((int)$i)+1];
+        $catch_nodes = $node->children['catches']->children ?? [];
+        foreach ($catch_nodes as $i => $catch_node) {
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node)) {
+                $catch_scope_list[] = $scope_list[((int)$i)+1];
+            }
         }
+        // TODO: Check if try node unconditionally returns.
 
         // Merge in the types for any variables found in a catch.
         foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
@@ -131,10 +136,12 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // If we have a finally, overwrite types for each
         // element
-        if (!empty($node->children['finallyStmts'])
-            || !empty($node->children['finally'])
-        ) {
+        if (!empty($node->children['finally'])) {
+            \assert(\count($scope_list) === 2 + \count($catch_nodes));
+            // Don't bother checking if finally unconditionally returns here
+            // If it does, dead code detection would also warn.
             $finally_scope = $scope_list[\count($scope_list)-1];
+            assert($finally_scope instanceof Scope);
 
             foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
                 if ($finally_scope->hasVariableWithName($variable_name)) {
@@ -157,6 +164,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     $try_scope->addVariable($variable);
                 }
             }
+        } else {
+            \assert(\count($scope_list) === 1 + \count($catch_nodes));
         }
 
         // Return the context of the try with the types of
@@ -249,10 +258,23 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 if (\count($type_set_list) < 2) {
                     return new UnionType($type_set_list[0] ?? [], true);
                 }
-
-                return new UnionType(
+                // compute the un-normalized types
+                $result = (new UnionType(
                     ArraySet::unionAll($type_set_list), true
-                );
+                ));
+                $result_count = $result->typeCount();
+                foreach ($type_set_list as $type_set) {
+                    if (\count($type_set) < $result_count) {
+                        // normalize it if any of the types varied
+                        // (i.e. one of the types lacks types in the type union)
+                        //
+                        // This is useful to avoid ending up with "bool|?false|true" (Will convert to "?bool")
+                        return $result->asNormalizedTypes();
+                    }
+                }
+                // Otherwise, don't normalize it - The different contexts didn't differ in the union types
+                return $result;
+
             };
 
         // Clone the incoming scope so we can modify it
@@ -265,9 +287,23 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 if ($this->context->getIsStrictTypes()) {
                     continue;
                 } else {
+                    // Limit the type of the variable to the subset
+                    // of types that are common to all branches
+                    // Record that it can be null, as the best available equivalent for undefined.
+                    $variable = clone($variable);
+
+                    $variable->setUnionType(
+                        $union_type($name)
+                    );
+
+                    // TODO: convert to nullable?
                     $variable->getUnionType()->addType(
                         NullType::instance(false)
                     );
+
+                    // Add the variable to the outgoing scope
+                    $scope->addVariable($variable);
+                    continue;
                 }
             }
 

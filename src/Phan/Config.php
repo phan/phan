@@ -11,9 +11,9 @@ class Config
     /**
      * The version of the AST (defined in php-ast) that we're using.
      * Other versions are likely to have edge cases we no longer support,
-     * and version 45 will probably get rid of Decl.
+     * and version 50 got rid of Decl.
      */
-    const AST_VERSION = 40;
+    const AST_VERSION = 50;
 
     /**
      * The version of the Phan plugin system.
@@ -21,8 +21,9 @@ class Config
      * and the results of version_compare.
      * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
      * New features increment minor versions, and bug fixes increment patch versions.
+     * @suppress PhanUnreferencedConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.0.0';
+    const PHAN_PLUGIN_VERSION = '2.1.0';
 
     /**
      * @var string|null
@@ -220,12 +221,20 @@ class Config
         'check_docblock_signature_param_type_match' => true,
 
         // (*Requires check_docblock_signature_param_type_match to be true*)
-        // If true, make narrowed types from phpdoc override
+        // If true, make narrowed types from phpdoc params override
         // the real types from the signature, when real types exist.
         // (E.g. allows specifying desired lists of subclasses,
         //  or to indicate a preference for non-nullable types over nullable types)
         // Affects analysis of the body of the method and the param types passed in by callers.
         'prefer_narrowed_phpdoc_param_type' => true,
+
+        // (*Requires check_docblock_signature_return_type_match to be true*)
+        // If true, make narrowed types from phpdoc returns override
+        // the real types from the signature, when real types exist.
+        // (E.g. allows specifying desired lists of subclasses,
+        //  or to indicate a preference for non-nullable types over nullable types)
+        // Affects analysis of return statements in the body of the method and the return types passed in by callers.
+        'prefer_narrowed_phpdoc_return_type' => true,
 
         // Set to true in order to attempt to detect dead
         // (unreferenced) code. Keep in mind that the
@@ -533,7 +542,7 @@ class Config
         // (use when the number of files is much larger than the process count)
         // NOTE: If you rely on Phan parsing files/directories in the order
         // that they were provided in this config, don't use this)
-        // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
+        // See https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
         'consistent_hashing_file_order' => false,
 
         // Set by --print-memory-usage-summary. Prints a memory usage summary to stderr after analysis.
@@ -542,6 +551,11 @@ class Config
         // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
         // (e.g. PHP is compiled with --enable-debug or when using XDebug)
         'skip_slow_php_options_warning' => false,
+
+        // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
+        // but aren't available in the codebase, or the internal functions used to run phan (may lead to false positives if an extension isn't loaded)
+        // If this is true(default), then Phan will not warn.
+        'ignore_undeclared_functions_with_known_signatures' => true,
 
         // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_socket' => false,
@@ -725,7 +739,15 @@ class Config
     public static function projectPath(string $relative_path)
     {
         // Make sure its actually relative
-        if (DIRECTORY_SEPARATOR == \substr($relative_path, 0, 1)) {
+        if (DIRECTORY_SEPARATOR === \substr($relative_path, 0, 1)) {
+            return $relative_path;
+        }
+        // Check for absolute path in windows, e.g. C:\
+        if (DIRECTORY_SEPARATOR === "\\" &&
+                strlen($relative_path) > 3 &&
+                ctype_alpha($relative_path[0]) &&
+                $relative_path[1] === ':' &&
+                strspn($relative_path, '/\\', 2, 1)) {
             return $relative_path;
         }
 
