@@ -22,7 +22,7 @@ class Config
      * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
      * New features increment minor versions, and bug fixes increment patch versions.
      */
-    const PHAN_PLUGIN_VERSION = '2.0.0';
+    const PHAN_PLUGIN_VERSION = '2.1.0';
 
     /**
      * @var string|null

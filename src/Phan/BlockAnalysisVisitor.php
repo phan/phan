@@ -917,4 +917,53 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
 
         return $context;
     }
+
+    /**
+     * @param Node $node
+     * An AST node we'd like to analyze the statements for
+     * @see $this->visit() - This is similar to visit() except that the check if $is_static requires parent_node,
+     * so PreOrderAnalysisVisitor can't be used to modify the Context.
+     *
+     * @return Context
+     * The updated context after visiting the node
+     */
+    public function visitPropElem(Node $node) : Context
+    {
+        $prop_name = (string)$node->children['name'];
+
+        $class = $this->context->getClassInScope($this->code_base);
+        $is_static = ($this->parent_node->flags & \ast\flags\MODIFIER_STATIC) !== 0;
+        $property = $class->getPropertyByNameInContext($this->code_base, $prop_name, $this->context, $is_static);
+
+        $context = $this->context->withScope(
+            $property->getInternalScope()
+        )->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        \assert(!empty($context), 'Context cannot be null');
+
+        // Don't bother calling PreOrderAnalysisVisitor, it does nothing
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base, $context, $node
+        );
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
+        $default = $node->children['default'] ?? null;
+        if ($default instanceof Node) {
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $default);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        return $context;
+    }
+
 }

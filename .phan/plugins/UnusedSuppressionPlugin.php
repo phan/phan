@@ -3,13 +3,15 @@
 use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
+use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
-use Phan\Language\Element\AddressableElement;
+use Phan\Language\Element\Property;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
+use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
 use ast\Node;
 
@@ -22,7 +24,8 @@ use ast\Node;
 class UnusedSuppressionPlugin extends PluginV2 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
-    AnalyzeMethodCapability {
+    AnalyzeMethodCapability,
+    AnalyzePropertyCapability {
 
     /**
      * @param CodeBase $code_base
@@ -116,6 +119,23 @@ class UnusedSuppressionPlugin extends PluginV2 implements
         $this->analyzeAddressableElement($code_base, $function);
     }
 
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the function exists
+     *
+     * @param Property $property
+     * A property being analyzed
+     *
+     * @return void
+     *
+     * @override
+     */
+    public function analyzeProperty(
+        CodeBase $code_base,
+        Property $property
+    ) {
+        $this->analyzeAddressableElement($code_base, $property);
+    }
 }
 
 // Every plugin needs to return an instance of itself at the
