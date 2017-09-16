@@ -2,15 +2,14 @@ language: php
 
 php:
   - 7.1
+  - 7.2
 
+# PhanTest (tests/files) is the slowest test (~20 seconds).
+# Group the remaining tests into groups.
 env:
-  - TEST_SUITE="PhanTest"
-  - TEST_SUITE="RasmusTest"
-  - TEST_SUITE="LanguageTest"
-  - TEST_SUITE="UtilTest"
-  - TEST_SUITE="__FakeSelfTest"
-  - TEST_SUITE="__FakeRewritingTest"
-  - TEST_SUITE="__FakePluginTest"
+  - TEST_SUITES="PhanTest"
+  - TEST_SUITES="UtilTest RasmusTest LanguageTest"
+  - TEST_SUITES="__FakeSelfTest __FakeRewritingTest __FakePluginTest"
 
 sudo: false
 dist: trusty
@@ -26,9 +25,10 @@ before_install:
 install:
   - composer --prefer-dist install
 
+# TEST_SUITES contains 1 or more space-separated value for TEST_SUITE
 # We have a fake TEST_SUITE which runs phan, and check if the exit code is non-zero and the standard output is non-empty.
 # This is used instead of a unit test because Phan currently caches too much state for this to be run with other unit tests, and the configuration might end up different within a unit test.
 # This was moved into a separate script to stop cluttering up .travis.yml
 script:
-  - tests/run_test "$TEST_SUITE"
+  - for TEST_SUITE in $TEST_SUITES; do echo "Running $TEST_SUITE"; tests/run_test "$TEST_SUITE" || exit $?; done
   - php package.php

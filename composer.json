@@ -19,12 +19,12 @@
         "sort-packages": true
     },
     "require": {
-        "php": "~7.1.0",
+        "php": "~7.1.0 || ~7.2.0",
         "ext-ast": "^0.1.5",
         "symfony/console": "~2.3|~3.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.2.1"
+        "phpunit/phpunit": "^6.3.0"
     },
     "autoload": {
         "psr-4": {"Phan\\": "src/Phan"}
