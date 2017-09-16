@@ -175,12 +175,13 @@ class ParseVisitor extends ScopeVisitor
         $class->setForbidUndeclaredMagicMethods($comment->getForbidUndeclaredMagicMethods());
 
         // Look to see if we have a parent class
-        if (!empty($node->children['extends'])) {
+        $extends_node = $node->children['extends'] ?? null;
+        if ($extends_node instanceof Node) {
             $parent_class_name =
-                $node->children['extends']->children['name'];
+                $extends_node->children['name'];
 
             // Check to see if the name isn't fully qualified
-            if ($node->children['extends']->flags & \ast\flags\NAME_NOT_FQ) {
+            if ($extends_node->flags & \ast\flags\NAME_NOT_FQ) {
                 if ($this->context->hasNamespaceMapFor(
                     \ast\flags\USE_NORMAL,
                     $parent_class_name
@@ -195,7 +196,11 @@ class ParseVisitor extends ScopeVisitor
                     $parent_class_name =
                         $this->context->getNamespace() . '\\' . $parent_class_name;
                 }
+            } else if ($extends_node->flags & \ast\flags\NAME_RELATIVE) {
+                $parent_class_name =
+                    $this->context->getNamespace() . '\\' . $parent_class_name;
             }
+            // $extends_node->flags is 0 when it is fully qualified?
 
             // The name is fully qualified. Make sure it looks
             // like it is

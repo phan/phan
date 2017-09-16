@@ -699,34 +699,48 @@ class ContextNode
         bool $is_function_declaration = false
     ) : FunctionInterface {
 
-        if ($is_function_declaration) {
-            $function_fqsen =
-                FullyQualifiedFunctionName::make(
-                    $this->context->getNamespace(),
-                    $function_name
-                );
-        } else {
-            $function_fqsen =
-                FullyQualifiedFunctionName::make(
-                    $this->context->getNamespace(),
-                    $function_name
-                );
-
-            // If it doesn't exist in the local namespace, try it
-            // in the global namespace
-            if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
-                $function_fqsen =
-                    FullyQualifiedFunctionName::fromStringInContext(
-                        $function_name,
-                        $this->context
-                    );
-            }
-        }
-
         \assert(
             $this->node instanceof \ast\Node,
             '$this->node must be a node'
         );
+        $namespace = $this->context->getNamespace();
+        // TODO: support namespace aliases for functions
+        if ($is_function_declaration) {
+            $function_fqsen =
+                FullyQualifiedFunctionName::make(
+                    $namespace,
+                    $function_name
+                );
+        } else {
+            if (($this->node->flags & (\ast\flags\NAME_RELATIVE | \ast\flags\NAME_NOT_FQ)) !== 0) {
+                // For relative and non-fully qualified functions (e.g. namespace\foo(), foo())
+                $function_fqsen =
+                    FullyQualifiedFunctionName::make(
+                        $namespace,
+                        $function_name
+                    );
+
+                if ($this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
+                    return $this->code_base->getFunctionByFQSEN($function_fqsen);
+                }
+                if (($this->node->flags & \ast\flags\NAME_RELATIVE) !== 0 || $namespace === '') {
+                    throw new IssueException(
+                        Issue::fromType(Issue::UndeclaredFunction)(
+                            $this->context->getFile(),
+                            $this->node->lineno ?? 0,
+                            [ "$function_fqsen()" ]
+                        )
+                    );
+                }
+                // If it doesn't exist in the local namespace, try it
+                // in the global namespace
+            }
+            $function_fqsen =
+                FullyQualifiedFunctionName::fromStringInContext(
+                    $function_name,
+                    $this->context
+                );
+        }
 
         // Make sure the method we're calling actually exists
         if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
