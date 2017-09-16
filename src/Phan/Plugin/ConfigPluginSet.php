@@ -356,7 +356,6 @@ final class ConfigPluginSet extends PluginV2 implements
 
     /**
      * @return \Closure[] - [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
-     * @suppress PhanNonClassMethodCall
      */
     private static function filterPreAnalysisPlugins(array $plugin_set) : array
     {
@@ -412,7 +411,6 @@ final class ConfigPluginSet extends PluginV2 implements
     /**
      * @return \Closure[] - [function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null): void]
      * @var \Closure[][] $closures_for_kind
-     * @suppress PhanNonClassMethodCall
      */
     private static function filterAnalysisPlugins(array $plugin_set) : array
     {

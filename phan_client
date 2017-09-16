@@ -282,6 +282,7 @@ EOB;
 
     /**
      * @suppress PhanParamTooManyInternal - `getopt` added an optional third parameter in php 7.1
+     * @suppress UnusedSuppression
      */
     public function __construct()  {
         global $argv;

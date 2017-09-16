@@ -21,6 +21,7 @@ class Config
      * and the results of version_compare.
      * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
      * New features increment minor versions, and bug fixes increment patch versions.
+     * @suppress PhanUnreferencedConstant
      */
     const PHAN_PLUGIN_VERSION = '2.1.0';
 
