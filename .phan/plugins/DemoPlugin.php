@@ -6,17 +6,19 @@ use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Property;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
+use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
 /**
  * This file demonstrates plugins for Phan.
- * This Plugin hooks into four events;
+ * This Plugin hooks into five events;
  *
  * - getAnalyzeNodeVisitorClassName
  *   This method returns a class that is called on every AST node from every
@@ -33,6 +35,10 @@ use ast\Node;
  * - analyzeFunction
  *   Once all functions have been parsed, this method will
  *   be called on every function in the code base.
+ *
+ * - analyzeProperty
+ *   Once all functions have been parsed, this method will
+ *   be called on every property in the code base.
  *
  * A plugin file must
  *
@@ -53,7 +59,8 @@ class DemoPlugin extends PluginV2 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
-    AnalyzeNodeCapability {
+    AnalyzeNodeCapability,
+    AnalyzePropertyCapability {
 
     /**
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
@@ -150,6 +157,33 @@ class DemoPlugin extends PluginV2 implements
         }
     }
 
+    /**
+     * @param CodeBase $code_base
+     * The code base in which the function exists
+     *
+     * @param Property $property
+     * A function being analyzed
+     *
+     * @return void
+     *
+     * @override
+     */
+    public function analyzeProperty(
+        CodeBase $code_base,
+        Property $property
+    ) {
+        // As an example, we test to see if the name of the
+        // function is `foo`, and emit an issue if it is.
+        if ($property->getName() == 'property') {
+            $this->emitIssue(
+                $code_base,
+                $property->getContext(),
+                'DemoPluginPropertyName',
+                "Property {PROPERTY} should not be called `property`",
+                [(string)$property->getFQSEN()]
+            );
+        }
+    }
 }
 
 /**

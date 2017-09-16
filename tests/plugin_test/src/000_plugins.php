@@ -132,3 +132,12 @@ ReturnChecks::missingReturnTypeSwitchGood(3);
 ReturnChecks::missingReturnTypeSwitch(5);
 ReturnChecks::generator(3);
 ReturnChecks::skippingWithBreak([3, 4, "strval"]);
+
+// Some of the demo warnings are valid code in php 7.
+class TestDemoPlugin {
+    function function() {}
+    public $property = 'x';
+}
+$tdp = new TestDemoPlugin();
+var_dump($tdp->property);
+var_dump($tdp->function());

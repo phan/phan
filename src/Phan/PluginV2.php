@@ -40,6 +40,10 @@ use ast\Node;
  *     Analyze (and modify) a property definition, after parsing and before analyzing.
  *     (implement \Phan\PluginV2\AnalyzePropertyCapability)
  *
+ *  6. public function finalize(CodeBase $code_base)
+ *     Analyze (and modify) a property definition, after parsing and before analyzing.
+ *     (implement \Phan\PluginV2\AnalyzePropertyCapability)
+ *
  * List of deprecated legacy capabilities
  *
  *  1. public static function analyzeNode(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null)
