@@ -4,11 +4,13 @@ namespace Phan\Language\Element;
 use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Scope\PropertyScope;
 use Phan\Language\UnionType;
 
 class Property extends ClassElement
 {
     use ElementFutureUnionType;
+    use ClosedScopeElement;
 
     /**
      * @param Context $context
@@ -41,6 +43,13 @@ class Property extends ClassElement
             $flags,
             $fqsen
         );
+
+        // Set an internal scope, so that issue suppressions can be placed on property doc comments.
+        // (plugins acting on properties would then pick those up).
+        // $fqsen is used to locate this property.
+        $this->setInternalScope(new PropertyScope(
+            $context->getScope(), $fqsen
+        ));
     }
 
     public function __toString() : string

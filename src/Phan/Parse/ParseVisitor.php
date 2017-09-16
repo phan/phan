@@ -386,8 +386,6 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     *
-     * @suppress PhanUndeclaredProperty - A property element can have a docComment - it's an exception
      */
     public function visitPropDecl(Node $node) : Context
     {
@@ -531,8 +529,6 @@ class ParseVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      *
-     * @suppress PhanUndeclaredProperty - class const elements are exceptions, and can have docComment properties.
-     *                                    They can't have endLineno, but may have it in the future.
      */
     public function visitClassConstDecl(Node $node) : Context
     {
@@ -598,8 +594,6 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
-     *
-     * @suppress PhanUndeclaredProperty - const elements are Nodes, but can have docComment.
      */
     public function visitConstDecl(Node $node) : Context
     {

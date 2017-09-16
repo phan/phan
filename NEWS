@@ -14,6 +14,10 @@ Maintenance
 Plugins
 + Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.
   Third party plugins will need to create a different version, Decls were changed into regular Nodes
++ Implement `AnalyzePropertyCapability` and `FinalizeProcessCapability`.
+  Make `UnusedSuppressionPlugin` start using `AnalyzePropertyCapability` and `FinalizeProcessCapability`.
+  Fix bug where `UnusedSuppressionPlugin` could run before the suppressed issues would be emitted,
+  making it falsely emit that suppressions were unused.
 
 Bug Fixes
 + Fix a few incorrect property names for Phan's signatures of internal classes (#1085)
@@ -65,6 +69,7 @@ Bug Fixes
   Additionally, fix false positive warnings about visibility of method aliases from traits.
 + Warn about instantiation of class with inaccessible constructor (Issue #1043)
 + Fix rare uncaught exceptions (Various)
++ Make issues and plugin issues on properties consistently use suppressions from the plugin doc comment.
 
 Changes In Emitted Issues
 + Improve `InvalidVariableIssetPlugin`. Change the names and messages for issue types.

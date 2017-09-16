@@ -40,14 +40,6 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         self::STATUS_THROW |
         self::STATUS_RETURN;
 
-    const STATUS_INTERESTING_SWITCH_BITMASK =
-        self::STATUS_THROW |
-        self::STATUS_RETURN;
-
-    const STATUS_INTERESTING_TRY_BITMASK =
-        self::STATUS_CONTINUE |
-        self::STATUS_BREAK;
-
     // Any status which doesn't lead to proceeding.
     const STATUS_NOT_PROCEED_BITMASK =
         self::STATUS_CONTINUE |

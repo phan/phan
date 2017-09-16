@@ -8,6 +8,7 @@ use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\IgnoredFilesFilterInterface;
 use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
+use Phan\Plugin\ConfigPluginSet;
 
 class Phan implements IgnoredFilesFilterInterface {
 
@@ -281,7 +282,11 @@ class Phan implements IgnoredFilesFilterInterface {
                     self::getIssueCollector()->reset();
                 },
                 $analysis_worker,
-                function () : array {
+                function () use($code_base) : array {
+                    // This closure is run once, after running analysis_worker on each input.
+                    // If there are any plugins defining finalizeProcess(), run those.
+                    ConfigPluginSet::instance()->finalizeProcess($code_base);
+
                     // Return the collected issues to be serialized.
                     return self::getIssueCollector()->getCollectedIssues();
                 }
@@ -305,6 +310,9 @@ class Phan implements IgnoredFilesFilterInterface {
             // in the code base and emit errors for dead
             // code.
             Analysis::analyzeDeadCode($code_base);
+
+            // If there are any plugins defining finalizeProcess(), run those.
+            ConfigPluginSet::instance()->finalizeProcess($code_base);
         }
 
         // Get a count of the number of issues that were found

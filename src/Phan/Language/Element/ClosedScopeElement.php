@@ -30,5 +30,4 @@ trait ClosedScopeElement {
     {
         return $this->internal_scope;
     }
-
 }

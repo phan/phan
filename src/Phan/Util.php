@@ -11,7 +11,6 @@ class Util
     /**
      * @param ?Node $node
      * @return ?int
-     * @suppress PhanUndeclaredProperty - The extension deliberately leaves it undeclared.
      */
     public static function getEndLineno($node)
     {
