@@ -32,8 +32,8 @@ use Phan\Library\Tuple4;
 
 use ast\Node;
 
-if (!function_exists('runkit_object_id')) {
-    require_once __DIR__ . '/../../runkit.php';
+if (!function_exists('spl_object_id')) {
+    require_once __DIR__ . '/../../spl_object_id.php';
 }
 
 class Type
@@ -802,7 +802,7 @@ class Type
     }
 
     /**
-     * @var Type[][] - Maps runkit_object_id() to an array containing the type for that object id.
+     * @var Type[][] - Maps spl_object_id() to an array containing the type for that object id.
      *                 The object id doesn't change as long as there's one reference to that object (including singleton_map)
      * Note: this is static instead of instance because some subclasses can be cloned (e.g. ClosureType)
      */
@@ -814,7 +814,7 @@ class Type
      */
     public function asUnionType() : UnionType
     {
-        $object_id = \runkit_object_id($this);
+        $object_id = \spl_object_id($this);
         $types_set = self::$singleton_map[$object_id] ?? null;
         if ($types_set === null) {
             $types_set = [$object_id => $this];  // same as ArraySet::singleton, but why bother recomputing object id.
