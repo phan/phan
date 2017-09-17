@@ -44,17 +44,9 @@ return [
     // can add quite a bit of time to the analysis.
     'analyze_signature_compatibility' => false,
 
-    // Test dead code detection
-    'dead_code_detection' => false,
-
     "quick_mode" => false,
 
-    // If true, then try to simplify AST into a form which improves Phan's type inference.
-    // E.g. rewrites `if (!is_string($foo)) { return; } b($foo);`
-    // into `if (is_string($foo)) {b($foo);} else {return;}`
-    // This may conflict with 'dead_code_detection'
-    // This slows down analysis noticeably.
-    "simplify_ast" => true,
+    "simplify_ast" => false,
 
     'generic_types_enabled' => true,
 

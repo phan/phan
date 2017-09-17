@@ -389,7 +389,7 @@ class Phan implements IgnoredFilesFilterInterface {
      * True if this file is a member of a third party directory as
      * configured via the CLI flag '-3 [paths]'.
      */
-    private static function isExcludedAnalysisFile(
+    public static function isExcludedAnalysisFile(
         string $file_path
     ) : bool {
         $include_analysis_file_list = Config::getValue('include_analysis_file_list');

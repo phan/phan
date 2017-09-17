@@ -69,7 +69,11 @@ class PhanPHPLinter {
                     $failure_code = 1;
                     continue;
                 }
-                system("php -l --no-php-ini " . escapeshellarg($temporary_path), $exit_code);
+                if (!$opts->use_fallback_parser) {
+                    system("php -l --no-php-ini " . escapeshellarg($temporary_path), $exit_code);
+                } else {
+                    $exit_code = 0;
+                }
                 if ($exit_code === 0) {
                     $temporary_file_mapping_contents[$path] = $temporary_contents;
                 }
@@ -77,7 +81,11 @@ class PhanPHPLinter {
                 // TODO: use popen instead
                 // TODO: add option to capture output, suppress "No syntax error"?
                 // --no-php-ini is a faster way to parse since php doesn't need to load multiple extensions. Assumes none of the extensions change the way php is parsed.
-                system("php -l --no-php-ini " . escapeshellarg($path), $exit_code);
+                if (!$opts->use_fallback_parser) {
+                    system("php -l --no-php-ini " . escapeshellarg($path), $exit_code);
+                } else {
+                    $exit_code = 0;
+                }
             }
             if ($exit_code !== 0) {
                 // The file is syntactically invalid. Or php somehow isn't able to be invoked from this script.
@@ -237,6 +245,9 @@ class PhanPHPLinterOpts {
     /** @var bool - unused. */
     public $verbose = false;
 
+    /** @var bool */
+    public $use_fallback_parser;
+
     /**
      * @param string $msg - optional message
      * @param int $exit_code - process exit code.
@@ -260,6 +271,11 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
   TCP port which a Phan daemon is listening for JSON requests on, in daemon mode. (E.g. 'default', which is an alias for port 4846)
   If no option is specified for the daemon's address, phan_client defaults to connecting on port 4846.
 
+ --use-fallback-parser
+  Skip the local PHP syntax check.
+  Use this if the daemon is also executing with --use-fallback-parser, or if the daemon runs a different PHP version from the default.
+  Useful if you wish to report errors while editing the file, even if the file is currently syntactically invalid.
+
  -l, --syntax-check <file.php>
   Syntax check, and if the Phan daemon is running, analyze the following file (absolute path or relative to current working ditectory)
   This will only analyze the file if a full phan check (with .phan/config.php) would analyze the file.
@@ -276,6 +292,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
 
  -h,--help
   This help information
+
 EOB;
         exit($exit_code);
     }
@@ -295,6 +312,7 @@ EOB;
             'daemonize-tcp-port:',
             'syntax-check:',
             'temporary-file-map:',
+            'use-fallback-parser',
             'flycheck-file:',
             'verbose',
         ];
@@ -334,6 +352,9 @@ EOB;
                 } else {
                     $this->url = sprintf('unix://%s/%s', $socket_dirname, basename($value));
                 }
+                break;
+            case 'use-fallback-parser':
+                $this->use_fallback_parser = true;
                 break;
             case 'f':
             case 'flycheck-file':

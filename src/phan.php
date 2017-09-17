@@ -35,6 +35,23 @@ try {
     );
 }
 
+// Workaround for https://github.com/nikic/php-ast/issues/79
+try {
+    \ast\parse_code(
+        '<?php syntaxerror',
+        Config::AST_VERSION
+    );
+    assert(false,
+        'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
+        . Config::AST_VERSION
+        . '. '
+        . 'You may need to rebuild the latest '
+        . 'version of the php-ast extension.'
+    );
+} catch (\ParseError $throwable) {
+    // error message may validate with locale and version, don't validate that.
+}
+
 if (extension_loaded('ast')) {
     // Warn if the php-ast version is too low.
     // (It's remotely possible \ast\parse_code could a pure PHP substitute for php-ast in the future)

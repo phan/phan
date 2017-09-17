@@ -20,6 +20,11 @@ case "$TEST_SUITE" in
 		./test.sh
 		exit $?
 		;;
+	__FakeFallbackTest)
+		cd tests/fallback_test
+		./test.sh
+		exit $?
+		;;
 	__FakePluginTest)
 		cd tests/plugin_test
 		./test.sh
