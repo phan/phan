@@ -416,6 +416,15 @@ class UnionTypeVisitor extends AnalysisVisitor
             )->asUnionType();
         }
 
+        if ($node->flags & \ast\flags\NAME_RELATIVE) {  // $x = new namespace\Foo();
+            $fully_qualified_name = $this->context->getNamespace() . '\\' . $node->children['name'];
+            return Type::fromFullyQualifiedString(
+                $fully_qualified_name
+            )->asUnionType();
+        }
+        // Sometimes 0 for a fully qualified name?
+        // \assert(($node->flags & \ast\flags\NAME_FQ) !== 0, "All flags must match");
+
         return Type::fromFullyQualifiedString(
             '\\' . $node->children['name']
         )->asUnionType();
@@ -1771,19 +1780,29 @@ class UnionTypeVisitor extends AnalysisVisitor
         $type = null;
 
         // Check to see if the name is fully qualified
-        if (!($node->flags & \ast\flags\NAME_NOT_FQ)) {
+        if ($node->flags & \ast\flags\NAME_NOT_FQ) {
+            $type = Type::fromStringInContext(
+                $class_name,
+                $context,
+                Type::FROM_NODE
+            );
+        } else if ($node->flags & \ast\flags\NAME_RELATIVE) {
+            // Relative to current namespace
+            if (0 !== strpos($class_name, '\\')) {
+                $class_name = '\\' . $class_name;
+            }
+
+            $type = Type::fromFullyQualifiedString(
+                $context->getNamespace() . $class_name
+            );
+        } else {
+            // Fully qualified
             if (0 !== strpos($class_name, '\\')) {
                 $class_name = '\\' . $class_name;
             }
 
             $type = Type::fromFullyQualifiedString(
                 $class_name
-            );
-        } else {
-            $type = Type::fromStringInContext(
-                $class_name,
-                $context,
-                Type::FROM_NODE
             );
         }
 
