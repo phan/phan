@@ -364,6 +364,7 @@ return [
     'directory_list' => [
         'src',
         'tests/Phan',
+        'vendor/nikic/php-parser/lib',
         'vendor/phpunit/phpunit/src',
         'vendor/symfony/console',
         '.phan/plugins',

@@ -9,7 +9,7 @@ php:
 env:
   - TEST_SUITES="PhanTest"
   - TEST_SUITES="UtilTest RasmusTest LanguageTest"
-  - TEST_SUITES="__FakeSelfTest __FakeRewritingTest __FakePluginTest"
+  - TEST_SUITES="__FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest"
 
 sudo: false
 dist: trusty

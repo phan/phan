@@ -557,6 +557,13 @@ class Config
         // If this is true(default), then Phan will not warn.
         'ignore_undeclared_functions_with_known_signatures' => true,
 
+        // If a file to be analyzed can't be parsed,
+        // then use a slower PHP substitute for php-ast to try to parse the files.
+        // This setting is ignored if a file is excluded from analysis.
+        // NOTE: it is strongly recommended to enable this via the --use-fallback-parser CLI flag instead,
+        // since this may result in strange error messages for invalid files (e.g. if parsed but not analyzed).
+        'use_fallback_parser' => false,
+
         // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_socket' => false,
 
