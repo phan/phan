@@ -21,9 +21,10 @@ class PassByReferenceVariable extends Variable
     /** @var TypedElement */
     private $element;
 
+    /** @param TypedElement|UnaddressableTypedElement $element */
     public function __construct(
         Variable $parameter,
-        TypedElement $element
+        $element
     ) {
         $this->parameter = $parameter;
         $this->element = $element;

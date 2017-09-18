@@ -415,6 +415,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 );
                 return $this->context;
             }
+            // TODO: Iterate over individual types, don't look at the whole type at once?
 
             // If we're assigning to an array element then we don't
             // know what the constitutation of the parameter is

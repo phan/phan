@@ -16,13 +16,14 @@ New Features (CLI, Configs)
   it will try again with a parser which tolerates a few types of errors, and analyze the statements that could be parsed.
   Useful in combination with daemon mode.
 
-
 Maintenance
 + Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.
 + Update links to project from github.com/etsy/phan to github.com/phan/phan.
 + Use the native `spl_object_id` function if it is available for the union type implementation.
   This will make phan 10% faster in PHP 7.2.
   (for PHP 7.1, https://github.com/runkit7/runkit_object_id 1.1.0+ also provides a native implementation of `spl_object_id`)
++ Reduce memory usage by around 5% by tracking only the file and lines associated with variables, instead of a full Context object.
+
 
 Plugins
 + Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.
