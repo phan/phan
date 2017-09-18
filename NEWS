@@ -15,6 +15,9 @@ New Features (CLI, Configs)
 + Add CLI flag `--use-fallback-parser` (Experimental).  If this flags is provided, then when Phan analyzes a syntactically invalid file,
   it will try again with a parser which tolerates a few types of errors, and analyze the statements that could be parsed.
   Useful in combination with daemon mode.
++ Add `phpdoc_type_mapping` config setting.
+  Projects can override this to make Phan ignore or substitute non-standard phpdoc2 types and common typos (#294)
+  (E.g. `'phpdoc_type_mapping' => ['the' => '', 'unknown_type' => '', 'number' => 'int|float']`)
 
 Maintenance
 + Increased minimum `ext-ast` version constraint to 0.1.5, switched to AST version 50.

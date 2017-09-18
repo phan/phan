@@ -2,7 +2,7 @@
 EXPECTED_PATH=expected/all_output.expected
 ACTUAL_PATH=all_output.actual
 if [ ! -e $EXPECTED_PATH ]; then
-	echo "Error: must run this script from tests/plugin_test folder" 1>&2
+	echo "Error: must run this script from tests/rewriting_test folder" 1>&2
 	exit 1
 fi
 echo "Running phan in '$PWD' ..."
