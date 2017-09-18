@@ -156,6 +156,14 @@ class BlockExitStatusCheckerTest extends BaseTest
                 'do {if (cond) continue; else if (foo()) { throw new RuntimeException("");}}while (1);',
             ],
             [
+                'return',
+                'if (cond) return 3; else if (foo()) {return 4;} else { return 5;}',
+            ],
+            [
+                'return',
+                'if (cond) return 3; else { if (foo()) {return 4;} return 5;}',
+            ],
+            [
                 'proceed/throw',
                 'foreach ($seq as $x) { if ($x) { throw new Exception("e"); }}',
             ],
