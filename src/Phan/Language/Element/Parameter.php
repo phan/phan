@@ -6,6 +6,7 @@ use Phan\Config;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\FileRef;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
@@ -35,8 +36,8 @@ class Parameter extends Variable
     private $default_value = null;
 
     /**
-     * @param Context $context
-     * The context in which the structural element lives
+     * @param FileRef $file_ref
+     * The file and lines in which the unaddressable element lives
      *
      * @param string $name
      * The name of the typed structural element
@@ -52,13 +53,13 @@ class Parameter extends Variable
      * a certain kind has a meaningful flags value.
      */
     public function __construct(
-        Context $context,
+        FileRef $file_ref,
         string $name,
         UnionType $type,
         int $flags
     ) {
         parent::__construct(
-            $context,
+            $file_ref,
             $name,
             $type,
             $flags
@@ -390,7 +391,7 @@ class Parameter extends Variable
         // e.g. $this->getUnionType() is of type T[]
         //      $this->non_variadic->getUnionType() is of type T
         return new Parameter(
-            $this->getContext(),
+            $this->getFileRef(),
             $this->getName(),
             $this->getNonVariadicUnionType(),
             Flags::bitVectorWithState($this->getFlags(), \ast\flags\PARAM_VARIADIC, false)
@@ -516,11 +517,11 @@ class Parameter extends Variable
 
         $string .= "\${$this->getName()}";
 
-        if ($this->hasDefaultValue()) {
+        if ($this->hasDefaultValue() && !$this->isVariadic()) {
             if ($this->getDefaultValue() instanceof \ast\Node) {
                 $string .= ' = null';
             } else {
-                $string .= ' = ' . (string)$this->getDefaultValue();
+                $string .= ' = ' . var_export($this->getDefaultValue(), true);
             }
         }
 
