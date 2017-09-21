@@ -40,6 +40,8 @@ Bug Fixes
 + Fix a few incorrect property names for Phan's signatures of internal classes (#1085)
 + Fix bugs in lookup of relative and non-fully qualified class and function names (#1097)
 + Fix a bug affecting analysis of code when `simplify_ast` is true.
++ Fix uncaught NodeException when analyzing complex variables as references (#1116),
+  e.g. `function_expecting_reference($$x)`.
 
 15 Aug 2017, Phan 0.9.4
 -----------------------
