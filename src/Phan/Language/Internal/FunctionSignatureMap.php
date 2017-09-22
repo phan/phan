@@ -6054,6 +6054,7 @@ return [
 'newrelic_notice_error' => ['void', 'message'=>'string', 'exception='=>'exception'],
 'newrelic_notice_error\'1' => ['void', 'unused_1'=>'string', 'message'=>'string', 'unused_2'=>'string', 'unused_3'=>'int', 'unused_4='=>''],
 'newrelic_record_custom_event' => ['void', 'name'=>'string', 'attributes'=>'array'],
+'newrelic_record_datastore_segment' => ['void', 'func'=>'callable', 'parameters'=>'array'],
 'newrelic_set_appname' => ['bool', 'name'=>'string', 'license='=>'string', 'xmit='=>'bool'],
 'newrelic_set_user_attributes' => ['bool', 'user'=>'string', 'account'=>'string', 'product'=>'string'],
 'newrelic_start_transaction' => ['bool', 'appname'=>'string', 'license='=>'string'],
