@@ -316,7 +316,7 @@ class UnionType implements \Serializable
     /**
      * @return Type[]
      * The set of simple types associated with this
-     * union type. The key is based on runkit_object_id()
+     * union type. The key is based on spl_object_id()
      */
     public function getTypeSet() : array
     {
@@ -330,7 +330,7 @@ class UnionType implements \Serializable
      */
     public function addType(Type $type)
     {
-        $this->type_set[\runkit_object_id($type)] = $type;
+        $this->type_set[\spl_object_id($type)] = $type;
     }
 
     /**
@@ -340,7 +340,7 @@ class UnionType implements \Serializable
      */
     public function removeType(Type $type)
     {
-        unset($this->type_set[\runkit_object_id($type)]);
+        unset($this->type_set[\spl_object_id($type)]);
     }
 
     /**
@@ -350,7 +350,7 @@ class UnionType implements \Serializable
      */
     public function hasType(Type $type) : bool
     {
-        return isset($this->type_set[\runkit_object_id($type)]);
+        return isset($this->type_set[\spl_object_id($type)]);
     }
 
     /**
@@ -1066,9 +1066,24 @@ class UnionType implements \Serializable
             return false;
         }
 
-        // TODO: change check to "any", not "each"?
-        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
-            return !$type->isArrayLike();
+        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+            return $type->isArrayLike();
+        });
+    }
+
+    /**
+     * @return bool
+     * True if this union has array-like types (is of type array, is
+     * a generic array, or implements ArrayAccess).
+     */
+    public function hasGenericArray() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+            return $type->isGenericArray();
         });
     }
 
@@ -1083,7 +1098,6 @@ class UnionType implements \Serializable
             return false;
         }
 
-        // TODO: change check to "any", not "each"?
         return ArraySet::exists($this->type_set, function (Type $type) : bool {
             return $type->isArrayAccess();
         });
@@ -1404,21 +1418,6 @@ class UnionType implements \Serializable
 
     /**
      * @return bool
-     * True if this type has any generic types
-     */
-    public function hasGenericArray() : bool
-    {
-        if ($this->isEmpty()) {
-            return false;
-        }
-
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
-            return $type->isGenericArray();
-        });
-    }
-
-    /**
-     * @return bool
      * True if any of the types in this UnionType made $matcher_callback return true
      */
     public function hasTypeMatchingCallback(\Closure $matcher_callback) : bool
@@ -1636,12 +1635,12 @@ class UnionType implements \Serializable
                 if (!$type->getIsNullable()) {
                     unset($new_type_set[$type_id]);
                     $nullable_type = $type->withIsNullable(true);
-                    $new_type_set[\runkit_object_id($nullable_type)] = $nullable_type;
+                    $new_type_set[\spl_object_id($nullable_type)] = $nullable_type;
                 }
             }
             static $nullable_id = null;
             if ($nullable_id === null) {
-                $nullable_id = \runkit_object_id(NullType::instance(false));
+                $nullable_id = \spl_object_id(NullType::instance(false));
             }
             unset($new_type_set[$nullable_id]);
         }
@@ -1662,6 +1661,7 @@ class UnionType implements \Serializable
      *
      * @param Type[] $type_set (Containing only non-nullable values)
      * return Type[] possibly modified $type_set
+     * @var int $bool_id
      */
     private static function asTypeSetWithNormalizedNonNullableBools(array $type_set) : array
     {
@@ -1670,11 +1670,14 @@ class UnionType implements \Serializable
         static $bool_id = null;
         static $bool_type = null;
         if ($bool_type === null) {
-            $true_id = \runkit_object_id(TrueType::instance(false));
-            $false_id = \runkit_object_id(FalseType::instance(false));
+            $true_id = \spl_object_id(TrueType::instance(false));
+            $false_id = \spl_object_id(FalseType::instance(false));
             $bool_type = BoolType::instance(false);
-            $bool_id = \runkit_object_id($bool_type);
+            $bool_id = \spl_object_id($bool_type);
         }
+        \assert(\is_int($bool_id));
+        \assert(\is_int($true_id));
+        \assert(\is_int($false_id));
         unset($type_set[$true_id]);
         unset($type_set[$false_id]);
         if (!isset($type_set[$bool_id])) {
@@ -1697,11 +1700,14 @@ class UnionType implements \Serializable
         static $bool_id = null;
         static $bool_type = null;
         if ($bool_type === null) {
-            $true_id = \runkit_object_id(TrueType::instance(true));
-            $false_id = \runkit_object_id(FalseType::instance(true));
+            $true_id = \spl_object_id(TrueType::instance(true));
+            $false_id = \spl_object_id(FalseType::instance(true));
             $bool_type = BoolType::instance(true);
-            $bool_id = \runkit_object_id($bool_type);
+            $bool_id = \spl_object_id($bool_type);
         }
+        \assert(\is_int($bool_id));
+        \assert(\is_int($true_id));
+        \assert(\is_int($false_id));
         unset($type_set[$true_id]);
         unset($type_set[$false_id]);
         if (!isset($type_set[$bool_id])) {
@@ -1716,7 +1722,7 @@ class UnionType implements \Serializable
             if (!$type->getIsNullable()) {
                 unset($type_set[$type_id]);
                 $nullable_type = $type->withIsNullable(true);
-                $new_types_set[\runkit_object_id($nullable_type)] = $nullable_type;
+                $new_types_set[\spl_object_id($nullable_type)] = $nullable_type;
             }
         }
         return $new_types_set;

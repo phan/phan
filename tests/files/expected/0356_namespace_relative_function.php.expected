@@ -1,0 +1,7 @@
+%s:7 PhanTypeMismatchArgument Argument 1 (x) is int but \test356() takes string defined at %s:4
+%s:8 PhanTypeMismatchArgument Argument 1 (x) is int but \test356() takes string defined at %s:4
+%s:9 PhanTypeMismatchArgument Argument 1 (x) is int but \test356() takes string defined at %s:4
+%s:14 PhanTypeMismatchArgument Argument 1 (x) is int but \test356() takes string defined at %s:4
+%s:15 PhanTypeMismatchArgument Argument 1 (x) is int but \test356() takes string defined at %s:4
+%s:16 PhanUndeclaredFunction Call to undeclared function \NS355\test356()
+%s:23 PhanUndeclaredFunction Call to undeclared function \inNS356()

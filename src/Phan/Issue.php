@@ -61,6 +61,9 @@ class Issue
     const TypeMismatchArgument      = 'PhanTypeMismatchArgument';
     const TypeMismatchArgumentInternal = 'PhanTypeMismatchArgumentInternal';
     const TypeMismatchDefault       = 'PhanTypeMismatchDefault';
+    const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
+    const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
+    const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
     const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
@@ -629,7 +632,7 @@ class Issue
                 self::Unanalyzable,
                 self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
-                "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/etsy/phan/issues/new.",
+                "Expression is unanalyzable or feature is unimplemented. Please create an issue at https://github.com/phan/phan/issues/new.",
                 self::REMEDIATION_B,
                 2000
             ),
@@ -637,7 +640,7 @@ class Issue
                 self::UnanalyzableInheritance,
                 self::CATEGORY_ANALYSIS,
                 self::SEVERITY_LOW,
-                "Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/etsy/phan/issues/new with a test case.",
+                "Unable to determine the method(s) which {METHOD} overrides, but Phan inferred that it did override something earlier. Please create an issue at https://github.com/phan/phan/issues/new with a test case.",
                 self::REMEDIATION_B,
                 2001
             ),
@@ -882,6 +885,30 @@ class Issue
                 'Found an instanceof class name of type {TYPE}, but class name must be a valid object or a string',
                 self::REMEDIATION_B,
                 10029
+            ),
+            new Issue(
+                self::TypeMismatchDimAssignment,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When appending to a value of type {TYPE}, found an array access index of type {TYPE}, but expected the index to be of type {TYPE}',
+                self::REMEDIATION_B,
+                10030
+            ),
+            new Issue(
+                self::TypeMismatchDimEmpty,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Assigning to an empty array index of a value of type {TYPE}, but expected the index to exist and be of type {TYPE}',
+                self::REMEDIATION_B,
+                10031
+            ),
+            new Issue(
+                self::TypeMismatchDimFetch,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When fetching an array index from a value of type {TYPE}, found an array index of type {TYPE}, but expected the index to be of type {TYPE}',
+                self::REMEDIATION_B,
+                10032
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

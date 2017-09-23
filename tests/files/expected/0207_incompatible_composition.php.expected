@@ -1,1 +1,1 @@
-%s:8 PhanIncompatibleCompositionProp \C2 and \C1 define the same property (p) in the composition of \C2. However, the definition differs and is considered incompatible. Class was composed in %s on line 11
+%s:10 PhanIncompatibleCompositionProp \C2 and \C1 define the same property (p) in the composition of \C2. However, the definition differs and is considered incompatible. Class was composed in %s on line 15

@@ -2,6 +2,7 @@
 namespace Phan;
 
 use Phan\AST\ASTSimplifier;
+use Phan\AST\Parser;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
 use Phan\Analysis\ReturnTypesAnalyzer;
@@ -50,43 +51,30 @@ class Analysis
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
         // of this method
-        try {
-            $real_file_path = Config::projectPath($file_path);
-            if (\is_string($override_contents)) {
-                $cache_entry = FileCache::addEntry($real_file_path, $override_contents);
-            } else {
-                $cache_entry = FileCache::getOrReadEntry($real_file_path);
-            }
-            $file_contents = $cache_entry->getContents();
-            if ($file_contents === '') {
-                // php-ast would return null for 0 byte files as an implementation detail.
-                // Make Phan consistently emit this warning.
-                Issue::maybeEmit(
-                    $code_base,
-                    $context,
-                    Issue::EmptyFile,
-                    0,
-                    $file_path
-                );
 
-                return $context;
-            }
-            $node = \ast\parse_code(
-                $file_contents,
-                Config::AST_VERSION
-            );
-        } catch (\ParseError $parse_error) {
-            if ($suppress_parse_errors) {
-                return $context;
-            }
+        $real_file_path = Config::projectPath($file_path);
+        if (\is_string($override_contents)) {
+            $cache_entry = FileCache::addEntry($real_file_path, $override_contents);
+        } else {
+            $cache_entry = FileCache::getOrReadEntry($real_file_path);
+        }
+        $file_contents = $cache_entry->getContents();
+        if ($file_contents === '') {
+            // php-ast would return null for 0 byte files as an implementation detail.
+            // Make Phan consistently emit this warning.
             Issue::maybeEmit(
                 $code_base,
                 $context,
-                Issue::SyntaxError,
-                $parse_error->getLine(),
-                $parse_error->getMessage()
+                Issue::EmptyFile,
+                0,
+                $file_path
             );
 
+            return $context;
+        }
+        try {
+            $node = Parser::parseCode($code_base, $context, $file_path, $file_contents, $suppress_parse_errors);
+        } catch (\ParseError $e) {
             return $context;
         }
 
@@ -99,7 +87,7 @@ class Analysis
         }
 
         if (empty($node)) {
-            // php-ast would return an empty node for 0 byte files.
+            // php-ast would return an empty node for 0 byte files in older releases.
             Issue::maybeEmit(
                 $code_base,
                 $context,
@@ -385,10 +373,7 @@ class Analysis
 
                 return $context;
             }
-            $node = \ast\parse_code(
-                $file_contents,
-                Config::AST_VERSION
-            );
+            $node = Parser::parseCode($code_base, $context, $file_path, $file_contents, false);
         } catch (\ParseError $parse_error) {
             Issue::maybeEmit(
                 $code_base,
@@ -426,7 +411,6 @@ class Analysis
                 );
             }
         }
-
 
         return (new BlockAnalysisVisitor($code_base, $context))($node);
     }

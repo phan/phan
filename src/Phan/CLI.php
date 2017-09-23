@@ -91,6 +91,7 @@ class CLI
                 'print-memory-usage-summary',
                 'markdown-issue-messages',
                 'disable-plugins',
+                'use-fallback-parser',
                 'daemonize-socket:',
                 'daemonize-tcp-port:',
                 'extended-help',
@@ -261,6 +262,9 @@ class CLI
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
                     Config::setValue('plugins', []);
+                    break;
+                case 'use-fallback-parser':
+                    Config::setValue('use_fallback_parser', true);
                     break;
                 case 's':
                 case 'daemonize-socket':
@@ -519,6 +523,14 @@ Usage: {$argv[0]} [options] [files...]
  -z, --signature-compatibility
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
+
+ --use-fallback-parser
+  If a file to be analyzed is syntactically invalid
+  (i.e. "php --syntax-check path/to/file" would emit a syntax error),
+  then retry, using a different, slower error tolerant parser to parse it.
+  (And phan will then analyze what could be parsed).
+  This flag is experimental and may result in unexpected exceptions or errors.
+  This flag does not affect excluded files and directories.
 
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.

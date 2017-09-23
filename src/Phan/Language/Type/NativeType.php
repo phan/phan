@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
-use Phan\Config;
 use Phan\Language\Type;
 
 abstract class NativeType extends Type

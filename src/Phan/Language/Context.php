@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Exception\CodeBaseException;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
+use Phan\Language\Element\Property;
 use Phan\Language\Element\TypedElement;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
@@ -13,6 +14,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalStructuralElement;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 use Phan\Language\Scope\GlobalScope;
 
 /**
@@ -314,6 +316,26 @@ class Context extends FileRef
     }
 
     /**
+     * @return bool
+     * True if this context is currently within a property
+     * scope, else false.
+     */
+    public function isInPropertyScope() : bool
+    {
+        return $this->getScope()->isInPropertyScope();
+    }
+
+    /**
+     * @return FullyQualifiedPropertyName
+     * A fully-qualified structural element name describing
+     * the current property in scope.
+     */
+    public function getPropertyFQSEN() : FullyQualifiedPropertyName
+    {
+        return $this->getScope()->getPropertyFQSEN();
+    }
+
+    /**
      * @param CodeBase $code_base
      * The global code base holding all state
      *
@@ -338,6 +360,35 @@ class Context extends FileRef
 
         return $code_base->getClassByFQSEN(
             $this->getClassFQSEN()
+        );
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * The global code base holding all state
+     *
+     * @return Property
+     * Get the property in this scope, or fail real hard
+     *
+     * @throws CodeBaseException
+     * Thrown if we can't find the property in scope within the
+     * given codebase.
+     */
+    public function getPropertyInScope(CodeBase $code_base) : Property
+    {
+        \assert($this->isInPropertyScope(),
+            "Must be in property scope to get property");
+
+        $property_fqsen = $this->getPropertyFQSEN();
+        if (!$code_base->hasPropertyWithFQSEN($property_fqsen)) {
+            throw new CodeBaseException(
+                $property_fqsen,
+                "Cannot find class with FQSEN {$property_fqsen} in context {$this}"
+            );
+        }
+
+        return $code_base->getPropertyByFQSEN(
+            $property_fqsen
         );
     }
 
@@ -414,7 +465,7 @@ class Context extends FileRef
     {
         return (
             $this->isInFunctionLikeScope()
-            || $this->isInClassScope()
+            || $this->isInClassScope()  // isInPropertyScope implies isInClassScope
         );
     }
 
@@ -444,6 +495,8 @@ class Context extends FileRef
 
         if ($this->isInFunctionLikeScope()) {
             return $this->getFunctionLikeInScope($code_base);
+        } else if ($this->isInPropertyScope()) {
+            return $this->getPropertyInScope($code_base);
         } else if ($this->isInClassScope()) {
             return $this->getClassInScope($code_base);
         }
@@ -478,8 +531,7 @@ class Context extends FileRef
 
         // Increment the suppression use count
         if ($has_suppress_issue) {
-            ++$this->getElementInScope($code_base)
-                ->getSuppressIssueList()[$issue_name];
+            $this->getElementInScope($code_base)->incrementSuppressIssueCount($issue_name);
         }
 
         return $has_suppress_issue;

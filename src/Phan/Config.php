@@ -21,8 +21,9 @@ class Config
      * and the results of version_compare.
      * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
      * New features increment minor versions, and bug fixes increment patch versions.
+     * @suppress PhanUnreferencedConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.0.0';
+    const PHAN_PLUGIN_VERSION = '2.1.0';
 
     /**
      * @var string|null
@@ -292,6 +293,20 @@ class Config
         // types expressed in code.
         'read_type_annotations' => true,
 
+        // This setting maps case insensitive strings to union types.
+        // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
+        // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
+        // If the corresponding value is not empty, Phan will act as though it saw the corresponding unionTypes(s) when the keys show up in a UnionType of @param, @return, @var, @property, etc.
+        //
+        // This matches the **entire string**, not parts of the string.
+        // (E.g. `@return the|null` will still look for a class with the name `the`, but `@return the` will be ignored with the below setting)
+        //
+        // (These are not aliases, this setting is ignored outside of doc comments).
+        // (Phan does not check if classes with these names exist)
+        //
+        // Example setting: ['unknown' => '', 'number' => 'int|float', 'char' => 'string', 'long' => 'int', 'the' => '']
+        'phpdoc_type_mapping' => [ ],
+
         // Set to true in order to ignore issue suppression.
         // This is useful for testing the state of your code, but
         // unlikely to be useful outside of that.
@@ -541,7 +556,7 @@ class Config
         // (use when the number of files is much larger than the process count)
         // NOTE: If you rely on Phan parsing files/directories in the order
         // that they were provided in this config, don't use this)
-        // See https://github.com/etsy/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
+        // See https://github.com/phan/phan/wiki/Different-Issue-Sets-On-Different-Numbers-of-CPUs
         'consistent_hashing_file_order' => false,
 
         // Set by --print-memory-usage-summary. Prints a memory usage summary to stderr after analysis.
@@ -550,6 +565,18 @@ class Config
         // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
         // (e.g. PHP is compiled with --enable-debug or when using XDebug)
         'skip_slow_php_options_warning' => false,
+
+        // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
+        // but aren't available in the codebase, or the internal functions used to run phan (may lead to false positives if an extension isn't loaded)
+        // If this is true(default), then Phan will not warn.
+        'ignore_undeclared_functions_with_known_signatures' => true,
+
+        // If a file to be analyzed can't be parsed,
+        // then use a slower PHP substitute for php-ast to try to parse the files.
+        // This setting is ignored if a file is excluded from analysis.
+        // NOTE: it is strongly recommended to enable this via the --use-fallback-parser CLI flag instead,
+        // since this may result in strange error messages for invalid files (e.g. if parsed but not analyzed).
+        'use_fallback_parser' => false,
 
         // Path to a unix socket for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_socket' => false,
