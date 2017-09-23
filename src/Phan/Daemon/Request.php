@@ -195,7 +195,6 @@ class Request {
      * @param array|null $status
      * @param int|null $pid
      * @return void
-     * @suppress PhanTypeMismatchArgumentInternal - bad function signature map - status is really an array
      * @suppress PhanUndeclaredConstant pcntl unavailable on windows
      */
     public static function childSignalHandler($signo, $status = null, $pid = null) {

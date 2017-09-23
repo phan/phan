@@ -53,8 +53,6 @@ return [
 
     'generic_types_enabled' => true,
 
-    'should_visit_all_nodes' => true,
-
     'minimum_severity' => Issue::SEVERITY_LOW,
 
     'directory_list' => ['src'],

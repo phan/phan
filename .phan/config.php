@@ -100,6 +100,20 @@ return [
     // This will also check if final methods are overridden, etc.
     'analyze_signature_compatibility' => true,
 
+    // This setting maps case insensitive strings to union types.
+    // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
+    // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)
+    // If the corresponding value is not empty, Phan will act as though it saw the corresponding unionTypes(s) when the keys show up in a UnionType of @param, @return, @var, @property, etc.
+    //
+    // This matches the **entire string**, not parts of the string.
+    // (E.g. `@return the|null` will still look for a class with the name `the`, but `@return the` will be ignored with the below setting)
+    //
+    // (These are not aliases, this setting is ignored outside of doc comments).
+    // (Phan does not check if classes with these names exist)
+    //
+    // Example setting: ['unknown' => '', 'number' => 'int|float', 'char' => 'string', 'long' => 'int', 'the' => '']
+    'phpdoc_type_mapping' => [ ],
+
     // Set to true in order to attempt to detect dead
     // (unreferenced) code. Keep in mind that the
     // results will only be a guess given that classes,
@@ -364,6 +378,7 @@ return [
     'directory_list' => [
         'src',
         'tests/Phan',
+        'vendor/nikic/php-parser/lib',
         'vendor/phpunit/phpunit/src',
         'vendor/symfony/console',
         '.phan/plugins',
@@ -392,6 +407,12 @@ return [
     // By default, Phan will log error messages to stdout if PHP is using options that slow the analysis.
     // (e.g. PHP is compiled with --enable-debug or when using XDebug)
     'skip_slow_php_options_warning' => false,
+
+    // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
+    // but aren't available in the codebase, or the internal functions used to run phan (may lead to false positives if an extension isn't loaded)
+    // If this is true(default), then Phan will not warn.
+    // (Would like to override to false for phan self-analysis, but Windows self-tests would fail)
+    'ignore_undeclared_functions_with_known_signatures' => true,
 
     // A list of plugin files to execute
     'plugins' => [

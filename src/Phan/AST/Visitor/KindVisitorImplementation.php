@@ -3,6 +3,8 @@ namespace Phan\AST\Visitor;
 
 use ast\Node;
 use ast\Node\Decl;
+use Phan\AST\Visitor\Element;
+use Phan\Debug;
 
 /**
  * A visitor of AST nodes based on the node's kind value
@@ -19,7 +21,14 @@ abstract class KindVisitorImplementation implements KindVisitor
      */
     public function __invoke(Node $node)
     {
-        return Element::acceptNodeAndKindVisitor($node, $this);
+        $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind';
+        return $this->{$fn_name}($node);
+    }
+
+    private function handleMissingNodeKind(Node $node)
+    {
+        Debug::printNode($node);
+        assert(false, 'All node kinds must match');
     }
 
     public function visitArgList(Node $node)

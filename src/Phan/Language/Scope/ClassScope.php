@@ -7,10 +7,20 @@ class ClassScope extends ClosedScope {
 
     /**
      * @return bool
-     * True if we're in a function scope
+     * True if we're in a class scope
+     * @override
      */
     public function isInClassScope() : bool {
         return true;
+    }
+
+    /**
+     * @return bool
+     * True if we're in a class scope
+     * @override
+     */
+    public function isInPropertyScope() : bool {
+        return false;
     }
 
     /**

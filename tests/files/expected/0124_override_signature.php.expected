@@ -10,8 +10,8 @@
 %s:25 PhanParamSignatureRealMismatchReturnType Declaration of function g() : int should be compatible with function g() : string (method returning 'int' cannot override method returning 'string') defined in %s:22
 %s:28 PhanParamSignatureRealMismatchReturnType Declaration of function g() should be compatible with function g() : string (method returning '' cannot override method returning 'string') defined in %s:22
 %s:35 PhanParamSignatureRealMismatchHasParamType Declaration of function h(int $a) should be compatible with function h($a) (parameter #1 of has type 'int' cannot replace original parameter with no type) defined in %s:32
-%s:50 PhanParamSignatureMismatch Declaration of function i($a) should be compatible with function i($a, mixed|string $b = default) defined in %s:46
-%s:50 PhanParamSignatureRealMismatchTooFewParameters Declaration of function i($a) should be compatible with function i($a, $b = default) (the method override accepts 1 parameter(s), but the overridden method can accept 2) defined in %s:46
+%s:50 PhanParamSignatureMismatch Declaration of function i($a) should be compatible with function i($a, mixed|string $b = 'default') defined in %s:46
+%s:50 PhanParamSignatureRealMismatchTooFewParameters Declaration of function i($a) should be compatible with function i($a, $b = 'default') (the method override accepts 1 parameter(s), but the overridden method can accept 2) defined in %s:46
 %s:58 PhanParamSignatureMismatch Declaration of function j() should be compatible with function &j() defined in %s:54
 %s:67 PhanParamSignatureMismatch Declaration of function k(&$a) should be compatible with function k($a) defined in %s:62
 %s:67 PhanParamSignatureRealMismatchParamIsReference Declaration of function k(&$a) should be compatible with function k($a) (parameter #1 is a reference parameter overriding a non-reference parameter) defined in %s:62
