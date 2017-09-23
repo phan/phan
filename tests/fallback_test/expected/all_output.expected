@@ -1,0 +1,12 @@
+src/000_missing_semicolon_check.php:5 PhanSyntaxError syntax error, unexpected return (T_RETURN)
+src/000_missing_semicolon_check.php:5 PhanTypeMismatchArgumentInternal Argument 1 (string) is array but \strlen() takes string
+src/000_missing_semicolon_check.php:5 PhanTypeMismatchReturn Returning type int but test_missing_semicolon() is declared to return string
+src/001_missing_variable_check.php:3 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+src/001_missing_variable_check.php:4 PhanSyntaxError syntax error, unexpected ';'
+src/001_missing_variable_check.php:5 PhanTypeMismatchArgumentInternal Argument 1 (var) is int but \count() takes \Countable|array
+src/002_missing_property_check.php:5 PhanSyntaxError syntax error, unexpected ';', expecting identifier (T_STRING) or variable (T_VARIABLE) or '{' or '$'
+src/002_missing_property_check.php:6 PhanTypeMismatchReturn Returning type string[] but missing_property() is declared to return int
+src/003_misc_noise.php:4 PhanTypeConversionFromArray array to string conversion
+src/003_misc_noise.php:5 PhanSyntaxError syntax error, unexpected '|'
+src/004_partial_arithmetic.php:4 PhanSyntaxError syntax error, unexpected '}'
+src/004_partial_arithmetic.php:7 PhanTypeInvalidRightOperand Invalid operator: left operand is array and right is not

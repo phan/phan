@@ -1,0 +1,5 @@
+%s:32 PhanUndeclaredInterface Class implements undeclared interface \NS355\I355
+%s:34 PhanCommentOverrideOnNonOverrideMethod Saw an @override annotation for method \NS355\E355::functionOfI, but could not find an overridden method and it is not a magic method
+%s:46 PhanUndeclaredClassMethod Call to method __construct from undeclared class \NS355\B355
+%s:53 PhanTypeMismatchArgument Argument 1 (x) is \NS355\B355 but \NS355\accepts_B355() takes \B355 defined at %s:48
+%s:53 PhanUndeclaredClassMethod Call to method __construct from undeclared class \NS355\B355

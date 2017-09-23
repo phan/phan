@@ -10,8 +10,7 @@ use \Phan\Issue;
  * @see src/Phan/Config.php
  * See Config for all configurable options.
  *
- * This is a config file which tests all built in plugins,
- * in addition to testing backwards compatibility checks and dead code detection.
+ * This is a config file which tests AST rewriting and phpdoc_type_mapping.
  */
 return [
 
@@ -58,14 +57,20 @@ return [
 
     'generic_types_enabled' => true,
 
-    'should_visit_all_nodes' => true,
-
     'minimum_severity' => Issue::SEVERITY_LOW,
 
     'directory_list' => ['src'],
 
     'analyzed_file_extensions' => ['php'],
 
+    // An unrelated form of rewriting to AST rewriting.
+    'phpdoc_type_mapping' => [
+        'number' => 'int|float',
+        'unknown_type' => '',
+    ],
+
     // A list of plugin files to execute
-    'plugins' => [ ],
+    'plugins' => [
+        '../../.phan/plugins/AlwaysReturnPlugin.php',  // may be affected by AST rewriting
+    ]
 ];

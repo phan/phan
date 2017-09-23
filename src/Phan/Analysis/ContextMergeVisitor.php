@@ -91,9 +91,13 @@ class ContextMergeVisitor extends KindVisitorImplementation
         assert($try_scope instanceof Scope);
 
         $catch_scope_list = [];
-        foreach ($node->children['catches'] ?? [] as $i => $catch_node) {
-            $catch_scope_list[] = $scope_list[((int)$i)+1];
+        $catch_nodes = $node->children['catches']->children ?? [];
+        foreach ($catch_nodes as $i => $catch_node) {
+            if (!BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($catch_node)) {
+                $catch_scope_list[] = $scope_list[((int)$i)+1];
+            }
         }
+        // TODO: Check if try node unconditionally returns.
 
         // Merge in the types for any variables found in a catch.
         foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
@@ -132,9 +136,10 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // If we have a finally, overwrite types for each
         // element
-        if (!empty($node->children['finallyStmts'])
-            || !empty($node->children['finally'])
-        ) {
+        if (!empty($node->children['finally'])) {
+            \assert(\count($scope_list) === 2 + \count($catch_nodes));
+            // Don't bother checking if finally unconditionally returns here
+            // If it does, dead code detection would also warn.
             $finally_scope = $scope_list[\count($scope_list)-1];
             assert($finally_scope instanceof Scope);
 
@@ -159,6 +164,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     $try_scope->addVariable($variable);
                 }
             }
+        } else {
+            \assert(\count($scope_list) === 1 + \count($catch_nodes));
         }
 
         // Return the context of the try with the types of

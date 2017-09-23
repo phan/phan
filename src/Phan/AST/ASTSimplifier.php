@@ -105,12 +105,12 @@ class ASTSimplifier {
      * Creates a new node with kind \ast\AST_STMT_LIST from a list of 0 or more child nodes.
      */
     private static function buildStatementList(int $lineno, Node ...$child_nodes) : Node {
-        $stmt_list = new Node();
-        $stmt_list->lineno = $lineno;
-        $stmt_list->kind = \ast\AST_STMT_LIST;
-        $stmt_list->flags = 0;
-        $stmt_list->children = $child_nodes;
-        return $stmt_list;
+        return new Node(
+            \ast\AST_STMT_LIST,
+            0,
+            $child_nodes,
+            $lineno
+        );
     }
 
     /**
@@ -158,9 +158,15 @@ class ASTSimplifier {
                     $new_if_elem = clone($stmt->children[0]);
                     $new_stmts = self::cloneStatementList($new_if_elem->children['stmts']);
                     $new_stmts->children = array_merge($new_stmts->children, array_slice($statements, $i + 1));
+                    $new_stmts->flags = 0;
                     $new_if_elem->children['stmts'] = $new_stmts;
-                    $new_if = clone($stmt);
-                    $new_if->children[0] = $new_if_elem;
+                    $new_if_elem->flags = 0;
+                    $new_if = new \ast\Node(
+                        \ast\AST_IF,
+                        0,
+                        [$new_if_elem],
+                        $stmt->lineno
+                    );
                     // Replace the old `if` node (followed by statements) with the new `if` node
                     while (\count($statements) > $i) {
                         \array_pop($statements);
@@ -175,20 +181,30 @@ class ASTSimplifier {
                     // If the if statement is guaranteed to break/continue/return/throw,
                     // then merge the remaining statements following that into the `else` block (not `elseif`)
                     // Create an `else` block if necessary.
-                    // This prevents inferences(e.g. in Phan) from the `if` block from leaking out into the remaining statemtns.
+                    // This prevents inferences(e.g. in Phan) from the `if` block from leaking out into the remaining statements.
                     if ($N == 1) {
-                        $new_else_elem = clone($stmt->children[0]);
-                        $new_else_elem->children['cond'] = null;
-                        // Don't clone the original if statement - It might not be a statement list.
-                        $new_else_elem->children['stmts'] = self::buildStatementList($stmt->children[0]->lineno ?? 0);
+                        // TODO: creating an `else` block should no longer be necessary.
+                        $new_else_elem = new \ast\Node(
+                            \ast\AST_IF_ELEM,
+                            0,
+                            [
+                                'cond' => null,
+                                // Don't clone the original if statement - It might not be a statement list.
+                                'stmts' => self::buildStatementList($stmt->children[0]->lineno ?? 0),
+                            ],
+                            $stmt->children[0]->lineno
+                        );
                     } else {
                         \assert($N === 2);
                         $new_else_elem = clone($stmt->children[1]);
                         // Convert a singular statement (or null) into a statement list, if necessary.
                         $new_else_elem->children['stmts'] = self::cloneStatementList($new_else_elem->children['stmts']);
+                        $new_else_elem->flags = 0;
                     }
                     $new_else_elem->children['stmts']->children = array_merge($new_else_elem->children['stmts']->children, array_slice($statements, $i + 1));
+                    $new_else_elem->children['stmts']->flags = 0;
                     $new_if_else = clone($stmt);
+                    $new_if_else->flags = 0;
                     $new_if_else->children[1] = $new_else_elem;
                     // We might end up undoing a negation as well, now that there is an else branch.
                     // Run normalizeIfStatement again.
@@ -212,7 +228,7 @@ class ASTSimplifier {
      */
     private static function replaceLastNodeWithNodeList(array &$nodes, Node... $new_statements) {
         \assert(count($nodes) > 0);
-        array_pop($nodes);
+        \array_pop($nodes);
         foreach ($new_statements as $stmt) {
             $nodes[] = $stmt;
         }
@@ -233,6 +249,7 @@ class ASTSimplifier {
         while ($old_nodes !== $nodes) {
             $old_nodes = $nodes;
             $node = $nodes[count($nodes) - 1];
+            $node->flags = 0;
             $if_cond = $node->children[0]->children['cond'];
             if (!($if_cond instanceof Node)) {
                 break;  // No transformation rules apply here.
@@ -282,12 +299,12 @@ class ASTSimplifier {
     private function buildIfNode(Node $l, Node $r) : Node {
         \assert($l->kind === \ast\AST_IF_ELEM);
         \assert($r->kind === \ast\AST_IF_ELEM);
-        $if_node = new Node();
-        $if_node->kind = \ast\AST_IF;
-        $if_node->lineno = $l->lineno ?? 0;
-        $if_node->flags = 0;
-        $if_node->children = [$l, $r];
-        return $if_node;
+        return new Node(
+            \ast\AST_IF,
+            0,
+            [$l, $r],
+            $l->lineno ?? 0
+        );
     }
 
     /**
@@ -302,22 +319,22 @@ class ASTSimplifier {
         while (count($children) > 2) {
             $r = array_pop($children);
             $l = array_pop($children);
+            $l->children['stmts']->flags = 0;
+            $r->children['stmts']->flags = 0;
             $inner_if_node = self::buildIfNode($l, $r);
-            $new_r = new Node();
-            $new_r->kind = \ast\AST_IF_ELEM;
-            $new_r->lineno = $l->lineno ?? 0;
-            $new_r->flags = 0;
-            $new_r->children = [
-                'cond' => null,
-                'stmts' => self::buildStatementList($inner_if_node->lineno, ...($this->normalizeIfStatement($inner_if_node))),
-            ];
-
+            $new_r = new Node(
+                \ast\AST_IF_ELEM,
+                0,
+                [
+                    'cond' => null,
+                    'stmts' => self::buildStatementList($inner_if_node->lineno, ...($this->normalizeIfStatement($inner_if_node))),
+                ],
+                0
+            );
             $children[] = $new_r;
         }
         // $children is an array of 2 nodes of type IF_ELEM
-        $new_node = clone($node);
-        $new_node->children = $children;
-        return $new_node;
+        return new Node(\ast\AST_IF, 0, $children, $node->lineno);
     }
 
     /**
@@ -328,15 +345,19 @@ class ASTSimplifier {
         \assert(count($node->children) == 1);
         $inner_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $inner_node_elem->children['cond'] = $inner_node_elem->children['cond']->children['right'];
+        $inner_node_elem->flags = 0;
         $inner_node = clone($node);  // AST_IF
         $inner_node->children[0] = $inner_node_elem;
         $inner_node->lineno = $inner_node_elem->lineno ?? 0;
+        $inner_node->flags = 0;
         $inner_node_stmt_list = self::buildStatementList($inner_node->lineno, $inner_node);  // AST_STMT_LIST
         $outer_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $outer_node_elem->children['cond'] = $node->children[0]->children['cond']->children['left'];
         $outer_node_elem->children['stmts'] = $inner_node_stmt_list;
+        $outer_node_elem->flags = 0;
         $outer_node = clone($node);  // AST_IF
         $outer_node->children[0] = $outer_node_elem;
+        $outer_node->flags = 0;
         return $outer_node;
     }
 
@@ -349,9 +370,11 @@ class ASTSimplifier {
         $outer_assign_statement = $node->children[0]->children['cond'];
         $new_node_elem = clone($node->children[0]);
         $new_node_elem->children['cond'] = $new_node_elem->children['cond']->children['var'];
+        $new_node_elem->flags = 0;
         $new_node = clone($node);
         $new_node->children[0] = $new_node_elem;
         $new_node->lineno = $new_node_elem->lineno ?? 0;
+        $new_node->flags = 0;
         return [$outer_assign_statement, $new_node];
     }
 
@@ -367,6 +390,7 @@ class ASTSimplifier {
         $new_node->children = [clone($new_node->children[1]), clone($new_node->children[0])];
         $new_node->children[0]->children['cond'] = $node->children[0]->children['cond']->children['expr'];
         $new_node->children[1]->children['cond'] = null;
+        $new_node->flags = 0;
         return $new_node;
     }
 
@@ -380,7 +404,9 @@ class ASTSimplifier {
 
         $new_cond = $node->children[0]->children['cond']->children['expr']->children['expr'];
         $new_node = clone($node);
+        $new_node->flags = 0;
         $new_node->children[0] = clone($node->children[0]);
+        $new_node->children[0]->flags = 0;
         $new_node->children[0]->children['cond'] = $new_cond;
 
         return $new_node;
@@ -400,6 +426,7 @@ class ASTSimplifier {
         }
         $new_catches = clone($catches);
         $new_catches->children = $new_list;
+        $new_catches->flags = 0;
         return $new_catches;
     }
 
@@ -421,6 +448,7 @@ class ASTSimplifier {
         $new_node->children['try'] = $new_try;
         $new_node->children['catches'] = $new_catches;
         $new_node->children['finally'] = $new_finally;
+        $new_node->flags = 0;
         return $new_node;
     }
 

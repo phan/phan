@@ -4,10 +4,10 @@ Phan looks for common issues and will verify type compatibility on various opera
 information is available or can be deduced. Phan does not have a strong understanding of flow control
 and does not attempt to track values.
 
-[![Code Climate](https://codeclimate.com/github/etsy/phan/badges/gpa.svg)](https://codeclimate.com/github/etsy/phan) [![Build Status](https://travis-ci.org/etsy/phan.svg?branch=master)](https://travis-ci.org/etsy/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/etsy/phan?branch=master&svg=true)](https://ci.appveyor.com/project/morria/phan/branch/master)
+[![Code Climate](https://codeclimate.com/github/etsy/phan/badges/gpa.svg)](https://codeclimate.com/github/etsy/phan) [![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/etsy/phan?branch=master&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/master)
 [![Gitter](https://badges.gitter.im/etsy/phan.svg)](https://gitter.im/etsy/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://poser.pugx.org/etsy/phan/v/stable)](https://packagist.org/packages/etsy/phan)
-[![License](https://poser.pugx.org/etsy/phan/license)](https://github.com/etsy/phan/blob/master/LICENSE)
+[![License](https://poser.pugx.org/etsy/phan/license)](https://github.com/phan/phan/blob/master/LICENSE)
 
 # Getting Started
 
@@ -17,20 +17,22 @@ The easiest way to use Phan is via Composer.
 composer require --dev etsy/phan
 ```
 
-With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) in
+With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This branch of Phan depends on PHP 7.0.x with the [php-ast](https://github.com/nikic/php-ast) extension. Take a look at later versions of Phan for PHP 7.1+ support.
+This branch of Phan depends on PHP 7.0.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.4 or newer, uses AST version 40). Take a look at later versions of Phan for PHP 7.1+ support.
 It is unable to analyze code from PHP 7.1.x+.
+Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
+The 0.10.x releases are more up to date, but require newer versions of php-ast (0.1.5 or newer. These releases may not work with older third party phan plugins)
 Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (or to support daemon mode).
 
 * **Alternative Installation Methods**<br />
-  See [Getting Started](https://github.com/etsy/phan/wiki/Getting-Started) for alternative methods of using
+  See [Getting Started](https://github.com/phan/phan/wiki/Getting-Started) for alternative methods of using
 Phan and details on how to configure Phan for your project.<br />
 * **Incrementally Strengthening Analysis**<br />
-  Take a look at [Incrementally Strengthening Analysis](https://github.com/etsy/phan/wiki/Incrementally-Strengthening-Analysis) for some tips on how to slowly ramp up the strictness of the analysis as your code becomes better equipped to be analyzed. <br />
+  Take a look at [Incrementally Strengthening Analysis](https://github.com/phan/phan/wiki/Incrementally-Strengthening-Analysis) for some tips on how to slowly ramp up the strictness of the analysis as your code becomes better equipped to be analyzed. <br />
 * **Installing Dependencies**<br />
-  Take a look at [Installing Phan Dependencies](https://github.com/etsy/phan/wiki/Getting-Started#installing-phan-dependencies) for help getting Phan's dependencies installed on your system.
+  Take a look at [Installing Phan Dependencies](https://github.com/phan/phan/wiki/Getting-Started#installing-phan-dependencies) for help getting Phan's dependencies installed on your system.
 
 # Features
 
@@ -48,39 +50,39 @@ Phan is able to perform the following kinds of analysis.
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).
   As of 0.9.3, Phan also checks for final classes/methods being overridden, and that the implemented interface is really a interface (and so on).
 * Supports namespaces, traits and variadics
-* Supports [Union Types](https://github.com/etsy/phan/wiki/About-Union-Types)
+* Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types)
 * Supports generic arrays such as `int[]`, `UserObject[]`, etc..
-* Supports phpdoc [type annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
+* Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code)
 * Supports inheriting phpdoc type annotations (in 0.9.3)
 * Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures (in 0.9.3)
-* Supports inferring types from [assert() statements](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code) and conditionals in if elements/loops.
-* Supports [`@deprecated` annotation](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#deprecated) for deprecating classes, methods and functions
-* Supports [`@internal` annotation](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#internal) for elements (such as a constant, function, class, class constant, property or method) as internal to the package in which its defined.
-* Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#suppress).
-* Supports [magic property annotations](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code#property) (partial) (`@property <union_type> <variable_name>`)
-* Supports [`class_alias` annotations (experimental, off by default)](https://github.com/etsy/phan/pull/586), as of 0.9.3
+* Supports inferring types from [assert() statements](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code) and conditionals in if elements/loops.
+* Supports [`@deprecated` annotation](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#deprecated) for deprecating classes, methods and functions
+* Supports [`@internal` annotation](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#internal) for elements (such as a constant, function, class, class constant, property or method) as internal to the package in which its defined.
+* Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#suppress).
+* Supports [magic property annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#property) (partial) (`@property <union_type> <variable_name>`)
+* Supports [`class_alias` annotations (experimental, off by default)](https://github.com/phan/phan/pull/586), as of 0.9.3
 * Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
-* [Can run in the background (daemon mode)](https://github.com/etsy/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file. (requires `pcntl`)
+* [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file. (requires `pcntl`)
 * Output is emitted in text, checkstyle, json or codeclimate formats.
 * Can run user plugins on source for checks specific to your code.
 
-See [Phan Issue Types](https://github.com/etsy/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
+See [Phan Issue Types](https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
 and examples of all issues that can be detected by Phan. Take a look at the
-[\Phan\Issue](https://github.com/etsy/phan/blob/master/src/Phan/Issue.php) to see the
+[\Phan\Issue](https://github.com/phan/phan/blob/master/src/Phan/Issue.php) to see the
 definition of each error type.
 
-Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://github.com/etsy/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base) to get a sense of what the process of doing ongoing analysis might look like for you.
+Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://github.com/phan/phan/wiki/Tutorial-for-Analyzing-a-Large-Sloppy-Code-Base) to get a sense of what the process of doing ongoing analysis might look like for you.
 
-See the [tests](https://github.com/etsy/phan/blob/master/tests/files) directory for some examples of the various checks.
+See the [tests](https://github.com/phan/phan/blob/master/tests/files) directory for some examples of the various checks.
 
 Phan is imperfect and shouldn't be used to prove that your PHP-based rocket guidance system is free of defects.
 
 # Usage
 
 Phan needs to be configured with details on where to find code to analyze and how to analyze it. The
-easiest way to tell Phan where to find source code is to [create a `.phan/config.php` file](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file).
+easiest way to tell Phan where to find source code is to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file).
 A simple `.phan/config.php` file might look something like the following.
 
 ```php
@@ -122,8 +124,8 @@ return [
 ];
 ```
 
-Take a look at [Creating a Config File](https://github.com/etsy/phan/wiki/Getting-Started#creating-a-config-file) and
-[Incrementally Strengthening Analysis](https://github.com/etsy/phan/wiki/Incrementally-Strengthening-Analysis) for
+Take a look at [Creating a Config File](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) and
+[Incrementally Strengthening Analysis](https://github.com/phan/phan/wiki/Incrementally-Strengthening-Analysis) for
 more details.
 
 Running `phan --help` will show usage information and command-line options.
@@ -220,11 +222,20 @@ Usage: ./phan [options] [files...]
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
 
+ --use-fallback-parser
+  If a file to be analyzed is syntactically invalid
+  (i.e. "php --syntax-check path/to/file" would emit a syntax error),
+  then retry, using a different, slower error tolerant parser to parse it.
+  (And phan will then analyze what could be parsed).
+  This flag is experimental and may result in unexpected exceptions or errors.
+  This flag does not affect excluded files and directories.
+
  -s, --daemonize-socket </path/to/file.sock>
   Unix socket for Phan to listen for requests on, in daemon mode.
 
- --daemonize-tcp-port <1024-65535>
-  TCP port for Phan to listen for JSON requests on, in daemon mode. (e.g. 4846)
+ --daemonize-tcp-port <default|1024-65535>
+  TCP port for Phan to listen for JSON requests on, in daemon mode.
+  (e.g. 'default', which is an alias for port 4846.)
 
  -v, --version
   Print phan's version number
@@ -239,11 +250,11 @@ Usage: ./phan [options] [files...]
 ## Annotating Your Source Code
 
 Phan reads and understands most [PHPDoc](http://www.phpdoc.org/docs/latest/guides/types.html)
-type annotations including [Union Types](https://github.com/etsy/phan/wiki/About-Union-Types)
+type annotations including [Union Types](https://github.com/phan/phan/wiki/About-Union-Types)
 (like `int|MyClass|string|null`) and generic array types (like `int[]` or `string[]|MyClass[]`).
 
-Take a look at [Annotating Your Source Code](https://github.com/etsy/phan/wiki/Annotating-Your-Source-Code)
-and [About Union Types](https://github.com/etsy/phan/wiki/About-Union-Types) for some help
+Take a look at [Annotating Your Source Code](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code)
+and [About Union Types](https://github.com/phan/phan/wiki/About-Union-Types) for some help
 getting started with defining types in your code.
 
 One important note is that Phan doesn't support `(int|string)[]` style annotations. Instead, use
@@ -310,7 +321,7 @@ various entry points, then all your library files containing your classes.
 
 # Development
 
-Take a look at [Developer's Guide to Phan](https://github.com/etsy/phan/wiki/Developer's-Guide-To-Phan) for help getting started hacking on Phan.
+Take a look at [Developer's Guide to Phan](https://github.com/phan/phan/wiki/Developer's-Guide-To-Phan) for help getting started hacking on Phan.
 
 When you find an issue, please take the time to create a tiny reproducing code snippet that illustrates
 the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to

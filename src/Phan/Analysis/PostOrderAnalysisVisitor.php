@@ -1696,14 +1696,18 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // or create it if it doesn't.
             if ($parameter->isPassByReference()) {
                 if ($argument->kind == \ast\AST_VAR) {
-                    // We don't do anything with it; just create it
-                    // if it doesn't exist
-                    $variable = (new ContextNode(
-                        $this->code_base,
-                        $this->context,
-                        $argument
-                    ))->getOrCreateVariable();
-
+                    try {
+                        // We don't do anything with it; just create it
+                        // if it doesn't exist
+                        $variable = (new ContextNode(
+                            $this->code_base,
+                            $this->context,
+                            $argument
+                        ))->getOrCreateVariable();
+                    } catch (NodeException $e) {
+                        // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
+                        continue;
+                    }
                 } elseif ($argument->kind == \ast\AST_STATIC_PROP
                     || $argument->kind == \ast\AST_PROP
                 ) {
@@ -1769,11 +1773,16 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $variable = null;
             if ($parameter->isPassByReference()) {
                 if ($argument->kind == \ast\AST_VAR) {
-                    $variable = (new ContextNode(
-                        $this->code_base,
-                        $this->context,
-                        $argument
-                    ))->getOrCreateVariable();
+                    try {
+                        $variable = (new ContextNode(
+                            $this->code_base,
+                            $this->context,
+                            $argument
+                        ))->getOrCreateVariable();
+                    } catch (NodeException $e) {
+                        // E.g. `function_accepting_reference(${$varName})` - Phan can't analyze outer type of ${$varName}
+                        continue;
+                    }
                 } elseif ($argument->kind == \ast\AST_STATIC_PROP
                     || $argument->kind == \ast\AST_PROP
                 ) {
@@ -1904,7 +1913,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         }, $original_parameter_list);
 
         // always resolve all arguments outside of quick mode to detect undefined variables, other problems in call arguments.
-        // Fixes https://github.com/etsy/phan/issues/583
+        // Fixes https://github.com/phan/phan/issues/583
         $argument_types = [];
         foreach ($argument_list_node->children as $i => $argument) {
             if (!$argument) {

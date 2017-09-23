@@ -82,7 +82,9 @@ class CompositionAnalyzer
                 }
 
                 // Don't emit an issue if the property suppresses the issue
+                // NOTE: The current context is the class, not either of the properties.
                 if ($property->hasSuppressIssue(Issue::IncompatibleCompositionProp)) {
+                    $property->incrementSuppressIssueCount(Issue::IncompatibleCompositionProp);
                     continue;
                 }
 
