@@ -68,6 +68,17 @@ interface TypedElementInterface
     public function setSuppressIssueList(array $suppress_issue_list);
 
     /**
+     * @return int[]
+     */
+    public function getSuppressIssueList() : array;
+
+    /**
+     * Increments the number of times $issue_name was suppressed.
+     * @return void
+     */
+    public function incrementSuppressIssueCount(string $issue_name);
+
+    /**
      * return bool
      * True if this element would like to suppress the given
      * issue name

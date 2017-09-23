@@ -1,0 +1,1 @@
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array

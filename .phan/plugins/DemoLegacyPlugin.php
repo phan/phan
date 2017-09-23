@@ -103,7 +103,7 @@ class DemoLegacyPlugin extends PluginImplementation {
                 $code_base,
                 $class->getContext(),
                 'DemoPluginClassName',
-                "Class {CLASS} cannot be called `Class`"
+                "Class {CLASS} cannot be called `Class`",
                 [(string)$class->getFQSEN()]
             );
         }

@@ -433,7 +433,7 @@ trait FunctionTrait {
     public function getRealReturnType() : UnionType
     {
         if (!$this->real_return_type) {
-            // Incomplete patch for https://github.com/etsy/phan/issues/670
+            // Incomplete patch for https://github.com/phan/phan/issues/670
             return new UnionType();
             // throw new \Error(sprintf("Failed to get real return type in %s method %s", (string)$this->getClassFQSEN(), (string)$this));
         }

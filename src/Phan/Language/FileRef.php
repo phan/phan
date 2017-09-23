@@ -150,4 +150,17 @@ class FileRef implements \Serializable
         $this->line_number_start = (int)$map[1];
         $this->line_number_end = (int)($map[2] ?? 0);
     }
+
+    /**
+     * @param FileRef $other - An instance of FileRef or a subclass such as Context
+     * @return FileRef - A plain file ref, with no other information
+     */
+    public static function copyFileRef(FileRef $other) : FileRef
+    {
+        $file_ref = new FileRef();
+        $file_ref->file = $other->file;
+        $file_ref->line_number_start = $other->line_number_start;
+        $file_ref->line_number_end = $other->line_number_end;
+        return $file_ref;
+    }
 }

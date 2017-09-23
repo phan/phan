@@ -36,6 +36,14 @@ use ast\Node;
  *     Returns the name of a class extending PluginAwarePreAnalysisVisitor, which will be used to pre-analyze nodes in the analysis phase.
  *     (implement \Phan\PluginV2\PreAnalyzeNodeCapability)
  *
+ *  6. public function analyzeProperty(CodeBase $code_base, Property $property)
+ *     Analyze (and modify) a property definition, after parsing and before analyzing.
+ *     (implement \Phan\PluginV2\AnalyzePropertyCapability)
+ *
+ *  6. public function finalize(CodeBase $code_base)
+ *     Analyze (and modify) a property definition, after parsing and before analyzing.
+ *     (implement \Phan\PluginV2\AnalyzePropertyCapability)
+ *
  * List of deprecated legacy capabilities
  *
  *  1. public static function analyzeNode(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null)

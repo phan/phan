@@ -2,7 +2,7 @@ FROM ablyler/php7ast
 
 WORKDIR /usr/src/app
 
-RUN git clone https://github.com/etsy/phan.git .
+RUN git clone https://github.com/phan/phan.git .
 COPY engine /usr/src/app/plugins/codeclimate/engine
 
 RUN curl -sS https://getcomposer.org/installer | php && \
