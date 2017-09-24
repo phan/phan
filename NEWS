@@ -1,7 +1,14 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.9.5 (dev)
+24 Sep 2017, Phan 0.9.5
 -----------------------
+
+Future releases (0.8.8+, 0.9.6+, 0.10.0+, etc.) will be published to phan/phan instead of etsy/phan on packagist.
+
+If you are using phan 0.9.x, it's recommended to switch to phan 0.10.0 releases
+(0.10.x depends on php-ast 0.1.5+ for AST version 50).
+Phan 0.9.x will be supported for only a few more patch versions.
+(and Phan 0.8.x will switch to AST version 50 after that)
 
 New Features(Analysis)
 + Check types of dimensions when using array access syntax (#406, #1093)
