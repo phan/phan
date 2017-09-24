@@ -1,7 +1,12 @@
 Phan NEWS
 
-0.8.7 ??? ?? 2017 (dev)
------------------
+0.8.7 Sep 24, 2017
+------------------
+
+Future releases (0.8.8+, 0.9.6+, 0.10.0+, etc.) will be published to phan/phan instead of etsy/phan on packagist.
+
+After a few more patch releases, Phan 0.8.x will switch from AST version 40 (php-ast 0.1.4+)
+to AST version 50 (0.1.5+).
 
 ### Backported from Phan 0.9.5 (dev)
 
