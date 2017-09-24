@@ -1,5 +1,10 @@
 Phan NEWS
 
+24 Sep 2017, Phan 0.9.6
+-----------------------
+
+Switched package name from etsy/phan to phan/phan.
+
 24 Sep 2017, Phan 0.9.5
 -----------------------
 
