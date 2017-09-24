@@ -6,15 +6,15 @@ and does not attempt to track values.
 
 [![Code Climate](https://codeclimate.com/github/etsy/phan/badges/gpa.svg)](https://codeclimate.com/github/etsy/phan) [![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/etsy/phan?branch=master&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/master)
 [![Gitter](https://badges.gitter.im/etsy/phan.svg)](https://gitter.im/etsy/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Latest Stable Version](https://poser.pugx.org/etsy/phan/v/stable)](https://packagist.org/packages/etsy/phan)
-[![License](https://poser.pugx.org/etsy/phan/license)](https://github.com/phan/phan/blob/master/LICENSE)
+[![Latest Stable Version](https://poser.pugx.org/phan/phan/v/stable)](https://packagist.org/packages/phan/phan)
+[![License](https://poser.pugx.org/phan/phan/license)](https://github.com/phan/phan/blob/master/LICENSE)
 
 # Getting Started
 
 The easiest way to use Phan is via Composer.
 
 ```
-composer require --dev etsy/phan
+composer require --dev phan/phan
 ```
 
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
