@@ -1,2 +1,1 @@
-%s:3 PhanSyntaxError syntax error, unexpected 'f' (T_STRING)
-%s:3 PhanSyntaxError syntax error, unexpected identifier (T_STRING)
+%s:3 PhanSyntaxError syntax error, unexpected ';'

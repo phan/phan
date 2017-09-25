@@ -1,3 +1,3 @@
 <?php
 
-funcion f[] ( ... )
+$a = ;
