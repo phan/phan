@@ -325,7 +325,7 @@ Take a look at [Developer's Guide to Phan](https://github.com/phan/phan/wiki/Dev
 
 When you find an issue, please take the time to create a tiny reproducing code snippet that illustrates
 the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to
-[tests][tests] then `./test` and send a PR with your fix and test. Alternatively, you can open an Issue with
+[tests](tests) then `./test` and send a PR with your fix and test. Alternatively, you can open an Issue with
 details.
 
 To run Phan's tests, just run `./test`.
