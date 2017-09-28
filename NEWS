@@ -1,5 +1,11 @@
 Phan NEWS
 
+?? ??? 2016, Phan 0.10.1
+
+Bug Fixes
++ Properly check for undeclared classes in arrays within phpdoc @param, @property, @method, @var, and @return types.
+  Also, fix a bug in resolving namespaces of generic arrays that are nested 2 or more array levels deep.
+
 24 Sep 2017, Phan 0.10.0
 -----------------------
 

@@ -16,7 +16,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.10.0';
+    const PHAN_VERSION = '0.10.1-dev';
 
     /**
      * @var OutputInterface

@@ -43,14 +43,14 @@ class Clazz extends AddressableElement
     private $parent_type = null;
 
     /**
-     * @var \Phan\Language\FullyQualifiedClassName[]
+     * @var FullyQualifiedClassName[]
      * A possibly empty list of interfaces implemented
      * by this class
      */
     private $interface_fqsen_list = [];
 
     /**
-     * @var \Phan\Language\FullyQualifiedClassName[]
+     * @var FullyQualifiedClassName[]
      * A possibly empty list of traits used by this class
      */
     private $trait_fqsen_list = [];
