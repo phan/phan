@@ -648,13 +648,15 @@ class Clazz extends AddressableElement
      */
     public function setMagicPropertyMap(
         array $magic_property_map,
-        CodeBase $code_base,
-        Context $context
+        CodeBase $code_base
     ) : bool {
         if (count($magic_property_map) === 0) {
             return true;  // Vacuously true.
         }
         $class_fqsen = $this->getFQSEN();
+        $context = $this->getContext()->withScope(
+            $this->getInternalScope()
+        );
         foreach ($magic_property_map as $comment_parameter) {
             // $flags is the same as the flags for `public` and non-internal?
             // Or \ast\flags\MODIFIER_PUBLIC.
@@ -684,13 +686,15 @@ class Clazz extends AddressableElement
      */
     public function setMagicMethodMap(
         array $magic_method_map,
-        CodeBase $code_base,
-        Context $context
+        CodeBase $code_base
     ) : bool {
         if (count($magic_method_map) === 0) {
             return true;  // Vacuously true.
         }
         $class_fqsen = $this->getFQSEN();
+        $context = $this->getContext()->withScope(
+            $this->getInternalScope()
+        );
         foreach ($magic_method_map as $comment_method) {
             // $flags is the same as the flags for `public` and non-internal?
             // Or \ast\flags\MODIFIER_PUBLIC.
