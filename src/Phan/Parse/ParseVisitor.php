@@ -155,8 +155,7 @@ class ParseVisitor extends ScopeVisitor
         // are limited to classes with either __get or __set declared (or interface/abstract
         $class->setMagicPropertyMap(
             $comment->getMagicPropertyMap(),
-            $this->code_base,
-            $this->context
+            $this->code_base
         );
 
         // Depends on code_base for checking existence of __call or __callStatic.
@@ -164,8 +163,7 @@ class ParseVisitor extends ScopeVisitor
         // are limited to classes with either __get or __set declared (or interface/abstract)
         $class->setMagicMethodMap(
             $comment->getMagicMethodMap(),
-            $this->code_base,
-            $this->context
+            $this->code_base
         );
 
         // usually used together with magic @property annotations
