@@ -414,7 +414,6 @@ class Type
             //'PHP_FLOAT_MAX'         => $int, // since 7.2.0
             'DEFAULT_INCLUDE_PATH'  => $string,
             'PEAR_INSTALL_DIR'      => $string,
-            'PEAR_EXTENSION_DIR'    => $string,
             'PHP_EXTENSION_DIR'     => $string,
             'PEAR_EXTENSION_DIR'    => $string,
             'PHP_PREFIX'            => $string,
@@ -695,6 +694,13 @@ class Type
         if ($namespace) {
             $non_generic_partially_qualified_array_type_name =
                 $namespace . '\\' . $non_generic_partially_qualified_array_type_name;
+        }
+
+        if ($is_generic_array_type && false !== \strrpos($non_generic_array_type_name, '[]')) {
+            return GenericArrayType::fromElementType(
+                Type::fromStringInContext($non_generic_partially_qualified_array_type_name, $context, $source),
+                $is_nullable
+            );
         }
         if ($context->hasNamespaceMapFor(
             \ast\flags\USE_NORMAL,

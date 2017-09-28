@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\FQSEN;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
