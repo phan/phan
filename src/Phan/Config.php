@@ -584,6 +584,16 @@ class Config
         // TCP port(from 1024 to 65535) for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_tcp_port' => false,
 
+        // If this is an array, it configures the way clients will communicate with the Phan language server.
+        // Possibilities: Exactly one of
+        // ['stdin' => true],
+        // ['tcp-server' => string (address this server should listen on)],
+        // ['tcp' => string (address client is listening on)
+        'language_server_config' => false,
+
+        // Valid values: null, 'info'. Used when developing or debugging a language server client of Phan.
+        'language_server_debug_level' => null,
+
         // A list of plugin files to execute
         'plugins' => [
         ],

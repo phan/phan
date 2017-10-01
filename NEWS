@@ -1,6 +1,14 @@
 Phan NEWS
 
-?? ??? 2016, Phan 0.10.1
+?? ??? 2017, Phan 0.10.1
+
+New Features (CLI, Configs)
+
++ Add Language Server Protocol support (Experimental) (#821)
+  Compatibility: Unix, Linux (depends on php pcntl extension).
+  This has the same analysis capabilities provided by [daemon mode](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode#using-phan_client-from-an-editor).
+  Supporting a standard protocol should make it easier to write extensions supporting Phan in various IDEs.
+  See https://github.com/Microsoft/language-server-protocol/blob/master/README.md
 
 Bug Fixes
 + Properly check for undeclared classes in arrays within phpdoc @param, @property, @method, @var, and @return types.
