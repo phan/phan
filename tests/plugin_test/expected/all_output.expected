@@ -34,3 +34,7 @@ src/004_unused_suppression_plugin.php:6 UnusedSuppression Element \SuppressionTe
 src/004_unused_suppression_plugin.php:11 UnusedSuppression Element \SuppressionTest::foo suppresses issue PhanParamTooMany but does not use it
 src/004_unused_suppression_plugin.php:23 UnusedSuppression Element \suppression_test_fn suppresses issue PhanParamTooFew but does not use it
 src/004_unused_suppression_plugin.php:27 PhanTypeMismatchArgument Argument 1 (x) is array but \SuppressionTest::bar() takes int defined at src/004_unused_suppression_plugin.php:15
+src/005_always_return.php:3 PhanPluginAlwaysReturnFunction Function \test5 has a return type of ?string, but may fail to return a value
+src/005_always_return.php:23 PhanPluginAlwaysReturnFunction Function \soft_non_nullable_test5 has a return type of string, but may fail to return a value
+src/005_always_return.php:39 PhanPluginAlwaysReturnMethod Method \C5::test has a return type of ?string, but may fail to return a value
+src/005_always_return.php:59 PhanPluginAlwaysReturnMethod Method \C5::soft_non_nullable_test5 has a return type of string, but may fail to return a value
