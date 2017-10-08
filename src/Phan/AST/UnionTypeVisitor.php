@@ -19,6 +19,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
@@ -674,40 +675,51 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitArray(Node $node) : UnionType
     {
-        if (!empty($node->children)
-            && $node->children[0] instanceof Node
-            && $node->children[0]->kind == \ast\AST_ARRAY_ELEM
+        $children = $node->children;
+        if (!empty($children)
+            && $children[0] instanceof Node
+            && $children[0]->kind == \ast\AST_ARRAY_ELEM
         ) {
+            /** @var UnionType[] */
             $element_types = [];
 
             // Check the first 5 (completely arbitrary) elements
             // and assume the rest are the same type
-            for ($i=0; $i<5; $i++) {
-                // Check to see if we're out of elements
-                if (empty($node->children[$i])) {
+            foreach ($children as $i => $child) {
+                if (empty($child)) {
+                    // Check to see if we're out of elements (shouldn't happen)
+                    break;
+                }
+                if ($i >= 5) {
                     break;
                 }
 
-                if ($node->children[$i]->children['value'] instanceof Node) {
+                $value = $child->children['value'];
+                if ($value instanceof Node) {
                     $element_types[] = UnionTypeVisitor::unionTypeFromNode(
                         $this->code_base,
                         $this->context,
-                        $node->children[$i]->children['value'],
+                        $value,
                         $this->should_catch_issue_exception
                     );
                 } else {
                     $element_types[] = Type::fromObject(
-                        $node->children[$i]->children['value']
+                        $value
                     )->asUnionType();
                 }
             }
 
-            $element_types =
-                \array_unique($element_types);
-
-            if (\count($element_types) === 1) {
-                return \reset($element_types)->asGenericArrayTypes();
+            // Should be slightly faster than checking if array_unique is of length 1, doesn't require sorting.
+            // Not using isEqualTo() because the old behavior is that closures cast to the same string ('callable').
+            $common_type = \array_pop($element_types);
+            $common_type_repr = (string)$common_type;
+            foreach ($element_types as $type) {
+                if ((string)$type !== $common_type_repr) {
+                    // 2 or more unique types exist, give up.
+                    return ArrayType::instance(false)->asUnionType();
+                }
             }
+            return $common_type->asGenericArrayTypes();
         }
 
         return ArrayType::instance(false)->asUnionType();
@@ -1374,7 +1386,12 @@ class UnionTypeVisitor extends AnalysisVisitor
         $possible_types = new UnionType();
         foreach ($function_list_generator as $function) {
             assert($function instanceof FunctionInterface);
-            $possible_types->addUnionType($function->getUnionType());
+            if ($function->hasDependentReturnType()) {
+                $function_types = $function->getDependentReturnType($this->code_base, $this->context, $node->children['args']->children ?? []);
+            } else {
+                $function_types = $function->getUnionType();
+            }
+            $possible_types->addUnionType($function_types);
         }
 
         return $possible_types;
@@ -1443,7 +1460,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $method_name
                     );
 
-                    $union_type = $method->getUnionType();
+                    if ($method->hasDependentReturnType()) {
+                        $union_type = $method->getDependentReturnType($this->code_base, $this->context, $node->children['args']->children ?? []);
+                    } else {
+                        $union_type = $method->getUnionType();
+                    }
 
                     // Map template types to concrete types
                     if ($union_type->hasTemplateType()) {
@@ -1811,7 +1832,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return \Generator|Clazz
+     * @return \Generator|Clazz[]
      */
     public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node) {
         return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node);
@@ -1853,5 +1874,58 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             yield $this->code_base->getClassByFQSEN($class_fqsen);
         }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param string|Node $node the node to fetch CallableType instances for.
+     * @param bool $log_error whether or not to log errors while searching
+     * @return FullyQualifiedFunctionLikeName[]
+     */
+    public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
+    {
+        // TODO: improve functionLikeFQSENListFromNodeAndContext to include
+        // 1. [MyClass::class, 'staticMethodName'],
+        // 2. [$obj, 'instanceMethodName],
+        // 3. 'global_func'
+        // 4. 'MyClass::staticFunc'
+        return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
+    }
+
+
+    /**
+     * @param string|Node $node
+     *
+     * @return FullyQualifiedFunctionLikeName[]
+     * A list of CallableTypes associated with the given node
+     *
+     * @throws IssueException
+     * An exception is thrown if we can't find a class for
+     * the given type
+     */
+    private function functionLikeFQSENListFromNode($node, bool $log_error) : array
+    {
+        if (is_string($node)) {
+            // TODO: implement.
+            return [];
+        }
+        // Get the types associated with the node
+        $union_type = self::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node
+        );
+
+        $closure_types = [];
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof ClosureType && $type->hasKnownFQSEN()) {
+                // TODO: Support class instances with __invoke()
+                $fqsen = $type->asFQSEN();
+                assert ($fqsen instanceof FullyQualifiedFunctionLikeName);
+                $closure_types[] = $fqsen;
+            }
+        }
+        return $closure_types;
     }
 }

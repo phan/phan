@@ -38,6 +38,11 @@ final class ClosureType extends Type
         $result = new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
     }
 
+    public function hasKnownFQSEN() : bool
+    {
+        return $this->fqsen !== null;
+    }
+
     /**
      * Override asFQSEN to return the closure's FQSEN
      */

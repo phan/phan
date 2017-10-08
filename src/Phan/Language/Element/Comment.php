@@ -61,7 +61,12 @@ class Comment
         self::ON_FUNCTION   => 'function',
     ];
 
-    const word_regex = '([a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*)';
+    /**
+     * This regex contains a single pattern, which matches a valid PHP identifier.
+     * (e.g. for variable names, magic property names, etc.
+     * This does not allow backslashes.
+     */
+    const word_regex = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
 
     /**
      * @var int - contains a subset of flags to set on elements
@@ -452,8 +457,9 @@ class Comment
         $return_union_type_string = '';
 
         if (preg_match('/@return\s+/', $line)) {
-            if (preg_match('/@return\s+(' . UnionType::union_type_regex . '+)/', $line, $match)) {
-                $return_union_type_string = $match[1];
+            // TODO: Is `@return &array` valid phpdoc2?
+            if (preg_match('/@return\s+(&\s*)?(' . UnionType::union_type_regex . '+)/', $line, $match)) {
+                $return_union_type_string = $match[2];
             }
             // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
         }

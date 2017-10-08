@@ -105,4 +105,25 @@ class Property extends ClassElement
         \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
+
+    public function toStub() {
+        $string = '    ';
+
+        if ($this->isPublic()) {
+            $string .= 'public ';
+        } elseif ($this->isProtected()) {
+            $string .= 'protected ';
+        } elseif ($this->isPrivate()) {
+            $string .= 'private ';
+        }
+
+        if ($this->isStatic()) {
+            $string .= 'static ';
+        }
+
+        $string .= "\${$this->getName()}";
+        $string .= ';';
+
+        return $string;
+    }
 }

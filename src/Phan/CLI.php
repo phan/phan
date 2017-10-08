@@ -16,7 +16,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.9.6';
+    const PHAN_VERSION = '0.9.7-dev';
 
     /**
      * @var OutputInterface
@@ -92,8 +92,13 @@ class CLI
                 'markdown-issue-messages',
                 'disable-plugins',
                 'use-fallback-parser',
+                'require-config-exists',
                 'daemonize-socket:',
                 'daemonize-tcp-port:',
+                'language-server-on-stdin',
+                'language-server-tcp-server:',
+                'language-server-tcp-connect:',
+                'language-server-verbose',
                 'extended-help',
             ]
         );
@@ -111,8 +116,17 @@ class CLI
 
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
+        $overriden_project_root_directory = $opts['d'] ?? $opts['project-root-directory'] ?? null;
+        if (\is_string($overriden_project_root_directory)) {
+            if (!\is_dir($overriden_project_root_directory)) {
+                $this->usage(\json_encode($overriden_project_root_directory) . ' is not a directory', EXIT_FAILURE);
+            }
+            // Set the current working directory so that relative paths within the project will work.
+            // TODO: Add an option to allow searching ancestor directories?
+            \chdir($overriden_project_root_directory);
+        }
         Config::setProjectRootDirectory(
-            $opts['d'] ?? $opts['project-root-directory'] ?? getcwd()
+            \getcwd()
         );
 
         // Before reading the config, check for an override on
@@ -125,7 +139,7 @@ class CLI
 
         // Now that we have a root directory, attempt to read a
         // configuration file `.phan/config.php` if it exists
-        $this->maybeReadConfigFile();
+        $this->maybeReadConfigFile(\array_key_exists('require-config-exists', $opts));
 
         $this->output = new ConsoleOutput();
         $factory = new PrinterFactory();
@@ -259,6 +273,8 @@ class CLI
                     // that we can get the project root directory to
                     // base other config flags values on
                     break;
+                case 'require-config-exists':
+                    break;  // handled earlier.
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
                     Config::setValue('plugins', []);
@@ -290,6 +306,19 @@ class CLI
                     } else {
                         $this->usage("daemonize-tcp-port must be the string 'default' or a value between 1024 and 65535, got '$value'", 1);
                     }
+                    break;
+                case 'language-server-on-stdin':
+                    Config::setValue('language_server_config', ['stdin' => true]);
+                    break;
+                case 'language-server-tcp-server':
+                    // TODO: could validate?
+                    Config::setValue('language_server_config', ['tcp-server' => $value]);
+                    break;
+                case 'language-server-tcp-connect':
+                    Config::setValue('language_server_config', ['tcp' => $value]);
+                    break;
+                case 'language-server-verbose':
+                    Config::setValue('language_server_debug_level', 'info');
                     break;
                 case 'x':
                 case 'dead-code-detection':
@@ -468,10 +497,9 @@ Usage: {$argv[0]} [options] [files...]
   This is primarily intended for performing standalone
   incremental analysis.
 
- -d, --project-root-directory
-  Hunt for a directory named .phan in the current or parent
-  directory and read configuration file config.php from that
-  path.
+ -d, --project-root-directory </path/to/project>
+  Hunt for a directory named .phan in the provided directory
+  and read configuration file .phan/config.php from that path.
 
  -r, --file-list-only
   A file containing a list of PHP files to be analyzed to the
@@ -524,6 +552,9 @@ Usage: {$argv[0]} [options] [files...]
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
 
+ --disable-plugins
+  Don't run any plugins. Slightly faster.
+
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
   (i.e. "php --syntax-check path/to/file" would emit a syntax error),
@@ -538,6 +569,17 @@ Usage: {$argv[0]} [options] [files...]
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
   (e.g. 'default', which is an alias for port 4846.)
+  `phan_client` can be used to communicate with the Phan Daemon.
+
+ --language-server-on-stdin
+  Start the language server (For the Language Server protocol).
+  This is a different protocol from --daemonize, clients for various IDEs already exist.
+
+ --language-server-tcp-server <addr>
+  Start the language server listening for TCP connections on <addr> (e.g. 127.0.0.1:<port>)
+
+ --language-server-tcp-connect <addr>
+  Start the language server and connect to the client listening on <addr> (e.g. 127.0.0.1:<port>)
 
  -v, --version
   Print phan's version number
@@ -566,11 +608,18 @@ Extended help:
   This uses a method signature format similar to FunctionSignatureMap.php.
 
  --print-memory-usage-summary
-  Emit JSON serialized signatures to the given file.
-  This uses a method signature format similar to FunctionSignatureMap.php.
+  Prints a summary of memory usage and maximum memory usage.
+  This is accurate when there is one analysis process.
 
  --markdown-issue-messages
   Emit issue messages with markdown formatting.
+
+ --language-server-verbose
+  Emit verbose logging messages related to the language server implementation to stderr.
+  This is useful when developing or debugging language server clients.
+
+ --require-config-exists
+  Exit immediately with an error code if .phan/config.php does not exist.
 
 EOB;
         }
@@ -730,7 +779,7 @@ EOB;
      * up the hierarchy and apply anything in there to
      * the configuration.
      */
-    private function maybeReadConfigFile()
+    private function maybeReadConfigFile(bool $require_config_exists)
     {
 
         // If the file doesn't exist here, try a directory up
@@ -745,6 +794,11 @@ EOB;
 
         // Totally cool if the file isn't there
         if (!file_exists($config_file_name)) {
+            if ($require_config_exists) {
+                // But if the CLI option --require-config-exists is provided, exit immediately.
+                // (Include extended help documenting that option)
+                $this->usage("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
+            }
             return;
         }
 

@@ -566,6 +566,15 @@ class Config
         // (e.g. PHP is compiled with --enable-debug or when using XDebug)
         'skip_slow_php_options_warning' => false,
 
+        // You can put paths to stubs of internal extensions in this config option.
+        // If the corresponding extension is **not** loaded, then phan will use the stubs instead.
+        // Phan will continue using its detailed type annotations, but load the constants, classes, functions, and classes (and their Reflection types) from these stub files (doubling as valid php files).
+        // Use a different extension from php to avoid accidentally loading these.
+        // The 'tools/make_stubs' script can be used to generate your own stubs (compatible with php 7.0+ right now)
+        'autoload_internal_extension_signatures' => [
+            // 'xdebug' => '.phan/internal_stubs/xdebug.phan_php',
+        ],
+
         // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
         // but aren't available in the codebase, or the internal functions used to run phan (may lead to false positives if an extension isn't loaded)
         // If this is true(default), then Phan will not warn.
@@ -583,6 +592,16 @@ class Config
 
         // TCP port(from 1024 to 65535) for a daemon to listen to files to analyze. Use command line option instead.
         'daemonize_tcp_port' => false,
+
+        // If this is an array, it configures the way clients will communicate with the Phan language server.
+        // Possibilities: Exactly one of
+        // ['stdin' => true],
+        // ['tcp-server' => string (address this server should listen on)],
+        // ['tcp' => string (address client is listening on)
+        'language_server_config' => false,
+
+        // Valid values: null, 'info'. Used when developing or debugging a language server client of Phan.
+        'language_server_debug_level' => null,
 
         // A list of plugin files to execute
         'plugins' => [

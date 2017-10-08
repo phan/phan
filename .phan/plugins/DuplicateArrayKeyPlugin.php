@@ -70,7 +70,9 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
             \assert(is_scalar($key));  // redundant Phan annotation.
             if (isset($keySet[$key])) {
                 $normalizedKey = self::normalizeKey($key);
-                $this->emit(
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
                     'PhanPluginDuplicateArrayKey',
                     "Duplicate/Equivalent array key literal({VARIABLE}) detected in array - the earlier entry will be ignored.",
                     [(string)$normalizedKey],
