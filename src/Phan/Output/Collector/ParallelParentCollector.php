@@ -37,7 +37,6 @@ class ParallelParentCollector implements IssueCollectorInterface
      * @param IssueCollectorInterface $base_collector
      * A collector must be given to which collected issues
      * will be passed
-     * @suppress PhanUndeclaredConstant pcntl unavailable on windows
      */
     public function __construct(
         IssueCollectorInterface $base_collector

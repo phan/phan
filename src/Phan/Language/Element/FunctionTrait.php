@@ -121,6 +121,11 @@ trait FunctionTrait {
     private $real_return_type;
 
     /**
+     * @var \Closure|null (CodeBase, Context, Node $arg_list) => UnionType (Bound to $this)
+     */
+    private $return_type_callback = null;
+
+    /**
      * @return int
      * The number of optional real parameters on this function/method.
      * May differ from getNumberOfOptionalParameters()
@@ -454,6 +459,16 @@ trait FunctionTrait {
     }
 
     /**
+     * @return void
+     *
+     * Call this before calling appendParameter, if parameters were already added.
+     */
+    public function clearParameterList() {
+        $this->parameter_list = [];
+        $this->parameter_list_hash = null;
+    }
+
+    /**
      * Adds types from comments to the params of a user-defined function or method.
      * Also adds the types from defaults, and emits warnings for certain violations.
      *
@@ -725,4 +740,31 @@ trait FunctionTrait {
     public abstract function analyze(Context $context, CodeBase $code_base) : Context;
 
     public abstract function getRecursionDepth() : int;
+
+    /**
+     * Returns true if the return type depends on the argument, and a plugin makes Phan aware of that.
+     */
+    public function hasDependentReturnType() : bool
+    {
+        return $this->return_type_callback !== null;
+    }
+
+    /**
+     * Returns a union type based on $args_node and $context
+     *
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param \ast\Node[]|int[]|string[] $args
+     */
+    public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType
+    {
+        return ($this->return_type_callback)($code_base, $context, $this, $args);
+    }
+
+    /**
+     * @return void
+     */
+    public function setDependentReturnTypeClosure(\Closure $closure) {
+        $this->return_type_callback = $closure->bindTo($this);
+    }
 }

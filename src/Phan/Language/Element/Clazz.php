@@ -2122,6 +2122,115 @@ class Clazz extends AddressableElement
         return $string;
     }
 
+    private function toStubSignature(CodeBase $code_base) : string
+    {
+        $string = '';
+
+        if ($this->isFinal()) {
+            $string .= 'final ';
+        }
+
+        if ($this->isAbstract() && !$this->isInterface()) {
+            $string .= 'abstract ';
+        }
+
+        if ($this->isInterface()) {
+            $string .= 'interface ';
+        } elseif ($this->isTrait()) {
+            $string .= 'trait ';
+        } else {
+            $string .= 'class ';
+        }
+
+        $string .= (string)$this->getFQSEN()->getName();
+
+        $extend_types = [];
+        $implements_types = [];
+        $parent_implements_types = [];
+
+        $parent_type = $this->parent_type;
+        if ($parent_type) {
+            $extend_types[] = $parent_type->asFQSEN();
+            $parent_class = $this->getParentClass($code_base);
+            $parent_implements_types = $parent_class->interface_fqsen_list;
+        }
+
+        if (count($this->interface_fqsen_list) > 0) {
+            if ($this->isInterface()) {
+                $extend_types = array_merge($extend_types, $this->interface_fqsen_list);
+            } else {
+                $implements_types = $this->interface_fqsen_list;
+                if (count($parent_implements_types) > 0) {
+                    $implements_types = array_diff($implements_types, $parent_implements_types);
+                }
+            }
+        }
+        if (count($extend_types) > 0) {
+            $string .= ' extends ' . implode(', ', $extend_types);
+        }
+        if (count($implements_types) > 0) {
+            $string .= ' implements ' . implode(', ', $implements_types);
+        }
+        return $string;
+    }
+
+    public function toStub(CodeBase $code_base) : string
+    {
+        [$namespace, $string] = $this->toStubInfo($code_base);
+        $namespace_text = $namespace === '' ? '' : "$namespace ";
+        $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        return $string;
+    }
+
+    /** @return string[] [string $namespace, string $text] */
+    public function toStubInfo(CodeBase $code_base) : array
+    {
+        $signature = $this->toStubSignature($code_base);
+
+        $stub = $signature;
+
+        $stub .= " {";
+
+        $constant_map = $this->getConstantMap($code_base);
+        if (count($constant_map) > 0) {
+            $stub .= "\n\n    // constants\n";
+            $stub .= implode("\n", array_map(function (ClassConstant $constant) {
+                return $constant->toStub();
+            }, $constant_map));
+        }
+
+        $property_map = $this->getPropertyMap($code_base);
+        if (count($property_map) > 0) {
+            $stub .= "\n\n    // properties\n";
+
+            $stub .= implode("\n", array_map(function (Property $property) use ($code_base) {
+                return $property->toStub();
+            }, $property_map));
+        }
+        $reflection_class = new \ReflectionClass((string)$this->getFQSEN());
+        $method_map = array_filter($this->getMethodMap($code_base), function(Method $method) use($reflection_class) : bool {
+            if ($method->getFQSEN()->isAlternate()) {
+                return false;
+            }
+            $reflection_method = $reflection_class->getMethod($method->getName());
+            if ($reflection_method->getDeclaringClass()->getName() !== $reflection_class->getName()) {
+                return false;
+            }
+            return true;
+        });
+        if (count($method_map) > 0) {
+            $stub .= "\n\n    // methods\n";
+
+            $stub .= implode("\n", array_map(function (Method $method) use ($code_base) {
+                return $method->toStub($code_base);
+            }, $method_map));
+        }
+
+        $stub .= "\n}\n\n";
+        $namespace = ltrim($this->getFQSEN()->getNamespace(), '\\');
+        return [$namespace, $stub];
+    }
+
     /**
      * This method must be called before analysis
      * begins.

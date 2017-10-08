@@ -43,6 +43,7 @@ final class NullType extends ScalarType
     {
         // null_casts_as_any_type means that null or nullable can cast to any type?
         return Config::get_null_casts_as_any_type()
+            || (Config::get_null_casts_as_array() && $type->isArrayLike())
             || parent::canCastToNonNullableType($type);
     }
 

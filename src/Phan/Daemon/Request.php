@@ -241,7 +241,6 @@ class Request {
      * @param array|null $status
      * @param int|null $pid
      * @return void
-     * @suppress PhanUndeclaredConstant pcntl unavailable on windows
      */
     public static function childSignalHandler($signo, $status = null, $pid = null)
     {
@@ -297,8 +296,7 @@ class Request {
      * @param CodeBase $code_base
      * @param \Closure $file_path_lister
      * @param resource $response_connection
-     * @return Request|null - non-null if this is a worker process with work to do. null if request failed or this is the master.
-     * @suppress PhanUndeclaredConstant (pcntl unavailable on windows)
+     * @return ?Request - non-null if this is a worker process with work to do. null if request failed or this is the master.
      */
     public static function accept(CodeBase $code_base, \Closure $file_path_lister, $response_connection)
     {
