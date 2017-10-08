@@ -2027,8 +2027,8 @@ class Clazz extends AddressableElement
                     $this->getContext(),
                     Issue::UndeclaredAliasedMethodOfTrait,
                     $original_trait_alias_source->getAliasLineno(),  // TODO: Track line number in TraitAdaptation
-                    sprintf('%s::%s', $this->getFQSEN(), $alias_method_name),
-                    sprintf('%s::%s', $class->getFQSEN(), $source_method_name),
+                    sprintf('%s::%s', (string)$this->getFQSEN(), $alias_method_name),
+                    sprintf('%s::%s', (string)$class->getFQSEN(), $source_method_name),
                     $class->getName()
                 );
                 continue;
