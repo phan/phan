@@ -66,8 +66,8 @@ Phan is able to perform the following kinds of analysis.
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
 * [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file.
-  Phan also has experimental support for the language server protocol.
-* In progress: can use open language server protocol(requires `pcntl`). Parts of the code are based on https://github.com/felixfbecker/php-language-server
+  In progress: can use open language server protocol(requires `pcntl`). Parts of the code are based on https://github.com/felixfbecker/php-language-server
+  This allows Phan to be used from [various editors](https://github.com/phan/phan/wiki/Editor-Support) (currently requires Unix/Linux)
 * Output is emitted in text, checkstyle, json, pylint, csv, or codeclimate formats.
 * Can run [user plugins on source for checks specific to your code.](https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan)
   [Phan includes various plugins you may wish to enable for your project](https://github.com/phan/phan/tree/master/.phan/plugins#2-general-use-plugins)
