@@ -371,10 +371,12 @@ class Method extends ClassElement implements FunctionInterface
             );
         }
 
-        // If the method is Analyzable, set the node so that
-        // we can come back to it whenever we like and
-        // rescan it
-        $method->setNode($node);
+        if (!$context->isPHPInternal()) {
+            // If the method is Analyzable, set the node so that
+            // we can come back to it whenever we like and
+            // rescan it
+            $method->setNode($node);
+        }
 
         // Set the parameter list on the method
         $method->setParameterList($parameter_list);
@@ -569,10 +571,11 @@ class Method extends ClassElement implements FunctionInterface
 
     /**
      * @return string
-     * A string representation of this method signature
+     * A string representation of this method signature (preferring phpdoc types)
      */
     public function __toString() : string {
         $string = '';
+        // TODO: should this representation and other representations include visibility?
 
         $string .= 'function ';
         if ($this->returnsRef()) {
@@ -607,6 +610,47 @@ class Method extends ClassElement implements FunctionInterface
 
         if (!$this->getRealReturnType()->isEmpty()) {
             $string .= ' : ' . (string)$this->getRealReturnType();
+        }
+
+        return $string;
+    }
+
+    public function toStub(CodeBase $code_base) : string {
+        // TODO: Include whether or not it is abstract
+        $string = '    ';
+        if ($this->isPrivate()) {
+            $string .= 'private ';
+        } else if ($this->isProtected()) {
+            $string .= 'protected ';
+        } else {
+            $string .= 'public ';
+        }
+
+        if ($this->isAbstract()) {
+            $string .= 'abstract ';
+        }
+
+        if ($this->isStatic()) {
+            $string .= 'static ';
+        }
+
+        $string .= 'function ';
+        if ($this->returnsRef()) {
+            $string .= '&';
+        }
+        $string .= $this->getName();
+
+        $string .= '(' . implode(', ', array_map(function(Parameter $parameter) : string {
+            return $parameter->toStubString();
+        }, $this->getRealParameterList())) . ')';
+
+        if (!$this->getRealReturnType()->isEmpty()) {
+            $string .= ' : ' . (string)$this->getRealReturnType();
+        }
+        if ($this->isAbstract()) {
+            $string .= ';';
+        } else {
+            $string .= ' {}';
         }
 
         return $string;

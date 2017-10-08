@@ -48,25 +48,29 @@ Phan is able to perform the following kinds of analysis.
 * Check for unused/dead code.
 * Check for classes, functions and methods being redefined
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).
-  As of 0.9.3, Phan also checks for final classes/methods being overridden, and that the implemented interface is really a interface (and so on).
+  Phan also checks for final classes/methods being overridden, and that the implemented interface is really a interface (and so on).
 * Supports namespaces, traits and variadics
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types)
 * Supports generic arrays such as `int[]`, `UserObject[]`, etc..
 * Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code)
-* Supports inheriting phpdoc type annotations (in 0.9.3)
-* Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures (in 0.9.3)
+* Supports inheriting phpdoc type annotations
+* Supports checking that phpdoc type annotations are a narrowed form (E.g. subclasses/subtypes) of the real type signatures
 * Supports inferring types from [assert() statements](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code) and conditionals in if elements/loops.
 * Supports [`@deprecated` annotation](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#deprecated) for deprecating classes, methods and functions
 * Supports [`@internal` annotation](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#internal) for elements (such as a constant, function, class, class constant, property or method) as internal to the package in which its defined.
 * Supports `@suppress <ISSUE_TYPE>` annotations for [suppressing issues](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#suppress).
-* Supports [magic property annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#property) (partial) (`@property <union_type> <variable_name>`)
-* Supports [`class_alias` annotations (experimental, off by default)](https://github.com/phan/phan/pull/586), as of 0.9.3
+* Supports [magic @property annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#property) (partial) (`@property <union_type> <variable_name>`)
+* Supports [magic @method annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#method) (`@method <union_type> <method_name>(<union_type> <param1_name>)`)
+* Supports [`class_alias` annotations (experimental, off by default)](https://github.com/phan/phan/pull/586)
 * Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
-* [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file. (requires `pcntl`)
-* Output is emitted in text, checkstyle, json or codeclimate formats.
-* Can run user plugins on source for checks specific to your code.
+* [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file.
+  In progress: can use open language server protocol(requires `pcntl`). Parts of the code are based on https://github.com/felixfbecker/php-language-server
+  This allows Phan to be used from [various editors](https://github.com/phan/phan/wiki/Editor-Support) (currently requires Unix/Linux)
+* Output is emitted in text, checkstyle, json, pylint, csv, or codeclimate formats.
+* Can run [user plugins on source for checks specific to your code.](https://github.com/phan/phan/wiki/Writing-Plugins-for-Phan)
+  [Phan includes various plugins you may wish to enable for your project](https://github.com/phan/phan/tree/master/.phan/plugins#2-general-use-plugins)
 
 See [Phan Issue Types](https://github.com/phan/phan/wiki/Issue-Types-Caught-by-Phan) for descriptions
 and examples of all issues that can be detected by Phan. Take a look at the
@@ -236,6 +240,17 @@ Usage: ./phan [options] [files...]
  --daemonize-tcp-port <default|1024-65535>
   TCP port for Phan to listen for JSON requests on, in daemon mode.
   (e.g. 'default', which is an alias for port 4846.)
+  `phan_client` can be used to communicate with the Phan Daemon.
+
+ --language-server-on-stdin
+  Start the language server (For the Language Server protocol).
+  This is a different protocol from --daemonize, clients for various IDEs already exist.
+
+ --language-server-tcp-server <addr>
+  Start the language server listening for TCP connections on <addr> (e.g. 127.0.0.1:<port>)
+
+ --language-server-tcp-connect <addr>
+  Start the language server and connect to the client listening on <addr> (e.g. 127.0.0.1:<port>)
 
  -v, --version
   Print phan's version number
@@ -325,7 +340,7 @@ Take a look at [Developer's Guide to Phan](https://github.com/phan/phan/wiki/Dev
 
 When you find an issue, please take the time to create a tiny reproducing code snippet that illustrates
 the bug. And once you have done that, fix it. Then turn your code snippet into a test and add it to
-[tests][tests] then `./test` and send a PR with your fix and test. Alternatively, you can open an Issue with
+[tests](tests) then `./test` and send a PR with your fix and test. Alternatively, you can open an Issue with
 details.
 
 To run Phan's tests, just run `./test`.

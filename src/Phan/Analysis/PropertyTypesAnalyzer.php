@@ -6,6 +6,7 @@ use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\TemplateType;
 
 class PropertyTypesAnalyzer
@@ -31,7 +32,11 @@ class PropertyTypesAnalyzer
             }
 
             // Look at each type in the parameter's Union Type
-            foreach ($union_type->getTypeSet() as $type) {
+            foreach ($union_type->getTypeSet() as $outer_type) {
+                $type = $outer_type;
+                while ($type instanceof GenericArrayType) {
+                    $type = $type->genericArrayElementType();
+                }
 
                 // If its a native type or a reference to
                 // self, its OK
@@ -68,7 +73,7 @@ class PropertyTypesAnalyzer
                             Issue::UndeclaredTypeProperty,
                             $property->getFileRef()->getLineNumberStart(),
                             (string)$property->getFQSEN(),
-                            (string)$type_fqsen
+                            (string)$outer_type
                         );
                     }
                 }

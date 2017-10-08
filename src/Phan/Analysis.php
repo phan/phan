@@ -2,6 +2,7 @@
 namespace Phan;
 
 use Phan\AST\ASTSimplifier;
+use Phan\AST\UnionTypeVisitor;
 use Phan\AST\Parser;
 use Phan\Analysis\DuplicateFunctionAnalyzer;
 use Phan\Analysis\ParameterTypesAnalyzer;
@@ -11,6 +12,10 @@ use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
+use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Type\NullType;
+use Phan\Language\UnionType;
 use Phan\Library\FileCache;
 use Phan\Parse\ParseVisitor;
 use Phan\Plugin\ConfigPluginSet;
@@ -40,19 +45,27 @@ class Analysis
      * If this is not null, this function will act as if $file_path's contents
      * were $override_contents
      *
+     * @param bool $is_php_internal_stub
+     * If this is true, this function will act as though the parsed constants, functions, and classes are actually part of PHP or it's extension's internals.
+     * See autoload_internal_extension_signatures.
+     *
      * @return Context
      */
-    public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null) : Context
+    public static function parseFile(CodeBase $code_base, string $file_path, bool $suppress_parse_errors = false, string $override_contents = null, bool $is_php_internal_stub = false) : Context
     {
-
+        $original_file_path = $file_path;
         $code_base->setCurrentParsedFile($file_path);
+        if ($is_php_internal_stub) {
+            /** @see \Phan\Language\FileRef->isPHPInternal() */
+            $file_path = 'internal';
+        }
         $context = (new Context)->withFile($file_path);
 
         // Convert the file to an Abstract Syntax Tree
         // before passing it on to the recursive version
         // of this method
 
-        $real_file_path = Config::projectPath($file_path);
+        $real_file_path = Config::projectPath($original_file_path);
         if (\is_string($override_contents)) {
             $cache_entry = FileCache::addEntry($real_file_path, $override_contents);
         } else {
@@ -60,6 +73,9 @@ class Analysis
         }
         $file_contents = $cache_entry->getContents();
         if ($file_contents === '') {
+            if ($is_php_internal_stub) {
+                throw new \InvalidArgumentException("Unexpected empty php file for autoload_internal_extension_signatures: path=" . json_encode($original_file_path, JSON_UNESCAPED_SLASHES));
+            }
             // php-ast would return null for 0 byte files as an implementation detail.
             // Make Phan consistently emit this warning.
             Issue::maybeEmit(
@@ -67,7 +83,7 @@ class Analysis
                 $context,
                 Issue::EmptyFile,
                 0,
-                $file_path
+                $original_file_path
             );
 
             return $context;
@@ -93,7 +109,7 @@ class Analysis
                 $context,
                 Issue::EmptyFile,
                 0,
-                $file_path
+                $original_file_path
             );
 
             return $context;
@@ -207,6 +223,7 @@ class Analysis
     /**
      * Take a pass over all functions verifying various
      * states.
+     * @suppress PhanTypeArraySuspicious https://github.com/etsy/phan/issues/642
      *
      * @return void
      */
@@ -265,6 +282,31 @@ class Analysis
                     $plugin_set->analyzeMethod(
                         $code_base, $function_or_method
                     );
+                }
+            }
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public static function loadMethodPlugins(CodeBase $code_base)
+    {
+        $plugin_set = ConfigPluginSet::instance();
+        foreach ($plugin_set->getReturnTypeOverrides($code_base) as $fqsen_string => $closure) {
+            if (stripos($fqsen_string, '::') !== false) {
+                // This is an override of a method.
+                $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
+                if ($code_base->hasMethodWithFQSEN($fqsen)) {
+                    $method = $code_base->getMethodByFQSEN($fqsen);
+                    $method->setDependentReturnTypeClosure($closure);
+                }
+            } else {
+                // This is an override of a function.
+                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
+                if ($code_base->hasFunctionWithFQSEN($fqsen)) {
+                    $function = $code_base->getFunctionByFQSEN($fqsen);
+                    $function->setDependentReturnTypeClosure($closure);
                 }
             }
         }

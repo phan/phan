@@ -1,0 +1,3 @@
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (code) is int but \ast\parse_code() takes string
+%s:5 PhanTypeMismatchArgumentInternal Argument 2 (version) is array but \ast\parse_code() takes int
+%s:5 PhanTypeMismatchReturn Returning type \ast\Node but test363() is declared to return int

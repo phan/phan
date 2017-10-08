@@ -1,5 +1,41 @@
 Phan NEWS
 
+?? ??? 2017, Phan 0.9.7 (dev)
+
+Based on Phan 0.10.1 (dev)
+
+**Users should upgrade to `php-ast` 0.1.5+ and switch to the 0.10.x Phan releases once possible, 0.9.x releases will be discontinued soon.**
+
+New Features (CLI, Configs)
+
++ Add Language Server Protocol support (Experimental) (#821)
+  Compatibility: Unix, Linux (depends on php pcntl extension).
+  This has the same analysis capabilities provided by [daemon mode](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode#using-phan_client-from-an-editor).
+  Supporting a standard protocol should make it easier to write extensions supporting Phan in various IDEs.
+  See https://github.com/Microsoft/language-server-protocol/blob/master/README.md
++ Add config (`autoload_internal_extension_signatures`) to allow users to specify PHP extensions (modules) used by the analyzed project,
+  along with stubs for Phan to use (instead of ReflectionFunction, etc) if the PHP binary used to run Phan doesn't have those extensions enabled. (#627)
+
+  Add a script (`tool/make_stubs`) to output the contents of stubs to use for `autoload_internal_extension_signatures` (#627).
++ By default, automatically restart Phan without xdebug if xdebug is enabled. (#1161)
++ Document the --disable-plugins CLI flag.
++ Improve analysis of return types of `array_pop`,`array_shift`,`current`,`end`,`next`,`prev`,`reset`,`array_map`,`array_filter`, etc..
+  See ArrayReturnTypeOverridePlugin.php.
+
+Plugins
++ Add a new plugin type which can override the return type of functions and methods on a case by case basis.
+  (e.g. based on one or more of the argument types)
++ Make line numbers more accurate in DuplicateArrayKeyPlugin.
+
+Bug Fixes
++ Properly check for undeclared classes in arrays within phpdoc @param, @property, @method, @var, and @return types.
+  Also, fix a bug in resolving namespaces of generic arrays that are nested 2 or more array levels deep.
++ Fix uncaught TypeError when magic property has the same name as a property. (#1141)
++ Make AlwaysReturnPlugin warn about functions/methods with real nullable return types failing to return a value.
++ Change the behavior of the `-d` flag, make it change the current working directory to the provided directory.
++ Properly set the real param type and return types of internal functions, in rare cases where that exists.
++ Support analyzing the rare case of namespaced internal global functions (e.g. `\ast\parse_code($code, $version)`)
+
 24 Sep 2017, Phan 0.9.6
 -----------------------
 

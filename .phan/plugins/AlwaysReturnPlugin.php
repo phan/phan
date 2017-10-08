@@ -17,7 +17,7 @@ use ast\Node;
 
 /**
  * This file checks if a function, closure or method unconditionally returns.
- * If the function doesn't have a null, void, or nullable return type,
+ * If the function doesn't have a void return type,
  * then this plugin will emit an issue.
  *
  * It hooks into two events:
@@ -71,9 +71,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
             return;
         }
 
-        $return_type = $method->getUnionType();
-
-        if (self::returnTypeAllowsNull($return_type)) {
+        if (self::returnTypeOfFunctionLikeAllowsNullNull($method)) {
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
@@ -83,7 +81,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
                     $method->getContext(),
                     'PhanPluginAlwaysReturnMethod',
                     "Method {METHOD} has a return type of {TYPE}, but may fail to return a value",
-                    [(string)$method->getFQSEN(), (string)$return_type]
+                    [(string)$method->getFQSEN(), (string)$method->getUnionType()]
                 );
             }
         }
@@ -110,9 +108,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
             return;
         }
 
-        $return_type = $function->getUnionType();
-
-        if (self::returnTypeAllowsNull($return_type)) {
+        if (self::returnTypeOfFunctionLikeAllowsNullNull($function)) {
             return;
         }
         if (!BlockExitStatusChecker::willUnconditionallyThrowOrReturn($stmts_list)) {
@@ -122,7 +118,7 @@ final class AlwaysReturnPlugin extends PluginV2 implements
                     $function->getContext(),
                     'PhanPluginAlwaysReturnFunction',
                     "Function {FUNCTION} has a return type of {TYPE}, but may fail to return a value",
-                    [(string)$function->getFQSEN(), (string)$return_type]
+                    [(string)$function->getFQSEN(), (string)$function->getUnionType()]
                 );
             }
         }
@@ -148,14 +144,18 @@ final class AlwaysReturnPlugin extends PluginV2 implements
     }
 
     /**
-     * @param ?UnionType $return_type
+     * @param FunctionInterface $func
      * @return bool - Is void(absense of a return type) an acceptable return type.
      * NOTE: projects can customize this as needed.
      */
-    private function returnTypeAllowsNull($return_type) : bool
+    private function returnTypeOfFunctionLikeAllowsNullNull(FunctionInterface $func) : bool
     {
-        return $return_type instanceof UnionType &&
-            ($return_type->isEmpty()
+        $real_return_type = $func->getRealReturnType();
+        if (!$real_return_type->isEmpty() && !$real_return_type->isType(VoidType::instance(false))) {
+            return false;
+        }
+        $return_type = $func->getUnionType();
+        return ($return_type->isEmpty()
             || $return_type->containsNullable()
             || $return_type->hasType(VoidType::instance(false))
             || $return_type->hasType(NullType::instance(false)));

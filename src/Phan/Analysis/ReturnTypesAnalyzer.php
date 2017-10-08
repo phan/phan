@@ -9,6 +9,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\TemplateType;
@@ -26,6 +27,7 @@ class ReturnTypesAnalyzer
         CodeBase $code_base,
         FunctionInterface $method
     ) {
+        $return_type = $method->getUnionType();
         $real_return_type = $method->getRealReturnType();
         $phpdoc_return_type = $method->getPHPDocReturnType();
         // TODO: use method->getPHPDocUnionType() to check compatibility, like analyzeParameterTypesDocblockSignaturesMatch
@@ -33,8 +35,13 @@ class ReturnTypesAnalyzer
         // Look at each parameter to make sure their types
         // are valid
 
-        // Look at each type in the parameter's Union Type
-        foreach ($real_return_type->getTypeSet() as $type) {
+        // Look at each type in the function's return union type
+        foreach ($return_type->getTypeSet() as $outer_type) {
+            $type = $outer_type;
+            while ($type instanceof GenericArrayType) {
+                $type = $type->genericArrayElementType();
+            }
+
             // If its a native type or a reference to
             // self, its OK
             if ($type->isNativeType() || ($method instanceof Method && ($type->isSelfType() || $type->isStaticType()))) {
@@ -64,7 +71,7 @@ class ReturnTypesAnalyzer
                         Issue::UndeclaredTypeReturnType,
                         $method->getFileRef()->getLineNumberStart(),
                         $method->getName(),
-                        (string)$type_fqsen
+                        (string)$outer_type
                     );
                 }
             }

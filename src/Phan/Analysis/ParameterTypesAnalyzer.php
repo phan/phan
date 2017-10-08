@@ -10,6 +10,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Parameter;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -38,7 +39,12 @@ class ParameterTypesAnalyzer
             $union_type = $parameter->getUnionType();
 
             // Look at each type in the parameter's Union Type
-            foreach ($union_type->getTypeSet() as $type) {
+            foreach ($union_type->getTypeSet() as $outer_type) {
+                $type = $outer_type;
+
+                while ($type instanceof GenericArrayType) {
+                    $type = $type->genericArrayElementType();
+                }
 
                 // If its a native type or a reference to
                 // self, its OK
@@ -68,7 +74,7 @@ class ParameterTypesAnalyzer
                             $method->getContext(),
                             Issue::UndeclaredTypeParameter,
                             $method->getFileRef()->getLineNumberStart(),
-                            (string)$type_fqsen
+                            (string)$outer_type
                         );
                     }
                 }

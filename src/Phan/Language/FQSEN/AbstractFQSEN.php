@@ -53,8 +53,7 @@ abstract class AbstractFQSEN implements FQSEN
 
     /**
      * @return string
-     * The class associated with this FQSEN or
-     * null if not defined
+     * The class associated with this FQSEN
      */
     public function getName() : string
     {

@@ -8,11 +8,13 @@ use Phan\Config;
 use Phan\Daemon;
 use Phan\Exception\IssueException;
 use Phan\Issue;
+use Phan\Util;
 use Phan\Language\Context;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Comment;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionFactory;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
@@ -109,7 +111,7 @@ class ParseVisitor extends ScopeVisitor
         // Build the class from what we know so far
         $class_context = $this->context
             ->withLineNumberStart($node->lineno ?? 0)
-            ->withLineNumberEnd($node->endLineno ?? -1);
+            ->withLineNumberEnd($node->endLineno ?? 0);
 
         $class = new Clazz(
             $class_context,
@@ -155,8 +157,7 @@ class ParseVisitor extends ScopeVisitor
         // are limited to classes with either __get or __set declared (or interface/abstract
         $class->setMagicPropertyMap(
             $comment->getMagicPropertyMap(),
-            $this->code_base,
-            $this->context
+            $this->code_base
         );
 
         // Depends on code_base for checking existence of __call or __callStatic.
@@ -164,8 +165,7 @@ class ParseVisitor extends ScopeVisitor
         // are limited to classes with either __get or __set declared (or interface/abstract)
         $class->setMagicMethodMap(
             $comment->getMagicMethodMap(),
-            $this->code_base,
-            $this->context
+            $this->code_base
         );
 
         // usually used together with magic @property annotations
@@ -299,28 +299,38 @@ class ParseVisitor extends ScopeVisitor
     {
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
+        $context = $this->context;
+        $code_base = $this->code_base;
 
         $method_name = (string)$node->name;
 
         $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
-            $method_name, $this->context
+            $method_name, $context
         );
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
-        while ($this->code_base->hasMethodWithFQSEN($method_fqsen)) {
+        while ($code_base->hasMethodWithFQSEN($method_fqsen)) {
             $method_fqsen =
                 $method_fqsen->withAlternateId(++$alternate_id);
         }
 
         $method = Method::fromNode(
-            clone($this->context),
-            $this->code_base,
+            clone($context),
+            $code_base,
             $node,
             $method_fqsen
         );
 
-        $class->addMethod($this->code_base, $method, new None);
+        if ($context->isPHPInternal()) {
+            // only for stubs
+            foreach (FunctionFactory::functionListFromFunction($method, $code_base) as $method_variant) {
+                \assert($method_variant instanceof Method);
+                $class->addMethod($code_base, $method_variant, new None);
+            }
+        } else {
+            $class->addMethod($code_base, $method, new None);
+        }
 
         if ('__construct' === $method_name) {
             $class->setIsParentConstructorCalled(false);
@@ -399,7 +409,6 @@ class ParseVisitor extends ScopeVisitor
         // Bomb out if we're not in a class context
         $class = $this->getContextClass();
         $docComment = '';
-        // TODO: Can other
         $first_child_node = $node->children[0] ?? null;
         if ($first_child_node instanceof Node) {
             $docComment = $first_child_node->docComment ?? '';
@@ -605,7 +614,7 @@ class ParseVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      *
-     * @suppress PhanUndeclaredProperty - const elements are Nodes, but can have docComment.
+     * @suppress PhanUndeclaredProperty -  const elements are Nodes, but can have docComment.
      */
     public function visitConstDecl(Node $node) : Context
     {
@@ -636,6 +645,8 @@ class ParseVisitor extends ScopeVisitor
     public function visitFuncDecl(Decl $node) : Context
     {
         $function_name = (string)$node->name;
+        $context = $this->context;
+        $code_base = $this->code_base;
 
         // Hunt for an un-taken alternate ID
         $alternate_id = 0;
@@ -644,25 +655,33 @@ class ParseVisitor extends ScopeVisitor
             $function_fqsen =
                 FullyQualifiedFunctionName::fromStringInContext(
                     $function_name,
-                    $this->context
+                    $context
                 )
-                ->withNamespace($this->context->getNamespace())
+                ->withNamespace($context->getNamespace())
                 ->withAlternateId($alternate_id++);
 
-        } while ($this->code_base->hasFunctionWithFQSEN(
+        } while ($code_base->hasFunctionWithFQSEN(
             $function_fqsen
         ));
 
         $func = Func::fromNode(
-            $this->context
+            $context
                 ->withLineNumberStart($node->lineno ?? 0)
                 ->withLineNumberEnd($node->endLineno ?? 0),
-            $this->code_base,
+            $code_base,
             $node,
             $function_fqsen
         );
 
-        $this->code_base->addFunction($func);
+        if ($context->isPHPInternal()) {
+            // only for stubs
+            foreach (FunctionFactory::functionListFromFunction($func, $code_base) as $func_variant) {
+                \assert($func_variant instanceof Func);
+                $code_base->addFunction($func_variant);
+            }
+        } else {
+            $code_base->addFunction($func);
+        }
 
         // Send the context into the function and reset the scope
         $context = $this->context->withScope(
@@ -735,6 +754,7 @@ class ParseVisitor extends ScopeVisitor
                                   ->setNumberOfOptionalParameters(999999);
                 }
             } else if ($function_name === 'define') {
+                // TODO: infer constant type from literal, string concatenation operators, etc?
                 $args = $node->children['args'];
                 if ($args->kind === \ast\AST_ARG_LIST
                     && isset($args->children[0])
