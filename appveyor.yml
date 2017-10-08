@@ -35,9 +35,9 @@ build_script:
 
     git clone --depth=1 --branch=master https://github.com/nikic/php-ast C:\projects\php-src\ext\ast
 
-    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.5/php_ast-0.1.5-7.1-nts-vc14-x86.zip
+    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.6/php_ast-0.1.6-7.1-nts-vc14-x86.zip
 
-    7z x php_ast-0.1.5-7.1-nts-vc14-x86.zip php_ast.dll -y >nul
+    7z x php_ast-0.1.6-7.1-nts-vc14-x86.zip php_ast.dll -y >nul
 
     cd C:\projects\php
 
@@ -48,6 +48,8 @@ build_script:
     echo extension=php_ast.dll >> php.ini
 
     echo extension=php_curl.dll >> php.ini
+
+    echo extension=php_intl.dll >> php.ini
 
     echo extension=php_mbstring.dll >> php.ini
 

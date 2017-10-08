@@ -252,7 +252,7 @@ class UnionType implements \Serializable
             $function_name =
                 $class_name . '::' . $function_fqsen->getName();
         } else {
-            $function_name = $function_fqsen->getName();
+            $function_name = $function_fqsen->getNamespacedName();
         }
 
         $function_name = \strtolower($function_name);
