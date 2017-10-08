@@ -49,6 +49,8 @@ build_script:
 
     echo extension=php_curl.dll >> php.ini
 
+    echo extension=php_intl.dll >> php.ini
+
     echo extension=php_mbstring.dll >> php.ini
 
     echo extension=php_openssl.dll >> php.ini
