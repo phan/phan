@@ -1,7 +1,7 @@
 src/000_plugins.php:4 PhanPluginInstanceOfObject Cannot call instanceof against `object`
 src/000_plugins.php:4 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \object
 src/000_plugins.php:10 PhanPluginDollarDollar $$ Variables are not allowed.
-src/000_plugins.php:17 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key literal(0) detected in array - the earlier entry will be ignored.
+src/000_plugins.php:18 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key literal(0) detected in array - the earlier entry will be ignored.
 src/000_plugins.php:21 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
 src/000_plugins.php:28 PhanPluginUndeclaredVariableIsset undeclared variable $foo in isset()
 src/000_plugins.php:29 PhanPluginComplexVariableInIsset Unanalyzable complex variable expression in isset
@@ -43,8 +43,8 @@ src/002_unreachable_code.php:23 PhanPluginUnreachableCode Unreachable statement 
 src/002_unreachable_code.php:25 PhanPluginUnreachableCode Unreachable statement detected
 src/002_unreachable_code.php:40 PhanPluginUnreachableCode Unreachable statement detected
 src/002_unreachable_code.php:64 PhanPluginUnreachableCode Unreachable statement detected
-src/003_suppress_on_property.php:8 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
-src/003_suppress_on_property.php:17 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key literal('key') detected in array - the earlier entry will be ignored.
+src/003_suppress_on_property.php:10 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
+src/003_suppress_on_property.php:19 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key literal('key') detected in array - the earlier entry will be ignored.
 src/004_unused_suppression_plugin.php:6 UnusedSuppression Element \SuppressionTest suppresses issue PhanPluginNotARealIssue but does not use it
 src/004_unused_suppression_plugin.php:11 UnusedSuppression Element \SuppressionTest::foo suppresses issue PhanParamTooMany but does not use it
 src/004_unused_suppression_plugin.php:23 UnusedSuppression Element \suppression_test_fn suppresses issue PhanParamTooFew but does not use it

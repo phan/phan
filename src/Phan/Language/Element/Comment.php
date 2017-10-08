@@ -457,8 +457,9 @@ class Comment
         $return_union_type_string = '';
 
         if (preg_match('/@return\s+/', $line)) {
-            if (preg_match('/@return\s+(' . UnionType::union_type_regex . '+)/', $line, $match)) {
-                $return_union_type_string = $match[1];
+            // TODO: Is `@return &array` valid phpdoc2?
+            if (preg_match('/@return\s+(&\s*)?(' . UnionType::union_type_regex . '+)/', $line, $match)) {
+                $return_union_type_string = $match[2];
             }
             // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
         }

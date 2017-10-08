@@ -765,6 +765,6 @@ trait FunctionTrait {
      * @return void
      */
     public function setDependentReturnTypeClosure(\Closure $closure) {
-        $this->return_type_callback = $closure->bindTo($this);
+        $this->return_type_callback = $closure;
     }
 }

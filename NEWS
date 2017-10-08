@@ -15,13 +15,13 @@ New Features (CLI, Configs)
   Add a script (`tool/make_stubs`) to output the contents of stubs to use for `autoload_internal_extension_signatures` (#627).
 + By default, automatically restart Phan without xdebug if xdebug is enabled. (#1161)
 + Document the --disable-plugins CLI flag.
-+ Improve analysis of return types of `array_pop`,`array_shift`,`current`,`end`,`next`,`prev`,`reset`,`array_map`,`array_filter`.
-  This will be improved more in the future.
++ Improve analysis of return types of `array_pop`,`array_shift`,`current`,`end`,`next`,`prev`,`reset`,`array_map`,`array_filter`, etc..
   See ArrayReturnTypeOverridePlugin.php.
 
 Plugins
 + Add a new plugin type which can override the return type of functions and methods on a case by case basis.
   (e.g. based on one or more of the argument types)
++ Make line numbers more accurate in DuplicateArrayKeyPlugin.
 
 Bug Fixes
 + Properly check for undeclared classes in arrays within phpdoc @param, @property, @method, @var, and @return types.
