@@ -14,35 +14,25 @@ install:
 - cmd: mkdir %APPVEYOR_BUILD_FOLDER%\bin
 build_script:
 - cmd: >-
-    "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\vcvars32.bat"
+    mkdir C:\projects\php
 
-    appveyor DownloadFile http://windows.php.net/downloads/php-sdk/php-sdk-binary-tools-20110915.zip
+    cd C:\projects\php
 
-    7z x -y php-sdk-binary-tools-20110915.zip -oC:\projects\php-sdk
+    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/php-7.1.9-nts-Win32-VC14-x86.zip
 
-    C:\projects\php-sdk\bin\phpsdk_setvars.bat
+    7z x -y php-7.1.9-nts-Win32-VC14-x86.zip
 
-    git clone --depth=1 --branch=PHP-7.1 https://github.com/php/php-src C:\projects\php-src
+    del /Q *.zip
+
+    cd C:\projects\php\ext
 
     git clone --depth=1 --branch=master https://github.com/nikic/php-ast C:\projects\php-src\ext\ast
 
-    appveyor DownloadFile http://windows.php.net/downloads/php-sdk/deps-7.1-vc14-x86.7z
+    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.5/php_ast-0.1.5-7.1-nts-vc14-x86.zip
 
-    7z x -y deps-7.1-vc14-x86.7z -oC:\projects\php-src
+    7z x php_ast-0.1.5-7.1-nts-vc14-x86.zip php_ast.dll -y >nul
 
-    cd C:\projects\php-src
-
-    buildconf.bat
-
-    configure.bat --disable-all --enable-phar --enable-json --enable-hash --enable-ctype --enable-filter --enable-tokenizer --enable-zip --with-iconv --with-openssl --with-dom --with-simplexml --with-libxml --enable-cli --enable-mbstring --enable-xmlwriter --with-xml --enable-ast=shared --with-prefix=C:\projects\php\bin --with-php-build=deps
-
-    nmake
-
-    nmake install
-
-    dir
-
-    cd C:\projects\php\bin
+    cd C:\projects\php
 
     echo [PHP] > php.ini
 
@@ -50,9 +40,15 @@ build_script:
 
     echo extension=php_ast.dll >> php.ini
 
+    echo extension=php_curl.dll >> php.ini
+
+    echo extension=php_mbstring.dll >> php.ini
+
     echo extension=php_openssl.dll >> php.ini
 
-    SET PATH=c:\projects\php\bin;%PATH%
+    echo extension=php_soap.dll >> php.ini
+
+    SET PATH=c:\projects\php;%PATH%
 
     echo %PATH%
 
