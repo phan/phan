@@ -92,6 +92,7 @@ class CLI
                 'markdown-issue-messages',
                 'disable-plugins',
                 'use-fallback-parser',
+                'require-config-exists',
                 'daemonize-socket:',
                 'daemonize-tcp-port:',
                 'language-server-on-stdin',
@@ -138,7 +139,7 @@ class CLI
 
         // Now that we have a root directory, attempt to read a
         // configuration file `.phan/config.php` if it exists
-        $this->maybeReadConfigFile();
+        $this->maybeReadConfigFile(\array_key_exists('require-config-exists', $opts));
 
         $this->output = new ConsoleOutput();
         $factory = new PrinterFactory();
@@ -272,6 +273,8 @@ class CLI
                     // that we can get the project root directory to
                     // base other config flags values on
                     break;
+                case 'require-config-exists':
+                    break;  // handled earlier.
                 case 'disable-plugins':
                     // Slightly faster, e.g. for daemon mode with lowest latency (along with --quick).
                     Config::setValue('plugins', []);
@@ -615,6 +618,9 @@ Extended help:
   Emit verbose logging messages related to the language server implementation to stderr.
   This is useful when developing or debugging language server clients.
 
+ --require-config-exists
+  Exit immediately with an error code if .phan/config.php does not exist.
+
 EOB;
         }
         exit($exit_code);
@@ -773,7 +779,7 @@ EOB;
      * up the hierarchy and apply anything in there to
      * the configuration.
      */
-    private function maybeReadConfigFile()
+    private function maybeReadConfigFile(bool $require_config_exists)
     {
 
         // If the file doesn't exist here, try a directory up
@@ -788,6 +794,11 @@ EOB;
 
         // Totally cool if the file isn't there
         if (!file_exists($config_file_name)) {
+            if ($require_config_exists) {
+                // But if the CLI option --require-config-exists is provided, exit immediately.
+                // (Include extended help documenting that option)
+                $this->usage("Could not find a config file at '$config_file_name', but --require-config-exists was set", EXIT_FAILURE, true);
+            }
             return;
         }
 
