@@ -549,8 +549,12 @@ class Phan implements IgnoredFilesFilterInterface {
             if (\extension_loaded($extension_name)) {
                 continue;
             }
-            if (!\is_string($path_to_extension) || !is_file($path_to_extension)) {
-                throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is: " . var_export($path_to_extension, true));
+            if (!\is_string($path_to_extension)) {
+                throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a string: value: " . var_export($path_to_extension, true));
+            }
+            $path_to_extension = Config::projectPath($path_to_extension);
+            if (!is_file($path_to_extension)) {
+                throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a file: value: " . var_export($path_to_extension, true));
             }
             Analysis::parseFile($code_base, $path_to_extension, false, null, true);
         }
