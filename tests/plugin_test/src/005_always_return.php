@@ -1,6 +1,6 @@
 <?php
 
-function test5() : ?string {
+function test5() : string {
     if (rand() % 2 > 0) {
         return 'rand';
     }
@@ -36,7 +36,7 @@ soft_non_nullable_test5();
 
 class C5 {
 
-    public static function test() : ?string {
+    public static function test() : string {
         if (rand() % 2 > 0) {
             return 'rand';
         }
