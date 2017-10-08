@@ -960,12 +960,6 @@ class CodeBase
         FullyQualifiedFunctionName $fqsen
     ) : bool
     {
-        // Only root namespaced functions will be found in
-        // the internal function map.
-        if ($fqsen->getNamespace() != '\\') {
-            return false;
-        }
-
         if (!Config::get()->ignore_undeclared_functions_with_known_signatures) {
             // Act as though functions don't exist if they aren't loaded into the php binary
             // running phan (or that binary's extensions), even if the signature map contains them.
@@ -981,8 +975,13 @@ class CodeBase
         $function_signature_map =
             UnionType::internalFunctionSignatureMap();
 
-        if (!empty($function_signature_map[$fqsen->getNameWithAlternateId()])) {
-            $signature = $function_signature_map[$fqsen->getNameWithAlternateId()];
+        $name = $fqsen->getNameWithAlternateId();
+        if ($fqsen->getNamespace() != '\\') {
+            $name = \ltrim($fqsen->getNamespace(), '\\') . '\\' . $name;
+        }
+
+        if (!empty($function_signature_map[$name])) {
+            $signature = $function_signature_map[$name];
 
             // Add each method returned for the signature
             foreach (FunctionFactory::functionListFromSignature(

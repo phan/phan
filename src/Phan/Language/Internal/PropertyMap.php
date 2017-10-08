@@ -413,4 +413,10 @@ return [
         'name' => '?string',
         'docComment' => '?string',
     ],
+    'ast\metadata' => [
+        'kind' => 'int',
+        'name' => 'string',
+        'flags' => 'string[]',
+        'flagsCombinable' => 'bool',
+    ],
 ];
