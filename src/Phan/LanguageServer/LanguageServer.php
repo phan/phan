@@ -391,7 +391,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher {
             $normalized_requested_uri = Utils::pathToUri(Utils::uriToPath($uri));
             $diagnostics[$normalized_requested_uri] = [];  // send an empty diagnostic list on failure.
             foreach ($json_contents['issues'] ?? [] as $issue) {
-                [$issue_uri, $diagnostic] = self::generateDiagnostic($issue);
+                list($issue_uri, $diagnostic) = self::generateDiagnostic($issue);
                 if ($diagnostic instanceof Diagnostic) {
                     $diagnostics[$issue_uri][] = $diagnostic;
                 }
