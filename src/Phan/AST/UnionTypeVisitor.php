@@ -674,40 +674,51 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitArray(Node $node) : UnionType
     {
-        if (!empty($node->children)
-            && $node->children[0] instanceof Node
-            && $node->children[0]->kind == \ast\AST_ARRAY_ELEM
+        $children = $node->children;
+        if (!empty($children)
+            && $children[0] instanceof Node
+            && $children[0]->kind == \ast\AST_ARRAY_ELEM
         ) {
+            /** @var UnionType[] */
             $element_types = [];
 
             // Check the first 5 (completely arbitrary) elements
             // and assume the rest are the same type
-            for ($i=0; $i<5; $i++) {
-                // Check to see if we're out of elements
-                if (empty($node->children[$i])) {
+            foreach ($children as $i => $child) {
+                if (empty($child)) {
+                    // Check to see if we're out of elements (shouldn't happen)
+                    break;
+                }
+                if ($i >= 5) {
                     break;
                 }
 
-                if ($node->children[$i]->children['value'] instanceof Node) {
+                $value = $child->children['value'];
+                if ($value instanceof Node) {
                     $element_types[] = UnionTypeVisitor::unionTypeFromNode(
                         $this->code_base,
                         $this->context,
-                        $node->children[$i]->children['value'],
+                        $value,
                         $this->should_catch_issue_exception
                     );
                 } else {
                     $element_types[] = Type::fromObject(
-                        $node->children[$i]->children['value']
+                        $value
                     )->asUnionType();
                 }
             }
 
-            $element_types =
-                \array_unique($element_types);
-
-            if (\count($element_types) === 1) {
-                return \reset($element_types)->asGenericArrayTypes();
+            // Should be slightly faster than checking if array_unique is of length 1, doesn't require sorting.
+            // Not using isEqualTo() because the old behavior is that closures cast to the same string ('callable').
+            $common_type = \array_pop($element_types);
+            $common_type_repr = (string)$common_type;
+            foreach ($element_types as $type) {
+                if ((string)$type !== $common_type_repr) {
+                    // 2 or more unique types exist, give up.
+                    return ArrayType::instance(false)->asUnionType();
+                }
             }
+            return $common_type->asGenericArrayTypes();
         }
 
         return ArrayType::instance(false)->asUnionType();

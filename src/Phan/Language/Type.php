@@ -1200,13 +1200,15 @@ class Type
      * @return Type
      * Get a new type which is the generic array version of
      * this type. For instance, 'int' will produce 'int[]'.
+     *
+     * As a special case to reduce false positives, 'array' (with no known types) will produce 'array'
      */
     public function asGenericArrayType() : Type
     {
         if (!($this instanceof GenericArrayType)
             && (
-                $this->getName() == 'array'
-                || $this->getName() == 'mixed'
+                $this->name === 'array'
+                || $this->name === 'mixed'
             )
         ) {
             return ArrayType::instance(false);
