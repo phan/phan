@@ -61,7 +61,12 @@ class Comment
         self::ON_FUNCTION   => 'function',
     ];
 
-    const word_regex = '([a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*)';
+    /**
+     * This regex contains a single pattern, which matches a valid PHP identifier.
+     * (e.g. for variable names, magic property names, etc.
+     * This does not allow backslashes.
+     */
+    const word_regex = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
 
     /**
      * @var int - contains a subset of flags to set on elements
