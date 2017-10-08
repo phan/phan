@@ -9,6 +9,13 @@ clone_depth: 1
 # Test 32-builds
 platform: x86
 
+branches:
+  only:
+    - master
+    - 0.8
+    - 0.9
+    - php72
+
 install:
 - cmd: choco feature enable -n=allowGlobalConfirmation
 - cmd: mkdir %APPVEYOR_BUILD_FOLDER%\bin

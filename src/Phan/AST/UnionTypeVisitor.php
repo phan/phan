@@ -19,6 +19,7 @@ use Phan\Language\Element\Clazz;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
@@ -1373,7 +1374,12 @@ class UnionTypeVisitor extends AnalysisVisitor
         $possible_types = new UnionType();
         foreach ($function_list_generator as $function) {
             assert($function instanceof FunctionInterface);
-            $possible_types->addUnionType($function->getUnionType());
+            if ($function->hasDependentReturnType()) {
+                $function_types = $function->getDependentReturnType($this->code_base, $this->context, $node->children['args']->children ?? []);
+            } else {
+                $function_types = $function->getUnionType();
+            }
+            $possible_types->addUnionType($function_types);
         }
 
         return $possible_types;
@@ -1442,7 +1448,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $method_name
                     );
 
-                    $union_type = $method->getUnionType();
+                    if ($method->hasDependentReturnType()) {
+                        $union_type = $method->getDependentReturnType($this->code_base, $this->context, $node->children['args']->children ?? []);
+                    } else {
+                        $union_type = $method->getUnionType();
+                    }
 
                     // Map template types to concrete types
                     if ($union_type->hasTemplateType()) {
@@ -1810,7 +1820,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
-     * @return \Generator|Clazz
+     * @return \Generator|Clazz[]
      */
     public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node) {
         return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node);
@@ -1852,5 +1862,58 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             yield $this->code_base->getClassByFQSEN($class_fqsen);
         }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param string|Node $node the node to fetch CallableType instances for.
+     * @param bool $log_error whether or not to log errors while searching
+     * @return FullyQualifiedFunctionLikeName[]
+     */
+    public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
+    {
+        // TODO: improve functionLikeFQSENListFromNodeAndContext to include
+        // 1. [MyClass::class, 'staticMethodName'],
+        // 2. [$obj, 'instanceMethodName],
+        // 3. 'global_func'
+        // 4. 'MyClass::staticFunc'
+        return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
+    }
+
+
+    /**
+     * @param string|Node $node
+     *
+     * @return FullyQualifiedFunctionLikeName[]
+     * A list of CallableTypes associated with the given node
+     *
+     * @throws IssueException
+     * An exception is thrown if we can't find a class for
+     * the given type
+     */
+    private function functionLikeFQSENListFromNode($node, bool $log_error) : array
+    {
+        if (is_string($node)) {
+            // TODO: implement.
+            return [];
+        }
+        // Get the types associated with the node
+        $union_type = self::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node
+        );
+
+        $closure_types = [];
+        foreach ($union_type->getTypeSet() as $type) {
+            if ($type instanceof ClosureType && $type->hasKnownFQSEN()) {
+                // TODO: Support class instances with __invoke()
+                $fqsen = $type->asFQSEN();
+                assert ($fqsen instanceof FullyQualifiedFunctionLikeName);
+                $closure_types[] = $fqsen;
+            }
+        }
+        return $closure_types;
     }
 }

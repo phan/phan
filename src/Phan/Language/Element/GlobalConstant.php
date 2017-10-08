@@ -67,4 +67,43 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
             $constant_fqsen
         );
     }
+
+    public function toStub() : string
+    {
+        [$namespace, $string] = $this->toStubInfo();
+        $namespace_text = $namespace === '' ? '' : "$namespace ";
+        $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        return $string;
+    }
+
+    /** @return string[] [string $namespace, string $text] */
+    public function toStubInfo() : array
+    {
+        $fqsen = (string)$this->getFQSEN();
+        $pos = \strrpos($fqsen, '\\');
+        if ($pos !== false) {
+            $name = \substr($fqsen, $pos + 1);
+            $namespace = \substr($fqsen, 0, $pos);
+        } else {
+            $name = $fqsen;
+            $namespace = '';
+        }
+
+        $is_defined = \defined($fqsen);
+        if ($is_defined) {
+            $repr = \var_export(constant($fqsen), true);
+            $comment = '';
+        } else {
+            $repr = 'null';
+            $comment = '  // could not find';
+        }
+        $namespace = \ltrim($this->getFQSEN()->getNamespace(), '\\');
+        if (\preg_match('@[a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*@', $name)) {
+            $string = "const $name = $repr;$comment\n";
+        } else {
+            // Internal extension defined a constant with an invalid identifier.
+            $string = \sprintf("define(%s, %s);%s\n", var_export($name, true), $repr, $comment);
+        }
+        return [$namespace, $string];
+    }
 }

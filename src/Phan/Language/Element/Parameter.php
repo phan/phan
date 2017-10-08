@@ -518,11 +518,60 @@ class Parameter extends Variable
         $string .= "\${$this->getName()}";
 
         if ($this->hasDefaultValue() && !$this->isVariadic()) {
-            if ($this->getDefaultValue() instanceof \ast\Node) {
+            $default_value = $this->getDefaultValue();
+            if ($default_value instanceof \ast\Node) {
                 $string .= ' = null';
             } else {
-                $string .= ' = ' . var_export($this->getDefaultValue(), true);
+                $string .= ' = ' . var_export($default_value, true);
             }
+        }
+
+        return $string;
+    }
+
+    public function toStubString() : string {
+        $string = '';
+
+        $typeObj = $this->getNonVariadicUnionType();
+        if (!$typeObj->isEmpty()) {
+            $string .= (string)$typeObj . ' ';
+        }
+
+        if ($this->isPassByReference()) {
+            $string .= '&';
+        }
+
+        if ($this->isVariadic()) {
+            $string .= '...';
+        }
+
+        $name = $this->getName();
+        if (!\preg_match('@' . Comment::word_regex . '@', $name)) {
+            // Some PECL extensions have invalid parameter names.
+            // Replace invalid characters with U+FFFD replacement character.
+            $name = \preg_replace('@[^a-zA-Z0-9_\x7f-\xff]', '�', $name);
+            if (!\preg_match($name, '@' . Comment::word_regex . '@')) {
+                $name = '_' . $name;
+            }
+        }
+
+        $string .= "\$$name";
+
+        if ($this->hasDefaultValue() && !$this->isVariadic()) {
+            $default_value = $this->getDefaultValue();
+            if ($default_value instanceof \ast\Node) {
+                $kind = $default_value->kind;
+                if ($kind === \ast\AST_NAME) {
+                    $default_repr = $default_value->children['name'];
+                } else if ($kind === \ast\AST_ARRAY) {
+                    $default_repr = '[]';
+                } else {
+                    $default_repr = 'null';
+                }
+            } else {
+                $default_repr = var_export($this->getDefaultValue(), true);
+            }
+            $string .= ' = ' . $default_repr;
         }
 
         return $string;

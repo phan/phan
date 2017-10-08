@@ -15,6 +15,7 @@ use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -1458,6 +1459,24 @@ class UnionType implements \Serializable
         }
 
         return $union_type;
+    }
+
+    /**
+     * Takes "b|d[]" and returns "b[]|d[][]"
+     *
+     * @return UnionType
+     * The subset of types in this
+     */
+    public function elementTypesToGenericArray() : UnionType
+    {
+        return new UnionType(
+            ArraySet::map($this->type_set, function (Type $type) : Type {
+                if ($type instanceof MixedType) {
+                    return ArrayType::instance(false);
+                }
+                return GenericArrayType::fromElementType($type, false);
+            })
+        );
     }
 
     /**

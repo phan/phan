@@ -4,7 +4,7 @@ src/000_plugins.php:10 PhanPluginDollarDollar $$ Variables are not allowed.
 src/000_plugins.php:17 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key literal(0) detected in array - the earlier entry will be ignored.
 src/000_plugins.php:21 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
 src/000_plugins.php:28 PhanPluginUndeclaredVariableIsset undeclared variable $foo in isset()
-src/000_plugins.php:29 PhanPluginComplexVariableIsset Unanalyzable complex variable expression in isset
+src/000_plugins.php:29 PhanPluginComplexVariableInIsset Unanalyzable complex variable expression in isset
 src/000_plugins.php:29 PhanPluginDollarDollar $$ Variables are not allowed.
 src/000_plugins.php:33 PhanPluginNonBoolBranch Non bool value evaluated in if clause
 src/000_plugins.php:40 PhanPluginNonBoolInLogicalArith Non bool value in logical arithmetic
@@ -19,6 +19,21 @@ src/000_plugins.php:77 PhanPluginAlwaysReturnMethod Method \ReturnChecks::missin
 src/000_plugins.php:127 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
 src/000_plugins.php:138 DemoPluginMethodName Method \TestDemoPlugin::function cannot be called `function`
 src/000_plugins.php:139 DemoPluginPropertyName Property \TestDemoPlugin::property should not be called `property`
+src/001_dead_code.php:8 PhanUnreferencedFunction Possibly zero references to function \duplicateFnB
+src/001_dead_code.php:19 PhanUnreferencedProperty Possibly zero references to property \DuplicateClass001::static_prop2
+src/001_dead_code.php:22 PhanUnreferencedProperty Possibly zero references to property \DuplicateClass001::instance_prop2
+src/001_dead_code.php:25 PhanUnreferencedMethod Possibly zero references to method \DuplicateClass001::f2
+src/001_dead_code.php:26 PhanUnreferencedMethod Possibly zero references to method \DuplicateClass001::f3
+src/001_dead_code.php:29 PhanRedefineFunction Function duplicateFnA defined at src/001_dead_code.php:29 was previously defined at src/001_dead_code.php:4
+src/001_dead_code.php:33 PhanRedefineFunction Function duplicateFnB defined at src/001_dead_code.php:33 was previously defined at src/001_dead_code.php:8
+src/001_dead_code.php:33 PhanUnreferencedFunction Possibly zero references to function \duplicateFnB,1
+src/001_dead_code.php:37 PhanUnreferencedConstant Possibly zero references to constant \Const1B
+src/001_dead_code.php:39 PhanRedefineClass Class \DuplicateClass001 defined at src/001_dead_code.php:39 was previously defined as Class \DuplicateClass001 at src/001_dead_code.php:15
+src/001_dead_code.php:41 PhanUnreferencedConstant Possibly zero references to constant \DuplicateClass001,1::D
+src/001_dead_code.php:44 PhanUnreferencedProperty Possibly zero references to property \DuplicateClass001,1::static_prop2
+src/001_dead_code.php:47 PhanUnreferencedProperty Possibly zero references to property \DuplicateClass001,1::instance_prop2
+src/001_dead_code.php:50 PhanUnreferencedMethod Possibly zero references to method \DuplicateClass001,1::f2
+src/001_dead_code.php:51 PhanUnreferencedMethod Possibly zero references to method \DuplicateClass001,1::f4
 src/001_globals_type_map.php:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Exception|\Throwable but \intdiv() takes int
 src/001_globals_type_map.php:8 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Error|\Throwable but \intdiv() takes int
 src/001_globals_type_map.php:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Exception|\Throwable but \intdiv() takes int

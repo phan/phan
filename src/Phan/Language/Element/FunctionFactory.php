@@ -63,6 +63,8 @@ class FunctionFactory {
             - $reflection_function->getNumberOfRequiredParameters()
         );
         $function->setIsDeprecated($reflection_function->isDeprecated());
+        $function->setRealReturnType(UnionType::fromReflectionType($reflection_function->getReturnType()));
+        $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
 
         return self::functionListFromFunction($function, $code_base);
     }
@@ -159,7 +161,7 @@ class FunctionFactory {
      * @return FunctionInterface[]
      * A list of typed functions/methods based on the given method
      */
-    private static function functionListFromFunction(
+    public static function functionListFromFunction(
         FunctionInterface $function,
         CodeBase $code_base
     ) : array {
@@ -190,6 +192,7 @@ class FunctionFactory {
             if (!empty($map['return_type'])) {
                 $alternate_function->setUnionType($map['return_type']);
             }
+            $alternate_function->clearParameterList();
 
             // Load parameter types if defined
             foreach ($map['parameter_name_type_map'] ?? []

@@ -115,8 +115,17 @@ class CLI
 
         // Determine the root directory of the project from which
         // we root all relative paths passed in as args
+        $overriden_project_root_directory = $opts['d'] ?? $opts['project-root-directory'] ?? null;
+        if (\is_string($overriden_project_root_directory)) {
+            if (!\is_dir($overriden_project_root_directory)) {
+                $this->usage(\json_encode($overriden_project_root_directory) . ' is not a directory', EXIT_FAILURE);
+            }
+            // Set the current working directory so that relative paths within the project will work.
+            // TODO: Add an option to allow searching ancestor directories?
+            \chdir($overriden_project_root_directory);
+        }
         Config::setProjectRootDirectory(
-            $opts['d'] ?? $opts['project-root-directory'] ?? getcwd()
+            \getcwd()
         );
 
         // Before reading the config, check for an override on
@@ -485,10 +494,9 @@ Usage: {$argv[0]} [options] [files...]
   This is primarily intended for performing standalone
   incremental analysis.
 
- -d, --project-root-directory
-  Hunt for a directory named .phan in the current or parent
-  directory and read configuration file config.php from that
-  path.
+ -d, --project-root-directory </path/to/project>
+  Hunt for a directory named .phan in the provided directory
+  and read configuration file .phan/config.php from that path.
 
  -r, --file-list-only
   A file containing a list of PHP files to be analyzed to the
@@ -540,6 +548,9 @@ Usage: {$argv[0]} [options] [files...]
  -z, --signature-compatibility
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
+
+ --disable-plugins
+  Don't run any plugins. Slightly faster.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid
@@ -594,8 +605,8 @@ Extended help:
   This uses a method signature format similar to FunctionSignatureMap.php.
 
  --print-memory-usage-summary
-  Emit JSON serialized signatures to the given file.
-  This uses a method signature format similar to FunctionSignatureMap.php.
+  Prints a summary of memory usage and maximum memory usage.
+  This is accurate when there is one analysis process.
 
  --markdown-issue-messages
   Emit issue messages with markdown formatting.

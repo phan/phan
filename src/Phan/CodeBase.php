@@ -236,7 +236,11 @@ class CodeBase
     private function addClassesByNames(array $class_name_list)
     {
         foreach ($class_name_list as $class_name) {
-            $this->addClass(Clazz::fromClassName($this, $class_name));
+            $reflection_class = new \ReflectionClass($class_name);
+            if (!$reflection_class->isUserDefined()) {
+                // include internal classes, but not external classes such as composer
+                $this->addClass(Clazz::fromReflectionClass($this, $reflection_class));
+            }
         }
     }
 

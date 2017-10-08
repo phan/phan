@@ -7,6 +7,7 @@ use Phan\Language\UnionType;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\ClosedScope;
+use ast\Node;
 
 /**
  * Interface defining the behavior of both Methods
@@ -144,6 +145,13 @@ interface FunctionInterface extends AddressableElementInterface {
     public function appendParameter(Parameter $parameter);
 
     /**
+     * @return void
+     *
+     * Call this before calling appendParameter, if parameters were already added.
+     */
+    public function clearParameterList();
+
+    /**
      * @return \Generator
      * The set of all alternates to this function
      */
@@ -228,4 +236,23 @@ interface FunctionInterface extends AddressableElementInterface {
      * True if this function or method returns a reference
      */
     public function returnsRef() : bool;
+
+    /**
+     * Returns true if the return type depends on the argument, and a plugin makes Phan aware of that.
+     */
+    public function hasDependentReturnType() : bool;
+
+    /**
+     *
+     * Returns a union type based on $args_node and $context
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param \ast\Node[]|int[]|string[] $args
+     */
+    public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType;
+
+    /**
+     * Make calculation of the return type of this function/method use $closure
+     */
+    public function setDependentReturnTypeClosure(\Closure $closure);
 }

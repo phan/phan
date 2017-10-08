@@ -192,10 +192,12 @@ class Func extends AddressableElement implements FunctionInterface
             );
         }
 
-        // If the function is Analyzable, set the node so that
-        // we can come back to it whenever we like and
-        // rescan it
-        $func->setNode($node);
+        if (!$context->isPHPInternal()) {
+            // If the function is Analyzable, set the node so that
+            // we can come back to it whenever we like and
+            // rescan it
+            $func->setNode($node);
+        }
 
         // Set the parameter list on the function
         $func->setParameterList($parameter_list);
@@ -310,4 +312,32 @@ class Func extends AddressableElement implements FunctionInterface
         );
     }
 
+    public function toStub() : string
+    {
+        [$namespace, $string] = $this->toStubInfo();
+        $namespace_text = $namespace === '' ? '' : "$namespace ";
+        $string = sprintf("namespace %s{\n%s}\n", $namespace_text, $string);
+        return $string;
+    }
+
+    /** @return string[] [string $namespace, string $text] */
+    public function toStubInfo() : array
+    {
+        $stub = 'function ';
+        if ($this->returnsRef()) {
+            $stub .= '&';
+        }
+        $stub .= $this->getName();
+        $stub .= '(' . implode(', ', array_map(function(Parameter $parameter) : string {
+            return $parameter->toStubString();
+        }, $this->getRealParameterList())) . ')';
+        if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {
+            $stub .= ' : ' . (string)$this->getRealReturnType();
+        }
+
+        $stub .= ' {}' . "\n";
+
+        $namespace = ltrim($this->getFQSEN()->getNamespace(), '\\');
+        return [$namespace, $stub];
+    }
 }
