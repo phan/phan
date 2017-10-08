@@ -2,6 +2,8 @@
 namespace Phan;
 
 use Phan\Daemon\Request;
+use Phan\LanguageServer\LanguageServer;
+use Phan\LanguageServer\Logger as LanguageServerLogger;
 use Phan\Library\FileCache;
 use Phan\Output\BufferedPrinterInterface;
 use Phan\Output\Collector\BufferingCollector;
@@ -80,8 +82,11 @@ class Phan implements IgnoredFilesFilterInterface {
     ) : bool {
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
         self::checkForSlowPHPOptions();
+        self::loadConfiguredPHPExtensionStubs($code_base);
         $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port');
-        if ($is_daemon_request) {
+        $language_server_config = Config::getValue('language_server_config');
+        $is_undoable_request = is_array($language_server_config) || $is_daemon_request;
+        if ($is_undoable_request) {
             $code_base->enableUndoTracking();
         }
 
@@ -157,27 +162,55 @@ class Phan implements IgnoredFilesFilterInterface {
         $temporary_file_mapping = [];
 
         $request = null;
-        if ($is_daemon_request) {
+        if ($is_undoable_request) {
             \assert($code_base->isUndoTrackingEnabled());
-            // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
-            // TODO: check for conflicts with other config options - incompatible with dump_ast, dump_signatures_file, output-file, etc.
-            // incompatible with dead_code_detection
-            $request = Daemon::run($code_base, $file_path_lister);  // This will fork and fall through every time a request to re-analyze the file set comes in. The daemon should be periodically restarted?
-            if (!$request) {
-                // TODO: Add a way to cleanly shut down.
-                error_log("Finished serving requests, exiting");
-                exit(2);
-            }
-            self::$printer = $request->getPrinter();
+            if ($is_daemon_request) {
+                \assert(!is_array($language_server_config), 'not supported yet');
+                // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
+                // TODO: check for conflicts with other config options - incompatible with dump_ast, dump_signatures_file, output-file, etc.
+                // incompatible with dead_code_detection
+                $request = Daemon::run($code_base, $file_path_lister);  // This will fork and fall through every time a request to re-analyze the file set comes in. The daemon should be periodically restarted?
+                if (!$request) {
+                    // TODO: Add a way to cleanly shut down.
+                    error_log("Finished serving requests, exiting");
+                    exit(2);
+                }
+                self::$printer = $request->getPrinter();
 
-            // This is the list of all of the parsed files
-            // (Also includes files which don't declare classes/functions/constants)
-            $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
-            if (count($analyze_file_path_list) === 0)  {
-                $request->respondWithNoFilesToAnalyze();  // respond and exit.
+                // This is the list of all of the parsed files
+                // (Also includes files which don't declare classes/functions/constants)
+                $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
+                if (count($analyze_file_path_list) === 0)  {
+                    $request->respondWithNoFilesToAnalyze();  // respond and exit.
+                }
+                // Do this before we stop tracking undo operations.
+                $temporary_file_mapping = $request->getTemporaryFileMapping();
+            } else {
+                assert(is_array($language_server_config));
+                LanguageServerLogger::logInfo(sprintf("Starting accepting connections on the language server (pid=%d)", getmypid()));
+                $request = LanguageServer::run($code_base, $file_path_lister, $language_server_config);
+                if (!$request) {
+                    // TODO: Add a way to cleanly shut down.
+                    error_log("Finished serving requests, exiting");
+                    exit(2);
+                }
+                LanguageServerLogger::logInfo(sprintf("language server accepted connection %d", getmypid()));
+
+                self::$printer = $request->getPrinter();
+
+                // This is the list of all of the parsed files
+                // (Also includes files which don't declare classes/functions/constants)
+                $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
+                if (count($analyze_file_path_list) === 0)  {
+                    $request->respondWithNoFilesToAnalyze();  // respond and exit.
+                }
+                // Do this before we stop tracking undo operations.
+                $temporary_file_mapping = $request->getTemporaryFileMapping();
+
+                // FIXME use sabre or some other async code
+                // FIXME implement
+
             }
-            // Do this before we stop tracking undo operations.
-            $temporary_file_mapping = $request->getTemporaryFileMapping();
 
             // Stop tracking undo operations, now that the parse phase is done.
             $code_base->disableUndoTracking();
@@ -215,6 +248,8 @@ class Phan implements IgnoredFilesFilterInterface {
         // various states now that we have the whole
         // state in memory
         Analysis::analyzeFunctions($code_base, $path_filter);
+
+        Analysis::loadMethodPlugins($code_base);
 
         // Filter out any files that are to be excluded from
         // analysis
@@ -322,6 +357,11 @@ class Phan implements IgnoredFilesFilterInterface {
 
         // Collect all issues, blocking
         self::display();
+
+        if (Config::get()->print_memory_usage_summary) {
+            self::printMemoryUsageSummary();
+        }
+
         if ($request instanceof Request) {
             $request->respondWithIssues($issue_count);
             exit(EXIT_SUCCESS);
@@ -494,6 +534,29 @@ class Phan implements IgnoredFilesFilterInterface {
         }
         if ($warned) {
             fwrite(STDERR, "(The above warnings about slow PHP settings can be disabled by setting 'skip_slow_php_options_warning' to true in .phan/config.php)\n");
+        }
+    }
+
+    /**
+     * Loads configured stubs for internal PHP extensions.
+     * @return void
+     */
+    private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base) {
+        $stubs = Config::getValue('autoload_internal_extension_signatures');
+        foreach ($stubs ?: [] as $extension_name => $path_to_extension) {
+            // Prefer using reflection info from the running extension over what's in the stub files.
+            // (The originals were already added to the CodeBase)
+            if (\extension_loaded($extension_name)) {
+                continue;
+            }
+            if (!\is_string($path_to_extension)) {
+                throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a string: value: " . var_export($path_to_extension, true));
+            }
+            $path_to_extension = Config::projectPath($path_to_extension);
+            if (!is_file($path_to_extension)) {
+                throw new \InvalidArgumentException("Invalid autoload_internal_extension_signatures: path for $extension_name is not a file: value: " . var_export($path_to_extension, true));
+            }
+            Analysis::parseFile($code_base, $path_to_extension, false, null, true);
         }
     }
 }

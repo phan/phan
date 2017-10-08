@@ -1,0 +1,7 @@
+%s:7 PhanUndeclaredTypeParameter Parameter of undeclared type \Missing359H[]
+%s:7 PhanUndeclaredTypeProperty Property \A359::missing4 has undeclared type \Missing359E
+%s:7 PhanUndeclaredTypeProperty Property \A359::missing4 has undeclared type \Missing359F[][]
+%s:7 PhanUndeclaredTypeReturnType Return type of myInstanceMethod is undeclared type \Missing359G
+%s:9 PhanUndeclaredTypeProperty Property \A359::missing1 has undeclared type \Missing359
+%s:9 PhanUndeclaredTypeProperty Property \A359::missing1 has undeclared type \Missing359B[][]
+%s:11 PhanUndeclaredTypeProperty Property \A359::missing2 has undeclared type ?\Missing359C

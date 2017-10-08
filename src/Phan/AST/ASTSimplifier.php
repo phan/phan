@@ -11,10 +11,11 @@ use ast\Node;
  */
 class ASTSimplifier {
     /** @var string - for debugging purposes */
-    private $_filename;
+    private $filename;
 
-    public function __construct(string $filename = 'unknown') {
-        $this->_filename = $filename;
+    public function __construct(string $filename = 'unknown')
+    {
+        $this->filename = $filename;
     }
 
     /**
@@ -59,7 +60,6 @@ class ASTSimplifier {
     private function applyToStmts(Node $node) : Node {
         $stmts = $node->children['stmts'];
         // Can be null, a single statement, or (possibly) a scalar instead of a node?
-        // TODO: newer versions of php-ast may guarantee Node?
         if (!($stmts instanceof Node)) {
             return $node;
         }
@@ -78,14 +78,12 @@ class ASTSimplifier {
      */
     private function applyToStatementList(Node $statement_list) : Node {
         if ($statement_list->kind !== \ast\AST_STMT_LIST) {
-            // TODO: This check may be unnecessary in new php-ast versions
             $statement_list = self::buildStatementList($statement_list->lineno ?? 0, $statement_list);
         }
         $new_children = [];
         foreach ($statement_list->children as $child_node) {
             if ($child_node instanceof Node) {
                 foreach ($this->apply($child_node) as $new_child_node) {
-                    // The apply() step can also modify the nodes, check below with ===
                     $new_children[] = $new_child_node;
                 }
             } else {
@@ -115,7 +113,7 @@ class ASTSimplifier {
 
     /**
      * Get a modifiable Node that is a clone of the statement or statement list.
-     * The resulting Node has kind AST_STMT_LIST.
+     * The resulting Node has kind AST_STMT_LIST
      */
     private static function cloneStatementList(Node $stmt_list = null) : Node {
         if (\is_null($stmt_list)) {
@@ -259,7 +257,7 @@ class ASTSimplifier {
                     $if_cond->flags === \ast\flags\UNARY_BOOL_NOT &&
                     $if_cond->children['expr']->kind === \ast\AST_UNARY_OP &&
                     $if_cond->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT) {
-                self::replaceLastNodeWithNodeList($nodes, $this->_applyIfDoubleNegateReduction($node));
+                self::replaceLastNodeWithNodeList($nodes, $this->applyIfDoubleNegateReduction($node));
                 continue;
             }
             if (count($node->children) === 1) {
@@ -398,7 +396,7 @@ class ASTSimplifier {
      * Converts if (!!(x)) {Y} -> if (x) {Y}
      * This improves phan's analysis for cases such as `if (!!x)`
      */
-    private function _applyIfDoubleNegateReduction(Node $node) : Node {
+    private function applyIfDoubleNegateReduction(Node $node) : Node {
         \assert($node->children[0]->children['cond']->flags === \ast\flags\UNARY_BOOL_NOT);
         \assert($node->children[0]->children['cond']->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT);
 

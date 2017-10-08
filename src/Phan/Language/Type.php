@@ -414,7 +414,6 @@ class Type
             //'PHP_FLOAT_MAX'         => $int, // since 7.2.0
             'DEFAULT_INCLUDE_PATH'  => $string,
             'PEAR_INSTALL_DIR'      => $string,
-            'PEAR_EXTENSION_DIR'    => $string,
             'PHP_EXTENSION_DIR'     => $string,
             'PEAR_EXTENSION_DIR'    => $string,
             'PHP_PREFIX'            => $string,
@@ -695,6 +694,13 @@ class Type
         if ($namespace) {
             $non_generic_partially_qualified_array_type_name =
                 $namespace . '\\' . $non_generic_partially_qualified_array_type_name;
+        }
+
+        if ($is_generic_array_type && false !== \strrpos($non_generic_array_type_name, '[]')) {
+            return GenericArrayType::fromElementType(
+                Type::fromStringInContext($non_generic_partially_qualified_array_type_name, $context, $source),
+                $is_nullable
+            );
         }
         if ($context->hasNamespaceMapFor(
             \ast\flags\USE_NORMAL,
@@ -1194,13 +1200,15 @@ class Type
      * @return Type
      * Get a new type which is the generic array version of
      * this type. For instance, 'int' will produce 'int[]'.
+     *
+     * As a special case to reduce false positives, 'array' (with no known types) will produce 'array'
      */
     public function asGenericArrayType() : Type
     {
         if (!($this instanceof GenericArrayType)
             && (
-                $this->getName() == 'array'
-                || $this->getName() == 'mixed'
+                $this->name === 'array'
+                || $this->name === 'mixed'
             )
         ) {
             return ArrayType::instance(false);
@@ -1321,7 +1329,7 @@ class Type
                 : $clazz->getUnionType()
         );
 
-        // Resurse up the tree to include all types
+        // Recurse up the tree to include all types
         $recursive_union_type = new UnionType();
         foreach ($union_type->getTypeSet() as $clazz_type) {
             if ((string)$clazz_type != (string)$this) {
@@ -1347,6 +1355,7 @@ class Type
                     : $alias_fqsen->asUnionType()
             );
         }
+        // TODO: Investigate caching this and returning clones after analysis is done.
 
         return $recursive_union_type;
     }
