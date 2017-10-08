@@ -77,7 +77,7 @@ class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor {
         } else if (!is_string($name)) {
             // emit issue if argument is not array access
             $this->emit(
-                'PhanPluginComplexVariableIsset',
+                'PhanPluginComplexVariableInIsset',
                 "Unanalyzable complex variable expression in isset",
                 []
             );

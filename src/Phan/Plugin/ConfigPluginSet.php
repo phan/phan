@@ -12,6 +12,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Plugin;
+use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
 use Phan\Plugin\PluginImplementation;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeNodeCapability;
@@ -25,6 +26,7 @@ use Phan\PluginV2\LegacyAnalyzeNodeCapability;
 use Phan\PluginV2\LegacyPreAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
+use Phan\PluginV2\ReturnTypeOverrideCapability;
 use ast\Node;
 
 /**
@@ -41,7 +43,8 @@ final class ConfigPluginSet extends PluginV2 implements
     AnalyzePropertyCapability,
     FinalizeProcessCapability,
     LegacyAnalyzeNodeCapability,
-    LegacyPreAnalyzeNodeCapability {
+    LegacyPreAnalyzeNodeCapability,
+    ReturnTypeOverrideCapability {
 
     /** @var Plugin[]|null - Cached plugin set for this instance. Lazily generated. */
     private $pluginSet;
@@ -66,6 +69,9 @@ final class ConfigPluginSet extends PluginV2 implements
 
     /** @var FinalizeProcessCapability[]|null */
     private $finalizeProcessPluginSet;
+
+    /** @var ReturnTypeOverrideCapability[]|null */
+    private $returnTypeOverridePluginSet;
 
     /**
      * Call `ConfigPluginSet::instance()` instead.
@@ -298,6 +304,19 @@ final class ConfigPluginSet extends PluginV2 implements
     }
 
     /**
+     * @return \Closure[] maps FQSEN string to closure
+     */
+    public function getReturnTypeOverrides(CodeBase $code_base) : array
+    {
+        $result = [];
+        \assert(!\is_null($this->pluginSet));
+        foreach ($this->returnTypeOverridePluginSet as $plugin) {
+            $result += $plugin->getReturnTypeOverrides($code_base);
+        }
+        return $result;
+    }
+
+    /**
      * Returns true if analyzeProperty() will execute any plugins.
      */
     private function hasAnalyzePropertyPlugins() : bool
@@ -312,6 +331,7 @@ final class ConfigPluginSet extends PluginV2 implements
         if (!\is_null($this->pluginSet)) {
             return;
         }
+        // Add user-defined plugins.
         $plugin_set = array_map(
             function (string $plugin_file_name) : PluginV2 {
                 $plugin_instance =
@@ -327,6 +347,10 @@ final class ConfigPluginSet extends PluginV2 implements
             },
             Config::getValue('plugins')
         );
+        // Add internal plugins. Currently always enabled.
+        $plugin_set[] = new ArrayReturnTypeOverridePlugin();
+
+        // Register the entire set.
         $this->pluginSet = $plugin_set;
 
         $this->preAnalyzeNodePluginSet      = self::filterPreAnalysisPlugins($plugin_set);
@@ -336,6 +360,7 @@ final class ConfigPluginSet extends PluginV2 implements
         $this->analyzePropertyPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzePropertyCapability::class), 'analyzeProperty');
         $this->analyzeClassPluginSet        = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeClassCapability::class), 'analyzeClass');
         $this->finalizeProcessPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, FinalizeProcessCapability::class), 'finalizeProcess');
+        $this->returnTypeOverridePluginSet  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
     }
 
     /**

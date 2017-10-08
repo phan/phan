@@ -175,6 +175,7 @@ return [
     // Add any issue types (such as 'PhanUndeclaredMethod')
     // here to inhibit them from being reported
     'suppress_issue_types' => [
+        'PhanPluginMixedKeyNoKey',  // FunctionSignatureMap.php has many of these, intentionally.
         // 'PhanUndeclaredMethod',
     ],
 
@@ -378,8 +379,11 @@ return [
     'directory_list' => [
         'src',
         'tests/Phan',
+        'vendor/felixfbecker/advanced-json-rpc/lib',
+        'vendor/netresearch/jsonmapper/src',
         'vendor/nikic/php-parser/lib',
         'vendor/phpunit/phpunit/src',
+        'vendor/sabre/event/lib',
         'vendor/symfony/console',
         '.phan/plugins',
         '.phan/stubs',
@@ -408,11 +412,23 @@ return [
     // (e.g. PHP is compiled with --enable-debug or when using XDebug)
     'skip_slow_php_options_warning' => false,
 
+    // You can put paths to internal stubs in this config option.
+    // Phan will continue using its detailed type annotations, but load the constants, classes, functions, and classes (and their Reflection types) from these stub files (doubling as valid php files).
+    // Use a different extension from php to avoid accidentally loading these.
+    // The 'mkstubs' script can be used to generate your own stubs (compatible with php 7.0+ right now)
+    'autoload_internal_extension_signatures' => [
+        'pcntl'   => '.phan/internal_stubs/pcntl.phan_php',
+        'posix'   => '.phan/internal_stubs/posix.phan_php',
+        'sysvmsg' => '.phan/internal_stubs/sysvmsg.phan_php',
+        'sysvsem' => '.phan/internal_stubs/sysvsem.phan_php',
+        'sysvshm' => '.phan/internal_stubs/sysvshm.phan_php',
+    ],
+
     // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
     // but aren't available in the codebase, or the internal functions used to run phan (may lead to false positives if an extension isn't loaded)
     // If this is true(default), then Phan will not warn.
-    // (Would like to override to false for phan self-analysis, but Windows self-tests would fail)
-    'ignore_undeclared_functions_with_known_signatures' => true,
+    // Also see 'autoload_internal_extension_signatures' for an alternative way to fix this type of issue.
+    'ignore_undeclared_functions_with_known_signatures' => false,
 
     // A list of plugin files to execute
     'plugins' => [
@@ -421,11 +437,10 @@ return [
         '.phan/plugins/DollarDollarPlugin.php',
         '.phan/plugins/UnreachableCodePlugin.php',
         // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without key as return type with values having keys deliberately.
-        // '.phan/plugins/DuplicateArrayKeyPlugin.php',
+        '.phan/plugins/DuplicateArrayKeyPlugin.php',
 
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
         // '.phan/plugins/UnusedSuppressionPlugin.php',
     ],
-
 ];

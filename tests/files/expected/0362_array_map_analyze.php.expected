@@ -1,0 +1,3 @@
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:14 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass but \strlen() takes string
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string

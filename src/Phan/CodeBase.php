@@ -253,7 +253,11 @@ class CodeBase
     private function addClassesByNames(array $class_name_list)
     {
         foreach ($class_name_list as $class_name) {
-            $this->addClass(Clazz::fromClassName($this, $class_name));
+            $reflection_class = new \ReflectionClass($class_name);
+            if (!$reflection_class->isUserDefined()) {
+                // include internal classes, but not external classes such as composer
+                $this->addClass(Clazz::fromReflectionClass($this, $reflection_class));
+            }
         }
     }
 
@@ -286,11 +290,12 @@ class CodeBase
 
     /**
      * @param string[] $new_file_list
+     * @param string[] $file_mapping_contents maps relative path to absolute paths
      * @return string[] - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(array $new_file_list) {
+    public function updateFileList(array $new_file_list, array $file_mapping_contents = []) {
         if ($this->undo_tracker) {
-            return $this->undo_tracker->updateFileList($this, $new_file_list);
+            return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents);
         }
         throw new \RuntimeException("Calling updateFileList without undo tracker");
     }
@@ -975,12 +980,6 @@ class CodeBase
         FullyQualifiedFunctionName $fqsen
     ) : bool
     {
-        // Only root namespaced functions will be found in
-        // the internal function map.
-        if ($fqsen->getNamespace() != '\\') {
-            return false;
-        }
-
         if (!Config::get()->ignore_undeclared_functions_with_known_signatures) {
             // Act as though functions don't exist if they aren't loaded into the php binary
             // running phan (or that binary's extensions), even if the signature map contains them.
@@ -996,8 +995,13 @@ class CodeBase
         $function_signature_map =
             UnionType::internalFunctionSignatureMap();
 
-        if (!empty($function_signature_map[$fqsen->getNameWithAlternateId()])) {
-            $signature = $function_signature_map[$fqsen->getNameWithAlternateId()];
+        $name = $fqsen->getNameWithAlternateId();
+        if ($fqsen->getNamespace() != '\\') {
+            $name = \ltrim($fqsen->getNamespace(), '\\') . '\\' . $name;
+        }
+
+        if (!empty($function_signature_map[$name])) {
+            $signature = $function_signature_map[$name];
 
             // Add each method returned for the signature
             foreach (FunctionFactory::functionListFromSignature(

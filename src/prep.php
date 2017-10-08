@@ -33,7 +33,6 @@ $visit_node = function(\ast\Node $node, string $file_path) {
                 print "$file_path:{$node->lineno} $name\n";
             }
         }
-
     }
 
 };

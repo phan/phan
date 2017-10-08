@@ -199,11 +199,22 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     /**
      * @return string
      * The namespace associated with this FQSEN
-     * or null if not defined
      */
     public function getNamespace() : string
     {
         return $this->namespace;
+    }
+
+    /**
+     * @return string
+     * The namespace+name associated with this FQSEN.
+     * (e.g. '\ast\parse_code')
+     */
+    public function getNamespacedName() : string {
+        if ($this->namespace === '\\') {
+            return $this->getName();
+        }
+        return \ltrim($this->namespace, '\\') . '\\' . $this->getName();
     }
 
     /**

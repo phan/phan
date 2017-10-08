@@ -290,7 +290,7 @@ Usage: {$argv[0]} [options] -l file.php [ -l file2.php]
  -v, --verbose
   Whether to emit debugging output of this client.
 
- -h,--help
+ -h, --help
   This help information
 
 EOB;
@@ -308,6 +308,7 @@ EOB;
         $optind = 0;
         $shortopts = "s:p:l:t:f:v";
         $longopts = [
+            'help',
             'daemonize-socket:',
             'daemonize-tcp-port:',
             'syntax-check:',

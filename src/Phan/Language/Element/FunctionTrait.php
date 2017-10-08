@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\FQSEN;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -118,6 +119,11 @@ trait FunctionTrait {
      * This does not change after initialization.
      */
     private $real_return_type;
+
+    /**
+     * @var \Closure|null (CodeBase, Context, Node $arg_list) => UnionType (Bound to $this)
+     */
+    private $return_type_callback = null;
 
     /**
      * @return int
@@ -453,6 +459,16 @@ trait FunctionTrait {
     }
 
     /**
+     * @return void
+     *
+     * Call this before calling appendParameter, if parameters were already added.
+     */
+    public function clearParameterList() {
+        $this->parameter_list = [];
+        $this->parameter_list_hash = null;
+    }
+
+    /**
      * Adds types from comments to the params of a user-defined function or method.
      * Also adds the types from defaults, and emits warnings for certain violations.
      *
@@ -724,4 +740,31 @@ trait FunctionTrait {
     public abstract function analyze(Context $context, CodeBase $code_base) : Context;
 
     public abstract function getRecursionDepth() : int;
+
+    /**
+     * Returns true if the return type depends on the argument, and a plugin makes Phan aware of that.
+     */
+    public function hasDependentReturnType() : bool
+    {
+        return $this->return_type_callback !== null;
+    }
+
+    /**
+     * Returns a union type based on $args_node and $context
+     *
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param \ast\Node[]|int[]|string[] $args
+     */
+    public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType
+    {
+        return ($this->return_type_callback)($code_base, $context, $this, $args);
+    }
+
+    /**
+     * @return void
+     */
+    public function setDependentReturnTypeClosure(\Closure $closure) {
+        $this->return_type_callback = $closure;
+    }
 }
