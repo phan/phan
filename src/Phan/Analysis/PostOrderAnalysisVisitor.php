@@ -86,10 +86,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         // Get the type of the right side of the
         // assignment
-        $right_type = UnionType::fromNode(
-            $this->context,
+        $right_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
-            $node->children['expr']
+            $this->context,
+            $node->children['expr'],
+            true
         );
 
         \assert(
@@ -404,12 +405,14 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitPrint(Node $node) : Context
     {
-        $type = UnionType::fromNode(
-            $this->context,
+        $type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
-            $node->children['expr']
+            $this->context,
+            $node->children['expr'],
+            true
         );
 
+        // TODO: Check objects and resources as well?
         if ($type->isType(ArrayType::instance(false))
             || $type->isType(ArrayType::instance(true))
             || $type->isGenericArray()
@@ -701,10 +704,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 yield VoidType::instance(false)->asUnionType();
                 return;
             }
-            yield UnionType::fromNode(
-                $context,
+            yield UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
-                $node
+                $context,
+                $node,
+                true
             );
             return;
         }
@@ -719,10 +723,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             return;
         }
 
-        $expression_type = UnionType::fromNode(
-            $context,
+        $expression_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
-            $node
+            $context,
+            $node,
+            true
         );
 
         if ($expression_type->hasStaticType()) {
@@ -1884,6 +1889,103 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      * Replace the method's parameter types with the argument
      * types and re-analyze the method.
      *
+     * This is used when analyzing callbacks and closures, e.g. in array_map.
+     *
+     * @param UnionType[] $argument_types
+     * An AST node listing the arguments
+     *
+     * @param FunctionInterface $method
+     * The method or function being called
+     *
+     * @return void
+     *
+     * @see analyzeMethodWithArgumentTypes (Which takes AST nodes)
+     */
+    public function analyzeCallableWithArgumentTypes(
+        array $argument_types, FunctionInterface $method
+    ) {
+        // Don't re-analyze recursive methods. That doesn't go well.
+        if ($this->context->isInFunctionLikeScope()
+            && $method->getFQSEN() === $this->context->getFunctionLikeFQSEN()
+        ) {
+            return;
+        }
+
+        $original_parameter_list = $method->getParameterList();
+        if (\count($original_parameter_list) === 0) {
+            return;  // No point in recursing if there's no changed parameters.
+        }
+
+        $original_method_scope = $method->getInternalScope();
+        $method->setInternalScope(clone($original_method_scope));
+        // Even though we don't modify the parameter list, we still need to know the types
+        // -- as an optimization, we don't run quick mode again if the types didn't change?
+        $parameter_list = \array_map(function (Variable $parameter) : Variable {
+            return clone($parameter);
+        }, $original_parameter_list);
+
+        foreach ($parameter_list as $i => $parameter_clone) {
+            assert($parameter_clone instanceof Parameter);
+            // Add the parameter to the scope
+            $method->getInternalScope()->addVariable(
+                $parameter_clone
+            );
+
+            if (!isset($argument_types[$i]) && $parameter_clone->hasDefaultValue()) {
+                $parameter_type = $parameter_clone->getDefaultValueType();
+                if ($parameter_type->isType(NullType::instance(false))) {
+                    // Treat a parameter default of null the same way as passing null to that parameter
+                    // (Add null to the list of possibilities)
+                    $parameter_clone->addUnionType($parameter_type);
+                } else {
+                    // For other types (E.g. string), just replace the union type.
+                    $parameter_clone->setUnionType($parameter_type);
+                }
+            }
+
+            // If there's no parameter at that offset, we may be in
+            // a ParamTooMany situation. That is caught elsewhere.
+            if (!isset($argument_types[$i])
+                || !$parameter_clone->getNonVariadicUnionType()->isEmpty()
+            ) {
+                continue;
+            }
+
+            $this->updateParameterTypeByArgument(
+                $method,
+                $parameter_clone,
+                null,  // TODO: Can array_map/array_filter accept closures with references? Consider warning?
+                $argument_types[$i],
+                $parameter_list,
+                $i
+            );
+        }
+        foreach ($parameter_list as $parameter_clone) {
+            if ($parameter_clone->isVariadic()) {
+                // We're using this parameter clone to analyze the **inside** of the method, it's never seen on the outside.
+                // Convert it immediately.
+                // TODO: Add tests of variadic references, fix those if necessary.
+                $method->getInternalScope()->addVariable(
+                    $parameter_clone->cloneAsNonVariadic()
+                );
+            }
+        }
+
+        // Now that we know something about the parameters used
+        // to call the method, we can reanalyze the method with
+        // the types of the parameter
+        $method->analyzeWithNewParams($method->getContext(), $this->code_base, $parameter_list);
+
+        // Reset to the original parameter scope after
+        // having tested the parameters with the types passed in
+        $method->setParameterList($original_parameter_list);
+        $method->setInternalScope($original_method_scope);
+    }
+
+    /**
+     * Replace the method's parameter types with the argument
+     * types and re-analyze the method.
+     *
      * @param Node $argument_list_node
      * An AST node listing the arguments
      *
@@ -1930,10 +2032,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 continue;
             }
             // Determine the type of the argument at position $i
-            $argument_types[$i] = UnionType::fromNode(
-                $this->context,
+            $argument_types[$i] = UnionTypeVisitor::unionTypeFromNode(
                 $this->code_base,
-                $argument
+                $this->context,
+                $argument,
+                true
             );
         }
 

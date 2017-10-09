@@ -3,8 +3,10 @@ namespace Phan\Plugin\Internal;
 
 use Phan\CodeBase;
 use Phan\Analysis\ArgumentType;
+use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Issue;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
@@ -101,7 +103,12 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnType
                         foreach ($filter_function_list as $filter_function) {
                             // Analyze that the individual elements passed to array_filter()'s callback make sense.
                             // TODO: analyze ARRAY_FILTER_USE_KEY, ARRAY_FILTER_USE_BOTH
-                            ArgumentType::analyzeParameter($code_base, $context, $filter_function, $passed_array_type->genericArrayElementTypes(), $context->getLineNumberStart(), 0);
+                            $passed_array_element_types = $passed_array_type->genericArrayElementTypes();
+                            ArgumentType::analyzeParameter($code_base, $context, $filter_function, $passed_array_element_types, $context->getLineNumberStart(), 0);
+                            if (!Config::get_quick_mode()) {
+                                $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
+                                $analyzer->analyzeCallableWithArgumentTypes([$passed_array_element_types], $filter_function);
+                            }
                         }
                     }
                     // TODO: Analyze if it and the flags are compatible with the arguments to the closure provided.
@@ -160,22 +167,46 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnType
                 return $array_type->asUnionType();
             }
             $arguments = \array_slice($args, 1);
-            $element_types = new UnionType();
-            foreach ($function_like_list as $function_like) {
-
+            $possible_return_types = new UnionType();
+            $cache = [];
+            // Don't calculate argument types more than once.
+            $get_argument_type_for_array_map = function($argument, int $i) use($code_base, $context, &$cache) : UnionType {
+                if (isset($cache[$i])) {
+                    return $cache[$i];
+                }
+                $argument_type = UnionTypeVisitor::unionTypeFromNode(
+                    $code_base,
+                    $context,
+                    $argument,
+                    true
+                )->genericArrayElementTypes();
+                $cache[$i] = $argument_type;
+                return $argument_type;
+            };
+            foreach ($function_like_list as $map_function) {
                 ArgumentType::analyzeForCallback(
-                    $function_like, $arguments, $context, $code_base, $extract_generic_array_element_types
+                    $map_function, $arguments, $context, $code_base, $get_argument_type_for_array_map
                 );
-                if ($function_like->hasDependentReturnType()) {
-                    $element_types->addUnionType($function_like->getDependentReturnType($code_base, $context, $arguments));
+                if ($map_function->hasDependentReturnType()) {
+                    $possible_return_types->addUnionType($map_function->getDependentReturnType($code_base, $context, $arguments));
                 } else {
-                    $element_types->addUnionType($function_like->getUnionType());
+                    $possible_return_types->addUnionType($map_function->getUnionType());
                 }
             }
-            if ($element_types->isEmpty()) {
+            if (!Config::get_quick_mode()) {
+                $argument_types = [];
+                foreach ($arguments as $i => $node) {
+                    $argument_types[] = $get_argument_type_for_array_map($node, $i);
+                }
+                foreach ($function_like_list as $map_function) {
+                    $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
+                    $analyzer->analyzeCallableWithArgumentTypes($argument_types, $map_function);
+                }
+            }
+            if ($possible_return_types->isEmpty()) {
                 return $array_type->asUnionType();
             }
-            return $element_types->elementTypesToGenericArray();
+            return $possible_return_types->elementTypesToGenericArray();
         };
         $array_pad_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use($array_type) : UnionType {
             if (\count($args) != 3) {

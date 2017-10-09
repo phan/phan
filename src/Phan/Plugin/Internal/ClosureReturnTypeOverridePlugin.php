@@ -3,10 +3,13 @@ namespace Phan\Plugin\Internal;
 
 use Phan\CodeBase;
 use Phan\Analysis\ArgumentType;
+use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
+use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\UnionType;
@@ -20,7 +23,6 @@ use ast\Node;
  * TODO: Refactor this.
  */
 final class ClosureReturnTypeOverridePlugin extends PluginV2 implements ReturnTypeOverrideCapability {
-
     /**
      * @return \Closure[]
      */
@@ -42,15 +44,13 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements ReturnTy
             }
             $arguments = \array_slice($args, 1);
             foreach ($function_like_list as $function_like) {
-                ArgumentType::analyzeForCallback(
-                    $function_like, $arguments, $context, $code_base, null
-                );
                 if ($function_like->hasDependentReturnType()) {
                     $element_types->addUnionType($function_like->getDependentReturnType($code_base, $context, $arguments));
                 } else {
                     $element_types->addUnionType($function_like->getUnionType());
                 }
             }
+            self::analyzeFunctionAndNormalArgumentList($code_base, $context, $function_like_list, $arguments);
             return $element_types;
         };
         $call_user_func_array_callback = static function(
@@ -79,17 +79,16 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements ReturnTy
                 $arguments = null;
             }
             $element_types = new UnionType();
+
             foreach ($function_like_list as $function_like) {
-                if ($arguments !== null) {
-                    ArgumentType::analyzeForCallback(
-                        $function_like, $arguments, $context, $code_base, null
-                    );
-                }
                 if ($arguments !== null && $function_like->hasDependentReturnType()) {
                     $element_types->addUnionType($function_like->getDependentReturnType($code_base, $context, $arguments));
                 } else {
                     $element_types->addUnionType($function_like->getUnionType());
                 }
+            }
+            if ($arguments !== null) {
+                self::analyzeFunctionAndNormalArgumentList($code_base, $context, $function_like_list, $arguments);
             }
             return $element_types;
         };
@@ -128,5 +127,54 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements ReturnTy
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
         return self::getReturnTypeOverridesStatic($code_base);
+    }
+
+    public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : \Closure
+    {
+        $cache = [];
+        return function($argument, int $i) use($code_base, $context, &$cache) : UnionType {
+            $argument_type = $cache[$i] ?? null;
+            if (isset($argument_type)) {
+                return $argument_type;
+            }
+            $argument_type = UnionTypeVisitor::unionTypeFromNode(
+                $code_base,
+                $context,
+                $argument,
+                true
+            );
+            $cache[$i] = $argument_type;
+            return $argument_type;
+        };
+    }
+
+    /**
+     * Analyze a function which is called with the un-transformed types from $arguments.
+     *
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param FunctionInterface[] $function_like_list
+     * @param Node[]|string[]|int[] $arguments
+     *
+     * @return void
+     */
+    private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments) {
+        $get_argument_type = self::createNormalArgumentCache($code_base, $context);
+        foreach ($function_like_list as $function_like) {
+            ArgumentType::analyzeForCallback($function_like, $arguments, $context, $code_base, $get_argument_type);
+        }
+        if (Config::get_quick_mode()) {
+            // Keep it fast, don't recurse.
+            return;
+        }
+
+        $argument_types = [];
+        foreach ($arguments as $i => $argument) {
+            $argument_types[] = $get_argument_type($argument, $i);
+        }
+        $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
+        foreach ($function_like_list as $function_like) {
+            $analyzer->analyzeCallableWithArgumentTypes($argument_types, $function_like);
+        }
     }
 }

@@ -87,10 +87,14 @@ trait Analyzable
         // that.
         //
         // TODO: Store the parent context on Analyzable objects
-        if ($this->getNode()->kind === \ast\AST_CLOSURE) {
-            return $context;
+        $definition_node = $this->getNode();
+        if ($definition_node->kind === \ast\AST_CLOSURE) {
+            // TODO: Pick up 'uses' when this is a closure invoked inline (e.g. array_map(function($x) use($localVar) {...}, args
+            // TODO: Investigate replacing the types of these with 'mixed' for quick mode re-analysis, or checking if the type will never vary.
+            if (!empty($definition_node->children['uses'])) {
+                return $context;
+            }
         }
-
         // Don't go deeper than one level in
         // TODO: Due to optimizations in checking for duplicate parameter lists, it should now be possible to increase this depth limit.
         if (self::$recursion_depth >= 2) {
@@ -103,7 +107,7 @@ trait Analyzable
             // Analyze the node in a cloned context so that we
             // don't overwrite anything
             return (new BlockAnalysisVisitor($code_base, clone($context)))(
-                $this->getNode()
+                $definition_node
             );
         } finally {
             self::$recursion_depth--;

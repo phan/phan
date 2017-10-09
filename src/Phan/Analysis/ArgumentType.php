@@ -238,15 +238,15 @@ class ArgumentType
      * @param CodeBase $code_base
      * The global code base
      *
-     * @param ?\Closure $transformation
-     * Transformation to apply to the types of individual arguments.
+     * @param ?\Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
+     * Fetches the types of individual arguments.
      */
     public static function analyzeForCallback(
         FunctionInterface $method,
         array $arg_nodes,
         Context $context,
         CodeBase $code_base,
-        \Closure $transformation = null
+        \Closure $get_argument_type
     ) {
         // Special common cases where we want slightly
         // better multi-signature error messages
@@ -312,7 +312,7 @@ class ArgumentType
             $method,
             $arg_nodes,
             $context,
-            $transformation
+            $get_argument_type
         );
     }
 
@@ -329,6 +329,8 @@ class ArgumentType
      * @param Context $context
      * The context in which we see the call
      *
+     * @param \Closure $get_argument_type (Node|string|int $node, int $i) -> UnionType
+     *
      * @return void
      */
     private static function analyzeParameterListForCallback(
@@ -336,7 +338,7 @@ class ArgumentType
         FunctionInterface $method,
         array $arg_nodes,
         Context $context,
-        \Closure $transformation = null
+        \Closure $get_argument_type
     ) {
         // There's nothing reasonable we can do here
         if ($method instanceof Method) {
@@ -360,14 +362,7 @@ class ArgumentType
 
             // Get the type of the argument. We'll check it against
             // the parameter in a moment
-            $argument_type = UnionType::fromNode(
-                $context,
-                $code_base,
-                $argument
-            );
-            if ($transformation !== null) {
-                $argument_type = $transformation($argument_type, $i);
-            }
+            $argument_type = $get_argument_type($argument, $i);
             self::analyzeParameter($code_base, $context, $method, $argument_type, $argument->lineno ?? 0, $i);
         }
     }
@@ -458,10 +453,11 @@ class ArgumentType
 
             // Get the type of the argument. We'll check it against
             // the parameter in a moment
-            $argument_type = UnionType::fromNode(
-                $context,
+            $argument_type = UnionTypeVisitor::unionTypeFromNode(
                 $code_base,
-                $argument
+                $context,
+                $argument,
+                true
             );
             self::analyzeParameter($code_base, $context, $method, $argument_type, $node->lineno ?? 0, $i);
         }
@@ -649,10 +645,11 @@ class ArgumentType
     ) : bool {
 
         // Get the type of the node
-        $node_type = UnionType::fromNode(
-            $context,
+        $node_type = UnionTypeVisitor::unionTypeFromNode(
             $code_base,
-            $node
+            $context,
+            $node,
+            true
         );
 
         // See if it can be cast to the given type
