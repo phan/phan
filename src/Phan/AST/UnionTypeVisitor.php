@@ -1882,15 +1882,40 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
      * @param bool $log_error whether or not to log errors while searching
+     * @return FunctionInterface[]
+     */
+    public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
+    {
+        $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
+        $functions = [];
+        foreach ($function_fqsens as $fqsen) {
+            if ($fqsen instanceof FullyQualifiedMethodName) {
+                if (!$code_base->hasMethodWithFQSEN($fqsen)) {
+                    // TODO: error PhanArrayMapClosure
+                    continue;
+                }
+                $functions[] = $code_base->getMethodByFQSEN($fqsen);
+            } else {
+                assert($fqsen instanceof FullyQualifiedFunctionName);
+                if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
+                    // TODO: error PhanArrayMapClosure
+                    continue;
+                }
+                $functions[] = $code_base->getFunctionByFQSEN($fqsen);
+            }
+        }
+        return $functions;
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param string|Node $node the node to fetch CallableType instances for.
+     * @param bool $log_error whether or not to log errors while searching
      * @return FullyQualifiedFunctionLikeName[]
      */
     public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
     {
-        // TODO: improve functionLikeFQSENListFromNodeAndContext to include
-        // 1. [MyClass::class, 'staticMethodName'],
-        // 2. [$obj, 'instanceMethodName],
-        // 3. 'global_func'
-        // 4. 'MyClass::staticFunc'
         return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
     }
 
