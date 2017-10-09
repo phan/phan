@@ -17,6 +17,7 @@ New Features (CLI, Configs)
 + Document the --disable-plugins CLI flag.
 + Improve analysis of return types of `array_pop`,`array_shift`,`current`,`end`,`next`,`prev`,`reset`,`array_map`,`array_filter`, etc..
   See ArrayReturnTypeOverridePlugin.php.
+  Phan can analyze callables (for `array_map`/`array_filter`) of Closure form, as well as strings/2-part arrays that are inlined.
 
 Plugins
 + Add a new plugin type which can override the return type of functions and methods on a case by case basis.

@@ -89,7 +89,7 @@ class ContextNode
     }
 
     /**
-     * Get a fully qualified name form a node
+     * Get a fully qualified name from a node
      *
      * @return string
      */
@@ -1518,5 +1518,38 @@ class ContextNode
                 );
             }
         }
+    }
+
+    /**
+     * @return ?FullyQualifiedClassName
+     * @throws IssueException if the list of possible classes couldn't be determined.
+     */
+    public function resolveClassNameInContext()
+    {
+        // A function argument to resolve into an FQSEN
+        $arg = $this->node;
+
+        if (\is_string($arg)) {
+            // Class_alias treats arguments as fully qualified strings.
+            return FullyQualifiedClassName::fromFullyQualifiedString($arg);
+        }
+        if ($arg instanceof Node
+            && $arg->kind === \ast\AST_CLASS_CONST
+            && \strcasecmp($arg->children['const'], 'class') === 0
+        ) {
+            $class_type = (new ContextNode(
+                $this->code_base,
+                $this->context,
+                $arg->children['class']
+            ))->getClassUnionType();
+
+            // If we find a class definition, then return it. There should be 0 or 1.
+            // (Expressions such as 'int::class' are syntactically valid, but would have 0 results).
+            foreach ($class_type->asClassFQSENList($this->context) as $class_fqsen) {
+                return $class_fqsen;
+            }
+        }
+
+        return null;
     }
 }

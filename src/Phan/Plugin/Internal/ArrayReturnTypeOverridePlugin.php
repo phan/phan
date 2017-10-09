@@ -3,6 +3,7 @@ namespace Phan\Plugin\Internal;
 
 use Phan\CodeBase;
 use Phan\AST\UnionTypeVisitor;
+use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -170,6 +171,32 @@ class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnTypeOverri
                         continue;
                     }
                     $function_like = $code_base->getFunctionByFQSEN($fqsen);
+                }
+                $expected_parameter_count = \count($args) - 1;
+                if ($function_like->getNumberOfRequiredRealParameters() > $expected_parameter_count) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::ParamTooFewCallable,
+                        $context->getLineNumberStart(),
+                        $expected_parameter_count,
+                        (string)$function_like->getFQSEN(),
+                        $function_like->getNumberOfRequiredRealParameters(),
+                        $function_like->getFileRef()->getFile(),
+                        $function_like->getFileRef()->getLineNumberStart()
+                    );
+                } else if ($function_like->getNumberOfParameters() < $expected_parameter_count) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::ParamTooManyCallable,
+                        $context->getLineNumberStart(),
+                        $expected_parameter_count,
+                        (string)$function_like->getFQSEN(),
+                        $function_like->getNumberOfParameters(),
+                        $function_like->getFileRef()->getFile(),
+                        $function_like->getFileRef()->getLineNumberStart()
+                    );
                 }
                 // TODO: dependent union type?
                 $element_types->addUnionType($function_like->getUnionType());

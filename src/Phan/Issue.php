@@ -42,6 +42,10 @@ class Issue
     const UndeclaredTypeProperty    = 'PhanUndeclaredTypeProperty';
     const UndeclaredVariable        = 'PhanUndeclaredVariable';
     const UndeclaredVariableDim     = 'PhanUndeclaredVariableDim';
+    const UndeclaredClassInCallable = 'PhanUndeclaredClassInCallable';
+    const UndeclaredStaticMethodInCallable = 'PhanUndeclaredStaticMethodInCallable';
+    const UndeclaredFunctionInCallable = 'PhanUndeclaredFunctionInCallable';
+    const UndeclaredMethodInCallable = 'PhanUndeclaredMethodInCallable';
 
     // Issue::CATEGORY_TYPE
     const NonClassMethodCall        = 'PhanNonClassMethodCall';
@@ -77,6 +81,9 @@ class Issue
     const TypeNonVarPassByRef       = 'PhanTypeNonVarPassByRef';
     const TypeParentConstructorCalled = 'PhanTypeParentConstructorCalled';
     const TypeVoidAssignment        = 'PhanTypeVoidAssignment';
+    const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
+    const TypeInvalidCallableArrayKey = 'PhanTypeInvalidCallableArrayKey';
+    const TypeInvalidCallableObjectOfMethod = 'PhanTypeInvalidCallableObjectOfMethod';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -107,8 +114,10 @@ class Issue
     const ParamSpecial4             = 'PhanParamSpecial4';
     const ParamTooFew               = 'PhanParamTooFew';
     const ParamTooFewInternal       = 'PhanParamTooFewInternal';
+    const ParamTooFewCallable       = 'PhanParamTooFewCallable';
     const ParamTooMany              = 'PhanParamTooMany';
     const ParamTooManyInternal      = 'PhanParamTooManyInternal';
+    const ParamTooManyCallable      = 'PhanParamTooManyCallable';
     const ParamTypeMismatch         = 'PhanParamTypeMismatch';
     const ParamSignatureMismatch    = 'PhanParamSignatureMismatch';
     const ParamSignatureMismatchInternal = 'PhanParamSignatureMismatchInternal';
@@ -626,6 +635,38 @@ class Issue
                 self::REMEDIATION_B,
                 11029
             ),
+            new Issue(
+                self::UndeclaredClassInCallable,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Reference to undeclared class {CLASS} in callable {METHOD}",
+                self::REMEDIATION_B,
+                11030
+            ),
+            new Issue(
+                self::UndeclaredStaticMethodInCallable,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Reference to undeclared static method {METHOD} in callable",
+                self::REMEDIATION_B,
+                11031
+            ),
+            new Issue(
+                self::UndeclaredFunctionInCallable,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Call to undeclared function {FUNCTION} in callable",
+                self::REMEDIATION_B,
+                11032
+            ),
+            new Issue(
+                self::UndeclaredMethodInCallable,
+                self::CATEGORY_UNDEFINED,
+                self::SEVERITY_NORMAL,
+                "Call to undeclared method {METHOD} in callable. Possible object type(s) of for that method are {TYPE}",
+                self::REMEDIATION_B,
+                11033
+            ),
 
             // Issue::CATEGORY_ANALYSIS
             new Issue(
@@ -910,6 +951,30 @@ class Issue
                 self::REMEDIATION_B,
                 10032
             ),
+            new Issue(
+                self::TypeInvalidCallableArraySize,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'In a place where phan was expecting a callable, saw an array of size {COUNT}, but callable arrays must be of size 2',
+                self::REMEDIATION_B,
+                10033
+            ),
+            new Issue(
+                self::TypeInvalidCallableArrayKey,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'In a place where phan was expecting a callable, saw an array with an unexpected key for element #{INDEX} (expected [$class_or_expr, $method_name])',
+                self::REMEDIATION_B,
+                10034
+            ),
+            new Issue(
+                self::TypeInvalidCallableObjectOfMethod,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'In a place where phan was expecting a callable, saw a two-element array with a class or expression with an unexpected type {TYPE} (expected a class type or string). Method name was {METHOD}',
+                self::REMEDIATION_B,
+                10035
+            ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,
@@ -1016,6 +1081,14 @@ class Issue
                 7002
             ),
             new Issue(
+                self::ParamTooManyCallable,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() (As a provided callable) which only takes {COUNT} arg(s) defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7043
+            ),
+            new Issue(
                 self::ParamTooFew,
                 self::CATEGORY_PARAMETER,
                 self::SEVERITY_NORMAL,
@@ -1030,6 +1103,14 @@ class Issue
                 "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() which requires {COUNT} arg(s)",
                 self::REMEDIATION_B,
                 7004
+            ),
+            new Issue(
+                self::ParamTooFewCallable,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_LOW,
+                "Call with {COUNT} arg(s) to {FUNCTIONLIKE}() (as a provided callable) which requires {COUNT} arg(s) defined at {FILE}:{LINE}",
+                self::REMEDIATION_B,
+                7044
             ),
             new Issue(
                 self::ParamSpecial1,
