@@ -1166,6 +1166,8 @@ class ParseVisitor extends ScopeVisitor
      * Return the existence of a class_alias from one FQSEN to the other.
      * Modifies $this->codebase if successful.
      *
+     * Supports 'MyClass' and MyClass::class
+     *
      * @param Node $node - An AST_CALL node with name 'class_alias' to attempt to resolve
      * @return void
      */
@@ -1175,13 +1177,15 @@ class ParseVisitor extends ScopeVisitor
         if (\count($args) < 2 || \count($args) > 3) {
             return;
         }
+        $code_base = $this->code_base;
+        $context = $this->context;
         try {
-            $original_fqsen = $this->resolveClassNameInContext($args[0]);
-            $alias_fqsen = $this->resolveClassNameInContext($args[1]);
+            $original_fqsen = (new ContextNode($code_base, $context, $args[0]))->resolveClassNameInContext();
+            $alias_fqsen = (new ContextNode($code_base, $context, $args[1]))->resolveClassNameInContext();
         } catch (IssueException $exception) {
             Issue::maybeEmitInstance(
-                $this->code_base,
-                $this->context,
+                $code_base,
+                $context,
                 $exception->getIssueInstance()
             );
             return;
@@ -1193,39 +1197,6 @@ class ParseVisitor extends ScopeVisitor
 
         // Add the class alias during parse phase.
         // Figure out if any of the aliases are wrong after analysis phase.
-        $this->code_base->addClassAlias($original_fqsen, $alias_fqsen, $this->context, $node->lineno ?? 0);
-    }
-
-    /**
-     * @param Node|string|float|int $arg
-     * A function argument to resolve into an FQSEN
-     *
-     * @return ?FullyQualifiedClassName
-     * @throws IssueException if the list of possible classes couldn't be determined.
-     */
-    private function resolveClassNameInContext($arg)
-    {
-        if (\is_string($arg)) {
-            // Class_alias treats arguments as fully qualified strings.
-            return FullyQualifiedClassName::fromFullyQualifiedString($arg);
-        }
-        if ($arg instanceof Node
-            && $arg->kind === \ast\AST_CLASS_CONST
-            && \strcasecmp($arg->children['const'], 'class') === 0
-        ) {
-            $class_type = (new ContextNode(
-                $this->code_base,
-                $this->context,
-                $arg->children['class']
-            ))->getClassUnionType();
-
-            // If we find a class definition, then return it. There should be 0 or 1.
-            // (Expressions such as 'int::class' are syntactically valid, but would have 0 results).
-            foreach ($class_type->asClassFQSENList($this->context) as $class_fqsen) {
-                return $class_fqsen;
-            }
-        }
-
-        return null;
+        $this->code_base->addClassAlias($original_fqsen, $alias_fqsen, $context, $node->lineno ?? 0);
     }
 }
