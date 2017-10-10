@@ -663,7 +663,7 @@ class Issue
                 self::UndeclaredMethodInCallable,
                 self::CATEGORY_UNDEFINED,
                 self::SEVERITY_NORMAL,
-                "Call to undeclared method {METHOD} in callable. Possible object type(s) of for that method are {TYPE}",
+                "Call to undeclared method {METHOD} in callable. Possible object type(s) for that method are {TYPE}",
                 self::REMEDIATION_B,
                 11033
             ),
