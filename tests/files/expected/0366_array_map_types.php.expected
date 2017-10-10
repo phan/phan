@@ -1,0 +1,4 @@
+%s:6 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \closure_%s() takes string defined at %s:6
+%s:6 PhanTypeMismatchReturn Returning type \stdClass[] but test366() is declared to return int[]
+%s:14 PhanTypeMismatchReturn Returning type int[] but test366B() is declared to return string[]
+%s:16 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \closure_%s() takes string defined at %s:14

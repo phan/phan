@@ -1882,15 +1882,40 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
      * @param bool $log_error whether or not to log errors while searching
+     * @return FunctionInterface[]
+     */
+    public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
+    {
+        $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
+        $functions = [];
+        foreach ($function_fqsens as $fqsen) {
+            if ($fqsen instanceof FullyQualifiedMethodName) {
+                if (!$code_base->hasMethodWithFQSEN($fqsen)) {
+                    // TODO: error PhanArrayMapClosure
+                    continue;
+                }
+                $functions[] = $code_base->getMethodByFQSEN($fqsen);
+            } else {
+                assert($fqsen instanceof FullyQualifiedFunctionName);
+                if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
+                    // TODO: error PhanArrayMapClosure
+                    continue;
+                }
+                $functions[] = $code_base->getFunctionByFQSEN($fqsen);
+            }
+        }
+        return $functions;
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param string|Node $node the node to fetch CallableType instances for.
+     * @param bool $log_error whether or not to log errors while searching
      * @return FullyQualifiedFunctionLikeName[]
      */
     public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
     {
-        // TODO: improve functionLikeFQSENListFromNodeAndContext to include
-        // 1. [MyClass::class, 'staticMethodName'],
-        // 2. [$obj, 'instanceMethodName],
-        // 3. 'global_func'
-        // 4. 'MyClass::staticFunc'
         return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
     }
 
@@ -1964,6 +1989,58 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param string $class_name (may also be 'self', 'parent', or 'static')
+     * @return ?FullyQualifiedClassName
+     */
+    private function lookupClassOfCallableByName(string $class_name)
+    {
+        switch(\strtolower($class_name)) {
+        case 'self':
+        case 'static':
+            $context = $this->context;
+            if (!$context->isInClassScope()) {
+                $this->emitIssue(
+                    Issue::ContextNotObject,
+                    $context->getLineNumberStart(),
+                    \strtolower($class_name)
+                );
+                return null;
+            }
+            return $context->getClassFQSEN();
+        case 'parent':
+            $context = $this->context;
+            if (!$context->isInClassScope()) {
+                $this->emitIssue(
+                    Issue::ContextNotObject,
+                    $context->getLineNumberStart(),
+                    \strtolower($class_name)
+                );
+                return null;
+            }
+            $class = $context->getClassInScope($this->code_base);
+            if ($class->isTrait()) {
+                $this->emitIssue(
+                    Issue::TraitParentReference,
+                    $context->getLineNumberStart(),
+                    (string)$class->getFQSEN()
+                );
+                return null;
+            }
+            if (!$class->hasParentType()) {
+                $this->emitIssue(
+                    Issue::ParentlessClass,
+                    $context->getLineNumberStart(),
+                    (string)$class->getFQSEN()
+                );
+                return null;
+            }
+            return $class->getParentClassFQSEN();  // may or may not exist.
+        default:
+            return FullyQualifiedClassName::make('', $class_name);
+        }
+    }
+
+    /**
      * @param string|Node $class_or_expr
      * @param string $method_name
      *
@@ -1972,17 +2049,20 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function methodFQSENListFromParts($class_or_expr, $method_name) : array
     {
-        $code_base = $this->code_base;
-        $context = $this->context;
-
         if (!\is_string($method_name)) {
             // Currently only works with string literals.
             // TODO: Check if union type is sane, e.g. callable ['MyClass', new stdClass()] is nonsense.
             return [];
         }
+        $code_base = $this->code_base;
+        $context = $this->context;
+
 
         if (is_string($class_or_expr)) {
-            $class_fqsen = FullyQualifiedClassName::make('', $class_or_expr);
+            $class_fqsen = $this->lookupClassOfCallableByName($class_or_expr);
+            if (!$class_fqsen) {
+                return [];
+            }
         } else {
             $class_fqsen = (new ContextNode($code_base, $context, $class_or_expr))->resolveClassNameInContext();
             if (!$class_fqsen) {

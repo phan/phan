@@ -15,9 +15,11 @@ New Features (CLI, Configs)
   Add a script (`tool/make_stubs`) to output the contents of stubs to use for `autoload_internal_extension_signatures` (#627).
 + By default, automatically restart Phan without xdebug if xdebug is enabled. (#1161)
 + Document the --disable-plugins CLI flag.
-+ Improve analysis of return types of `array_pop`,`array_shift`,`current`,`end`,`next`,`prev`,`reset`,`array_map`,`array_filter`, etc..
++ Improve analysis of return types of `array_pop`,`array_shift`,`current`,`end`,`next`,`prev`,`reset`,`array_map`,`array_filter`, etc.
   See ArrayReturnTypeOverridePlugin.php.
   Phan can analyze callables (for `array_map`/`array_filter`) of Closure form, as well as strings/2-part arrays that are inlined.
++ Check if functions/methods passed to array_map and array_filter are compatible with their arguments.
+  Recursively analyze the functions/methods passed to array_map/array_filter if no types were provided. (unless quick mode is being used)
 
 Plugins
 + Add a new plugin type which can override the return type of functions and methods on a case by case basis.

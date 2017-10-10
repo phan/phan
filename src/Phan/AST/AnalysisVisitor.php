@@ -5,6 +5,9 @@ use Phan\AST\Visitor\KindVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Language\FQSEN;
+use Phan\Language\UnionType;
+use Phan\Language\Type;
 
 abstract class AnalysisVisitor extends KindVisitorImplementation
 {
@@ -44,7 +47,7 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
      * @param int $lineno
      * The line number where the issue was found
      *
-     * @param mixed ...$parameters
+     * @param int|string|FQSEN|UnionType|Type ...$parameters
      * Template parameters for the issue's error message
      *
      * @return void

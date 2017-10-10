@@ -48,23 +48,40 @@ interface FunctionInterface extends AddressableElementInterface {
 
     /**
      * @return int
+     * The number of optional real parameters on this function/method.
+     * May differ from getNumberOfOptionalParameters()
+     * for internal modules lacking proper reflection info,
+     * or if the installed module version's API changed from what Phan's stubs used,
+     * or if a function/method uses variadics/func_get_arg*()
+     */
+    public function getNumberOfOptionalRealParameters() : int;
+
+    /**
+     * @return int
      * The maximum number of parameters to this method
      */
     public function getNumberOfParameters() : int;
-    /**
 
+    /**
      * @return int
      * The number of required parameters on this method
      */
     public function getNumberOfRequiredParameters() : int;
 
     /**
-     *
      * The number of required parameters
      *
      * @return void
      */
     public function setNumberOfRequiredParameters(int $number);
+
+    /**
+     * @return int
+     * The number of required real parameters on this function/method.
+     * May differ for internal modules lacking proper reflection info,
+     * or if the installed module version's API changed from what Phan's stubs used.
+     */
+    public function getNumberOfRequiredRealParameters() : int;
 
     /**
      * @return bool

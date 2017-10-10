@@ -2,10 +2,14 @@
 namespace Phan\Plugin\Internal;
 
 use Phan\CodeBase;
+use Phan\Analysis\ArgumentType;
+use Phan\Analysis\PostOrderAnalysisVisitor;
 use Phan\AST\UnionTypeVisitor;
 use Phan\Issue;
+use Phan\Config;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type\ArrayType;
@@ -14,12 +18,15 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
 use Phan\PluginV2;
+use ast\Node;
 
 /**
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  *
+ * TODO: Refactor this.
  */
-class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnTypeOverrideCapability {
+final class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnTypeOverrideCapability {
+
     /**
      * @return \Closure[]
      */
@@ -91,6 +98,19 @@ class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnTypeOverri
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
                 $generic_passed_array_type = $passed_array_type->genericArrayTypes();
                 if (!$generic_passed_array_type->isEmpty()) {
+                    if (\count($args) === 2) {
+                        $filter_function_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[1], true);
+                        foreach ($filter_function_list as $filter_function) {
+                            // Analyze that the individual elements passed to array_filter()'s callback make sense.
+                            // TODO: analyze ARRAY_FILTER_USE_KEY, ARRAY_FILTER_USE_BOTH
+                            $passed_array_element_types = $passed_array_type->genericArrayElementTypes();
+                            ArgumentType::analyzeParameter($code_base, $context, $filter_function, $passed_array_element_types, $context->getLineNumberStart(), 0);
+                            if (!Config::get_quick_mode()) {
+                                $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
+                                $analyzer->analyzeCallableWithArgumentTypes([$passed_array_element_types], $filter_function);
+                            }
+                        }
+                    }
                     // TODO: Analyze if it and the flags are compatible with the arguments to the closure provided.
                     return $generic_passed_array_type;
                 }
@@ -102,31 +122,17 @@ class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnTypeOverri
             if (\count($args) < 2) {
                 return $mixed_type->asUnionType();
             }
-            $function_fqsen_list = UnionTypeVisitor::functionLikeFQSENListFromNodeAndContext($code_base, $context, $args[1], true);
-            if (\count($function_fqsen_list) === 0) {
+            $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[1], true);
+            if (\count($function_like_list) === 0) {
                 return $mixed_type->asUnionType();
             }
             $function_return_types = new UnionType();
-            foreach ($function_fqsen_list as $fqsen) {
-                if ($fqsen instanceof FullyQualifiedMethodName) {
-                    if (!$code_base->hasMethodWithFQSEN($fqsen)) {
-                        // TODO: error PhanArrayMapClosure
-                        continue;
-                    }
-                    $function_like = $code_base->getMethodByFQSEN($fqsen);
-                } else {
-                    assert($fqsen instanceof FullyQualifiedFunctionName);
-                    if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
-                        // TODO: error PhanArrayMapClosure
-                        continue;
-                    }
-                    $function_like = $code_base->getFunctionByFQSEN($fqsen);
-                }
-                // TODO: dependent union type?
+            foreach ($function_like_list as $function_like) {
+                // TODO: Support analysis of map/reduce functions with dependent union types?
                 $function_return_types->addUnionType($function_like->getUnionType());
             }
             if ($function_return_types->isEmpty()) {
-                return $mixed_type->asUnionType();
+                $function_return_types->addType($mixed_type);
             }
             return $function_return_types;
         };
@@ -143,68 +149,64 @@ class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnTypeOverri
             return $types;
         };
 
-        $array_map_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use($array_type) : UnionType {
+        $extract_generic_array_element_types = static function(UnionType $type) : UnionType{
+            return $type->genericArrayElementTypes();
+        };
+
+        $array_map_callback = static function(
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ) use ($array_type, $extract_generic_array_element_types) : UnionType {
             if (\count($args) < 2) {
                 return $array_type->asUnionType();
             }
-            // TODO: improve functionLikeFQSENListFromNodeAndContext to include
-            // 1. [MyClass::class, 'staticMethodName'],
-            // 2. [$obj, 'instanceMethodName],
-            // 3. 'global_func'
-            // 4. 'MyClass::staticFunc'
-            $function_fqsen_list = UnionTypeVisitor::functionLikeFQSENListFromNodeAndContext($code_base, $context, $args[0], true);
-            if (\count($function_fqsen_list) === 0) {
+            $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
+            if (\count($function_like_list) === 0) {
                 return $array_type->asUnionType();
             }
-            $element_types = new UnionType();
-            foreach ($function_fqsen_list as $fqsen) {
-                if ($fqsen instanceof FullyQualifiedMethodName) {
-                    if (!$code_base->hasMethodWithFQSEN($fqsen)) {
-                        // TODO: error PhanArrayMapClosure
-                        continue;
-                    }
-                    $function_like = $code_base->getMethodByFQSEN($fqsen);
+            $arguments = \array_slice($args, 1);
+            $possible_return_types = new UnionType();
+            $cache = [];
+            // Don't calculate argument types more than once.
+            $get_argument_type_for_array_map = function($argument, int $i) use($code_base, $context, &$cache) : UnionType {
+                if (isset($cache[$i])) {
+                    return $cache[$i];
+                }
+                $argument_type = UnionTypeVisitor::unionTypeFromNode(
+                    $code_base,
+                    $context,
+                    $argument,
+                    true
+                )->genericArrayElementTypes();
+                $cache[$i] = $argument_type;
+                return $argument_type;
+            };
+            foreach ($function_like_list as $map_function) {
+                ArgumentType::analyzeForCallback(
+                    $map_function, $arguments, $context, $code_base, $get_argument_type_for_array_map
+                );
+                if ($map_function->hasDependentReturnType()) {
+                    $possible_return_types->addUnionType($map_function->getDependentReturnType($code_base, $context, $arguments));
                 } else {
-                    assert($fqsen instanceof FullyQualifiedFunctionName);
-                    if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
-                        // TODO: error PhanArrayMapClosure
-                        continue;
-                    }
-                    $function_like = $code_base->getFunctionByFQSEN($fqsen);
+                    $possible_return_types->addUnionType($map_function->getUnionType());
                 }
-                $expected_parameter_count = \count($args) - 1;
-                if ($function_like->getNumberOfRequiredRealParameters() > $expected_parameter_count) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::ParamTooFewCallable,
-                        $context->getLineNumberStart(),
-                        $expected_parameter_count,
-                        (string)$function_like->getFQSEN(),
-                        $function_like->getNumberOfRequiredRealParameters(),
-                        $function_like->getFileRef()->getFile(),
-                        $function_like->getFileRef()->getLineNumberStart()
-                    );
-                } else if ($function_like->getNumberOfParameters() < $expected_parameter_count) {
-                    Issue::maybeEmit(
-                        $code_base,
-                        $context,
-                        Issue::ParamTooManyCallable,
-                        $context->getLineNumberStart(),
-                        $expected_parameter_count,
-                        (string)$function_like->getFQSEN(),
-                        $function_like->getNumberOfParameters(),
-                        $function_like->getFileRef()->getFile(),
-                        $function_like->getFileRef()->getLineNumberStart()
-                    );
-                }
-                // TODO: dependent union type?
-                $element_types->addUnionType($function_like->getUnionType());
             }
-            if ($element_types->isEmpty()) {
+            if (!Config::get_quick_mode()) {
+                $argument_types = [];
+                foreach ($arguments as $i => $node) {
+                    $argument_types[] = $get_argument_type_for_array_map($node, $i);
+                }
+                foreach ($function_like_list as $map_function) {
+                    $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
+                    $analyzer->analyzeCallableWithArgumentTypes($argument_types, $map_function);
+                }
+            }
+            if ($possible_return_types->isEmpty()) {
                 return $array_type->asUnionType();
             }
-            return $element_types->elementTypesToGenericArray();
+            return $possible_return_types->elementTypesToGenericArray();
         };
         $array_pad_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use($array_type) : UnionType {
             if (\count($args) != 3) {
