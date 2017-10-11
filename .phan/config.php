@@ -436,7 +436,7 @@ return [
         '.phan/plugins/DemoPlugin.php',
         '.phan/plugins/DollarDollarPlugin.php',
         '.phan/plugins/UnreachableCodePlugin.php',
-        // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without key as return type with values having keys deliberately.
+        // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without keys (as return type) with values having keys deliberately.
         '.phan/plugins/DuplicateArrayKeyPlugin.php',
 
         // NOTE: This plugin only produces correct results when

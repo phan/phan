@@ -1,0 +1,19 @@
+%s:20 PhanTypeMismatchReturn Returning type int[] but my_test371B() is declared to return string[]
+%s:26 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \Foo\NS371\strlen371() takes string defined at %s:4
+%s:32 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \Foo\NS371\C371::strlen371() takes string defined at %s:8
+%s:38 PhanTypeMismatchReturn Returning type int[] but my_test371E() is declared to return string[]
+%s:62 PhanTypeMismatchReturn Returning type \stdClass[] but test371C() is declared to return string[]
+%s:68 PhanTypeMismatchReturn Returning type \stdClass[] but test371C2() is declared to return string[]
+%s:74 PhanUndeclaredClassInCallable Reference to undeclared class \Foo\Bar\Missing371 in callable \Foo\Bar\Missing371::createObject
+%s:80 PhanUndeclaredClassInCallable Reference to undeclared class \C371 in callable \C371::createObject
+%s:86 PhanUndeclaredClassConstant Reference to constant class from undeclared class \Foo\Bar\Missing371
+%s:86 PhanUndeclaredClassInCallable Reference to undeclared class \Foo\Bar\Missing371 in callable \Foo\Bar\Missing371::createObject
+%s:92 PhanTypeMismatchArgument Argument 1 (x) is string but \Foo\Bar\C371::createArray() takes int defined at %s:54
+%s:92 PhanTypeMismatchReturn Returning type int[][] but test371D() is declared to return string[]
+%s:101 PhanParamTooManyCallable Call with 1 arg(s) to \Foo\Bar\accepts_no_args() (As a provided callable) which only takes 0 arg(s) defined at %s:95
+%s:111 PhanParamTooFewCallable Call with 1 arg(s) to \Foo\Bar\accepts_twoargs() (as a provided callable) which requires 2 arg(s) defined at %s:104
+%s:122 PhanUndeclaredFunctionInCallable Call to undeclared function \accepts_enough_args in callable
+%s:128 PhanUndeclaredMethodInCallable Call to undeclared method missingMethod in callable. Possible object type(s) for that method are \Foo\Bar\C371
+%s:134 PhanTypeMismatchReturn Returning type \ast\Node[] but test371GNamespacedValid() is declared to return string[]
+%s:140 PhanUndeclaredStaticMethodInCallable Reference to undeclared static method \Foo\Bar\C371::missing_static_method in callable
+%s:146 PhanUndeclaredClassInCallable Reference to undeclared class \C371 in callable \C371::missing_static_method2
