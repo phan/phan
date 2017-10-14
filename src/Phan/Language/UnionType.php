@@ -37,6 +37,16 @@ class UnionType implements \Serializable
         . '(\|' . Type::type_regex . ')*';
 
     /**
+     * @var string
+     * A list of one or more types delimited by the '|'
+     * character (e.g. 'int|DateTime|string[]' or 'null|$this')
+     * This may be used for return types.
+     */
+    const union_type_regex_or_this =
+        Type::type_regex_or_this
+        . '(\|' . Type::type_regex_or_this . ')*';
+
+    /**
      * @var Type[] - [int $type_object_id => Type $type]
      */
     private $type_set;

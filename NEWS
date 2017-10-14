@@ -2,6 +2,9 @@ Phan NEWS
 
 ?? ??? 2017, Phan 0.10.1
 
+New Features(Analysis)
++ Support `@return $this` in phpdoc for methods and magic methods (but not elsewhere. E.g. `@param $this $varName` is not supported) (#634)
+
 New Features (CLI, Configs)
 
 + Add Language Server Protocol support (Experimental) (#821)
