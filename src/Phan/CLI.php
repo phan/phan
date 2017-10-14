@@ -88,6 +88,7 @@ class CLI
                 'processes:',
                 'config-file:',
                 'signature-compatibility',
+                'memory-limit:',
                 'print-memory-usage-summary',
                 'markdown-issue-messages',
                 'disable-plugins',
@@ -323,6 +324,13 @@ class CLI
                 case 'x':
                 case 'dead-code-detection':
                     Config::setValue('dead_code_detection', true);
+                    break;
+                case 'memory-limit':
+                    if (preg_match('@^([1-9][0-9]+)([KMG])?$@', $value, $match)) {
+                        ini_set('memory_limit', $value);
+                    } else {
+                        fwrite(STDERR, "Invalid --memory-limit '$value', ignoring\n");
+                    }
                     break;
                 case 'print-memory-usage-summary':
                     Config::setValue('print_memory_usage_summary', true);
@@ -606,6 +614,11 @@ Extended help:
  --dump-signatures-file <filename>
   Emit JSON serialized signatures to the given file.
   This uses a method signature format similar to FunctionSignatureMap.php.
+
+ --memory-limit <memory_limit>
+  Sets the memory limit for analysis (per process).
+  This is useful when developing or when you want guarantees on memory limits.
+  K, M, and G are optional suffixes (Kilobytes, Megabytes, Gigabytes).
 
  --print-memory-usage-summary
   Prints a summary of memory usage and maximum memory usage.
