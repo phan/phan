@@ -603,7 +603,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $cond_node
             );
         }
-
         // TODO: emit no-op if $cond_node is a literal, such as `if (2)`
         // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
 
@@ -623,10 +622,54 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->code_base,
                 $base_context
             ))($cond_node);
+
+            if (!isset($node->children['true'])) {
+                $true_type = UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $true_context,
+                    $true_node
+                );
+
+                $false_type = UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $false_context,
+                    $node->children['false'] ?? ''
+                );
+                $true_type_is_empty = $true_type->isEmpty();
+                if (!$false_type->isEmpty()) {
+                    // E.g. `foo() ?: 2` where foo is nullable or possibly false.
+                    if ($true_type->containsFalsey()) {
+                        $true_type = $true_type->nonFalseyClone();
+                    }
+                }
+
+                $union_type = new UnionType();
+
+                // Add the type for the 'true' side
+                $union_type->addUnionType($true_type);
+
+                // Add the type for the 'false' side
+                $union_type->addUnionType($false_type);
+
+                // If one side has an unknown type but the other doesn't
+                // we can't let the unseen type get erased. Unfortunately,
+                // we need to add 'mixed' in so that we know it could be
+                // anything at all.
+                //
+                // See Issue #104
+                if ($true_type_is_empty xor $false_type->isEmpty()) {
+                    $union_type->addUnionType(
+                        MixedType::instance(false)->asUnionType()
+                    );
+                }
+
+                return $union_type;
+            }
         } else {
             $true_context = $this->context;
             $false_context = $this->context;
         }
+        // Postcondition: This is (cond_expr) ? (true_expr) : (false_expr)
 
         $true_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
