@@ -260,7 +260,6 @@ interface FunctionInterface extends AddressableElementInterface {
     public function hasDependentReturnType() : bool;
 
     /**
-     *
      * Returns a union type based on $args_node and $context
      * @param CodeBase $code_base
      * @param Context $context
@@ -270,6 +269,29 @@ interface FunctionInterface extends AddressableElementInterface {
 
     /**
      * Make calculation of the return type of this function/method use $closure
+     * @return void
      */
     public function setDependentReturnTypeClosure(\Closure $closure);
+
+    /**
+     * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)
+     * @see getDependentReturnType
+     */
+    public function hasFunctionCallAnalyzer() : bool;
+
+    /**
+     * Perform additional analysis logic for invocations (From internal and user defined plugins)
+     *
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param \ast\Node[]|int[]|string[] $args
+     * @return void
+     */
+    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args);
+
+    /**
+     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
+     * @return void
+     */
+    public function setFunctionCallAnalyzer(\Closure $closure);
 }

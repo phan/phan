@@ -17,6 +17,7 @@ use Phan\Language\Type\FalseType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2;
 use ast\Node;
 
@@ -25,7 +26,8 @@ use ast\Node;
  *
  * TODO: Refactor this.
  */
-final class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnTypeOverrideCapability {
+final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
+    ReturnTypeOverrideCapability {
 
     /**
      * @return \Closure[]
@@ -272,6 +274,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements ReturnType
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
-        return self::getReturnTypeOverridesStatic($code_base);
+        // Unit tests invoke this repeatedly. Cache it.
+        static $overrides = null;
+        if ($overrides === null) {
+            $overrides = self::getReturnTypeOverridesStatic($code_base);
+        }
+        return $overrides;
     }
 }

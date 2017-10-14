@@ -26,9 +26,12 @@ New Features (CLI, Configs)
 + Add `--memory-limit` CLI option (e.g. `--memory-limit 500M`). If this option isn't provided, there is no memory limit. (#1148)
 
 Plugins
-+ Add a new plugin type which can override the return type of functions and methods on a case by case basis.
-  (e.g. based on one or more of the argument types)
++ Add a new plugin capability `ReturnTypeOverrideCapability` which can override the return type of functions and methods on a case by case basis.
+  (e.g. based on one or more of the argument types or values) (related to #612, #1181)
++ Add a new plugin capability `AnalyzeFunctionCallCapability` which can add logic to analyze calls to a small subset of functions.
+  (e.g. based on one or more of the argument types or values) (#1181)
 + Make line numbers more accurate in DuplicateArrayKeyPlugin.
++ Add `PregRegexCheckerPlugin` to check for invalid regexes. (uses `AnalyzeFunctionCallCapability`)
 
 Bug Fixes
 + Properly check for undeclared classes in arrays within phpdoc @param, @property, @method, @var, and @return types.

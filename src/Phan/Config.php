@@ -23,7 +23,7 @@ class Config
      * New features increment minor versions, and bug fixes increment patch versions.
      * @suppress PhanUnreferencedConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.1.0';
+    const PHAN_PLUGIN_VERSION = '2.2.0';
 
     /**
      * @var string|null

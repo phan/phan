@@ -53,3 +53,12 @@ src/005_always_return.php:3 PhanPluginAlwaysReturnFunction Function \test5 has a
 src/005_always_return.php:23 PhanPluginAlwaysReturnFunction Function \soft_non_nullable_test5 has a return type of string, but may fail to return a value
 src/005_always_return.php:39 PhanPluginAlwaysReturnMethod Method \C5::test has a return type of ?string, but may fail to return a value
 src/005_always_return.php:59 PhanPluginAlwaysReturnMethod Method \C5::soft_non_nullable_test5 has a return type of string, but may fail to return a value
+src/006_preg_regex.php:3 PhanPluginInvalidPregRegex Call to \preg_match was passed an invalid regex '@foo': No ending delimiter '@' found
+src/006_preg_regex.php:6 PhanPluginInvalidPregRegex Call to \preg_replace was passed an invalid regex '@foo(@': Compilation failed: missing ) at offset 4
+src/006_preg_regex.php:10 PhanUnreferencedFunction Possibly zero references to function \closure_23db2857d253
+src/006_preg_regex.php:11 PhanPluginInvalidPregRegex Call to \preg_replace_callback_array was passed an invalid regex '@a': No ending delimiter '@' found
+src/006_preg_regex.php:11 PhanUnreferencedFunction Possibly zero references to function \closure_9509309a61e0
+src/006_preg_regex.php:13 PhanPluginInvalidPregRegex Call to \preg_replace_callback was passed an invalid regex '^a': No ending delimiter '^' found
+src/006_preg_regex.php:14 PhanPluginInvalidPregRegex Call to \preg_split was passed an invalid regex '/\\s//': Unknown modifier '/'
+src/006_preg_regex.php:15 PhanPluginInvalidPregRegex Call to \preg_match_all was passed an invalid regex '/\\w/i/': Unknown modifier '/'
+src/006_preg_regex.php:16 PhanPluginInvalidPregRegex Call to \preg_grep was passed an invalid regex '/\\w/i/': Unknown modifier '/'

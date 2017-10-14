@@ -283,9 +283,10 @@ class Issue
     const uncolored_format_string_for_template = [
         'CLASS'         => '%s',
         'CLASSLIKE'     => '%s',
-        'COMMENT'       => '%s',
+        'COMMENT'       => '%s',  // contents of a phpdoc comment
         'CONST'         => '%s',
         'COUNT'         => '%d',
+        'DETAILS'       => '%s',  // additional details about an error
         'FILE'          => '%s',
         'FUNCTIONLIKE'  => '%s',
         'FUNCTION'      => '%s',
@@ -299,6 +300,7 @@ class Issue
         'NAMESPACE'     => '%s',
         'PARAMETER'     => '%s',
         'PROPERTY'      => '%s',
+        'STRING_LITERAL' => '%s',  // A string literal from the code
         'TYPE'          => '%s',
         'TRAIT'         => '%s',
         'VARIABLE'      => '%s',

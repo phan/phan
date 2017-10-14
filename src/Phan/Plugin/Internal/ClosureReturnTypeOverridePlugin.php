@@ -14,6 +14,7 @@ use Phan\Language\Element\Method;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2;
 use ast\Node;
 
@@ -22,7 +23,27 @@ use ast\Node;
  *
  * TODO: Refactor this.
  */
-final class ClosureReturnTypeOverridePlugin extends PluginV2 implements ReturnTypeOverrideCapability {
+final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
+    AnalyzeFunctionCallCapability,
+    ReturnTypeOverrideCapability {
+
+    /**
+     * @param Node|int|string $arg_array_node
+     * @return ?array
+     */
+    private static function extractArrayArgs($arg_array_node) {
+        if (($arg_array_node instanceof Node) && $arg_array_node->kind === \ast\AST_ARRAY) {
+            $arguments = [];
+            // TODO: Sanity check keys.
+            foreach ($arg_array_node->children as $child) {
+                $arguments[] = $child->children['value'];
+            }
+            return $arguments;
+        } else {
+            return null;
+        }
+    }
+
     /**
      * @return \Closure[]
      */
@@ -42,15 +63,13 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements ReturnTy
             if (\count($function_like_list) === 0) {
                 return $element_types;
             }
-            $arguments = \array_slice($args, 1);
             foreach ($function_like_list as $function_like) {
                 if ($function_like->hasDependentReturnType()) {
-                    $element_types->addUnionType($function_like->getDependentReturnType($code_base, $context, $arguments));
+                    $element_types->addUnionType($function_like->getDependentReturnType($code_base, $context, \array_slice($args, 1)));
                 } else {
                     $element_types->addUnionType($function_like->getUnionType());
                 }
             }
-            self::analyzeFunctionAndNormalArgumentList($code_base, $context, $function_like_list, $arguments);
             return $element_types;
         };
         $call_user_func_array_callback = static function(
@@ -69,15 +88,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements ReturnTy
                 return $element_types;
             }
             $arg_array_node = $args[1];
-            if (($arg_array_node instanceof Node) && $arg_array_node->kind === \ast\AST_ARRAY) {
-                $arguments = [];
-                // TODO: Sanity check keys.
-                foreach ($arg_array_node->children as $child) {
-                    $arguments[] = $child->children['value'];
-                }
-            } else {
-                $arguments = null;
-            }
+            $arguments = self::extractArrayArgs($args[1]);
             $element_types = new UnionType();
 
             foreach ($function_like_list as $function_like) {
@@ -124,9 +135,85 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements ReturnTy
     /**
      * @return \Closure[]
      */
+    private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
+    {
+        /**
+         * @return void
+         */
+        $call_user_func_callback = static function(
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ) {
+            if (\count($args) < 1) {
+                return;
+            }
+            $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
+            if (\count($function_like_list) === 0) {
+                return;
+            }
+            $arguments = \array_slice($args, 1);
+            self::analyzeFunctionAndNormalArgumentList($code_base, $context, $function_like_list, $arguments);
+        };
+
+        /**
+         * @return void
+         */
+        $call_user_func_array_callback = static function(
+            CodeBase $code_base,
+            Context $context,
+            Func $function,
+            array $args
+        ) {
+            if (\count($args) < 2) {
+                return;
+            }
+            // Currently, only analyze calls of the form call_user_func_array(callable expression, [$arg1, $arg2...])
+            $function_like_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[0], true);
+            if (\count($function_like_list) === 0) {
+                return;
+            }
+            $arguments = self::extractArrayArgs($args[1] ?? null);
+            if ($arguments === null) {
+                return;
+            }
+
+            self::analyzeFunctionAndNormalArgumentList($code_base, $context, $function_like_list, $arguments);
+        };
+        return [
+            // call
+            'call_user_func'            => $call_user_func_callback,
+            'forward_static_call'       => $call_user_func_callback,
+            'call_user_func_array'      => $call_user_func_array_callback,
+            'forward_static_call_array' => $call_user_func_array_callback,
+        ];
+    }
+
+    /**
+     * @return \Closure[]
+     */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
-        return self::getReturnTypeOverridesStatic($code_base);
+        // Unit tests invoke this repeatedly. Cache it.
+        static $overrides = null;
+        if ($overrides === null) {
+            $overrides = self::getReturnTypeOverridesStatic($code_base);
+        }
+        return $overrides;
+    }
+
+    /**
+     * @return \Closure[]
+     */
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    {
+        // Unit tests invoke this repeatedly. Cache it.
+        static $analyzers = null;
+        if ($analyzers === null) {
+            $analyzers = self::getAnalyzeFunctionCallClosuresStatic($code_base);
+        }
+        return $analyzers;
     }
 
     public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : \Closure
