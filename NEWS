@@ -23,6 +23,7 @@ New Features (CLI, Configs)
   Phan can analyze callables (for `array_map`/`array_filter`) of Closure form, as well as strings/2-part arrays that are inlined.
 + Check if functions/methods passed to array_map and array_filter are compatible with their arguments.
   Recursively analyze the functions/methods passed to array_map/array_filter if no types were provided. (unless quick mode is being used)
++ Add `--memory-limit` CLI option (e.g. `--memory-limit 500M`). If this option isn't provided, there is no memory limit. (#1148)
 
 Plugins
 + Add a new plugin type which can override the return type of functions and methods on a case by case basis.
