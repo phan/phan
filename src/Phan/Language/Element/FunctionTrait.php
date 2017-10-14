@@ -121,9 +121,14 @@ trait FunctionTrait {
     private $real_return_type;
 
     /**
-     * @var \Closure|null (CodeBase, Context, Node $arg_list) => UnionType (Bound to $this)
+     * @var \Closure|null (CodeBase, Context, Func|Method $func, Node[]|string[]|int[] $arg_list) => UnionType
      */
     private $return_type_callback = null;
+
+    /**
+     * @var \Closure|null (CodeBase, Context, Func|Method $func, Node[]|string[]|int[] $arg_list) => void
+     */
+    private $function_call_analyzer_callback = null;
 
     /**
      * @return int
@@ -766,5 +771,36 @@ trait FunctionTrait {
      */
     public function setDependentReturnTypeClosure(\Closure $closure) {
         $this->return_type_callback = $closure;
+    }
+
+    /**
+     * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)
+     */
+    public function hasFunctionCallAnalyzer() : bool
+    {
+        return $this->function_call_analyzer_callback !== null;
+    }
+
+    /**
+     * Perform additional analysis logic for invocations (From internal and user defined plugins)
+     *
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param \ast\Node[]|int[]|string[] $args
+     * @return void
+     */
+    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args)
+    {
+        ($this->function_call_analyzer_callback)($code_base, $context, $this, $args);
+    }
+
+    /**
+     * Make additional analysis logic of this function/method use $closure
+     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
+     * @return void
+     */
+    public function setFunctionCallAnalyzer(\Closure $closure)
+    {
+        $this->function_call_analyzer_callback = $closure;
     }
 }

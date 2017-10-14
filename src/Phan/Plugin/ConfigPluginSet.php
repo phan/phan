@@ -9,6 +9,7 @@ use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Plugin;
@@ -20,6 +21,7 @@ use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PreAnalyzeNodeCapability;
 use Phan\PluginV2\AnalyzeClassCapability;
 use Phan\PluginV2\AnalyzeFunctionCapability;
+use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2\AnalyzePropertyCapability;
 use Phan\PluginV2\AnalyzeMethodCapability;
 use Phan\PluginV2\FinalizeProcessCapability;
@@ -28,6 +30,7 @@ use Phan\PluginV2\LegacyPreAnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use Phan\PluginV2\PluginAwarePreAnalysisVisitor;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
+use Phan\PluginV2\FunctionHookCapability;
 use ast\Node;
 
 /**
@@ -40,6 +43,7 @@ use ast\Node;
 final class ConfigPluginSet extends PluginV2 implements
     AnalyzeClassCapability,
     AnalyzeFunctionCapability,
+    AnalyzeFunctionCallCapability,
     AnalyzeMethodCapability,
     AnalyzePropertyCapability,
     FinalizeProcessCapability,
@@ -50,28 +54,31 @@ final class ConfigPluginSet extends PluginV2 implements
     /** @var Plugin[]|null - Cached plugin set for this instance. Lazily generated. */
     private $pluginSet;
 
-    /** @var \Closure[]|null */
+    /** @var \Closure[]|null - plugins to analyze nodes in pre order. */
     private $preAnalyzeNodePluginSet;
 
-    /** @var \Closure[]|null */
+    /** @var \Closure[]|null - plugins to analyze nodes in post order. */
     private $analyzeNodePluginSet;
 
-    /** @var AnalyzeClassCapability[]|null */
+    /** @var AnalyzeClassCapability[]|null - plugins to analyze class declarations. */
     private $analyzeClassPluginSet;
 
-    /** @var AnalyzeFunctionCapability[]|null */
+    /** @var AnalyzeFunctionCallCapability[]|null - plugins to analyze invocations of subsets of functions and methods. */
+    private $analyzeFunctionCallPluginSet;
+
+    /** @var AnalyzeFunctionCapability[]|null - plugins to analyze function declarations. */
     private $analyzeFunctionPluginSet;
 
-    /** @var AnalyzePropertyCapability[]|null */
+    /** @var AnalyzePropertyCapability[]|null - plugins to analyze property declarations. */
     private $analyzePropertyPluginSet;
 
-    /** @var AnalyzeMethodCapability[]|null */
+    /** @var AnalyzeMethodCapability[]|null - plugins to analyze method declarations.*/
     private $analyzeMethodPluginSet;
 
-    /** @var FinalizeProcessCapability[]|null */
+    /** @var FinalizeProcessCapability[]|null - plugins to call finalize() on after analysis is finished. */
     private $finalizeProcessPluginSet;
 
-    /** @var ReturnTypeOverrideCapability[]|null */
+    /** @var ReturnTypeOverrideCapability[]|null - plugins which generate return UnionTypes of functions based on arguments. */
     private $returnTypeOverridePluginSet;
 
     /**
@@ -307,6 +314,30 @@ final class ConfigPluginSet extends PluginV2 implements
     /**
      * @return \Closure[] maps FQSEN string to closure
      */
+    public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
+    {
+        $result = [];
+        \assert(!\is_null($this->pluginSet));
+        foreach ($this->analyzeFunctionCallPluginSet as $plugin) {
+            // TODO: Make this case insensitive.
+            foreach ($plugin->getAnalyzeFunctionCallClosures($code_base) as $fqsen_name => $closure) {
+                $other_closure = $result[$fqsen_name] ?? null;
+                if ($other_closure !== null) {
+                    $old_closure = $closure;
+                    $closure = static function(CodeBase $code_base, Context $context, FunctionInterface $func, array $args) use ($old_closure, $other_closure) {
+                        $other_closure($code_base, $context, $func, $args);
+                        $old_closure($code_base, $context, $func, $args);
+                    };
+                }
+                $result[$fqsen_name] = $closure;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * @return \Closure[] maps FQSEN string to closure
+     */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
         $result = [];
@@ -364,6 +395,7 @@ final class ConfigPluginSet extends PluginV2 implements
         $this->analyzeClassPluginSet        = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, AnalyzeClassCapability::class), 'analyzeClass');
         $this->finalizeProcessPluginSet     = self::filterOutEmptyMethodBodies(self::filterByClass($plugin_set, FinalizeProcessCapability::class), 'finalizeProcess');
         $this->returnTypeOverridePluginSet  = self::filterByClass($plugin_set, ReturnTypeOverrideCapability::class);
+        $this->analyzeFunctionCallPluginSet = self::filterByClass($plugin_set, AnalyzeFunctionCallCapability::class);
     }
 
     /**

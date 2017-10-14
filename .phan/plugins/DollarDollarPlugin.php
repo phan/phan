@@ -9,24 +9,15 @@ use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
 /**
- * This file demonstrates plugins for Phan. Plugins hook into
- * four events;
+ * This plugin checks for occurrences of `$$x`,
+ * which may be a typo, or behave differently in php 5 vs 7, or be hard to analyze code.
+ *
+ * This file demonstrates plugins for Phan. Plugins hook into various events.
+ * DollarDollarPlugin hooks into one event:
  *
  * - getAnalyzeNodeVisitorClassName
  *   This method returns a visitor that is called on every AST node from every
  *   file being analyzed
- *
- * - analyzeClass
- *   Once all classes have been parsed, this method will be
- *   called on every class that is found in the code base
- *
- * - analyzeMethod
- *   Once all methods are parsed, this method will be called
- *   on every method in the code base
- *
- * - analyzeFunction
- *   Once all functions have been parsed, this method will
- *   be called on every function in the code base.
  *
  * A plugin file must
  *

@@ -47,3 +47,5 @@ C370::main();
 echo call_user_func('self::foo', 2);
 echo call_user_func('static::foo', 2);
 echo call_user_func('parent::foo', 2);
+$x = call_user_func('C370::foo', new stdClass());
+call_user_func('C370::foo', new stdClass());

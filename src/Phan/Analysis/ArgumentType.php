@@ -46,6 +46,10 @@ class ArgumentType
         // Special common cases where we want slightly
         // better multi-signature error messages
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
+        if ($method->hasFunctionCallAnalyzer()) {
+            $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno ?? 0), $node->children['args']->children ?? []);
+        }
+
         if ($method->isPHPInternal()) {
             if (self::analyzeInternalArgumentType(
                 $method,

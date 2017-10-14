@@ -9,3 +9,5 @@
 %s:47 PhanContextNotObject Cannot access self when not in object context
 %s:48 PhanContextNotObject Cannot access static when not in object context
 %s:49 PhanContextNotObject Cannot access parent when not in object context
+%s:50 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \C370::foo() takes int defined at %s:41
+%s:51 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \C370::foo() takes int defined at %s:41
