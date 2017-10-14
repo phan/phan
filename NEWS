@@ -34,6 +34,7 @@ Bug Fixes
 + Change the behavior of the `-d` flag, make it change the current working directory to the provided directory.
 + Properly set the real param type and return types of internal functions, in rare cases where that exists.
 + Support analyzing the rare case of namespaced internal global functions (e.g. `\ast\parse_code($code, $version)`)
++ Improve analysis of shorthand ternary operator: Remove false/null from cond_expr in `(cond_expr) ?: (false_expr)` (#1186)
 
 24 Sep 2017, Phan 0.10.0
 -----------------------
