@@ -782,7 +782,7 @@ EOB;
                ' ' .
                str_repeat("\u{2588}", $current) .
                str_repeat("\u{2591}", $rest) .
-               " " . sprintf("% 3d", (int)(100*$p)) . "%" .
+               " " . sprintf("%1$ 3d", (int)(100*$p)) . "%" .
                sprintf(' %0.2dMB/%0.2dMB', $memory, $peak) . "\r";
         fwrite(STDERR, $msg);
     }

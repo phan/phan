@@ -1,6 +1,5 @@
 <?php declare(strict_types=1);
 
-use Phan\AST\AnalysisVisitor;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;

@@ -62,3 +62,25 @@ src/006_preg_regex.php:13 PhanPluginInvalidPregRegex Call to \preg_replace_callb
 src/006_preg_regex.php:14 PhanPluginInvalidPregRegex Call to \preg_split was passed an invalid regex '/\\s//': Unknown modifier '/'
 src/006_preg_regex.php:15 PhanPluginInvalidPregRegex Call to \preg_match_all was passed an invalid regex '/\\w/i/': Unknown modifier '/'
 src/006_preg_regex.php:16 PhanPluginInvalidPregRegex Call to \preg_grep was passed an invalid regex '/\\w/i/': Unknown modifier '/'
+src/007_printf.php:3 PhanPluginPrintfNoArguments No format string arguments are given for "%s", consider using echo instead
+src/007_printf.php:4 PhanPluginPrintfNoArguments No format string arguments are given for "some literal", consider using echo instead
+src/007_printf.php:6 PhanPluginPrintfNoSpecifiers Format string "%d dollars 100% down\n" refers to nonexistent argument #2 in "% d"
+src/007_printf.php:6 PhanPluginPrintfNotPercent Format string "%d dollars 100% down\n" contains something that is not a percent sign, it will be treated as a format string with padding: ' '
+src/007_printf.php:7 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args" are used
+src/007_printf.php:8 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
+src/007_printf.php:9 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
+src/007_printf.php:10 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
+src/007_printf.php:11 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args\n" are used
+src/007_printf.php:13 PhanTypeMismatchArgumentInternal Argument 1 (format) is array but \printf() takes string
+src/007_printf.php:14 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "3" are used
+src/007_printf.php:14 PhanTypeMismatchArgumentInternal Argument 1 (format) is int but \printf() takes string
+src/007_printf.php:16 PhanPluginPrintfNoArguments No format string arguments are given for "Hello world\n", consider using fwrite instead
+src/007_printf.php:19 PhanPluginPrintfNoSpecifiers Format string "Hello %10s" does not use provided argument #2
+src/007_printf.php:20 PhanPluginPrintfNoArguments No format string arguments are given for "Hello %10s", consider using fwrite instead
+src/007_printf.php:23 PhanPluginPrintfNoArguments No format string arguments are given for "%1$f dollars", consider using echo instead
+src/007_printf.php:25 PhanPluginPrintfNoArguments No format string arguments are given for "%1$f dollars", consider using echo instead
+src/007_printf.php:27 PhanPluginPrintfNoArguments No format string arguments are given for "%1$f dollars", consider using echo instead
+src/007_printf.php:29 PhanPluginPrintfNoArguments No format string arguments are given for "%1$f dollars", consider using echo instead
+src/007_printf.php:30 PhanPluginPrintfNoArguments No format string arguments are given for "%1$f separated dollars", consider using echo instead
+src/007_printf.php:32 PhanPluginPrintfIncompatibleSpecifier Format string "%1$d == %1$s: %s" refers to argument #1 in different ways: %1$d,%1$s
+src/007_printf.php:32 PhanPluginPrintfNoSpecifiers Format string "%1$d == %1$s: %s" does not use provided argument #2

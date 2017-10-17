@@ -71,6 +71,7 @@ return [
         '../../.phan/plugins/NonBoolInLogicalArithPlugin.php',
         '../../.phan/plugins/NumericalComparisonPlugin.php',
         '../../.phan/plugins/PregRegexCheckerPlugin.php',
+        '../../.phan/plugins/PrintfCheckerPlugin.php',
         '../../.phan/plugins/UnreachableCodePlugin.php',
         '../../.phan/plugins/UnusedSuppressionPlugin.php',
     ],

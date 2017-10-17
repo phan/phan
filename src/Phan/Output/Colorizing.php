@@ -124,6 +124,7 @@ class Colorizing {
         $fmt_directive = Issue::uncolored_format_string_for_template[$template_type] ?? null;
         if ($fmt_directive === null) {
             error_log(sprintf("Unknown template type '%s'. Known template types: %s",
+                    $template_type,
                     implode(', ', array_keys(Issue::uncolored_format_string_for_template))));
             return (string)$arg;
         }
