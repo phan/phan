@@ -326,7 +326,7 @@ class CLI
                     Config::setValue('dead_code_detection', true);
                     break;
                 case 'memory-limit':
-                    if (preg_match('@^([1-9][0-9]+)([KMG])?$@', $value, $match)) {
+                    if (preg_match('@^([1-9][0-9]*)([KMG])?$@', $value, $match)) {
                         ini_set('memory_limit', $value);
                     } else {
                         fwrite(STDERR, "Invalid --memory-limit '$value', ignoring\n");

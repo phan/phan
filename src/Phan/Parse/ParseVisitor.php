@@ -582,13 +582,15 @@ class ParseVisitor extends ScopeVisitor
             $constant->setIsOverrideIntended($comment->isOverrideIntended());
             $constant->setSuppressIssueList($comment->getSuppressIssueList());
 
+            $value_node = $child_node->children['value'];
             $constant->setFutureUnionType(
                 new FutureUnionType(
                     $this->code_base,
                     $this->context,
-                    $child_node->children['value']
+                    $value_node
                 )
             );
+            $constant->setNodeForValue($value_node);
 
             $class->addConstant(
                 $this->code_base,
@@ -1142,6 +1144,8 @@ class ParseVisitor extends ScopeVisitor
                 $value
             )
         );
+
+        $constant->setNodeForValue($value);
 
         $constant->setIsDeprecated($comment->isDeprecated());
         $constant->setIsNSInternal($comment->isNSInternal());

@@ -42,6 +42,19 @@ set_exception_handler(function (Throwable $throwable) {
 });
 
 /**
+ * @return mixed
+ */
+function with_disabled_phan_error_handler(Closure $closure) {
+    global $__no_echo_phan_errors;
+    $__no_echo_phan_errors = true;
+    try {
+        return $closure();
+    } finally {
+        $__no_echo_phan_errors = false;
+    }
+}
+
+/**
  * The error handler for PHP notices, etc.
  * This is a named function instead of a closure to make stack traces easier to read.
  *
@@ -49,6 +62,10 @@ set_exception_handler(function (Throwable $throwable) {
  */
 function phan_error_handler($errno, $errstr, $errfile, $errline)
 {
+    global $__no_echo_phan_errors;
+    if ($__no_echo_phan_errors) {
+        return false;
+    }
     error_log("$errfile:$errline [$errno] $errstr\n");
     if (error_reporting() === 0) {
         // https://secure.php.net/manual/en/language.operators.errorcontrol.php
