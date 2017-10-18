@@ -59,13 +59,15 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         $constant_fqsen = FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
             '\\' . $name
         );
-        return new self(
+        $result = new self(
             new Context(),
             $name,
             Type::fromObject($value)->asUnionType(),
             0,
             $constant_fqsen
         );
+        $result->setNodeForValue($value);
+        return $result;
     }
 
     public function toStub() : string

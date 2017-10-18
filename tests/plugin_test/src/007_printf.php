@@ -33,4 +33,8 @@ printf('%1$d == %1$s: %s', 42, "message");
 printf("%1s of %2s\n", 5, 9);
 printf("%1s of %2s", 5, 9);
 
+printf(true);
+printf(false);
+printf(null);
+printf(E_ERROR);
 // TODO test printf("%d", $strVal) and warn

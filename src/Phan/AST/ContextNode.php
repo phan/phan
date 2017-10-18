@@ -1552,4 +1552,160 @@ class ContextNode
 
         return null;
     }
+
+    // Flags for getEquivalentPHPValue
+
+    // Should this attempt to resolve arrays?
+    const RESOLVE_ARRAYS = (1<<0);
+    // Should this attempt to resolve array keys?
+    const RESOLVE_ARRAY_KEYS = (1<<1);
+    // Should this attempt to resolve array values?
+    const RESOLVE_ARRAY_VALUES = (1<<2);
+    // Should this attempt to resolve accesses to constants?
+    const RESOLVE_CONSTANTS = (1<<3);
+    // If resolving array keys fails, should this use a placeholder?
+    const RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER = (1<<4);
+    // Skip unknown keys
+    const RESOLVE_KEYS_SKIP_UNKNOWN_KEYS = (1<<5);
+
+    const RESOLVE_DEFAULT =
+        self::RESOLVE_ARRAYS |
+        self::RESOLVE_ARRAY_KEYS |
+        self::RESOLVE_ARRAY_VALUES |
+        self::RESOLVE_CONSTANTS |
+        self::RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER;
+
+    const RESOLVE_SCALAR_DEFAULT =
+        self::RESOLVE_CONSTANTS |
+        self::RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER;
+
+    /**
+     * @param Node[]|string[]|float[]|int[] $children
+     * @param int $flags - See self::RESOLVE_*
+     * @return ?array - array if elements could be resolved.
+     */
+    private function getEquivalentPHPArrayElements(array $children, int $flags) {
+        $elements = [];
+        foreach ($children as $child_node) {
+            $key_node = ($flags & self::RESOLVE_ARRAY_KEYS) != 0 ? $child_node->children['key'] : null;
+            $value_node = $child_node->children['value'];
+            if (self::RESOLVE_ARRAY_VALUES) {
+                $value_node = $this->getEquivalentPHPValueForNode($value_node, $flags);
+            }
+            // NOTE: this has some overlap with DuplicateKeyPlugin
+            if ($key_node === null) {
+                $elements[] = $value_node;
+            } else if (\is_scalar($key_node)) {
+                $elements[$key_node] = $value_node;  // Check for float?
+            } else {
+                $key = $this->getEquivalentPHPValueForNode($key_node, $flags);
+                if (is_scalar($key)) {
+                    $elements[$key] = $value_node;
+                } else {
+                    if (($flags & self::RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER) !== 0) {
+                        $elements[] = $value_node;
+                    } else {
+                        // TODO: Alternate strategies?
+                        return null;
+                    }
+                }
+            }
+        }
+        return $elements;
+    }
+
+    /**
+     * This converts an AST node in context to the value it represents.
+     * This is useful for plugins, etc, and will gradually improve.
+     *
+     * @see $this->getEquivalentPHPValue
+     *
+     * @param Node|float|int|string $node
+     * @return Node|Node[]|string[]|int[]|float[]|string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node.
+     */
+    private function getEquivalentPHPValueForNode($node, int $flags) {
+        if (!$node instanceof Node) {
+            return $node;
+        }
+        $kind = $node->kind;
+        if ($kind === \ast\AST_ARRAY) {
+            if (($flags & self::RESOLVE_ARRAYS) === 0) {
+                return $node;
+            }
+            $elements = $this->getEquivalentPHPArrayElements($node->children, $flags);
+            if ($elements === null) {
+                // Attempted to resolve elements but failed at one or more elements.
+                return $node;
+            }
+            return $elements;
+        } else if ($kind === \ast\AST_CONST) {
+            $name = $node->children['name']->children['name'] ?? null;
+            if (\is_string($name)) {
+                switch(\strtolower($name)) {
+                case 'false': return false;
+                case 'true': return true;
+                case 'null': return null;
+                }
+            }
+            if (($flags & self::RESOLVE_CONSTANTS) === 0) {
+                return $node;
+            }
+            try {
+                $constant = (new ContextNode($this->code_base, $this->context, $node))->getConst();
+            } catch (\Exception $e) {
+                return $node;
+            }
+            // TODO: Recurse, but don't try to resolve constants again
+            $new_node = $constant->getNodeForValue();
+            if (is_object($new_node)) {
+                // Avoid infinite recursion, only resolve once
+                $new_node = $this->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
+            }
+            return $new_node;
+        } else if ($kind === \ast\AST_CLASS_CONST) {
+            if (($flags & self::RESOLVE_CONSTANTS) === 0) {
+                return $node;
+            }
+            try {
+                $constant = (new ContextNode($this->code_base, $this->context, $node))->getClassConst();
+            } catch (\Exception $e) {
+                return $node;
+            }
+            // TODO: Recurse, but don't try to resolve constants again
+            $new_node = $constant->getNodeForValue();
+            if (is_object($new_node)) {
+                // Avoid infinite recursion, only resolve once
+                $new_node = $this->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
+            }
+            return $new_node;
+        }
+        return $node;
+    }
+
+    /**
+     * This converts an AST node in context to the value it represents.
+     * This is useful for plugins, etc, and will gradually improve.
+     *
+     * This does not create new object instances.
+     *
+     * @return Node|string[]|int[]|float[]|string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node.
+     * @throws InvalidArgumentException if the object could not be determined - Callers must catch this.
+     */
+    public function getEquivalentPHPValue(int $flags = self::RESOLVE_DEFAULT) {
+        return $this->getEquivalentPHPValueForNode($this->node, $flags);
+    }
+
+    /**
+     * This converts an AST node in context to the value it represents.
+     * This is useful for plugins, etc, and will gradually improve.
+     *
+     * This does not create new object instances.
+     *
+     * @return Node||string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node. If this would be an array, this returns $node.
+     *
+     * @throws InvalidArgumentException if the object could not be determined - Callers must catch this.
+     */
+    public function getEquivalentPHPScalarValue() {
+        return $this->getEquivalentPHPValueForNode($this->node, self::RESOLVE_SCALAR_DEFAULT);
+    }
 }

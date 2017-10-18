@@ -31,7 +31,12 @@ Plugins
 + Add a new plugin capability `AnalyzeFunctionCallCapability` which can add logic to analyze calls to a small subset of functions.
   (e.g. based on one or more of the argument types or values) (#1181)
 + Make line numbers more accurate in DuplicateArrayKeyPlugin.
-+ Add `PregRegexCheckerPlugin` to check for invalid regexes. (uses `AnalyzeFunctionCallCapability`)
++ Add `PregRegexCheckerPlugin` to check for invalid regexes. (uses `AnalyzeFunctionCallCapability`).
+  This plugin is able to resolve literals, global constants, and class constants as regexes.
+  See [the corresponding section of .phan/plugins/README.md](.phan/plugins/README.md#pregregexcheckerpluginphp)
++ Add `PrintfCheckerPlugin` to check for invalid format strings or incorrect arguments in printf calls. (uses `AnalyzeFunctionCallCapability`)
+  This plugin is able to resolve literals, global constants, and class constants as format strings.
+  See [the corresponding section of .phan/plugins/README.md](.phan/plugins/README.md#printfcheckerpluginphp)
 
 Bug Fixes
 + Properly check for undeclared classes in arrays within phpdoc @param, @property, @method, @var, and @return types.

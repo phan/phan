@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
@@ -14,20 +15,33 @@ use ast\Node;
  *   This method returns a map from function/method FQSEN to closures that are called on invocations of those closures.
  */
 class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability {
+    // Skip over analyzing regex keys that couldn't be resolved.
+    // Don't try to convert values to PHP data (should be closures)
+    const RESOLVE_REGEX_KEY_FLAGS = (ContextNode::RESOLVE_DEFAULT | ContextNode::RESOLVE_KEYS_SKIP_UNKNOWN_KEYS) &
+        ~(ContextNode::RESOLVE_KEYS_SKIP_UNKNOWN_KEYS | ContextNode::RESOLVE_ARRAY_VALUES);
+
+
     private function analyzePattern(CodeBase $code_base, Context $context, Func $function, string $pattern)
     {
-        $old_error_reporting = error_reporting();
-        \error_reporting(0);
-        \ob_start();
-        \error_clear_last();
-        try {
-            $result = @\preg_match($pattern, '');
-        } finally {
-            \ob_end_clean();
-            \error_reporting($old_error_reporting);
-        }
-        if ($result === false) {
-            $err = \error_get_last() ?? [];
+        $err = with_disabled_phan_error_handler(function() use($pattern) {
+            $old_error_reporting = error_reporting();
+            \error_reporting(0);
+            \ob_start();
+            \error_clear_last();
+            try {
+                $result = @\preg_match($pattern, '');
+                if ($result === false) {
+                    $err = \error_get_last() ?? [];
+                    var_export($err);
+                    return $err;
+                }
+                return null;
+            } finally {
+                \ob_end_clean();
+                \error_reporting($old_error_reporting);
+            }
+        });
+        if ($err !== null) {
             $this->emitIssue(
                 $code_base,
                 $context,
@@ -58,6 +72,9 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             }
             // TODO: Resolve global constants and class constants?
             $pattern = $args[0];
+            if ($pattern instanceof Node) {
+                $pattern = (new ContextNode($code_base, $context, $pattern))->getEquivalentPHPScalarValue();
+            }
             if (\is_string($pattern)) {
                 $this->analyzePattern($code_base, $context, $function, $pattern);
             }
@@ -77,15 +94,17 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             }
             // TODO: Resolve global constants and class constants?
             $pattern = $args[0];
+            if ($pattern instanceof Node) {
+                $pattern = (new ContextNode($code_base, $context, $pattern))->getEquivalentPHPValue();
+            }
             if (\is_string($pattern)) {
                 $this->analyzePattern($code_base, $context, $function, $pattern);
                 return;
             }
-            if ($pattern instanceof Node && $pattern->kind === ast\AST_ARRAY) {
-                foreach ($pattern->children as $child) {
-                    $pattern = $child->children['value'];
-                    if (\is_string($pattern)) {
-                        $this->analyzePattern($code_base, $context, $function, $pattern);
+            if (\is_array($pattern)) {
+                foreach ($pattern as $child_pattern) {
+                    if (\is_string($child_pattern)) {
+                        $this->analyzePattern($code_base, $context, $function, $child_pattern);
                     }
                 }
                 return;
@@ -106,17 +125,20 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
             }
             // TODO: Resolve global constants and class constants?
             $pattern = $args[0];
-            if ($pattern instanceof Node && $pattern->kind === ast\AST_ARRAY) {
-                foreach ($pattern->children as $child) {
-                    $pattern = $child->children['key'];
-                    if (\is_string($pattern)) {
-                        $this->analyzePattern($code_base, $context, $function, $pattern);
+            if ($pattern instanceof Node) {
+                $pattern = (new ContextNode($code_base, $context, $pattern))->getEquivalentPHPValue(self::RESOLVE_REGEX_KEY_FLAGS);
+            }
+            if (\is_array($pattern)) {
+                foreach ($pattern as $child_pattern => $_) {
+                    if (\is_scalar($child_pattern)) {
+                        $this->analyzePattern($code_base, $context, $function, (string)$child_pattern);
                     }
                 }
                 return;
             }
         };
 
+        // TODO: Check that the callbacks have the right signatures in another PR?
         return [
             // call
             'preg_filter'                 => $preg_pattern_or_array_callback,
