@@ -116,6 +116,9 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                         return null;
                     }
                     $prim = self::astNodeToPrimitive($code_base, $context, $childArg);
+                    if ($prim === null) {
+                        return null;
+                    }
                     return new PrimitiveValue($prim->value, true);
                 }
             }
@@ -129,6 +132,9 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 return null;
             }
             $right = $this->astNodeToPrimitive($code_base, $context, $astNode->children['right']);
+            if ($right === null) {
+                return null;
+            }
             return $this->concatenateToPrimitive($left, $right);
         }
         // We don't know how to convert this to a primitive, give up.
