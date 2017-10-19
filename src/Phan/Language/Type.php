@@ -58,7 +58,10 @@ class Type
      * @var string
      * A regex matching template parameter types such
      * as '<int,DateTime|null,string>'
+     *
+     * See https://secure.php.net/manual/en/regexp.reference.recursive.php
      */
+    /*
     const template_parameter_type_list_regex =
         '<'
         . '('
@@ -68,24 +71,29 @@ class Type
         . ')*'
         . ')'
         . '>';
+     */
 
     /**
      * @var string
      * A type with an optional template parameter list
      * such as 'Set<Datetime>', 'int' or 'Tuple2<int>'.
      */
+    /*
     const simple_type_with_template_parameter_list_regex =
         '(' . self::simple_type_regex . ')'
-        . '(' . self::template_parameter_type_list_regex . ')?';
+        . '(' . self::_template_parameter_type_list_regex_recursive . ')?';
+     */
 
     /**
      * @var string
      * A type with an optional template parameter list
      * such as 'Set<Datetime>', 'int' or 'Tuple2<int>' or $this
      */
+    /*
     const simple_type_with_template_parameter_list_regex_or_this =
         '(' . self::simple_type_regex_or_this . ')'
-        . '(' . self::template_parameter_type_list_regex . ')?';
+        . '(' . self::_template_parameter_type_list_regex_recursive . ')?';
+     */
 
     /**
      * @var string
@@ -94,7 +102,18 @@ class Type
      * 'string' or 'Set<DateTime>')
      */
     const type_regex =
-        self::simple_type_with_template_parameter_list_regex . '(\[\])*';
+        '('
+        . '(' . self::simple_type_regex . ')'  // 2 patterns
+        . '(?:<'
+          . '('
+            . '(?-4)'
+            . '(\s*,\s*'
+              . '(?-6)'
+            . ')*'
+          . ')'
+        . '>)?'
+        . '(\[\])*'
+       .')';
 
     /**
      * @var string
@@ -103,7 +122,21 @@ class Type
      * 'string' or 'Set<DateTime>')
      */
     const type_regex_or_this =
-        self::simple_type_with_template_parameter_list_regex_or_this . '(\[\])*';
+        '('
+        . '\((?-1)\)|'
+        . '('
+          . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
+          . '(?:<'
+            . '('
+              . '(?-6)'  // We use relative references instead of named references so that more than one one type_regex can be used in a regex.
+              . '(\s*,\s*'
+                . '(?-7)'
+              . ')*'
+            . ')'
+          . '>)?'
+          . '(\[\])*'
+        . ')'
+       . ')';
 
     /**
      * @var bool[] - For checking if a string is an internal type. This is used for case insensitive lookup.
@@ -614,6 +647,19 @@ class Type
             !empty($fully_qualified_string),
             "Type cannot be empty"
         );
+        if (\substr($fully_qualified_string, -2) === '[]') {
+            if ($fully_qualified_string[0] === '?') {
+                $is_nullable = true;
+                $fully_qualified_substring = \substr($fully_qualified_string, 1, -2);
+            } else {
+                $is_nullable = false;
+                $fully_qualified_substring = \substr($fully_qualified_string, 0, -2);
+            }
+            return GenericArrayType::fromElementType(
+                Type::fromFullyQualifiedString($fully_qualified_substring),
+                $is_nullable
+            );
+        }
 
         $tuple = self::typeStringComponents($fully_qualified_string);
 
@@ -677,6 +723,27 @@ class Type
             $string !== '',
             "Type cannot be empty"
         );
+
+        if (\substr($string, -2) === '[]') {
+            if ($string[0] === '?') {
+                $is_nullable = true;
+                $substring = \substr($string, 1, -2);
+            } else {
+                $is_nullable = false;
+                $substring = \substr($string, 0, -2);
+            }
+            if ($substring === '') {
+                return ArrayType::instance($is_nullable);
+            }
+            return GenericArrayType::fromElementType(
+                self::fromStringInContext(
+                    $substring,
+                    $context,
+                    $source
+                ),
+                $is_nullable
+            );
+        }
 
         // Extract the namespace, type and parameter type name list
         $tuple = self::typeStringComponents($string);
@@ -758,7 +825,7 @@ class Type
 
         // If this was a fully qualified type, we're all
         // set
-        if (!empty($namespace) && 0 === strpos($namespace, '\\')) {
+        if (!empty($namespace) && 0 === \strpos($namespace, '\\')) {
             return self::make(
                 $namespace,
                 $type_name,
@@ -769,6 +836,18 @@ class Type
         }
 
         if (self::isInternalTypeString($type_name, $source)) {
+            if (!empty($template_parameter_type_list)) {
+                if (\strtolower($type_name) === 'array') {
+                    $template_count = \count($template_parameter_type_list);
+                    if ($template_count <= 2) {  // array<T> or array<key, T>
+                        $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
+                        if (\count($types) === 1) {
+                            return GenericArrayType::fromElementType(\reset($types), $is_nullable);
+                        }
+                    }
+                }
+                // TODO: Warn about unrecognized types.
+            }
             return self::fromInternalTypeName($type_name, $is_nullable, $source);
         }
 
@@ -851,7 +930,6 @@ class Type
             $types_set = [$object_id => $this];  // same as ArraySet::singleton, but why bother recomputing object id.
             self::$singleton_map[$object_id] = $types_set;
         }
-        // var_export($types_set);
         /**
         if (!ArraySet::is_array_set($types_set)) {
             printf("Assertion failed: %s %s %d %s %s %s\n", $this, json_encode($this instanceof StringType), $object_id, $old_hash, spl_object_hash($this), var_export($types_set, true));
@@ -1083,7 +1161,7 @@ class Type
     ) : bool {
         // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
         // Not sure if that should extend to phpdoc.
-        return preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\$this)$/', $type_string) > 0;
+        return \preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\$this)$/', $type_string) > 0;
     }
 
     /**
@@ -1099,7 +1177,7 @@ class Type
     ) : bool {
         // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
         // Not sure if that should extend to phpdoc.
-        return preg_match('/^\\\\?([sS][tT][aA][tT][iI][cC]|\\$this)$/', $type_string) > 0;
+        return \preg_match('/^\\\\?([sS][tT][aA][tT][iI][cC]|\\$this)$/', $type_string) > 0;
     }
 
     /**
@@ -1651,6 +1729,8 @@ class Type
      * @return Tuple4<string,string,array,bool>
      * A pair with the 0th element being the namespace and the first
      * element being the type name.
+     *
+     * NOTE: callers must check for the generic array symbol
      */
     private static function typeStringComponents(
         string $type_string
@@ -1660,28 +1740,23 @@ class Type
 
         $match = [];
         $is_nullable = false;
-        if (\preg_match('/' . self::type_regex_or_this. '/', $type_string, $match)) {
-            $type_string = $match[1];
+        if (\preg_match('/^' . self::type_regex_or_this. '$/', $type_string, $match)) {
+            if (!isset($match[2])) {
+                // Parse '(X)' as 'X'
+                return self::typeStringComponents(\substr($match[1], 1, -1));
+            }
+            $type_string = $match[3];
 
             // Rip out the nullability indicator if it
             // exists and note its nullability
-            $is_nullable = ($match[2] ?? '') === '?';
+            $is_nullable = ($match[4] ?? '') === '?';
             if ($is_nullable) {
                 $type_string = \substr($type_string, 1);
             }
 
-            // If we have a generic array symbol '[]', append that back
-            // on to the type string
-            if (isset($match[13])) {
-                // Figure out the dimensionality of the type array
-                $gmatch = [];
-                if (\preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {
-                    $type_string .= $gmatch[0];
-                }
-            }
-
-            $template_parameter_type_name_list = !empty($match[4])
-                ? \preg_split('/\s*,\s*/', $match[4])
+            // Recursively parse this
+            $template_parameter_type_name_list = isset($match[6])
+                ? self::extractTemplateParameterTypeNameList($match[6])
                 : [];
         }
 
@@ -1706,6 +1781,45 @@ class Type
             $template_parameter_type_name_list,
             $is_nullable
         );
+    }
+
+    /**
+     * @return string[]
+     */
+    private static function extractTemplateParameterTypeNameList(string $template_list_string)
+    {
+        $results = [];
+        $prev_parts = [];
+        $delta = 0;
+        foreach (\explode(',', $template_list_string) as $result) {
+            $result = \trim($result);
+            if (\count($prev_parts) > 0) {
+                $prev_parts[] = $result;
+                $delta += \substr_count($result, '<') - \substr_count($result, '>');
+                if ($delta <= 0) {
+                    if ($delta === 0) {
+                        $results[] = \implode(',', $prev_parts);
+                    }  // ignore unparseable data such as "<T,T2>>"
+                    $prev_parts = [];
+                    $delta = 0;
+                    continue;
+                }
+            }
+            $bracket_count = \substr_count($result, '<');
+            if ($bracket_count === 0) {
+                $results[] = $result;
+                continue;
+            }
+            $delta = $bracket_count - \substr_count($result, '>');
+            if ($delta === 0) {
+                $results[] = $result;
+            } else if ($delta > 0) {
+                $prev_parts[] = $result;
+            }  // otherwise ignore unparseable data such as ">" (should be impossible)
+
+            // e.g. we're breaking up T1<T2<X,Y>> into "T1<T2<X" and "Y>>"
+        }
+        return $results;
     }
 
     /**

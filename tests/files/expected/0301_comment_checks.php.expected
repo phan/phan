@@ -1,5 +1,6 @@
 %s:17 PhanInvalidCommentForDeclarationType The phpdoc comment for @param cannot occur on a class
 %s:17 PhanInvalidCommentForDeclarationType The phpdoc comment for @return cannot occur on a class
+%s:17 PhanInvalidCommentForDeclarationType The phpdoc comment for @var cannot occur on a class
 %s:17 PhanMisspelledAnnotation Saw misspelled annotation @phan-forbid-this-is-a-typo, should be one of @phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override
 %s:17 PhanUnextractableAnnotationPart Saw unextractable annotation for a fragment of comment * @method foo(string$invalidType $param1): string$invalidType $param1
 %s:17 PhanUnextractableAnnotation Saw unextractable annotation for comment * @method unmatched(
