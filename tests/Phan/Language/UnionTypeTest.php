@@ -3,8 +3,25 @@
 namespace Phan\Tests\Language;
 
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\BoolType;
+use Phan\Language\Type\CallableType;
+use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\FalseType;
+use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
+use Phan\Language\Type\IterableType;
+use Phan\Language\Type\MixedType;
+use Phan\Language\Type\NativeType;
+use Phan\Language\Type\NullType;
+use Phan\Language\Type\ObjectType;
+use Phan\Language\Type\ResourceType;
+use Phan\Language\Type\StaticType;
+use Phan\Language\Type\StringType;
+use Phan\Language\Type\TemplateType;
+use Phan\Language\Type\TrueType;
+use Phan\Language\Type\VoidType;
 
 // Grab these before we define our own classes
 $internal_class_name_list = get_declared_classes();
@@ -129,7 +146,7 @@ class UnionTypeTest extends BaseTest {
     {
         $this->assertEquals(
             $type_name,
-            $this->typeStringFromCode('<?php ' . $code_stub . ';')
+            $this->typeStringFromCode('<' . '?php ' . $code_stub . ';')
         );
     }
 
@@ -148,5 +165,57 @@ class UnionTypeTest extends BaseTest {
                 Config::AST_VERSION
             )->children[0]
         )->asExpandedTypes($this->code_base)->__toString();
+    }
+
+    private static function makePHPDocUnionType(string $union_type_string) : UnionType
+    {
+        return UnionType::fromStringInContext($union_type_string, new Context(), Type::FROM_PHPDOC);
+    }
+
+    private function makePHPDocType(string $type) : Type
+    {
+        return Type::fromStringInContext($type, new Context(), Type::FROM_PHPDOC);
+    }
+
+    private function assertIsType(Type $type, string $union_type_string)
+    {
+        $union_type = self::makePHPDocUnionType($union_type_string);
+        $this->assertTrue($union_type->hasType($type), "Expected $union_type (from $union_type_string) to be $type");
+    }
+
+    public function testBasicTypes()
+    {
+        $this->assertIsType(ArrayType::instance(false), 'array');
+        $this->assertIsType(ArrayType::instance(true), '?array');
+        $this->assertIsType(ArrayType::instance(true), '?ARRAY');
+        $this->assertIsType(BoolType::instance(false), 'bool');
+        $this->assertIsType(CallableType::instance(false), 'callable');
+        $this->assertIsType(ClosureType::instance(false), 'Closure');
+        $this->assertIsType(FalseType::instance(false), 'false');
+        $this->assertIsType(FloatType::instance(false), 'float');
+        $this->assertIsType(IntType::instance(false), 'int');
+        $this->assertIsType(IterableType::instance(false), 'iterable');
+        $this->assertIsType(MixedType::instance(false), 'mixed');
+        $this->assertIsType(ObjectType::instance(false), 'object');
+        $this->assertIsType(ResourceType::instance(false), 'resource');
+        $this->assertIsType(StaticType::instance(false), 'static');
+        $this->assertIsType(StringType::instance(false), 'string');
+        $this->assertIsType(TrueType::instance(false), 'true');
+        $this->assertIsType(VoidType::instance(false), 'void');
+    }
+
+    public function testTemplateTypes()
+    {
+        $union_type = self::makePHPDocUnionType('TypeTestClass<A1,B2>');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('\\', $type->getNamespace());
+        $this->assertSame('TypeTestClass', $type->getName());
+        $parts = $type->getTemplateParameterTypeList();
+        $this->assertCount(2, $parts);
+        $this->assertTrue($parts[0]->isType(self::makePHPDocType('A1')));
+        $this->assertTrue($parts[1]->isType(self::makePHPDocType('B2')));
     }
 }

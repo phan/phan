@@ -17,7 +17,7 @@ final class ClosureType extends Type
     // Same as instance(), but guaranteed not to have memoized state.
     private static function closureInstance() : ClosureType {
         static $instance = null;
-        if (empty($instance)) {
+        if ($instance === null) {
             $instance = self::make('\\', self::NAME, [], false, self::FROM_NODE);
         }
         return $instance;
@@ -25,9 +25,13 @@ final class ClosureType extends Type
 
     public static function instanceWithClosureFQSEN(FQSEN $fqsen)
     {
+        static $original_instance = null;
+        if ($original_instance === null) {
+            $original_instance = self::closureInstance();
+        }
         // Use an instance with no memoized or lazily initialized results.
         // Avoids picking up changes to ClosureType::instance(false) in the case that a result depends on asFQSEN()
-        $instance = clone(self::closureInstance());
+        $instance = clone($original_instance);
         $instance->fqsen = $fqsen;
         $instance->memoizeFlushAll();
         return $instance;

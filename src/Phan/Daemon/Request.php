@@ -238,7 +238,7 @@ class Request {
 
     /**
      * @param int $signo
-     * @param array|null $status
+     * @param int|null $status
      * @param int|null $pid
      * @return void
      */

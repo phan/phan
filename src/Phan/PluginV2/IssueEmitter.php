@@ -44,6 +44,8 @@ trait IssueEmitter {
      * A guess at how hard the issue will be to fix from the
      * set {Issue:REMEDIATION_A, Issue:REMEDIATION_B, ...
      * Issue::REMEDIATION_F} with F being the hardest.
+     *
+     * @param int $issue_type_id An issue id for pylint
      */
     public function emitPluginIssue(
         CodeBase $code_base,

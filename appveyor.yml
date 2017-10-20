@@ -6,7 +6,7 @@ version: '{branch}.{build}'
 clone_folder: C:\projects\phan
 # Don't include full git history
 clone_depth: 1
-# Test 32-builds
+# Test 32-bit builds
 platform: x86
 
 branches:

@@ -61,4 +61,12 @@ class C253_2 extends C253_1 {
     public function f7() : self {
         return new static();
     }
+    /** @return $this (narrowing, allowed) */
+    public function h3() : C253_1 {
+        return $this;
+    }
+    /** @return $this (incompatible, not allowed) */
+    public function h4() : iterable {
+        throw new RuntimeException('not implemented');
+    }
 }
