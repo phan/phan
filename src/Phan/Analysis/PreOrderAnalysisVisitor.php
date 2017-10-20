@@ -222,7 +222,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // looking at currently in this context.
         $function = null;
         foreach ($canonical_function->alternateGenerator($this->code_base)
-            as $i => $alternate_function
+            as $alternate_function
         ) {
             if ($alternate_function->getFileRef()->getProjectRelativePath()
                 === $this->context->getProjectRelativePath()
@@ -248,6 +248,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         // Parse the comment above the function to get
         // extra meta information about the method.
+        // TODO: Investigate caching information from Comment::fromStringInContext?
         $comment = Comment::fromStringInContext(
             $node->docComment ?? '',
             $this->code_base,
@@ -439,24 +440,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
                 // Pass the variable into a new scope
                 $func->getInternalScope()->addVariable($variable);
-            }
-        }
-
-        // Add all parameters to the scope
-        if (!empty($node->children['params'])
-            && $node->children['params']->kind == \ast\AST_PARAM_LIST
-        ) {
-            $params = $node->children['params'];
-            foreach ($params->children as $param) {
-                // Read the parameter
-                $parameter = Parameter::fromNode(
-                    $context,
-                    $this->code_base,
-                    $param
-                );
-
-                // Add it to the scope
-                $func->getInternalScope()->addVariable($parameter);
             }
         }
 

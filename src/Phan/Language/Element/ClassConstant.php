@@ -90,6 +90,7 @@ class ClassConstant extends ClassElement implements ConstantInterface
         $string .= 'const ' . $this->getName() . ' = ';
         $fqsen = (string)$this->getFQSEN();
         if (defined($fqsen)) {
+            // TODO: Could start using $this->getNodeForValue()?
             $string .= var_export(constant($fqsen), true) . ';';
         } else {
             $string .= "null;  // could not find";

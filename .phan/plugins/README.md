@@ -39,6 +39,11 @@ or if the relevant parts of the codebase fixed the bug/added annotations)
 These plugins are useful across a wide variety of code styles, and should give low false positives.
 Also see [DollarDollarPlugin.php](#dollardollarpluginphp) for a meaningful real-world example.
 
+#### AlwaysReturnPlugin.php
+
+Checks if a function or method with a non-void return type will **unconditionally** return or throw.
+This is stricter than Phan's default checks (Phan accepts a function or method that **may** return something, or functions that unconditionally throw).
+
 #### DuplicateArrayKeyPlugin.php
 
 Warns about common errors in php array keys. Has the following checks (Doesn't try to resolve constants).
@@ -50,11 +55,43 @@ Warns about common errors in php array keys. Has the following checks (Doesn't t
 
   (E.g. `['key' => 'value', 'othervalue']` is often found in code because the key for `'othervalue'` was forgotten)
 
-#### AlwaysReturnPlugin.php
+#### PregRegexCheckerPlugin
 
-Checks if a function or method with a non-void return type will **unconditionally** return or throw.
-This is stricter than Phan's default checks (Phan accepts a function or method that **may** return something, or functions that unconditionally throw).
+This plugin checks for invalid regexes.
+This plugin is able to resolve literals, global constants, and class constants as regexes.
 
+- **PhanPluginInvalidPregRegex**: The provided regex is invalid, according to PHP.
+
+#### PrintfCheckerPlugin
+
+Checks for invalid format strings, incorrect argument counts, and unused arguments in printf calls.
+Additionally, warns about incompatible union types (E.g. passing `string` for the argument corresponding to `%d`)
+This plugin is able to resolve literals, global constants, and class constants as format strings.
+
+
+- **PhanPluginPrintfNonexistentArgument**: `Format string {STRING_LITERAL} refers to nonexistent argument #{INDEX} in {STRING_LITERAL}`
+- **PhanPluginPrintfNoArguments**: `No format string arguments are given for {STRING_LITERAL}, consider using {FUNCTION} instead`
+- **PhanPluginPrintfNoSpecifiers**: `None of the formatting arguments passed alongside format string {STRING_LITERAL} are used`
+- **PhanPluginPrintfUnusedArgument**: `Format string {STRING_LITERAL} does not use provided argument #{INDEX}`
+- **PhanPluginPrintfNotPercent**: `Format string {STRING_LITERAL} contains something that is not a percent sign, it will be treated as a format string '{STRING_LITERAL}' with padding. Use %% for a literal percent sign, or '{STRING_LITERAL}' to be less ambiguous`
+  (Usually a typo, e.g. `printf("%s is 20% done", $taskName)` treats `% d` as a second argument)
+- **PhanPluginPrintfWidthNotPosition**: `Format string {STRING_LITERAL} is specifying a width({STRING_LITERAL}) instead of a position({STRING_LITERAL})`
+- **PhanPluginPrintfIncompatibleSpecifier**: `Format string {STRING_LITERAL} refers to argument #{INDEX} in different ways: {DETAILS}` (e.g. `"%1$s of #%1$d"`. May be an off by one error.)
+- **PhanPluginPrintfIncompatibleArgumentTypeWeak**: `Format string {STRING_LITERAL} refers to argument #{INDEX} as {DETAILS}, so type {TYPE} is expected. However, {FUNCTION} was passed the type {TYPE} (which is weaker than {TYPE})`
+- **PhanPluginPrintfIncompatibleArgumentType**: `PhanPluginPrintfIncompatibleArgumentType`
+
+Note (for projects using `gettext`):
+Subclassing this plugin (and overriding `gettextForAllLocales`) will allow you to analyze translations of a project for compatibility.
+This will require extra work to set up.
+See [PrintfCheckerPlugin's source](./PrintfCheckerPlugin.php) for details.
+
+                        'PhanPluginPrintfNotPercent',
+                        'PhanPluginPrintfTranslatedWidthNotPosition',
+                    'PhanPluginPrintfIncompatibleSpecifier',
+                        'PhanPluginPrintfIncompatibleArgumentTypeWeak',
+                        'PhanPluginPrintfIncompatibleArgumentType',
+                            $issue_type = 'PhanPluginPrintfTranslatedIncompatible';
+                            $issue_type = 'PhanPluginPrintfTranslatedHasMoreArgs';
 #### UnconditionalCodePlugin.php
 
 Checks for syntactically unreachable statements in the global scope or function bodies.

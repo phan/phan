@@ -49,6 +49,13 @@ class Type
 
     /**
      * @var string
+     * A legal type identifier (e.g. 'int' or 'DateTime')
+     */
+    const simple_type_regex_or_this =
+        '(\??)([a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
+
+    /**
+     * @var string
      * A regex matching template parameter types such
      * as '<int,DateTime|null,string>'
      */
@@ -73,16 +80,33 @@ class Type
 
     /**
      * @var string
+     * A type with an optional template parameter list
+     * such as 'Set<Datetime>', 'int' or 'Tuple2<int>' or $this
+     */
+    const simple_type_with_template_parameter_list_regex_or_this =
+        '(' . self::simple_type_regex_or_this . ')'
+        . '(' . self::template_parameter_type_list_regex . ')?';
+
+    /**
+     * @var string
      * A legal type identifier matching a type optionally with a []
      * indicating that it's a generic typed array (e.g. 'int[]',
      * 'string' or 'Set<DateTime>')
-     * TODO: change the regex so that '(at)return $this' will work (Currently not parsed, has empty regex)
      */
     const type_regex =
         self::simple_type_with_template_parameter_list_regex . '(\[\])*';
 
     /**
-     * @var bool[] - For checking if a string is an internal type.
+     * @var string
+     * A legal type identifier matching a type optionally with a []
+     * indicating that it's a generic typed array (e.g. 'int[]' or '$this[]',
+     * 'string' or 'Set<DateTime>')
+     */
+    const type_regex_or_this =
+        self::simple_type_with_template_parameter_list_regex_or_this . '(\[\])*';
+
+    /**
+     * @var bool[] - For checking if a string is an internal type. This is used for case insensitive lookup.
      */
     const _internal_type_set = [
         'array'     => true,
@@ -535,6 +559,8 @@ class Type
                 return IterableType::instance($is_nullable);
             case 'static':
                 return StaticType::instance($is_nullable);
+            case '$this':
+                return StaticType::instance($is_nullable);
         }
 
         throw new \AssertionError("No internal type with name $type_name");
@@ -647,7 +673,6 @@ class Type
         Context $context,
         int $source
     ) : Type {
-
         \assert(
             $string !== '',
             "Type cannot be empty"
@@ -1007,14 +1032,14 @@ class Type
      * @see \Phan\Deprecated\Util::is_native_type
      * Formerly `function is_native_type`
      */
-    private static function isInternalTypeString(string $type_name, int $source) : bool
+    private static function isInternalTypeString(string $original_type_name, int $source) : bool
     {
-        $type_name = str_replace('[]', '', strtolower($type_name));
+        $type_name = \str_replace('[]', '', \strtolower($original_type_name));
         if ($source === Type::FROM_PHPDOC) {
             $type_name = self::canonicalNameFromName($type_name);  // Have to convert boolean[] to bool
         }
         if (!\array_key_exists($type_name, self::_internal_type_set)) {
-            return false;
+            return $original_type_name === '$this';  // This is the only case sensitive check.
         }
         // All values of $type_name exist as a valid phpdoc type, but some don't exist as real types.
         if ($source === Type::FROM_NODE && \array_key_exists($type_name, self::_soft_internal_type_set)) {
@@ -1058,7 +1083,7 @@ class Type
     ) : bool {
         // Note: While 'self' and 'parent' are case insensitive, '$this' is case sensitive
         // Not sure if that should extend to phpdoc.
-        return preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\\$this)$/', $type_string) > 0;
+        return preg_match('/^\\\\?([sS][eE][lL][fF]|[pP][aA][rR][eE][nN][tT]|\$this)$/', $type_string) > 0;
     }
 
     /**
@@ -1635,19 +1660,19 @@ class Type
 
         $match = [];
         $is_nullable = false;
-        if (\preg_match('/' . self::type_regex. '/', $type_string, $match)) {
+        if (\preg_match('/' . self::type_regex_or_this. '/', $type_string, $match)) {
             $type_string = $match[1];
 
             // Rip out the nullability indicator if it
             // exists and note its nullability
-            $is_nullable = ($match[2] ?? '') == '?';
+            $is_nullable = ($match[2] ?? '') === '?';
             if ($is_nullable) {
                 $type_string = \substr($type_string, 1);
             }
 
             // If we have a generic array symbol '[]', append that back
             // on to the type string
-            if (isset($match[12])) {
+            if (isset($match[13])) {
                 // Figure out the dimensionality of the type array
                 $gmatch = [];
                 if (\preg_match('/\[[\]\[]*\]/', $match[0], $gmatch)) {

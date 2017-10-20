@@ -8,7 +8,6 @@ use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
-use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayType;
@@ -36,6 +35,16 @@ class UnionType implements \Serializable
     const union_type_regex =
         Type::type_regex
         . '(\|' . Type::type_regex . ')*';
+
+    /**
+     * @var string
+     * A list of one or more types delimited by the '|'
+     * character (e.g. 'int|DateTime|string[]' or 'null|$this')
+     * This may be used for return types.
+     */
+    const union_type_regex_or_this =
+        Type::type_regex_or_this
+        . '(\|' . Type::type_regex_or_this . ')*';
 
     /**
      * @var Type[] - [int $type_object_id => Type $type]

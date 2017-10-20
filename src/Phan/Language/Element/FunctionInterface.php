@@ -48,23 +48,40 @@ interface FunctionInterface extends AddressableElementInterface {
 
     /**
      * @return int
+     * The number of optional real parameters on this function/method.
+     * May differ from getNumberOfOptionalParameters()
+     * for internal modules lacking proper reflection info,
+     * or if the installed module version's API changed from what Phan's stubs used,
+     * or if a function/method uses variadics/func_get_arg*()
+     */
+    public function getNumberOfOptionalRealParameters() : int;
+
+    /**
+     * @return int
      * The maximum number of parameters to this method
      */
     public function getNumberOfParameters() : int;
-    /**
 
+    /**
      * @return int
      * The number of required parameters on this method
      */
     public function getNumberOfRequiredParameters() : int;
 
     /**
-     *
      * The number of required parameters
      *
      * @return void
      */
     public function setNumberOfRequiredParameters(int $number);
+
+    /**
+     * @return int
+     * The number of required real parameters on this function/method.
+     * May differ for internal modules lacking proper reflection info,
+     * or if the installed module version's API changed from what Phan's stubs used.
+     */
+    public function getNumberOfRequiredRealParameters() : int;
 
     /**
      * @return bool
@@ -243,7 +260,6 @@ interface FunctionInterface extends AddressableElementInterface {
     public function hasDependentReturnType() : bool;
 
     /**
-     *
      * Returns a union type based on $args_node and $context
      * @param CodeBase $code_base
      * @param Context $context
@@ -253,6 +269,29 @@ interface FunctionInterface extends AddressableElementInterface {
 
     /**
      * Make calculation of the return type of this function/method use $closure
+     * @return void
      */
     public function setDependentReturnTypeClosure(\Closure $closure);
+
+    /**
+     * Returns true if this function or method has additional analysis logic for invocations (From internal and user defined plugins)
+     * @see getDependentReturnType
+     */
+    public function hasFunctionCallAnalyzer() : bool;
+
+    /**
+     * Perform additional analysis logic for invocations (From internal and user defined plugins)
+     *
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param \ast\Node[]|int[]|string[] $args
+     * @return void
+     */
+    public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args);
+
+    /**
+     * If callers need to invoke multiple closures, they should pass in a closure to invoke multiple closures.
+     * @return void
+     */
+    public function setFunctionCallAnalyzer(\Closure $closure);
 }

@@ -170,10 +170,9 @@ Usage: ./phan [options] [files...]
   This is primarily intended for performing standalone
   incremental analysis.
 
- -d, --project-root-directory
-  Hunt for a directory named .phan in the current or parent
-  directory and read configuration file config.php from that
-  path.
+ -d, --project-root-directory </path/to/project>
+  Hunt for a directory named .phan in the provided directory
+  and read configuration file .phan/config.php from that path.
 
  -r, --file-list-only
   A file containing a list of PHP files to be analyzed to the
@@ -225,6 +224,9 @@ Usage: ./phan [options] [files...]
  -z, --signature-compatibility
   Analyze signatures for methods that are overrides to ensure
   compatibility with what they're overriding.
+
+ --disable-plugins
+  Don't run any plugins. Slightly faster.
 
  --use-fallback-parser
   If a file to be analyzed is syntactically invalid

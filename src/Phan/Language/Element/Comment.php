@@ -458,7 +458,7 @@ class Comment
 
         if (preg_match('/@return\s+/', $line)) {
             // TODO: Is `@return &array` valid phpdoc2?
-            if (preg_match('/@return\s+(&\s*)?(' . UnionType::union_type_regex . '+)/', $line, $match)) {
+            if (preg_match('/@return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/', $line, $match)) {
                 $return_union_type_string = $match[2];
             }
             // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
@@ -714,9 +714,9 @@ class Comment
         //    Assumes the parameters end at the first ")" after "("
         //    As an exception, allows one level of matching brackets
         //    to support old style arrays such as $x = array(), $x = array(2) (Default values are ignored)
-        if (preg_match('/@method(\s+(static))?((\s+(' . UnionType::union_type_regex . '))?)\s+' . self::word_regex . '\s*\((([^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
+        if (preg_match('/@method(\s+(static))?((\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::word_regex . '\s*\((([^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
             $is_static = $match[2] === 'static';
-            $return_union_type_string = $match[4];
+            $return_union_type_string = $match[5];
             if ($return_union_type_string !== '') {
                 $return_union_type =
                     UnionType::fromStringInContext(
@@ -729,9 +729,9 @@ class Comment
                 // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
                 $return_union_type = VoidType::instance(false)->asUnionType();
             }
-            $method_name = $match[31];
+            $method_name = $match[33];
 
-            $arg_list = trim($match[32]);
+            $arg_list = trim($match[34]);
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {

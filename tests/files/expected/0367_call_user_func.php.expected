@@ -1,0 +1,6 @@
+%s:3 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:3 PhanTypeMismatchArgumentInternal Argument 2 (divisor) is array but \intdiv() takes int
+%s:6 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:7 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
+%s:7 PhanTypeMismatchArgumentInternal Argument 2 (divisor) is \SimpleXMLElement|\Traversable|iterable but \intdiv() takes int
+%s:8 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string
