@@ -1,6 +1,6 @@
 <?php
-
-function foo382() : ?string {
+/** @return ?string */
+function foo382() {
     return 'x';
 }
 
