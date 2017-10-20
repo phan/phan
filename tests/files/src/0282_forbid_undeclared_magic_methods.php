@@ -2,6 +2,7 @@
 
 /**
  * @method array instanceMethod(?int $arg)
+ * @method $this instanceMethodReturningThis(string $arg)
  * @method static string static_method(string $arg)
  * @phan-forbid-undeclared-magic-methods
  */
@@ -16,6 +17,10 @@ class Magic282 {
     public static function __callStatic(string $name, array $args) {
         if ($name == 'static_method') {
             return 'prefix' . $args[0];
+        }
+        if ($name == 'static_method_returning_this') {
+            echo 'prefix' . $args[0];
+            return $this;
         }
         throw new RuntimeException("Bad static method name");
     }
@@ -34,4 +39,6 @@ function test282() {
     echo intdiv($s, 2);  // warn about passing string, expect int
     // Should warn about undeclared static methods because of @phan-forbid-undeclared-magic-methods
     Magic282::undeclared_magic_static_method();
+    $m2 = $m->instanceMethodReturningThis('str');
+    echo intdiv($m2, 2); // warn about passing Magic282, want int
 }

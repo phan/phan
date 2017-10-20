@@ -25,14 +25,6 @@ class C253_1 {
     public function a6() : iterable {
         return array('a', 'b', 'c');
     }
-    /** @return Traversable (narrowing, allowed) */
-    public function a7() : iterable {
-        yield 'a';
-    }
-    /** @return string (incompatible, not allowed) */
-    public function a8() : iterable {
-        return array('a', 'b', 'c');
-    }
     /** @return static (narrowing) */
     public function a9() : self {
         return new static();
@@ -61,5 +53,13 @@ class C253_2 extends C253_1 {
     /** @return C253_1 (widening, not allowed) */
     public function f7() : self {
         return new static();
+    }
+    /** @return $this (narrowing, allowed) */
+    public function h3() : C253_1 {
+        return $this;
+    }
+    /** @return $this (incompatible, not allowed) */
+    public function h4() : Traversable {
+        throw new RuntimeException('not implemented');
     }
 }

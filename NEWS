@@ -1,8 +1,10 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.8.9 (dev)
+0.8.9 ??? ??, 2017 (dev)
+------------------
 
-Based on Phan 0.10.1 (dev)
+New Features(Analysis)
++ Support `@return $this` in phpdoc for methods and magic methods (but not elsewhere. E.g. `@param $this $varName` is not supported) (#634)
 
 New Features (CLI, Configs)
 
@@ -17,13 +19,25 @@ New Features (CLI, Configs)
   Add a script (`tool/make_stubs`) to output the contents of stubs to use for `autoload_internal_extension_signatures` (#627).
 + By default, automatically restart Phan without xdebug if xdebug is enabled. (#1161)
 + Document the --disable-plugins CLI flag.
-+ Improve analysis of return types of `array_pop`,`array_shift`,`current`,`end`,`next`,`prev`,`reset`,`array_map`,`array_filter`, etc..
++ Improve analysis of return types of `array_pop`,`array_shift`,`current`,`end`,`next`,`prev`,`reset`,`array_map`,`array_filter`, etc.
   See ArrayReturnTypeOverridePlugin.php.
+  Phan can analyze callables (for `array_map`/`array_filter`) of Closure form, as well as strings/2-part arrays that are inlined.
++ Check if functions/methods passed to array_map and array_filter are compatible with their arguments.
+  Recursively analyze the functions/methods passed to array_map/array_filter if no types were provided. (unless quick mode is being used)
++ Add `--memory-limit` CLI option (e.g. `--memory-limit 500M`). If this option isn't provided, there is no memory limit. (#1148)
 
 Plugins
-+ Add a new plugin type which can override the return type of functions and methods on a case by case basis.
-  (e.g. based on one or more of the argument types)
++ Add a new plugin capability `ReturnTypeOverrideCapability` which can override the return type of functions and methods on a case by case basis.
+  (e.g. based on one or more of the argument types or values) (related to #612, #1181)
++ Add a new plugin capability `AnalyzeFunctionCallCapability` which can add logic to analyze calls to a small subset of functions.
+  (e.g. based on one or more of the argument types or values) (#1181)
 + Make line numbers more accurate in DuplicateArrayKeyPlugin.
++ Add `PregRegexCheckerPlugin` to check for invalid regexes. (uses `AnalyzeFunctionCallCapability`).
+  This plugin is able to resolve literals, global constants, and class constants as regexes.
+  See [the corresponding section of .phan/plugins/README.md](.phan/plugins/README.md#pregregexcheckerpluginphp)
++ Add `PrintfCheckerPlugin` to check for invalid format strings or incorrect arguments in printf calls. (uses `AnalyzeFunctionCallCapability`)
+  This plugin is able to resolve literals, global constants, and class constants as format strings.
+  See [the corresponding section of .phan/plugins/README.md](.phan/plugins/README.md#printfcheckerpluginphp)
 
 Bug Fixes
 + Properly check for undeclared classes in arrays within phpdoc @param, @property, @method, @var, and @return types.
@@ -33,6 +47,7 @@ Bug Fixes
 + Change the behavior of the `-d` flag, make it change the current working directory to the provided directory.
 + Properly set the real param type and return types of internal functions, in rare cases where that exists.
 + Support analyzing the rare case of namespaced internal global functions (e.g. `\ast\parse_code($code, $version)`)
++ Improve analysis of shorthand ternary operator: Remove false/null from cond_expr in `(cond_expr) ?: (false_expr)` (#1186)
 
 0.8.8 Sep 24, 2017
 ------------------

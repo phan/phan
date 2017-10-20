@@ -288,6 +288,8 @@ class Analysis
     }
 
     /**
+     * Loads extra logic for analyzing function and method calls.
+     *
      * @return void
      */
     public static function loadMethodPlugins(CodeBase $code_base)
@@ -307,6 +309,24 @@ class Analysis
                 if ($code_base->hasFunctionWithFQSEN($fqsen)) {
                     $function = $code_base->getFunctionByFQSEN($fqsen);
                     $function->setDependentReturnTypeClosure($closure);
+                }
+            }
+        }
+
+        foreach ($plugin_set->getAnalyzeFunctionCallClosures($code_base) as $fqsen_string => $closure) {
+            if (stripos($fqsen_string, '::') !== false) {
+                // This is an override of a method.
+                $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
+                if ($code_base->hasMethodWithFQSEN($fqsen)) {
+                    $method = $code_base->getMethodByFQSEN($fqsen);
+                    $method->setFunctionCallAnalyzer($closure);
+                }
+            } else {
+                // This is an override of a function.
+                $fqsen = FullyQualifiedFunctionName::fromFullyQualifiedString($fqsen_string);
+                if ($code_base->hasFunctionWithFQSEN($fqsen)) {
+                    $function = $code_base->getFunctionByFQSEN($fqsen);
+                    $function->setFunctionCallAnalyzer($closure);
                 }
             }
         }

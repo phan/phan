@@ -304,6 +304,7 @@ class Clazz extends AddressableElement
                 0,
                 $constant_fqsen
             );
+            $constant->setNodeForValue($value);
 
             $clazz->addConstant($code_base, $constant);
         }

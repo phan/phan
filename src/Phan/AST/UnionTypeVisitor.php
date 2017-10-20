@@ -21,6 +21,7 @@ use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionLikeName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
+use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Language\Type;
@@ -36,6 +37,7 @@ use Phan\Language\Type\NullType;
 use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StringType;
 use Phan\Language\Type\StaticType;
+use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
 use Phan\Library\ArraySet;
@@ -602,7 +604,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $cond_node
             );
         }
-
         // TODO: emit no-op if $cond_node is a literal, such as `if (2)`
         // - Also note that some things such as `true` and `false` are \ast\AST_NAME nodes.
 
@@ -622,10 +623,54 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $this->code_base,
                 $base_context
             ))($cond_node);
+
+            if (!isset($node->children['true'])) {
+                $true_type = UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $true_context,
+                    $true_node
+                );
+
+                $false_type = UnionTypeVisitor::unionTypeFromNode(
+                    $this->code_base,
+                    $false_context,
+                    $node->children['false'] ?? ''
+                );
+                $true_type_is_empty = $true_type->isEmpty();
+                if (!$false_type->isEmpty()) {
+                    // E.g. `foo() ?: 2` where foo is nullable or possibly false.
+                    if ($true_type->containsFalsey()) {
+                        $true_type = $true_type->nonFalseyClone();
+                    }
+                }
+
+                $union_type = new UnionType();
+
+                // Add the type for the 'true' side
+                $union_type->addUnionType($true_type);
+
+                // Add the type for the 'false' side
+                $union_type->addUnionType($false_type);
+
+                // If one side has an unknown type but the other doesn't
+                // we can't let the unseen type get erased. Unfortunately,
+                // we need to add 'mixed' in so that we know it could be
+                // anything at all.
+                //
+                // See Issue #104
+                if ($true_type_is_empty xor $false_type->isEmpty()) {
+                    $union_type->addUnionType(
+                        MixedType::instance(false)->asUnionType()
+                    );
+                }
+
+                return $union_type;
+            }
         } else {
             $true_context = $this->context;
             $false_context = $this->context;
         }
+        // Postcondition: This is (cond_expr) ? (true_expr) : (false_expr)
 
         $true_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
@@ -1881,18 +1926,246 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
      * @param bool $log_error whether or not to log errors while searching
+     * @return FunctionInterface[]
+     */
+    public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
+    {
+        $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
+        $functions = [];
+        foreach ($function_fqsens as $fqsen) {
+            if ($fqsen instanceof FullyQualifiedMethodName) {
+                if (!$code_base->hasMethodWithFQSEN($fqsen)) {
+                    // TODO: error PhanArrayMapClosure
+                    continue;
+                }
+                $functions[] = $code_base->getMethodByFQSEN($fqsen);
+            } else {
+                assert($fqsen instanceof FullyQualifiedFunctionName);
+                if (!$code_base->hasFunctionWithFQSEN($fqsen)) {
+                    // TODO: error PhanArrayMapClosure
+                    continue;
+                }
+                $functions[] = $code_base->getFunctionByFQSEN($fqsen);
+            }
+        }
+        return $functions;
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param string|Node $node the node to fetch CallableType instances for.
+     * @param bool $log_error whether or not to log errors while searching
      * @return FullyQualifiedFunctionLikeName[]
      */
     public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
     {
-        // TODO: improve functionLikeFQSENListFromNodeAndContext to include
-        // 1. [MyClass::class, 'staticMethodName'],
-        // 2. [$obj, 'instanceMethodName],
-        // 3. 'global_func'
-        // 4. 'MyClass::staticFunc'
         return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
     }
 
+    /**
+     * @param string|Node $class_or_expr
+     * @param string $method_name
+     *
+     * @return FullyQualifiedMethodName[]
+     * A list of CallableTypes associated with the given node
+     */
+    private function methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name) : array {
+        $code_base = $this->code_base;
+        $context = $this->context;
+
+        $union_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $class_or_expr);
+        if ($union_type->isEmpty()) {
+            return [];
+        }
+        $object_types = $union_type->objectTypes();
+        if ($object_types->isEmpty()) {
+            if (!$union_type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                $this->emitIssue(
+                    Issue::TypeInvalidCallableObjectOfMethod,
+                    $context->getLineNumberStart(),
+                    (string)$union_type,
+                    $method_name
+                );
+            }
+            return [];
+        }
+        $result_types = [];
+        $class = null;
+        foreach ($object_types->getTypeSet() as $object_type) {
+            // TODO: support templates here.
+            if ($object_type instanceof ObjectType || $object_type instanceof TemplateType) {
+                continue;
+            }
+            $class_fqsen = $object_type->asFQSEN();
+            if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+                continue;
+            }
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                $this->emitIssue(
+                    Issue::UndeclaredClassInCallable,
+                    $context->getLineNumberStart(),
+                    (string)$class_fqsen,
+                    "$class_fqsen::$method_name"
+                );
+                continue;
+            }
+            $class = $code_base->getClassByFQSEN($class_fqsen);
+            if (!$class->hasMethodWithName($code_base, $method_name)) {
+                // emit error below
+                continue;
+            }
+            $method_fqsen = FullyQualifiedMethodName::make(
+                $class_fqsen,
+                $method_name
+            );
+            $result_types[] = $method_fqsen;
+        }
+        if (\count($result_types) === 0 && $class instanceof Clazz) {
+            $this->emitIssue(
+                Issue::UndeclaredMethodInCallable,
+                $context->getLineNumberStart(),
+                $method_name,
+                (string)$union_type
+            );
+        }
+        return $result_types;
+    }
+
+    /**
+     * @param string $class_name (may also be 'self', 'parent', or 'static')
+     * @return ?FullyQualifiedClassName
+     */
+    private function lookupClassOfCallableByName(string $class_name)
+    {
+        switch(\strtolower($class_name)) {
+        case 'self':
+        case 'static':
+            $context = $this->context;
+            if (!$context->isInClassScope()) {
+                $this->emitIssue(
+                    Issue::ContextNotObject,
+                    $context->getLineNumberStart(),
+                    \strtolower($class_name)
+                );
+                return null;
+            }
+            return $context->getClassFQSEN();
+        case 'parent':
+            $context = $this->context;
+            if (!$context->isInClassScope()) {
+                $this->emitIssue(
+                    Issue::ContextNotObject,
+                    $context->getLineNumberStart(),
+                    \strtolower($class_name)
+                );
+                return null;
+            }
+            $class = $context->getClassInScope($this->code_base);
+            if ($class->isTrait()) {
+                $this->emitIssue(
+                    Issue::TraitParentReference,
+                    $context->getLineNumberStart(),
+                    (string)$class->getFQSEN()
+                );
+                return null;
+            }
+            if (!$class->hasParentType()) {
+                $this->emitIssue(
+                    Issue::ParentlessClass,
+                    $context->getLineNumberStart(),
+                    (string)$class->getFQSEN()
+                );
+                return null;
+            }
+            return $class->getParentClassFQSEN();  // may or may not exist.
+        default:
+            // TODO: Reject invalid/empty class names earlier
+            if (\substr($class_name, 0, 1) === '\\') {
+                $class_name = \substr($class_name, 1);
+            }
+            return FullyQualifiedClassName::make('', $class_name);
+        }
+    }
+
+    /**
+     * @param string|Node $class_or_expr
+     * @param string $method_name
+     *
+     * @return FullyQualifiedMethodName[]
+     * A list of CallableTypes associated with the given node
+     */
+    private function methodFQSENListFromParts($class_or_expr, $method_name) : array
+    {
+        if (!\is_string($method_name)) {
+            // Currently only works with string literals.
+            // TODO: Check if union type is sane, e.g. callable ['MyClass', new stdClass()] is nonsense.
+            return [];
+        }
+        $code_base = $this->code_base;
+        $context = $this->context;
+
+
+        if (is_string($class_or_expr)) {
+            $class_fqsen = $this->lookupClassOfCallableByName($class_or_expr);
+            if (!$class_fqsen) {
+                return [];
+            }
+        } else {
+            $class_fqsen = (new ContextNode($code_base, $context, $class_or_expr))->resolveClassNameInContext();
+            if (!$class_fqsen) {
+                return $this->methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name);
+            }
+        }
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            $this->emitIssue(
+                Issue::UndeclaredClassInCallable,
+                $context->getLineNumberStart(),
+                (string)$class_fqsen,
+                "$class_fqsen::$method_name"
+            );
+            return [];
+        }
+        $class = $code_base->getClassByFQSEN($class_fqsen);
+        if (!$class->hasMethodWithName($code_base, $method_name)) {
+            $this->emitIssue(
+                Issue::UndeclaredStaticMethodInCallable,
+                $context->getLineNumberStart(),
+                "$class_fqsen::$method_name"
+            );
+            return [];
+        }
+        $method = $class->getMethodByName($code_base, $method_name);
+        if (!$method->isStatic()) {
+            $this->emitIssue(
+                Issue::StaticCallToNonStatic,
+                $context->getLineNumberStart(),
+                "{$class->getFQSEN()}::{$method_name}()",
+                (string)$method->getFQSEN(),
+                $method->getFileRef()->getFile(),
+                (string)$method->getFileRef()->getLineNumberStart()
+            );
+        }
+        return [$method->getFQSEN()];
+    }
+
+    /**
+     * @see ContextNode->getFunction() for a similar function
+     */
+    private function functionFQSENListFromFunctionName(string $function_name) : array
+    {
+        // TODO: Catch invalid code such as call_user_func('\\\\x\\\\y')
+        $function_fqsen = FullyQualifiedFunctionName::make('', \ltrim($function_name, '\\'));
+        if (!$this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
+            $this->emitIssue(
+                Issue::UndeclaredFunctionInCallable,
+                $this->context->getLineNumberStart(),
+                $function_name
+            );
+            return [];
+        }
+        return [$function_fqsen];
+    }
 
     /**
      * @param string|Node $node
@@ -1906,10 +2179,44 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function functionLikeFQSENListFromNode($node, bool $log_error) : array
     {
-        if (is_string($node)) {
-            // TODO: implement.
+        if (\is_string($node)) {
+            if (\stripos($node, '::') !== false) {
+                list($class_name, $method_name) = \explode('::', $node, 2);
+                return $this->methodFQSENListFromParts($class_name, $method_name);
+            }
+            return $this->functionFQSENListFromFunctionName($node);
+        }
+        if (!($node instanceof Node)) {
+            // warning is probably redundant
             return [];
         }
+        if ($node->kind === \ast\AST_ARRAY) {
+            $elements = $node->children;
+            if (\count($elements) !== 2) {
+                $this->emitIssue(
+                    Issue::TypeInvalidCallableArraySize,
+                    $node->lineno ?? 0,
+                    \count($elements)
+                );
+                return [];
+            }
+            $parts = [];
+            foreach ($elements as $i => $elem) {
+                $key = $elem->children['key'];
+                $parts[] = $elem->children['value'];
+                if ($key !== null && $key !== $i) {
+                    $this->emitIssue(
+                        Issue::TypeInvalidCallableArraySize,
+                        $node->lineno ?? 0,
+                        $i
+                    );
+                    return [];
+                }
+            }
+            return $this->methodFQSENListFromParts($parts[0], $parts[1]);
+        }
+        // TODO: Look up functions by name.
+
         // Get the types associated with the node
         $union_type = self::unionTypeFromNode(
             $this->code_base,

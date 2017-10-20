@@ -1,0 +1,16 @@
+%s:7 PhanTypeMismatchArgument Argument 1 (x) is string but \closure_%s() takes int defined at %s:7
+%s:7 PhanTypeMismatchReturn Returning type int[] but test365A() is declared to return string[]
+%s:13 PhanTypeMismatchReturn Returning type int[] but test365B() is declared to return string[]
+%s:32 PhanTypeMismatchReturn Returning type \stdClass[] but test365C() is declared to return string[]
+%s:38 PhanUndeclaredClassInCallable Reference to undeclared class \Missing365 in callable \Missing365::createObject
+%s:44 PhanTypeMismatchArgument Argument 1 (x) is string but \C365::createArray() takes int defined at %s:24
+%s:44 PhanTypeMismatchReturn Returning type int[][] but test365D() is declared to return string[]
+%s:53 PhanParamTooManyCallable Call with 1 arg(s) to \accepts_no_args() (As a provided callable) which only takes 0 arg(s) defined at %s:47
+%s:63 PhanParamTooFewCallable Call with 1 arg(s) to \accepts_twoargs() (as a provided callable) which requires 2 arg(s) defined at %s:56
+%s:74 PhanTypeMismatchReturn Returning type string[][] but test365EEnough() is declared to return int[]
+%s:80 PhanUndeclaredMethodInCallable Call to undeclared method missingMethod in callable. Possible object type(s) for that method are \C365
+%s:86 PhanUndeclaredFunctionInCallable Call to undeclared function missing_global_function365 in callable
+%s:92 PhanUndeclaredFunctionInCallable Call to undeclared function MyNS\missing_global_function365 in callable
+%s:98 PhanTypeMismatchReturn Returning type \ast\Node[] but test365GNamespacedValid() is declared to return string[]
+%s:104 PhanUndeclaredStaticMethodInCallable Reference to undeclared static method \C365::missing_static_method in callable
+%s:110 PhanUndeclaredStaticMethodInCallable Reference to undeclared static method \C365::missing_static_method2 in callable
