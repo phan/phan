@@ -1,1 +1,1 @@
-%s:9 PhanTypeMismatchArgument Argument 1 (p) is \NS257\C1|bool|null but \NS257\C2::f2() takes string defined at %s:11
+%s:9 PhanTypeMismatchArgument Argument 1 (p) is \NS257\C1|null|true but \NS257\C2::f2() takes string defined at %s:11

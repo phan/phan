@@ -23,7 +23,7 @@ class Config
      * New features increment minor versions, and bug fixes increment patch versions.
      * @suppress PhanUnreferencedConstant
      */
-    const PHAN_PLUGIN_VERSION = '2.1.0';
+    const PHAN_PLUGIN_VERSION = '2.2.0';
 
     /**
      * @var string|null
@@ -602,6 +602,10 @@ class Config
 
         // Valid values: null, 'info'. Used when developing or debugging a language server client of Phan.
         'language_server_debug_level' => null,
+
+        // Can be set to false to disable the plugins Phan uses to infer more accurate return types of array_map, array_filter, etc.
+        // Phan is slightly faster when these are disabled.
+        'enable_internal_return_type_plugins' => true,
 
         // A list of plugin files to execute
         'plugins' => [

@@ -96,7 +96,7 @@ final class ASTConverter {
      */
     public function parseCodeAsPHPAST(string $source, int $ast_version, bool $suppress_errors = false, array &$errors = null) {
         if (!\in_array($ast_version, self::SUPPORTED_AST_VERSIONS)) {
-            throw new \InvalidArgumentException(sprintf("Unexpected version: want %d, got %d", implode(', ', self::SUPPORTED_AST_VERSIONS), $ast_version));
+            throw new \InvalidArgumentException(sprintf("Unexpected version: want %s, got %d", implode(', ', self::SUPPORTED_AST_VERSIONS), $ast_version));
         }
         $parser_node = $this->phpParserParse($source, $suppress_errors, $errors);
         return self::phpParserToPhpast($parser_node, $ast_version);
