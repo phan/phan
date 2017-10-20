@@ -1,6 +1,6 @@
 <?php
-
-function get_nullable_int() : ?int {
+/** @return ?int */
+function get_nullable_int() {
     return rand() % 2 > 0 ? 2 : null;
 }
 
