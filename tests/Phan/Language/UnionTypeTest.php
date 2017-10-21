@@ -38,34 +38,56 @@ use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\Tests\BaseTest;
 
-class UnionTypeTest extends BaseTest {
+class UnionTypeTest extends BaseTest
+{
 
     /** @var Context|null */
     protected $context = null;
 
-    /** @var CodeBase */
-    protected $code_base = null;
+    /** @var CodeBase|null */
+    protected static $code_base = null;
 
-    protected function setUp() {
+    // Based on BaseTest
+    // TODO: Investigate instantiating CodeBase in a cheaper way (lazily?)
+    protected $backupStaticAttributesBlacklist = [
+        'Phan\Language\Type' => [
+            'canonical_object_map',
+            'internal_fn_cache',
+            'singleton_map',
+        ],
+        // Back this up because it takes 306 ms.
+        'Phan\Tests\Language\UnionTypeTest' => [
+            'code_base',
+        ],
+    ];
+
+    protected function setUp()
+    {
         global $internal_class_name_list;
         global $internal_interface_name_list;
         global $internal_trait_name_list;
         global $internal_const_name_list;
         global $internal_function_name_list;
 
-        $this->code_base = new CodeBase(
-            $internal_class_name_list,
-            $internal_interface_name_list,
-            $internal_trait_name_list,
-            $internal_const_name_list,
-            $internal_function_name_list
-        );
-
+        if (self::$code_base === null) {
+            self::$code_base = new CodeBase(
+                $internal_class_name_list,
+                $internal_interface_name_list,
+                $internal_trait_name_list,
+                $internal_const_name_list,
+                $internal_function_name_list
+            );
+        }
         $this->context = new Context;
     }
 
-    protected function tearDown() {
+    protected function tearDown()
+    {
         $this->context = null;
+    }
+
+    public static function tearDownAfterClass() {
+        self::$code_base = null;
     }
 
     public function testInt() {
@@ -159,12 +181,12 @@ class UnionTypeTest extends BaseTest {
     private function typeStringFromCode(string $code) : string {
         return UnionType::fromNode(
             $this->context,
-            $this->code_base,
+            self::$code_base,
             \ast\parse_code(
                 $code,
                 Config::AST_VERSION
             )->children[0]
-        )->asExpandedTypes($this->code_base)->__toString();
+        )->asExpandedTypes(self::$code_base)->__toString();
     }
 
     private static function makePHPDocUnionType(string $union_type_string) : UnionType

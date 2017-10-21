@@ -41,6 +41,8 @@ class UnionType implements \Serializable
      * A list of one or more types delimited by the '|'
      * character (e.g. 'int|DateTime|string[]' or 'null|$this')
      * This may be used for return types.
+     *
+     * TODO: Equivalent variants with no capturing? (May not improve performance much)
      */
     const union_type_regex_or_this =
         Type::type_regex_or_this
@@ -93,6 +95,7 @@ class UnionType implements \Serializable
         $type_set = $memoize_map[$fully_qualified_string] ?? null;
 
         if (!isset($type_set)) {
+            // TODO: Support brackets, template types within <>, etc.
             $type_set = ArraySet::from_list(\array_map(function (string $type_name) {
                 return Type::fromFullyQualifiedString($type_name);
             }, \explode('|', $fully_qualified_string)));
