@@ -92,12 +92,12 @@ See [PrintfCheckerPlugin's source](./PrintfCheckerPlugin.php) for details.
                         'PhanPluginPrintfIncompatibleArgumentType',
                             $issue_type = 'PhanPluginPrintfTranslatedIncompatible';
                             $issue_type = 'PhanPluginPrintfTranslatedHasMoreArgs';
-#### UnconditionalCodePlugin.php
+#### UnreachableCodePlugin.php
 
 Checks for syntactically unreachable statements in the global scope or function bodies.
-(E.g. function calls after unconditional continue/break/throw/return/exit())
+(E.g. function calls after unconditional `continue`/`break`/`throw`/`return`/`exit()` statements)
 
-This is in development, and has some edge cases related to try blocks.
+- **PhanPluginUnreachableCode**: `Unreachable statement detected`
 
 #### Unused variable detection
 
