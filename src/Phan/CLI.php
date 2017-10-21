@@ -525,7 +525,8 @@ Usage: {$argv[0]} [options] [files...]
   Output filename
 
  --color
-  Add colors to the outputted issues. Tested for Unix, recommended for only the default --output-mode ('text')
+  Add colors to the outputted issues. Tested in Unix.
+  This is recommended for only the default --output-mode ('text')
 
  -p, --progress-bar
   Show progress bar
