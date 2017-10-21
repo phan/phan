@@ -1,29 +1,35 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.10.1
+20 Oct 2017, Phan 0.10.1
+------------------------
 
 New Features(Analysis)
-+ Support `@return $this` in phpdoc for methods and magic methods (but not elsewhere. E.g. `@param $this $varName` is not supported) (#634)
++ Support `@return $this` in phpdoc for methods and magic methods 
+  (but not elsewhere. E.g. `@param $this $varName` is not supported, use `@param static $varName`) (#634)
++ Check if functions/methods passed to array_map and array_filter are compatible with their arguments.
+  Recursively analyze the functions/methods passed to array_map/array_filter if no types were provided. (unless quick mode is being used)
 
 New Features (CLI, Configs)
 
 + Add Language Server Protocol support (Experimental) (#821)
-  Compatibility: Unix, Linux (depends on php pcntl extension).
+  Compatibility: Unix, Linux (depends on php `pcntl` extension).
   This has the same analysis capabilities provided by [daemon mode](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode#using-phan_client-from-an-editor).
   Supporting a standard protocol should make it easier to write extensions supporting Phan in various IDEs.
   See https://github.com/Microsoft/language-server-protocol/blob/master/README.md
 + Add config (`autoload_internal_extension_signatures`) to allow users to specify PHP extensions (modules) used by the analyzed project,
   along with stubs for Phan to use (instead of ReflectionFunction, etc) if the PHP binary used to run Phan doesn't have those extensions enabled. (#627)
-
   Add a script (`tool/make_stubs`) to output the contents of stubs to use for `autoload_internal_extension_signatures` (#627).
 + By default, automatically restart Phan without xdebug if xdebug is enabled. (#1161)
-+ Document the --disable-plugins CLI flag.
-+ Improve analysis of return types of `array_pop`,`array_shift`,`current`,`end`,`next`,`prev`,`reset`,`array_map`,`array_filter`, etc.
+  If you wish to analyze a project using xdebug's functions, set `autoload_internal_extension_signatures`
+  (e.g. `['xdebug' => 'vendor/phan/phan/.phan/internal_stubs/xdebug.phan_php']`)
+  If you wish to use xdebug to debug Phan's analysis itself, set and export the environment variable `PHAN_ALLOW_XDEBUG=1`.
++ Improve analysis of return types of `array_pop`, `array_shift`, `current`, `end`, `next`, `prev`, `reset`, `array_map`, `array_filter`, etc.
   See ArrayReturnTypeOverridePlugin.php.
   Phan can analyze callables (for `array_map`/`array_filter`) of Closure form, as well as strings/2-part arrays that are inlined.
-+ Check if functions/methods passed to array_map and array_filter are compatible with their arguments.
-  Recursively analyze the functions/methods passed to array_map/array_filter if no types were provided. (unless quick mode is being used)
 + Add `--memory-limit` CLI option (e.g. `--memory-limit 500M`). If this option isn't provided, there is no memory limit. (#1148)
+
+Maintenance
++ Document the `--disable-plugins` CLI flag.
 
 Plugins
 + Add a new plugin capability `ReturnTypeOverrideCapability` which can override the return type of functions and methods on a case by case basis.
@@ -39,7 +45,7 @@ Plugins
   See [the corresponding section of .phan/plugins/README.md](.phan/plugins/README.md#printfcheckerpluginphp)
 
 Bug Fixes
-+ Properly check for undeclared classes in arrays within phpdoc @param, @property, @method, @var, and @return types.
++ Properly check for undeclared classes in arrays within phpdoc `@param`, `@property`, `@method`, `@var`, and `@return` (etc.) types.
   Also, fix a bug in resolving namespaces of generic arrays that are nested 2 or more array levels deep.
 + Fix uncaught TypeError when magic property has the same name as a property. (#1141)
 + Make AlwaysReturnPlugin warn about functions/methods with real nullable return types failing to return a value.
@@ -49,7 +55,7 @@ Bug Fixes
 + Improve analysis of shorthand ternary operator: Remove false/null from cond_expr in `(cond_expr) ?: (false_expr)` (#1186)
 
 24 Sep 2017, Phan 0.10.0
------------------------
+------------------------
 
 New Features(Analysis)
 + Check types of dimensions when using array access syntax (#406, #1093)
