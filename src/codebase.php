@@ -10,7 +10,6 @@ $internal_const_name_list = array_keys(array_merge(...array_values(
 )));
 $internal_function_name_list = get_defined_functions()['internal'];
 
-
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
   // This is the normal path when Phan is installed only in the scope of a project.
   require_once __DIR__ . '/../vendor/autoload.php';

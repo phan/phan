@@ -170,16 +170,13 @@ class Clazz extends AddressableElement
         $context = new Context;
 
         $class_name = $class->getName();
-        $class_fqsen = FullyQualifiedClassName::fromStringInContext(
-            $class_name,
-            $context
-        );
+        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class_name);
 
         // Build a base class element
         $clazz = new Clazz(
             $context,
             $class_name,
-            UnionType::fromStringInContext($class_name, $context, Type::FROM_TYPE),
+            UnionType::fromFullyQualifiedString('\\' . $class_name),
             $flags,
             $class_fqsen
         );

@@ -86,6 +86,9 @@ class Phan implements IgnoredFilesFilterInterface {
         $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port');
         $language_server_config = Config::getValue('language_server_config');
         $is_undoable_request = is_array($language_server_config) || $is_daemon_request;
+        if ($is_daemon_request) {
+            $code_base->eagerlyLoadAllSignatures();
+        }
         if ($is_undoable_request) {
             $code_base->enableUndoTracking();
         }

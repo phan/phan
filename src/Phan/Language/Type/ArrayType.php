@@ -19,3 +19,7 @@ class ArrayType extends IterableType
         return $this;
     }
 }
+// Trigger the autoloader for GenericArrayType so that it won't be called
+// before ArrayType.
+// This won't pass if GenericArrayType is in the process of being instantiated.
+\class_exists(GenericArrayType::class);

@@ -2,6 +2,7 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
+use Phan\Language\Type\ArrayType;
 
 abstract class NativeType extends Type
 {
@@ -161,3 +162,4 @@ abstract class NativeType extends Type
         return $this->name;
     }
 }
+\class_exists(ArrayType::class);
