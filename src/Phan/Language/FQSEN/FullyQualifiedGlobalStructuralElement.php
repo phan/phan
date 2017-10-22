@@ -27,7 +27,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * The name of this structural element
      *
      * @param int $alternate_id
-     * An alternate ID for the elemnet for use when
+     * An alternate ID for the element for use when
      * there are multiple definitions of the element
      */
     protected function __construct(
@@ -74,7 +74,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * The name of this structural element
      *
      * @param int $alternate_id
-     * An alternate ID for the elemnet for use when
+     * An alternate ID for the element for use when
      * there are multiple definitions of the element
      *
      * @return static

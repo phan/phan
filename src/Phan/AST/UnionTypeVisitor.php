@@ -2080,10 +2080,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return $class->getParentClassFQSEN();  // may or may not exist.
         default:
             // TODO: Reject invalid/empty class names earlier
-            if (\substr($class_name, 0, 1) === '\\') {
-                $class_name = \substr($class_name, 1);
-            }
-            return FullyQualifiedClassName::make('', $class_name);
+            return FullyQualifiedClassName::makeFromExtractedNamespaceAndName($class_name);
         }
     }
 
