@@ -164,6 +164,7 @@ class Parameter extends Variable
     /**
      * @return Parameter[]
      * A list of parameters from an AST node.
+     * @suppress PhanPluginUnusedVariable
      */
     public static function listFromNode(
         Context $context,
@@ -172,7 +173,7 @@ class Parameter extends Variable
     ) : array {
         $parameter_list = [];
         $is_optional_seen = false;
-        foreach ($node->children ?? [] as $i => $child_node) {
+        foreach ($node->children ?? [] as $child_node) {
             $parameter =
                 Parameter::fromNode($context, $code_base, $child_node);
 

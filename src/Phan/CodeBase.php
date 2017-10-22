@@ -325,12 +325,11 @@ class CodeBase
 
     /**
      * @param string $file_name
-     * @param string $new_file_contents
      * @return bool - true if caller should replace contents
      */
-    public function beforeReplaceFileContents(string $file_name, string $new_file_contents) {
+    public function beforeReplaceFileContents(string $file_name) {
         if ($this->undo_tracker) {
-            return $this->undo_tracker->beforeReplaceFileContents($this, $file_name, $new_file_contents);
+            return $this->undo_tracker->beforeReplaceFileContents($this, $file_name);
         }
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
     }
@@ -575,7 +574,6 @@ class CodeBase
             if ($this->hasClassWithFQSEN($alias_fqsen)) {
                 // Emit a different issue type to make filtering out false positives easier.
                 $clazz = $this->getClassByFQSEN($alias_fqsen);
-                $clazz_context = $clazz->getContext();
                 Issue::maybeEmit(
                     $this,
                     $alias_record->context,
@@ -1217,7 +1215,7 @@ class CodeBase
     }
 
     /**
-     * @return void;
+     * @return void
      */
     public function flushDependenciesForFile(string $file_path)
     {

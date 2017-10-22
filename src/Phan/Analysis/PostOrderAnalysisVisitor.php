@@ -799,6 +799,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     /**
      * @param \Generator|UnionType[] $types
      * @return \Generator|UnionType[]
+     * @suppress PhanPluginUnusedVariable
      */
     private static function deduplicateUnionTypes($types)
     {

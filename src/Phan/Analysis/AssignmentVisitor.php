@@ -114,6 +114,7 @@ class AssignmentVisitor extends AnalysisVisitor
 
     /**
      * The following is an example of how this'd happen.
+     * (TODO: Check if the right hand side is an object with offsetSet() or a reference?
      *
      * ```php
      * class C {
@@ -124,19 +125,20 @@ class AssignmentVisitor extends AnalysisVisitor
      * (new C)->f()[1] = 42;
      * ```
      *
-     * @param Node $node
+     * @param Node $unused_node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethodCall(Node $node) : Context {
+    public function visitMethodCall(Node $unused_node) : Context {
         return $this->context;
     }
 
     /**
      * The following is an example of how this'd happen.
+     * TODO: Check that the left hand side is a reference or defines offsetSet()?
      *
      * ```php
      * function &f() {
@@ -145,14 +147,14 @@ class AssignmentVisitor extends AnalysisVisitor
      * f()[1] = 42;
      * ```
      *
-     * @param Node $node
+     * @param Node $unused_node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $node) : Context {
+    public function visitCall(Node $unused_node) : Context {
         return $this->context;
     }
 
@@ -168,14 +170,14 @@ class AssignmentVisitor extends AnalysisVisitor
      * A::f()[1] = 42;
      * ```
      *
-     * @param Node $node
+     * @param Node $unused_node
      * A node to parse
      *
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitStaticCall(Node $node) : Context {
+    public function visitStaticCall(Node $unused_node) : Context {
         return $this->context;
     }
 
@@ -209,7 +211,8 @@ class AssignmentVisitor extends AnalysisVisitor
 
             // Get the key and value nodes for each
             // array element we're assigning to
-            $key_node = $child_node->children['key'];
+            // TODO: Check key types are valid?
+            // $key_node = $child_node->children['key'];
             $value_node = $child_node->children['value'];
 
             if ($value_node->kind == \ast\AST_VAR) {

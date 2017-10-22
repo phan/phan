@@ -8,9 +8,12 @@
 %s:17 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
 %s:20 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \expect_string_300() takes string defined at %s:3
 %s:21 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
+%s:21 PhanUndeclaredVariable Variable $refIntVar is undeclared
 %s:23 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
 %s:25 PhanTypeMismatchArgument Argument 1 (x) is object but \expect_string_300() takes string defined at %s:3
 %s:26 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
 %s:27 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
 %s:28 PhanUndeclaredFunction Call to undeclared function \expect_default_int_300()
-%s:31 PhanContextNotObject Cannot access self when not in object context
+%s:31 PhanTypeMismatchArgument Argument 1 (x) is int but \expect_string_300() takes string defined at %s:3
+%s:34 PhanTypeMismatchArgument Argument 1 (x) is string but \expect_int_300() takes int defined at %s:4
+%s:37 PhanContextNotObject Cannot access self when not in object context

@@ -347,7 +347,7 @@ class Clazz extends AddressableElement
             // Figure out if the given parent type contains any template
             // types.
             $contains_templated_type = false;
-            foreach ($parent_type->getTemplateParameterTypeList() as $i => $union_type) {
+            foreach ($parent_type->getTemplateParameterTypeList() as $union_type) {
                 foreach ($union_type->getTypeSet() as $type) {
                     if (isset($template_type_map[$type->getName()])) {
                         $contains_templated_type = true;
@@ -2201,7 +2201,7 @@ class Clazz extends AddressableElement
         if (count($property_map) > 0) {
             $stub .= "\n\n    // properties\n";
 
-            $stub .= implode("\n", array_map(function (Property $property) use ($code_base) {
+            $stub .= implode("\n", array_map(function(Property $property) {
                 return $property->toStub();
             }, $property_map));
         }

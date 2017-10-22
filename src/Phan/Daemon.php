@@ -24,11 +24,12 @@ class Daemon {
      *
      * @return Request|null - A writeable request, which has been fully read from.
      * Callers should close after they are finished writing.
+     *
+     * @suppress PhanPluginUnusedVariable https://github.com/mattriverm/PhanUnusedVariable/issues/30
      */
     public static function run(CodeBase $code_base, \Closure $file_path_lister) {
         \assert($code_base->isUndoTrackingEnabled());
 
-        $receivedSignal = false;
         // example requests over TCP
         // Assumes that clients send and close the their requests quickly, then wait for a response.
 

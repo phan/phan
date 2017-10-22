@@ -51,3 +51,8 @@ Integration tests of all of Phan's plugins' output.
 
 Rasmus's original test cases for Phan.
 These get updated when Phan's behavior improves or intentionally changes.
+
+Scripts
+-------
+
+`run_test` can be run from the root folder to run individual test suites
