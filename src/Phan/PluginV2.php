@@ -55,7 +55,6 @@ use ast\Node;
  *     See \Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin as an example (That is automatically loaded by phan)
  *
  *     Closure type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : UnionType {...}
- kj
  *
  * List of deprecated legacy capabilities
  *
