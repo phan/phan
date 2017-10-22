@@ -2,6 +2,15 @@ Phan NEWS
 
 ?? ??? 2017, Phan 0.10.2 (dev)
 
+New Features(Analysis)
++ Support less ambiguous `?(T[])` and `(?T)[]` in phpdoc (#1213)
+  Note that `(S|T)[]` is **not** supported yet.
++ Support alternate syntax `array<T>` and `array<Key, T>` in phpdoc (PR #1213)
+  Note that Phan ignores the provided value of `Key` completely right now (i.e. same as `T[]`); Key types may be supported later.
+
+Bug Fixes
++ Fixes bugs in PrintfCheckerPlugin: Alignment goes before width, and objects with __toString() can cast to %s. (#1225)
+
 20 Oct 2017, Phan 0.10.1
 ------------------------
 
