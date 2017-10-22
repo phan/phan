@@ -332,7 +332,13 @@ class Config
         // is good for reducing network IO and filling up
         // your terminal's buffer when running phan on a
         // remote host.
-        'progress_bar_sample_rate' => 0.005,
+        // Set this to 0 to use *only* progress_bar_sample_interval.
+        'progress_bar_sample_rate' => 0.000,
+
+        // If this much time (in seconds) has passed since the last update,
+        // then update the progress bar (Ignores progress_bar_sample_rate).
+        // Set this to INF to only use progress_bar_sample_rate.
+        'progress_bar_sample_interval' => 0.1,
 
         // The number of processes to fork off during the analysis
         // phase.

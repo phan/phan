@@ -66,7 +66,7 @@ class ReferenceCountsAnalyzer
         // Classes
         self::analyzeElementListReferenceCounts(
             $code_base,
-            $code_base->getClassMap(),
+            $code_base->getUserDefinedClassMap(),
             Issue::UnreferencedClass,
             $total_count,
             $i

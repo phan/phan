@@ -24,6 +24,9 @@ use Phan\Language\UnionType;
 use Phan\Library\Map;
 use Phan\Library\Set;
 
+use Generator;
+use ReflectionClass;
+
 /**
  * A CodeBase represents the known state of a code base
  * we're analyzing.
@@ -60,9 +63,27 @@ class CodeBase
 {
     /**
      * @var Map
-     * A map from FQSEN to a class
+     * A map from FQSEN to an internal or user defined class
      */
     private $fqsen_class_map;
+
+    /**
+     * @var Map
+     * A map from FQSEN to a user defined class
+     */
+    private $fqsen_class_map_user_defined;
+
+    /**
+     * @var Map
+     * A map from FQSEN to an internal class
+     */
+    private $fqsen_class_map_internal;
+
+    /**
+     * @var Map
+     * A map from FQSEN to a ReflectionClass
+     */
+    private $fqsen_class_map_reflection;
 
     /**
      * @var Map
@@ -84,9 +105,16 @@ class CodeBase
 
     /**
      * @var Set
-     * The set of all functions and methods
+     * A set of internal function FQSENs to lazily initialize.
+     * Entries are removed as new entries get added to fqsen_func_map.
      */
-    private $func_and_method_set;
+    private $internal_function_fqsen_set;
+
+    /**
+     * @var Set
+     * The set of all methods
+     */
+    private $method_set;
 
     /**
      * @var Map
@@ -122,6 +150,12 @@ class CodeBase
 
     /**
      * Initialize a new CodeBase
+     * TODO: Remove internal_function_name_list completely?
+     * @param string[] $internal_class_name_list
+     * @param string[] $internal_interface_name_list
+     * @param string[] $internal_trait_name_list
+     * @param string[] $internal_constant_name_list
+     * @param string[] $internal_function_name_list
      */
     public function __construct(
         array $internal_class_name_list,
@@ -131,11 +165,15 @@ class CodeBase
         array $internal_function_name_list
     ) {
         $this->fqsen_class_map = new Map;
+        $this->fqsen_class_map_internal = new Map;
+        $this->fqsen_class_map_reflection = new Map;
+        $this->fqsen_class_map_user_defined = new Map;
         $this->fqsen_alias_map = new Map;
         $this->fqsen_global_constant_map = new Map;
         $this->fqsen_func_map = new Map;
         $this->class_fqsen_class_map_map = new Map;
-        $this->func_and_method_set = new Set;
+        $this->method_set = new Set;
+        $this->internal_function_fqsen_set = new Set;
 
         // Add any pre-defined internal classes, interfaces,
         // constants, traits and functions
@@ -143,7 +181,9 @@ class CodeBase
         $this->addClassesByNames($internal_interface_name_list);
         $this->addClassesByNames($internal_trait_name_list);
         $this->addGlobalConstantsByNames($internal_constant_name_list);
-        $this->addFunctionsByNames($internal_function_name_list);
+        // We initialize the FQSENs early on so that they show up
+        // in the proper casing.
+        $this->addInternalFunctionsByNames($internal_function_name_list);
     }
 
     /**
@@ -239,7 +279,7 @@ class CodeBase
             $reflection_class = new \ReflectionClass($class_name);
             if (!$reflection_class->isUserDefined()) {
                 // include internal classes, but not external classes such as composer
-                $this->addClass(Clazz::fromReflectionClass($this, $reflection_class));
+                $this->addReflectionClass($reflection_class);
             }
         }
     }
@@ -295,18 +335,41 @@ class CodeBase
         throw new \RuntimeException("Calling replaceFileContents without undo tracker");
     }
 
-    /**
-     * @param string[] $function_name_list
-     * A list of function names to load type information for
-     */
-    private function addFunctionsByNames(array $function_name_list)
+    public function eagerlyLoadAllSignatures()
     {
-        foreach ($function_name_list as $i => $function_name) {
-            foreach (FunctionFactory::functionListFromName($this, $function_name)
-                as $function
-            ) {
-                $this->addFunction($function);
+        $this->getInternalClassMap();  // Force initialization of remaining internal php classes to reduce latency of future analysis requests.
+        $this->forceLoadingInternalFunctions();  // Force initialization of internal functions to reduce latency of future analysis requests.
+    }
+
+    /**
+     * @return void
+     */
+    public function forceLoadingInternalFunctions()
+    {
+        $internal_function_fqsen_set = $this->internal_function_fqsen_set;
+        $this->internal_function_fqsen_set = new Set;  // Don't need to track these any more.
+        foreach ($internal_function_fqsen_set as $function_fqsen) {
+            // hasFunctionWithFQSEN will automatically load $function_name, **unless** we don't have a signature for that function.
+            if (!$this->hasFunctionWithFQSEN($function_fqsen)) {
+                // Force loading these even if automatic loading failed.
+                // (Shouldn't happen, the function list is fetched from reflection by callers.
+                foreach (FunctionFactory::functionListFromReflectionFunction($this, $function_fqsen, new \ReflectionFunction($function_fqsen->getName()))
+                    as $function
+                ) {
+                    $this->addFunction($function);
+                }
             }
+        }
+    }
+
+    /**
+     * @param string[] $internal_function_name_list
+     * @return void
+     */
+    private function addInternalFunctionsByNames(array $internal_function_name_list)
+    {
+        foreach ($internal_function_name_list as $function_name) {
+            $this->internal_function_fqsen_set->attach(FullyQualifiedFunctionName::makeFromExtractedNamespaceAndName($function_name));
         }
     }
 
@@ -318,6 +381,23 @@ class CodeBase
         $this->fqsen_class_map =
             $this->fqsen_class_map->deepCopy();
 
+        $this->fqsen_class_map_user_defined =
+            new Map;
+
+        $this->fqsen_class_map_internal =
+            new Map;
+
+        foreach ($this->fqsen_class_map as $fqsen => $clazz) {
+            if ($clazz->isPHPInternal()) {
+                $this->fqsen_class_map_internal[$fqsen] = $clazz;
+            } else {
+                $this->fqsen_class_map_user_defined[$fqsen] = $clazz;
+            }
+        }
+
+        $this->fqsen_class_map_reflection =
+            clone($this->fqsen_class_map_reflection);
+
         $this->fqsen_alias_map =
             $this->fqsen_alias_map->deepCopy();
 
@@ -327,8 +407,8 @@ class CodeBase
         $this->fqsen_func_map =
             $this->fqsen_func_map->deepCopy();
 
-        $this->func_and_method_set =
-            $this->func_and_method_set->deepCopy();
+        $this->method_set =
+            $this->method_set->deepCopy();
 
         $this->class_fqsen_class_map_map =
             $this->class_fqsen_class_map_map->deepCopy();
@@ -356,16 +436,25 @@ class CodeBase
         $code_base = new CodeBase([], [], [], [], []);
         $code_base->fqsen_class_map =
             clone($this->fqsen_class_map);
+        $code_base->fqsen_class_map_user_defined =
+            clone($this->fqsen_class_map_user_defined);
+        $code_base->fqsen_class_map_internal =
+            clone($this->fqsen_class_map_internal);
+        $code_base->fqsen_class_map_reflection =
+            clone($this->fqsen_class_map_reflection);
         $code_base->fqsen_alias_map =
             clone($this->fqsen_alias_map);
+
         $code_base->fqsen_global_constant_map =
             clone($this->fqsen_global_constant_map);
         $code_base->fqsen_func_map =
             clone($this->fqsen_func_map);
+        $code_base->internal_function_fqsen_set =
+            clone($this->internal_function_fqsen_set);
         $code_base->class_fqsen_class_map_map =
             clone($this->class_fqsen_class_map_map);
-        $code_base->func_and_method_set =
-            clone($this->func_and_method_set);
+        $code_base->method_set =
+            clone($this->method_set);
         return $code_base;
     }
 
@@ -378,15 +467,29 @@ class CodeBase
     public function addClass(Clazz $class)
     {
         // Map the FQSEN to the class
-        $this->fqsen_class_map[$class->getFQSEN()] = $class;
+        $fqsen = $class->getFQSEN();
+        $this->fqsen_class_map[$fqsen] = $class;
+        $this->fqsen_class_map_user_defined[$fqsen] = $class;
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($class) {
-                $fqsen = $class->getFQSEN();
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($fqsen) {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 unset($inner->fqsen_class_map[$fqsen]);
+                unset($inner->fqsen_class_map_user_defined[$fqsen]);
                 unset($inner->class_fqsen_class_map_map[$fqsen]);
             });
         }
+    }
+
+    /**
+     * @param ReflectionClass $class
+     * A class to add, lazily.
+     *
+     * @return void
+     */
+    public function addReflectionClass(ReflectionClass $class)
+    {
+        // Map the FQSEN to the class
+        $this->fqsen_class_map_reflection[FullyQualifiedClassName::fromFullyQualifiedString($class->getName())] = $class;
     }
 
     /**
@@ -493,14 +596,42 @@ class CodeBase
 
     /**
      * @return bool
-     * True if an element with the given FQSEN exists
+     * True if a Clazz with the given FQSEN exists
      */
     public function hasClassWithFQSEN(
         FullyQualifiedClassName $fqsen
     ) : bool {
-        return !empty($this->fqsen_class_map[$fqsen]);
+        if (!empty($this->fqsen_class_map[$fqsen])) {
+            return true;
+        }
+        return $this->lazyLoadPHPInternalClassWithFQSEN($fqsen);
     }
 
+    /**
+     * @return bool
+     * True if a Clazz with the given FQSEN was created
+     */
+    private function lazyLoadPHPInternalClassWithFQSEN(
+        FullyQualifiedClassName $fqsen
+    ) : bool {
+        $reflection_class = $this->fqsen_class_map_reflection[$fqsen] ?? null;
+        if ($reflection_class !== null) {
+            $this->loadPHPInternalClassWithFQSEN($fqsen, $reflection_class);
+            return true;
+        }
+        return false;
+    }
+
+    /** @return void */
+    private function loadPHPInternalClassWithFQSEN(
+        FullyQualifiedClassName $fqsen,
+        ReflectionClass $reflection_class
+    ) {
+        $class = Clazz::fromReflectionClass($this, $reflection_class);
+        $this->fqsen_class_map[$fqsen] = $class;
+        $this->fqsen_class_map_internal[$fqsen] = $class;
+        unset($this->fqsen_class_map_reflection[$fqsen]);
+    }
     /**
      * @param FullyQualifiedClassName $fqsen
      * The FQSEN of a class to get
@@ -550,10 +681,39 @@ class CodeBase
     /**
      * @return Map
      * A list of all classes
+     *
+     * @deprecated - use hasClassWithFQSEN and getClassByFQSEN or getUserDefinedClassMap instead
      */
     public function getClassMap() : Map
     {
+        $this->getInternalClassMap(); // Force initialization of remaining internal php classes
         return $this->fqsen_class_map;
+    }
+
+    /**
+     * @return Map
+     * A map from FQSENs to classes which are internal.
+     */
+    public function getUserDefinedClassMap() : Map
+    {
+        return $this->fqsen_class_map_user_defined;
+    }
+
+    /**
+     * @return Map
+     * A list of all classes which are internal.
+     */
+    public function getInternalClassMap() : Map
+    {
+        if (\count($this->fqsen_class_map_reflection) > 0) {
+            foreach ($this->fqsen_class_map_reflection as $fqsen => $reflection_class) {
+                $this->loadPHPInternalClassWithFQSEN($fqsen, $reflection_class);
+            }
+            // Free up memory used by old class map.
+            $this->fqsen_class_map_reflection = new Map;
+        }
+        // TODO: Resolve internal classes and optimize the implementation.
+        return $this->fqsen_class_map_internal;
     }
 
     /**
@@ -569,7 +729,7 @@ class CodeBase
             $method->getFQSEN()
         )->addMethod($method);
 
-        $this->func_and_method_set->attach($method);
+        $this->method_set->attach($method);
 
         // If we're doing dead code detection(or something else) and this is a
         // method, map the name to the FQSEN so we can do hail-
@@ -581,9 +741,9 @@ class CodeBase
             $this->name_method_map[$method->getFQSEN()->getNameWithAlternateId()]->attach($method);
         }
         if ($this->undo_tracker) {
-            // The addClass's recordUndo should remove the class map. Only need to remove it from func_and_method_set
+            // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
             $this->undo_tracker->recordUndo(function(CodeBase $inner) use($method) {
-                $inner->func_and_method_set->detach($method);
+                $inner->method_set->detach($method);
             });
         }
     }
@@ -644,20 +804,38 @@ class CodeBase
     /**
      * @return Set
      * The set of all methods and functions
+     *
+     * @deprecated - Use getFunctionMap and getMethodSet instead, this is slow and may be removed in a future release.
      */
     public function getFunctionAndMethodSet() : Set
     {
-        return $this->func_and_method_set;
+        $set = clone($this->method_set);
+        foreach ($this->fqsen_func_map as $value) {
+            $set->attach($value);
+        }
+        return $set;
+    }
+
+    /**
+     * @return Set
+     * The set of all methods that Phan is tracking.
+     */
+    public function getMethodSet() : Set
+    {
+        return $this->method_set;
     }
 
     /**
      * @return string[][] -
-     * A human readable encoding of $this->func_and_method_set [string $filename => [int|string $pos => string $spec]]
+     * A human readable encoding of $this->func_and_method_set [string $function_or_method_name => [int|string $pos => string $spec]]
      * Excludes internal functions and methods.
+     *
+     * This can be used for debugging Phan's inference
+     * @suppress PhanDeprecatedFunction
      */
     public function exportFunctionAndMethodSet() : array {
         $result = [];
-        foreach ($this->func_and_method_set as $function_or_method) {
+        foreach ($this->getFunctionAndMethodSet() as $function_or_method) {
             if ($function_or_method->isPHPInternal()) {
                 continue;
             }
@@ -680,7 +858,7 @@ class CodeBase
             }
             $result[$function_or_method_name] = $signature;
         }
-        ksort($result);
+        \ksort($result);
         return $result;
     }
 
@@ -695,14 +873,10 @@ class CodeBase
         // Add it to the map of functions
         $this->fqsen_func_map[$function->getFQSEN()] = $function;
 
-        // Add it to the set of functions and methods
-        $this->func_and_method_set->attach($function);
-
         if ($this->undo_tracker) {
             $this->undo_tracker->recordUndo(function(CodeBase $inner) use($function) {
                 Daemon::debugf("Undoing addFunction on %s\n", $function->getFQSEN());
                 unset($inner->fqsen_func_map[$function->getFQSEN()]);
-                $inner->func_and_method_set->detach($function);
             });
         }
     }
@@ -717,7 +891,7 @@ class CodeBase
         $has_function = $this->fqsen_func_map->contains($fqsen);
 
         if ($has_function) {
-            return $has_function;
+            return true;
         }
 
         // Make the following checks:
@@ -737,11 +911,6 @@ class CodeBase
     public function getFunctionByFQSEN(
         FullyQualifiedFunctionName $fqsen
     ) : Func {
-
-        if (empty($this->fqsen_func_map[$fqsen])) {
-            print "Not found $fqsen\n";
-        }
-
         return $this->fqsen_func_map[$fqsen];
     }
 
@@ -960,11 +1129,27 @@ class CodeBase
         FullyQualifiedFunctionName $fqsen
     ) : bool
     {
-        if (!Config::get()->ignore_undeclared_functions_with_known_signatures) {
+        $canonical_fqsen = $fqsen->withAlternateId(0);
+        $found = isset($this->internal_function_fqsen_set[$canonical_fqsen]);
+        if (!$found) {
             // Act as though functions don't exist if they aren't loaded into the php binary
             // running phan (or that binary's extensions), even if the signature map contains them.
             // (All of the functions were loaded during initialization)
-            return false;
+            //
+            // Also, skip over user-defined global functions defined **by Phan** and its dependencies for analysis
+            if (!Config::get()->ignore_undeclared_functions_with_known_signatures) {
+                return false;
+            }
+            // If we already created the alternates, do nothing.
+            // TODO: This assumes we call hasFunctionWithFQSEN before adding.
+            if (isset($this->fqsen_func_map[$canonical_fqsen])) {
+                return false;
+            }
+        }
+
+        $name = $canonical_fqsen->getName();
+        if ($canonical_fqsen->getNamespace() !== '\\') {
+            $name = \ltrim($canonical_fqsen->getNamespace(), '\\') . '\\' . $name;
         }
 
         // For elements in the root namespace, check to see if
@@ -975,10 +1160,8 @@ class CodeBase
         $function_signature_map =
             UnionType::internalFunctionSignatureMap();
 
-        $name = $fqsen->getNameWithAlternateId();
-        if ($fqsen->getNamespace() != '\\') {
-            $name = \ltrim($fqsen->getNamespace(), '\\') . '\\' . $name;
-        }
+        // Don't need to track this any more
+        unset($this->internal_function_fqsen_set[$canonical_fqsen]);
 
         if (!empty($function_signature_map[$name])) {
             $signature = $function_signature_map[$name];
@@ -986,15 +1169,25 @@ class CodeBase
             // Add each method returned for the signature
             foreach (FunctionFactory::functionListFromSignature(
                 $this,
-                $fqsen,
+                $canonical_fqsen,
                 $signature
             ) as $function) {
                 $this->addFunction($function);
             }
 
             return true;
-        }
+        } else if ($found) {
+            // Phan doesn't have extended information for the signature for this function, but the function exists.
+            foreach (FunctionFactory::functionListFromReflectionFunction(
+                $this,
+                $canonical_fqsen,
+                new \ReflectionFunction($name)
+            ) as $function) {
+                $this->addFunction($function);
+            }
 
+            return true;
+        }
         return false;
     }
 
@@ -1007,7 +1200,9 @@ class CodeBase
         $sum = (
             \count($this->getFunctionMap())
             + \count($this->getGlobalConstantMap())
-            + \count($this->getClassMap())
+            + \count($this->getUserDefinedClassMap())
+            + \count($this->fqsen_class_map_internal)  // initialized internal classes
+            + \count($this->fqsen_class_map_reflection)  // uninitialized internal classes
         );
 
         foreach ($this->getClassMapMap() as $class_map) {

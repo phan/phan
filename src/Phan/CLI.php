@@ -757,14 +757,22 @@ EOB;
         // Bound the percentage to [0, 1]
         $p = min(max($p, 0.0), 1.0);
 
+        static $previous_update_time = 0.0;
+        $time = microtime(true);
+
+
         // Don't update every time when we're moving
         // super fast
         if ($p > 0.0
             && $p < 1.0
-            && rand(0, 1000) > (1000 * Config::getValue('progress_bar_sample_rate')
+            && (
+                // If it hasn't been enough time and we're unlucky, then stop early
+                ($time - $previous_update_time < Config::getValue('progress_bar_sample_interval'))
+              && (rand(0, 1000) > (1000 * Config::getValue('progress_bar_sample_rate')))
             )) {
             return;
         }
+        $previous_update_time = $time;
 
         // If we're on windows, just print a dot to show we're
         // working

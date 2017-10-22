@@ -20,8 +20,10 @@ class FunctionFactory {
         CodeBase $code_base,
         string $function_name
     ) : array {
+        $fqsen = FullyQualifiedFunctionName::makeFromExtractedNamespaceAndName($function_name);
         return self::functionListFromReflectionFunction(
             $code_base,
+            $fqsen,
             new \ReflectionFunction($function_name)
         );
     }
@@ -33,18 +35,11 @@ class FunctionFactory {
      */
     public static function functionListFromReflectionFunction(
         CodeBase $code_base,
+        FullyQualifiedFunctionName $fqsen,
         \ReflectionFunction $reflection_function
     ) : array {
 
         $context = new Context();
-
-        $parts = explode('\\', $reflection_function->getName());
-        $function_name = array_pop($parts);
-        $namespace = '\\' . implode('\\', $parts);
-
-        $fqsen = FullyQualifiedFunctionName::make(
-            $namespace, $function_name
-        );
 
         $function = new Func(
             $context,

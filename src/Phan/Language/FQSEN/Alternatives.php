@@ -26,7 +26,7 @@ trait Alternatives
 
     /**
      * @var int
-     * An alternate ID for the elemnet for use when
+     * An alternate ID for the element for use when
      * there are multiple definitions of the element
      */
     protected $alternate_id = 0;

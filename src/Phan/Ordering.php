@@ -73,12 +73,7 @@ class Ordering
         $file_names_for_classes = [];
 
         // Iterate over each class extracting files
-        foreach ($this->code_base->getClassMap() as $fqsen => $class) {
-
-            // We won't be analyzing internal stuff
-            if ($class->isPHPInternal()) {
-                continue;
-            }
+        foreach ($this->code_base->getUserDefinedClassMap() as $class) {
 
             // Get the name of the file associated with the class
             $file_name = $class->getContext()->getFile();
