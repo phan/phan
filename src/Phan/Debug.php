@@ -6,6 +6,9 @@ use ast\flags;
 
 /**
  * Debug utilities
+ *
+ * Mostly utilities for printing representations of AST nodes.
+ * Also see `Debug/`
  */
 class Debug
 {
@@ -121,7 +124,7 @@ class Debug
             $string .= ' #' . $node->lineno;
         }
 
-        $endLineno = Util::getEndLineno($node);
+        $endLineno = $node->endLineno ?? null;
         if (!\is_null($endLineno)) {
             $string .= ':' . $endLineno;
         }
@@ -227,7 +230,7 @@ class Debug
 
             if ($options & self::AST_DUMP_LINENOS) {
                 $result .= " @ $ast->lineno";
-                $endLineno = Util::getEndLineno($ast);
+                $endLineno = $ast->endLineno ?? null;
                 if (!\is_null($endLineno)) {
                     $result .= "-$endLineno";
                 }

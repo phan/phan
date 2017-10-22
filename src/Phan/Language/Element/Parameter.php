@@ -164,9 +164,6 @@ class Parameter extends Variable
     /**
      * @return Parameter[]
      * A list of parameters from an AST node.
-     *
-     * @see \Phan\Deprecated\Pass1::node_paramlist
-     * Formerly `function node_paramlist`
      */
     public static function listFromNode(
         Context $context,
@@ -243,9 +240,6 @@ class Parameter extends Variable
     /**
      * @return Parameter
      * A parameter built from a node
-     *
-     * @see \Phan\Deprecated\Pass1::node_param
-     * Formerly `function node_param`
      */
     public static function fromNode(
         Context $context,

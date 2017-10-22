@@ -11,6 +11,11 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 
+/**
+ * Contains methods for parsing CLI arguments to Phan,
+ * outputting to the CLI, as well as helper methods to retrieve files/folders
+ * for the analyzed project.
+ */
 class CLI
 {
     /**

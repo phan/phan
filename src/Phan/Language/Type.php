@@ -1106,9 +1106,6 @@ class Type
      * @return bool
      * True if this is a native type or an array of native types
      * (like int, string, bool[], etc.),
-     *
-     * @see \Phan\Deprecated\Util::is_native_type
-     * Formerly `function is_native_type`
      */
     private static function isInternalTypeString(string $original_type_name, int $source) : bool
     {
@@ -1183,9 +1180,6 @@ class Type
     /**
      * @return bool
      * True if this type is scalar.
-     *
-     * @see \Phan\Deprecated\Util::type_scalar
-     * Formerly `function type_scalar`
      */
     public function isScalar() : bool
     {

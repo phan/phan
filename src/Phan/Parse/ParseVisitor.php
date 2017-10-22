@@ -110,7 +110,7 @@ class ParseVisitor extends ScopeVisitor
         // Build the class from what we know so far
         $class_context = $this->context
             ->withLineNumberStart($node->lineno ?? 0)
-            ->withLineNumberEnd(Util::getEndLineno($node) ?? 0);
+            ->withLineNumberEnd($node->endLineno ?? 0);
 
         $class = new Clazz(
             $class_context,
@@ -662,7 +662,7 @@ class ParseVisitor extends ScopeVisitor
         $func = Func::fromNode(
             $context
                 ->withLineNumberStart($node->lineno ?? 0)
-                ->withLineNumberEnd(Util::getEndLineno($node) ?? 0),
+                ->withLineNumberEnd($node->endLineno ?? 0),
             $code_base,
             $node,
             $function_fqsen
