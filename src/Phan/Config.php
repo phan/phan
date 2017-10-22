@@ -3,6 +3,10 @@ namespace Phan;
 
 /**
  * Program configuration.
+ *
+ * Many of the settings in this class can be overridden in .phan/config.php.
+ *
+ * Some configuration can be overridden on the command line.
  * See `./phan -h` for command line usage, or take a
  * look at \Phan\CLI.php for more details on CLI usage.
  */

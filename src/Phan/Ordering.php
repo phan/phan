@@ -5,6 +5,11 @@ use Phan\Library\Hasher;
 use Phan\Library\Hasher\Consistent;
 use Phan\Library\Hasher\Sequential;
 
+/**
+ * This determines the order in which files will be analyzed.
+ * Affected by `consistent_hashing_file_order` and `randomize_file_order`.
+ * By default, files are analyzed in the same order as `.phan/config.php`
+ */
 class Ordering
 {
     /** @var CodeBase */

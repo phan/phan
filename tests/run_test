@@ -9,19 +9,18 @@ if [ "x$TEST_SUITE" == "x" ]; then
 	echo "Provided TEST_SUITE param was empty" 1>&2
 	exit 1
 fi
-set -x
 case "$TEST_SUITE" in
 	__FakeSelfTest)
 		./phan
 		exit $?
 		;;
 	__FakeRewritingTest)
-		cd tests/rewriting_test
+		cd tests/misc/rewriting_test
 		./test.sh
 		exit $?
 		;;
 	__FakeFallbackTest)
-		cd tests/fallback_test
+		cd tests/misc/fallback_test
 		./test.sh
 		exit $?
 		;;
