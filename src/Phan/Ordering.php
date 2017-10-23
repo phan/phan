@@ -67,7 +67,7 @@ class Ordering
 
         // Create a Set from the file list
         $analysis_file_map = [];
-        foreach ($analysis_file_list as $i => $file) {
+        foreach ($analysis_file_list as $file) {
             $analysis_file_map[$file] = true;
         }
 

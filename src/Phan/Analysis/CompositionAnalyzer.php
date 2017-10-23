@@ -21,9 +21,6 @@ class CompositionAnalyzer
         CodeBase $code_base,
         Clazz $class
     ) {
-        // Get the Class's FQSEN
-        $fqsen = $class->getFQSEN();
-
         // Get the list of all inherited classes.
         $inherited_class_list =
             $class->getAncestorClassList($code_base);
@@ -107,6 +104,9 @@ class CompositionAnalyzer
         //       and we should figure out how to merge it.
 
         /*
+        // Get the Class's FQSEN
+        $fqsen = $class->getFQSEN();
+
         $method_map =
             $code_base->getMethodMapByFullyQualifiedClassName($fqsen);
 

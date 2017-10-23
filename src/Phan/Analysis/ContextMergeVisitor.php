@@ -214,7 +214,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
         // Get a list of all variables in all scopes
         $variable_map = [];
-        foreach ($scope_list as $i => $scope) {
+        foreach ($scope_list as $scope) {
             foreach ($scope->getVariableMap() as $name => $variable) {
                 $variable_map[$name] = $variable;
             }

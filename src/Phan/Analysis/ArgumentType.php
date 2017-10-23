@@ -360,8 +360,6 @@ class ArgumentType
                 continue;
             }
 
-            $argument_kind = $argument->kind ?? 0;
-
             // TODO: Warnings about call-by-reference are different for array_map, etc.
 
             // Get the type of the argument. We'll check it against

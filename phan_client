@@ -196,6 +196,7 @@ class PhanPHPLinter {
      * @param array[] $response
      * @param string[] $file_mapping
      * @return void
+     * @suppress PhanPluginUnusedVariable $did_debug false positive
      */
     private static function dumpJSONIssues(array $response, array $file_mapping) {
         $did_debug = false;
@@ -335,7 +336,6 @@ EOB;
             $this->verbose = true;
         }
 
-        $url = null;
         foreach ((\is_array($opts) ? $opts : []) as $key => $value) {
             switch($key) {
             case 's':
@@ -422,7 +422,7 @@ EOB;
             $this->usage("This requires at least one file to analyze (with -l path/to/file", 1);
         }
         if (\is_array($this->temporary_file_map)) {
-            foreach ($this->temporary_file_map as $original_path => $temporary_path) {
+            foreach ($this->temporary_file_map as $original_path => $unused_temporary_path) {
                 if (!in_array($original_path, $this->file_list)) {
                     $this->usage("Need to specify -l '$original_path' if a mapping is included", 1);
                 }

@@ -39,7 +39,7 @@ final class ClosureType extends Type
 
     public function __clone() {
         assert($this->fqsen === null, 'should only clone null fqsen');
-        $result = new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
+        // same as new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
     }
 
     public function hasKnownFQSEN() : bool

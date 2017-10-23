@@ -483,7 +483,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $child_context_list
         ))($node);
 
-        $context = $this->postOrderAnalyze($context, $node);
+        $unused_final_context = $this->postOrderAnalyze($context, $node);
 
         // Return the initial context as we exit
         return $this->context;

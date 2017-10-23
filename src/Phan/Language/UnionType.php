@@ -627,7 +627,7 @@ class UnionType implements \Serializable
         if (\count($type_set) !== \count($other_type_set)) {
             return false;
         }
-        foreach ($type_set as $type_id => $type) {
+        foreach ($type_set as $type_id => $unused_type) {
             if (!isset($other_type_set[$type_id])) {
                 return false;
             }
@@ -643,7 +643,7 @@ class UnionType implements \Serializable
     public function hasCommonType(UnionType $union_type) : bool
     {
         $other_type_set = $union_type->type_set;
-        foreach ($this->type_set as $type_id => $type) {
+        foreach ($this->type_set as $type_id => $unused_type) {
             if (isset($other_type_set[$type_id])) {
                 return true;
             }

@@ -57,6 +57,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     /**
      * People who have translations may subclass this plugin and return a mapping from other locales to those locales translations of $fmt_str.
      * @return string[] mapping locale to the translation (e.g. ['fr_FR' => 'Bonjour'] for $fmt_str == 'Hello')
+     * @suppress PhanPluginUnusedVariable
      */
     protected static function gettextForAllLocales(string $fmt_str)
     {
@@ -333,7 +334,6 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         };
 
         // Check for extra or missing arguments
-        $emitted = false;
         if (\is_array($arg_nodes) && \count($arg_nodes) === 0) {
             if (count($specs) > 0) {
                 $largest_positional = \max(\array_keys($specs));
@@ -652,7 +652,7 @@ class ConversionSpec {
      */
     protected function __construct(array $match)
     {
-        list($this->directive, $position_str, $this->padding_char, $this->alignment, $this->width, $precision, $this->arg_type) = $match;
+        list($this->directive, $position_str, $this->padding_char, $this->alignment, $this->width, $unused_precision, $this->arg_type) = $match;
         if ($position_str !== "") {
             $this->position = \intval(\substr($position_str, 0, -1));
         }
@@ -686,8 +686,7 @@ class ConversionSpec {
     {
         // echo "format is $fmt_str\n";
         $directives = [];
-        $n = \preg_match_all(self::format_string_regex, (string) $fmt_str, $matches, PREG_SET_ORDER);
-        // var_export($matches); return;
+        \preg_match_all(self::format_string_regex, (string) $fmt_str, $matches, PREG_SET_ORDER);
         $unnamed_count = 0;
         foreach ($matches as $match) {
             if ($match[0] === '%%') { continue; }

@@ -296,7 +296,7 @@ class Comment
                 if (Config::getValue('generic_types_enabled')) {
                     $check_compatible('@template', [Comment::ON_CLASS]);
                     if (($template_type =
-                        self::templateTypeFromCommentLine($context, $line))
+                        self::templateTypeFromCommentLine($line))
                     ) {
                         $template_type_list[] = $template_type;
                     }
@@ -312,7 +312,7 @@ class Comment
                 if (preg_match('/@return\b/i', $line)) {
                     $check_compatible('@return', Comment::FUNCTION_LIKE);
                     $return_union_type =
-                        self::returnTypeFromCommentLine($code_base, $context, $line, $lineno);
+                        self::returnTypeFromCommentLine($context, $line);
                 } else if (\stripos($line, '@returns') !== false) {
                     Issue::maybeEmit(
                         $code_base,
@@ -430,26 +430,18 @@ class Comment
     }
 
     /**
-     * @param CodeBase $code_base
-     * Used for extracting issues.
-     *
      * @param Context $context
      * The context in which the comment line appears
      *
      * @param string $line
      * An individual line of a comment
      *
-     * @param int $lineno
-     * The line number of the element that comment annotates
-     *
      * @return UnionType
      * The declared return type
      */
     private static function returnTypeFromCommentLine(
-        CodeBase $code_base,
         Context $context,
-        string $line,
-        int $lineno
+        string $line
     ) {
         $return_union_type_string = '';
 
@@ -569,9 +561,6 @@ class Comment
     }
 
     /**
-     * @param Context $context
-     * The context in which the comment line appears
-     *
      * @param string $line
      * An individual line of a comment
      *
@@ -580,7 +569,6 @@ class Comment
      * wasn't found.
      */
     private static function templateTypeFromCommentLine(
-        Context $context,
         string $line
     ) {
         $match = [];

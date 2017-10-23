@@ -443,7 +443,7 @@ class Type
      */
     private static function createReservedConstantNameLookup() : array {
         $false  = FalseType::instance(false);
-        $float  = FloatType::instance(false);
+        // $float  = FloatType::instance(false);
         $int    = IntType::instance(false);
         $null   = NullType::instance(false);
         $string = StringType::instance(false);
@@ -1357,8 +1357,6 @@ class Type
 
             $class = $code_base->getClassByFQSEN($fqsen);
 
-            $class_template_type_list = $class->getTemplateTypeMap();
-
             $template_parameter_type_list =
                 $this->getTemplateParameterTypeList();
 
@@ -1779,6 +1777,7 @@ class Type
 
     /**
      * @return string[]
+     * @suppress PhanPluginUnusedVariable
      */
     private static function extractTemplateParameterTypeNameList(string $template_list_string)
     {

@@ -44,7 +44,7 @@ trait ConditionVisitorUtil {
             function(UnionType $type) : UnionType {
                 return $type->nonTruthyClone();
             },
-            false
+            $suppress_issues
         );
     }
 

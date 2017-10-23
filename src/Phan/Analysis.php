@@ -284,7 +284,6 @@ class Analysis
         $i = 0;
         if ($show_progress) { CLI::progress('function', 0.0); }
         $function_map = $code_base->getFunctionMap();
-        $internal_count = 0;
         foreach ($function_map as $function)  // iterate, ignoring $fqsen
         {
             if ($show_progress) {

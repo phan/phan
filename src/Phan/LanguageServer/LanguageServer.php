@@ -190,7 +190,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher {
     public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options) {
         \assert($code_base->isUndoTrackingEnabled());
 
-        $receivedSignal = false;
         $make_language_server = function(ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
             return new LanguageServer(
                 $in,
@@ -367,7 +366,6 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher {
         // Parent
         // FIXME: make this async as well, and rate limit it.
         if ($pid > 0) {
-            $is_parent = true;
             $read_stream = self::streamForParent($sockets);
             $concatenated = '';
             while (!feof($read_stream)) {
@@ -426,8 +424,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher {
         $issue_uri = Utils::pathToUri($path);
         $start_line = $issue['location']['lines']['begin'];
         $start_line = max($start_line, 1);
-        $end_line = $issue['location']['lines']['end'] ?? $start_line;
-        $end_line = max($end_line, 1);
+        // If we ever supported end_line:
+        // $end_line = $issue['location']['lines']['end'] ?? $start_line;
+        // $end_line = max($end_line, 1);
         // Language server has 0 based lines and columns, phan has 1-based lines and columns.
         $range = new Range(new Position($start_line - 1, 0), new Position($start_line, 0));
         switch ($severity) {
@@ -499,7 +498,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher {
      */
     public function initialize(ClientCapabilities $capabilities, string $rootPath = null, int $processId = null): Promise
     {
-        return coroutine(function () use ($capabilities, $rootPath, $processId) : \Generator {
+        return coroutine(function () : \Generator {
             // Eventually, this might block on something. Leave it as a generator.
             if (false) { yield; }
 
