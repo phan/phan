@@ -43,7 +43,7 @@ class FunctionFactory {
 
         $function = new Func(
             $context,
-            $fqsen->getName(),
+            $fqsen->getNamespacedName(),
             new UnionType(),
             0,
             $fqsen
@@ -85,7 +85,7 @@ class FunctionFactory {
 
         $func = new Func(
             $context,
-            $fqsen->getName(),
+            $fqsen->getNamespacedName(),
             $return_type,
             0,
             $fqsen
