@@ -11,9 +11,9 @@ class Config
     /**
      * The version of the AST (defined in php-ast) that we're using.
      * Other versions are likely to have edge cases we no longer support,
-     * and version 45 will probably get rid of Decl.
+     * and version 50 got rid of Decl.
      */
-    const AST_VERSION = 40;
+    const AST_VERSION = 50;
 
     /**
      * The version of the Phan plugin system.

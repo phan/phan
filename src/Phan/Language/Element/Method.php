@@ -15,7 +15,6 @@ use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
-use ast\Node\Decl;
 
 class Method extends ClassElement implements FunctionInterface
 {
@@ -320,7 +319,7 @@ class Method extends ClassElement implements FunctionInterface
      *
      * @param CodeBase $code_base
      *
-     * @param Decl $node
+     * @param Node $node
      * An AST node representing a method
      *
      * @return Method
@@ -330,7 +329,7 @@ class Method extends ClassElement implements FunctionInterface
     public static function fromNode(
         Context $context,
         CodeBase $code_base,
-        Decl $node,
+        Node $node,
         FullyQualifiedMethodName $fqsen
     ) : Method {
 
@@ -338,7 +337,7 @@ class Method extends ClassElement implements FunctionInterface
         // we know so far
         $method = new Method(
             $context,
-            (string)$node->name,
+            (string)$node->children['name'],
             new UnionType(),
             $node->flags ?? 0,
             $fqsen
@@ -347,7 +346,7 @@ class Method extends ClassElement implements FunctionInterface
         // Parse the comment above the method to get
         // extra meta information about the method.
         $comment = Comment::fromStringInContext(
-            $node->docComment ?? '',
+            $node->children['docComment'] ?? '',
             $code_base,
             $context,
             $node->lineno ?? 0,

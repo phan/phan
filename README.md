@@ -20,10 +20,9 @@ composer require --dev phan/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This branch of Phan depends on PHP 7.0.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.4 or newer, uses AST version 40). Take a look at later versions of Phan for PHP 7.1+ support.
+This branch of Phan depends on PHP 7.0.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50). Take a look at later versions of Phan (0.10.0+) for PHP 7.1+ support.
 It is unable to analyze code from PHP 7.1.x+.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
-The 0.10.x releases are more up to date, but require newer versions of php-ast (0.1.5 or newer. These releases may not work with older third party phan plugins)
 Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (or to support daemon mode).
 
 * **Alternative Installation Methods**<br />
