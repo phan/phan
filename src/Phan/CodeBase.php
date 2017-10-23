@@ -352,7 +352,7 @@ class CodeBase
             if (!$this->hasFunctionWithFQSEN($function_fqsen)) {
                 // Force loading these even if automatic loading failed.
                 // (Shouldn't happen, the function list is fetched from reflection by callers.
-                foreach (FunctionFactory::functionListFromReflectionFunction($this, $function_fqsen, new \ReflectionFunction($function_fqsen->getName()))
+                foreach (FunctionFactory::functionListFromReflectionFunction($this, $function_fqsen, new \ReflectionFunction($function_fqsen->getNamespacedName()))
                     as $function
                 ) {
                     $this->addFunction($function);
