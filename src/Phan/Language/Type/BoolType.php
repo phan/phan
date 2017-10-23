@@ -4,11 +4,6 @@ namespace Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\Language\Type;
 
-// Temporary hack to load FalseType and TrueType before BoolType::instance() is called
-// (Due to bugs in php static variables)
-assert(class_exists(FalseType::class));
-assert(class_exists(TrueType::class));
-
 final class BoolType extends ScalarType
 {
     /** @phan-override */
@@ -82,3 +77,8 @@ final class BoolType extends ScalarType
         return $this->is_nullable ? (self::_bit_nullable | self::_bit_true | self::_bit_false) : (self::_bit_true | self::_bit_false);
     }
 }
+
+// Temporary hack to load FalseType and TrueType before BoolType::instance() is called
+// (Due to bugs in php static variables)
+\class_exists(FalseType::class);
+\class_exists(TrueType::class);

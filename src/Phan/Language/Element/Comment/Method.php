@@ -121,7 +121,11 @@ class Method
 
     public function __toString() : string
     {
-        $string = 'function ';
+        if ($this->isStatic()) {
+            $string = 'static function ';
+        } else {
+            $string = 'function ';
+        }
         // Magic methods can't be by ref?
         $string .= $this->getName();
 

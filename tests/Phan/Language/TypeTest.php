@@ -34,38 +34,51 @@ class TypeTest extends BaseTest
         return Type::fromStringInContext($type, new Context(), Type::FROM_PHPDOC);
     }
 
+    public function testBracketedTypes()
+    {
+        $this->assertParsesAsType(ArrayType::instance(false), '(array)');
+        $this->assertParsesAsType(ArrayType::instance(false), '((array))');
+        $this->assertParsesAsType(ArrayType::instance(false), '((array))');
+    }
+
+    public function assertParsesAsType(Type $expected_type, string $type_string)
+    {
+        $this->assertTrue(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string'");
+        $this->assertSameType($expected_type, self::makePHPDocType($type_string));
+    }
 
     public function testBasicTypes()
     {
-        $this->assertSame(ArrayType::instance(false), self::makePHPDocType('array'));
-        $this->assertSame(ArrayType::instance(true), self::makePHPDocType('?array'));
-        $this->assertSame(ArrayType::instance(true), self::makePHPDocType('?ARRAY'));
-        $this->assertSame(BoolType::instance(false), self::makePHPDocType('bool'));
-        $this->assertSame(CallableType::instance(false), self::makePHPDocType('callable'));
-        $this->assertSame(ClosureType::instance(false), self::makePHPDocType('Closure'));
-        $this->assertSame(FalseType::instance(false), self::makePHPDocType('false'));
-        $this->assertSame(FloatType::instance(false), self::makePHPDocType('float'));
-        $this->assertSame(IntType::instance(false), self::makePHPDocType('int'));
-        $this->assertSame(IterableType::instance(false), self::makePHPDocType('iterable'));
-        $this->assertSame(MixedType::instance(false), self::makePHPDocType('mixed'));
-        $this->assertSame(ObjectType::instance(false), self::makePHPDocType('object'));
-        $this->assertSame(ResourceType::instance(false), self::makePHPDocType('resource'));
-        $this->assertSame(StaticType::instance(false), self::makePHPDocType('static'));
-        $this->assertSame(StringType::instance(false), self::makePHPDocType('string'));
-        $this->assertSame(TrueType::instance(false), self::makePHPDocType('true'));
-        $this->assertSame(VoidType::instance(false), self::makePHPDocType('void'));
+        $this->assertParsesAsType(ArrayType::instance(false), 'array');
+        $this->assertParsesAsType(ArrayType::instance(true), '?array');
+        $this->assertParsesAsType(ArrayType::instance(true), '?ARRAY');
+        $this->assertParsesAsType(BoolType::instance(false), 'bool');
+        $this->assertParsesAsType(CallableType::instance(false), 'callable');
+        $this->assertParsesAsType(ClosureType::instance(false), 'Closure');
+        $this->assertParsesAsType(FalseType::instance(false), 'false');
+        $this->assertParsesAsType(FloatType::instance(false), 'float');
+        $this->assertParsesAsType(IntType::instance(false), 'int');
+        $this->assertParsesAsType(IterableType::instance(false), 'iterable');
+        $this->assertParsesAsType(MixedType::instance(false), 'mixed');
+        $this->assertParsesAsType(ObjectType::instance(false), 'object');
+        $this->assertParsesAsType(ResourceType::instance(false), 'resource');
+        $this->assertParsesAsType(StaticType::instance(false), 'static');
+        $this->assertParsesAsType(StringType::instance(false), 'string');
+        $this->assertParsesAsType(TrueType::instance(false), 'true');
+        $this->assertParsesAsType(VoidType::instance(false), 'void');
     }
 
     private function assertSameType(Type $expected, Type $actual)
     {
-        $this->assertEquals($expected, $actual);
-        $this->assertSame($expected, $actual);
+        $message = \sprintf("Expected %s to be %s", (string)$actual, (string)$expected);
+        $this->assertEquals($expected, $actual, $message);
+        $this->assertSame($expected, $actual, $message);
     }
 
     public function testUnionTypeOfThis()
     {
-        $this->assertSameType(StaticType::instance(false), self::makePHPDocType('$this'));
-        $this->assertSameType(StaticType::instance(true), self::makePHPDocType('?$this'));
+        $this->assertParsesAsType(StaticType::instance(false), '$this');
+        $this->assertParsesAsType(StaticType::instance(true), '?$this');
     }
 
     public function testGenericArray()
@@ -78,8 +91,10 @@ class TypeTest extends BaseTest
             ),
             false
         );
-        $this->assertSame($expectedGenericArrayType, $genericArrayType);
+        $this->assertSameType($expectedGenericArrayType, $genericArrayType);
         $this->assertSame('int[][]', (string)$expectedGenericArrayType);
+        $this->assertSameType($expectedGenericArrayType, self::makePHPDocType('(int)[][]'));
+        // TODO: Parse (int[])[]?
     }
 
     public function testTemplateTypes()
@@ -91,5 +106,95 @@ class TypeTest extends BaseTest
         $this->assertCount(2, $parts);
         $this->assertTrue($parts[0]->isType(self::makePHPDocType('A1')));
         $this->assertTrue($parts[1]->isType(self::makePHPDocType('B2')));
+    }
+
+    public function testTemplateTypesWithArray()
+    {
+        $type = self::makePHPDocType('TypeTestClass<array<string>,array<int>>');  // not exactly a template, but has the same parsing
+        $this->assertSame('\\', $type->getNamespace());
+        $this->assertSame('TypeTestClass', $type->getName());
+        $parts = $type->getTemplateParameterTypeList();
+        $this->assertCount(2, $parts);
+        $this->assertTrue($parts[0]->isType(self::makePHPDocType('string[]')));
+        $this->assertTrue($parts[1]->isType(self::makePHPDocType('int[]')));
+    }
+
+    public function testTemplateTypesWithTemplates()
+    {
+        $type = self::makePHPDocType('TypeTestClass<T1<int,string[]>,T2>');  // not exactly a template, but has the same parsing
+        $this->assertSame('\\', $type->getNamespace());
+        $this->assertSame('TypeTestClass', $type->getName());
+        $parts = $type->getTemplateParameterTypeList();
+        $this->assertCount(2, $parts);
+        $this->assertTrue($parts[0]->isType(self::makePHPDocType('T1<int,string[]>')), "Unexpected value for " . (string)$parts[0]);
+        $this->assertTrue($parts[1]->isType(self::makePHPDocType('T2')));
+        $inner_parts = $parts[0]->getTemplateParameterTypeList();
+        $this->assertCount(2, $inner_parts);
+        $this->assertTrue($inner_parts[0]->isType(self::makePHPDocType('int')));
+        $this->assertTrue($inner_parts[1]->isType(self::makePHPDocType('string[]')));
+    }
+
+    public function testTemplateTypesWithNullable()
+    {
+        $type = self::makePHPDocType('TypeTestClass<'.'?int,?string>');  // not exactly a template, but has the same parsing
+        $this->assertSame('\\', $type->getNamespace());
+        $this->assertSame('TypeTestClass', $type->getName());
+        $parts = $type->getTemplateParameterTypeList();
+        $this->assertCount(2, $parts);
+        $this->assertTrue($parts[0]->isType(self::makePHPDocType('?int')), "Unexpected value for " . (string)$parts[0]);
+        $this->assertTrue($parts[1]->isType(self::makePHPDocType('?string')));
+    }
+
+    /**
+     * Regression test - Phan parses ?int[] as ?(int[])
+     */
+    public function testGenericArrayNullable()
+    {
+        $genericArrayType = self::makePHPDocType('?int[]');
+        $expectedGenericArrayType = GenericArrayType::fromElementType(
+            IntType::instance(false),
+            true
+        );
+        $this->assertSameType($expectedGenericArrayType, $genericArrayType);
+        $genericArrayArrayType = self::makePHPDocType('?int[][]');
+        $expectedGenericArrayArrayType = GenericArrayType::fromElementType(
+            GenericArrayType::fromElementType(
+                IntType::instance(false),
+                false
+            ),
+            true
+        );
+        $this->assertSameType($expectedGenericArrayArrayType, $genericArrayArrayType);
+    }
+
+    public function testArrayAlternate()
+    {
+        $stringArrayType = self::makePHPDocType('array<string>');
+        $expectedStringArrayType = GenericArrayType::fromElementType(
+            StringType::instance(false),
+            false
+        );
+        $this->assertSameType($expectedStringArrayType, $stringArrayType);
+
+        $stringArrayType2 = self::makePHPDocType('array<mixed,string>');
+        $this->assertSameType($expectedStringArrayType, $stringArrayType2);
+
+        // We don't track key types yet, but may track them in the future.
+        $stringArrayType3 = self::makePHPDocType('array<int,string>');
+        $this->assertSameType($expectedStringArrayType, $stringArrayType3);
+
+        // Allow space
+        $stringArrayType4 = self::makePHPDocType('array<mixed, string>');
+        $this->assertSameType($expectedStringArrayType, $stringArrayType4);
+
+        // Nested array types.
+        $expectedStringArrayArrayType = GenericArrayType::fromElementType(
+            $expectedStringArrayType,
+            false
+        );
+        $this->assertParsesAsType($expectedStringArrayArrayType, 'array<string[]>');
+        $this->assertParsesAsType($expectedStringArrayArrayType, 'array<string>[]');
+        $this->assertParsesAsType($expectedStringArrayArrayType, 'array<array<string>>');
+        $this->assertParsesAsType($expectedStringArrayArrayType, 'array<mixed,array<mixed,string>>');
     }
 }

@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+/**
+ * Utility for profiling Phan runs. Used if the profiler_enabled config setting is true.
+ */
 trait Profile
 {
     /**

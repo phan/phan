@@ -374,7 +374,6 @@ class Request {
         }
 
         self::reloadFilePathListForDaemon($code_base, $file_path_lister, $new_file_mapping_contents);
-        $receivedSignal = false;
 
         $fork_result = pcntl_fork();
         if ($fork_result < 0) {
@@ -465,7 +464,6 @@ class Request {
      */
     private static function applyTemporaryFileMappingForParsePhase(CodeBase $code_base, array $temporary_file_mapping_contents)
     {
-        $old_count = $code_base->getParsedFilePathCount();
         if (count($temporary_file_mapping_contents) === 0) {
             return;
         }
@@ -475,7 +473,7 @@ class Request {
 
         $changes_to_add = [];
         foreach ($temporary_file_mapping_contents as $file_name => $contents) {
-            if ($code_base->beforeReplaceFileContents($file_name, $contents)) {
+            if ($code_base->beforeReplaceFileContents($file_name)) {
                 $changes_to_add[$file_name] = $contents;
             }
         }

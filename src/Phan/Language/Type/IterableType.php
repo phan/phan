@@ -40,3 +40,5 @@ class IterableType extends NativeType
         return parent::canCastToNonNullableType($type);
     }
 }
+// Trigger autoloader for subclass before make() can get called.
+\class_exists(ArrayType::class);

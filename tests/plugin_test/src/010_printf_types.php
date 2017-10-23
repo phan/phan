@@ -11,3 +11,16 @@ printf("Hello, %s", false);
 printf("Hello, %s", []);
 printf("Hello, %f %s", "World", 2);
 printf('Hello, %1$d %1$f', 'x');
+printf('Hello, %-10d,%+3d', 2, 4);  // left aligned and right aligned
+printf('Hello, %-10d,%+3d', 2, 4, 5);  // Extra
+class Foo {
+    public function __toString() {
+        return 'world';
+    }
+}
+class Bar {
+}
+$foo = new Foo();
+printf("Hello, %s\n", $foo);
+$bar = new Bar();
+printf("Hello, %s\n", $bar);

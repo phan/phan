@@ -71,6 +71,6 @@ return [
 
     // A list of plugin files to execute
     'plugins' => [
-        '../../.phan/plugins/AlwaysReturnPlugin.php',  // may be affected by AST rewriting
+        '../../../.phan/plugins/AlwaysReturnPlugin.php',  // may be affected by AST rewriting
     ]
 ];

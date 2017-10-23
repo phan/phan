@@ -27,7 +27,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * The name of this structural element
      *
      * @param int $alternate_id
-     * An alternate ID for the elemnet for use when
+     * An alternate ID for the element for use when
      * there are multiple definitions of the element
      */
     protected function __construct(
@@ -50,6 +50,23 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     }
 
     /**
+     * @param string $name
+     * The name of this structural element, may contain a namespace.
+     *
+     * @return static
+     */
+    public static function makeFromExtractedNamespaceAndName(string $name)
+    {
+        $name = \ltrim($name, '\\');
+        $i = \stripos($name, '\\');
+        if ($i === false) {
+            // Common case: no namespace
+            return self::make('\\', $name);
+        }
+        return self::make('\\' . \substr($name, 0, $i), \substr($name, $i+1));
+    }
+
+    /**
      * @param string $namespace
      * The namespace in this element's scope
      *
@@ -57,7 +74,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
      * The name of this structural element
      *
      * @param int $alternate_id
-     * An alternate ID for the elemnet for use when
+     * An alternate ID for the element for use when
      * there are multiple definitions of the element
      *
      * @return static
@@ -70,7 +87,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
 
         // Transfer any relative namespace stuff from the
         // name to the namespace.
-        $name_parts= \explode('\\', $name);
+        $name_parts = \explode('\\', $name);
         $name = \array_pop($name_parts);
         $namespace = \implode('\\', \array_merge([$namespace], $name_parts));
         $namespace = self::cleanNamespace($namespace);
@@ -78,7 +95,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
         // use the canonicalName for $name instead of strtolower - Some subclasses(constants) are case sensitive.
         $key = implode('|', [
             static::class,
-            static::toString(strtolower($namespace), static::canonicalLookupKey($name), $alternate_id)
+            static::toString(\strtolower($namespace), static::canonicalLookupKey($name), $alternate_id)
         ]);
 
         $fqsen = self::memoizeStatic($key, function () use ($namespace, $name, $alternate_id) {

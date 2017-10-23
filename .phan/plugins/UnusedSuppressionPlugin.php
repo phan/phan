@@ -78,7 +78,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $unused_code_base
      * The code base in which the class exists
      *
      * @param Clazz $class
@@ -89,14 +89,14 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      * @override
      */
     public function analyzeClass(
-        CodeBase $code_base,
+        CodeBase $unused_code_base,
         Clazz $class
     ) {
         $this->elements_for_postponed_analysis[] = $class;
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $unused_code_base
      * The code base in which the method exists
      *
      * @param Method $method
@@ -107,7 +107,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      * @override
      */
     public function analyzeMethod(
-        CodeBase $code_base,
+        CodeBase $unused_code_base,
         Method $method
     ) {
 
@@ -120,7 +120,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $unused_code_base
      * The code base in which the function exists
      *
      * @param Func $function
@@ -131,14 +131,14 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      * @override
      */
     public function analyzeFunction(
-        CodeBase $code_base,
+        CodeBase $unused_code_base,
         Func $function
     ) {
         $this->elements_for_postponed_analysis[] = $function;
     }
 
     /**
-     * @param CodeBase $code_base
+     * @param CodeBase $unused_code_base
      * The code base in which the function exists
      *
      * @param Property $property
@@ -149,7 +149,7 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      * @override
      */
     public function analyzeProperty(
-        CodeBase $code_base,
+        CodeBase $unused_code_base,
         Property $property
     ) {
         $this->elements_for_postponed_analysis[] = $property;

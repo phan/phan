@@ -942,7 +942,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             // Map each template type o the argument's concrete type
             $template_type_list = [];
-            foreach ($constructor_method->getParameterList() as $i => $parameter) {
+            foreach ($constructor_method->getParameterList() as $i => $unused_parameter) {
                 if (isset($arg_type_list[$i])) {
                     $template_type_list[] = $arg_type_list[$i];
                 }
@@ -1929,7 +1929,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
     {
-        $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
+        $function_fqsens = (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
         $functions = [];
         foreach ($function_fqsens as $fqsen) {
             if ($fqsen instanceof FullyQualifiedMethodName) {
@@ -1954,12 +1954,12 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
-     * @param bool $log_error whether or not to log errors while searching
+     * @param bool $unused_log_error whether or not to log errors while searching (TODO: use)
      * @return FullyQualifiedFunctionLikeName[]
      */
-    public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
+    public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $unused_log_error) : array
     {
-        return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node, $log_error);
+        return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
     }
 
     /**
@@ -2080,10 +2080,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return $class->getParentClassFQSEN();  // may or may not exist.
         default:
             // TODO: Reject invalid/empty class names earlier
-            if (\substr($class_name, 0, 1) === '\\') {
-                $class_name = \substr($class_name, 1);
-            }
-            return FullyQualifiedClassName::make('', $class_name);
+            return FullyQualifiedClassName::makeFromExtractedNamespaceAndName($class_name);
         }
     }
 
@@ -2176,7 +2173,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * An exception is thrown if we can't find a class for
      * the given type
      */
-    private function functionLikeFQSENListFromNode($node, bool $log_error) : array
+    private function functionLikeFQSENListFromNode($node) : array
     {
         if (\is_string($node)) {
             if (\stripos($node, '::') !== false) {

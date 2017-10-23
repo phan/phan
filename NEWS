@@ -1,9 +1,25 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.8.9
+?? ??? 2017, Phan 0.8.10
 -----------------------
 
-Phan 0.8.x switched from using AST version 40 (php-ast 0.1.4+) to AST version 50 (0.1.5+).
+Phan 0.8.x switched from using AST version 40 (php-ast 0.1.4+) to AST version 50 (0.1.5+) in this release.
+
+Backported from Phan 0.10.2 (dev)
+
+New Features(Analysis)
++ Support less ambiguous `?(T[])` and `(?T)[]` in phpdoc (#1213)
+  Note that `(S|T)[]` is **not** supported yet.
++ Support alternate syntax `array<T>` and `array<Key, T>` in phpdoc (PR #1213)
+  Note that Phan ignores the provided value of `Key` completely right now (i.e. same as `T[]`); Key types may be supported later.
++ Speed up phan analysis on small projects, reduce memory usage (Around 0.15 seconds and 15MB)
+  This was done by deferring loading the information about internal classes and functions until that information was needed for analysis.
+
+New Features (CLI, Configs)
++ Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
+
+Bug Fixes
++ Fixes bugs in PrintfCheckerPlugin: Alignment goes before width, and objects with __toString() can cast to %s. (#1225)
 
 20 Oct 2017, Phan 0.8.9
 -----------------------

@@ -1,7 +1,7 @@
-%s:8 PhanMismatchVariadicComment int ...x is variadic in comment, but not variadic in param ($x)
-%s:8 PhanMismatchVariadicParam array y is not variadic in comment, but variadic in param (...$y)
-%s:16 PhanMismatchVariadicParam int y is not variadic in comment, but variadic in param (...$y)
-%s:25 PhanMismatchVariadicComment int ...x is variadic in comment, but not variadic in param ($x)
-%s:25 PhanMismatchVariadicParam array y is not variadic in comment, but variadic in param (...$y)
-%s:32 PhanMismatchVariadicParam int z is not variadic in comment, but variadic in param (...$z)
+%s:8 PhanMismatchVariadicComment int ...$x is variadic in comment, but not variadic in param ($x)
+%s:8 PhanMismatchVariadicParam array $y is not variadic in comment, but variadic in param (...$y)
+%s:16 PhanMismatchVariadicParam int $y is not variadic in comment, but variadic in param (...$y)
+%s:25 PhanMismatchVariadicComment int ...$x is variadic in comment, but not variadic in param ($x)
+%s:25 PhanMismatchVariadicParam array $y is not variadic in comment, but variadic in param (...$y)
+%s:32 PhanMismatchVariadicParam int $z is not variadic in comment, but variadic in param (...$z)
 %s:36 PhanTypeMismatchArgument Argument 3 (y) is array but \badvariadic258b() takes int defined at %s:16

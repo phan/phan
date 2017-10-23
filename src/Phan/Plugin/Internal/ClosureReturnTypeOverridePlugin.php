@@ -87,7 +87,6 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($function_like_list) === 0) {
                 return $element_types;
             }
-            $arg_array_node = $args[1];
             $arguments = self::extractArrayArgs($args[1]);
             $element_types = new UnionType();
 

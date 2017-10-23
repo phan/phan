@@ -27,10 +27,10 @@
         <const name="EXPECTED_DIR" value="./tests/files/expected"/>
         <const name="MULTI_FILE_DIR" value="./tests/multi_files/src"/>
         <const name="MULTI_EXPECTED_DIR" value="./tests/multi_files/expected"/>
-        <const name="SOAP_TEST_FILE_DIR" value="./tests/soap_files/src"/>
-        <const name="SOAP_EXPECTED_DIR" value="./tests/soap_files/expected"/>
-        <const name="INTL_TEST_FILE_DIR" value="./tests/intl_files/src"/>
-        <const name="INTL_EXPECTED_DIR" value="./tests/intl_files/expected"/>
+        <const name="SOAP_TEST_FILE_DIR" value="./tests/misc/soap_files/src"/>
+        <const name="SOAP_EXPECTED_DIR" value="./tests/misc/soap_files/expected"/>
+        <const name="INTL_TEST_FILE_DIR" value="./tests/misc/intl_files/src"/>
+        <const name="INTL_EXPECTED_DIR" value="./tests/misc/intl_files/expected"/>
     </php>
 
     <testsuites>

@@ -41,6 +41,8 @@ class UnionType implements \Serializable
      * A list of one or more types delimited by the '|'
      * character (e.g. 'int|DateTime|string[]' or 'null|$this')
      * This may be used for return types.
+     *
+     * TODO: Equivalent variants with no capturing? (May not improve performance much)
      */
     const union_type_regex_or_this =
         Type::type_regex_or_this
@@ -93,6 +95,7 @@ class UnionType implements \Serializable
         $type_set = $memoize_map[$fully_qualified_string] ?? null;
 
         if (!isset($type_set)) {
+            // TODO: Support brackets, template types within <>, etc.
             $type_set = ArraySet::from_list(\array_map(function (string $type_name) {
                 return Type::fromFullyQualifiedString($type_name);
             }, \explode('|', $fully_qualified_string)));
@@ -624,7 +627,7 @@ class UnionType implements \Serializable
         if (\count($type_set) !== \count($other_type_set)) {
             return false;
         }
-        foreach ($type_set as $type_id => $type) {
+        foreach ($type_set as $type_id => $unused_type) {
             if (!isset($other_type_set[$type_id])) {
                 return false;
             }
@@ -640,7 +643,7 @@ class UnionType implements \Serializable
     public function hasCommonType(UnionType $union_type) : bool
     {
         $other_type_set = $union_type->type_set;
-        foreach ($this->type_set as $type_id => $type) {
+        foreach ($this->type_set as $type_id => $unused_type) {
             if (isset($other_type_set[$type_id])) {
                 return true;
             }
@@ -971,9 +974,6 @@ class UnionType implements \Serializable
      * @return bool
      * True if this type is allowed to cast to the given type
      * i.e. int->float is allowed  while float->int is not.
-     *
-     * @see \Phan\Deprecated\Pass2::type_check
-     * Formerly 'function type_check'
      */
     public function canCastToUnionType(
         UnionType $target
@@ -1050,9 +1050,6 @@ class UnionType implements \Serializable
     /**
      * @return bool
      * True if all types in this union are scalars
-     *
-     * @see \Phan\Deprecated\Util::type_scalar
-     * Formerly `function type_scalar`
      */
     public function isScalar() : bool
     {
@@ -1303,9 +1300,6 @@ class UnionType implements \Serializable
      *
      * @return UnionType
      * A UnionType with generic array types filtered out
-     *
-     * @see \Phan\Deprecated\Pass2::nongenerics
-     * Formerly `function nongenerics`
      */
     public function nonGenericArrayTypes() : UnionType
     {
