@@ -66,15 +66,6 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $array_type->asUnionType();
         };
-        $get_first_array_arg_as_array = static function(CodeBase $code_base, Context $context, Func $function, array $args) use($array_type) : UnionType {
-            if (\count($args) >= 1) {
-                $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
-                if (!$element_types->isEmpty()) {
-                    return $element_types->asGenericArrayTypes();
-                }
-            }
-            return $array_type->asGenericArrayType()->asUnionType();
-        };
         $array_fill_keys_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use($array_type) : UnionType {
             if (\count($args) == 2) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
@@ -151,16 +142,12 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $types;
         };
 
-        $extract_generic_array_element_types = static function(UnionType $type) : UnionType{
-            return $type->genericArrayElementTypes();
-        };
-
         $array_map_callback = static function(
             CodeBase $code_base,
             Context $context,
             Func $function,
             array $args
-        ) use ($array_type, $extract_generic_array_element_types) : UnionType {
+        ) use ($array_type) : UnionType {
             if (\count($args) < 2) {
                 return $array_type->asUnionType();
             }

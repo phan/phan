@@ -37,7 +37,6 @@ use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\Some;
 use ast\Node;
-use ast\Node\Decl;
 
 /**
  * Methods for an AST node in context
@@ -51,7 +50,7 @@ class ContextNode
     /** @var Context */
     private $context;
 
-    /** @var Decl|Node|string|null */
+    /** @var Node|string|null */
     private $node;
 
     /**
@@ -527,7 +526,7 @@ class ContextNode
 
         // Hunt to see if any of them have the method we're
         // looking for
-        foreach ($class_list as $i => $class) {
+        foreach ($class_list as $class) {
             if ($class->hasMethodWithName($this->code_base, $method_name, $is_direct)) {
                 return $class->getMethodByName(
                     $this->code_base,
@@ -911,7 +910,7 @@ class ContextNode
             }
         }
 
-        foreach ($class_list as $i => $class) {
+        foreach ($class_list as $class) {
             $class_fqsen = $class->getFQSEN();
 
             // Keep hunting if this class doesn't have the given
@@ -983,7 +982,7 @@ class ContextNode
         // possible classes, check for classes with dynamic
         // properties
         if (!$is_static) {
-            foreach ($class_list as $i => $class) {
+            foreach ($class_list as $class) {
                 if (Config::getValue('allow_missing_properties')
                     || $class->getHasDynamicProperties($this->code_base)
                 ) {
@@ -1281,7 +1280,8 @@ class ContextNode
             );
         }
 
-        foreach ($class_list as $i => $class) {
+        foreach ($class_list as $class) {
+            // Remember the last analyzed class for the next issue message
             $class_fqsen = $class->getFQSEN();
 
             // Check to see if the class has the constant

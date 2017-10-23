@@ -9,6 +9,7 @@ use Phan\Language\FQSEN;
 use Phan\Language\UnionType;
 use Phan\Language\Type;
 
+// TODO: Move to AST\Visitor?
 abstract class AnalysisVisitor extends KindVisitorImplementation
 {
     /**

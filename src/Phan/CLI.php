@@ -11,12 +11,17 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 
+/**
+ * Contains methods for parsing CLI arguments to Phan,
+ * outputting to the CLI, as well as helper methods to retrieve files/folders
+ * for the analyzed project.
+ */
 class CLI
 {
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    const PHAN_VERSION = '0.8.9';
+    const PHAN_VERSION = '0.8.10-dev';
 
     /**
      * @var OutputInterface
@@ -525,7 +530,8 @@ Usage: {$argv[0]} [options] [files...]
   Output filename
 
  --color
-  Add colors to the outputted issues. Tested for Unix, recommended for only the default --output-mode ('text')
+  Add colors to the outputted issues. Tested in Unix.
+  This is recommended for only the default --output-mode ('text')
 
  -p, --progress-bar
   Show progress bar
@@ -756,14 +762,22 @@ EOB;
         // Bound the percentage to [0, 1]
         $p = min(max($p, 0.0), 1.0);
 
+        static $previous_update_time = 0.0;
+        $time = microtime(true);
+
+
         // Don't update every time when we're moving
         // super fast
         if ($p > 0.0
             && $p < 1.0
-            && rand(0, 1000) > (1000 * Config::getValue('progress_bar_sample_rate')
+            && (
+                // If it hasn't been enough time and we're unlucky, then stop early
+                ($time - $previous_update_time < Config::getValue('progress_bar_sample_interval'))
+              && (rand(0, 1000) > (1000 * Config::getValue('progress_bar_sample_rate')))
             )) {
             return;
         }
+        $previous_update_time = $time;
 
         // If we're on windows, just print a dot to show we're
         // working

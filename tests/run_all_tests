@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+if [ "$#" != 0 ]; then
+	echo "Usage: $0" 1>&2
+	echo "Runs all unit tests, integration tests, and test scripts" 1>&2
+	exit 1
+fi
+
+TEST_SUITES="PhanTest"
+TEST_SUITES+=" UtilTest RasmusTest LanguageTest"
+TEST_SUITES+=" __FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest"
+
+FAILURES=""
+for TEST_SUITE in $TEST_SUITES; do
+	echo "Running test suite: $TEST_SUITE"
+	if ! tests/run_test "$TEST_SUITE"; then
+		FAILURES="$FAILURES $TEST_SUITE"
+	fi
+	echo
+done
+if [[ "x$FAILURES" != "x" ]]; then
+	echo "These tests or checks failed (see above output): $FAILURES"
+	exit 1
+else
+	echo 'All tests and checks passed!'
+fi

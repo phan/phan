@@ -182,9 +182,11 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
     /**
      * @param Node $node
      * A node to check types on
+     * TODO: Check that both types can cast to string or scalars?
      *
      * @return UnionType
      * The resulting type(s) of the binary operation
+     * @suppress PhanPluginUnusedMethodArgument
      */
     public function visitBinaryConcat(Node $node) : UnionType
     {
@@ -449,13 +451,14 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     private function visitBinaryBool(Node $node) : UnionType
     {
-        $left = UnionType::fromNode(
+        // TODO: Check for suspicious operations (E.g. always false, always true, always object)
+        $unused_left = UnionType::fromNode(
             $this->context,
             $this->code_base,
             $node->children['left']
         );
 
-        $right = UnionType::fromNode(
+        $unused_right = UnionType::fromNode(
             $this->context,
             $this->code_base,
             $node->children['right']

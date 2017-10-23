@@ -10,7 +10,7 @@ use ast\Node;
  * their hooks called at appropriate times during analysis
  * of each file, class, method and function.
  *
- * Plugins must extends this class
+ * Plugins must extend this class
  * (And at least one of the interfaces corresponding to plugin capabilities)
  * and return an instance of themselves.
  *
@@ -43,6 +43,18 @@ use ast\Node;
  *  6. public function finalize(CodeBase $code_base)
  *     Analyze (and modify) a property definition, after parsing and before analyzing.
  *     (implement \Phan\PluginV2\AnalyzePropertyCapability)
+ *
+ *  7. public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : \Closure[]
+ *     Maps FQSEN of function or method to a closure used to analyze the function in question.
+ *     'MyClass::myMethod' can be used as the FQSEN of a static or instance method.
+ *     See .phan/plugins/PregRegexCheckerPlugin.php as an example.
+ *
+ *      Closure Type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : void {...}
+ *  8. public function getReturnTypeOverrides(CodeBase $code_base) : array
+ *     Maps FQSEN of function or method to a closure used to override the returned UnionType.
+ *     See \Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin as an example (That is automatically loaded by phan)
+ *
+ *     Closure type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : UnionType {...}
  *
  * List of deprecated legacy capabilities
  *

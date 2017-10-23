@@ -11,6 +11,7 @@ use Phan\Analysis\ReferenceCountsAnalyzer;
 use Phan\Language\Context;
 use Phan\Language\Element\Clazz;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
@@ -231,28 +232,20 @@ class Analysis
     {
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
-        $function_and_method_set = $code_base->getFunctionAndMethodSet();
         $show_progress = CLI::shouldShowProgress();
-        $i = 0;
-
-        if ($show_progress) { CLI::progress('method', 0.0); }
-
-        foreach ($function_and_method_set as $function_or_method)
-        {
-            if ($show_progress) {
-                // I suspect that method analysis is hydrating some of the classes,
-                // adding even more inherited methods to the end of the set.
-                // This recalculation is needed so that the progress bar is accurate.
-                CLI::progress('method', (++$i)/(\count($function_and_method_set)));
-            }
-
+        $analyze_function_or_method = function(FunctionInterface $function_or_method) use (
+            $code_base,
+            $plugin_set,
+            $has_function_or_method_plugins,
+            $file_filter
+        ) {
             if ($function_or_method->isPHPInternal()) {
-                continue;
+                return;
             }
 
             // If there is an array limiting the set of files, skip this file if it's not in the list,
             if (\is_array($file_filter) && !isset($file_filter[$function_or_method->getContext()->getFile()])) {
-                continue;
+                return;
             }
 
             DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
@@ -284,6 +277,35 @@ class Analysis
                     );
                 }
             }
+        };
+
+        // Analyze user-defined method declarations.
+        // Plugins may also analyze user-defined methods here.
+        $i = 0;
+        if ($show_progress) { CLI::progress('function', 0.0); }
+        $function_map = $code_base->getFunctionMap();
+        foreach ($function_map as $function)  // iterate, ignoring $fqsen
+        {
+            if ($show_progress) {
+                CLI::progress('function', (++$i)/(\count($function_map)));
+            }
+            $analyze_function_or_method($function);
+        }
+
+        // Analyze user-defined method declarations.
+        // Plugins may also analyze user-defined methods here.
+        $i = 0;
+        $method_set = $code_base->getMethodSet();
+        if ($show_progress) { CLI::progress('method', 0.0); }
+        foreach ($method_set as $method)
+        {
+            if ($show_progress) {
+                // I suspect that method analysis is hydrating some of the classes,
+                // adding even more inherited methods to the end of the set.
+                // This recalculation is needed so that the progress bar is accurate.
+                CLI::progress('method', (++$i)/(\count($method_set)));
+            }
+            $analyze_function_or_method($method);
         }
     }
 
@@ -340,7 +362,7 @@ class Analysis
      */
     public static function analyzeClasses(CodeBase $code_base, array $path_filter = null)
     {
-        $classes = self::getUserDefinedClasses($code_base);
+        $classes = $code_base->getUserDefinedClassMap();
         if (\is_array($path_filter)) {
             // If a list of files is provided, then limit analysis to classes defined in those files.
             $old_classes = $classes;
@@ -354,21 +376,6 @@ class Analysis
         foreach ($classes as $class) {
             $class->analyze($code_base);
         }
-    }
-
-    /**
-     * Fetches all of the user defined classes in $code_base
-     * @return Clazz[]
-     */
-    private static function getUserDefinedClasses(CodeBase $code_base)
-    {
-        $classes = [];
-        foreach ($code_base->getClassMap() as $class) {
-            if (!$class->isPHPInternal()) {
-                $classes[] = $class;
-            }
-        }
-        return $classes;
     }
 
     /**

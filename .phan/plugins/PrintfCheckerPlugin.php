@@ -5,6 +5,7 @@ namespace Phan\Plugin\PrintfCheckerPlugin;  // Don't pollute the global namespac
 use Phan\AST\ContextNode;
 use Phan\AST\UnionTypeVisitor;
 use Phan\CodeBase;
+use Phan\Exception\CodeBaseException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\Language\Element\Func;
@@ -24,8 +25,6 @@ use function var_export;
  * This plugin checks for invalid format strings and invalid uses of format strings in printf and sprintf, etc.
  * e.g. for printf("literal format %s", $arg)
  *
- * TODO: Take advantage of Phan's ability to resolve union types, warn about printf("%d", $strVar)
- *
  * This uses ConversionSpec as a best effort at determining the the positions used by PHP format strings.
  * Some edge cases may have been overlooked.
  *
@@ -36,9 +35,8 @@ use function var_export;
  *
  * This analyzes printf, sprintf, and fprintf.
  *
- * TODO: Analyze vprintf, vsprintf, and vfprintf (and any other built in class methods?)
- *
  * TODO: Add optional verbose warnings about unanalyzable strings
+ * TODO: Check if arg can cast to string.
  */
 class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability {
 
@@ -59,6 +57,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     /**
      * People who have translations may subclass this plugin and return a mapping from other locales to those locales translations of $fmt_str.
      * @return string[] mapping locale to the translation (e.g. ['fr_FR' => 'Bonjour'] for $fmt_str == 'Hello')
+     * @suppress PhanPluginUnusedVariable
      */
     protected static function gettextForAllLocales(string $fmt_str)
     {
@@ -335,7 +334,6 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         };
 
         // Check for extra or missing arguments
-        $emitted = false;
         if (\is_array($arg_nodes) && \count($arg_nodes) === 0) {
             if (count($specs) > 0) {
                 $largest_positional = \max(\array_keys($specs));
@@ -469,6 +467,24 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                 }
                 if ($actual_union_type->canCastToUnionType($expected_union_type)) {
                     continue;
+                }
+                if (isset($expected_set['string'])) {
+                    $can_cast_to_string = false;
+                    // Allow passing objects with __toString() to printf whether or not strict types are used in the caller.
+                    // TODO: Move into a common helper method?
+                    try {
+                        foreach ($actual_union_type->asExpandedTypes($code_base)->asClassList($code_base, $context) as $clazz) {
+                            if ($clazz->hasMethodWithName($code_base, '__toString')) {
+                                $can_cast_to_string = true;
+                                break;
+                            }
+                        }
+                    } catch (CodeBaseException $e) {
+                        // Swallow "Cannot find class", go on to emit issue.
+                    }
+                    if ($can_cast_to_string) {
+                        continue;
+                    }
                 }
 
                 $expected_union_type_string = (string)$expected_union_type;
@@ -636,11 +652,30 @@ class ConversionSpec {
      */
     protected function __construct(array $match)
     {
-        list($this->directive, $position_str, $this->padding_char, $this->width, $this->alignment, $precision, $this->arg_type) = $match;
+        list($this->directive, $position_str, $this->padding_char, $this->alignment, $this->width, $unused_precision, $this->arg_type) = $match;
         if ($position_str !== "") {
             $this->position = \intval(\substr($position_str, 0, -1));
         }
     }
+
+    // A padding string regex may be a space or 0.
+    // Alternate padding specifiers may be specified by prefixing it with a single quote.
+    const padding_string_regex_part ='[0 ]?|\'.';
+
+    /**
+     * Based on https://secure.php.net/manual/en/function.sprintf.php
+     */
+    const format_string_inner_regex_part =
+        '%'  // Every format string begins with a percent
+        . '(\d+\$)?'  // Optional n$ position specifier must go immediately after percent
+        . '(' . self::padding_string_regex_part . ')'  // optional padding specifier
+        . '([+-]?)' // optional alignment specifier
+        . '(\d*)'  // optional width specifier
+        . '(\.\d*)?'   // Optional precision specifier in the form of a period followed by an optional decimal digit string
+        . '([bcdeEfFgGosuxX])';  // A type specifier
+
+
+    const format_string_regex = '/%%|' . self::format_string_inner_regex_part . '/';
 
     /**
      * Extract a list of directives from a format string.
@@ -651,8 +686,7 @@ class ConversionSpec {
     {
         // echo "format is $fmt_str\n";
         $directives = [];
-        $n = \preg_match_all('/%%|%(\d+\$)?([0 ]?)(\d*)([+-]?)(\.\d*)?([bcdeEfFgGosuxX])/', (string) $fmt_str, $matches, PREG_SET_ORDER);
-        // var_export($matches); return;
+        \preg_match_all(self::format_string_regex, (string) $fmt_str, $matches, PREG_SET_ORDER);
         $unnamed_count = 0;
         foreach ($matches as $match) {
             if ($match[0] === '%%') { continue; }

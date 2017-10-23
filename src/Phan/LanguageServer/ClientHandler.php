@@ -78,7 +78,6 @@ class ClientHandler
      */
     public function notify(string $method, $params): Promise
     {
-        $id = $this->idGenerator->generate();
         return $this->protocolWriter->write(
             new Protocol\Message(
                 new AdvancedJsonRpc\Notification($method, (object)$params)

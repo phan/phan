@@ -2,9 +2,9 @@
 namespace Phan\Debug;
 
 readline_completion_function(function($input) {
-    $matches = array();
-    foreach (get_declared_classes() as $i => $className) {
-        if (strpos($className, $input) == 0) {
+    $matches = [];
+    foreach (\get_declared_classes() as $className) {
+        if (\strpos($className, $input) == 0) {
             $matches[] = $className;
         }
     }

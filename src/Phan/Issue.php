@@ -1922,6 +1922,7 @@ class Issue
     /**
      * @param Issue[] $error_list
      * @return void
+     * @suppress PhanPluginUnusedVariable (error_map and unique_type_id_set)
      */
     private static function sanityCheckErrorList(array $error_list)
     {

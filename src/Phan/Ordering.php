@@ -5,6 +5,11 @@ use Phan\Library\Hasher;
 use Phan\Library\Hasher\Consistent;
 use Phan\Library\Hasher\Sequential;
 
+/**
+ * This determines the order in which files will be analyzed.
+ * Affected by `consistent_hashing_file_order` and `randomize_file_order`.
+ * By default, files are analyzed in the same order as `.phan/config.php`
+ */
 class Ordering
 {
     /** @var CodeBase */
@@ -62,7 +67,7 @@ class Ordering
 
         // Create a Set from the file list
         $analysis_file_map = [];
-        foreach ($analysis_file_list as $i => $file) {
+        foreach ($analysis_file_list as $file) {
             $analysis_file_map[$file] = true;
         }
 
@@ -73,12 +78,7 @@ class Ordering
         $file_names_for_classes = [];
 
         // Iterate over each class extracting files
-        foreach ($this->code_base->getClassMap() as $fqsen => $class) {
-
-            // We won't be analyzing internal stuff
-            if ($class->isPHPInternal()) {
-                continue;
-            }
+        foreach ($this->code_base->getUserDefinedClassMap() as $class) {
 
             // Get the name of the file associated with the class
             $file_name = $class->getContext()->getFile();

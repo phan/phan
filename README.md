@@ -20,10 +20,9 @@ composer require --dev phan/phan
 With Phan installed, you'll want to [create a `.phan/config.php` file](https://github.com/phan/phan/wiki/Getting-Started#creating-a-config-file) in
 your project to tell Phan how to analyze your source code. Once configured, you can run it via `./vendor/bin/phan`.
 
-This branch of Phan depends on PHP 7.0.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.4 or newer, uses AST version 40). Take a look at later versions of Phan for PHP 7.1+ support.
+This branch of Phan depends on PHP 7.0.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50). Take a look at later versions of Phan (0.10.0+) for PHP 7.1+ support.
 It is unable to analyze code from PHP 7.1.x+.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
-The 0.10.x releases are more up to date, but require newer versions of php-ast (0.1.5 or newer. These releases may not work with older third party phan plugins)
 Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (or to support daemon mode).
 
 * **Alternative Installation Methods**<br />
@@ -40,16 +39,16 @@ Phan is able to perform the following kinds of analysis.
 
 * Check that all methods, functions, classes, traits, interfaces, constants, properties and variables are defined and accessible.
 * Check for type safety and arity issues on method/function/closure calls.
-* Check for PHP7/PHP5 backward compatibility
-* Check for sanity with array accesses
-* Check for type safety on binary operations
-* Check for valid and type safe return values on methods, functions, and closures
+* Check for PHP7/PHP5 backward compatibility.
+* Check for sanity with array accesses.
+* Check for type safety on binary operations.
+* Check for valid and type safe return values on methods, functions, and closures.
 * Check for No-Ops on arrays, closures, constants, properties, variables.
-* Check for unused/dead code.
-* Check for classes, functions and methods being redefined
+* Check for unused/dead/[unreachable](https://github.com/phan/phan/tree/master/.phan/plugins#unreachablecodepluginphp) code. (Pass in `--dead-code-detection`)
+* Check for classes, functions and methods being redefined.
 * Check for sanity with class inheritance (e.g. checks method signature compatibility).
   Phan also checks for final classes/methods being overridden, and that the implemented interface is really a interface (and so on).
-* Supports namespaces, traits and variadics
+* Supports namespaces, traits and variadics.
 * Supports [Union Types](https://github.com/phan/phan/wiki/About-Union-Types)
 * Supports generic arrays such as `int[]`, `UserObject[]`, etc..
 * Supports phpdoc [type annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code)
@@ -63,6 +62,7 @@ Phan is able to perform the following kinds of analysis.
 * Supports [magic @method annotations](https://github.com/phan/phan/wiki/Annotating-Your-Source-Code#method) (`@method <union_type> <method_name>(<union_type> <param1_name>)`)
 * Supports [`class_alias` annotations (experimental, off by default)](https://github.com/phan/phan/pull/586)
 * Supports indicating the class to which a closure will be bound, via `@phan-closure-scope` ([example](tests/files/src/0264_closure_override_context.php))
+* Supports analysis of closures and return types passed to `array_map`, `array_filter`, and other internal array functions. (as of Phan 0.10.1+/0.8.9+)
 * Offers extensive configuration for weakening the analysis to make it useful on large sloppy code bases
 * Can be run on many cores. (requires `pcntl`)
 * [Can run in the background (daemon mode)](https://github.com/phan/phan/wiki/Using-Phan-Daemon-Mode), to then quickly respond to requests to analyze the latest version of a file.
@@ -82,6 +82,21 @@ Take a look at the [Tutorial for Analyzing a Large Sloppy Code Base](https://git
 See the [tests](https://github.com/phan/phan/blob/master/tests/files) directory for some examples of the various checks.
 
 Phan is imperfect and shouldn't be used to prove that your PHP-based rocket guidance system is free of defects.
+
+## Features provided by plugins
+
+Additional analysis features have been provided by [plugins](https://github.com/phan/phan/tree/master/.phan/plugins#plugins).
+
+- [Unused variable detection](https://github.com/mattriverm/PhanUnusedVariable) (external, see [#345](https://github.com/phan/phan/issues/345))
+- [Checking for syntactically unreachable statements](https://github.com/phan/phan/tree/master/.phan/plugins#unreachablecodepluginphp) (E.g. `{ throw new Exception("Message"); return $value; }`)
+- [Checking `*printf()` format strings against the provided arguments](https://github.com/phan/phan/tree/master/.phan/plugins#printfcheckerplugin) (as well as checking for common errors)
+- [Checking that PCRE regexes passed to `preg_*()` are valid](https://github.com/phan/phan/tree/master/.phan/plugins#pregregexcheckerplugin)
+- [Checking for `@suppress` annotations that are no longer needed.](https://github.com/phan/phan/tree/master/.phan/plugins#unusedsuppressionpluginphp)
+- [Checking for duplicate or missing array keys.](https://github.com/phan/phan/tree/master/.phan/plugins#duplicatearraykeypluginphp)
+- [Checking coding style conventions](https://github.com/phan/phan/tree/master/.phan/plugins#3-plugins-specific-to-code-styles)
+- [Others](https://github.com/phan/phan/tree/master/.phan/plugins#plugins)
+
+Example: [Phan's plugins for self-analysis.](https://github.com/phan/phan/blob/0.10.1/.phan/config.php#L433-L447)
 
 # Usage
 
@@ -124,6 +139,17 @@ return [
     //       to `exclude_analysis_directory_list`.
     "exclude_analysis_directory_list" => [
         'vendor/'
+    ],
+
+    // A list of plugin files to execute.
+    // See https://github.com/phan/phan/tree/master/.phan/plugins for even more.
+    // (Pass these in as relative paths)
+    'plugins' => [
+        // checks if a function, closure or method unconditionally returns.
+        'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php',
+        // Checks for syntactically unreachable statements in
+        // the global scope or function bodies.
+        'vendor/phan/phan/.phan/plugins/UnreachableCodePlugin.php',
     ],
 ];
 ```
@@ -190,7 +216,8 @@ Usage: ./phan [options] [files...]
   Output filename
 
  --color
-  Add colors to the outputted issues. Tested for Unix, recommended for only the default --output-mode ('text')
+  Add colors to the outputted issues. Tested in Unix.
+  This is recommended for only the default --output-mode ('text')
 
  -p, --progress-bar
   Show progress bar

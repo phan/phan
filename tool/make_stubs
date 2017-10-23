@@ -78,10 +78,6 @@ EOT;
         echo "// @phan-stub-for-extension $extension_name@$extension_version\n";
         echo "\n";
 
-        $class_map = $code_base->getClassMap();
-        $function_map = $code_base->getFunctionMap();
-        $const_map = $code_base->getGlobalConstantMap();
-
         foreach ($reflection_extension->getClassNames() as $class_name) {
             [$namespace, $name] = self::extractNamespaceAndName($class_name);
             $class_fqsen = FullyQualifiedClassName::make($namespace, $name);

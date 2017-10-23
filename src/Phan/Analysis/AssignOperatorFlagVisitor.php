@@ -108,10 +108,50 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     }
 
     public function visitBinaryBitwiseAnd(Node $node) {
+        $left = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['var']
+        );
+
+        $right = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['expr']
+        );
+        if ($left->hasType(IntType::instance(false))
+            && $right->hasType(IntType::instance(false))
+        ) {
+            return IntType::instance(false)->asUnionType();
+        } else if ($left->hasType(StringType::instance(false)) &&
+            $right->hasType(StringType::instance(false))) {
+            // $x = 'a'; $x &= 'c';
+            return StringType::instance(false)->asUnionType();
+        }
         return IntType::instance(false)->asUnionType();
     }
 
     public function visitBinaryBitwiseOr(Node $node) {
+        $left = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['var']
+        );
+
+        $right = UnionType::fromNode(
+            $this->context,
+            $this->code_base,
+            $node->children['expr']
+        );
+        if ($left->hasType(IntType::instance(false))
+            && $right->hasType(IntType::instance(false))
+        ) {
+            return IntType::instance(false)->asUnionType();
+        } else if ($left->hasType(StringType::instance(false)) &&
+            $right->hasType(StringType::instance(false))) {
+            // $x = 'a'; $x |= 'c';
+            return StringType::instance(false)->asUnionType();
+        }
         return IntType::instance(false)->asUnionType();
     }
 

@@ -12,6 +12,14 @@ use Phan\Output\IssueCollectorInterface;
 use Phan\Output\IssuePrinterInterface;
 use Phan\Plugin\ConfigPluginSet;
 
+/**
+ * This executes the the parse, method/function, then the analysis phases.
+ *
+ * This is the entry point of Phan's implementation.
+ * Implementations such as `./phan` or the code climate integration call into this.
+ *
+ * @see self::analyzeFileList
+ */
 class Phan implements IgnoredFilesFilterInterface {
 
     /** @var IssuePrinterInterface */
@@ -86,6 +94,9 @@ class Phan implements IgnoredFilesFilterInterface {
         $is_daemon_request = Config::getValue('daemonize_socket') || Config::getValue('daemonize_tcp_port');
         $language_server_config = Config::getValue('language_server_config');
         $is_undoable_request = is_array($language_server_config) || $is_daemon_request;
+        if ($is_daemon_request) {
+            $code_base->eagerlyLoadAllSignatures();
+        }
         if ($is_undoable_request) {
             $code_base->enableUndoTracking();
         }

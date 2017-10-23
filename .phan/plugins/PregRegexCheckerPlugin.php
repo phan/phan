@@ -9,7 +9,11 @@ use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use ast\Node;
 
 /**
- * This plugin checks for invalid regexes in preg_match.
+ * This plugin checks for invalid regexes in calls to preg_match. (And all of the other internal PCRE functions).
+ *
+ * This plugin performs this check by attempting to match the empty string,
+ * then checking if PHP emitted a warning (Instead of failing to match)
+ * (PHP doesn't have preg_validate())
  *
  * - getAnalyzeFunctionCallClosures
  *   This method returns a map from function/method FQSEN to closures that are called on invocations of those closures.

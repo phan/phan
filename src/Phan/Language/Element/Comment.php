@@ -31,25 +31,19 @@ class Comment
     const ON_METHOD     = 5;
     const ON_FUNCTION   = 6;
 
-    // List of types that are method-like
+    // List of types that are function-like (e.g. have params and function body)
     const FUNCTION_LIKE = [
         self::ON_METHOD,
         self::ON_FUNCTION,
     ];
 
+    // Lists of types that can have (at)var annotations.
     const HAS_VAR_ANNOTATION = [
         self::ON_METHOD,
         self::ON_FUNCTION,
         self::ON_VAR,
         self::ON_PROPERTY,
-        self::ON_CLASS,
         self::ON_CONST,
-    ];
-
-    const VAR_LIKE = [
-        self::ON_VAR,
-        self::ON_PROPERTY,
-        self::ON_CLASS
     ];
 
     const NAME_FOR_TYPE = [
@@ -289,17 +283,20 @@ class Comment
                     $parameter_list[] =
                         self::parameterFromCommentLine($code_base, $context, $line, false, $lineno);
                 }
-            } elseif (\stripos($line, '@var') !== false && preg_match('/@var\b/i', $line)) {
+            } elseif (\stripos($line, '@var') !== false && \preg_match('/@var\b/i', $line)) {
                 $check_compatible('@var', Comment::HAS_VAR_ANNOTATION);
-                $variable_list[] =
-                    self::parameterFromCommentLine($code_base, $context, $line, true, $lineno);
+                $comment_var = self::parameterFromCommentLine($code_base, $context, $line, true, $lineno);
+                if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
+                    $variable_list[] = $comment_var;
+                }
+
             } elseif (\stripos($line, '@template') !== false) {
 
                 // Make sure support for generic types is enabled
                 if (Config::getValue('generic_types_enabled')) {
                     $check_compatible('@template', [Comment::ON_CLASS]);
                     if (($template_type =
-                        self::templateTypeFromCommentLine($context, $line))
+                        self::templateTypeFromCommentLine($line))
                     ) {
                         $template_type_list[] = $template_type;
                     }
@@ -315,7 +312,7 @@ class Comment
                 if (preg_match('/@return\b/i', $line)) {
                     $check_compatible('@return', Comment::FUNCTION_LIKE);
                     $return_union_type =
-                        self::returnTypeFromCommentLine($code_base, $context, $line, $lineno);
+                        self::returnTypeFromCommentLine($context, $line);
                 } else if (\stripos($line, '@returns') !== false) {
                     Issue::maybeEmit(
                         $code_base,
@@ -433,26 +430,18 @@ class Comment
     }
 
     /**
-     * @param CodeBase $code_base
-     * Used for extracting issues.
-     *
      * @param Context $context
      * The context in which the comment line appears
      *
      * @param string $line
      * An individual line of a comment
      *
-     * @param int $lineno
-     * The line number of the element that comment annotates
-     *
      * @return UnionType
      * The declared return type
      */
     private static function returnTypeFromCommentLine(
-        CodeBase $code_base,
         Context $context,
-        string $line,
-        int $lineno
+        string $line
     ) {
         $return_union_type_string = '';
 
@@ -514,16 +503,15 @@ class Comment
         bool $is_var,
         int $lineno
     ) {
-        $match = [];
-        if (preg_match('/@(param|var)\s+(' . UnionType::union_type_regex . ')(\s+(\.\.\.)?\s*(\\$' . self::word_regex . '))?/', $line, $match)) {
+        if (preg_match('/@(param|var)\s+(' . UnionType::union_type_regex . ')(?:\s+(\.\.\.)?\s*(?:\\$' . self::word_regex . '))?/', $line, $match)) {
             $original_type = $match[2];
 
-            $is_variadic = ($match[29] ?? '') === '...';
+            $is_variadic = ($match[16] ?? '') === '...';
 
             if ($is_var && $is_variadic) {
                 $variable_name = '';  // "@var int ...$x" is nonsense and invalid phpdoc.
             } else {
-                $variable_name = $match[31] ?? '';
+                $variable_name = $match[17] ?? '';
             }
             // If the parameter has a type which is labelled as a typo (type maps to ''),
             // then treat it the same way as a parameter without a type in the doc comment.
@@ -573,9 +561,6 @@ class Comment
     }
 
     /**
-     * @param Context $context
-     * The context in which the comment line appears
-     *
      * @param string $line
      * An individual line of a comment
      *
@@ -584,10 +569,10 @@ class Comment
      * wasn't found.
      */
     private static function templateTypeFromCommentLine(
-        Context $context,
         string $line
     ) {
         $match = [];
+        // TODO: Just use word_regex? Backslashes or nested templates wouldn't make sense.
         if (preg_match('/@template\s+(' . Type::simple_type_regex. ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return new TemplateType($template_type_identifier);
@@ -661,7 +646,7 @@ class Comment
         // https://github.com/phpDocumentor/phpDocumentor2/pull/1271/files - phpdoc allows passing an default value.
         // Phan allows `=.*`, to indicate that a parameter is optional
         // TODO: in another PR, check that optional parameters aren't before required parameters.
-        if (preg_match('/^(' . UnionType::union_type_regex . ')?\s*((\.\.\.)\s*)?(\$' . self::word_regex . ')?((\s*=.*)?)$/', $param_string, $param_match)) {
+        if (preg_match('/^(' . UnionType::union_type_regex . ')?\s*(?:(\.\.\.)\s*)?(?:\$' . self::word_regex . ')?((?:\s*=.*)?)$/', $param_string, $param_match)) {
             // Note: a magic method parameter can be variadic, but it can't be pass-by-reference? (No support in __call)
             $union_type_string = $param_match[1];
             $union_type = UnionType::fromStringInContext(
@@ -669,8 +654,8 @@ class Comment
                 $context,
                 Type::FROM_PHPDOC
             );
-            $is_variadic = $param_match[28] === '...';
-            $default_str = $param_match[31];
+            $is_variadic = $param_match[15] === '...';
+            $default_str = $param_match[17];
             $has_default_value = $default_str !== '';
             if ($has_default_value) {
                 $default_value_repr = trim(explode('=', $default_str, 2)[1]);
@@ -678,7 +663,7 @@ class Comment
                     $union_type = $union_type->nullableClone();
                 }
             }
-            $var_name = $param_match[30];
+            $var_name = $param_match[16];
             if ($var_name === '') {
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
@@ -714,9 +699,9 @@ class Comment
         //    Assumes the parameters end at the first ")" after "("
         //    As an exception, allows one level of matching brackets
         //    to support old style arrays such as $x = array(), $x = array(2) (Default values are ignored)
-        if (preg_match('/@method(\s+(static))?((\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::word_regex . '\s*\((([^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
-            $is_static = $match[2] === 'static';
-            $return_union_type_string = $match[5];
+        if (preg_match('/@method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::word_regex . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
+            $is_static = $match[1] === 'static';
+            $return_union_type_string = $match[2];
             if ($return_union_type_string !== '') {
                 $return_union_type =
                     UnionType::fromStringInContext(
@@ -729,13 +714,14 @@ class Comment
                 // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
                 $return_union_type = VoidType::instance(false)->asUnionType();
             }
-            $method_name = $match[33];
+            $method_name = $match[20];
 
-            $arg_list = trim($match[34]);
+            $arg_list = trim($match[21]);
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {
                 // TODO: Would need to use a different approach if templates were ever supported
+                //       e.g. The magic method parsing doesn't support commas?
                 $params_strings = explode(',', $arg_list);
                 $failed = false;
                 foreach ($params_strings as $i => $param_string) {
@@ -792,10 +778,10 @@ class Comment
         // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
         // TODO: properly handle duplicates...
         // TODO: support read-only/write-only checks elsewhere in the codebase?
-        if (preg_match('/@(property|property-read|property-write)(\s+' . UnionType::union_type_regex . ')?(\s+(\\$' . self::word_regex . '))/', $line, $match)) {
-            $type = ltrim($match[2] ?? '');
+        if (\preg_match('/@(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::word_regex . '))/', $line, $match)) {
+            $type = $match[2] ?? '';
 
-            $property_name = $match[30] ?? '';
+            $property_name = $match[16] ?? '';
             if ($property_name === '') {
                 return null;
             }
@@ -847,7 +833,7 @@ class Comment
         // a Closure would be bound with bind() or bindTo(), so using a custom tag.
         //
         // TODO: Also add a version which forbids using $this in the closure?
-        if (preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . UnionType::union_type_regex . '+)/', $line, $match)) {
+        if (preg_match('/@(PhanClosureScope|phan-closure-scope)\s+(' . UnionType::union_type_regex . ')/', $line, $match)) {
             $closure_scope_union_type_string = $match[2];
         }
 

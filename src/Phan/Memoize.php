@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 namespace Phan;
 
+/**
+ * A utility trait to memoize (cache) the result of instance methods and static methods.
+ */
 trait Memoize
 {
     use Profile;

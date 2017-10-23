@@ -871,7 +871,6 @@ final class ASTConverter {
                 $end_line = $n->getAttribute('endLine') ?: $start_line;
                 $return_type = $n->returnType;
                 $return_type_line = sl($return_type) ?: $end_line;
-                $ast_return_type = self::phpParserTypeToAstNode($return_type, $return_type_line);
 
                 return self::astDeclFunction(
                     $n->byRef,
@@ -1071,7 +1070,6 @@ final class ASTConverter {
             },
             'PhpParser\Node\Stmt\TraitUseAdaptation\Alias' => function(PhpParser\Node\Stmt\TraitUseAdaptation\Alias $n, int $start_line) : ast\Node {
                 $old_class = $n->trait !== null ? self::phpParserNodeToAstNode($n->trait) : null;
-                $flags = ($n->trait instanceof PhpParser\Node\Name\FullyQualified) ? ast\flags\NAME_FQ : ast\flags\NAME_NOT_FQ;
                 // TODO: flags for visibility
                 return new ast\Node(ast\AST_TRAIT_ALIAS, self::phpParserVisibilityToAstVisibility($n->newModifier ?? 0, false), [
                     'method' => new ast\Node(ast\AST_METHOD_REFERENCE, 0, [
@@ -1128,8 +1126,8 @@ final class ASTConverter {
             },
         ];
 
-        foreach ($closures as $key => $value) {
-            assert(class_exists($key), "Class $key should exist");
+        foreach ($closures as $key => $_) {
+            \assert(\class_exists($key), "Class $key should exist");
         }
         return $closures;
     }
@@ -1943,7 +1941,7 @@ final class ASTConverter {
         // TODO: is this applicable?
         if (\is_string($class)) {
             if (substr($class, 0, 1) === '\\') {
-                $expr = substr($class, 1);
+                $class = substr($class, 1);
             }
             $class = new ast\Node(ast\AST_NAME, ast\flags\NAME_FQ, ['name' => $class], $start_line);
         }

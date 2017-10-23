@@ -30,7 +30,7 @@ class Parameter
 
     /**
      * @var bool
-     * Whether or not the parameter is optional (Note: only applies to the comment for (at)method.
+     * Whether or not the parameter is optional (Note: only applies to the comment for (at)method.)
      */
     private $has_default_value;
 
@@ -152,7 +152,7 @@ class Parameter
             $string .= '...';
         }
 
-        $string .= $this->name;
+        $string .= '$' . $this->name;
 
         if ($this->has_default_value) {
             $string .= ' = default';

@@ -14,10 +14,16 @@ use Phan\Language\Scope\BranchScope;
 use Phan\Language\Scope\GlobalScope;
 use Phan\Plugin\ConfigPluginSet;
 use ast\Node;
-use ast\Node\Decl;
 
 /**
  * Analyze blocks of code
+ *
+ * - Uses `\Phan\Analysis\PreOrderAnalysisVisitor` for pre-order analysis of a node (E.g. entering a function to analyze)
+ * - Recursively analyzes child nodes
+ * - Uses `\Phan\Analysis\PostOrderAnalysisVisitor` for post-order analysis of a node (E.g. analyzing a statement with the updated Context and emitting issues)
+ * - If there is more than one possible child context, merges state from them (variable types)
+ *
+ * @see $this->visit
  */
 class BlockAnalysisVisitor extends AnalysisVisitor {
 
@@ -477,7 +483,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
             $child_context_list
         ))($node);
 
-        $context = $this->postOrderAnalyze($context, $node);
+        $unused_final_context = $this->postOrderAnalyze($context, $node);
 
         // Return the initial context as we exit
         return $this->context;
@@ -775,49 +781,49 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
     }
 
     /**
-     * @param Decl $node
+     * @param Node $node
      * An AST node we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitClass(Decl $node) : Context
+    public function visitClass(Node $node) : Context
     {
         return $this->visitClosedContext($node);
     }
 
     /**
-     * @param Decl $node
+     * @param Node $node
      * An AST node we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitMethod(Decl $node) : Context
+    public function visitMethod(Node $node) : Context
     {
         return $this->visitClosedContext($node);
     }
 
     /**
-     * @param Decl $node
+     * @param Node $node
      * An AST node we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitFuncDecl(Decl $node) : Context
+    public function visitFuncDecl(Node $node) : Context
     {
         return $this->visitClosedContext($node);
     }
 
     /**
-     * @param Decl $node
+     * @param Node $node
      * An AST node we'd like to analyze the statements for
      *
      * @return Context
      * The updated context after visiting the node
      */
-    public function visitClosure(Decl $node) : Context
+    public function visitClosure(Node $node) : Context
     {
         return $this->visitClosedContext($node);
     }
