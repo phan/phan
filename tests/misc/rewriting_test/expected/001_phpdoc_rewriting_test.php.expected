@@ -1,0 +1,2 @@
+src/001_phpdoc_rewriting_test.php:8 PhanUndeclaredTypeParameter Parameter of undeclared type \missingClass
+src/001_phpdoc_rewriting_test.php:9 PhanTypeMismatchArgumentInternal Argument 1 (string) is float|int but \strlen() takes string
