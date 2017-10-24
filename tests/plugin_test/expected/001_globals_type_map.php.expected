@@ -1,0 +1,4 @@
+src/001_globals_type_map.php:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Exception|\Throwable but \intdiv() takes int
+src/001_globals_type_map.php:8 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Error|\Throwable but \intdiv() takes int
+src/001_globals_type_map.php:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Exception|\Throwable but \intdiv() takes int
+src/001_globals_type_map.php:15 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is \Error|\Throwable but \intdiv() takes int

@@ -1,0 +1,15 @@
+src/010_printf_types.php:7 PhanPluginPrintfIncompatibleArgumentTypeWeak Format string "Hello, %s" refers to argument #1 as %s, so type string is expected. However, printf was passed the type float (which is weaker than string)
+src/010_printf_types.php:8 PhanPluginPrintfIncompatibleArgumentTypeWeak Format string "Hello, %s" refers to argument #1 as %s, so type string is expected. However, printf was passed the type int (which is weaker than string)
+src/010_printf_types.php:9 PhanPluginPrintfIncompatibleArgumentType Format string "Hello, %s" refers to argument #1 as %s, so type string is expected, but printf was passed incompatible type ?int
+src/010_printf_types.php:9 PhanTypeMismatchArgumentInternal Argument 2 (args) is ?int but \printf() takes float|int|string
+src/010_printf_types.php:10 PhanPluginPrintfIncompatibleArgumentType Format string "Hello, %s" refers to argument #1 as %s, so type string is expected, but printf was passed incompatible type false
+src/010_printf_types.php:10 PhanTypeMismatchArgumentInternal Argument 2 (args) is false but \printf() takes float|int|string
+src/010_printf_types.php:11 PhanPluginPrintfIncompatibleArgumentType Format string "Hello, %s" refers to argument #1 as %s, so type string is expected, but printf was passed incompatible type array
+src/010_printf_types.php:11 PhanTypeMismatchArgumentInternal Argument 2 (args) is array but \printf() takes float|int|string
+src/010_printf_types.php:12 PhanPluginPrintfIncompatibleArgumentTypeWeak Format string "Hello, %f %s" refers to argument #2 as %s, so type string is expected. However, printf was passed the type int (which is weaker than string)
+src/010_printf_types.php:12 PhanPluginPrintfIncompatibleArgumentType Format string "Hello, %f %s" refers to argument #1 as %f, so type float is expected, but printf was passed incompatible type string
+src/010_printf_types.php:13 PhanPluginPrintfIncompatibleArgumentType Format string "Hello, %1$d %1$f" refers to argument #1 as %1$d,%1$f, so type float|int is expected, but printf was passed incompatible type string
+src/010_printf_types.php:13 PhanPluginPrintfIncompatibleSpecifier Format string "Hello, %1$d %1$f" refers to argument #1 in different ways: %1$d,%1$f
+src/010_printf_types.php:15 PhanPluginPrintfUnusedArgument Format string "Hello, %-10d,%+3d" does not use provided argument #3
+src/010_printf_types.php:26 PhanPluginPrintfIncompatibleArgumentType Format string "Hello, %s\n" refers to argument #1 as %s, so type string is expected, but printf was passed incompatible type \Bar
+src/010_printf_types.php:26 PhanTypeMismatchArgumentInternal Argument 2 (args) is \Bar but \printf() takes float|int|string

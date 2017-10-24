@@ -32,10 +32,11 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
     // NOTE: Any exit status must be a combination of at least one of these bits
     // E.g. if STATUS_PROCEED is mixed with STATUS_RETURN, it would mean it is possible both to go to completion or return.
     const STATUS_PROCEED        = (1 << 20);       // At least one branch continues to completion.
-    const STATUS_CONTINUE       = (1 << 21);       // At least one branch leads to a continue statement
-    const STATUS_BREAK          = (1 << 22);       // At least one branch leads to a break statement
-    const STATUS_THROW          = (1 << 23);       // At least one branch leads to a throw statement
-    const STATUS_RETURN         = (1 << 24);       // At least one branch leads to a return/exit() statement (or an infinite loop)
+    const STATUS_GOTO           = (1 << 21);       // At least one branch leads to a goto statement
+    const STATUS_CONTINUE       = (1 << 22);       // At least one branch leads to a continue statement
+    const STATUS_BREAK          = (1 << 23);       // At least one branch leads to a break statement
+    const STATUS_THROW          = (1 << 24);       // At least one branch leads to a throw statement
+    const STATUS_RETURN         = (1 << 25);       // At least one branch leads to a return/exit() statement (or an infinite loop)
 
     const STATUS_THROW_OR_RETURN_BITMASK =
         self::STATUS_THROW |
@@ -43,6 +44,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
 
     // Any status which doesn't lead to proceeding.
     const STATUS_NOT_PROCEED_BITMASK =
+        self::STATUS_GOTO |
         self::STATUS_CONTINUE |
         self::STATUS_BREAK |
         self::STATUS_THROW |
@@ -51,6 +53,10 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
     const STATUS_BITMASK =
         self::STATUS_PROCEED |
         self::STATUS_NOT_PROCEED_BITMASK;
+
+    const STATUS_MAYBE_PROCEED =
+        self::STATUS_PROCEED |
+        self::STATUS_GOTO;
 
     public function __construct() { }
 
@@ -444,6 +450,11 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         return $status;
     }
 
+    public function visitGoto(Node $node)
+    {
+        return self::STATUS_GOTO;
+    }
+
     /**
      * @param \ast\Node[] $block
      * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
@@ -472,7 +483,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
 
     public static function willUnconditionallySkipRemainingStatements(Node $node) : bool
     {
-        return ((new self())($node) & self::STATUS_PROCEED) === 0;
+        return ((new self())($node) & self::STATUS_MAYBE_PROCEED) === 0;
     }
 
     public static function willUnconditionallyThrowOrReturn(Node $node) : bool

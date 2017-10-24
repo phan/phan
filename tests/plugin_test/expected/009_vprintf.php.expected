@@ -1,0 +1,13 @@
+src/009_vprintf.php:6 PhanPluginPrintfNoArguments No format string arguments are given for "%s", consider using fwrite instead
+src/009_vprintf.php:6 PhanPluginPrintfNonexistentArgument Format string "%s" refers to nonexistent argument #1 in "%s"
+src/009_vprintf.php:7 PhanPluginPrintfNoArguments No format string arguments are given for "some literal", consider using echo instead
+src/009_vprintf.php:9 PhanPluginPrintfNonexistentArgument Format string "%d dollars 100% down\n" refers to nonexistent argument #2 in "% d"
+src/009_vprintf.php:9 PhanPluginPrintfNotPercent Format string "%d dollars 100% down\n" contains something that is not a percent sign, it will be treated as a format string '% d' with padding. Use %% for a literal percent sign, or '%2$ d' to be less ambiguous
+src/009_vprintf.php:10 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args" are used
+src/009_vprintf.php:11 PhanPluginPrintfNoSpecifiers None of the formatting arguments passed alongside format string "Not using args" are used
+src/009_vprintf.php:12 PhanPluginPrintfUnusedArgument Format string "Not using %d\n args\n" does not use provided argument #2
+src/009_vprintf.php:14 PhanTypeMismatchArgumentInternal Argument 1 (format) is array but \vprintf() takes string
+src/009_vprintf.php:14 PhanTypeMismatchArgumentInternal Argument 2 (args) is int but \vprintf() takes array
+src/009_vprintf.php:16 PhanPluginPrintfNoArguments No format string arguments are given for "Hello world\n", consider using fwrite instead
+src/009_vprintf.php:18 PhanTypeMismatchArgumentInternal Argument 3 (args) is string but \vfprintf() takes array
+src/009_vprintf.php:19 PhanTypeMismatchArgumentInternal Argument 3 (args) is true but \vfprintf() takes array

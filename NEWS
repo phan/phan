@@ -15,6 +15,7 @@ New Features (CLI, Configs)
 
 Bug Fixes
 + Fixes bugs in PrintfCheckerPlugin: Alignment goes before width, and objects with __toString() can cast to %s. (#1225)
++ Reduce false positives in analysis of gotos, blocks containing gotos anywhere may do something other than return or throw. (#1222)
 
 20 Oct 2017, Phan 0.10.1
 ------------------------

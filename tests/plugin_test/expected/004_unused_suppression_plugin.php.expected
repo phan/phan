@@ -1,0 +1,4 @@
+src/004_unused_suppression_plugin.php:6 UnusedSuppression Element \SuppressionTest suppresses issue PhanPluginNotARealIssue but does not use it
+src/004_unused_suppression_plugin.php:11 UnusedSuppression Element \SuppressionTest::foo suppresses issue PhanParamTooMany but does not use it
+src/004_unused_suppression_plugin.php:23 UnusedSuppression Element \suppression_test_fn suppresses issue PhanParamTooFew but does not use it
+src/004_unused_suppression_plugin.php:27 PhanTypeMismatchArgument Argument 1 (x) is array but \SuppressionTest::bar() takes int defined at src/004_unused_suppression_plugin.php:15
