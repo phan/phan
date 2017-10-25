@@ -27,7 +27,14 @@ abstract class AbstractPhanFileTest
     abstract public function getTestFiles();
 
     /**
-     * Setup our state before running reach test
+     * @return ?string - Can be overwritten by subclasses to get a reason to skip this directory.
+     */
+    public function getSkipReason() {
+        return null;
+    }
+
+    /**
+     * Setup our state before running each test
      *
      * @return void
      */
@@ -74,7 +81,7 @@ abstract class AbstractPhanFileTest
                 function ($filename) use ($sourceDir, $expectedDir) {
                     return [
                         [$sourceDir . DIRECTORY_SEPARATOR . $filename],
-                        $expectedDir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX
+                        $expectedDir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX,
                     ];
                 }, $files
             )
@@ -82,10 +89,9 @@ abstract class AbstractPhanFileTest
     }
 
     /**
-     * This reads all files in `tests/files/src`, runs
+     * This reads all files in a test directory (e.g. `tests/files/src`), runs
      * the analyzer on each and compares the output
-     * to the files's counterpart in
-     * `tests/files/expected`
+     * to the files's counterpart in `tests/files/expected`
      *
      * @param string[] $test_file_list
      * @param string $expected_file_path

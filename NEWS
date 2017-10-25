@@ -1,6 +1,9 @@
 Phan NEWS
+?? ??? 2017, Phan 0.11.0 (dev)
+------------------------
 
-?? ??? 2017, Phan 0.10.2 (dev)
+New Features (Analysis of PHP 7.2)
++ Support analyzing the 'object' type hint in real function/method signatures. (Issue #995)
 
 New Features(Analysis)
 + Support less ambiguous `?(T[])` and `(?T)[]` in phpdoc (#1213)

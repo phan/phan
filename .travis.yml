@@ -8,7 +8,7 @@ php:
 # Group the remaining tests into groups.
 env:
   - TEST_SUITES="PhanTest"
-  - TEST_SUITES="UtilTest RasmusTest LanguageTest"
+  - TEST_SUITES="UtilTest PHP72Test RasmusTest LanguageTest"
   - TEST_SUITES="__FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest"
 
 sudo: false

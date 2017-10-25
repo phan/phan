@@ -27,10 +27,12 @@
         <const name="EXPECTED_DIR" value="./tests/files/expected"/>
         <const name="MULTI_FILE_DIR" value="./tests/multi_files/src"/>
         <const name="MULTI_EXPECTED_DIR" value="./tests/multi_files/expected"/>
-        <const name="SOAP_TEST_FILE_DIR" value="./tests/misc/soap_files/src"/>
-        <const name="SOAP_EXPECTED_DIR" value="./tests/misc/soap_files/expected"/>
-        <const name="INTL_TEST_FILE_DIR" value="./tests/misc/intl_files/src"/>
-        <const name="INTL_EXPECTED_DIR" value="./tests/misc/intl_files/expected"/>
+		<const name="SOAP_TEST_FILE_DIR" value="./tests/misc/soap_files/src"/>
+		<const name="SOAP_EXPECTED_DIR" value="./tests/misc/soap_files/expected"/>
+		<const name="INTL_TEST_FILE_DIR" value="./tests/misc/intl_files/src"/>
+		<const name="INTL_EXPECTED_DIR" value="./tests/misc/intl_files/expected"/>
+        <const name="PHP72_TEST_FILE_DIR" value="./tests/php72_files/src"/>
+        <const name="PHP72_EXPECTED_DIR" value="./tests/php72_files/expected"/>
     </php>
 
     <testsuites>
@@ -59,7 +61,10 @@
             <file>tests/Phan/AnalyzerTest.php</file>
             <directory>tests/Phan/Output/Printer</directory>
             <file>tests/Phan/Library/TupleTest.php</file>
-            <file>tests/Phan/Analysis/BlockExitStatusCheckerTest.php</file>
+			<file>tests/Phan/Analysis/BlockExitStatusCheckerTest.php</file>
+        </testsuite>
+        <testsuite name="PHP72Test">
+            <file>tests/Phan/PHP72Test.php</file>
         </testsuite>
     </testsuites>
     <filter>

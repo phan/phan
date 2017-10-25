@@ -18,6 +18,7 @@ branches:
 
 install:
 - cmd: choco feature enable -n=allowGlobalConfirmation
+# TODO: Switch to php 7.2 when binary tools or https://pecl.php.net/package/ast/0.1.5/windows becomes available for download
 - cmd: mkdir %APPVEYOR_BUILD_FOLDER%\bin
 build_script:
 - cmd: >-
@@ -71,7 +72,7 @@ build_script:
 
 test_script:
 - cmd: cd C:\projects\phan
-- cmd: php composer.phar install
+- cmd: php composer.phar install --ignore-platform-reqs
 - cmd: php phan
 - cmd: .\vendor\bin\phpunit --verbose
 # Verify that a phar can be built and executed under windows

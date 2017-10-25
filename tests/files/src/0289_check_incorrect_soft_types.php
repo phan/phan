@@ -10,7 +10,7 @@ function realResource289() {
     echo intdiv($x, 2);  // warn, this is a resource
 }
 
-// Should warn because this uses an undeclared class with name object
+// Should not warn in php 7.2 - object was added in 7.2.0alpha3
 function readObject289(object $x) {
 }
 
