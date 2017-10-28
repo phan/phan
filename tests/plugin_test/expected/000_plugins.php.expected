@@ -1,7 +1,7 @@
 src/000_plugins.php:4 PhanPluginInstanceOfObject Cannot call instanceof against `object`
 src/000_plugins.php:4 PhanUndeclaredClassInstanceof Checking instanceof against undeclared class \object
 src/000_plugins.php:10 PhanPluginDollarDollar $$ Variables are not allowed.
-src/000_plugins.php:18 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key literal(0) detected in array - the earlier entry will be ignored.
+src/000_plugins.php:18 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(0) detected in array - the earlier entry will be ignored.
 src/000_plugins.php:21 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
 src/000_plugins.php:28 PhanPluginUndeclaredVariableIsset undeclared variable $foo in isset()
 src/000_plugins.php:29 PhanPluginComplexVariableInIsset Unanalyzable complex variable expression in isset
