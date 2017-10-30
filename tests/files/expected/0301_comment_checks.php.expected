@@ -11,4 +11,4 @@
 %s:30 PhanInvalidCommentForDeclarationType The phpdoc comment for @phan-forbid-undeclared-magic-properties cannot occur on a method
 %s:30 PhanInvalidCommentForDeclarationType The phpdoc comment for @property cannot occur on a method
 %s:30 PhanUnextractableAnnotation Saw unextractable annotation for comment * @method int $wrongPlaceForMethod
-%s:38 PhanUnextractableAnnotation Saw unextractable annotation for comment * @param
+%s:38 PhanUndeclaredTypeParameter Parameter of undeclared type \A
