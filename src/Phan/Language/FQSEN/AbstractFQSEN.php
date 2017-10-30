@@ -26,7 +26,7 @@ abstract class AbstractFQSEN implements FQSEN
     }
 
     /**
-     * @param $fqsen_string
+     * @param string $fully_qualified_string
      * An FQSEN string like '\Namespace\Class::method' or
      * 'Class' or 'Class::method'.
      *
@@ -40,14 +40,14 @@ abstract class AbstractFQSEN implements FQSEN
      * @param Context $context
      * The context in which the FQSEN string was found
      *
-     * @param $fqsen_string
+     * @param string $fqsen_string
      * An FQSEN string like '\Namespace\Class::method' or
      * 'Class' or 'Class::method'.
      *
      * @return FQSEN
      */
     abstract public static function fromStringInContext(
-        string $string,
+        string $fqsen_string,
         Context $context
     );
 
