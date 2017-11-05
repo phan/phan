@@ -2,8 +2,32 @@
 
 namespace Phan\Tests;
 
+use Phan\Config;
 
 class PHP72Test extends AbstractPhanFileTest {
+    const overrides = [
+        'allow_method_param_type_widening' => true,
+    ];
+
+    protected $old_values = [];
+
+    public function setUp()
+    {
+        parent::setUp();
+        foreach (self::overrides as $key => $value) {
+            $this->old_values[$key] = Config::getValue($key);
+            Config::setValue($key, $value);
+        }
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        foreach ($this->old_values as $key => $value) {
+            Config::setValue($key, $value);
+        }
+    }
+
     /**
      * This reads all files in a test directory (e.g. `tests/files/src`), runs
      * the analyzer on each and compares the output

@@ -3,7 +3,10 @@ Phan NEWS
 ------------------------
 
 New Features (Analysis of PHP 7.2)
-+ Support analyzing the 'object' type hint in real function/method signatures. (Issue #995)
++ Support analyzing the 'object' type hint in real function/method signatures. (#995)
++ Allow widening an overriding method's param types in php 7.2 branch (#1256)
+  Phan continues warning about `ParamSignatureRealMismatchHasNoParamType` by default, in case a project needs to work with older php releases.
+  Add `'allow_method_param_type_widening' => true` if you wish for Phan to stop emitting that issue category.
 
 New Features(Analysis)
 + Support less ambiguous `?(T[])` and `(?T)[]` in phpdoc (#1213)

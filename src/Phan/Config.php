@@ -162,6 +162,13 @@ class Config
         // This will also check if final methods are overridden, etc.
         'analyze_signature_compatibility' => true,
 
+        // Set this to true to allow contravariance in real parameter types of method overrides
+        // (Users may enable this if analyzing projects that support only php 7.2+)
+        // See https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening
+        // This is false by default. (Will warn if real parameter types are omitted in an override)
+        // TODO: If 'target_php_version' is implemented, automatically infer this if null/not provided.
+        'allow_method_param_type_widening' => false,
+
         // If enabled, inherit any missing phpdoc for types from
         // the parent method if none is provided.
         //
