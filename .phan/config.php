@@ -100,6 +100,12 @@ return [
     // This will also check if final methods are overridden, etc.
     'analyze_signature_compatibility' => true,
 
+    // Set this to true to allow contravariance in real parameter types of method overrides (Introduced in php 7.2)
+    // See https://secure.php.net/manual/en/migration72.new-features.php#migration72.new-features.param-type-widening
+    // (Users may enable this if analyzing projects that support only php 7.2+)
+    // This is false by default. (Will warn if real parameter types are omitted in an override)
+    'allow_method_param_type_widening' => false,
+
     // This setting maps case insensitive strings to union types.
     // This is useful if a project uses phpdoc that differs from the phpdoc2 standard.
     // If the corresponding value is the empty string, Phan will ignore that union type (E.g. can ignore 'the' in `@return the value`)

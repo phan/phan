@@ -540,20 +540,23 @@ class ParameterTypesAnalyzer
             $o_parameter_union_type = $o_parameter->getUnionType();
             $parameter_union_type = $parameter->getUnionType();
             if ($parameter_union_type->isEmpty() != $o_parameter_union_type->isEmpty()) {
-                $is_possibly_compatible = false;
                 if ($parameter_union_type->isEmpty()) {
-                    self::emitSignatureRealMismatchIssue(
-                        $code_base,
-                        $method,
-                        $o_method,
-                        Issue::ParamSignatureRealMismatchHasNoParamType,
-                        Issue::ParamSignatureRealMismatchHasNoParamTypeInternal,
-                        Issue::ParamSignaturePHPDocMismatchHasNoParamType,
-                        $offset,
-                        (string)$o_parameter_union_type
-                    );
+                    if (Config::getValue('allow_method_param_type_widening') === false) {
+                        $is_possibly_compatible = false;
+                        self::emitSignatureRealMismatchIssue(
+                            $code_base,
+                            $method,
+                            $o_method,
+                            Issue::ParamSignatureRealMismatchHasNoParamType,
+                            Issue::ParamSignatureRealMismatchHasNoParamTypeInternal,
+                            Issue::ParamSignaturePHPDocMismatchHasNoParamType,
+                            $offset,
+                            (string)$o_parameter_union_type
+                        );
+                    }
                     continue;
                 } else {
+                    $is_possibly_compatible = false;
                     self::emitSignatureRealMismatchIssue(
                         $code_base,
                         $method,
