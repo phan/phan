@@ -266,6 +266,9 @@ class ParameterTypesAnalyzer
 
         // If parameter counts match, check their types
         } else {
+            $real_parameter_list = $method->getRealParameterList();
+            $o_real_parameter_list = $o_method->getRealParameterList();
+
             foreach ($method->getParameterList() as $i => $parameter) {
 
                 if (!isset($o_parameter_list[$i])) {
@@ -281,25 +284,36 @@ class ParameterTypesAnalyzer
                     break;
                 }
 
+                // Variadic parameters must match up.
+                if ($o_parameter->isVariadic() !== $parameter->isVariadic()) {
+                    $signatures_match = false;
+                    break;
+                }
+
+                // Check for the presence of real types first, warn if the override has a type but the original doesn't.
+                $o_real_parameter = $o_real_parameter_list[$i] ?? null;
+                $real_parameter = $real_parameter_list[$i] ?? null;
+                if ($o_real_parameter !== null && $real_parameter !== null && !$real_parameter->getUnionType()->isEmpty() && $o_real_parameter->getUnionType()->isEmpty()) {
+                    $signatures_match = false;
+                    break;
+                }
+
                 // A stricter type on an overriding method is cool
-                // TODO: This doesn't match the definition of LSP.
-                // - If you use a stricter param type, you can't call the subclass with args you could call the base class with.
-                if ($o_parameter->getUnionType()->isEmpty()
-                    || $o_parameter->getUnionType()->isType(MixedType::instance(false))
+                if ($parameter->getUnionType()->isEmpty()
+                    || $parameter->getUnionType()->isType(MixedType::instance(false))
                 ) {
                     continue;
                 }
 
-                // TODO: check variadic.
+                if ($o_parameter->getUnionType()->isEmpty() || $o_parameter->getUnionType()->isType(MixedType::instance(false))) {
+                    continue;
+                }
 
-                // Its not OK to have a more relaxed type on an
-                // overriding method
+                // In php 7.2, it's ok to have a more relaxed type on an overriding method.
+                // In earlier versions it isn't.
+                // Because this check is analyzing phpdoc types, so it's fine for php < 7.2 as well. Use `PhanParamSignatureRealMismatch*` for detecting **real** mismatches.
                 //
                 // https://3v4l.org/XTm3P
-                if ($parameter->getUnionType()->isEmpty()) {
-                    $signatures_match = false;
-                    break;
-                }
 
                 // If we have types, make sure they line up
                 //
@@ -318,6 +332,8 @@ class ParameterTypesAnalyzer
 
         // Return types should be mappable for LSP
         // Note: PHP requires return types to be identical
+        // The return type should be stricter than or identical to the overridden union type.
+        // E.g. there is no issue if the overridden return type is empty.
         if (!$o_return_union_type->isEmpty()) {
 
             if (!$method->getUnionType()->asExpandedTypes($code_base)->canCastToUnionType(

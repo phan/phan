@@ -20,6 +20,8 @@ Bug Fixes
 + Fixes bugs in PrintfCheckerPlugin: Alignment goes before width, and objects with __toString() can cast to %s. (#1225)
 + Reduce false positives in analysis of gotos, blocks containing gotos anywhere may do something other than return or throw. (#1222)
 + Fix a crash when a magic method with a return type has the same name as a real method.
++ Allow methods to have weaker PHPdoc types than the overridden method in `PhanParamSignatureMismatch`. (#1253)
+  `PhanParamSignatureRealMismatch*` is unaffected, and will continue working the same way in Phan releases analyzing PHP < 7.2.
 
 20 Oct 2017, Phan 0.10.1
 ------------------------
