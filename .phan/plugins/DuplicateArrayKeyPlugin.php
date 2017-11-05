@@ -3,6 +3,7 @@
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
+use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\PluginV2;
@@ -62,10 +63,20 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
             if ($key instanceof ast\Node && in_array($key->kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST], true)) {
                 // if key is constant, take it in account
                 $constant = new ContextNode($this->code_base, $this->context, $key);
-                if ($key->kind === \ast\AST_CLASS_CONST) {
-                    $key = $constant->getClassConst()->getNodeForValue();
-                } else {
-                    $key = $constant->getConst()->getNodeForValue();
+                try {
+                    if ($key->kind === \ast\AST_CLASS_CONST) {
+                        $key = $constant->getClassConst()->getNodeForValue();
+                    } else {
+                        $key = $constant->getConst()->getNodeForValue();
+                    }
+                } catch (IssueException $e) {
+                    // This is redundant, but do it anyway
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $e->getIssueInstance()
+                    );
+                    continue;
                 }
             }
             // Skip array entries without literal keys.
