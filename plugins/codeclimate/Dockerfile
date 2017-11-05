@@ -26,7 +26,7 @@
 
 FROM alpine:3.6
 
-ADD repositories /etc/lder/Dockerfileapk
+ENV LAST_MODIFIED_DATE 2017-11-05
 
 RUN apk --update add bash \
 	wget \

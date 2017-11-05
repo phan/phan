@@ -117,4 +117,4 @@ $collector = new BufferingCollector($filter);
 Phan::setIssueCollector($collector);
 
 // Analyze the file list provided via the CLI
-Phan::analyzeFileList($code_base, $include_paths);
+Phan::analyzeFileList($code_base, function() use($include_paths) { return $include_paths; });
