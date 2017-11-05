@@ -1314,6 +1314,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             }
 
             if (!$method->isAbstract()
+                && !$method->isFromPHPDoc()
                 && !$has_interface_class
                 && !$return_type->isEmpty()
                 && !$method->getHasReturn()
