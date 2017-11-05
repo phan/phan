@@ -1,0 +1,3 @@
+%s:33 PhanParamSignatureRealMismatchReturnType Declaration of function f3() should be compatible with function f3() : string (method returning '' cannot override method returning 'string') defined in %s:13
+%s:42 PhanParamSignatureMismatch Declaration of function bar(\stdClass $x) should be compatible with function bar($x) defined in %s:19
+%s:42 PhanParamSignatureRealMismatchHasParamType Declaration of function bar(\stdClass $x) should be compatible with function bar($x) (parameter #1 has type '\stdClass' cannot replace original parameter with no type) defined in %s:19
