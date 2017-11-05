@@ -88,6 +88,9 @@ ADD ast.ini /etc/php7/conf.d
 
 WORKDIR /usr/src/app
 
+# Increment the last digit when updating codeclimate docker images.
+ENV PHAN_ITERATION 0.10.2-dev-1
+
 RUN git clone https://github.com/phan/phan.git .
 COPY engine /usr/src/app/plugins/codeclimate/engine
 
