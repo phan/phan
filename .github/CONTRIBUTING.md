@@ -9,3 +9,5 @@ declare(strict_types=1)
 Pull requests that come with tests are great.
 
 Issues that come with simplified failing code are great, but don't let that stop you from submitting issues if you can't get a simple case.
+
+[Frequently Asked Questions (Wiki)](https://github.com/phan/phan/wiki/Frequently-Asked-Questions) contains answers to some common questions/bug reports about Phan.
