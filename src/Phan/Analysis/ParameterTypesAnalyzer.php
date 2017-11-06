@@ -177,7 +177,14 @@ class ParameterTypesAnalyzer
     ) {
         if ($o_method->isFinal()) {
             // Even if it is a constructor, verify that a method doesn't override a final method.
+            // TODO: different warning for trait (#1126)
             self::warnOverridingFinalMethod($code_base, $method, $class, $o_method);
+        }
+
+        // Don't bother warning about incompatible signatures for private methods.
+        // (But it is an error to override a private final method)
+        if ($o_method->isPrivate()) {
+            return;
         }
 
         // Unless it is an abstract constructor,
