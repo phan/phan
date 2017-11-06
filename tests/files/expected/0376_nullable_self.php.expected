@@ -1,0 +1,1 @@
+%s:22 PhanTypeMismatchReturn Returning type \stdClass but test() is declared to return ?\MyClass376

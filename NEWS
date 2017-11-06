@@ -20,6 +20,7 @@ Bug Fixes
 + Allow methods to have weaker PHPdoc types than the overridden method in `PhanParamSignatureMismatch`. (#1253)
   `PhanParamSignatureRealMismatch*` is unaffected, and will continue working the same way in Phan releases analyzing PHP < 7.2.
 + Stop warning about `PhanParamSignatureMismatch`, etc. for private methods. The private methods don't affect each other. (#1250)
++ Properly parse `?self` as a *nullable* instance of the current class in union types (#1264)
 
 20 Oct 2017, Phan 0.10.1
 ------------------------
