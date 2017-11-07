@@ -22,6 +22,9 @@ Bug Fixes
 + Stop warning about `PhanParamSignatureMismatch`, etc. for private methods. The private methods don't affect each other. (#1250)
 + Properly parse `?self` as a *nullable* instance of the current class in union types (#1264)
 
+Plugins
++ Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)
+
 20 Oct 2017, Phan 0.10.1
 ------------------------
 
