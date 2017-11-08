@@ -37,8 +37,6 @@ ENV PHP_AST_VERSION=0.1.6
 # Increment the last digit when updating codeclimate docker images.
 ENV PHAN_ITERATION 0.10.2-dev-1
 
-ADD plugins/codeclimate/ast.ini /etc/php7/conf.d
-
 RUN apk add --no-cache \
 	php7 && \
 	test -d /etc/php7/conf.d || ((test -e /etc/php7/conf.d && rm /etc/php7/conf.d) && mkdir /etc/php7/conf.d)	&& \
