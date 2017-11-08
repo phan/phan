@@ -2244,18 +2244,18 @@ class Clazz extends AddressableElement
         }
 
         // Create the 'class' constant
-        $this->addConstant($code_base,
-            new ClassConstant(
-                $this->getContext(),
-                'class',
-                StringType::instance(false)->asUnionType(),
-                0,
-                FullyQualifiedClassConstantName::make(
-                    $this->getFQSEN(),
-                    'class'
-                )
+        $class_constant = new ClassConstant(
+            $this->getContext(),
+            'class',
+            StringType::instance(false)->asUnionType(),
+            0,
+            FullyQualifiedClassConstantName::make(
+                $this->getFQSEN(),
+                'class'
             )
         );
+        $class_constant->setNodeForValue((string)$this->getFQSEN());
+        $this->addConstant($code_base, $class_constant);
 
         // Add variable '$this' to the scope
         $this->getInternalScope()->addVariable(

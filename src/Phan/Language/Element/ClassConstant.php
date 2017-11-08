@@ -8,6 +8,8 @@ use Phan\Language\UnionType;
 
 class ClassConstant extends ClassElement implements ConstantInterface
 {
+    use ConstantTrait;
+
     /**
      * @param Context $context
      * The context in which the structural element lives
@@ -25,8 +27,8 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * ast\kind_uses_flags() can be used to determine whether
      * a certain kind has a meaningful flags value.
      *
-     * @param FQSEN $fqsen
-     * A fully qualified name for the element
+     * @param FullyQualifiedClassConstantName $fqsen
+     * A fully qualified name for the class constant
      */
     public function __construct(
         Context $context,
@@ -43,9 +45,11 @@ class ClassConstant extends ClassElement implements ConstantInterface
             $fqsen
         );
 
+        // Presume that this is the original definition
+        // of this class constant, and let it be overwritten
+        // if it isn't.
         $this->setDefiningFQSEN($fqsen);
     }
-    use ConstantTrait;
 
     /**
      * Override the default getter to fill in a future

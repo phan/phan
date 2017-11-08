@@ -185,6 +185,22 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
+     * Copy addressable references from an element of the same subclass
+     * @return void
+     */
+    public function copyReferencesFrom(AddressableElement $element)
+    {
+        if ($this === $element) {
+            // Should be impossible
+            return;
+        }
+        $reference_list = $element->reference_list;
+        foreach ($reference_list as $file_ref) {
+            $this->reference_list[] = $file_ref;
+        }
+    }
+
+    /**
      * @return FileRef[]
      * A list of references to this typed structural element.
      */
@@ -208,7 +224,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function getReferenceCount(
         CodeBase $code_base
     ) : int {
-        return count($this->reference_list);
+        return \count($this->reference_list);
     }
 
     /**

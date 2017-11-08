@@ -1,0 +1,5 @@
+src/015_trait_method.php:9 PhanUnreferencedMethod Possibly zero references to method \T15::fn2
+src/015_trait_method.php:19 PhanUnreferencedConstant Possibly zero references to constant \I15::CI2
+src/015_trait_method.php:31 PhanUnreferencedMethod Possibly zero references to method \Base15::baseInstanceMethod2
+src/015_trait_method.php:35 PhanUnreferencedConstant Possibly zero references to constant \Base15::C2
+src/015_trait_method.php:37 PhanUnreferencedProperty Possibly zero references to property \Base15::p2

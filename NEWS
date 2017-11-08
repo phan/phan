@@ -21,6 +21,10 @@ Bug Fixes
   `PhanParamSignatureRealMismatch*` is unaffected, and will continue working the same way in Phan releases analyzing PHP < 7.2.
 + Stop warning about `PhanParamSignatureMismatch`, etc. for private methods. The private methods don't affect each other. (#1250)
 + Properly parse `?self` as a *nullable* instance of the current class in union types (#1264)
++ Stop erroneously warning about inherited constants being unused in subclasses for dead code detection (#1260)
++ For dead code detection, properly track uses of inherited class elements (methods, properties, classes) as uses of the original definition. (#1108)
+  Fix the way that uses of private/protected methods from traits were tracked.
+  Also, start warning about a subset of issues from interfaces and abstract classes (e.g. unused interface constants)
 
 Plugins
 + Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)

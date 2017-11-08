@@ -185,7 +185,8 @@ class Analysis
         // \ast\AST_GROUP_USE has \ast\AST_USE as a child.
         // We don't want to use block twice in the parse phase.
         // (E.g. `use MyNS\{const A, const B}` would lack the MyNs part if this were to recurse.
-        if ($kind === \ast\AST_GROUP_USE) {
+        // And \ast\AST_DECLARE has AST_CONST_DECL as a child, so don't parse a constant declaration either.
+        if ($kind === \ast\AST_GROUP_USE || $kind === \ast\AST_DECLARE) {
             return $context;
         }
 

@@ -44,6 +44,11 @@ class Property extends ClassElement
             $fqsen
         );
 
+        // Presume that this is the original definition
+        // of this property, and let it be overwritten
+        // if it isn't.
+        $this->setDefiningFQSEN($fqsen);
+
         // Set an internal scope, so that issue suppressions can be placed on property doc comments.
         // (plugins acting on properties would then pick those up).
         // $fqsen is used to locate this property.
