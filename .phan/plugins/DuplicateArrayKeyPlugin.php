@@ -60,6 +60,11 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
                 continue;  // Triggered by code such as `list(, $a) = $expr`. In php 7.1, the array and list() syntax was unified.
             }
             $key = $entry->children['key'];
+            // Skip array entries without literal keys. (Do it before resolving the key value)
+            if ($key === null) {
+                $hasEntryWithoutKey = true;
+                continue;
+            }
             if ($key instanceof ast\Node && in_array($key->kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST], true)) {
                 // if key is constant, take it in account
                 $constant = new ContextNode($this->code_base, $this->context, $key);
@@ -68,6 +73,9 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
                         $key = $constant->getClassConst()->getNodeForValue();
                     } else {
                         $key = $constant->getConst()->getNodeForValue();
+                    }
+                    if ($key === null) {
+                        $key = '';
                     }
                 } catch (IssueException $e) {
                     // This is redundant, but do it anyway
@@ -78,11 +86,6 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
                     );
                     continue;
                 }
-            }
-            // Skip array entries without literal keys.
-            if ($key === null) {
-                $hasEntryWithoutKey = true;
-                continue;
             }
             if (!is_scalar($key)) {
                 // Skip non-literal keys.

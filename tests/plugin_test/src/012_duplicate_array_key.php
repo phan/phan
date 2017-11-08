@@ -19,4 +19,11 @@ $a = [
     Test::FALSE => false,
     A => true,
     B => false,
+    false => 11,
+    true => 13,
+    null => 14,
+    '' => 15,
+    // Could analyze these later, but not doing that yet. For now, just check that this doesn't warn.
+    __FILE__ => 15,
+    __LINE__ => 15,
 ];
