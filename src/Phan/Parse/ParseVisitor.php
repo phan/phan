@@ -615,6 +615,7 @@ class ParseVisitor extends ScopeVisitor
     {
         foreach ($node->children ?? [] as $child_node) {
             \assert($child_node instanceof Node);
+
             $this->addConstant(
                 $child_node,
                 $child_node->children['name'],

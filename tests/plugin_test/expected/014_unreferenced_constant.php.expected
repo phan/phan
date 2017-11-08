@@ -1,0 +1,1 @@
+src/014_unreferenced_constant.php:5 PhanUnreferencedConstant Possibly zero references to constant \A::unreferencedconst
