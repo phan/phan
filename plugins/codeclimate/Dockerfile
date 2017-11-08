@@ -26,80 +26,90 @@
 
 FROM alpine:3.6
 
+WORKDIR /usr/src/app
+
+RUN adduser -u 9000 -D app
+
 ENV LAST_MODIFIED_DATE 2017-11-05
 
-RUN apk --update add bash \
-	wget \
-	curl \
-	git \
-	grep \
-	php7 \
+ENV PHP_AST_VERSION=0.1.6
+
+# Increment the last digit when updating codeclimate docker images.
+ENV PHAN_ITERATION 0.10.2-dev-1
+
+RUN apk add --no-cache \
+	php7 && \
+	test -d /etc/php7/conf.d || ((test -e /etc/php7/conf.d && rm /etc/php7/conf.d) && mkdir /etc/php7/conf.d)	&& \
+	apk add --no-cache \
 	php7-bcmath \
 	php7-curl \
+	php7-gd \
+	php7-gettext \
+	php7-iconv \
 	php7-intl \
 	php7-json \
-	php7-gettext \
-	php7-gd \
 	php7-ldap \
 	php7-mbstring \
 	php7-mcrypt \
 	php7-mysqlnd \
 	php7-opcache \
 	php7-openssl \
-	php7-pgsql \
-	php7-phar \
 	php7-pdo_mysql \
 	php7-pdo_pgsql \
 	php7-pdo_sqlite \
+	php7-pgsql \
+	php7-phar \
 	php7-session \
 	php7-soap \
 	php7-sockets \
 	php7-sqlite3 \
 	php7-tidy \
-	php7-xsl \
+	php7-tokenizer \
 	php7-xml \
 	php7-xmlreader \
 	php7-xmlrpc \
+	php7-xsl \
 	php7-zip \
 	php7-zlib
 
-RUN apk --update add bash \
-	autoconf \
-	make \
-	build-base \
-	php7-dev && \
-	wget -O v0.1.6.tar.gz https://github.com/nikic/php-ast/archive/v0.1.6.tar.gz && \
-	tar -zxvf v0.1.6.tar.gz && \
-	cd php-ast-0.1.6 && \
-	export CFLAGS=-O2 && \
-	phpize7 && \
-	./configure --prefix=/usr --with-php-config=/usr/bin/php-config7 && \
-	make -j3 && \
-	make install && \
-	cd .. && \
-	apk del php7-dev \
-	autoconf \
-	make \
-	build-base
+RUN apk add --no-cache bash \
+      autoconf \
+      openssl \
+      make \
+      build-base \
+      php7-dev \
+      wget && \
+    wget -O php-ast.tar.gz https://github.com/nikic/php-ast/archive/v${PHP_AST_VERSION}.tar.gz && \
+    tar -zxvf php-ast.tar.gz && \
+    cd php-ast-${PHP_AST_VERSION} && \
+    export CFLAGS=-O2 && \
+    phpize7 && \
+    ./configure --prefix=/usr --with-php-config=/usr/bin/php-config7 && \
+    make -j3 && \
+    make test && \
+    make install && \
+    cd .. && \
+    rm -Rf php-ast-${PHP_AST_VERSION} php-ast.tar.gz && \
+    apk del bash \
+      autoconf \
+      openssl \
+      make \
+      build-base \
+      php7-dev \
+      wget
+COPY plugins/codeclimate/ast.ini /etc/php7/conf.d/
+COPY plugins/codeclimate/engine /usr/src/app/plugins/codeclimate/engine
 
-RUN php --version
+COPY composer.json composer.lock ./
+RUN apk add --no-cache curl && \
+    curl -sS https://getcomposer.org/installer | php && \
+    ./composer.phar install --no-dev --optimize-autoloader && \
+    rm composer.phar && \
+    apk del curl
 
-ADD ast.ini /etc/php7/conf.d
+COPY .phan .phan
+COPY src src
 
-WORKDIR /usr/src/app
-
-# Increment the last digit when updating codeclimate docker images.
-ENV PHAN_ITERATION 0.10.2-dev-1
-
-RUN git clone https://github.com/phan/phan.git .
-COPY engine /usr/src/app/plugins/codeclimate/engine
-
-RUN apk --update add php7-tokenizer
-
-RUN curl -sS https://getcomposer.org/installer | php && \
-    /usr/src/app/composer.phar install --no-dev --optimize-autoloader
-
-RUN adduser -u 9000 -D app
 USER app
 
 CMD ["/usr/src/app/plugins/codeclimate/engine"]
