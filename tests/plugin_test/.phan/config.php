@@ -63,8 +63,8 @@ return [
     // (Execute all of them.)
     // FooName is shorthand for /path/to/phan/.phan/plugins/FooName.php.
     'plugins' => [
-        'AlwaysReturnPlugin',
-        'DemoPlugin',
+        __DIR__ . '/../../../.phan/plugins/AlwaysReturnPlugin.php',  // This is testing the plugin locator, use old syntax
+        '../../.phan/plugins/DemoPlugin.php',  // Test behavior of the plugin locator.
         'DollarDollarPlugin',
         'DuplicateArrayKeyPlugin',
         'InvalidVariableIssetPlugin',
