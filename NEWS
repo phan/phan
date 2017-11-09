@@ -25,6 +25,7 @@ Bug Fixes
 + For dead code detection, properly track uses of inherited class elements (methods, properties, classes) as uses of the original definition. (#1108)
   Fix the way that uses of private/protected methods from traits were tracked.
   Also, start warning about a subset of issues from interfaces and abstract classes (e.g. unused interface constants)
++ Properly handle `static::class` as a class name in an array callable, or `static::method_name` in a string callable (#1232)
 
 Plugins
 + Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)

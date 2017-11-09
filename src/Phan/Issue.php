@@ -97,6 +97,7 @@ class Issue
 
     // Issue::CATEGORY_CONTEXT
     const ContextNotObject          = 'PhanContextNotObject';
+    const ContextNotObjectInCallable = 'PhanContextNotObjectInCallable';
 
     // Issue::CATEGORY_DEPRECATED
     const DeprecatedClass           = 'PhanDeprecatedClass';
@@ -1005,6 +1006,14 @@ class Issue
                 "Cannot access {CLASS} when not in object context",
                 self::REMEDIATION_B,
                 4000
+            ),
+            new Issue(
+                self::ContextNotObjectInCallable,
+                self::CATEGORY_CONTEXT,
+                self::SEVERITY_NORMAL,
+                "Cannot access {CLASS} when not in object context, but code is using callable {METHOD}",
+                self::REMEDIATION_B,
+                4001
             ),
 
             // Issue::CATEGORY_DEPRECATED
