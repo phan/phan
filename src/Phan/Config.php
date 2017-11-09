@@ -618,6 +618,8 @@ class Config
         'enable_internal_return_type_plugins' => true,
 
         // A list of plugin files to execute
+        // (Pass these in as relative paths (e.g. 'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php').
+        // The upcoming 0.10.2 release will allow passing 'AlwaysReturnPlugin' if referring to a plugin that is bundled with Phan)
         'plugins' => [
         ],
     ];

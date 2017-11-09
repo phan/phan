@@ -28,6 +28,7 @@ Bug Fixes
 
 Plugins
 + Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)
++ Support 'plugins' => ['AlwaysReturnPlugin'] as shorthand for full relative path to a bundled plugin such as AlwaysReturnPlugin.php (#1209)
 
 20 Oct 2017, Phan 0.10.1
 ------------------------
