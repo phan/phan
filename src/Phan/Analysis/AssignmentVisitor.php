@@ -457,7 +457,7 @@ class AssignmentVisitor extends AnalysisVisitor
             } else if ($clazz->isPHPInternal() && $clazz->getFQSEN() !== FullyQualifiedClassName::getStdClassFQSEN()) {
                 // We don't want to modify the types of internal classes such as \ast\Node even if they are compatible
                 // This would result in unpredictable results, and types which are more specific than they really are.
-                // stdClass is an exception to this, for issues such as https://github.com/etsy/phan/pull/700
+                // stdClass is an exception to this, for issues such as https://github.com/phan/phan/pull/700
                 return $this->context;
             } else {
                 if (!$this->right_type->canCastToExpandedUnionType(
