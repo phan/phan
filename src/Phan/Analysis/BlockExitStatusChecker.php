@@ -356,6 +356,20 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         return self::STATUS_RETURN;
     }
 
+    public function visitUnaryOp(Node $node)
+    {
+        // Don't modify $node->flags, use unmodified flags here
+        if ($node->flags !== \ast\flags\UNARY_SILENCE) {
+            return self::STATUS_PROCEED;
+        }
+        // Analyze exit status of `@expr` like `expr` (e.g. @trigger_error())
+        $expr = $node->children['expr'];
+        if (!($expr instanceof Node)) {
+            return self::STATUS_PROCEED;
+        }
+        return $this($expr);
+    }
+
     // A trigger_error statement may or may not exit, depending on the constant and user configuration.
     public function visitCall(Node $node)
     {

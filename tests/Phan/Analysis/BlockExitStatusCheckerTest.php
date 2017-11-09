@@ -279,6 +279,14 @@ class BlockExitStatusCheckerTest extends BaseTest
                 'proceed',
                 'trigger_error("err msg", E_DEPRECATED);',
             ],
+            [
+                'return',
+                '@trigger_error("err msg", E_USER_ERROR);',
+            ],
+            [
+                'proceed',
+                '@trigger_error("err msg", E_DEPRECATED);',
+            ],
         ];
     }
 }
