@@ -24,6 +24,13 @@ class Method extends ClassElement implements FunctionInterface
     use ClosedScopeElement;
 
     /**
+     * @var ?FullyQualifiedMethodName If this was originally defined in a trait, this is the trait's defining fqsen.
+     * This is tracked separately from getDefiningFQSEN() in order to not break access checks on protected/private methods.
+     * Used for dead code detection.
+     */
+    private $real_defining_fqsen;
+
+    /**
      * @param Context $context
      * The context in which the structural element lives
      *
@@ -300,9 +307,11 @@ class Method extends ClassElement implements FunctionInterface
             break;
         }
 
+        $defining_fqsen = $this->getDefiningFQSEN();
         if ($method->isPublic()) {
-            $method->setDefiningFQSEN($this->getDefiningFQSEN());
+            $method->setDefiningFQSEN($defining_fqsen);
         }
+        $method->real_defining_fqsen = $defining_fqsen;
 
         $method->setParameterList($this->getParameterList());
         $method->setRealParameterList($this->getRealParameterList());
@@ -566,6 +575,15 @@ class Method extends ClassElement implements FunctionInterface
             $this->getFQSEN(),
             "Method $this with FQSEN {$this->getFQSEN()} does not override another method"
         );
+    }
+
+    /**
+     * @return FullyQualifiedMethodName the FQSEN with the original definition (Even if this is private/protected and inherited from a trait). Used for dead code detection.
+     *                                  Inheritance tests use getDefiningFQSEN() so that access checks won't break.
+     */
+    public function getRealDefiningFQSEN() : FullyQualifiedMethodName
+    {
+        return $this->real_defining_fqsen ?? $this->getDefiningFQSEN();
     }
 
     /**

@@ -356,6 +356,86 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         return self::STATUS_RETURN;
     }
 
+    public function visitUnaryOp(Node $node)
+    {
+        // Don't modify $node->flags, use unmodified flags here
+        if ($node->flags !== \ast\flags\UNARY_SILENCE) {
+            return self::STATUS_PROCEED;
+        }
+        // Analyze exit status of `@expr` like `expr` (e.g. @trigger_error())
+        $expr = $node->children['expr'];
+        if (!($expr instanceof Node)) {
+            return self::STATUS_PROCEED;
+        }
+        return $this($expr);
+    }
+
+    // A trigger_error statement may or may not exit, depending on the constant and user configuration.
+    public function visitCall(Node $node)
+    {
+        $status = $node->flags & self::STATUS_BITMASK;
+        if ($status) {
+            return $status;
+        }
+        $status = $this->computeStatusOfCall($node);
+        $node->flags = $status;
+        return $status;
+    }
+
+    private function computeStatusOfCall(Node $node) : int
+    {
+        $expression = $node->children['expr'];
+        if ($expression instanceof Node) {
+            if ($expression->kind !== \ast\AST_NAME) {
+                return self::STATUS_PROCEED;  // best guess
+            }
+            $function_name = $expression->children['name'];
+            if (!\is_string($function_name)) {
+                return self::STATUS_PROCEED;
+            }
+        } else {
+            if (!\is_string($expression)) {
+                return self::STATUS_PROCEED;  // Probably impossible.
+            }
+            $function_name = $expression;
+        }
+        if (!$function_name) {
+            return self::STATUS_THROW;  // nonsense such as ''();
+        }
+        if ($function_name[0] === '\\') {
+            $function_name = \substr($function_name, 1);
+        }
+        if (\strcasecmp($function_name, 'trigger_error') === 0) {
+            return $this->computeTriggerErrorStatusCodeForConstant($node->children['args']->children[1] ?? null);
+        }
+        // TODO: Could allow .phan/config.php or plugins to define additional behaviors, e.g. for methods.
+        // E.g. if (!$var) {HttpFramework::generate_302_and_die(); }
+        return self::STATUS_PROCEED;
+    }
+
+    private function computeTriggerErrorStatusCodeForConstant($constant_ast) : int
+    {
+        // return PROCEED if this can't be determined.
+        if (!($constant_ast instanceof Node)) {
+            return self::STATUS_PROCEED;
+        }
+        if ($constant_ast->kind !== \ast\AST_CONST) {
+            return self::STATUS_PROCEED;
+        }
+        $name = $constant_ast->children['name']->children['name'] ?? null;
+        if (!\is_string($name)) {
+            return self::STATUS_PROCEED;
+        }
+        if (\in_array($name, ['E_ERROR', 'E_PARSE', 'E_CORE_ERROR', 'E_COMPILE_ERROR', 'E_USER_ERROR'])) {
+            return self::STATUS_RETURN;
+        }
+        if ($name === 'E_RECOVERABLE_ERROR') {
+            return self::STATUS_THROW;
+        }
+
+        return self::STATUS_PROCEED;  // Assume this is a warning or notice?
+    }
+
     /**
      * A statement list has the weakest return status out of all of the (non-PROCEEDing) statements.
      * FIXME: This is buggy, doesn't account for one statement having STATUS_CONTINUE some of the time but not all of it.

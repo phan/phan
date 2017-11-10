@@ -15,6 +15,7 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use Phan\Library\FileCache;
@@ -185,7 +186,8 @@ class Analysis
         // \ast\AST_GROUP_USE has \ast\AST_USE as a child.
         // We don't want to use block twice in the parse phase.
         // (E.g. `use MyNS\{const A, const B}` would lack the MyNs part if this were to recurse.
-        if ($kind === \ast\AST_GROUP_USE) {
+        // And \ast\AST_DECLARE has AST_CONST_DECL as a child, so don't parse a constant declaration either.
+        if ($kind === \ast\AST_GROUP_USE || $kind === \ast\AST_DECLARE) {
             return $context;
         }
 
@@ -318,12 +320,17 @@ class Analysis
     {
         $plugin_set = ConfigPluginSet::instance();
         foreach ($plugin_set->getReturnTypeOverrides($code_base) as $fqsen_string => $closure) {
-            if (stripos($fqsen_string, '::') !== false) {
-                // This is an override of a method.
+            if (\stripos($fqsen_string, '::') !== false) {
                 $fqsen = FullyQualifiedMethodName::fromFullyQualifiedString($fqsen_string);
-                if ($code_base->hasMethodWithFQSEN($fqsen)) {
-                    $method = $code_base->getMethodByFQSEN($fqsen);
-                    $method->setDependentReturnTypeClosure($closure);
+                $class_fqsen = $fqsen->getFullyQualifiedClassName();
+                // We have to call hasClassWithFQSEN before calling hasMethodWithFQSEN in order to autoload the internal function signatures.
+                // TODO: Move class autoloading into hasMethodWithFQSEN()?
+                if ($code_base->hasClassWithFQSEN($class_fqsen)) {
+                    // This is an override of a method.
+                    if ($code_base->hasMethodWithFQSEN($fqsen)) {
+                        $method = $code_base->getMethodByFQSEN($fqsen);
+                        $method->setDependentReturnTypeClosure($closure);
+                    }
                 }
             } else {
                 // This is an override of a function.

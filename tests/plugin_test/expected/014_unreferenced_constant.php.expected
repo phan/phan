@@ -1,0 +1,3 @@
+src/014_unreferenced_constant.php:6 PhanUnreferencedConstant Possibly zero references to constant \A14::unreferencedconst
+src/014_unreferenced_constant.php:10 PhanUnreferencedProperty Possibly zero references to property \A14::prop2
+src/014_unreferenced_constant.php:12 PhanUnreferencedMethod Possibly zero references to method \A14::foo_unused

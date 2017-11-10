@@ -51,7 +51,6 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     const ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT_WEAK = 1307;  // E.g. passing an int where a string is expected
     const ERR_UNTRANSLATED_WIDTH_INSTEAD_OF_POSITION = 1308; // e.g. _('%1s'). Change to _('%1$1s' if you really mean that the width is 1, add positions for others ('%2$s', etc.)
     const ERR_TRANSLATED_INCOMPATIBLE              = 1309;
-    const ERR_TRANSLATED_WIDTH_INSTEAD_OF_POSITION = 1310; // e.g. _('%1s'). Change to _('%1$1s' if you really mean that the width is 1, add positions for others ('%2$s', etc.)
     const ERR_TRANSLATED_HAS_MORE_ARGS             = 1311;
 
     /**
@@ -519,7 +518,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
                             (string)$actual_union_type,
                         ],
                         Issue::SEVERITY_LOW,
-                        self::ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT_WEAK
+                        self::ERR_UNTRANSLATED_INCOMPATIBLE_ARGUMENT
                     );
                 }
             }

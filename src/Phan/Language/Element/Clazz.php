@@ -609,7 +609,6 @@ class Clazz extends AddressableElement
         // TODO: defer template properties until the analysis phase? They might not be parsed or resolved yet.
         if ($property->getFQSEN() !== $property_fqsen) {
             $property = clone($property);
-            $property->setDefiningFQSEN($property->getFQSEN());
             $property->setFQSEN($property_fqsen);
 
             try {
@@ -1175,7 +1174,6 @@ class Clazz extends AddressableElement
 
         if ($method->getFQSEN() !== $method_fqsen) {
             $method = clone($method);
-            $method->setDefiningFQSEN($method->getDefiningFQSEN());
             $method->setFQSEN($method_fqsen);
             // When we inherit it from the ancestor class, it may be an override in the ancestor class,
             // but that doesn't imply it's an override in *this* class.
@@ -2246,18 +2244,18 @@ class Clazz extends AddressableElement
         }
 
         // Create the 'class' constant
-        $this->addConstant($code_base,
-            new ClassConstant(
-                $this->getContext(),
-                'class',
-                StringType::instance(false)->asUnionType(),
-                0,
-                FullyQualifiedClassConstantName::make(
-                    $this->getFQSEN(),
-                    'class'
-                )
+        $class_constant = new ClassConstant(
+            $this->getContext(),
+            'class',
+            StringType::instance(false)->asUnionType(),
+            0,
+            FullyQualifiedClassConstantName::make(
+                $this->getFQSEN(),
+                'class'
             )
         );
+        $class_constant->setNodeForValue((string)$this->getFQSEN());
+        $this->addConstant($code_base, $class_constant);
 
         // Add variable '$this' to the scope
         $this->getInternalScope()->addVariable(

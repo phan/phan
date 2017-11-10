@@ -258,6 +258,35 @@ class BlockExitStatusCheckerTest extends BaseTest
                 'proceed/goto/break',
                 'if (cond2()) { if (cond()) { goto end; } break; }  end: ;',
             ],
+            // trigger_error can make it throw/exit. The returned code for exit is 'return'
+            [
+                'return',
+                'trigger_error("err msg", E_USER_ERROR);',
+            ],
+            [
+                'throw',
+                'TRIGGER_ERROR("err msg", E_RECOVERABLE_ERROR);',
+            ],
+            [
+                'proceed',
+                'TRIGGER_ERROR_NOT("err msg", E_RECOVERABLE_ERROR);',
+            ],
+            [
+                'throw',
+                '\trigger_error("err msg", E_RECOVERABLE_ERROR);',
+            ],
+            [
+                'proceed',
+                'trigger_error("err msg", E_DEPRECATED);',
+            ],
+            [
+                'return',
+                '@trigger_error("err msg", E_USER_ERROR);',
+            ],
+            [
+                'proceed',
+                '@trigger_error("err msg", E_DEPRECATED);',
+            ],
         ];
     }
 }

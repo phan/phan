@@ -3,6 +3,7 @@
 use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
+use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\PluginV2;
@@ -59,19 +60,32 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
                 continue;  // Triggered by code such as `list(, $a) = $expr`. In php 7.1, the array and list() syntax was unified.
             }
             $key = $entry->children['key'];
-            if ($key instanceof ast\Node && in_array($key->kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST], true)) {
-                // if key is constant, take it in account
-                $constant = new ContextNode($this->code_base, $this->context, $key);
-                if ($key->kind === \ast\AST_CLASS_CONST) {
-                    $key = $constant->getClassConst()->getNodeForValue();
-                } else {
-                    $key = $constant->getConst()->getNodeForValue();
-                }
-            }
-            // Skip array entries without literal keys.
+            // Skip array entries without literal keys. (Do it before resolving the key value)
             if ($key === null) {
                 $hasEntryWithoutKey = true;
                 continue;
+            }
+            if ($key instanceof ast\Node && in_array($key->kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST], true)) {
+                // if key is constant, take it in account
+                $constant = new ContextNode($this->code_base, $this->context, $key);
+                try {
+                    if ($key->kind === \ast\AST_CLASS_CONST) {
+                        $key = $constant->getClassConst()->getNodeForValue();
+                    } else {
+                        $key = $constant->getConst()->getNodeForValue();
+                    }
+                    if ($key === null) {
+                        $key = '';
+                    }
+                } catch (IssueException $e) {
+                    // This is redundant, but do it anyway
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $e->getIssueInstance()
+                    );
+                    continue;
+                }
             }
             if (!is_scalar($key)) {
                 // Skip non-literal keys.

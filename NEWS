@@ -25,6 +25,17 @@ Bug Fixes
 + Fix a crash when a magic method with a return type has the same name as a real method.
 + Allow methods to have weaker PHPdoc types than the overridden method in `PhanParamSignatureMismatch`. (#1253)
   `PhanParamSignatureRealMismatch*` is unaffected, and will continue working the same way in Phan releases analyzing PHP < 7.2.
++ Stop warning about `PhanParamSignatureMismatch`, etc. for private methods. The private methods don't affect each other. (#1250)
++ Properly parse `?self` as a *nullable* instance of the current class in union types (#1264)
++ Stop erroneously warning about inherited constants being unused in subclasses for dead code detection (#1260)
++ For dead code detection, properly track uses of inherited class elements (methods, properties, classes) as uses of the original definition. (#1108)
+  Fix the way that uses of private/protected methods from traits were tracked.
+  Also, start warning about a subset of issues from interfaces and abstract classes (e.g. unused interface constants)
++ Properly handle `static::class` as a class name in an array callable, or `static::method_name` in a string callable (#1232)
+
+Plugins
++ Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)
++ Support 'plugins' => ['AlwaysReturnPlugin'] as shorthand for full relative path to a bundled plugin such as AlwaysReturnPlugin.php (#1209)
 
 20 Oct 2017, Phan 0.10.1
 ------------------------

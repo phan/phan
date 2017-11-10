@@ -43,4 +43,18 @@ class IssueException extends Exception
     {
         return $this->issue_instance;
     }
+
+    /**
+     * @override
+     */
+    public function __toString()
+    {
+        return \sprintf(
+            "IssueException at %s:%d: %s\n%s",
+            $this->getFile(),
+            $this->getLine(),
+            (string)$this->issue_instance,
+            $this->getTraceAsString()
+        );
+    }
 }

@@ -88,14 +88,7 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
         $hash_material = implode('|', [
             $context->getFile(),
             $context->getLineNumberStart(),
-            $node->children['docComment'] ?? '',
-            implode(',', array_map(function(Node $arg) : string {
-                return serialize([$arg->children['type'], $arg->children['name'], $arg->children['default']]);
-            }, $node->children['params']->children)),
-            implode(',', array_map(function(Node $use) : string {
-                return $use->children['name'];
-            }, $node->children['uses']->children ?? [])),
-            serialize($node->children['returnType']),
+            $node->children['__declId'],
         ]);
         // TODO: hash args
         $name = 'closure_' . substr(md5($hash_material), 0, 12);

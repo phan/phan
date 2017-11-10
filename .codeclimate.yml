@@ -1,4 +1,5 @@
 ---
+# TODO: Fix https://github.com/phan/phan/issues/826
 engines:
   duplication:
     enabled: true
@@ -13,7 +14,7 @@ engines:
       Controversial/CamelCaseVariableName:
         enabled: false
   phan:
-    enabled: true
+    enabled: false
     config:
         file_extensions: "php"
         ignore-undeclared: false

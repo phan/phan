@@ -11,6 +11,7 @@ use Phan\Language\Element\AddressableElement;
 use Phan\Language\Element\ClassConstant;
 use Phan\Language\Element\ClassElement;
 use Phan\Language\Element\Func;
+use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Library\Map;
@@ -46,7 +47,7 @@ class ReferenceCountsAnalyzer
         $i = 0;
 
         // Functions
-        self::analyzeElementListReferenceCounts(
+        self::analyzeGlobalElementListReferenceCounts(
             $code_base,
             $code_base->getFunctionMap(),
             Issue::UnreferencedFunction,
@@ -55,7 +56,7 @@ class ReferenceCountsAnalyzer
         );
 
         // Constants
-        self::analyzeElementListReferenceCounts(
+        self::analyzeGlobalElementListReferenceCounts(
             $code_base,
             $code_base->getGlobalConstantMap(),
             Issue::UnreferencedConstant,
@@ -64,7 +65,7 @@ class ReferenceCountsAnalyzer
         );
 
         // Classes
-        self::analyzeElementListReferenceCounts(
+        self::analyzeGlobalElementListReferenceCounts(
             $code_base,
             $code_base->getUserDefinedClassMap(),
             Issue::UnreferencedClass,
@@ -73,13 +74,27 @@ class ReferenceCountsAnalyzer
         );
 
         // Class Maps
+        $elements_to_analyze = [];
         foreach ($code_base->getClassMapMap() as $class_map) {
-            self::analyzeClassMapReferenceCounts(
+            foreach (self::getElementsFromClassMapForDeferredAnalysis(
                 $code_base,
                 $class_map,
                 $total_count,
                 $i
-            );
+            ) as $element) {
+                $elements_to_analyze[] = $element;
+            }
+        }
+
+        static $issue_types = [
+            ClassConstant::class => Issue::UnreferencedConstant,
+            Method::class => Issue::UnreferencedMethod,
+            Property::class => Issue::UnreferencedProperty,
+        ];
+
+        foreach ($elements_to_analyze as $element) {
+            $issue_type = $issue_types[\get_class($element)];
+            self::analyzeElementReferenceCounts($code_base, $element, $issue_type);
         }
     }
 
@@ -89,37 +104,34 @@ class ReferenceCountsAnalyzer
      * @param int $total_count
      * @param int $i
      *
-     * @return void
+     * @return \Generator|ClassElement[]
      */
-    private static function analyzeClassMapReferenceCounts(
+    private static function getElementsFromClassMapForDeferredAnalysis(
         CodeBase $code_base,
         ClassMap $class_map,
         int $total_count,
         int &$i
     ) {
         // Constants
-        self::analyzeElementListReferenceCounts(
+        yield from self::getElementsFromElementListForDeferredAnalysis(
             $code_base,
             $class_map->getClassConstantMap(),
-            Issue::UnreferencedConstant,
             $total_count,
             $i
         );
 
         // Properties
-        self::analyzeElementListReferenceCounts(
+        yield from self::getElementsFromElementListForDeferredAnalysis(
             $code_base,
             $class_map->getPropertyMap(),
-            Issue::UnreferencedProperty,
             $total_count,
             $i
         );
 
         // Methods
-        self::analyzeElementListReferenceCounts(
+        yield from self::getElementsFromElementListForDeferredAnalysis(
             $code_base,
             $class_map->getMethodMap(),
-            Issue::UnreferencedMethod,
             $total_count,
             $i
         );
@@ -127,25 +139,120 @@ class ReferenceCountsAnalyzer
 
     /**
      * @param CodeBase $code_base
-     * @param Map|array $element_list
+     * @param Map|AddressableElement[] $element_list
      * @param string $issue_type
      * @param int $total_count
      * @param int $i
      *
      * @return void
      */
-    private static function analyzeElementListReferenceCounts(
+    private static function analyzeGlobalElementListReferenceCounts(
         CodeBase $code_base,
         $element_list,
         string $issue_type,
         int $total_count,
         int &$i
     ) {
+        $filtered_element_list = [];
         foreach ($element_list as $element) {
             CLI::progress('dead code', (++$i)/$total_count);
-            self::analyzeElementReferenceCounts(
-                $code_base, $element, $issue_type
-            );
+            // Don't worry about internal elements
+            if ($element->isPHPInternal()) {
+                continue;
+            }
+            self::analyzeElementReferenceCounts($code_base, $element, $issue_type);
+        }
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * @param Map|ClassElement[] $element_list
+     * @param int $total_count
+     * @param int $i
+     *
+     * @return \Generator|ClassElement[]
+     */
+    private static function getElementsFromElementListForDeferredAnalysis(
+        CodeBase $code_base,
+        $element_list,
+        int $total_count,
+        int &$i
+    ) {
+        $filtered_element_list = [];
+        foreach ($element_list as $element) {
+            CLI::progress('dead code', (++$i)/$total_count);
+            // Don't worry about internal elements
+            if ($element->isPHPInternal()) {
+                continue;
+            }
+            // Currently, deferred analysis is only needed for class elements, which can be inherited
+            // (And we may track the references to the inherited version of the original)
+            assert ($element instanceof ClassElement);
+            if ($element instanceof ClassConstant) {
+                // should not warn about self::class
+                if (strcasecmp($element->getName(), 'class') === 0) {
+                    continue;
+                }
+            }
+            if ($element->getIsOverride()) {
+                continue;
+            }
+
+            $fqsen = $element->getFQSEN();
+            if ($element instanceof Method) {
+                $defining_fqsen = $element->getRealDefiningFQSEN();
+            } else {
+                $defining_fqsen = $element->getDefiningFQSEN();
+            }
+
+            // Don't analyze elements defined in a parent
+            // class
+            if ($fqsen != $defining_fqsen) {
+                if ($element->getReferenceCount($code_base) > 0) {
+                    $defining_element = null;
+                    if ($defining_fqsen instanceof FullyQualifiedMethodName) {
+                        if ($code_base->hasMethodWithFQSEN($defining_fqsen)) {
+                            $defining_element = $code_base->getMethodByFQSEN($defining_fqsen);
+                        }
+                    } else if ($defining_fqsen instanceof FullyQualifiedPropertyName) {
+                        if ($code_base->hasPropertyWithFQSEN($defining_fqsen)) {
+                            $defining_element = $code_base->getPropertyByFQSEN($defining_fqsen);
+                        }
+                    } else if ($defining_fqsen instanceof FullyQualifiedClassConstantName) {
+                        if ($code_base->hasClassConstantWithFQSEN($defining_fqsen)) {
+                            $defining_element = $code_base->getClassConstantByFQSEN($defining_fqsen);
+                        }
+                    }
+                    if ($defining_element !== null) {
+                        $defining_element->copyReferencesFrom($element);
+                    }
+                }
+                continue;
+            }
+            $defining_class =
+                $element->getClass($code_base);
+
+            if ($element instanceof Method) {
+                // Ignore magic methods
+                if ($element->getIsMagic()) {
+                    continue;
+                }
+                // Don't analyze abstract methods, as they're uncallable.
+                // (Every method on an interface is abstract)
+                if ($element->isAbstract() || $defining_class->isInterface()) {
+                    continue;
+                }
+            } else if ($element instanceof Property) {
+                // Skip properties on classes that have a magic
+                // __get or __set method given that we can't track
+                // their access
+                $defining_class = $element->getClass($code_base);
+
+                if ($defining_class->hasGetOrSetMethod($code_base)) {
+                    continue;
+                }
+            }
+            yield $element;
         }
     }
 
@@ -159,69 +266,6 @@ class ReferenceCountsAnalyzer
         AddressableElement $element,
         string $issue_type
     ) {
-
-        // Don't worry about internal elements
-        if ($element->isPHPInternal()) {
-            return;
-        }
-
-        // Skip methods that are overrides of other methods
-        if ($element instanceof ClassElement) {
-            if ($element instanceof ClassConstant) {
-                // should not warn about self::class
-                if (strcasecmp($element->getName(), 'class') === 0) {
-                    return;
-                }
-            }
-            if ($element->getIsOverride()) {
-                return;
-            }
-
-            $class_fqsen = $element->getClassFQSEN();
-
-            // Don't analyze elements defined in a parent
-            // class
-            try {
-                if ($class_fqsen != $element->getDefiningClassFQSEN()) {
-                    return;
-                }
-            } catch (CodeBaseException $e) {
-                // No defining class for property/constant/etc.
-            }
-
-            $defining_class =
-                $element->getClass($code_base);
-
-            // Don't analyze elements on interfaces or on
-            // abstract classes, as they're uncallable.
-            if ($defining_class->isInterface()
-                || $defining_class->isAbstract()
-                || $defining_class->isTrait()
-            ) {
-                return;
-            }
-
-            // Ignore magic methods
-            if ($element instanceof Method) {
-                // Doubly nested so that `$element` shows
-                // up as Method in Phan.
-                if ($element->getIsMagic()) {
-                    return;
-                }
-            }
-        }
-
-        // Skip properties on classes that have a magic
-        // __get or __set method given that we can't track
-        // their access
-        if ($element instanceof Property) {
-            $defining_class = $element->getClass($code_base);
-
-            if ($defining_class->hasGetOrSetMethod($code_base)) {
-                return;
-            }
-        }
-
         /*
         print "digraph G {\n";
         foreach ($element->getReferenceList() as $file_ref) {
@@ -244,8 +288,10 @@ class ReferenceCountsAnalyzer
                         return;
                     }
                 }
-                if ($element instanceof Func && \strcasecmp($element->getName(), "__autoload") === 0) {
-                    return;
+                if ($element instanceof Func) {
+                    if (\strcasecmp($element->getName(), "__autoload") === 0) {
+                        return;
+                    }
                 }
 
                 // If there are duplicate declarations, display issues for unreferenced elements on each declaration.

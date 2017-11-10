@@ -2000,6 +2000,18 @@ class UnionTypeVisitor extends AnalysisVisitor
             if (!($class_fqsen instanceof FullyQualifiedClassName)) {
                 continue;
             }
+            if ($object_type->isStaticType()) {
+                if (!$context->isInClassScope()) {
+                    $this->emitIssue(
+                        Issue::ContextNotObjectInCallable,
+                        $context->getLineNumberStart(),
+                        (string)$class_fqsen,
+                        "$class_fqsen::$method_name"
+                    );
+                    continue;
+                }
+                $class_fqsen = $context->getClassFQSEN();
+            }
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                 $this->emitIssue(
                     Issue::UndeclaredClassInCallable,
@@ -2085,6 +2097,21 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * @param string $class_name
+     * @param string $method_name
+     * @return void
+     */
+    private function emitNonObjectContextInCallableIssue(string $class_name, string $method_name)
+    {
+        $this->emitIssue(
+            Issue::ContextNotObjectInCallable,
+            $this->context->getLineNumberStart(),
+            $class_name,
+            "$class_name::$method_name"
+        );
+    }
+
+    /**
      * @param string|Node $class_or_expr
      * @param string $method_name
      *
@@ -2101,16 +2128,31 @@ class UnionTypeVisitor extends AnalysisVisitor
         $code_base = $this->code_base;
         $context = $this->context;
 
-
         if (is_string($class_or_expr)) {
-            $class_fqsen = $this->lookupClassOfCallableByName($class_or_expr);
-            if (!$class_fqsen) {
-                return [];
+            if (\in_array(\strtolower($class_or_expr), ['static', 'self', 'parent'], true)) {
+                // Allow 'static' but not '\static'
+                if (!$context->isInClassScope()) {
+                    $this->emitNonObjectContextInCallableIssue($class_or_expr, $method_name);
+                    return [];
+                }
+                $class_fqsen = $context->getClassFQSEN();
+            } else {
+                $class_fqsen = $this->lookupClassOfCallableByName($class_or_expr);
+                if (!$class_fqsen) {
+                    return [];
+                }
             }
         } else {
             $class_fqsen = (new ContextNode($code_base, $context, $class_or_expr))->resolveClassNameInContext();
             if (!$class_fqsen) {
                 return $this->methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name);
+            }
+            if (\in_array(\strtolower($class_fqsen->getName()), ['static', 'self', 'parent'], true)) {
+                if (!$context->isInClassScope()) {
+                    $this->emitNonObjectContextInCallableIssue((string)$class_fqsen, $method_name);
+                    return [];
+                }
+                $class_fqsen = $context->getClassFQSEN();
             }
         }
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {

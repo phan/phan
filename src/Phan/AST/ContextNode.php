@@ -626,10 +626,7 @@ class ContextNode
                     $this->code_base,
                     $this->context,
                     $expression
-                ))->getFunction(
-                    $expression->children['name']
-                        ?? $expression->children['method']
-                );
+                ))->getFunction($expression->children['name']);
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
                     $this->code_base,

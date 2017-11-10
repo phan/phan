@@ -2136,11 +2136,3 @@ function sl($node) {
     }
     return null;
 }
-
-/** @return ?int */
-function el($node) {
-    if ($node instanceof PhpParser\Node) {
-        return $node->getAttribute('endLine');
-    }
-    return null;
-}

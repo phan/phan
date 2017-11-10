@@ -4,7 +4,7 @@ Phan looks for common issues and will verify type compatibility on various opera
 information is available or can be deduced. Phan does not have a strong understanding of flow control
 and does not attempt to track values.
 
-[![Code Climate](https://codeclimate.com/github/etsy/phan/badges/gpa.svg)](https://codeclimate.com/github/etsy/phan) [![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/etsy/phan?branch=master&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/3940135c0dfbd5387c94/maintainability)](https://codeclimate.com/github/phan/phan/maintainability) [![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/etsy/phan?branch=master&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/master)
 [![Gitter](https://badges.gitter.im/etsy/phan.svg)](https://gitter.im/etsy/phan?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Latest Stable Version](https://poser.pugx.org/phan/phan/v/stable)](https://packagist.org/packages/phan/phan)
 [![License](https://poser.pugx.org/phan/phan/license)](https://github.com/phan/phan/blob/master/LICENSE)
@@ -144,7 +144,8 @@ return [
 
     // A list of plugin files to execute.
     // See https://github.com/phan/phan/tree/master/.phan/plugins for even more.
-    // (Pass these in as relative paths)
+    // (Pass these in as relative paths.
+    // The upcoming 0.10.2 release will allow passing 'AlwaysReturnPlugin' if referring to a plugin that is bundled with Phan)
     'plugins' => [
         // checks if a function, closure or method unconditionally returns.
         'vendor/phan/phan/.phan/plugins/AlwaysReturnPlugin.php',
