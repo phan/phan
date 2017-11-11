@@ -1,0 +1,1 @@
+%s:17 PhanTypeMismatchArgument Argument 1 (x) is float[] but \MyNS\TemplateArray379::keys() takes string[] defined at %s:9
