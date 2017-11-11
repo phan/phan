@@ -503,7 +503,7 @@ class Comment
         bool $is_var,
         int $lineno
     ) {
-        if (preg_match('/@(param|var)\s*(' . UnionType::union_type_regex . ')*(?:\s*(\.\.\.)?\s*(?:\\$' . self::word_regex . '))?/', $line, $match)) {
+        if (preg_match('/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*(?:\\$' . self::word_regex . '))?/', $line, $match)) {
             if (!isset($match[2])) {
                 return new CommentParameter('', new UnionType());
             }
