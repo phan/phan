@@ -613,7 +613,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $this->code_base,
                 $this->context,
                 $node->children['class']
-            ))->getClassList();
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
 
             foreach ($class_list as $class) {
                 $class->addReference($this->context);

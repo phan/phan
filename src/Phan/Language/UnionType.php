@@ -1341,6 +1341,18 @@ class UnionType implements \Serializable
     }
 
     /**
+     * Returns true if objectTypes would be non-empty.
+     *
+     * @return bool
+     */
+    public function hasObjectTypes() : bool
+    {
+        return ArraySet::exists($this->type_set, (function (Type $type) : bool {
+            return $type->isObject();
+        }));
+    }
+
+    /**
      * Returns the types for which is_scalar($x) would be true.
      * This means null/nullable is removed.
      * Takes "MyClass|int|?bool|array|?object" and returns "int|bool"

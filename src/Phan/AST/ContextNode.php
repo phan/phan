@@ -26,6 +26,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
+use Phan\Language\Type;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
@@ -373,10 +374,24 @@ class ContextNode
         );
     }
 
+    // Constants for getClassList() API
+    const CLASS_LIST_ACCEPT_ANY = 0;
+    const CLASS_LIST_ACCEPT_OBJECT = 1;
+    const CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME = 2;
+
     /**
      * @param bool $ignore_missing_classes
      * If set to true, missing classes will be ignored and
      * exceptions will be inhibited
+     *
+     * @param int $expected_type_categories
+     * Does not affect the returned classes, but will cause phan to emit issues. Does not emit by default.
+     * If set to CLASS_LIST_ACCEPT_ANY, this will not warn.
+     * If set to CLASS_LIST_ACCEPT_OBJECT, this will warn if the inferred type is exclusively non-object types.
+     * If set to CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, this will warn if the inferred type is exclusively non-object and non-string types.
+     *
+     * @param ?string $custom_issue_type
+     * If this exists, emit the given issue type (passing in union type as format arg) instead of the default issue type.
      *
      * @return Clazz[]
      * A list of classes representing the non-native types
@@ -386,9 +401,12 @@ class ContextNode
      * An exception is thrown if a non-native type does not have
      * an associated class
      */
-    public function getClassList($ignore_missing_classes = false)
+    public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null) : array
     {
         $union_type = $this->getClassUnionType();
+        if ($union_type->isEmpty()) {
+            return [];
+        }
 
         $class_list = [];
 
@@ -409,6 +427,20 @@ class ContextNode
                 $this->context
             ) as $clazz) {
                 $class_list[] = $clazz;
+            }
+        }
+
+        if (\count($class_list) === 0 && $expected_type_categories !== self::CLASS_LIST_ACCEPT_ANY) {
+            if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories) : bool {
+                return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME && $type instanceof StringType);
+            })) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    $custom_issue_type ?? ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME ? Issue::TypeExpectedObjectOrClassName : Issue::TypeExpectedObject),
+                    $this->node->lineno ?? 0,
+                    (string)$union_type
+                );
             }
         }
 
@@ -470,12 +502,14 @@ class ContextNode
         );
 
         try {
+            // Fetch the list of valid classes, and warn about any undefined classes.
+            // (We have more specific issue types such as PhanNonClassMethodCall below, don't emit PhanTypeExpected*)
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $this->node->children['expr']
                     ?? $this->node->children['class']
-            ))->getClassList();
+            ))->getClassList(false, self::CLASS_LIST_ACCEPT_ANY);
         } catch (CodeBaseException $exception) {
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredClassMethod)(
@@ -646,7 +680,7 @@ class ContextNode
                 $this->code_base,
                 $this->context,
                 $expression
-            ))->getClassList();
+            ))->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
 
             foreach ($class_list as $class) {
                 if (!$class->hasMethodWithName(
@@ -881,12 +915,14 @@ class ContextNode
         $class_fqsen = null;
 
         try {
+            $expected_type_categories = $is_static ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT;
+            $expected_issue = $is_static ? Issue::TypeExpectedObjectStaticPropAccess : Issue::TypeExpectedObjectPropAccess;
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $this->node->children['expr'] ??
                     $this->node->children['class']
-            ))->getClassList(true);
+            ))->getClassList(true, $expected_type_categories, $expected_issue);
         } catch (CodeBaseException $exception) {
             if ($is_static) {
                 throw new IssueException(
@@ -1093,11 +1129,13 @@ class ContextNode
         );
 
         try {
+            $expected_type_categories = $is_static ? self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME : self::CLASS_LIST_ACCEPT_OBJECT;
+            $expected_issue = $is_static ? Issue::TypeExpectedObjectStaticPropAccess : Issue::TypeExpectedObjectPropAccess;
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $this->node->children['expr'] ?? null
-            ))->getClassList();
+            ))->getClassList(false, $expected_type_categories, $expected_issue);
         } catch (CodeBaseException $exception) {
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredClassReference)(
@@ -1266,7 +1304,7 @@ class ContextNode
                 $this->code_base,
                 $this->context,
                 $this->node->children['class']
-            ))->getClassList();
+            ))->getClassList(false, self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
         } catch (CodeBaseException $exception) {
             throw new IssueException(
                 Issue::fromType(Issue::UndeclaredClassConstant)(

@@ -967,14 +967,31 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitInstanceOf(Node $node) : UnionType
     {
+        $code_base = $this->code_base;
+        $context = $this->context;
         // Check to make sure the left side is valid
-        UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $node->children['expr']);
+        UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node->children['expr']);
         try {
-            // Confirm that the right-side exists
-            // Compute the union type but don't use it.
-            $this->visitClassNode(
-                $node->children['class']
+            // Get the type that we're checking it against, check if it is valid.
+            $class_node = $node->children['class'];
+            $type = UnionTypeVisitor::unionTypeFromNode(
+                $code_base,
+                $context,
+                $class_node
             );
+            // TODO: Unify UnionTypeVisitor, AssignmentVisitor, and PostOrderAnalysisVisitor
+            if (!$type->isEmpty() && !$type->hasObjectTypes()) {
+                if ($class_node->kind !== \ast\AST_NAME &&
+                        !$type->canCastToUnionType(StringType::instance(false)->asUnionType())) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeInvalidInstanceof,
+                        $context->getLineNumberStart(),
+                        (string)$type
+                    );
+                }
+            }
         } catch (TypeException $exception) {
             // TODO: log it?
         }
