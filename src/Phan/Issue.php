@@ -84,6 +84,10 @@ class Issue
     const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
     const TypeInvalidCallableArrayKey = 'PhanTypeInvalidCallableArrayKey';
     const TypeInvalidCallableObjectOfMethod = 'PhanTypeInvalidCallableObjectOfMethod';
+    const TypeExpectedObject        = 'PhanTypeExpectedObject';
+    const TypeExpectedObjectOrClassName = 'PhanTypeExpectedObjectOrClassName';
+    const TypeExpectedObjectPropAccess = 'PhanTypeExpectedObjectPropAccess';
+    const TypeExpectedObjectStaticPropAccess = 'PhanTypeExpectedObjectStaticPropAccess';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -977,6 +981,38 @@ class Issue
                 'In a place where phan was expecting a callable, saw a two-element array with a class or expression with an unexpected type {TYPE} (expected a class type or string). Method name was {METHOD}',
                 self::REMEDIATION_B,
                 10035
+            ),
+            new Issue(
+                self::TypeExpectedObject,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance but saw expression with type {TYPE}',
+                self::REMEDIATION_B,
+                10036
+            ),
+            new Issue(
+                self::TypeExpectedObjectOrClassName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance or the name of a class but saw expression with type {TYPE}',
+                self::REMEDIATION_B,
+                10037
+            ),
+            new Issue(
+                self::TypeExpectedObjectPropAccess,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}',
+                self::REMEDIATION_B,
+                10038
+            ),
+            new Issue(
+                self::TypeExpectedObjectStaticPropAccess,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance or a class name when accessing a static property, but saw an expression with type {TYPE}',
+                self::REMEDIATION_B,
+                10039
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

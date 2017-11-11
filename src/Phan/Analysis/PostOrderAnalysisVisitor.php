@@ -920,9 +920,10 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 false
             );
 
+            $class_list = $context_node->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);
             // Add a reference to each class this method
             // could be called on
-            foreach ($context_node->getClassList() as $class) {
+            foreach ($class_list as $class) {
                 $class->addReference($this->context);
                 if ($class->isDeprecated()) {
                     $this->emitIssue(
@@ -969,7 +970,6 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 $node
             );
 
-            $class_list = $context_node->getClassList();
             foreach ($class_list as $class) {
                 // Make sure we're not instantiating an abstract
                 // class
@@ -1021,11 +1021,12 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
     {
         try {
             // Fetch the class list, and emit warnings as a side effect.
+            // TODO: Unify UnionTypeVisitor, AssignmentVisitor, and PostOrderAnalysisVisitor
             (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node->children['class']
-            ))->getClassList();
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeInvalidInstanceof);
         } catch (CodeBaseException $exception) {
             $this->emitIssue(
                 Issue::UndeclaredClassInstanceof,
