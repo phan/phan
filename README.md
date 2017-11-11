@@ -1,7 +1,7 @@
 Phan is a static analyzer for PHP that prefers to minimize false-positives. Phan attempts to prove incorrectness rather than correctness.
 
 Phan looks for common issues and will verify type compatibility on various operations when type
-information is available or can be deduced. Phan does not have a strong understanding of flow control
+information is available or can be deduced. Phan has a good (but not comprehensive) understanding of flow control
 and does not attempt to track values.
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/3940135c0dfbd5387c94/maintainability)](https://codeclimate.com/github/phan/phan/maintainability) [![Build Status](https://travis-ci.org/phan/phan.svg?branch=master)](https://travis-ci.org/phan/phan) [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/github/etsy/phan?branch=master&svg=true)](https://ci.appveyor.com/project/TysonAndre/phan/branch/master)
