@@ -14,6 +14,7 @@ use Phan\Language\Element\Method;
 use Phan\Language\Element\Property;
 use Phan\Plugin;
 use Phan\Plugin\Internal\ArrayReturnTypeOverridePlugin;
+use Phan\Plugin\Internal\CallableParamPlugin;
 use Phan\Plugin\Internal\ClosureReturnTypeOverridePlugin;
 use Phan\Plugin\PluginImplementation;
 use Phan\PluginV2;
@@ -388,7 +389,12 @@ final class ConfigPluginSet extends PluginV2 implements
         );
         // Add internal plugins. Can be disabled by disable_internal_return_type_plugins.
         if (Config::getValue('enable_internal_return_type_plugins')) {
-            $plugin_set = array_merge([new ArrayReturnTypeOverridePlugin(), new ClosureReturnTypeOverridePlugin()], $plugin_set);
+            $internal_return_type_plugins = [
+                new CallableParamPlugin(),
+                new ArrayReturnTypeOverridePlugin(),
+                new ClosureReturnTypeOverridePlugin(),
+            ];
+            $plugin_set = array_merge($internal_return_type_plugins, $plugin_set);
         }
 
         // Register the entire set.

@@ -9,6 +9,9 @@ New Features(Analysis)
   Note that Phan ignores the provided value of `Key` completely right now (i.e. same as `T[]`); Key types may be supported later.
 + Speed up phan analysis on small projects, reduce memory usage (Around 0.15 seconds and 15MB)
   This was done by deferring loading the information about internal classes and functions until that information was needed for analysis.
++ Analyze existence and usage of callables passed to (internal and user-defined) function&methods expecting callable. (#1194)
+  Analysis will now warn if a callable no longer exists.
+  This change also reduces false positives in dead code detection.
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
