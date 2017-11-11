@@ -70,6 +70,11 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
                     $element_types->addUnionType($function_like->getUnionType());
                 }
             }
+            if (Config::get_track_references()) {
+                foreach ($function_like_list as $function_like) {
+                    $function_like->addReference($context);
+                }
+            }
             return $element_types;
         };
         $call_user_func_array_callback = static function(
@@ -95,6 +100,11 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
                     $element_types->addUnionType($function_like->getDependentReturnType($code_base, $context, $arguments));
                 } else {
                     $element_types->addUnionType($function_like->getUnionType());
+                }
+            }
+            if (Config::get_track_references()) {
+                foreach ($function_like_list as $function_like) {
+                    $function_like->addReference($context);
                 }
             }
             if ($arguments !== null) {
