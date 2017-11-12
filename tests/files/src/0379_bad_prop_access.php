@@ -14,3 +14,11 @@ function main379(string $value) {
     echo $eleven::value . "\n";  // should warn
     return $array;
 }
+
+/**
+ * @param object $x
+ */
+function test_object($x) {
+    var_export($x[0]);  // invalid
+    return $x->prop;
+}
