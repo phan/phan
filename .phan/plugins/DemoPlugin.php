@@ -60,7 +60,8 @@ class DemoPlugin extends PluginV2 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
     AnalyzeNodeCapability,
-    AnalyzePropertyCapability {
+    AnalyzePropertyCapability
+{
 
     /**
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
@@ -193,7 +194,8 @@ class DemoPlugin extends PluginV2 implements
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DemoNodeVisitor extends PluginAwareAnalysisVisitor {
+class DemoNodeVisitor extends PluginAwareAnalysisVisitor
+{
     // A plugin's visitors should NOT implement visit(), unless they need to.
 
     /**

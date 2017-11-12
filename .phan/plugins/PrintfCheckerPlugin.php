@@ -38,7 +38,8 @@ use function var_export;
  * TODO: Add optional verbose warnings about unanalyzable strings
  * TODO: Check if arg can cast to string.
  */
-class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability {
+class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+{
 
     // Pylint error codes for emitted issues.
     const ERR_UNTRANSLATED_USE_ECHO                = 1300;
@@ -79,61 +80,61 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         if (!($astNode instanceof Node)) {
             return new PrimitiveValue($astNode);
         }
-        switch($astNode->kind) {
-        case \ast\AST_CONST:
-            $nameNode = $astNode->children['name'];
-            if ($nameNode->kind === \ast\AST_NAME) {
-                $name = $nameNode->children['name'];
-                if (\strcasecmp($name, '__DIR__') === 0) {
-                    // Relative to the directory of that file... Hopefully doesn't contain a format specifier
-                    return new PrimitiveValue('(__DIR__ literal)');
-                } elseif (\strcasecmp($name, '__FILE__') === 0) {
-                    // Relative to the directory of that file... Hopefully doesn't contain a format specifier
-                    return new PrimitiveValue('(__FILE__ literal)');
-                } elseif (\defined($name)) {
-                    // TODO: This can be an array, which is almost definitely wrong in printf contexts
-                    // FIXME use GlobalConstant to retrieve the literal's value
-                    $value = \constant($name);
-                    if (!\is_scalar($value)) {
-                        return null;
+        switch ($astNode->kind) {
+            case \ast\AST_CONST:
+                $nameNode = $astNode->children['name'];
+                if ($nameNode->kind === \ast\AST_NAME) {
+                    $name = $nameNode->children['name'];
+                    if (\strcasecmp($name, '__DIR__') === 0) {
+                        // Relative to the directory of that file... Hopefully doesn't contain a format specifier
+                        return new PrimitiveValue('(__DIR__ literal)');
+                    } elseif (\strcasecmp($name, '__FILE__') === 0) {
+                        // Relative to the directory of that file... Hopefully doesn't contain a format specifier
+                        return new PrimitiveValue('(__FILE__ literal)');
+                    } elseif (\defined($name)) {
+                        // TODO: This can be an array, which is almost definitely wrong in printf contexts
+                        // FIXME use GlobalConstant to retrieve the literal's value
+                        $value = \constant($name);
+                        if (!\is_scalar($value)) {
+                            return null;
+                        }
+                        return new PrimitiveValue($value);
                     }
-                    return new PrimitiveValue($value);
                 }
-            }
-            return null;
+                return null;
         // TODO: Resolve class constant access when those are format strings. Same for PregRegexCheckerPlugin.
-        case \ast\AST_CALL:
-            $nameNode = $astNode->children['expr'];
-            if ($nameNode->kind === \ast\AST_NAME) {
-                // TODO: Use Phan's function resolution?
-                // TODO: ngettext?
-                $name = $nameNode->children['name'];
-                if ($name === '_' || strcasecmp($name, 'gettext') === 0) {
-                    $childArg = $astNode->children['args']->children[0] ?? null;
-                    if ($childArg === null) {
-                        return null;
+            case \ast\AST_CALL:
+                $nameNode = $astNode->children['expr'];
+                if ($nameNode->kind === \ast\AST_NAME) {
+                    // TODO: Use Phan's function resolution?
+                    // TODO: ngettext?
+                    $name = $nameNode->children['name'];
+                    if ($name === '_' || strcasecmp($name, 'gettext') === 0) {
+                        $childArg = $astNode->children['args']->children[0] ?? null;
+                        if ($childArg === null) {
+                            return null;
+                        }
+                        $prim = self::astNodeToPrimitive($code_base, $context, $childArg);
+                        if ($prim === null) {
+                            return null;
+                        }
+                        return new PrimitiveValue($prim->value, true);
                     }
-                    $prim = self::astNodeToPrimitive($code_base, $context, $childArg);
-                    if ($prim === null) {
-                        return null;
-                    }
-                    return new PrimitiveValue($prim->value, true);
                 }
-            }
-            return null;
-        case \ast\AST_BINARY_OP:
-            if ($astNode->flags !== ast\flags\BINARY_CONCAT) {
                 return null;
-            }
-            $left = $this->astNodeToPrimitive($code_base, $context, $astNode->children['left']);
-            if ($left === null) {
-                return null;
-            }
-            $right = $this->astNodeToPrimitive($code_base, $context, $astNode->children['right']);
-            if ($right === null) {
-                return null;
-            }
-            return $this->concatenateToPrimitive($left, $right);
+            case \ast\AST_BINARY_OP:
+                if ($astNode->flags !== ast\flags\BINARY_CONCAT) {
+                    return null;
+                }
+                $left = $this->astNodeToPrimitive($code_base, $context, $astNode->children['left']);
+                if ($left === null) {
+                    return null;
+                }
+                $right = $this->astNodeToPrimitive($code_base, $context, $astNode->children['right']);
+                if ($right === null) {
+                    return null;
+                }
+                return $this->concatenateToPrimitive($left, $right);
         }
         // We don't know how to convert this to a primitive, give up.
         // (Subclasses may add their own logic first, then call self::astNodeToPrimitive)
@@ -151,8 +152,12 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
     protected function concatenateToPrimitive(PrimitiveValue $left, PrimitiveValue $right)
     {
         // Combining untranslated strings with anything will cause problems.
-        if ($left->is_translated) { return null; }
-        if ($right->is_translated) { return null; }
+        if ($left->is_translated) {
+            return null;
+        }
+        if ($right->is_translated) {
+            return null;
+        }
         $str = $left->value . $right->value;
         return new PrimitiveValue($str);
     }
@@ -263,7 +268,8 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
         ];
     }
 
-    protected function encodeString(string $str) : string {
+    protected function encodeString(string $str) : string
+    {
         $result = \json_encode($str, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if ($result !== false) {
             return $result;
@@ -625,13 +631,13 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
             }
         }
     }
-
 }
 
 /**
  * An object representing a conversion specifier of a format string, such as "%1$d".
  */
-class ConversionSpec {
+class ConversionSpec
+{
     /** @var string Original text of the directive */
     public $directive;
     /** @var ?int Which argument this refers to, starting from 1 */
@@ -688,7 +694,9 @@ class ConversionSpec {
         \preg_match_all(self::format_string_regex, (string) $fmt_str, $matches, PREG_SET_ORDER);
         $unnamed_count = 0;
         foreach ($matches as $match) {
-            if ($match[0] === '%%') { continue; }
+            if ($match[0] === '%%') {
+                continue;
+            }
             $directive = new self($match);
             if (!isset($directive->position)) {
                 $directive->position = ++$unnamed_count;
@@ -734,7 +742,8 @@ class ConversionSpec {
     /**
      * @return string the name of the union type expected for the arg for this conversion spec
      */
-    public function getExpectedUnionTypeName() : string {
+    public function getExpectedUnionTypeName() : string
+    {
         return self::ARG_TYPE_LOOKUP[$this->arg_type] ?? 'string';
     }
 }
@@ -743,7 +752,8 @@ class ConversionSpec {
  * Represents the information we have about the result of evaluating an expression.
  * Currently, used only for printf arguments.
  */
-class PrimitiveValue {
+class PrimitiveValue
+{
     /** @var int|string|float|null The primitive value of the expression if it could be determined. */
     public $value;
     /** @var bool Whether or not the expression value was translated. */
