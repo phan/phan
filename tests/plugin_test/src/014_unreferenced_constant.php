@@ -4,8 +4,8 @@ class A14 {
     const myconst = 'x';
     const myotherconst = 'x';
     const unreferencedconst = 'y';
-    /** @suppress PhanUnreferencedPublicClassConstant testing suppression */
-    const unreferencedconst2 = 'z';
+    // Leaving out test of (at)suppress on unreferencedconst2 because php 7.0 doesn't have phpdoc comments on constants
+    // const unreferencedconst2 = 'z';
     public static $prop = 33;
     public static $prop2 = 33;
     public static function foo() { echo "Called foo\n"; }
