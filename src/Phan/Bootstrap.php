@@ -45,7 +45,8 @@ set_exception_handler(function (Throwable $throwable) {
  * @return mixed
  * @suppress PhanPluginUnusedVariable
  */
-function with_disabled_phan_error_handler(Closure $closure) {
+function with_disabled_phan_error_handler(Closure $closure)
+{
     global $__no_echo_phan_errors;
     $__no_echo_phan_errors = true;
     try {

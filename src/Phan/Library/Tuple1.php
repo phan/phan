@@ -19,7 +19,8 @@ class Tuple1 extends Tuple
      * @param T0 $_0
      * The 0th element
      */
-    public function __construct($_0) {
+    public function __construct($_0)
+    {
         $this->_0 = $_0;
     }
 

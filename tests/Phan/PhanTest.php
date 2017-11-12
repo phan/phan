@@ -4,11 +4,13 @@ namespace Phan\Tests;
 
 use Phan\Config;
 
-class PhanTest extends AbstractPhanFileTest {
+class PhanTest extends AbstractPhanFileTest
+{
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles() {
+    public function getTestFiles()
+    {
 
         // Read and apply any custom configuration
         // overrides for the tests.

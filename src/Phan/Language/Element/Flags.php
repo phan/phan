@@ -76,5 +76,4 @@ class Flags
     ) : bool {
         return (($bit_vector & $flag) == $flag);
     }
-
 }

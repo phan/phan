@@ -8,17 +8,20 @@ namespace Phan\LanguageServer;
  *
  * TODO: remove all overrides when a language server disconnects.
  */
-class FileMapping {
+class FileMapping
+{
     /**
      * @var string[] maps the absolute paths on disks to the currently edited versions of those files.
      * TODO: Won't work with more than one client.
      */
     private $overrides = [];
 
-    public function __construct() {
+    public function __construct()
+    {
     }
 
-    public function getOverrides() {
+    public function getOverrides()
+    {
         return $this->overrides;
     }
 
@@ -27,7 +30,8 @@ class FileMapping {
      * @param ?string $new_contents
      * @return void
      */
-    public function addOverrideURI(string $uri, $new_contents) {
+    public function addOverrideURI(string $uri, $new_contents)
+    {
         $path = Utils::uriToPath($uri);
         if ($new_contents === null) {
             $this->removeOverride($path);
@@ -41,7 +45,8 @@ class FileMapping {
      * @param ?string $new_contents
      * @return void
      */
-    public function addOverride(string $path, $new_contents) {
+    public function addOverride(string $path, $new_contents)
+    {
         if ($new_contents === null) {
             $this->removeOverride($path);
             return;
@@ -52,7 +57,8 @@ class FileMapping {
     /**
      * @return void
      */
-    public function removeOverrideURI(string $uri) {
+    public function removeOverrideURI(string $uri)
+    {
         $path = Utils::uriToPath($uri);
         $this->removeOverride($path);
     }
@@ -60,7 +66,8 @@ class FileMapping {
     /**
      * @return void
      */
-    public function removeOverride(string $path) {
+    public function removeOverride(string $path)
+    {
         unset($this->overrides[$path]);
     }
 }

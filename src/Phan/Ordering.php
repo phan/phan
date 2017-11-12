@@ -44,8 +44,10 @@ class Ordering
         array $analysis_file_list
     ) : array {
 
-        \assert($process_count > 0,
-            "The process count must be greater than zero.");
+        \assert(
+            $process_count > 0,
+            "The process count must be greater than zero."
+        );
 
         if (Config::getValue('randomize_file_order')) {
             $random_proc_file_map = [];
@@ -79,7 +81,6 @@ class Ordering
 
         // Iterate over each class extracting files
         foreach ($this->code_base->getUserDefinedClassMap() as $class) {
-
             // Get the name of the file associated with the class
             $file_name = $class->getContext()->getFile();
 
@@ -136,7 +137,6 @@ class Ordering
             foreach ($list as $item) {
                 $processor_file_list_map[$process_id][] = $item['file'];
             }
-
         }
 
         // Distribute any remaining files without classes evenly

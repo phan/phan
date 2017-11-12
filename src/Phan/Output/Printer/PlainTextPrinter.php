@@ -26,16 +26,16 @@ final class PlainTextPrinter implements IssuePrinterInterface
         $type    = $issue->getType();
         $message = $instance->getMessage();
         if (Config::getValue('color_issue_messages')) {
-            switch($issue->getSeverity()) {
-            case Issue::SEVERITY_CRITICAL:
-                $issue_type_template = '{ISSUETYPE_CRITICAL}';
-                break;
-            case Issue::SEVERITY_NORMAL:
-                $issue_type_template = '{ISSUETYPE_NORMAL}';
-                break;
-            default:
-                $issue_type_template = '{ISSUETYPE}';
-                break;
+            switch ($issue->getSeverity()) {
+                case Issue::SEVERITY_CRITICAL:
+                    $issue_type_template = '{ISSUETYPE_CRITICAL}';
+                    break;
+                case Issue::SEVERITY_NORMAL:
+                    $issue_type_template = '{ISSUETYPE_NORMAL}';
+                    break;
+                default:
+                    $issue_type_template = '{ISSUETYPE}';
+                    break;
             }
             $issue = Colorizing::colorizeTemplate("{FILE}:{LINE} $issue_type_template %s", [
                 $file,

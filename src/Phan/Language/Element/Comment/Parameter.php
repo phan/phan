@@ -59,8 +59,7 @@ class Parameter
     public function asVariable(
         Context $context,
         int $flags = 0
-    ) : Variable
-    {
+    ) : Variable {
         return new Variable(
             $context,
             $this->getName(),
@@ -74,8 +73,7 @@ class Parameter
      */
     public function asRealParameter(
         Context $context
-    ) : \Phan\Language\Element\Parameter
-    {
+    ) : \Phan\Language\Element\Parameter {
         $flags = 0;
         if ($this->isVariadic()) {
             $flags |= \ast\flags\PARAM_VARIADIC;

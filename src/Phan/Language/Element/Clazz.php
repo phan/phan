@@ -184,7 +184,6 @@ class Clazz extends AddressableElement
         // If this class has a parent class, add it to the
         // class info
         if (($parent_class = $class->getParentClass())) {
-
             $parent_class_fqsen =
                 FullyQualifiedClassName::fromFullyQualifiedString(
                     '\\' . $parent_class->getName()
@@ -208,7 +207,6 @@ class Clazz extends AddressableElement
         foreach (UnionType::internalPropertyMapForClassName(
             $clazz->getName()
         ) as $property_name => $property_type_string) {
-
             // An asterisk indicates that the class supports
             // dynamic properties
             if ($property_name === '*') {
@@ -307,7 +305,6 @@ class Clazz extends AddressableElement
         }
 
         foreach ($class->getMethods() as $reflection_method) {
-
             $method_context = $context->withScope(
                 new ClassScope(new GlobalScope, $clazz->getFQSEN())
             );
@@ -337,7 +334,6 @@ class Clazz extends AddressableElement
     public function setParentType(Type $parent_type = null)
     {
         if ($this->getInternalScope()->hasAnyTemplateType()) {
-
             // Get a reference to the local list of templated
             // types. We'll use this to map templated types on the
             // parent to locally templated types.
@@ -632,7 +628,6 @@ class Clazz extends AddressableElement
                     $exception->getIssueInstance()
                 );
             }
-
         }
 
         $code_base->addProperty($property);
@@ -785,7 +780,8 @@ class Clazz extends AddressableElement
 
         // Get the FQSEN of the property we're looking for
         $property_fqsen = FullyQualifiedPropertyName::make(
-            $this->getFQSEN(), $name
+            $this->getFQSEN(),
+            $name
         );
 
         $property = null;
@@ -853,7 +849,7 @@ class Clazz extends AddressableElement
                         [ (string)$property_fqsen ]
                     )
                 );
-            } else if ($method->isProtected()) {
+            } elseif ($method->isProtected()) {
                 throw new IssueException(
                     Issue::fromType(Issue::AccessPropertyProtected)(
                         $context->getFile(),
@@ -874,9 +870,7 @@ class Clazz extends AddressableElement
             $this->addProperty($code_base, $property, new None);
 
             return $property;
-
-        } else if ($has_property) {
-
+        } elseif ($has_property) {
             // If we have a property, but its inaccessible, emit
             // an issue
             if ($property->isPrivate()) {
@@ -1093,7 +1087,7 @@ class Clazz extends AddressableElement
                     ]
                 )
             );
-        } else if (!$is_local_or_remote_access && $constant->isProtected()) {
+        } elseif (!$is_local_or_remote_access && $constant->isProtected()) {
             throw new IssueException(
                 Issue::fromType(Issue::AccessClassConstantProtected)(
                     $context->getFile(),
@@ -1184,14 +1178,17 @@ class Clazz extends AddressableElement
             // and use a clone of all of the parameters for analysis (quick_mode=false has different values).
             // TODO: If they're immutable, they can be shared without cloning with less worry.
             $method->setParameterList(
-                \array_map(function (Parameter $parameter) : Parameter {
-                    return clone($parameter);
-                }, $method->getParameterList()));
+                \array_map(
+                    function (Parameter $parameter) : Parameter {
+                        return clone($parameter);
+                    },
+                    $method->getParameterList()
+                )
+            );
 
             // If we have a parent type defined, map the method's
             // return type and parameter types through it
             if ($type_option->isDefined()) {
-
                 // Map the method's return type
                 if ($method->getUnionType()->hasTemplateType()) {
                     $method->setUnionType(
@@ -1291,7 +1288,8 @@ class Clazz extends AddressableElement
                 // but doesn't exist yet
                 $default_constructor =
                     Method::defaultConstructorForClass(
-                        $this, $code_base
+                        $this,
+                        $code_base
                     );
 
                 $this->addMethod($code_base, $default_constructor, $this->getParentTypeOption());
@@ -1355,7 +1353,8 @@ class Clazz extends AddressableElement
      * @return Method
      * The magic `__call` method
      */
-    public function getCallMethod(CodeBase $code_base) {
+    public function getCallMethod(CodeBase $code_base)
+    {
         return $this->getMethodByName($code_base, '__call');
     }
 
@@ -1395,7 +1394,8 @@ class Clazz extends AddressableElement
      * @return Method
      * The magic `__callStatic` method
      */
-    public function getCallStaticMethod(CodeBase $code_base) {
+    public function getCallStaticMethod(CodeBase $code_base)
+    {
         return $this->getMethodByName($code_base, '__callStatic');
     }
 
@@ -1517,7 +1517,8 @@ class Clazz extends AddressableElement
     /**
      * Check if this class or its ancestors forbids undeclared magic properties.
      */
-    public function getForbidUndeclaredMagicProperties(CodeBase $code_base) : bool {
+    public function getForbidUndeclaredMagicProperties(CodeBase $code_base) : bool
+    {
         return (
             Flags::bitVectorHasState(
                 $this->getPhanFlags(),
@@ -1551,7 +1552,8 @@ class Clazz extends AddressableElement
     /**
      * Check if this class or its ancestors forbids undeclared magic methods.
      */
-    public function getForbidUndeclaredMagicMethods(CodeBase $code_base) : bool {
+    public function getForbidUndeclaredMagicMethods(CodeBase $code_base) : bool
+    {
         return (
             Flags::bitVectorHasState(
                 $this->getPhanFlags(),
@@ -1764,7 +1766,9 @@ class Clazz extends AddressableElement
             }
 
             $this->importAncestorClass(
-                $code_base, $ancestor, new None
+                $code_base,
+                $ancestor,
+                new None
             );
         }
 
@@ -1779,7 +1783,9 @@ class Clazz extends AddressableElement
             }
 
             $this->importAncestorClass(
-                $code_base, $ancestor, new None
+                $code_base,
+                $ancestor,
+                new None
             );
         }
 
@@ -2204,7 +2210,7 @@ class Clazz extends AddressableElement
             }, $property_map));
         }
         $reflection_class = new \ReflectionClass((string)$this->getFQSEN());
-        $method_map = array_filter($this->getMethodMap($code_base), function(Method $method) use($reflection_class) : bool {
+        $method_map = array_filter($this->getMethodMap($code_base), function(Method $method) use ($reflection_class) : bool {
             if ($method->getFQSEN()->isAlternate()) {
                 return false;
             }
@@ -2275,7 +2281,8 @@ class Clazz extends AddressableElement
 
         // Make sure there are no abstract methods on non-abstract classes
         AbstractMethodAnalyzer::analyzeAbstractMethodsAreImplemented(
-            $code_base, $this
+            $code_base,
+            $this
         );
 
         self::analyzeClassConstantOverrides($code_base, $original_declared_class_constants);
@@ -2309,7 +2316,7 @@ class Clazz extends AddressableElement
      *
      * @return void
      */
-    public final function analyze(CodeBase $code_base)
+    final public function analyze(CodeBase $code_base)
     {
         if ($this->isPHPInternal()) {
             return;
@@ -2317,31 +2324,36 @@ class Clazz extends AddressableElement
 
         // Make sure the parent classes exist
         ClassInheritanceAnalyzer::analyzeClassInheritance(
-            $code_base, $this
+            $code_base,
+            $this
         );
 
         DuplicateClassAnalyzer::analyzeDuplicateClass(
-            $code_base, $this
+            $code_base,
+            $this
         );
 
         ParentConstructorCalledAnalyzer::analyzeParentConstructorCalled(
-            $code_base, $this
+            $code_base,
+            $this
         );
 
         PropertyTypesAnalyzer::analyzePropertyTypes(
-            $code_base, $this
+            $code_base,
+            $this
         );
 
         // Analyze this class to make sure that we don't have conflicting
         // types between similar inherited methods.
         CompositionAnalyzer::analyzeComposition(
-            $code_base, $this
+            $code_base,
+            $this
         );
 
         // Let any configured plugins analyze the class
         ConfigPluginSet::instance()->analyzeClass(
-            $code_base, $this
+            $code_base,
+            $this
         );
-
     }
 }

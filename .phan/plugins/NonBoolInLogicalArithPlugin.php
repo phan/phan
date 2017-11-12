@@ -10,19 +10,22 @@ use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
-class NonBoolInLogicalArithPlugin extends PluginV2 implements AnalyzeNodeCapability {
+class NonBoolInLogicalArithPlugin extends PluginV2 implements AnalyzeNodeCapability
+{
 
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
      *
      * @override
      */
-    public static function getAnalyzeNodeVisitorClassName() : string {
+    public static function getAnalyzeNodeVisitorClassName() : string
+    {
         return NonBoolInLogicalArithVisitor::class;
     }
 }
 
-class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor {
+class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor
+{
 
     /** define boolean operator list */
     const BINARY_BOOL_OPERATORS = [
@@ -36,19 +39,20 @@ class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor {
     /**
      * @override
      */
-    public function visitBinaryop(Node $node) : Context{
+    public function visitBinaryop(Node $node) : Context
+    {
         // check every boolean binary operation
-        if(in_array($node->flags, self::BINARY_BOOL_OPERATORS, true)){
+        if (in_array($node->flags, self::BINARY_BOOL_OPERATORS, true)) {
             // get left node and parse it
             // (dig nodes to avoid NOT('!') operator's converting its value to boolean type)
             $left_node = $node->children['left'];
-            while(isset($left_node->flags) && $left_node->flags === ast\flags\UNARY_BOOL_NOT){
+            while (isset($left_node->flags) && $left_node->flags === ast\flags\UNARY_BOOL_NOT) {
                 $left_node = $left_node->children['expr'];
             }
 
             // get right node and parse it
             $right_node = $node->children['right'];
-            while(isset($right_node->flags) && $right_node->flags === ast\flags\UNARY_BOOL_NOT){
+            while (isset($right_node->flags) && $right_node->flags === ast\flags\UNARY_BOOL_NOT) {
                 $right_node = $right_node->children['expr'];
             }
 
@@ -57,7 +61,7 @@ class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor {
             $right_type = UnionType::fromNode($this->context, $this->code_base, $right_node);
 
             // if left or right type is NOT boolean, emit issue
-            if($left_type->serialize() !== "bool" || $right_type->serialize() !== "bool"){
+            if ($left_type->serialize() !== "bool" || $right_type->serialize() !== "bool") {
                 $this->emit(
                     'PhanPluginNonBoolInLogicalArith',
                     'Non bool value in logical arithmetic',
@@ -67,7 +71,6 @@ class NonBoolInLogicalArithVisitor extends PluginAwareAnalysisVisitor {
         }
         return $this->context;
     }
-
 }
 
 return new NonBoolInLogicalArithPlugin;

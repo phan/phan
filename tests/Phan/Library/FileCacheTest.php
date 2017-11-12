@@ -11,13 +11,15 @@ class FileCacheTest extends BaseTest
     const MOCK_PATH = '/path/to/a';
     const MOCK_CONTENTS = "Mock contents\nOther lines\n";
 
-    public function setUp() {
+    public function setUp()
+    {
         parent::setUp();
         FileCache::clear();
         FileCache::setMaxCacheSize(FileCache::MINIMUM_CACHE_SIZE);
     }
 
-    public function tearDown() {
+    public function tearDown()
+    {
         parent::setUp();
         FileCache::clear();
     }
@@ -57,7 +59,8 @@ class FileCacheTest extends BaseTest
         $this->assertSame("contents of 2", FileCache::getEntry("/path/to/2")->getContents(), "Second least recently used entry should be kept");
     }
 
-    public function testGetOrReadEntry() {
+    public function testGetOrReadEntry()
+    {
         $this->assertNull(FileCache::getEntry(__FILE__));
         $line = __LINE__;  // Comment placeholder
         $expectedLineContents = "        \$line = __LINE__;  // Comment placeholder\n";
@@ -65,7 +68,8 @@ class FileCacheTest extends BaseTest
         $this->assertSame($expectedLineContents, $entry->getLine($line));
     }
 
-    public function testGetOrReadEntryThrows() {
+    public function testGetOrReadEntryThrows()
+    {
         try {
             FileCache::getOrReadEntry('/path/to/missingfile');
             $this->fail('should throw');

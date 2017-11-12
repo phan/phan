@@ -126,5 +126,4 @@ class ClassMap
     {
         return $this->method_map;
     }
-
 }

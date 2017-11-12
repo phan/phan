@@ -158,7 +158,6 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
     ) {
         // Test to see if we have a class defined
         if (false === \strpos($fqsen_string, '::')) {
-
             \assert(
                 $context->isInClassScope(),
                 "Cannot reference class element without class name when not in class scope."
@@ -236,8 +235,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         int $alternate_id
     ) {
 
-        \assert($alternate_id < 1000,
-            "Your alternate IDs have run away");
+        \assert(
+            $alternate_id < 1000,
+            "Your alternate IDs have run away"
+        );
 
         return static::make(
             $this->getFullyQualifiedClassName(),
@@ -251,7 +252,8 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
      * The alternate id for the class of the class element
      * TODO: Is it necessary to have both of these?
      */
-    public function getAlternateIdForClassName() : int{
+    public function getAlternateIdForClassName() : int
+    {
         return $this->getFullyQualifiedClassName()->getAlternateId();
     }
 
@@ -265,8 +267,10 @@ abstract class FullyQualifiedClassElement extends AbstractFQSEN
         int $alternate_id
     ) {
 
-        \assert($alternate_id < 1000,
-            "Your alternate IDs have run away");
+        \assert(
+            $alternate_id < 1000,
+            "Your alternate IDs have run away"
+        );
 
         return static::make(
             $this->getFullyQualifiedClassName()->withAlternateId($alternate_id),

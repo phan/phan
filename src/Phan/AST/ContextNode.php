@@ -170,7 +170,7 @@ class ContextNode
             \assert($adaptation_node instanceof Node);
             if ($adaptation_node->kind === \ast\AST_TRAIT_ALIAS) {
                 $this->handleTraitAlias($adaptations_map, $adaptation_node);
-            } else if ($adaptation_node->kind === \ast\AST_TRAIT_PRECEDENCE) {
+            } elseif ($adaptation_node->kind === \ast\AST_TRAIT_PRECEDENCE) {
                 $this->handleTraitPrecedence($adaptations_map, $adaptation_node);
             } else {
                 \assert(false, ("Unknown adaptation node kind " . $adaptation_node->kind));
@@ -244,7 +244,8 @@ class ContextNode
      * @param Node $adaptation_node
      * @return void
      */
-    private function handleTraitPrecedence(array $adaptations_map, Node $adaptation_node) {
+    private function handleTraitPrecedence(array $adaptations_map, Node $adaptation_node)
+    {
         // TODO: Should also verify that the original method exists, in a future PR?
         $trait_method_node = $adaptation_node->children['method'];
         // $trait_chosen_class_name_node = $trait_method_node->children['class'];
@@ -566,9 +567,9 @@ class ContextNode
                     $this->code_base,
                     $method_name
                 );
-            } else if (!$is_static && $class->allowsCallingUndeclaredInstanceMethod($this->code_base)) {
+            } elseif (!$is_static && $class->allowsCallingUndeclaredInstanceMethod($this->code_base)) {
                 return $class->getCallMethod($this->code_base);
-            } else if ($is_static && $class->allowsCallingUndeclaredStaticMethod($this->code_base)) {
+            } elseif ($is_static && $class->allowsCallingUndeclaredStaticMethod($this->code_base)) {
                 return $class->getCallStaticMethod($this->code_base);
             }
         }
@@ -1620,7 +1621,8 @@ class ContextNode
      * @param int $flags - See self::RESOLVE_*
      * @return ?array - array if elements could be resolved.
      */
-    private function getEquivalentPHPArrayElements(array $children, int $flags) {
+    private function getEquivalentPHPArrayElements(array $children, int $flags)
+    {
         $elements = [];
         foreach ($children as $child_node) {
             $key_node = ($flags & self::RESOLVE_ARRAY_KEYS) != 0 ? $child_node->children['key'] : null;
@@ -1631,7 +1633,7 @@ class ContextNode
             // NOTE: this has some overlap with DuplicateKeyPlugin
             if ($key_node === null) {
                 $elements[] = $value_node;
-            } else if (\is_scalar($key_node)) {
+            } elseif (\is_scalar($key_node)) {
                 $elements[$key_node] = $value_node;  // Check for float?
             } else {
                 $key = $this->getEquivalentPHPValueForNode($key_node, $flags);
@@ -1659,7 +1661,8 @@ class ContextNode
      * @param Node|float|int|string $node
      * @return Node|Node[]|string[]|int[]|float[]|string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node.
      */
-    private function getEquivalentPHPValueForNode($node, int $flags) {
+    private function getEquivalentPHPValueForNode($node, int $flags)
+    {
         if (!$node instanceof Node) {
             return $node;
         }
@@ -1674,13 +1677,16 @@ class ContextNode
                 return $node;
             }
             return $elements;
-        } else if ($kind === \ast\AST_CONST) {
+        } elseif ($kind === \ast\AST_CONST) {
             $name = $node->children['name']->children['name'] ?? null;
             if (\is_string($name)) {
-                switch(\strtolower($name)) {
-                case 'false': return false;
-                case 'true': return true;
-                case 'null': return null;
+                switch (\strtolower($name)) {
+                    case 'false':
+                        return false;
+                    case 'true':
+                        return true;
+                    case 'null':
+                        return null;
                 }
             }
             if (($flags & self::RESOLVE_CONSTANTS) === 0) {
@@ -1698,7 +1704,7 @@ class ContextNode
                 $new_node = $this->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
             }
             return $new_node;
-        } else if ($kind === \ast\AST_CLASS_CONST) {
+        } elseif ($kind === \ast\AST_CLASS_CONST) {
             if (($flags & self::RESOLVE_CONSTANTS) === 0) {
                 return $node;
             }
@@ -1727,7 +1733,8 @@ class ContextNode
      * @return Node|string[]|int[]|float[]|string|float|int|bool|null - If this could be resolved and we're certain of the value, this gets an equivalent definition. Otherwise, this returns $node.
      * @throws InvalidArgumentException if the object could not be determined - Callers must catch this.
      */
-    public function getEquivalentPHPValue(int $flags = self::RESOLVE_DEFAULT) {
+    public function getEquivalentPHPValue(int $flags = self::RESOLVE_DEFAULT)
+    {
         return $this->getEquivalentPHPValueForNode($this->node, $flags);
     }
 
@@ -1741,7 +1748,8 @@ class ContextNode
      *
      * @throws InvalidArgumentException if the object could not be determined - Callers must catch this.
      */
-    public function getEquivalentPHPScalarValue() {
+    public function getEquivalentPHPScalarValue()
+    {
         return $this->getEquivalentPHPValueForNode($this->node, self::RESOLVE_SCALAR_DEFAULT);
     }
 }

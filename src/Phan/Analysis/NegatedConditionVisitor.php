@@ -24,7 +24,6 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use ast\Node;
 
-
 // TODO: Make $x != null remove FalseType and NullType from $x
 // TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
 class NegatedConditionVisitor extends KindVisitorImplementation
@@ -110,10 +109,10 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         $flags = ($node->flags ?? 0);
         if ($flags === \ast\flags\BINARY_BOOL_OR) {
             return $this->analyzeShortCircuitingOr($node->children['left'], $node->children['right']);
-        } else if ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
+        } elseif ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
             $this->checkVariablesDefined($node);
             return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
-        } else if ($flags === \ast\flags\BINARY_IS_NOT_IDENTICAL || $flags === \ast\flags\BINARY_IS_NOT_EQUAL) {
+        } elseif ($flags === \ast\flags\BINARY_IS_NOT_IDENTICAL || $flags === \ast\flags\BINARY_IS_NOT_EQUAL) {
             $this->checkVariablesDefined($node);
             // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
             return $this->analyzeIsNotIdentical($node->children['left'], $node->children['right']);
@@ -131,7 +130,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
             // e.g. if (!($x === null))
             return $this->updateVariableToBeNotIdentical($left, $right, $this->context);
-        } else if (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
+        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
             // e.g. if (!(null === $x))
             return $this->updateVariableToBeNotIdentical($right, $left, $this->context);
         }
@@ -148,7 +147,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
             // e.g. if (!($x !== null))
             return $this->updateVariableToBeIdentical($left, $right, $this->context);
-        } else if (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
+        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
             // e.g. if (!(null !== $x))
             return $this->updateVariableToBeIdentical($right, $left, $this->context);
         }
@@ -232,7 +231,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $node) {
+    public function visitCall(Node $node)
+    {
         $raw_function_name = self::getFunctionName($node);
         if (!\is_string($raw_function_name)) {
             return $this->context;
@@ -269,7 +269,8 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         return $context;
     }
 
-    public function visitVar(Node $node) {
+    public function visitVar(Node $node)
+    {
         $this->checkVariablesDefined($node);
         return $this->removeTruthyFromVariable($node, $this->context, false);
     }
@@ -287,20 +288,20 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     /**
      * @return \Closure[] (ConditionVisitor $cv, Node $var_node, Context $context) -> Context
      */
-    private static function createNegationCallbackMap() : array {
+    private static function createNegationCallbackMap() : array
+    {
         $remove_null_cb = function(NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->removeNullFromVariable($var_node, $context, false);
         };
 
         // Remove any Types from UnionType that are subclasses of $base_class_name
-        $make_basic_negated_assertion_callback = static function(string $base_class_name) : \Closure
-        {
-            return static function(NegatedConditionVisitor $cv, Node $var_node, Context $context) use($base_class_name) : Context {
+        $make_basic_negated_assertion_callback = static function(string $base_class_name) : \Closure {
+            return static function(NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($base_class_name) : Context {
                 return $cv->updateVariableWithConditionalFilter(
                     $var_node,
                     $context,
-                    function(UnionType $union_type) use($base_class_name) : bool {
-                        return $union_type->hasTypeMatchingCallback(function(Type $type) use($base_class_name) : bool {
+                    function(UnionType $union_type) use ($base_class_name) : bool {
+                        return $union_type->hasTypeMatchingCallback(function(Type $type) use ($base_class_name) : bool {
                             return $type instanceof $base_class_name;
                         });
                     },

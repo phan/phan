@@ -8,16 +8,15 @@ use Phan\Output\Printer\PlainTextPrinter;
 use Phan\Phan;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-abstract class AbstractPhanFileTest
-    extends BaseTest
-    implements CodeBaseAwareTestInterface
+abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTestInterface
 {
     const EXPECTED_SUFFIX = '.expected';
 
     private $code_base;
     private $original_config = [];
 
-    public function setCodeBase(CodeBase $code_base = null) {
+    public function setCodeBase(CodeBase $code_base = null)
+    {
         $this->code_base = $code_base;
     }
 
@@ -38,7 +37,8 @@ abstract class AbstractPhanFileTest
      *
      * @return void
      */
-    public function setUp() {
+    public function setUp()
+    {
         parent::setUp();
 
         // Backup the config file
@@ -50,7 +50,8 @@ abstract class AbstractPhanFileTest
     /**
      * Reset any changes we made to our global state
      */
-    public function tearDown() {
+    public function tearDown()
+    {
         parent::tearDown();
 
         // Reinstate the original config
@@ -65,7 +66,8 @@ abstract class AbstractPhanFileTest
      * @param string $sourceDir
      * @return string[][]
      */
-    protected function scanSourceFilesDir($sourceDir, $expectedDir) {
+    protected function scanSourceFilesDir($sourceDir, $expectedDir)
+    {
         $files = array_filter(
             array_filter(
                 scandir($sourceDir),
@@ -77,13 +79,15 @@ abstract class AbstractPhanFileTest
         );
 
         return array_combine(
-            $files, array_map(
+            $files,
+            array_map(
                 function ($filename) use ($sourceDir, $expectedDir) {
                     return [
                         [$sourceDir . DIRECTORY_SEPARATOR . $filename],
                         $expectedDir . DIRECTORY_SEPARATOR . $filename . self::EXPECTED_SUFFIX,
                     ];
-                }, $files
+                },
+                $files
             )
         );
     }
@@ -98,7 +102,8 @@ abstract class AbstractPhanFileTest
      * @param ?string $config_file_path
      * @dataProvider getTestFiles
      */
-    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null) {
+    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
+    {
         $expected_output = '';
         if (is_file($expected_file_path)) {
             // Read the expected output
@@ -120,7 +125,9 @@ abstract class AbstractPhanFileTest
         Phan::setPrinter($printer);
         Phan::setIssueCollector(new BufferingCollector());
 
-        Phan::analyzeFileList($this->code_base, function() use($test_file_list) { return $test_file_list; });
+        Phan::analyzeFileList($this->code_base, function() use ($test_file_list) {
+            return $test_file_list;
+        });
 
         $output = $stream->fetch();
 
@@ -148,7 +155,7 @@ abstract class AbstractPhanFileTest
         $r = "%r";
         $startOffset = 0;
         $length = strlen($wanted_re);
-        while($startOffset < $length) {
+        while ($startOffset < $length) {
             $start = strpos($wanted_re, $r, $startOffset);
             if ($start !== false) {
                 // we have found a start tag
@@ -162,7 +169,7 @@ abstract class AbstractPhanFileTest
                 $start = $end = $length;
             }
             // quote a non re portion of the string
-            $temp = $temp . preg_quote(substr($wanted_re, $startOffset, ($start - $startOffset)),  '/');
+            $temp = $temp . preg_quote(substr($wanted_re, $startOffset, ($start - $startOffset)), '/');
             // add the re unquoted.
             if ($end > $start) {
                 $temp = $temp . '(' . substr($wanted_re, $start+2, ($end - $start-2)). ')';
@@ -188,7 +195,10 @@ abstract class AbstractPhanFileTest
         $wanted_re = str_replace('%c', '.', $wanted_re);
         // %f allows two points "-.0.0" but that is the best *simple* expression
 
-        $this->assertRegExp("/^$wanted_re\$/", $output,
-            "Unexpected output in {$test_file_list[0]}");
+        $this->assertRegExp(
+            "/^$wanted_re\$/",
+            $output,
+            "Unexpected output in {$test_file_list[0]}"
+        );
     }
 }

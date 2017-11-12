@@ -92,8 +92,7 @@ final class GenericArrayType extends ArrayType
     public static function fromElementType(
         Type $type,
         bool $is_nullable
-    ) : GenericArrayType
-    {
+    ) : GenericArrayType {
         // Make sure we only ever create exactly one
         // object for any unique type
         static $canonical_object_map_non_nullable = null;

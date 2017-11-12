@@ -13,11 +13,10 @@ $internal_function_name_list = get_defined_functions()['internal'];
 
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
   // This is the normal path when Phan is installed only in the scope of a project.
-  require_once __DIR__ . '/../vendor/autoload.php';
-}
-else {
+    require_once __DIR__ . '/../vendor/autoload.php';
+} else {
   // This is the path to autoload.php when Phan is installed globally.
-  require_once __DIR__ . '/../../../autoload.php';
+    require_once __DIR__ . '/../../../autoload.php';
 }
 
 use Phan\CodeBase;

@@ -189,7 +189,8 @@ class CodeBase
     /**
      * @return void
      */
-    public function enableUndoTracking() {
+    public function enableUndoTracking()
+    {
         if ($this->has_enabled_undo_tracker) {
             throw new \RuntimeException("Undo tracking already enabled");
         }
@@ -200,14 +201,16 @@ class CodeBase
     /**
      * @return void
      */
-    public function disableUndoTracking() {
+    public function disableUndoTracking()
+    {
         if (!$this->has_enabled_undo_tracker) {
             throw new \RuntimeException("Undo tracking was never enabled");
         }
         $this->undo_tracker = null;
     }
 
-    public function isUndoTrackingEnabled() : bool {
+    public function isUndoTrackingEnabled() : bool
+    {
         return $this->undo_tracker !== null;
     }
 
@@ -229,7 +232,8 @@ class CodeBase
      *
      * (This is the list prior to any analysis exclusion or whitelisting steps)
      */
-    public function getParsedFilePathList() : array {
+    public function getParsedFilePathList() : array
+    {
         if ($this->undo_tracker) {
             return $this->undo_tracker->getParsedFilePathList();
         }
@@ -239,7 +243,8 @@ class CodeBase
     /**
      * @return int The size of $this->getParsedFilePathList()
      */
-    public function getParsedFilePathCount() : int {
+    public function getParsedFilePathCount() : int
+    {
         if ($this->undo_tracker) {
             return $this->undo_tracker->getParsedFilePathCount();
         }
@@ -250,7 +255,8 @@ class CodeBase
      * @param string|null $current_parsed_file
      * @return void
      */
-    public function setCurrentParsedFile($current_parsed_file) {
+    public function setCurrentParsedFile($current_parsed_file)
+    {
         if ($this->undo_tracker) {
             $this->undo_tracker->setCurrentParsedFile($current_parsed_file);
         }
@@ -261,7 +267,8 @@ class CodeBase
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */
-    public function recordUnparseableFile(string $current_parsed_file) {
+    public function recordUnparseableFile(string $current_parsed_file)
+    {
         if ($this->undo_tracker) {
             $this->undo_tracker->recordUnparseableFile($this, $current_parsed_file);
         }
@@ -316,7 +323,8 @@ class CodeBase
      * @param string[] $file_mapping_contents maps relative path to absolute paths
      * @return string[] - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(array $new_file_list, array $file_mapping_contents = []) {
+    public function updateFileList(array $new_file_list, array $file_mapping_contents = [])
+    {
         if ($this->undo_tracker) {
             return $this->undo_tracker->updateFileList($this, $new_file_list, $file_mapping_contents);
         }
@@ -327,7 +335,8 @@ class CodeBase
      * @param string $file_name
      * @return bool - true if caller should replace contents
      */
-    public function beforeReplaceFileContents(string $file_name) {
+    public function beforeReplaceFileContents(string $file_name)
+    {
         if ($this->undo_tracker) {
             return $this->undo_tracker->beforeReplaceFileContents($this, $file_name);
         }
@@ -352,9 +361,12 @@ class CodeBase
             if (!$this->hasFunctionWithFQSEN($function_fqsen)) {
                 // Force loading these even if automatic loading failed.
                 // (Shouldn't happen, the function list is fetched from reflection by callers.
-                foreach (FunctionFactory::functionListFromReflectionFunction($this, $function_fqsen, new \ReflectionFunction($function_fqsen->getNamespacedName()))
-                    as $function
-                ) {
+                $function_alternate_generator = FunctionFactory::functionListFromReflectionFunction(
+                    $this,
+                    $function_fqsen,
+                    new \ReflectionFunction($function_fqsen->getNamespacedName())
+                );
+                foreach ($function_alternate_generator as $function) {
                     $this->addFunction($function);
                 }
             }
@@ -470,7 +482,7 @@ class CodeBase
         $this->fqsen_class_map[$fqsen] = $class;
         $this->fqsen_class_map_user_defined[$fqsen] = $class;
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($fqsen) {
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($fqsen) {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 unset($inner->fqsen_class_map[$fqsen]);
                 unset($inner->fqsen_class_map_user_defined[$fqsen]);
@@ -522,7 +534,7 @@ class CodeBase
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
             // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($original, $alias_record) {
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($original, $alias_record) {
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {
                     $fqsen_alias_map->detach($alias_record);
@@ -723,7 +735,8 @@ class CodeBase
      *
      * @return void
      */
-    public function addMethod(Method $method) {
+    public function addMethod(Method $method)
+    {
 
         // Add the method to the map
         $this->getClassMapByFQSEN(
@@ -743,7 +756,7 @@ class CodeBase
         }
         if ($this->undo_tracker) {
             // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($method) {
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($method) {
                 $inner->method_set->detach($method);
             });
         }
@@ -794,7 +807,8 @@ class CodeBase
      */
     public function getMethodSetByName(string $name) : Set
     {
-        \assert(Config::get_track_references(),
+        \assert(
+            Config::get_track_references(),
             __METHOD__ . ' can only be called when dead code '
             . ' detection (or force_tracking_references) is enabled.'
         );
@@ -834,7 +848,8 @@ class CodeBase
      * This can be used for debugging Phan's inference
      * @suppress PhanDeprecatedFunction
      */
-    public function exportFunctionAndMethodSet() : array {
+    public function exportFunctionAndMethodSet() : array
+    {
         $result = [];
         foreach ($this->getFunctionAndMethodSet() as $function_or_method) {
             if ($function_or_method->isPHPInternal()) {
@@ -875,7 +890,7 @@ class CodeBase
         $this->fqsen_func_map[$function->getFQSEN()] = $function;
 
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use($function) {
+            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($function) {
                 Daemon::debugf("Undoing addFunction on %s\n", $function->getFQSEN());
                 unset($inner->fqsen_func_map[$function->getFQSEN()]);
             });
@@ -981,7 +996,8 @@ class CodeBase
      *
      * @return void
      */
-    public function addGlobalConstant(GlobalConstant $global_constant) {
+    public function addGlobalConstant(GlobalConstant $global_constant)
+    {
         $this->fqsen_global_constant_map[
             $global_constant->getFQSEN()
         ] = $global_constant;
@@ -1128,8 +1144,7 @@ class CodeBase
      */
     private function hasInternalFunctionWithFQSEN(
         FullyQualifiedFunctionName $fqsen
-    ) : bool
-    {
+    ) : bool {
         $canonical_fqsen = $fqsen->withAlternateId(0);
         $found = isset($this->internal_function_fqsen_set[$canonical_fqsen]);
         if (!$found) {
@@ -1177,7 +1192,7 @@ class CodeBase
             }
 
             return true;
-        } else if ($found) {
+        } elseif ($found) {
             // Phan doesn't have extended information for the signature for this function, but the function exists.
             foreach (FunctionFactory::functionListFromReflectionFunction(
                 $this,
@@ -1197,7 +1212,8 @@ class CodeBase
      * The total number of elements of all types in the
      * code base.
      */
-    public function totalElementCount() : int {
+    public function totalElementCount() : int
+    {
         $sum = (
             \count($this->getFunctionMap())
             + \count($this->getGlobalConstantMap())
@@ -1243,5 +1259,4 @@ class CodeBase
         // TODO: ...
         return [];
     }
-
 }

@@ -8,9 +8,11 @@ use Phan\Output\Printer\CSVPrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class CSVPrinterTest extends BaseTest {
+class CSVPrinterTest extends BaseTest
+{
 
-    public function testHeaderCorrespondsToData() {
+    public function testHeaderCorrespondsToData()
+    {
         $output = new BufferedOutput();
 
         $printer = new CSVPrinter();
@@ -35,7 +37,8 @@ class CSVPrinterTest extends BaseTest {
      *
      * @dataProvider specialCharacterCasesProvider
      */
-    public function testSpecialCharactersAreProperlyEncoded($string, $messageExpected) {
+    public function testSpecialCharactersAreProperlyEncoded($string, $messageExpected)
+    {
         $output = new BufferedOutput();
 
         $printer = new CSVPrinter();
@@ -48,7 +51,8 @@ class CSVPrinterTest extends BaseTest {
         $this->assertEquals($expected, $actual);
     }
 
-    public function specialCharacterCasesProvider() {
+    public function specialCharacterCasesProvider()
+    {
         return [
             // Valid ASCII
             ["a", 'a'],

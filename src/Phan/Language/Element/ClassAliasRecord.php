@@ -6,7 +6,8 @@ use ast\Node;
 use Phan\Language\Context;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
-class ClassAliasRecord {
+class ClassAliasRecord
+{
 
     /** @var FullyQualifiedClassName the FQSEN of the alias that will be created. */
     public $alias_fqsen;

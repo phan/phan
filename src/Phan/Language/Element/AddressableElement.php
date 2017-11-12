@@ -69,7 +69,8 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * The fully-qualified structural element name of this
      * structural element
      */
-    public function getFQSEN() {
+    public function getFQSEN()
+    {
         \assert(!empty($this->fqsen), "FQSEN must be defined");
         return $this->fqsen;
     }
@@ -230,7 +231,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @return void
      * @override
      */
-    public final function hydrate(CodeBase $code_base)
+    final public function hydrate(CodeBase $code_base)
     {
         if (!$this->isFirstExecution(__METHOD__)) {
             return;

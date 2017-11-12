@@ -239,7 +239,16 @@ class Comment
 
         if (!Config::getValue('read_type_annotations')) {
             return new Comment(
-                0, [], [], [], new None, new UnionType(), [], [], [], new None
+                0,
+                [],
+                [],
+                [],
+                new None,
+                new UnionType(),
+                [],
+                [],
+                [],
+                new None
             );
         }
 
@@ -260,7 +269,7 @@ class Comment
          * @param int[] $validTypes
          * @return void
          */
-        $check_compatible = function(string $paramName, array $validTypes) use($code_base, $context, $comment_type, $lineno) {
+        $check_compatible = function(string $paramName, array $validTypes) use ($code_base, $context, $comment_type, $lineno) {
             if (!in_array($comment_type, $validTypes, true)) {
                 self::emitInvalidCommentForDeclarationType(
                     $code_base,
@@ -289,9 +298,7 @@ class Comment
                 if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
                     $variable_list[] = $comment_var;
                 }
-
             } elseif (\stripos($line, '@template') !== false) {
-
                 // Make sure support for generic types is enabled
                 if (Config::getValue('generic_types_enabled')) {
                     $check_compatible('@template', [Comment::ON_CLASS]);
@@ -313,7 +320,7 @@ class Comment
                     $check_compatible('@return', Comment::FUNCTION_LIKE);
                     $return_union_type =
                         self::returnTypeFromCommentLine($context, $line);
-                } else if (\stripos($line, '@returns') !== false) {
+                } elseif (\stripos($line, '@returns') !== false) {
                     Issue::maybeEmit(
                         $code_base,
                         $context,
@@ -361,7 +368,7 @@ class Comment
                 } elseif (\stripos($line, '@phan-override') !== false) {
                     $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST]);
                     $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
-                } else if (\stripos($line, '@phan-') !== false) {
+                } elseif (\stripos($line, '@phan-') !== false) {
                     preg_match('/@phan-\S*/', $line, $match);
                     Issue::maybeEmit(
                         $code_base,
@@ -1031,14 +1038,16 @@ class Comment
     /**
      * @return CommentParameter[] map from parameter name to parameter
      */
-    public function getMagicPropertyMap() : array {
+    public function getMagicPropertyMap() : array
+    {
         return $this->magic_property_map;
     }
 
     /**
      * @return CommentMethod[] map from method name to method info
      */
-    public function getMagicMethodMap() : array {
+    public function getMagicMethodMap() : array
+    {
         return $this->magic_method_map;
     }
 

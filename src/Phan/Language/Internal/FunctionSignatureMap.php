@@ -1,4 +1,4 @@
-<?php
+<?php // @codingStandardsIgnoreFile (phpcs runs out of memory)
 namespace Phan\Language\Internal;
 
 /**

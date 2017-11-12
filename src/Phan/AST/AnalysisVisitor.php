@@ -66,5 +66,4 @@ abstract class AnalysisVisitor extends KindVisitorImplementation
             $parameters
         );
     }
-
 }

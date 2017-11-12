@@ -4,7 +4,8 @@ namespace Phan\PluginV2;
 use Phan\CodeBase;
 use Phan\Language\Element\Clazz;
 
-interface AnalyzeClassCapability {
+interface AnalyzeClassCapability
+{
     /**
      * @param CodeBase $code_base
      * The code base in which the class exists

@@ -8,14 +8,16 @@ use Phan\Output\Printer\CheckstylePrinter;
 use Phan\Tests\BaseTest;
 use Symfony\Component\Console\Output\BufferedOutput;
 
-class CheckstylePrinterTest extends BaseTest {
+class CheckstylePrinterTest extends BaseTest
+{
 
     /**
      * @param string $string String to check against
      *
      * @dataProvider invalidUTF8StringsProvider
      */
-    public function testUTF8CharactersDoNotCauseDOMAttrToFail($string) {
+    public function testUTF8CharactersDoNotCauseDOMAttrToFail($string)
+    {
         $output = new BufferedOutput();
 
         $printer = new CheckstylePrinter();
@@ -25,7 +27,8 @@ class CheckstylePrinterTest extends BaseTest {
         $this->assertContains('PhanSyntaxError', $output->fetch());
     }
 
-    public function invalidUTF8StringsProvider() {
+    public function invalidUTF8StringsProvider()
+    {
         return [
             // Valid ASCII
             ["a"],

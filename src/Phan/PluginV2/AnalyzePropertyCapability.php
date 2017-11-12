@@ -4,7 +4,8 @@ namespace Phan\PluginV2;
 use Phan\CodeBase;
 use Phan\Language\Element\Property;
 
-interface AnalyzePropertyCapability {
+interface AnalyzePropertyCapability
+{
     /**
      * @param CodeBase $code_base
      * The code base in which the property exists

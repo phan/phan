@@ -44,7 +44,8 @@ use ast\Node;
  */
 final class AlwaysReturnPlugin extends PluginV2 implements
     AnalyzeFunctionCapability,
-    AnalyzeMethodCapability {
+    AnalyzeMethodCapability
+{
 
     /**
      * @param CodeBase $code_base
@@ -128,7 +129,8 @@ final class AlwaysReturnPlugin extends PluginV2 implements
      * @param Func|Method $func
      * @return ?\ast\Node - returns null if there's no statement list to analyze
      */
-    private function getStatementListToAnalyze($func) {
+    private function getStatementListToAnalyze($func)
+    {
         if (!$func->hasNode()) {
             return null;
         } elseif ($func->getHasYield()) {

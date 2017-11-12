@@ -26,27 +26,27 @@ class BlockExitStatusCheckerTest extends BaseTest
             $bit = ($status & ($status - 1)) ^ $status;
             $status &= ~$bit;
             switch ($bit) {
-            case BlockExitStatusChecker::STATUS_PROCEED:
-                $parts[] = 'proceed';
-                break;
-            case BlockExitStatusChecker::STATUS_GOTO:
-                $parts[] = 'goto';
-                break;
-            case BlockExitStatusChecker::STATUS_CONTINUE:
-                $parts[] = 'continue';
-                break;
-            case BlockExitStatusChecker::STATUS_BREAK:
-                $parts[] = 'break';
-                break;
-            case BlockExitStatusChecker::STATUS_THROW:
-                $parts[] = 'throw';
-                break;
-            case BlockExitStatusChecker::STATUS_RETURN:
-                $parts[] = 'return';
-                break;
-            default:
-                $parts[] = sprintf("invalid(1<<%d)", (int)round(log($bit, 2)));
-                break;
+                case BlockExitStatusChecker::STATUS_PROCEED:
+                    $parts[] = 'proceed';
+                    break;
+                case BlockExitStatusChecker::STATUS_GOTO:
+                    $parts[] = 'goto';
+                    break;
+                case BlockExitStatusChecker::STATUS_CONTINUE:
+                    $parts[] = 'continue';
+                    break;
+                case BlockExitStatusChecker::STATUS_BREAK:
+                    $parts[] = 'break';
+                    break;
+                case BlockExitStatusChecker::STATUS_THROW:
+                    $parts[] = 'throw';
+                    break;
+                case BlockExitStatusChecker::STATUS_RETURN:
+                    $parts[] = 'return';
+                    break;
+                default:
+                    $parts[] = sprintf("invalid(1<<%d)", (int)round(log($bit, 2)));
+                    break;
             }
         }
         // Return the representation of possible values, with "proceed" (low order bit) first, and "return" (high order bit) last.
@@ -63,7 +63,8 @@ class BlockExitStatusCheckerTest extends BaseTest
         $this->assertSame($expectedStatusRepresentation, $this->representStatus($status_code), sprintf("Unexpected status 0x%x\nCode:\n%s\n", $status_code, $codeSnippet));
     }
 
-    public function exitStatusProvider() : array {
+    public function exitStatusProvider() : array
+    {
         return [
             [
                 'proceed',

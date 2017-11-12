@@ -132,7 +132,8 @@ class AssignmentVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitMethodCall(Node $unused_node) : Context {
+    public function visitMethodCall(Node $unused_node) : Context
+    {
         return $this->context;
     }
 
@@ -154,7 +155,8 @@ class AssignmentVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitCall(Node $unused_node) : Context {
+    public function visitCall(Node $unused_node) : Context
+    {
         return $this->context;
     }
 
@@ -177,7 +179,8 @@ class AssignmentVisitor extends AnalysisVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitStaticCall(Node $unused_node) : Context {
+    public function visitStaticCall(Node $unused_node) : Context
+    {
         return $this->context;
     }
 
@@ -201,7 +204,6 @@ class AssignmentVisitor extends AnalysisVisitor
             $this->right_type->genericArrayElementTypes();
 
         foreach ($node->children ?? [] as $child_node) {
-
             // Some times folks like to pass a null to
             // a list to throw the element away. I'm not
             // here to judge.
@@ -216,7 +218,6 @@ class AssignmentVisitor extends AnalysisVisitor
             $value_node = $child_node->children['value'];
 
             if ($value_node->kind == \ast\AST_VAR) {
-
                 $variable = Variable::fromNodeInContext(
                     $value_node,
                     $this->context,
@@ -231,8 +232,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 // Note that we're not creating a new scope, just
                 // adding variables to the existing scope
                 $this->context->addScopeVariable($variable);
-
-            } else if ($value_node->kind == \ast\AST_PROP) {
+            } elseif ($value_node->kind == \ast\AST_PROP) {
                 try {
                     $property = (new ContextNode(
                         $this->code_base,
@@ -305,7 +305,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->context,
                 $node->children['dim']
             );
-        } else if (\is_scalar($dim_node) && $dim_node !== null) {
+        } elseif (\is_scalar($dim_node) && $dim_node !== null) {
             $dim_type = Type::fromObject($dim_node)->asUnionType();
         } else {
             $dim_type = null;
@@ -329,7 +329,8 @@ class AssignmentVisitor extends AnalysisVisitor
      * May create a new variable in $this->context.
      * TODO: Emit issues if the assignment is incompatible with the pre-existing type?
      */
-    private function analyzeSuperglobalDim(Node $node, string $variable_name) : Context {
+    private function analyzeSuperglobalDim(Node $node, string $variable_name) : Context
+    {
         $dim = $node->children['dim'];
         if ('GLOBALS' === $variable_name) {
             if (!\is_string($dim)) {
@@ -395,7 +396,6 @@ class AssignmentVisitor extends AnalysisVisitor
         }
 
         foreach ($class_list as $clazz) {
-
             // Check to see if this class has the property or
             // a setter
             if (!$clazz->hasPropertyWithName($this->code_base, $property_name)) {
@@ -428,12 +428,12 @@ class AssignmentVisitor extends AnalysisVisitor
             $property_union_type = $property->getUnionType();
             if ($this->is_dim_assignment) {
                 if ($this->right_type->canCastToExpandedUnionType(
-                        $property_union_type,
-                        $this->code_base
-                    )
+                    $property_union_type,
+                    $this->code_base
+                )
                 ) {
                     $this->addTypesToProperty($property, $node);
-                } else if ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                } elseif ($property_union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
                     // Add any type if this is a subclass with array access.
                     $this->addTypesToProperty($property, $node);
                 } else {
@@ -455,16 +455,16 @@ class AssignmentVisitor extends AnalysisVisitor
                     }
                 }
                 return $this->context;
-            } else if ($clazz->isPHPInternal() && $clazz->getFQSEN() !== FullyQualifiedClassName::getStdClassFQSEN()) {
+            } elseif ($clazz->isPHPInternal() && $clazz->getFQSEN() !== FullyQualifiedClassName::getStdClassFQSEN()) {
                 // We don't want to modify the types of internal classes such as \ast\Node even if they are compatible
                 // This would result in unpredictable results, and types which are more specific than they really are.
                 // stdClass is an exception to this, for issues such as https://github.com/phan/phan/pull/700
                 return $this->context;
             } else {
                 if (!$this->right_type->canCastToExpandedUnionType(
-                        $property_union_type,
-                        $this->code_base
-                    )
+                    $property_union_type,
+                    $this->code_base
+                )
                     && !($this->right_type->hasTypeInBoolFamily() && $property_union_type->hasTypeInBoolFamily())
                     && !$clazz->getHasDynamicProperties($this->code_base)
                 ) {
@@ -603,8 +603,9 @@ class AssignmentVisitor extends AnalysisVisitor
             }
 
             if (!$this->right_type->canCastToExpandedUnionType(
-                    $property->getUnionType(),
-                    $this->code_base)
+                $property->getUnionType(),
+                $this->code_base
+            )
                 && !($this->right_type->hasTypeInBoolFamily() && $property->getUnionType()->hasTypeInBoolFamily())
             ) {
                 // Currently, same warning type for static and non-static property type mismatches.
@@ -701,7 +702,6 @@ class AssignmentVisitor extends AnalysisVisitor
                 $variable->getUnionType()->addUnionType(
                     $right_type
                 );
-
             } else {
                 // If the variable isn't a pass-by-reference parameter
                 // we clone it so as to not disturb its previous types
@@ -711,7 +711,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     } else {
                         $variable = clone($variable);
                     }
-                } else if (!($variable instanceof PassByReferenceVariable)) {
+                } elseif (!($variable instanceof PassByReferenceVariable)) {
                     $variable = clone($variable);
                 }
 
@@ -757,7 +757,8 @@ class AssignmentVisitor extends AnalysisVisitor
      * @param UnionType $assign_type - The type which is being added to
      * @return UnionType - Usually the unmodified UnionType. Sometimes, the adjusted type, e.g. for string modification.
      */
-    public function typeCheckDimAssignment(UnionType $assign_type, Node $node) : UnionType {
+    public function typeCheckDimAssignment(UnionType $assign_type, Node $node) : UnionType
+    {
         static $int_or_string_type = null;
         static $int_type = null;
         static $string_array_type = null;
@@ -791,7 +792,7 @@ class AssignmentVisitor extends AnalysisVisitor
                     (string)$assign_type,
                     (string)$int_type
                 );
-            } else if (!$dim_type->isEmpty() && !$dim_type->hasType($int_type)) {
+            } elseif (!$dim_type->isEmpty() && !$dim_type->hasType($int_type)) {
                 $this->emitIssue(
                     Issue::TypeMismatchDimAssignment,
                     $node->lineno ?? 0,

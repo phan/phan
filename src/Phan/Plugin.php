@@ -27,7 +27,8 @@ abstract class Plugin extends PluginV2 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
     LegacyAnalyzeNodeCapability,
-    LegacyPreAnalyzeNodeCapability {
+    LegacyPreAnalyzeNodeCapability
+{
 
     /**
      * Do a first-pass analysis of a node before Phan

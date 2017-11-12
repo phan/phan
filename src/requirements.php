@@ -27,7 +27,7 @@ To disable this warning, set the environment variable PHAN_DISABLE_XDEBUG_WARN t
 To include function signatures of xdebug, see .phan/internal_stubs/xdebug.xdebug.phan_php
 
 EOT
-);
+        );
     }
     // This code is taken from composer's automatic restart without xdebug.
     // Restart if xdebug is loading, unless the environment variable PHAN_ALLOW_XDEBUG is set.

@@ -12,20 +12,24 @@ use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Tests\BaseTest;
 use Phan\Parse\ParseVisitor;
 
-class ContextTest extends BaseTest {
+class ContextTest extends BaseTest
+{
 
     /** @var CodeBase|null */
     protected $code_base = null;
 
-    protected function setUp() {
+    protected function setUp()
+    {
         $this->code_base = new CodeBase([], [], [], [], []);
     }
 
-    protected function tearDown() {
+    protected function tearDown()
+    {
         $this->code_base = null;
     }
 
-    public function testSimple() {
+    public function testSimple()
+    {
         $context = new Context();
 
         $context_namespace =
@@ -51,7 +55,8 @@ class ContextTest extends BaseTest {
         $this->assertTrue(!empty($context_method));
     }
 
-    public function testClassContext() {
+    public function testClassContext()
+    {
         $code = "<?php
             class C {
                 private function f() {
@@ -69,21 +74,23 @@ class ContextTest extends BaseTest {
         $context = new Context;
 
         $context = (new ParseVisitor(
-            $this->code_base, $context
+            $this->code_base,
+            $context
         ))($class_node);
 
         $stmt_list_node = $class_node->children['stmts'];
         $method_node = $stmt_list_node->children[0];
 
         $context = (new ParseVisitor(
-            $this->code_base, $context
+            $this->code_base,
+            $context
         ))($method_node);
 
         $this->assertSame('\C::f', (string)$context->getScope()->getFQSEN());
     }
 
-    public function disabled_testNamespaceMap() {
+    public function disabled_testNamespaceMap()
+    {
         // ...
     }
-
 }

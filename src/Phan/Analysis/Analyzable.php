@@ -117,7 +117,8 @@ trait Analyzable
     /**
      * Gets the recursion depth. Starts at 0, increases the deeper the recursion goes
      */
-    public function getRecursionDepth() : int {
+    public function getRecursionDepth() : int
+    {
         return self::$recursion_depth;
     }
 }

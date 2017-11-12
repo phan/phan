@@ -4,7 +4,8 @@ namespace Phan\Language\Element;
 use Phan\Language\FutureUnionType;
 use ast\Node;
 
-interface ConstantInterface {
+interface ConstantInterface
+{
 
     /**
      * @return void

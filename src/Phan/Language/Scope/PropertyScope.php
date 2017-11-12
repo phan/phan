@@ -3,14 +3,16 @@ namespace Phan\Language\Scope;
 
 use Phan\Language\FQSEN\FullyQualifiedPropertyName;
 
-class PropertyScope extends ClosedScope {
+class PropertyScope extends ClosedScope
+{
 
     /**
      * @return bool
      * True if we're in a property scope
      * @override
      */
-    public function isInPropertyScope() : bool {
+    public function isInPropertyScope() : bool
+    {
         return true;
     }
 
@@ -19,7 +21,8 @@ class PropertyScope extends ClosedScope {
      * True if we're in a class scope (True for properties)
      * @override
      */
-    public function isInClassScope() : bool {
+    public function isInClassScope() : bool
+    {
         return true;
     }
 

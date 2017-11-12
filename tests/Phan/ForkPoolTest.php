@@ -22,16 +22,19 @@ class ForkPoolTest extends BaseTest
         ];
 
         $worker_data = [];
-        $pool = new ForkPool($data,
+        $pool = new ForkPool(
+            $data,
             /** @return void */
-            function() { },
+            function() {
+            },
             /** @return void */
-            function($unused_i, $data) use(&$worker_data) {
+            function($unused_i, $data) use (&$worker_data) {
                 $worker_data[] = $data;
             },
-            function() use(&$worker_data) : array {
+            function() use (&$worker_data) : array {
                 return $worker_data;
-            });
+            }
+        );
 
         $this->assertEquals($data, $pool->wait());
     }
@@ -45,18 +48,20 @@ class ForkPoolTest extends BaseTest
         $pool = new ForkPool(
             [[1], [2], [3], [4]],
             /** @return void */
-            function() use(&$did_startup) {
+            function() use (&$did_startup) {
                 $did_startup = true;
             },
             /** @return void */
             function($unused_i, $unused_data) {
             },
-            function() use(&$did_startup) : array {
+            function() use (&$did_startup) : array {
                 return [$did_startup];
-            });
+            }
+        );
 
         $this->assertEquals(
             [[true], [true], [true], [true]],
-            $pool->wait());
+            $pool->wait()
+        );
     }
 }

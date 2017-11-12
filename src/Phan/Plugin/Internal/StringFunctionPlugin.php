@@ -28,13 +28,15 @@ use ast\Node;
  * e.g. explode($var, ':') or strpos(':', $x)
  */
 final class StringFunctionPlugin extends PluginV2 implements
-    AnalyzeFunctionCallCapability {
+    AnalyzeFunctionCallCapability
+{
 
     /**
      * @param Node|int|string $arg_array_node
      * @return ?array
      */
-    private static function extractArrayArgs($arg_array_node) {
+    private static function extractArrayArgs($arg_array_node)
+    {
         if (($arg_array_node instanceof Node) && $arg_array_node->kind === \ast\AST_ARRAY) {
             $arguments = [];
             // TODO: Sanity check keys.
@@ -64,7 +66,7 @@ final class StringFunctionPlugin extends PluginV2 implements
             if ($kind === ast\AST_BINARY_OP) {
                 // E.g. flags == BINARY_CONCAT
                 return self::isSimpleExpression($arg->children['left']) && self::isSimpleExpression($arg->children['right']);
-            } else if ($kind === ast\AST_ARRAY) {
+            } elseif ($kind === ast\AST_ARRAY) {
                 foreach ($arg->children as $child) {
                     if (!($child instanceof Node)) {
                         continue;
@@ -87,7 +89,7 @@ final class StringFunctionPlugin extends PluginV2 implements
      */
     private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {
-        $make_order_warner = static function(int $expected_const_pos, int $expected_variable_pos) : \Closure{
+        $make_order_warner = static function(int $expected_const_pos, int $expected_variable_pos) : \Closure {
             $expected_arg_count = 1 + (int)max($expected_const_pos, $expected_variable_pos);
             /**
              * @return void
@@ -97,7 +99,11 @@ final class StringFunctionPlugin extends PluginV2 implements
                 Context $context,
                 Func $function,
                 array $args
-            ) use ($expected_const_pos, $expected_variable_pos, $expected_arg_count) {
+            ) use (
+                $expected_const_pos,
+                $expected_variable_pos,
+                $expected_arg_count
+) {
                 if (\count($args) < $expected_arg_count) {
                     return;
                 }
