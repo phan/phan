@@ -51,7 +51,8 @@ class IssueInstance
         // Not sure if codeclimate supports that.
         if (Config::getValue('markdown_issue_messages')) {
             $template = preg_replace(
-                '/([^ ]*%s[^ ]*)/', '`\1`',
+                '/([^ ]*%s[^ ]*)/',
+                '`\1`',
                 $template
             );
         }

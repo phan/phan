@@ -766,27 +766,26 @@ class Config
     {
         self::$configuration[$name] = $value;
         switch ($name) {
-        case 'null_casts_as_any_type':
-            self::$null_casts_as_any_type = $value;
-            break;
-        case 'null_casts_as_array':
-            self::$null_casts_as_array = $value;
-            break;
-        case 'array_casts_as_null':
-            self::$array_casts_as_null = $value;
-            break;
-        case 'dead_code_detection':
-        case 'force_tracking_references':
-            self::$track_references = self::getValue('dead_code_detection') || self::getValue('force_tracking_references');
-            break;
-        case 'backward_compatibility_checks':
-            self::$backward_compatibility_checks = $value;
-            break;
-        case 'quick_mode':
-            self::$quick_mode = $value;
-            break;
+            case 'null_casts_as_any_type':
+                self::$null_casts_as_any_type = $value;
+                break;
+            case 'null_casts_as_array':
+                self::$null_casts_as_array = $value;
+                break;
+            case 'array_casts_as_null':
+                self::$array_casts_as_null = $value;
+                break;
+            case 'dead_code_detection':
+            case 'force_tracking_references':
+                self::$track_references = self::getValue('dead_code_detection') || self::getValue('force_tracking_references');
+                break;
+            case 'backward_compatibility_checks':
+                self::$backward_compatibility_checks = $value;
+                break;
+            case 'quick_mode':
+                self::$quick_mode = $value;
+                break;
         }
-
     }
 
     /**

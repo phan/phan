@@ -5,7 +5,8 @@ namespace Phan;
  * Fork off to n-processes and divide up tasks between
  * each process.
  */
-class ForkPool {
+class ForkPool
+{
 
     /** @var int[] */
     private $child_pid_list = [];
@@ -40,10 +41,13 @@ class ForkPool {
 
         $pool_size = count($process_task_data_iterator);
 
-        \assert($pool_size > 1,
-            'The pool size must be >= 2 to use the fork pool.');
+        \assert(
+            $pool_size > 1,
+            'The pool size must be >= 2 to use the fork pool.'
+        );
 
-        \assert(extension_loaded('pcntl'),
+        \assert(
+            extension_loaded('pcntl'),
             'The pcntl extension must be loaded in order for Phan to be able to fork.'
         );
 
@@ -54,7 +58,6 @@ class ForkPool {
         // Fork as many times as requested to get the given
         // pool size
         for ($proc_id = 0; $proc_id < $pool_size; $proc_id++) {
-
             // Create an IPC socket pair.
             $sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
             if (!$sockets) {
@@ -180,11 +183,11 @@ class ForkPool {
         // Read the data off of all the stream.
         while (count($streams) >0) {
             $needs_read = array_values($streams);
-            $needs_write = NULL;
-            $needs_except = NULL;
+            $needs_write = null;
+            $needs_except = null;
 
             // Wait for data on at least one stream.
-            $num = stream_select($needs_read, $needs_write, $needs_except, NULL /* no timeout */);
+            $num = stream_select($needs_read, $needs_write, $needs_except, null /* no timeout */);
             if ($num === false) {
                 error_log("unable to select on read stream");
                 exit(EXIT_FAILURE);

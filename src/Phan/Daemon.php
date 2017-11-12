@@ -9,7 +9,8 @@ use Phan\Library\FileCache;
  * Accepts requests (Currently only JSON blobs) over a unix socket or TCP sockets.
  * TODO: HTTP support, or open language protocol support
  */
-class Daemon {
+class Daemon
+{
     /**
      * This creates an analyzing daemon, to be used by IDEs.
      * Format:
@@ -27,7 +28,8 @@ class Daemon {
      *
      * @suppress PhanPluginUnusedVariable https://github.com/mattriverm/PhanUnusedVariable/issues/30
      */
-    public static function run(CodeBase $code_base, \Closure $file_path_lister) {
+    public static function run(CodeBase $code_base, \Closure $file_path_lister)
+    {
         \assert($code_base->isUndoTrackingEnabled());
 
         // example requests over TCP
@@ -40,25 +42,25 @@ class Daemon {
         // TODO: accept SIGCHLD when child terminates, somehow?
         try {
             $gotSignal = false;
-            pcntl_signal(SIGCHLD, function(...$args) use(&$gotSignal) {
+            pcntl_signal(SIGCHLD, function(...$args) use (&$gotSignal) {
                 $gotSignal = true;
                 Request::childSignalHandler(...$args);
             });
             while (true) {
                 $gotSignal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
-				$previousErrorHandler = set_error_handler(function ($severity, $message, $file, $line) use (&$previousErrorHandler) {
+                $previousErrorHandler = set_error_handler(function ($severity, $message, $file, $line) use (&$previousErrorHandler) {
                     self::debugf("In new error handler '$message'");
-					if (!preg_match('/stream_socket_accept/i', $message)) {
-						return $previousErrorHandler($severity, $message, $file, $line);
-					}
+                    if (!preg_match('/stream_socket_accept/i', $message)) {
+                        return $previousErrorHandler($severity, $message, $file, $line);
+                    }
                     throw new \RuntimeException("Got signal");
-				});
+                });
 
                 $conn = false;
                 try {
                     $conn = stream_socket_accept($socket_server, -1);
-                } catch(\RuntimeException $e) {
+                } catch (\RuntimeException $e) {
                     self::debugf("Got signal");
                     pcntl_signal_dispatch();
                     self::debugf("done processing signals");
@@ -88,11 +90,12 @@ class Daemon {
     /**
      * @return resource (resource is not a reserved keyword)
      */
-    private static function createDaemonStreamSocketServer() {
+    private static function createDaemonStreamSocketServer()
+    {
         $listen_url = null;
         if (Config::getValue('daemonize_socket')) {
             $listen_url = 'unix://' . Config::getValue('daemonize_socket');
-        } else if (Config::getValue('daemonize_tcp_port')) {
+        } elseif (Config::getValue('daemonize_tcp_port')) {
             $listen_url = sprintf('tcp://127.0.0.1:%d', Config::getValue('daemonize_tcp_port'));
         } else {
             throw new \InvalidArgumentException("Should not happen, no port/socket for daemon to listen on.");
@@ -113,7 +116,8 @@ class Daemon {
      * @param string $format - printf style format string
      * @param mixed ...$args - printf args
      */
-    public static function debugf(string $format, ...$args) {
+    public static function debugf(string $format, ...$args)
+    {
         /*
         if (count($args) > 0) {
             $message = sprintf($format, ...$args);
@@ -123,5 +127,4 @@ class Daemon {
         error_log($message);
         */
     }
-
 }

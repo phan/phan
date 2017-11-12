@@ -372,12 +372,16 @@ class Issue
         string $template
     ) : string {
         /** @param string[] $matches */
-        return preg_replace_callback('/{([A-Z_]+)}/', function(array $matches) use($template): string {
+        return preg_replace_callback('/{([A-Z_]+)}/', function(array $matches) use ($template): string {
             $key = $matches[1];
             $replacement_exists = \array_key_exists($key, self::uncolored_format_string_for_template);
             if (!$replacement_exists) {
-                error_log(sprintf("No coloring info for issue message (%s), key {%s}. Valid template types: %s",
-                    $template, $key, implode(', ', array_keys(self::uncolored_format_string_for_template))));
+                error_log(sprintf(
+                    "No coloring info for issue message (%s), key {%s}. Valid template types: %s",
+                    $template,
+                    $key,
+                    implode(', ', array_keys(self::uncolored_format_string_for_template))
+                ));
                 return '%s';
             }
             return self::uncolored_format_string_for_template[$key];
@@ -2130,14 +2134,14 @@ class Issue
     public function getSeverityName() : string
     {
         switch ($this->getSeverity()) {
-        case self::SEVERITY_LOW:
-            return 'low';
-        case self::SEVERITY_NORMAL:
-            return 'normal';
-        case self::SEVERITY_CRITICAL:
-            return 'critical';
-        default:
-            throw new \AssertionError('Unknown severity ' . $this->getSeverity());
+            case self::SEVERITY_LOW:
+                return 'low';
+            case self::SEVERITY_NORMAL:
+                return 'normal';
+            case self::SEVERITY_CRITICAL:
+                return 'critical';
+            default:
+                throw new \AssertionError('Unknown severity ' . $this->getSeverity());
         }
     }
 
@@ -2292,8 +2296,10 @@ class Issue
         // the config, ignore it
 
         if (!Config::getValue('disable_suppression')) {
-            if (in_array($issue_instance->getIssue()->getType(),
-                    Config::getValue('suppress_issue_types') ?? [])
+            if (in_array(
+                $issue_instance->getIssue()->getType(),
+                Config::getValue('suppress_issue_types') ?? []
+            )
             ) {
                 return;
             }
@@ -2302,8 +2308,10 @@ class Issue
             // only emit issues on the white-list
             $whitelist_issue_types = Config::getValue('whitelist_issue_types') ?? [];
             if (count($whitelist_issue_types) > 0
-                && !in_array($issue_instance->getIssue()->getType(),
-                        $whitelist_issue_types)
+                && !in_array(
+                    $issue_instance->getIssue()->getType(),
+                    $whitelist_issue_types
+                )
             ) {
                 return;
             }
@@ -2311,8 +2319,8 @@ class Issue
             // If this issue type has been suppressed in
             // this scope from a doc block, ignore it.
             if ($context->hasSuppressIssue(
-                    $code_base,
-                    $issue_instance->getIssue()->getType()
+                $code_base,
+                $issue_instance->getIssue()->getType()
             )) {
                 return;
             }
@@ -2349,7 +2357,11 @@ class Issue
         ...$parameters
     ) {
         self::maybeEmitWithParameters(
-            $code_base, $context, $issue_type, $lineno, $parameters
+            $code_base,
+            $context,
+            $issue_type,
+            $lineno,
+            $parameters
         );
     }
 
@@ -2382,8 +2394,10 @@ class Issue
         // If this issue type has been suppressed in
         // the config, ignore it
         if (!Config::getValue('disable_suppression')
-            && in_array($issue_type,
-            Config::getValue('suppress_issue_types') ?? [])
+            && in_array(
+                $issue_type,
+                Config::getValue('suppress_issue_types') ?? []
+            )
         ) {
             return;
         }
@@ -2391,8 +2405,10 @@ class Issue
         // only emit issues on the white-list
         if (!Config::getValue('disable_suppression')
             && count(Config::getValue('whitelist_issue_types')) > 0
-            && !in_array($issue_type,
-                Config::getValue('whitelist_issue_types') ?? [])
+            && !in_array(
+                $issue_type,
+                Config::getValue('whitelist_issue_types') ?? []
+            )
         ) {
             return;
         }
@@ -2409,6 +2425,5 @@ class Issue
             $lineno,
             $parameters
         );
-
     }
 }
