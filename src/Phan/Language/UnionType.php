@@ -1341,6 +1341,18 @@ class UnionType implements \Serializable
     }
 
     /**
+     * Returns true if objectTypes would be non-empty.
+     *
+     * @return bool
+     */
+    public function hasObjectTypes() : bool
+    {
+        return ArraySet::exists($this->type_set, (function (Type $type) : bool {
+            return $type->isObject();
+        }));
+    }
+
+    /**
      * Returns the types for which is_scalar($x) would be true.
      * This means null/nullable is removed.
      * Takes "MyClass|int|?bool|array|?object" and returns "int|bool"
@@ -1375,11 +1387,48 @@ class UnionType implements \Serializable
      */
     public function callableTypes() : UnionType
     {
-        // TODO: is_scalar(null) is false, account for that in analysis.
         $types = \array_filter($this->type_set, function (Type $type) : bool {
             return $type->isCallable();
         });
         return new UnionType($types, true);
+    }
+
+    /**
+     * Returns true if this has one or more callable types
+     * TODO: Check for __invoke()?
+     * Takes "Closure|false" and returns true
+     * Takes "?MyClass" and returns false
+     *
+     * @return bool
+     * A UnionType with known callable types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @see genericArrayElementTypes
+     */
+    public function hasCallableType() : bool
+    {
+        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+            return $type->isCallable();
+        });
+    }
+
+    /**
+     * Returns true if every type in this type is callable.
+     * TODO: Check for __invoke()?
+     * Takes "callable" and returns true
+     * Takes "callable|false" and returns false
+     *
+     * @return bool
+     * A UnionType with known callable types kept, other types filtered out.
+     *
+     * @see nonGenericArrayTypes
+     * @see genericArrayElementTypes
+     */
+    public function isExclusivelyCallable() : bool
+    {
+        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
+            return !$type->isCallable();
+        });
     }
 
     /**

@@ -66,20 +66,4 @@ class IniHelper
 
         return $paths;
     }
-
-    /**
-     * Describes the location of the loaded php.ini file
-     *
-     * @return string
-     */
-    public static function getMessage()
-    {
-        $paths = self::getAll();
-
-        if (empty($paths[0])) {
-            return 'A php.ini file does not exist. You will have to create one.';
-        }
-
-        return 'The php.ini used by your command-line PHP is: '.$paths[0];
-    }
 }

@@ -84,6 +84,10 @@ class Issue
     const TypeInvalidCallableArraySize = 'PhanTypeInvalidCallableArraySize';
     const TypeInvalidCallableArrayKey = 'PhanTypeInvalidCallableArrayKey';
     const TypeInvalidCallableObjectOfMethod = 'PhanTypeInvalidCallableObjectOfMethod';
+    const TypeExpectedObject        = 'PhanTypeExpectedObject';
+    const TypeExpectedObjectOrClassName = 'PhanTypeExpectedObjectOrClassName';
+    const TypeExpectedObjectPropAccess = 'PhanTypeExpectedObjectPropAccess';
+    const TypeExpectedObjectStaticPropAccess = 'PhanTypeExpectedObjectStaticPropAccess';
 
     // Issue::CATEGORY_ANALYSIS
     const Unanalyzable              = 'PhanUnanalyzable';
@@ -113,6 +117,7 @@ class Issue
     const ParamSpecial2             = 'PhanParamSpecial2';
     const ParamSpecial3             = 'PhanParamSpecial3';
     const ParamSpecial4             = 'PhanParamSpecial4';
+    const ParamSuspiciousOrder      = 'PhanParamSuspiciousOrder';
     const ParamTooFew               = 'PhanParamTooFew';
     const ParamTooFewInternal       = 'PhanParamTooFewInternal';
     const ParamTooFewCallable       = 'PhanParamTooFewCallable';
@@ -163,9 +168,17 @@ class Issue
     const NoopVariable              = 'PhanNoopVariable';
     const UnreferencedClass         = 'PhanUnreferencedClass';
     const UnreferencedFunction      = 'PhanUnreferencedFunction';
-    const UnreferencedMethod        = 'PhanUnreferencedMethod';
-    const UnreferencedProperty      = 'PhanUnreferencedProperty';
+    const UnreferencedPublicMethod  = 'PhanUnreferencedPublicMethod';
+    const UnreferencedProtectedMethod = 'PhanUnreferencedProtectedMethod';
+    const UnreferencedPrivateMethod = 'PhanUnreferencedPrivateMethod';
+    const UnreferencedPublicProperty = 'PhanUnreferencedPublicProperty';
+    const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
+    const UnreferencedPrivateProperty = 'PhanUnreferencedPrivateProperty';
     const UnreferencedConstant      = 'PhanUnreferencedConstant';
+    const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
+    const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
+    const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
+    const UnreferencedClosure       = 'PhanUnreferencedClosure';
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -978,6 +991,38 @@ class Issue
                 self::REMEDIATION_B,
                 10035
             ),
+            new Issue(
+                self::TypeExpectedObject,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance but saw expression with type {TYPE}',
+                self::REMEDIATION_B,
+                10036
+            ),
+            new Issue(
+                self::TypeExpectedObjectOrClassName,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance or the name of a class but saw expression with type {TYPE}',
+                self::REMEDIATION_B,
+                10037
+            ),
+            new Issue(
+                self::TypeExpectedObjectPropAccess,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}',
+                self::REMEDIATION_B,
+                10038
+            ),
+            new Issue(
+                self::TypeExpectedObjectStaticPropAccess,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance or a class name when accessing a static property, but saw an expression with type {TYPE}',
+                self::REMEDIATION_B,
+                10039
+            ),
             // Issue::CATEGORY_VARIABLE
             new Issue(
                 self::VariableUseClause,
@@ -1430,6 +1475,14 @@ class Issue
                 self::REMEDIATION_B,
                 7042
             ),
+            new Issue(
+                self::ParamSuspiciousOrder,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Argument #{INDEX} of this call to {FUNCTIONLIKE} is typically a literal or constant but isn't, but argument #{INDEX} (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.",
+                self::REMEDIATION_B,
+                7045
+            ),
 
             // Issue::CATEGORY_NOOP
             new Issue(
@@ -1481,26 +1534,10 @@ class Issue
                 6005
             ),
             new Issue(
-                self::UnreferencedMethod,
-                self::CATEGORY_NOOP,
-                self::SEVERITY_NORMAL,
-                "Possibly zero references to method {METHOD}",
-                self::REMEDIATION_B,
-                6006
-            ),
-            new Issue(
-                self::UnreferencedProperty,
-                self::CATEGORY_NOOP,
-                self::SEVERITY_NORMAL,
-                "Possibly zero references to property {PROPERTY}",
-                self::REMEDIATION_B,
-                6007
-            ),
-            new Issue(
                 self::UnreferencedConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to constant {CONST}",
+                "Possibly zero references to global constant {CONST}",
                 self::REMEDIATION_B,
                 6008
             ),
@@ -1511,6 +1548,86 @@ class Issue
                 "Possibly zero references to function {FUNCTION}",
                 self::REMEDIATION_B,
                 6009
+            ),
+            new Issue(
+                self::UnreferencedClosure,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to closure {FUNCTION}",
+                self::REMEDIATION_B,
+                6010
+            ),
+            new Issue(
+                self::UnreferencedPublicMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to public method {METHOD}",
+                self::REMEDIATION_B,
+                6011
+            ),
+            new Issue(
+                self::UnreferencedProtectedMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to protected method {METHOD}",
+                self::REMEDIATION_B,
+                6012
+            ),
+            new Issue(
+                self::UnreferencedPrivateMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private method {METHOD}",
+                self::REMEDIATION_B,
+                6013
+            ),
+            new Issue(
+                self::UnreferencedPublicProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to public property {PROPERTY}",
+                self::REMEDIATION_B,
+                6014
+            ),
+            new Issue(
+                self::UnreferencedProtectedProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to protected property {PROPERTY}",
+                self::REMEDIATION_B,
+                6015
+            ),
+            new Issue(
+                self::UnreferencedPrivateProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private property {PROPERTY}",
+                self::REMEDIATION_B,
+                6016
+            ),
+            new Issue(
+                self::UnreferencedPublicClassConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to public class constant {CONST}",
+                self::REMEDIATION_B,
+                6017
+            ),
+            new Issue(
+                self::UnreferencedProtectedClassConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to protected class constant {CONST}",
+                self::REMEDIATION_B,
+                6018
+            ),
+            new Issue(
+                self::UnreferencedPrivateClassConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to public class constant {CONST}",
+                self::REMEDIATION_B,
+                6019
             ),
 
             // Issue::CATEGORY_REDEFINE

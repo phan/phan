@@ -27,6 +27,9 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
 
     private function analyzePattern(CodeBase $code_base, Context $context, Func $function, string $pattern)
     {
+        /**
+         * @suppress PhanParamSuspiciousOrder 100% deliberate use of varying regex and constant $subject for preg_match
+         */
         $err = with_disabled_phan_error_handler(function() use($pattern) {
             $old_error_reporting = error_reporting();
             \error_reporting(0);

@@ -1,0 +1,5 @@
+src/016_dead_code_callable.php:7 PhanUnreferencedFunction Possibly zero references to function \myfunc16unused
+src/016_dead_code_callable.php:12 PhanUnreferencedFunction Possibly zero references to function \double16unused
+src/016_dead_code_callable.php:20 PhanUnreferencedPublicMethod Possibly zero references to public method \MyClass16::static_func_unused
+src/016_dead_code_callable.php:26 PhanUnreferencedPublicMethod Possibly zero references to public method \MyClass16::instanceFuncUnused
+src/016_dead_code_callable.php:45 PhanUndeclaredFunctionInCallable Call to undeclared function undeclared_func_16 in callable

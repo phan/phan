@@ -226,7 +226,7 @@ class Analysis
     /**
      * Take a pass over all functions verifying various
      * states.
-     * @suppress PhanTypeArraySuspicious https://github.com/etsy/phan/issues/642
+     * @suppress PhanTypeArraySuspicious https://github.com/phan/phan/issues/642
      *
      * @return void
      */

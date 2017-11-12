@@ -13,7 +13,7 @@ src/000_plugins.php:49 PhanPluginNumericalComparison numerical values compared b
 src/000_plugins.php:55 UnusedSuppression Element \testUnusedSuppressionPlugin suppresses issue PhanParamTooFew but does not use it
 src/000_plugins.php:61 PhanUnreferencedFunction Possibly zero references to function \testUnreferencedFunction
 src/000_plugins.php:66 PhanUnreferencedClass Possibly zero references to class \__autoload
-src/000_plugins.php:67 PhanUnreferencedConstant Possibly zero references to constant \__autoload
+src/000_plugins.php:67 PhanUnreferencedConstant Possibly zero references to global constant \__autoload
 src/000_plugins.php:69 PhanPluginAlwaysReturnFunction Function \missingReturnType has a return type of int, but may fail to return a value
 src/000_plugins.php:77 PhanPluginAlwaysReturnMethod Method \ReturnChecks::missingReturnTypeSwitch has a return type of int, but may fail to return a value
 src/000_plugins.php:127 PhanTypeMismatchArgumentInternal Argument 1 (string) is int but \strlen() takes string

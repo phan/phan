@@ -4,7 +4,7 @@ class A14 {
     const myconst = 'x';
     const myotherconst = 'x';
     const unreferencedconst = 'y';
-    /** @suppress PhanUnreferencedConstant testing suppression*/
+    /** @suppress PhanUnreferencedPublicClassConstant testing suppression */
     const unreferencedconst2 = 'z';
     public static $prop = 33;
     public static $prop2 = 33;

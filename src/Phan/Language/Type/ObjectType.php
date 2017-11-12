@@ -16,4 +16,14 @@ final class ObjectType extends NativeType
         }
         return parent::canCastToNonNullableType($type);
     }
+
+    /**
+     * @return bool
+     * True if this type is an object (or the phpdoc `object`)
+     * @override
+     */
+    public function isObject() : bool
+    {
+        return true;  // Overridden in various subclasses
+    }
 }

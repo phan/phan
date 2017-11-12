@@ -87,9 +87,9 @@ class ReferenceCountsAnalyzer
         }
 
         static $issue_types = [
-            ClassConstant::class => Issue::UnreferencedConstant,
-            Method::class => Issue::UnreferencedMethod,
-            Property::class => Issue::UnreferencedProperty,
+            ClassConstant::class => Issue::UnreferencedPublicClassConstant,  // This is overridden
+            Method::class        => Issue::UnreferencedPublicMethod,  // This is overridden
+            Property::class      => Issue::UnreferencedPublicProperty,  // This is overridden
         ];
 
         foreach ($elements_to_analyze as $element) {
@@ -288,9 +288,40 @@ class ReferenceCountsAnalyzer
                         return;
                     }
                 }
-                if ($element instanceof Func) {
+                // Make issue types granular so that these can be fixed in smaller steps.
+                // E.g. composer libraries may have unreferenced but used public methods, properties, and class constants.
+                if ($element instanceof ClassElement) {
+                    if ($element instanceof Method) {
+                        if ($element->isPrivate()) {
+                            $issue_type = Issue::UnreferencedPrivateMethod;
+                        } else if ($element->isProtected()) {
+                            $issue_type = Issue::UnreferencedProtectedMethod;
+                        } else {
+                            $issue_type = Issue::UnreferencedPublicMethod;
+                        }
+                    } else if ($element instanceof Property) {
+                        if ($element->isPrivate()) {
+                            $issue_type = Issue::UnreferencedPrivateProperty;
+                        } else if ($element->isProtected()) {
+                            $issue_type = Issue::UnreferencedProtectedProperty;
+                        } else {
+                            $issue_type = Issue::UnreferencedPublicProperty;
+                        }
+                    } else if ($element instanceof ClassConstant) {
+                        if ($element->isPrivate()) {
+                            $issue_type = Issue::UnreferencedPrivateClassConstant;
+                        } else if ($element->isProtected()) {
+                            $issue_type = Issue::UnreferencedProtectedClassConstant;
+                        } else {
+                            $issue_type = Issue::UnreferencedPublicClassConstant;
+                        }
+                    }
+                } else if ($element instanceof Func) {
                     if (\strcasecmp($element->getName(), "__autoload") === 0) {
                         return;
+                    }
+                    if ($element->getFQSEN()->isClosure()) {
+                        $issue_type = Issue::UnreferencedClosure;
                     }
                 }
 
