@@ -3,3 +3,4 @@ vendor
 composer.phar
 /build
 samples
+all_output.*

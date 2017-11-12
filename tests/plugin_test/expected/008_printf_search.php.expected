@@ -1,0 +1,6 @@
+src/008_printf_search.php:6 PhanPluginPrintfUnusedArgument Format string "class const: %1$d of 2" does not use provided argument #2
+src/008_printf_search.php:13 PhanPluginPrintfNoArguments No format string arguments are given for "%s", consider using echo instead
+src/008_printf_search.php:13 PhanPluginPrintfNonexistentArgument Format string "%s" refers to nonexistent argument #1 in "%s"
+src/008_printf_search.php:15 PhanPluginPrintfUnusedArgument Format string "global const Hello, %s" does not use provided argument #2
+src/008_printf_search.php:16 PhanPluginPrintfNoArguments No format string arguments are given for "global const Hello, %s", consider using echo instead
+src/008_printf_search.php:16 PhanPluginPrintfNonexistentArgument Format string "global const Hello, %s" refers to nonexistent argument #1 in "%s"

@@ -1,0 +1,3 @@
+src/000_missing_semicolon_check.php:5 PhanSyntaxError syntax error, unexpected 'return' (T_RETURN)
+src/000_missing_semicolon_check.php:5 PhanTypeMismatchArgumentInternal Argument 1 (string) is array but \strlen() takes string
+src/000_missing_semicolon_check.php:5 PhanTypeMismatchReturn Returning type int but test_missing_semicolon() is declared to return string

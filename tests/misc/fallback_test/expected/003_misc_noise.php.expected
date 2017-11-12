@@ -1,0 +1,2 @@
+src/003_misc_noise.php:4 PhanTypeConversionFromArray array to string conversion
+src/003_misc_noise.php:5 PhanSyntaxError syntax error, unexpected '|'

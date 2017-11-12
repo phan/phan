@@ -1,0 +1,9 @@
+src/006_preg_regex.php:3 PhanPluginInvalidPregRegex Call to \preg_match was passed an invalid regex '@foo': No ending delimiter '@' found
+src/006_preg_regex.php:6 PhanPluginInvalidPregRegex Call to \preg_replace was passed an invalid regex '@foo(@': Compilation failed: missing ) at offset 4
+src/006_preg_regex.php:13 PhanPluginInvalidPregRegex Call to \preg_replace_callback_array was passed an invalid regex '@a': No ending delimiter '@' found
+src/006_preg_regex.php:15 PhanPluginInvalidPregRegex Call to \preg_replace_callback was passed an invalid regex '^a': No ending delimiter '^' found
+src/006_preg_regex.php:16 PhanPluginInvalidPregRegex Call to \preg_split was passed an invalid regex '/\\s//': Unknown modifier '/'
+src/006_preg_regex.php:17 PhanPluginInvalidPregRegex Call to \preg_match_all was passed an invalid regex '/\\w/i/': Unknown modifier '/'
+src/006_preg_regex.php:18 PhanPluginInvalidPregRegex Call to \preg_grep was passed an invalid regex '/\\w/i/': Unknown modifier '/'
+src/006_preg_regex.php:21 PhanPluginInvalidPregRegex Call to \preg_replace_callback_array was passed an invalid regex '0': Delimiter must not be alphanumeric or backslash
+src/006_preg_regex.php:22 PhanPluginInvalidPregRegex Call to \preg_replace_callback_array was passed an invalid regex '0': Delimiter must not be alphanumeric or backslash

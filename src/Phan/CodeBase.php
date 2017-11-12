@@ -369,7 +369,7 @@ class CodeBase
             if (!$this->hasFunctionWithFQSEN($function_fqsen)) {
                 // Force loading these even if automatic loading failed.
                 // (Shouldn't happen, the function list is fetched from reflection by callers.
-                foreach (FunctionFactory::functionListFromReflectionFunction($this, $function_fqsen, new \ReflectionFunction($function_fqsen->getName()))
+                foreach (FunctionFactory::functionListFromReflectionFunction($this, $function_fqsen, new \ReflectionFunction($function_fqsen->getNamespacedName()))
                     as $function
                 ) {
                     $this->addFunction($function);
@@ -491,6 +491,7 @@ class CodeBase
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 unset($inner->fqsen_class_map[$fqsen]);
                 unset($inner->fqsen_class_map_user_defined[$fqsen]);
+                // unset($inner->fqsen_class_map_reflection[$fqsen]);  // should not be necessary
                 unset($inner->class_fqsen_class_map_map[$fqsen]);
             });
         }
@@ -505,7 +506,8 @@ class CodeBase
     public function addReflectionClass(ReflectionClass $class)
     {
         // Map the FQSEN to the class
-        $this->fqsen_class_map_reflection[FullyQualifiedClassName::fromFullyQualifiedString($class->getName())] = $class;
+        $class_fqsen = FullyQualifiedClassName::fromFullyQualifiedString($class->getName());
+        $this->fqsen_class_map_reflection[$class_fqsen] = $class;
     }
 
     /**
@@ -721,11 +723,12 @@ class CodeBase
     public function getInternalClassMap() : Map
     {
         if (\count($this->fqsen_class_map_reflection) > 0) {
-            foreach ($this->fqsen_class_map_reflection as $fqsen => $reflection_class) {
+            $fqsen_class_map_reflection = $this->fqsen_class_map_reflection;
+            // Free up memory used by old class map. Prevent it from being freed before we can load it manually.
+            $this->fqsen_class_map_reflection = new Map;
+            foreach ($fqsen_class_map_reflection as $fqsen => $reflection_class) {
                 $this->loadPHPInternalClassWithFQSEN($fqsen, $reflection_class);
             }
-            // Free up memory used by old class map.
-            $this->fqsen_class_map_reflection = new Map;
         }
         // TODO: Resolve internal classes and optimize the implementation.
         return $this->fqsen_class_map_internal;

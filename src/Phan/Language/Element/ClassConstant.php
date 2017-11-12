@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Element;
 
+use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
 use Phan\Language\UnionType;
@@ -8,6 +9,47 @@ use Phan\Language\UnionType;
 class ClassConstant extends ClassElement implements ConstantInterface
 {
     use ConstantTrait;
+
+    /**
+     * @param Context $context
+     * The context in which the structural element lives
+     *
+     * @param string $name
+     * The name of the typed structural element
+     *
+     * @param UnionType $type
+     * A '|' delimited set of types satisfyped by this
+     * typed structural element.
+     *
+     * @param int $flags
+     * The flags property contains node specific flags. It is
+     * always defined, but for most nodes it is always zero.
+     * ast\kind_uses_flags() can be used to determine whether
+     * a certain kind has a meaningful flags value.
+     *
+     * @param FullyQualifiedClassConstantName $fqsen
+     * A fully qualified name for the class constant
+     */
+    public function __construct(
+        Context $context,
+        string $name,
+        UnionType $type,
+        int $flags,
+        FullyQualifiedClassConstantName $fqsen
+    ) {
+        parent::__construct(
+            $context,
+            $name,
+            $type,
+            $flags,
+            $fqsen
+        );
+
+        // Presume that this is the original definition
+        // of this class constant, and let it be overwritten
+        // if it isn't.
+        $this->setDefiningFQSEN($fqsen);
+    }
 
     /**
      * Override the default getter to fill in a future

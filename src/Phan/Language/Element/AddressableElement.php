@@ -23,6 +23,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      * @var FileRef[]
      * A list of locations in which this typed structural
      * element is referenced from.
+     * References from the same file and line are deduplicated to save memory.
      */
     private $reference_list = [];
 
@@ -180,7 +181,22 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function addReference(FileRef $file_ref)
     {
         if (Config::get_track_references()) {
-            $this->reference_list[] = $file_ref;
+            $this->reference_list[(string)$file_ref] = $file_ref;
+        }
+    }
+
+    /**
+     * Copy addressable references from an element of the same subclass
+     * @return void
+     */
+    public function copyReferencesFrom(AddressableElement $element)
+    {
+        if ($this === $element) {
+            // Should be impossible
+            return;
+        }
+        foreach ($element->reference_list as $key => $file_ref) {
+            $this->reference_list[$key] = $file_ref;
         }
     }
 
@@ -190,10 +206,6 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
      */
     public function getReferenceList() : array
     {
-        if (!empty($this->reference_list)) {
-            return $this->reference_list;
-        }
-
         return $this->reference_list;
     }
 
@@ -208,7 +220,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function getReferenceCount(
         CodeBase $code_base
     ) : int {
-        return count($this->reference_list);
+        return \count($this->reference_list);
     }
 
     /**

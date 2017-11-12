@@ -223,7 +223,7 @@ class ParseVisitor extends ScopeVisitor
             $class->setParentType($inherited_type_option->get());
         }
 
-        // Add any implemeneted interfaces
+        // Add any implemented interfaces
         if (!empty($node->children['implements'])) {
             $interface_list = (new ContextNode(
                 $this->code_base,
@@ -621,6 +621,7 @@ class ParseVisitor extends ScopeVisitor
     {
         foreach ($node->children ?? [] as $child_node) {
             \assert($child_node instanceof Node);
+
             $this->addConstant(
                 $child_node,
                 $child_node->children['name'],

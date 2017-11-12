@@ -13,9 +13,9 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\UnionType;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2;
+use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV2\ReturnTypeOverrideCapability;
 use ast\Node;
 
 /**
@@ -70,6 +70,11 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
                     $element_types->addUnionType($function_like->getUnionType());
                 }
             }
+            if (Config::get_track_references()) {
+                foreach ($function_like_list as $function_like) {
+                    $function_like->addReference($context);
+                }
+            }
             return $element_types;
         };
         $call_user_func_array_callback = static function(
@@ -95,6 +100,11 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
                     $element_types->addUnionType($function_like->getDependentReturnType($code_base, $context, $arguments));
                 } else {
                     $element_types->addUnionType($function_like->getUnionType());
+                }
+            }
+            if (Config::get_track_references()) {
+                foreach ($function_like_list as $function_like) {
+                    $function_like->addReference($context);
                 }
             }
             if ($arguments !== null) {
@@ -191,6 +201,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
 
     /**
      * @return \Closure[]
+     * @override
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
@@ -204,6 +215,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
 
     /**
      * @return \Closure[]
+     * @override
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {

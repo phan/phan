@@ -1,0 +1,2 @@
+src/003_suppress_on_property.php:10 PhanPluginMixedKeyNoKey Should not mix array entries of the form [key => value,] with entries of the form [value,].
+src/003_suppress_on_property.php:19 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('key') detected in array - the earlier entry will be ignored.

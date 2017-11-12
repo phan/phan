@@ -431,18 +431,20 @@ return [
     'ignore_undeclared_functions_with_known_signatures' => false,
 
     // A list of plugin files to execute
+    // NOTE: values can be the base name without the extension for plugins bundled with Phan (E.g. 'AlwaysReturnPlugin')
+    // or relative/absolute paths to the plugin (Relative to the project root).
     'plugins' => [
-        '.phan/plugins/AlwaysReturnPlugin.php',
-        '.phan/plugins/DemoPlugin.php',
-        '.phan/plugins/DollarDollarPlugin.php',
-        '.phan/plugins/UnreachableCodePlugin.php',
+        'AlwaysReturnPlugin',
+        'DemoPlugin',
+        'DollarDollarPlugin',
+        'UnreachableCodePlugin',
         // NOTE: src/Phan/Language/Internal/FunctionSignatureMap.php mixes value without keys (as return type) with values having keys deliberately.
-        '.phan/plugins/DuplicateArrayKeyPlugin.php',
-        '.phan/plugins/PregRegexCheckerPlugin.php',
-        '.phan/plugins/PrintfCheckerPlugin.php',
+        'DuplicateArrayKeyPlugin',
+        'PregRegexCheckerPlugin',
+        'PrintfCheckerPlugin',
 
         // NOTE: This plugin only produces correct results when
         //       Phan is run on a single core (-j1).
-        // '.phan/plugins/UnusedSuppressionPlugin.php',
+        // 'UnusedSuppressionPlugin',
     ],
 ];

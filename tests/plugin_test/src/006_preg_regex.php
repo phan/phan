@@ -7,7 +7,7 @@ echo preg_replace('@foo(@', 'foobar', $x);
 preg_match('/\w\+/', '  words', $matches);
 var_export($matches);
 
-/** @suppress PhanUnreferencedFunction */
+/** @suppress PhanUnreferencedClosure */
 call_user_func(function() {
     echo preg_replace_callback_array(['@a@' => function($x) { return 'i'; }], 'bad');
     echo preg_replace_callback_array(['@a' => function($x) { return 'i'; }], 'bad');

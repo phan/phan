@@ -11,12 +11,12 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 
 assert(
     (int)phpversion()[0] >= 7,
-    'make_stubs requires PHP version 7 or greater. See https://github.com/etsy/phan#getting-it-running for more details.'
+    'make_stubs requires PHP version 7 or greater. See https://github.com/phan/phan#getting-it-running for more details.'
 );
 
 assert(
     file_exists(dirname(__DIR__) . '/vendor/autoload.php') || file_exists(__DIR__ . '/../../../../autoload.php'),
-    'Autoloader not found. Make sure you run `composer install` before running Phan. See https://github.com/etsy/phan#getting-it-running for more details.'
+    'Autoloader not found. Make sure you run `composer install` before running Phan. See https://github.com/phan/phan#getting-it-running for more details.'
 );
 
 require_once(dirname(__DIR__) . '/src/Phan/Bootstrap.php');

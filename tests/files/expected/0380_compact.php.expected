@@ -1,0 +1,3 @@
+%s:11 PhanUndeclaredVariable Variable $v2 is undeclared
+%s:13 PhanUndeclaredVariable Variable $otherVarName is undeclared
+%s:15 PhanUndeclaredVariable Variable $v3 is undeclared

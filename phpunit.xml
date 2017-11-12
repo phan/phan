@@ -59,6 +59,7 @@
             <file>tests/Phan/AnalyzerTest.php</file>
             <directory>tests/Phan/Output/Printer</directory>
             <file>tests/Phan/Library/TupleTest.php</file>
+            <file>tests/Phan/Exception/IssueExceptionTest.php</file>
             <file>tests/Phan/Analysis/BlockExitStatusCheckerTest.php</file>
         </testsuite>
     </testsuites>

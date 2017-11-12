@@ -52,6 +52,9 @@ class GlobalConstant extends AddressableElement implements ConstantInterface
         CodeBase $code_base,
         string $name
     ) : GlobalConstant {
+        if ($name === 'strict_types') {
+            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        }
         if (!defined($name)) {
             throw new \InvalidArgumentException(sprintf("This should not happen, defined(%s) is false, but the constant was returned by get_defined_constants()", var_export($name, true)));
         }

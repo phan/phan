@@ -1,0 +1,2 @@
+src/004_partial_arithmetic.php:4 PhanSyntaxError syntax error, unexpected '}'
+src/004_partial_arithmetic.php:7 PhanTypeInvalidRightOperand Invalid operator: left operand is array and right is not

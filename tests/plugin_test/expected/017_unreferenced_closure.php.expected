@@ -1,0 +1,1 @@
+src/017_unreferenced_closure.php:10 PhanUnreferencedClosure Possibly zero references to closure \closure_%s

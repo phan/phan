@@ -4,12 +4,12 @@
 %s:12 PhanParamSignatureRealMismatchTooManyRequiredParameters Declaration of function f(int $a, int $b) should be compatible with function f(int $a) (the method override requires 2 parameter(s), but the overridden method requires only 1) defined in %s:3
 %s:15 PhanParamSignatureMismatch Declaration of function f(string $a) should be compatible with function f(int $a) defined in %s:3
 %s:15 PhanParamSignatureRealMismatchParamType Declaration of function f(string $a) should be compatible with function f(int $a) (parameter #1 of type 'string' cannot replace original parameter of type 'int') defined in %s:3
-%s:18 PhanParamSignatureMismatch Declaration of function f($a) should be compatible with function f(int $a) defined in %s:3
 %s:18 PhanParamSignatureRealMismatchHasNoParamType Declaration of function f($a) should be compatible with function f(int $a) (parameter #1 with no type cannot replace original parameter with type 'int') defined in %s:3
 %s:25 PhanParamSignatureMismatch Declaration of function g() : int should be compatible with function g() : string defined in %s:22
 %s:25 PhanParamSignatureRealMismatchReturnType Declaration of function g() : int should be compatible with function g() : string (method returning 'int' cannot override method returning 'string') defined in %s:22
 %s:28 PhanParamSignatureRealMismatchReturnType Declaration of function g() should be compatible with function g() : string (method returning '' cannot override method returning 'string') defined in %s:22
-%s:35 PhanParamSignatureRealMismatchHasParamType Declaration of function h(int $a) should be compatible with function h($a) (parameter #1 of has type 'int' cannot replace original parameter with no type) defined in %s:32
+%s:35 PhanParamSignatureMismatch Declaration of function h(int $a) should be compatible with function h($a) defined in %s:32
+%s:35 PhanParamSignatureRealMismatchHasParamType Declaration of function h(int $a) should be compatible with function h($a) (parameter #1 has type 'int' cannot replace original parameter with no type) defined in %s:32
 %s:50 PhanParamSignatureMismatch Declaration of function i($a) should be compatible with function i($a, mixed|string $b = 'default') defined in %s:46
 %s:50 PhanParamSignatureRealMismatchTooFewParameters Declaration of function i($a) should be compatible with function i($a, $b = 'default') (the method override accepts 1 parameter(s), but the overridden method can accept 2) defined in %s:46
 %s:58 PhanParamSignatureMismatch Declaration of function j() should be compatible with function &j() defined in %s:54
