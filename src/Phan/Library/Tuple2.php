@@ -27,7 +27,8 @@ class Tuple2 extends Tuple1
      * @param T1 $_1
      * The 1st element
      */
-    public function __construct($_0, $_1) {
+    public function __construct($_0, $_1)
+    {
         parent::__construct($_0);
         $this->_1 = $_1;
     }

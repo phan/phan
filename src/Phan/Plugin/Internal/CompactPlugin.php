@@ -14,7 +14,8 @@ use ast\Node;
  * NOTE: This is automatically loaded by phan. Do not include it in a config.
  */
 final class CompactPlugin extends PluginV2 implements
-    AnalyzeFunctionCallCapability {
+    AnalyzeFunctionCallCapability
+{
 
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
@@ -40,7 +41,7 @@ final class CompactPlugin extends PluginV2 implements
             Func $unused_func,
             array $args
         ) {
-            $maybe_emit_issue = function(string $variable_name, $arg = null) use($code_base, $context) {
+            $maybe_emit_issue = function(string $variable_name, $arg = null) use ($code_base, $context) {
                 if (!$context->getScope()->hasVariableWithName($variable_name)) {
                     Issue::maybeEmit(
                         $code_base,

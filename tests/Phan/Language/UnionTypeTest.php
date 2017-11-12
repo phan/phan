@@ -86,15 +86,18 @@ class UnionTypeTest extends BaseTest
         $this->context = null;
     }
 
-    public static function tearDownAfterClass() {
+    public static function tearDownAfterClass()
+    {
         self::$code_base = null;
     }
 
-    public function testInt() {
+    public function testInt()
+    {
         $this->assertUnionTypeStringEqual('42', 'int');
     }
 
-    public function testString() {
+    public function testString()
+    {
         try {
             $this->assertUnionTypeStringEqual(
                 '"a string"',
@@ -105,36 +108,45 @@ class UnionTypeTest extends BaseTest
         }
     }
 
-    public function testArrayUniform() {
+    public function testArrayUniform()
+    {
         $this->assertUnionTypeStringEqual(
             '[1, 2, 3]',
             'int[]'
         );
     }
 
-    public function testArrayMixed() {
+    public function testArrayMixed()
+    {
         $this->assertUnionTypeStringEqual(
-            '[1, "string"]', 'array'
+            '[1, "string"]',
+            'array'
         );
     }
 
-    public function testArrayEmpty() {
+    public function testArrayEmpty()
+    {
         $this->assertUnionTypeStringEqual(
-            '[]', 'array'
+            '[]',
+            'array'
         );
     }
-    public function testInternalObject() {
+    public function testInternalObject()
+    {
         $this->assertUnionTypeStringEqual(
             'new SplStack();',
             '\\ArrayAccess|\\Countable|\\Iterator|\\Serializable|\\SplDoublyLinkedList|\\SplStack|\\Traversable|iterable'
         );
     }
 
-    public function testGenericArrayType() {
+    public function testGenericArrayType()
+    {
         $type = GenericArrayType::fromElementType(
             GenericArrayType::fromElementType(
-                IntType::instance(false), false
-            ), false
+                IntType::instance(false),
+                false
+            ),
+            false
         );
 
         $this->assertEquals(
@@ -143,7 +155,8 @@ class UnionTypeTest extends BaseTest
         );
     }
 
-    public function testGenericArrayTypeFromString() {
+    public function testGenericArrayTypeFromString()
+    {
         $type = Type::fromFullyQualifiedString("int[][]");
 
         $this->assertEquals(
@@ -164,8 +177,8 @@ class UnionTypeTest extends BaseTest
      */
     private function assertUnionTypeStringEqual(
         string $code_stub,
-        string $type_name)
-    {
+        string $type_name
+    ) {
         $this->assertEquals(
             $type_name,
             $this->typeStringFromCode('<' . '?php ' . $code_stub . ';')
@@ -178,7 +191,8 @@ class UnionTypeTest extends BaseTest
      * the first statement in the statement list in the given
      * code.
      */
-    private function typeStringFromCode(string $code) : string {
+    private function typeStringFromCode(string $code) : string
+    {
         return UnionType::fromNode(
             $this->context,
             self::$code_base,

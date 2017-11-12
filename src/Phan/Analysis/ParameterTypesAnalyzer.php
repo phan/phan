@@ -125,7 +125,7 @@ class ParameterTypesAnalyzer
         //      then this has to check two different overrides (Subclass overriding parent class, and subclass overriding abstract method in interface)
         try {
             $o_method_list = $method->getOverriddenMethods($code_base);
-        } catch(CodeBaseException $e) {
+        } catch (CodeBaseException $e) {
             // TODO: Remove if no edge cases are seen.
             Issue::maybeEmit(
                 $code_base,
@@ -144,7 +144,8 @@ class ParameterTypesAnalyzer
     /**
      * @return void
      */
-    private static function analyzeOverrideComment(CodeBase $code_base, Method $method) {
+    private static function analyzeOverrideComment(CodeBase $code_base, Method $method)
+    {
         if ($method->getIsMagic()) {
             return;
         }
@@ -266,7 +267,7 @@ class ParameterTypesAnalyzer
             > $o_method->getNumberOfRequiredParameters()
         ) {
             $signatures_match = false;
-        } else if ($method->getNumberOfParameters()
+        } elseif ($method->getNumberOfParameters()
             < $o_method->getNumberOfParameters()
         ) {
             $signatures_match = false;
@@ -277,7 +278,6 @@ class ParameterTypesAnalyzer
             $o_real_parameter_list = $o_method->getRealParameterList();
 
             foreach ($method->getParameterList() as $i => $parameter) {
-
                 if (!isset($o_parameter_list[$i])) {
                     continue;
                 }
@@ -342,7 +342,6 @@ class ParameterTypesAnalyzer
         // The return type should be stricter than or identical to the overridden union type.
         // E.g. there is no issue if the overridden return type is empty.
         if (!$o_return_union_type->isEmpty()) {
-
             if (!$method->getUnionType()->asExpandedTypes($code_base)->canCastToUnionType(
                 $o_return_union_type
             )) {
@@ -431,7 +430,6 @@ class ParameterTypesAnalyzer
                     );
                 }
             }
-
         }
     }
 
@@ -481,7 +479,7 @@ class ParameterTypesAnalyzer
                 $o_method->getNumberOfRequiredRealParameters()
             );
             return;
-        } else if ($method->getNumberOfRealParameters()
+        } elseif ($method->getNumberOfRealParameters()
             < $o_method->getNumberOfRealParameters()
         ) {
             self::emitSignatureRealMismatchIssue(
@@ -615,7 +613,6 @@ class ParameterTypesAnalyzer
             if (!($o_return_union_type->isEqualTo($return_union_type) || (
                 $o_return_union_type->containsNullable() && !($o_return_union_type->nonNullableClone()->isEqualTo($return_union_type)))
                 )) {
-
                 $is_possibly_compatible = false;
 
                 self::emitSignatureRealMismatchIssue(
@@ -685,7 +682,8 @@ class ParameterTypesAnalyzer
      * @param int|string ...$args
      * @return void
      */
-    private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, string $phpdoc_issue_type, ...$args) {
+    private static function emitSignatureRealMismatchIssue(CodeBase $code_base, Method $method, Method $o_method, string $issue_type, string $internal_issue_type, string $phpdoc_issue_type, ...$args)
+    {
         if ($method->isFromPHPDoc() || $o_method->isFromPHPDoc()) {
             // TODO: for overriding methods defined in phpdoc, going to need to add issue suppressions from the class phpdoc?
             if ($method->hasSuppressIssue($phpdoc_issue_type)) {
@@ -703,7 +701,7 @@ class ParameterTypesAnalyzer
                     $o_method->getFileRef()->getLineNumberStart(),
                 ])
             );
-        } else if ($o_method->isPHPInternal()) {
+        } elseif ($o_method->isPHPInternal()) {
             if ($method->hasSuppressIssue($internal_issue_type)) {
                 return;
             }
@@ -763,10 +761,10 @@ class ParameterTypesAnalyzer
                     // or equivalent form of the syntax-level declared
                     // return type.
                     if (!$phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
-                            $resolved_real_param_type,
-                            $context,
-                            $code_base
-                        )
+                        $resolved_real_param_type,
+                        $context,
+                        $code_base
+                    )
                     ) {
                         $is_exclusively_narrowed = false;
                         if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParam)) {
@@ -870,7 +868,7 @@ class ParameterTypesAnalyzer
                 $o_method->getFileRef()->getFile(),
                 $o_method->getFileRef()->getLineNumberStart()
             );
-        } else if ($o_method->isPHPInternal()) {
+        } elseif ($o_method->isPHPInternal()) {
             if ($method->hasSuppressIssue(Issue::AccessOverridesFinalMethodInternal)) {
                 return;
             }

@@ -67,5 +67,4 @@ interface AddressableElementInterface extends TypedElementInterface
     public function getReferenceCount(
         CodeBase $code_base
     ) : int;
-
 }

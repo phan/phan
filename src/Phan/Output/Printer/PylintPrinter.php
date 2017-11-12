@@ -19,7 +19,8 @@ final class PylintPrinter implements IssuePrinterInterface
             $instance->getIssue()->getType(),
             $instance->getMessage()
         );
-        $line = sprintf("%s:%d: [%s] %s",
+        $line = sprintf(
+            "%s:%d: [%s] %s",
             $instance->getFile(),
             $instance->getLine(),
             self::get_severity_code($instance),
@@ -33,15 +34,15 @@ final class PylintPrinter implements IssuePrinterInterface
     {
         $issue = $instance->getIssue();
         $categoryId = $issue->getTypeId();
-        switch($issue->getSeverity()) {
-        case Issue::SEVERITY_LOW:
-            return 'C' . $categoryId;
-        case Issue::SEVERITY_NORMAL:
-            return 'W' . $categoryId;
-        case Issue::SEVERITY_CRITICAL:
-            return 'E' . $categoryId;
-        default:
-            throw new \AssertionError("Unrecognized severity for " . __METHOD__ . ": " . $issue->getSeverity());
+        switch ($issue->getSeverity()) {
+            case Issue::SEVERITY_LOW:
+                return 'C' . $categoryId;
+            case Issue::SEVERITY_NORMAL:
+                return 'W' . $categoryId;
+            case Issue::SEVERITY_CRITICAL:
+                return 'E' . $categoryId;
+            default:
+                throw new \AssertionError("Unrecognized severity for " . __METHOD__ . ": " . $issue->getSeverity());
         }
     }
 

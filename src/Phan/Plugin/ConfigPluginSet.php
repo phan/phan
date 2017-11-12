@@ -52,7 +52,8 @@ final class ConfigPluginSet extends PluginV2 implements
     FinalizeProcessCapability,
     LegacyAnalyzeNodeCapability,
     LegacyPreAnalyzeNodeCapability,
-    ReturnTypeOverrideCapability {
+    ReturnTypeOverrideCapability
+{
 
     /** @var Plugin[]|null - Cached plugin set for this instance. Lazily generated. */
     private $pluginSet;
@@ -87,7 +88,9 @@ final class ConfigPluginSet extends PluginV2 implements
     /**
      * Call `ConfigPluginSet::instance()` instead.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * @return ConfigPluginSet
@@ -379,11 +382,15 @@ final class ConfigPluginSet extends PluginV2 implements
                 $plugin_instance =
                     require($plugin_file_name);
 
-                \assert(!empty($plugin_instance),
-                    "Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not.");
+                \assert(
+                    !empty($plugin_instance),
+                    "Plugins must return an instance of the plugin. The plugin at $plugin_file_name does not."
+                );
 
-                \assert($plugin_instance instanceof PluginV2,
-                    "Plugins must extend \Phan\PluginV2. The plugin at $plugin_file_name does not.");
+                \assert(
+                    $plugin_instance instanceof PluginV2,
+                    "Plugins must extend \Phan\PluginV2. The plugin at $plugin_file_name does not."
+                );
 
                 return $plugin_instance;
             },
@@ -418,8 +425,9 @@ final class ConfigPluginSet extends PluginV2 implements
     /**
      * @return array
      */
-    private static function filterOutEmptyMethodBodies(array $plugin_set, string $method_name) : array {
-        return \array_values(\array_filter($plugin_set, function(PluginV2 $plugin) use($method_name) : bool {
+    private static function filterOutEmptyMethodBodies(array $plugin_set, string $method_name) : array
+    {
+        return \array_values(\array_filter($plugin_set, function(PluginV2 $plugin) use ($method_name) : bool {
             if ($plugin instanceof PluginImplementation) {
                 if (!$plugin->isDefinedInSubclass($method_name)) {
                     // PluginImplementation defines empty method bodies for each of the plugin $method_names
@@ -449,7 +457,7 @@ final class ConfigPluginSet extends PluginV2 implements
                 }
                 $closure = (new \ReflectionMethod($plugin, 'preAnalyzeNode'))->getClosure($plugin);
                 $closures_for_kind->recordForAllKinds($closure);
-            } else if ($plugin instanceof PreAnalyzeNodeCapability) {
+            } elseif ($plugin instanceof PreAnalyzeNodeCapability) {
                 $plugin_analysis_class = $plugin->getPreAnalyzeNodeVisitorClassName();
                 if (!\is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
                     throw new \TypeError(sprintf("Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not", get_class($plugin), PluginAwarePreAnalysisVisitor::class, $plugin_analysis_class));
@@ -477,7 +485,7 @@ final class ConfigPluginSet extends PluginV2 implements
             }
         }
         return $closures_for_kind->getFlattenedClosures(static function(array $closure_list) : \Closure {
-            return static function(CodeBase $code_base, Context $context, Node $node) use($closure_list) {
+            return static function(CodeBase $code_base, Context $context, Node $node) use ($closure_list) {
                 foreach ($closure_list as $closure) {
                     $closure($code_base, $context, $node);
                 }
@@ -504,7 +512,7 @@ final class ConfigPluginSet extends PluginV2 implements
                 }
                 $closure = (new \ReflectionMethod($plugin, 'analyzeNode'))->getClosure($plugin);
                 $closures_for_kind->recordForAllKinds($closure);
-            } else if ($plugin instanceof AnalyzeNodeCapability) {
+            } elseif ($plugin instanceof AnalyzeNodeCapability) {
                 $plugin_analysis_class = $plugin->getAnalyzeNodeVisitorClassName();
                 if (!\is_subclass_of($plugin_analysis_class, PluginAwareAnalysisVisitor::class)) {
                     throw new \TypeError(sprintf("Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not", get_class($plugin), PluginAwareAnalysisVisitor::class, $plugin_analysis_class));
@@ -537,11 +545,11 @@ final class ConfigPluginSet extends PluginV2 implements
             }
         }
         return $closures_for_kind->getFlattenedClosures(static function(array $closure_list) : \Closure {
-           return static function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null) use($closure_list) {
+            return static function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null) use ($closure_list) {
                 foreach ($closure_list as $closure) {
                     $closure($code_base, $context, $node, $parent_node);
                 }
-           };
+            };
         });
     }
 
@@ -563,5 +571,4 @@ final class ConfigPluginSet extends PluginV2 implements
     {
         return $this->pluginSet;
     }
-
 }

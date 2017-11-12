@@ -96,7 +96,8 @@ class ClassConstant extends ClassElement implements ConstantInterface
      * @return bool
      * True if this class constant is intended to be an override of another class constant (contains (at)override)
      */
-    public function isOverrideIntended() : bool {
+    public function isOverrideIntended() : bool
+    {
         return Flags::bitVectorHasState(
             $this->getPhanFlags(),
             Flags::IS_OVERRIDE_INTENDED
@@ -108,7 +109,8 @@ class ClassConstant extends ClassElement implements ConstantInterface
 
      * @return void
      */
-    public function setIsOverrideIntended(bool $is_override_intended) {
+    public function setIsOverrideIntended(bool $is_override_intended)
+    {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
                 $this->getPhanFlags(),
@@ -118,7 +120,8 @@ class ClassConstant extends ClassElement implements ConstantInterface
         );
     }
 
-    public function toStub() : string {
+    public function toStub() : string
+    {
         $string = '    ';
 
         if ($this->isPublic()) {

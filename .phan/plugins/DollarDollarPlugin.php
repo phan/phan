@@ -31,12 +31,14 @@ use ast\Node;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DollarDollarPlugin extends PluginV2 implements AnalyzeNodeCapability {
+class DollarDollarPlugin extends PluginV2 implements AnalyzeNodeCapability
+{
 
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
      */
-    public static function getAnalyzeNodeVisitorClassName() : string {
+    public static function getAnalyzeNodeVisitorClassName() : string
+    {
         return DollarDollarVisitor::class;
     }
 }
@@ -48,7 +50,8 @@ class DollarDollarPlugin extends PluginV2 implements AnalyzeNodeCapability {
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DollarDollarVisitor extends PluginAwareAnalysisVisitor {
+class DollarDollarVisitor extends PluginAwareAnalysisVisitor
+{
 
     // A plugin's visitors should not override visit() unless they need to.
 
@@ -59,7 +62,8 @@ class DollarDollarVisitor extends PluginAwareAnalysisVisitor {
      * @return void
      * @override
      */
-    public function visitVar(Node $node) {
+    public function visitVar(Node $node)
+    {
         if ($node->children['name'] instanceof Node) {
             $this->emitPluginIssue(
                 $this->code_base,

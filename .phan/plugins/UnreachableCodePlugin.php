@@ -32,8 +32,8 @@ use ast\Node;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-final class UnreachableCodePlugin extends PluginV2
-    implements AnalyzeNodeCapability {
+final class UnreachableCodePlugin extends PluginV2 implements AnalyzeNodeCapability
+{
 
     /**
      * @return string - The name of the visitor that will be called (formerly analyzeNode)
@@ -51,7 +51,8 @@ final class UnreachableCodePlugin extends PluginV2
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-final class UnreachableCodeVisitor extends PluginAwareAnalysisVisitor {
+final class UnreachableCodeVisitor extends PluginAwareAnalysisVisitor
+{
     // A plugin's visitors should NOT implement visit(), unless they need to.
 
     const DECL_KIND_SET = [

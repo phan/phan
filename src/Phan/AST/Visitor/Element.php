@@ -601,7 +601,8 @@ class Element
         }
     }
 
-    private static function flagDescription(Node $node) : string {
+    private static function flagDescription(Node $node) : string
+    {
         return Debug::astFlagDescription($node->flags ?? 0, $node->kind);
     }
 }

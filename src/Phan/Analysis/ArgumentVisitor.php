@@ -112,7 +112,6 @@ class ArgumentVisitor extends KindVisitorImplementation
     public function analyzeProp(Node $node, bool $is_static)
     {
         try {
-
             // Only look at properties with names that aren't
             // variables or whatever
             if (!\is_string($node->children['prop'])) {

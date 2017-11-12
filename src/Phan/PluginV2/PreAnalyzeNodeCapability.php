@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\PluginV2;
 
-interface PreAnalyzeNodeCapability {
+interface PreAnalyzeNodeCapability
+{
     /**
      * Returns the name of the visitor class to be instantiated and invoked to pre-analyze a node in the analysis phase.
      * (To pre-analyze a node)

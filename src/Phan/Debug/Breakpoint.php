@@ -33,7 +33,7 @@ do {
         eval($input . ';');
     } catch (\ParseError $exception) {
         print "Parse error in `$input`\n";
-    } catch(\Throwable $exception) {
+    } catch (\Throwable $exception) {
         print $exception->getMessage() . "\n";
         print $exception->getTraceAsString() . "\n";
     }

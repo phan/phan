@@ -25,7 +25,8 @@ use ast\Node;
  *
  * @see $this->visit
  */
-class BlockAnalysisVisitor extends AnalysisVisitor {
+class BlockAnalysisVisitor extends AnalysisVisitor
+{
 
     /**
      * @var ?Node
@@ -97,13 +98,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         // indicating the state of the world within the
         // given node
         $context = (new PreOrderAnalysisVisitor(
-            $this->code_base, $context
+            $this->code_base,
+            $context
         ))($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
         ConfigPluginSet::instance()->preAnalyzeNode(
-            $this->code_base, $context, $node
+            $this->code_base,
+            $context,
+            $node
         );
 
         \assert(!empty($context), 'Context cannot be null');
@@ -720,7 +724,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         // Let any configured plugins do a pre-order
         // analysis of the node.
         ConfigPluginSet::instance()->preAnalyzeNode(
-            $this->code_base, $context, $node
+            $this->code_base,
+            $context,
+            $node
         );
 
         \assert(!empty($context), 'Context cannot be null');
@@ -847,13 +853,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         // indicating the state of the world within the
         // given node
         $context = (new PreOrderAnalysisVisitor(
-            $this->code_base, $context
+            $this->code_base,
+            $context
         ))($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
         ConfigPluginSet::instance()->preAnalyzeNode(
-            $this->code_base, $context, $node
+            $this->code_base,
+            $context,
+            $node
         );
         return $context;
     }
@@ -883,7 +892,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
 
         // let any configured plugins analyze the node
         ConfigPluginSet::instance()->analyzeNode(
-            $this->code_base, $context, $node, $this->parent_node
+            $this->code_base,
+            $context,
+            $node,
+            $this->parent_node
         );
         return $context;
     }
@@ -909,13 +921,16 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         // indicating the state of the world within the
         // given node
         $context = (new PreOrderAnalysisVisitor(
-            $this->code_base, $context
+            $this->code_base,
+            $context
         ))($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
         ConfigPluginSet::instance()->preAnalyzeNode(
-            $this->code_base, $context, $node
+            $this->code_base,
+            $context,
+            $node
         );
 
         \assert(!empty($context), 'Context cannot be null');
@@ -955,7 +970,9 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
         // Let any configured plugins do a pre-order
         // analysis of the node.
         ConfigPluginSet::instance()->preAnalyzeNode(
-            $this->code_base, $context, $node
+            $this->code_base,
+            $context,
+            $node
         );
 
         // With a context that is inside of the node passed
@@ -972,5 +989,4 @@ class BlockAnalysisVisitor extends AnalysisVisitor {
 
         return $context;
     }
-
 }

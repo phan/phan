@@ -44,7 +44,8 @@ use ast\Node;
  * Note: When adding new plugins,
  * add them to the corresponding section of README.md
  */
-class DemoLegacyPlugin extends PluginImplementation {
+class DemoLegacyPlugin extends PluginImplementation
+{
 
     /**
      * @param CodeBase $code_base
@@ -165,7 +166,6 @@ class DemoLegacyPlugin extends PluginImplementation {
             );
         }
     }
-
 }
 
 /**
@@ -175,7 +175,8 @@ class DemoLegacyPlugin extends PluginImplementation {
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DemoLegacyNodeVisitor extends AnalysisVisitor {
+class DemoLegacyNodeVisitor extends AnalysisVisitor
+{
 
     /** @var Plugin */
     private $plugin;
@@ -253,4 +254,6 @@ class DemoLegacyNodeVisitor extends AnalysisVisitor {
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
 /** @suppress PhanDeprecatedClass - Only using a closure so that I can suppress Phan issue types */
-return (function() : DemoLegacyPlugin { return new DemoLegacyPlugin(); })();
+return (function() : DemoLegacyPlugin {
+    return new DemoLegacyPlugin();
+})();

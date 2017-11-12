@@ -13,16 +13,19 @@ use Sabre\Event\Loop;
  * A logger used by Phan for developing or debugging the language server.
  * Logs to stderr.
  */
-class Logger {
+class Logger
+{
     /** @var resource|false */
     public static $file;
 
-    public static function shouldLog() : bool {
+    public static function shouldLog() : bool
+    {
         return Config::getValue('language_server_debug_level') === 'info';
     }
 
     /** @return void */
-    public static function logRequest(array $headers, string $buffer) {
+    public static function logRequest(array $headers, string $buffer)
+    {
         if (!self::shouldLog()) {
             return;
         }
@@ -30,7 +33,8 @@ class Logger {
     }
 
     /** @return void */
-    public static function logResponse(array $headers, string $buffer) {
+    public static function logResponse(array $headers, string $buffer)
+    {
         if (!self::shouldLog()) {
             return;
         }
@@ -38,7 +42,8 @@ class Logger {
     }
 
     /** @return void */
-    public static function logInfo(string $msg) {
+    public static function logInfo(string $msg)
+    {
         if (!self::shouldLog()) {
             return;
         }
@@ -49,7 +54,8 @@ class Logger {
     /**
      * @return resource
      */
-    private static function getLogFile() {
+    private static function getLogFile()
+    {
         if (self::$file === null) {
             self::$file = STDERR;
         }
@@ -60,7 +66,8 @@ class Logger {
      * @param resource $newFile
      * @return void
      */
-    public static function setLogFile($newFile) {
+    public static function setLogFile($newFile)
+    {
         assert(is_resource($newFile));
         if (is_resource(self::$file)) {
             if (self::$file === $newFile) {

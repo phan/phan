@@ -1,11 +1,11 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.8.10
------------------------
+?? ??? 2017, Phan 0.8.10 (dev)
+------------------------
 
 Phan 0.8.x switched from using AST version 40 (php-ast 0.1.4+) to AST version 50 (0.1.5+) in this release.
 
-Backported from Phan 0.10.2 (dev)
+### Backported from Phan 0.10.2 (dev)
 
 New Features(Analysis)
 + Support less ambiguous `?(T[])` and `(?T)[]` in phpdoc (#1213)
@@ -26,6 +26,7 @@ New Features(Analysis)
 + Analyze compact() for undefined variables (#1089)
 + Add `PhanParamSuspiciousOrder` to warn about mixing up variable and constant/literal arguments in calls to built in string/regex functions
   (`explode`, `strpos`, `preg_match`, etc.)
++ Preserve the closure's function signature in the inferred return value of `Closure::bind()`. (#869)
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
@@ -48,10 +49,14 @@ Plugins
 + Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)
 + Support `'plugins' => ['AlwaysReturnPlugin']` as shorthand for full relative path to a bundled plugin such as AlwaysReturnPlugin.php (#1209)
 
+Maintenance
++ Used PHP_CodeSniffer to automatically make Phan's source directory adhere closely to PSR-1 and PSR-2, making minor changes to many files.
+  (e.g. which line each brace goes on, etc.)
+
 20 Oct 2017, Phan 0.8.9
 -----------------------
 
-Backported from Phan 0.9.7
+### Backported from Phan 0.9.7
 
 New Features(Analysis)
 + Support `@return $this` in phpdoc for methods and magic methods.
@@ -401,7 +406,7 @@ Backwards Incompatible Changes
   analyzed in a case sensitive way.
   This may affect projects using `define(name, value, case_insensitive = true)`.
   Change the code being analyzed to exactly match the constant name in define())
- 
+
 ### Backported from Phan 0.9.1
 
 New Features (Analysis)

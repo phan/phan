@@ -10,7 +10,8 @@ use Phan\Language\Context;
 
 use ast\Node;
 
-class Parser {
+class Parser
+{
     /**
      * Parses the code. If $suppress_parse_errors is false, this also emits SyntaxError.
      *

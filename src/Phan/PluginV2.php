@@ -68,7 +68,8 @@ use ast\Node;
  *     (implement \Phan\PluginV2\LegacyPreAnalyzeNodeCapability)
  *     (Deprecated in favor of \Phan\PluginV2\PreAnalyzeNodeCapability, which is faster)
  */
-abstract class PluginV2 {
+abstract class PluginV2
+{
     /**
      * public function emitIssue(
      *     CodeBase $code_base,

@@ -18,7 +18,8 @@ use ast\Node;
  * - getAnalyzeFunctionCallClosures
  *   This method returns a map from function/method FQSEN to closures that are called on invocations of those closures.
  */
-class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability {
+class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapability
+{
     // Skip over analyzing regex keys that couldn't be resolved.
     // Don't try to convert values to PHP data (should be closures)
     const RESOLVE_REGEX_KEY_FLAGS = (ContextNode::RESOLVE_DEFAULT | ContextNode::RESOLVE_KEYS_SKIP_UNKNOWN_KEYS) &
@@ -30,7 +31,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         /**
          * @suppress PhanParamSuspiciousOrder 100% deliberate use of varying regex and constant $subject for preg_match
          */
-        $err = with_disabled_phan_error_handler(function() use($pattern) {
+        $err = with_disabled_phan_error_handler(function() use ($pattern) {
             $old_error_reporting = error_reporting();
             \error_reporting(0);
             \ob_start();

@@ -12,7 +12,8 @@ use ast\Node;
 /**
  * A trait which allows plugins to emit issues with custom error messages
  */
-trait IssueEmitter {
+trait IssueEmitter
+{
     /**
      * Emit an issue if it is not suppressed
      *

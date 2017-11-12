@@ -139,7 +139,7 @@ class CLI
         // the location of the config file path.
         if (isset($opts['k'])) {
             $this->config_file = $opts['k'];
-        } else if (isset($opts['config-file'])) {
+        } elseif (isset($opts['config-file'])) {
             $this->config_file = $opts['config-file'];
         }
 
@@ -423,7 +423,8 @@ class CLI
                 $exclude_file_set[$file] = true;
             }
 
-            $this->file_list = array_filter($this->file_list,
+            $this->file_list = array_filter(
+                $this->file_list,
                 function(string $file) use ($exclude_file_set) : bool {
                     return empty($exclude_file_set[$file]);
                 }
@@ -435,13 +436,16 @@ class CLI
         // way during analysis. With our parallelization mechanism, there
         // is no shared state between processes, making it impossible to
         // have a complete set of reference lists.
-        \assert(Config::getValue('processes') === 1
+        \assert(
+            Config::getValue('processes') === 1
             || !Config::getValue('dead_code_detection'),
-            "We cannot run dead code detection on more than one core.");
+            "We cannot run dead code detection on more than one core."
+        );
     }
 
     /** @return void - exits on usage error */
-    private function checkCanDaemonize(string $protocol) {
+    private function checkCanDaemonize(string $protocol)
+    {
         $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
         if (!in_array($protocol, stream_get_transports())) {
             $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot create a daemon with $opt", 1);

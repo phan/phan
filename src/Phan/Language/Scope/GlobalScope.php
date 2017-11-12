@@ -4,7 +4,8 @@ namespace Phan\Language\Scope;
 use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 
-class GlobalScope extends Scope {
+class GlobalScope extends Scope
+{
 
     /**
      * @var Variable[]
@@ -113,5 +114,4 @@ class GlobalScope extends Scope {
     {
         return $this->getVariableByName($name);
     }
-
 }

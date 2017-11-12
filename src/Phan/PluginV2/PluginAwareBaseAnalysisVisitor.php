@@ -11,7 +11,8 @@ use ast\Node;
 /**
  * This augments AnalysisVisitor with public and internal methods.
  */
-abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor {
+abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor
+{
     use IssueEmitter;  // defines emitPluginIssue
 
     /**
@@ -76,7 +77,7 @@ abstract class PluginAwareBaseAnalysisVisitor extends AnalysisVisitor {
     /**
      * @return int[] The list of $node->kind values this plugin is capable of analyzing.
      */
-    public static final function getHandledNodeKinds() : array
+    final public static function getHandledNodeKinds() : array
     {
         $defines_visit = self::isDefinedInSubclass('visit');
         $kinds = [];

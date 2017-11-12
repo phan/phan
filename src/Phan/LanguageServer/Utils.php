@@ -13,9 +13,11 @@ use Throwable;
  *
  * Mostly from src/utils.php
  */
-class Utils {
+class Utils
+{
     /** @return void */
-    public static function crash(Throwable $err) {
+    public static function crash(Throwable $err)
+    {
         Loop\nextTick(function () use ($err) {
             throw $err;
         });
@@ -64,5 +66,4 @@ class Utils {
         }
         return $filepath;
     }
-
 }

@@ -9,7 +9,8 @@ use ast\Node;
 /**
  * @deprecated - New plugins should use AnalyzeNodeCapability
  */
-interface LegacyAnalyzeNodeCapability {
+interface LegacyAnalyzeNodeCapability
+{
     /**
      * Analyze the given node in the given context after
      * Phan has analyzed the node.

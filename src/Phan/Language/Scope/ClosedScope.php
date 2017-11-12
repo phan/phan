@@ -3,5 +3,6 @@ namespace Phan\Language\Scope;
 
 use Phan\Language\Scope;
 
-class ClosedScope extends Scope {
+class ClosedScope extends Scope
+{
 }

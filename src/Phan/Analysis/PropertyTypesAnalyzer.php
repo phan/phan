@@ -55,7 +55,6 @@ class PropertyTypesAnalyzer
                         );
                     }
                 } else {
-
                     // Make sure the class exists
                     $type_fqsen = $type->asFQSEN();
                     \assert($type_fqsen instanceof FullyQualifiedClassName, 'fqsens of non-native types must be class names');

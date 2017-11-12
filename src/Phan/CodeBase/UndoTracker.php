@@ -17,7 +17,8 @@ use Phan\Phan;
  * (We don't garbage collect reference cycles, so this attempts to work in a way that avoids cycles.
  *  Haven't verified that it does that as expected, yet)
  */
-class UndoTracker {
+class UndoTracker
+{
 
     /**
      * @var ?string absolute path to currently parsed file, when in parse phase.
@@ -35,7 +36,8 @@ class UndoTracker {
      */
     private $fileModificationState = [];
 
-    public function __construct() {
+    public function __construct()
+    {
     }
 
     /**
@@ -46,14 +48,16 @@ class UndoTracker {
      *
      * (This is the list prior to any analysis exclusion or whitelisting steps)
      */
-    public function getParsedFilePathList() : array {
+    public function getParsedFilePathList() : array
+    {
         return array_keys($this->fileModificationState);
     }
 
     /**
      * @return int The size of $this->getParsedFilePathList()
      */
-    public function getParsedFilePathCount() : int {
+    public function getParsedFilePathCount() : int
+    {
         return count($this->fileModificationState);
     }
 
@@ -61,7 +65,8 @@ class UndoTracker {
      * @param ?string $current_parsed_file
      * @return void
      */
-    public function setCurrentParsedFile($current_parsed_file) {
+    public function setCurrentParsedFile($current_parsed_file)
+    {
         if (\is_string($current_parsed_file)) {
             Daemon::debugf("Recording file modification state for %s", $current_parsed_file);
             $this->fileModificationState[$current_parsed_file] = self::getFileState($current_parsed_file);
@@ -73,7 +78,8 @@ class UndoTracker {
     /**
      * @return ?string - This string should change when the file is modified. Returns null if the file somehow doesn't exist
      */
-    public static function getFileState(string $path) {
+    public static function getFileState(string $path)
+    {
         clearstatcache(true, $path);  // TODO: does this work properly with symlinks? seems to.
         $real = realpath($path);
         if (!$real) {
@@ -94,7 +100,8 @@ class UndoTracker {
      * Removes the classes and functions, etc. from an older version of the file, if one exists.
      * @return void
      */
-    public function recordUnparseableFile(CodeBase $code_base, string $current_parsed_file) {
+    public function recordUnparseableFile(CodeBase $code_base, string $current_parsed_file)
+    {
         Daemon::debugf("%s was unparseable, had a syntax error", $current_parsed_file);
         Phan::getIssueCollector()->removeIssuesForFiles([$current_parsed_file]);
         $this->undoFileChanges($code_base, $current_parsed_file);
@@ -105,7 +112,8 @@ class UndoTracker {
      * Undoes all of the changes for the relative path at $path
      * @return void
      */
-    private function undoFileChanges(CodeBase $code_base, string $path) {
+    private function undoFileChanges(CodeBase $code_base, string $path)
+    {
         Daemon::debugf("Undoing file changes for $path");
         foreach ($this->undoOperationsForPath[$path] ?? [] as $undo_operation) {
             $undo_operation($code_base);
@@ -119,7 +127,8 @@ class UndoTracker {
      *
      * @return void
      */
-    public function recordUndo(\Closure $undo_operation) {
+    public function recordUndo(\Closure $undo_operation)
+    {
         $file = $this->current_parsed_file;
         if (!\is_string($file)) {
             debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
@@ -136,7 +145,8 @@ class UndoTracker {
      * @param string[] $new_file_list
      * @return string[] - Subset of $new_file_list which changed on disk and has to be parsed again. Automatically unparses the old versions of files which were modified.
      */
-    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents) {
+    public function updateFileList(CodeBase $code_base, array $new_file_list, array $file_mapping_contents)
+    {
         $new_file_set = [];
         foreach ($new_file_list as $path) {
             $new_file_set[$path] = true;
@@ -186,7 +196,8 @@ class UndoTracker {
      * @param string $file_path
      * @return bool - true if the file existed
      */
-    public function beforeReplaceFileContents(CodeBase $code_base, string $file_path) {
+    public function beforeReplaceFileContents(CodeBase $code_base, string $file_path)
+    {
         if (!isset($this->fileModificationState[$file_path])) {
             Daemon::debugf("Tried to replace contents of '$file_path', but that path does not yet exist");
             return false;
