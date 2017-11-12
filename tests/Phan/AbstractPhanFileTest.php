@@ -28,7 +28,8 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     /**
      * @return ?string - Can be overwritten by subclasses to get a reason to skip this directory.
      */
-    public function getSkipReason() {
+    public function getSkipReason()
+    {
         return null;
     }
 

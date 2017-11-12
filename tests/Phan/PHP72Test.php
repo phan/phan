@@ -4,7 +4,8 @@ namespace Phan\Tests;
 
 use Phan\Config;
 
-class PHP72Test extends AbstractPhanFileTest {
+class PHP72Test extends AbstractPhanFileTest
+{
     const overrides = [
         'allow_method_param_type_widening' => true,
     ];
@@ -40,17 +41,18 @@ class PHP72Test extends AbstractPhanFileTest {
      * @dataProvider getTestFiles
      * @override
      */
-    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null) {
+    public function testFiles($test_file_list, $expected_file_path, $config_file_path = null)
+    {
         $skip_reason = null;
         $main_path = basename(reset($test_file_list));
         if (PHP_VERSION_ID < 70200) {
             switch ($main_path) {
-            case '0002_hash.php':
-                $skip_reason = 'Skip HashContext has no stub';
-                break;
-            case '0003_is_iterable.php':
-                $skip_reason = 'Skip isIterateable not added in php < 7.2, no stub exists';
-                break;
+                case '0002_hash.php':
+                    $skip_reason = 'Skip HashContext has no stub';
+                    break;
+                case '0003_is_iterable.php':
+                    $skip_reason = 'Skip isIterateable not added in php < 7.2, no stub exists';
+                    break;
             }
         }
         if ($skip_reason !== null) {
@@ -63,7 +65,8 @@ class PHP72Test extends AbstractPhanFileTest {
     /**
      * @suppress PhanUndeclaredConstant
      */
-    public function getTestFiles() {
+    public function getTestFiles()
+    {
         return $this->scanSourceFilesDir(PHP72_TEST_FILE_DIR, PHP72_EXPECTED_DIR);
     }
 }
