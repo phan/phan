@@ -27,9 +27,6 @@ use Phan\Language\Type\VoidType;
 $internal_class_name_list = get_declared_classes();
 $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
-$internal_const_name_list = array_keys(array_merge(...array_values(
-    array_diff_key(get_defined_constants(true), ['user' => []])
-)));
 $internal_function_name_list = get_defined_functions()['internal'];
 
 use Phan\CodeBase;
@@ -66,7 +63,6 @@ class UnionTypeTest extends BaseTest
         global $internal_class_name_list;
         global $internal_interface_name_list;
         global $internal_trait_name_list;
-        global $internal_const_name_list;
         global $internal_function_name_list;
 
         if (self::$code_base === null) {
@@ -74,7 +70,7 @@ class UnionTypeTest extends BaseTest
                 $internal_class_name_list,
                 $internal_interface_name_list,
                 $internal_trait_name_list,
-                $internal_const_name_list,
+                CodeBase::getPHPInternalConstantNameList(),
                 $internal_function_name_list
             );
         }

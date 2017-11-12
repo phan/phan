@@ -496,17 +496,15 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $nameNode = $node->children['name'];
             // Based on UnionTypeVisitor::visitConst
             if ($nameNode->kind == \ast\AST_NAME) {
-                if (defined($nameNode->children['name'])) {
-                    // Do nothing, this is an internal type such as `true` or `\ast\AST_NAME`
-                } else {
-                    $constant = (new ContextNode(
-                        $this->code_base,
-                        $this->context,
-                        $node
-                    ))->getConst();
+                $constant = (new ContextNode(
+                    $this->code_base,
+                    $this->context,
+                    $node
+                ))->getConst();
 
-                    // Mark that this constant has been referenced from
-                    // this context
+                // Mark that this constant has been referenced from
+                // this context
+                if (!$constant->isPHPInternal()) {
                     $constant->addReference($this->context);
                 }
             }

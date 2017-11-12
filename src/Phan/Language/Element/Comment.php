@@ -939,7 +939,7 @@ class Comment
     /**
      * @return CommentParameter[] (The leftover parameters without a name)
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getParameterList() : array
     {
@@ -949,7 +949,7 @@ class Comment
     /**
      * @return CommentParameter[] (maps the names of parameters to their values. Does not include parameters which didn't provide names)
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getParameterMap() : array
     {
@@ -976,7 +976,7 @@ class Comment
 
     /**
      * @return string[]
-     * A set of issue names like 'PhanUnreferencedMethod' to suppress
+     * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress
      */
     public function getSuppressIssueList() : array
     {

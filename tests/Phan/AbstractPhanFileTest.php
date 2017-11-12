@@ -26,7 +26,7 @@ abstract class AbstractPhanFileTest extends BaseTest implements CodeBaseAwareTes
     abstract public function getTestFiles();
 
     /**
-     * Setup our state before running reach test
+     * Setup our state before running each test
      *
      * @return void
      */

@@ -19,7 +19,7 @@ class Debug
      * Print a lil' something to the console to
      * see if a thing is called
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function mark()
     {
@@ -34,7 +34,7 @@ class Debug
      *
      * @return void
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function printNode($node)
     {
@@ -44,7 +44,7 @@ class Debug
     /**
      * Print the name of a node to the terminal
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function printNodeName($node, $indent = 0)
     {
@@ -56,7 +56,7 @@ class Debug
     /**
      * Print a thing with the given indent level
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function print(string $message, int $indent = 0)
     {
@@ -203,7 +203,7 @@ class Debug
      * @return void
      * Pretty-printer for debug_backtrace
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function backtrace(int $levels = 0)
     {

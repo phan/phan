@@ -25,7 +25,7 @@ class Config
      * and the results of version_compare.
      * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
      * New features increment minor versions, and bug fixes increment patch versions.
-     * @suppress PhanUnreferencedConstant
+     * @suppress PhanUnreferencedPublicClassConstant
      */
     const PHAN_PLUGIN_VERSION = '2.2.0';
 
@@ -517,8 +517,16 @@ class Config
             // 'PhanUnextractableAnnotationPart',
             // 'PhanUnreferencedClass',
             // 'PhanUnreferencedConstant',
-            // 'PhanUnreferencedMethod',
-            // 'PhanUnreferencedProperty',
+            // 'PhanUnreferencedPublicClassConstant',
+            // 'PhanUnreferencedProtectedClassConstant',
+            // 'PhanUnreferencedPrivateClassConstant',
+            // 'PhanUnreferencedPublicMethod',
+            // 'PhanUnreferencedProtectedMethod',
+            // 'PhanUnreferencedPrivateMethod',
+            // 'PhanUnreferencedPublicMethod',
+            // 'PhanUnreferencedPublicProperty',
+            // 'PhanUnreferencedProtectedProperty',
+            // 'PhanUnreferencedPublicProperty',
             // 'PhanVariableUseClause',
         ],
 
@@ -792,7 +800,7 @@ class Config
      * @return string
      * The relative path appended to the project root directory.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function projectPath(string $relative_path)
     {
