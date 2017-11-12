@@ -161,7 +161,7 @@ class Debug
             if (isset($flagInfo[$flags])) {
                 $flag_names[] = $flagInfo[$flags];
             }
-        } else if (isset($combinable[$kind])) {
+        } elseif (isset($combinable[$kind])) {
             $flagInfo = $combinable[$kind];
             foreach ($flagInfo as $flag => $name) {
                 if ($flags & $flag) {
@@ -179,14 +179,15 @@ class Debug
      * 'ASSIGN_DIV (26)'
      * Source: https://github.com/nikic/php-ast/blob/master/util.php
      */
-    public static function formatFlags(int $kind, int $flags) : string {
+    public static function formatFlags(int $kind, int $flags) : string
+    {
         list($exclusive, $combinable) = self::getFlagInfo();
         if (isset($exclusive[$kind])) {
             $flagInfo = $exclusive[$kind];
             if (isset($flagInfo[$flags])) {
                 return "{$flagInfo[$flags]} ($flags)";
             }
-        } else if (isset($combinable[$kind])) {
+        } elseif (isset($combinable[$kind])) {
             $flagInfo = $combinable[$kind];
             $names = [];
             foreach ($flagInfo as $flag => $name) {
@@ -228,7 +229,8 @@ class Debug
      * Dumps abstract syntax tree
      * Source: https://github.com/nikic/php-ast/blob/master/util.php
      */
-    public static function astDump($ast, int $options = 0) : string {
+    public static function astDump($ast, int $options = 0) : string
+    {
         if ($ast instanceof \ast\Node) {
             $result = \ast\get_kind_name($ast->kind);
 
@@ -253,9 +255,9 @@ class Debug
                 $result .= "\n    $i: " . str_replace("\n", "\n    ", self::astDump($child, $options));
             }
             return $result;
-        } else if ($ast === null) {
+        } elseif ($ast === null) {
             return 'null';
-        } else if (\is_string($ast)) {
+        } elseif (\is_string($ast)) {
             return "\"$ast\"";
         } else {
             return (string) $ast;
@@ -267,7 +269,8 @@ class Debug
      * @return string[][][]
      * Return value is [string[][] $exclusive, string[][] $combinable]. Maps node id to flag id to name.
      */
-    private static function getFlagInfo() : array {
+    private static function getFlagInfo() : array
+    {
         static $exclusive, $combinable;
         if ($exclusive !== null) {
             return [$exclusive, $combinable];

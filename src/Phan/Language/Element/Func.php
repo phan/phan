@@ -58,11 +58,13 @@ class Func extends AddressableElement implements FunctionInterface
 
         if ($fqsen->isClosure()) {
             $this->setInternalScope(new ClosureScope(
-                $context->getScope(), $fqsen
+                $context->getScope(),
+                $fqsen
             ));
         } else {
             $this->setInternalScope(new FunctionLikeScope(
-                $context->getScope(), $fqsen
+                $context->getScope(),
+                $fqsen
             ));
         }
     }
@@ -208,14 +210,17 @@ class Func extends AddressableElement implements FunctionInterface
             $parameter_list,
             function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
-            }, 0)
-        );
+            },
+            0
+        ));
 
         $func->setNumberOfOptionalParameters(\array_reduce(
-            $parameter_list, function (int $carry, Parameter $parameter) : int {
+            $parameter_list,
+            function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
-            }, 0)
-        );
+            },
+            0
+        ));
 
         // Check to see if the comment specifies that the
         // function is deprecated
@@ -230,7 +235,7 @@ class Func extends AddressableElement implements FunctionInterface
         );
 
         // Take a look at function return types
-        if($node->children['returnType'] !== null) {
+        if ($node->children['returnType'] !== null) {
             // Get the type of the parameter
             $union_type = UnionType::fromNode(
                 $context,
@@ -243,12 +248,13 @@ class Func extends AddressableElement implements FunctionInterface
         }
 
         if ($comment->hasReturnUnionType()) {
-
             // See if we have a return type specified in the comment
             $union_type = $comment->getReturnType();
 
-            \assert(!$union_type->hasSelfType(),
-                "Function referencing self in $context");
+            \assert(
+                !$union_type->hasSelfType(),
+                "Function referencing self in $context"
+            );
 
             $func->getUnionType()->addUnionType($union_type);
             $func->setPHPDocReturnType($union_type);
@@ -263,7 +269,8 @@ class Func extends AddressableElement implements FunctionInterface
     /**
      * @return FullyQualifiedFunctionName
      */
-    public function getFQSEN() : FullyQualifiedFunctionName {
+    public function getFQSEN() : FullyQualifiedFunctionName
+    {
         return $this->fqsen;
     }
 
@@ -271,7 +278,8 @@ class Func extends AddressableElement implements FunctionInterface
      * @return \Generator
      * The set of all alternates to this function
      */
-    public function alternateGenerator(CodeBase $code_base) : \Generator {
+    public function alternateGenerator(CodeBase $code_base) : \Generator
+    {
         $alternate_id = 0;
         $fqsen = $this->getFQSEN();
 
@@ -285,7 +293,8 @@ class Func extends AddressableElement implements FunctionInterface
      * @return string
      * A string representation of this function signature
      */
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = '';
 
         $string .= 'function ' . $this->getName();
@@ -305,7 +314,8 @@ class Func extends AddressableElement implements FunctionInterface
      * @return bool
      * True if this function returns a reference
      */
-    public function returnsRef() : bool {
+    public function returnsRef() : bool
+    {
         return Flags::bitVectorHasState(
             $this->getFlags(),
             \ast\flags\RETURNS_REF

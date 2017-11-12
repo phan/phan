@@ -5,13 +5,15 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 
 // TODO: Wrap this with a ClosureLikeScope
-class FunctionLikeScope extends ClosedScope {
+class FunctionLikeScope extends ClosedScope
+{
 
     /**
      * @return bool
      * True if we're in a function scope
      */
-    public function isInFunctionLikeScope() : bool {
+    public function isInFunctionLikeScope() : bool
+    {
         return true;
     }
 
@@ -19,7 +21,8 @@ class FunctionLikeScope extends ClosedScope {
      * @return bool
      * True if we're in a function scope
      */
-    public function isInPropertyScope() : bool {
+    public function isInPropertyScope() : bool
+    {
         return false;
     }
 
@@ -41,5 +44,4 @@ class FunctionLikeScope extends ClosedScope {
 
         throw new \AssertionError("FQSEN must be a function-like FQSEN");
     }
-
 }

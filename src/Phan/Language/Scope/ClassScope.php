@@ -3,14 +3,16 @@ namespace Phan\Language\Scope;
 
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
-class ClassScope extends ClosedScope {
+class ClassScope extends ClosedScope
+{
 
     /**
      * @return bool
      * True if we're in a class scope
      * @override
      */
-    public function isInClassScope() : bool {
+    public function isInClassScope() : bool
+    {
         return true;
     }
 
@@ -19,7 +21,8 @@ class ClassScope extends ClosedScope {
      * True if we're in a class scope
      * @override
      */
-    public function isInPropertyScope() : bool {
+    public function isInPropertyScope() : bool
+    {
         return false;
     }
 
@@ -38,5 +41,4 @@ class ClassScope extends ClosedScope {
 
         throw new \AssertionError("FQSEN must be a FullyQualifiedClassName");
     }
-
 }

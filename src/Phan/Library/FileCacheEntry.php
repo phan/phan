@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Library;
 
-class FileCacheEntry {
+class FileCacheEntry
+{
     /** @var string contents of the file */
     private $contents;
     /**
@@ -9,18 +10,21 @@ class FileCacheEntry {
      */
     private $lines = null;
 
-    public function __construct(string $contents) {
+    public function __construct(string $contents)
+    {
         $this->contents = $contents;
     }
 
-    public function getContents() : string {
+    public function getContents() : string
+    {
         return $this->contents;
     }
 
     /**
      * @return string[] a 1-based array of lines
      */
-    public function getLines() : array {
+    public function getLines() : array
+    {
         $lines = $this->lines;
         if (is_array($lines)) {
             return $lines;
@@ -39,7 +43,8 @@ class FileCacheEntry {
      * @param int $lineno - A line number, starting with line 1
      * @return ?string
      */
-    public function getLine(int $lineno) {
+    public function getLine(int $lineno)
+    {
         $lines = $this->getLines();
         return $lines[$lineno] ?? null;
     }

@@ -11,7 +11,8 @@ use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 use ast\Node;
 
-trait FunctionTrait {
+trait FunctionTrait
+{
 
     /**
      * @return int
@@ -138,7 +139,8 @@ trait FunctionTrait {
      * or if the installed module version's API changed from what Phan's stubs used,
      * or if a function/method uses variadics/func_get_arg*()
      */
-    public function getNumberOfOptionalRealParameters() : int {
+    public function getNumberOfOptionalRealParameters() : int
+    {
         return $this->number_of_optional_real_parameters;
     }
 
@@ -146,7 +148,8 @@ trait FunctionTrait {
      * @return int
      * The number of optional parameters on this method
      */
-    public function getNumberOfOptionalParameters() : int {
+    public function getNumberOfOptionalParameters() : int
+    {
         return $this->number_of_optional_parameters;
     }
 
@@ -155,7 +158,8 @@ trait FunctionTrait {
      *
      * @return void
      */
-    public function setNumberOfOptionalParameters(int $number) {
+    public function setNumberOfOptionalParameters(int $number)
+    {
         $this->number_of_optional_parameters = $number;
     }
 
@@ -165,7 +169,8 @@ trait FunctionTrait {
      * Variadic parameters are counted only once.
      * TODO: Specially handle variadic parameters, either here or in ParameterTypesAnalyzer::analyzeOverrideRealSignature
      */
-    public function getNumberOfRealParameters() : int {
+    public function getNumberOfRealParameters() : int
+    {
         return (
             $this->getNumberOfRequiredRealParameters()
             + $this->getNumberOfOptionalRealParameters()
@@ -176,7 +181,8 @@ trait FunctionTrait {
      * @return int
      * The maximum number of parameters to this function/method
      */
-    public function getNumberOfParameters() : int {
+    public function getNumberOfParameters() : int
+    {
         return (
             $this->getNumberOfRequiredParameters()
             + $this->getNumberOfOptionalParameters()
@@ -189,7 +195,8 @@ trait FunctionTrait {
      * May differ for internal modules lacking proper reflection info,
      * or if the installed module version's API changed from what Phan's stubs used.
      */
-    public function getNumberOfRequiredRealParameters() : int {
+    public function getNumberOfRequiredRealParameters() : int
+    {
         return $this->number_of_required_real_parameters;
     }
 
@@ -197,7 +204,8 @@ trait FunctionTrait {
      * @return int
      * The number of required parameters on this function/method
      */
-    public function getNumberOfRequiredParameters() : int {
+    public function getNumberOfRequiredParameters() : int
+    {
         return $this->number_of_required_parameters;
     }
 
@@ -207,7 +215,8 @@ trait FunctionTrait {
      *
      * @return void
      */
-    public function setNumberOfRequiredParameters(int $number) {
+    public function setNumberOfRequiredParameters(int $number)
+    {
         $this->number_of_required_parameters = $number;
     }
 
@@ -306,7 +315,8 @@ trait FunctionTrait {
      * @return Parameter[]
      * A list of parameters on the method
      */
-    public function getParameterList() {
+    public function getParameterList()
+    {
         return $this->parameter_list;
     }
 
@@ -319,7 +329,8 @@ trait FunctionTrait {
      * @param int $i - offset of the parameter.
      * @return Parameter|null The parameter type that the **caller** observes.
      */
-    public function getParameterForCaller(int $i) {
+    public function getParameterForCaller(int $i)
+    {
         $list = $this->parameter_list;
         if (count($list) === 0) {
             return null;
@@ -343,7 +354,8 @@ trait FunctionTrait {
      *
      * @return void
      */
-    public function setParameterList(array $parameter_list) {
+    public function setParameterList(array $parameter_list)
+    {
         $this->parameter_list = $parameter_list;
         if ($this->parameter_list_hash === null) {
             $this->initParameterListInfo();
@@ -353,7 +365,8 @@ trait FunctionTrait {
     /**
      * Called to lazily initialize properties of $this derived from $this->parameter_list
      */
-    private function initParameterListInfo() {
+    private function initParameterListInfo()
+    {
         $parameter_list = $this->parameter_list;
         $this->parameter_list_hash = self::computeParameterListHash($parameter_list);
         $has_pass_by_reference_parameters = false;
@@ -372,7 +385,8 @@ trait FunctionTrait {
      * @return int 32-bit or 64-bit hash. Not likely to collide unless there are around 2^16 possible union types on 32-bit, or around 2^32 on 64-bit.
      *    (Collisions aren't a concern; The memory/runtime would probably be a bigger issue than collisions in non-quick mode.)
      */
-    private static function computeParameterListHash(array $parameter_list) : int {
+    private static function computeParameterListHash(array $parameter_list) : int
+    {
         // Choosing a small value to fit inside of a packed array.
         if (count($parameter_list) === 0) {
             return 0;
@@ -459,7 +473,8 @@ trait FunctionTrait {
      *
      * @return void
      */
-    public function appendParameter(Parameter $parameter) {
+    public function appendParameter(Parameter $parameter)
+    {
         $this->parameter_list[] = $parameter;
     }
 
@@ -468,7 +483,8 @@ trait FunctionTrait {
      *
      * Call this before calling appendParameter, if parameters were already added.
      */
-    public function clearParameterList() {
+    public function clearParameterList()
+    {
         $this->parameter_list = [];
         $this->parameter_list_hash = null;
     }
@@ -769,7 +785,8 @@ trait FunctionTrait {
     /**
      * @return void
      */
-    public function setDependentReturnTypeClosure(\Closure $closure) {
+    public function setDependentReturnTypeClosure(\Closure $closure)
+    {
         $this->return_type_callback = $closure;
     }
 

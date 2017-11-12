@@ -73,7 +73,8 @@ class Method extends ClassElement implements FunctionInterface
         // Record the FQSEN of this method (With the current Clazz),
         // to prevent recursing from a method into itself in non-quick mode.
         $this->setInternalScope(new FunctionLikeScope(
-            $context->getScope(), $fqsen
+            $context->getScope(),
+            $fqsen
         ));
     }
 
@@ -81,7 +82,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
      */
-    public function isFromPHPDoc() : bool {
+    public function isFromPHPDoc() : bool
+    {
         return Flags::bitVectorHasState(
             $this->getPhanFlags(),
             Flags::IS_FROM_PHPDOC
@@ -92,7 +94,8 @@ class Method extends ClassElement implements FunctionInterface
      * @param bool $from_phpdoc - True if this is a magic phpdoc method (declared via (at)method on class declaration phpdoc)
      * @return void
      */
-    public function setIsFromPHPDoc(bool $from_phpdoc) {
+    public function setIsFromPHPDoc(bool $from_phpdoc)
+    {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
                 $this->getPhanFlags(),
@@ -106,7 +109,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this method is intended to be an override of another method (contains (at)override)
      */
-    public function isOverrideIntended() : bool {
+    public function isOverrideIntended() : bool
+    {
         return Flags::bitVectorHasState(
             $this->getPhanFlags(),
             Flags::IS_OVERRIDE_INTENDED
@@ -118,7 +122,8 @@ class Method extends ClassElement implements FunctionInterface
 
      * @return void
      */
-    public function setIsOverrideIntended(bool $is_override_intended) {
+    public function setIsOverrideIntended(bool $is_override_intended)
+    {
         $this->setPhanFlags(
             Flags::bitVectorWithState(
                 $this->getPhanFlags(),
@@ -132,7 +137,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is an abstract method
      */
-    public function isAbstract() : bool {
+    public function isAbstract() : bool
+    {
         return Flags::bitVectorHasState(
             $this->getFlags(),
             \ast\flags\MODIFIER_ABSTRACT
@@ -143,7 +149,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is a final method
      */
-    public function isFinal() : bool {
+    public function isFinal() : bool
+    {
         return Flags::bitVectorHasState(
             $this->getFlags(),
             \ast\flags\MODIFIER_FINAL
@@ -154,7 +161,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this method returns a reference
      */
-    public function returnsRef() : bool {
+    public function returnsRef() : bool
+    {
         return Flags::bitVectorHasState(
             $this->getFlags(),
             \ast\flags\RETURNS_REF
@@ -166,7 +174,8 @@ class Method extends ClassElement implements FunctionInterface
      * True if this is a magic method
      * (Names are all normalized in FullyQualifiedMethodName::make())
      */
-    public function getIsMagic() : bool {
+    public function getIsMagic() : bool
+    {
         return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_METHOD_NAME_SET);
     }
 
@@ -175,7 +184,8 @@ class Method extends ClassElement implements FunctionInterface
      * True if this is a magic method which should have return type of void
      * (Names are all normalized in FullyQualifiedMethodName::make())
      */
-    public function getIsMagicAndVoid() : bool {
+    public function getIsMagicAndVoid() : bool
+    {
         return \array_key_exists($this->getName(), FullyQualifiedMethodName::MAGIC_VOID_METHOD_NAME_SET);
     }
 
@@ -184,7 +194,8 @@ class Method extends ClassElement implements FunctionInterface
      * True if this is the `__construct` method
      * (Does not return true for php4 constructors)
      */
-    public function getIsNewConstructor() : bool {
+    public function getIsNewConstructor() : bool
+    {
         return ($this->getName() === '__construct');
     }
 
@@ -192,7 +203,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is the magic `__call` method
      */
-    public function getIsMagicCall() : bool {
+    public function getIsMagicCall() : bool
+    {
         return ($this->getName() === '__call');
     }
 
@@ -200,7 +212,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is the magic `__callStatic` method
      */
-    public function getIsMagicCallStatic() : bool {
+    public function getIsMagicCallStatic() : bool
+    {
         return ($this->getName() === '__callStatic');
     }
 
@@ -208,7 +221,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is the magic `__get` method
      */
-    public function getIsMagicGet() : bool {
+    public function getIsMagicGet() : bool
+    {
         return ($this->getName() === '__get');
     }
 
@@ -216,7 +230,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return bool
      * True if this is the magic `__set` method
      */
-    public function getIsMagicSet() : bool {
+    public function getIsMagicSet() : bool
+    {
         return ($this->getName() === '__set');
     }
 
@@ -289,22 +304,22 @@ class Method extends ClassElement implements FunctionInterface
             $method_fqsen
         );
         switch ($new_visibility_flags) {
-        case \ast\flags\MODIFIER_PUBLIC:
-        case \ast\flags\MODIFIER_PROTECTED:
-        case \ast\flags\MODIFIER_PRIVATE:
-            // Replace the visibility with the new visibility.
-            $method->setFlags(Flags::bitVectorWithState(
-                Flags::bitVectorWithState(
-                    $method->getFlags(),
-                    \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_PRIVATE,
-                    false
-                ),
-                $new_visibility_flags,
-                true
-            ));
-            break;
-        default:
-            break;
+            case \ast\flags\MODIFIER_PUBLIC:
+            case \ast\flags\MODIFIER_PROTECTED:
+            case \ast\flags\MODIFIER_PRIVATE:
+                // Replace the visibility with the new visibility.
+                $method->setFlags(Flags::bitVectorWithState(
+                    Flags::bitVectorWithState(
+                        $method->getFlags(),
+                        \ast\flags\MODIFIER_PUBLIC | \ast\flags\MODIFIER_PROTECTED | \ast\flags\MODIFIER_PRIVATE,
+                        false
+                    ),
+                    $new_visibility_flags,
+                    true
+                ));
+                break;
+            default:
+                break;
         }
 
         $defining_fqsen = $this->getDefiningFQSEN();
@@ -395,14 +410,17 @@ class Method extends ClassElement implements FunctionInterface
             $parameter_list,
             function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
-            }, 0)
-        );
+            },
+            0
+        ));
 
         $method->setNumberOfOptionalParameters(array_reduce(
-            $parameter_list, function (int $carry, Parameter $parameter) : int {
+            $parameter_list,
+            function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
-            }, 0)
-        );
+            },
+            0
+        ));
 
         // Check to see if the comment specifies that the
         // method is deprecated
@@ -425,7 +443,7 @@ class Method extends ClassElement implements FunctionInterface
         // Add the syntax-level return type to the method's union type
         // if it exists
         $return_union_type = new UnionType;
-        if($node->children['returnType'] !== null) {
+        if ($node->children['returnType'] !== null) {
             $return_union_type = UnionType::fromNode(
                 $context,
                 $code_base,
@@ -438,7 +456,6 @@ class Method extends ClassElement implements FunctionInterface
         // If available, add in the doc-block annotated return type
         // for the method.
         if ($comment->hasReturnUnionType()) {
-
             $comment_return_union_type = $comment->getReturnType();
             if ($comment_return_union_type->hasSelfType()) {
                 // We can't actually figure out 'static' at this
@@ -497,7 +514,8 @@ class Method extends ClassElement implements FunctionInterface
     /**
      * @return FullyQualifiedMethodName
      */
-    public function getFQSEN() : FullyQualifiedMethodName {
+    public function getFQSEN() : FullyQualifiedMethodName
+    {
         return $this->fqsen;
     }
 
@@ -505,7 +523,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return \Generator
      * The set of all alternates to this method
      */
-    public function alternateGenerator(CodeBase $code_base) : \Generator {
+    public function alternateGenerator(CodeBase $code_base) : \Generator
+    {
         $alternate_id = 0;
         $fqsen = $this->getFQSEN();
 
@@ -590,7 +609,8 @@ class Method extends ClassElement implements FunctionInterface
      * @return string
      * A string representation of this method signature (preferring phpdoc types)
      */
-    public function __toString() : string {
+    public function __toString() : string
+    {
         $string = '';
         // TODO: should this representation and other representations include visibility?
 
@@ -614,7 +634,8 @@ class Method extends ClassElement implements FunctionInterface
      * A string representation of this method signature
      * (Based on real types only, instead of phpdoc+real types)
      */
-    public function toRealSignatureString() : string {
+    public function toRealSignatureString() : string
+    {
         $string = '';
 
         $string .= 'function ';
@@ -632,12 +653,13 @@ class Method extends ClassElement implements FunctionInterface
         return $string;
     }
 
-    public function toStub(CodeBase $code_base) : string {
+    public function toStub(CodeBase $code_base) : string
+    {
         // TODO: Include whether or not it is abstract
         $string = '    ';
         if ($this->isPrivate()) {
             $string .= 'private ';
-        } else if ($this->isProtected()) {
+        } elseif ($this->isProtected()) {
             $string .= 'protected ';
         } else {
             $string .= 'public ';

@@ -19,7 +19,8 @@ use ast\Node;
  *
  * @suppress PhanUnreferencedClass
  */
-class PluginImplementation extends Plugin {
+class PluginImplementation extends Plugin
+{
     /**
      * Do a first-pass analysis of a node before Phan
      * does its full analysis. This hook allows you to
@@ -121,7 +122,7 @@ class PluginImplementation extends Plugin {
     /**
      * @return bool true if $method_name is defined by the subclass of PluginAwareAnalysisVisitor, and not by PluginAwareAnalysisVisitor or one of it's parents.
      */
-    public static final function isDefinedInSubclass(string $method_name) : bool
+    final public static function isDefinedInSubclass(string $method_name) : bool
     {
         $method = new \ReflectionMethod(static::class, $method_name);
         return is_subclass_of($method->getDeclaringClass()->name, self::class);

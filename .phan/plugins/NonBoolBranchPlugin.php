@@ -10,7 +10,8 @@ use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
-class NonBoolBranchPlugin extends PluginV2 implements AnalyzeNodeCapability {
+class NonBoolBranchPlugin extends PluginV2 implements AnalyzeNodeCapability
+{
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
      *
@@ -22,7 +23,8 @@ class NonBoolBranchPlugin extends PluginV2 implements AnalyzeNodeCapability {
     }
 }
 
-class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor {
+class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor
+{
     // A plugin's visitors should not override visit() unless they need to.
 
     /** @override */
@@ -31,7 +33,7 @@ class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor {
         $condition = $node->children['cond'];
 
         // dig nodes to avoid NOT('!') operator's converting its value to boolean type
-        while (isset($condition->flags) && $condition->flags === ast\flags\UNARY_BOOL_NOT){
+        while (isset($condition->flags) && $condition->flags === ast\flags\UNARY_BOOL_NOT) {
             $condition = $condition->children['expr'];
         }
 
@@ -47,7 +49,6 @@ class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor {
         }
         return $this->context;
     }
-
 }
 
 return new NonBoolBranchPlugin;

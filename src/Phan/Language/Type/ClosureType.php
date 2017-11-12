@@ -15,7 +15,8 @@ final class ClosureType extends Type
     private $fqsen;
 
     // Same as instance(), but guaranteed not to have memoized state.
-    private static function closureInstance() : ClosureType {
+    private static function closureInstance() : ClosureType
+    {
         static $instance = null;
         if ($instance === null) {
             $instance = self::make('\\', self::NAME, [], false, self::FROM_NODE);
@@ -37,7 +38,8 @@ final class ClosureType extends Type
         return $instance;
     }
 
-    public function __clone() {
+    public function __clone()
+    {
         assert($this->fqsen === null, 'should only clone null fqsen');
         // same as new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
     }

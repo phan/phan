@@ -23,10 +23,11 @@ call_user_func(/** @suppress PhanUndeclaredFunctionInCallable for ReflectionFunc
          * @suppress PhanRedefineFunction
          * @suppress PhanUndeclaredFunction
          */
-        function spl_object_id($object) {
+        function spl_object_id($object)
+        {
             return runkit_object_id($object);
         }
-    } else if (PHP_INT_SIZE === 8) {
+    } elseif (PHP_INT_SIZE === 8) {
         /**
          * See https://github.com/runkit7/runkit_object_id for a faster native version (Improves phan's speed by 10% or so).
          * spl_object_hash() exists, but spl_object_id() is only available in php 7.2+.
@@ -37,7 +38,8 @@ call_user_func(/** @suppress PhanUndeclaredFunctionInCallable for ReflectionFunc
          * @suppress PhanRedefineFunctionInternal
          * @suppress PhanRedefineFunction
          */
-        function spl_object_id($object) {
+        function spl_object_id($object)
+        {
             $hash = spl_object_hash($object);
             // Fit this into a php long (32-bit or 64-bit signed int).
             // The first 16 hex digits (64 bytes) vary, the last 16 don't.
@@ -55,7 +57,8 @@ call_user_func(/** @suppress PhanUndeclaredFunctionInCallable for ReflectionFunc
          * @suppress PhanRedefineFunctionInternal
          * @suppress PhanRedefineFunction
          */
-        function spl_object_id($object) {
+        function spl_object_id($object)
+        {
             $hash = spl_object_hash($object);
             // Fit this into a php long (32-bit or 64-bit signed int).
             // The first 16 hex digits (64 bytes) vary, the last 16 don't.

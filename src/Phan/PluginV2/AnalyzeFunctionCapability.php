@@ -4,7 +4,8 @@ namespace Phan\PluginV2;
 use Phan\CodeBase;
 use Phan\Language\Element\Func;
 
-interface AnalyzeFunctionCapability {
+interface AnalyzeFunctionCapability
+{
     /**
      * @param CodeBase $code_base
      * The code base in which the function exists

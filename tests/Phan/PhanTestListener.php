@@ -24,12 +24,11 @@ use PHPUnit\Framework\Test;
  * @suppress PhanUnreferencedClass
  * This class is referenced in phpunit.xml
  */
-class PhanTestListener
-    extends BaseTestListener
+class PhanTestListener extends BaseTestListener
 {
-    public function startTest(Test $test) {
+    public function startTest(Test $test)
+    {
         if ($test instanceof CodeBaseAwareTestInterface) {
-
             // We're holding a static reference to the
             // CodeBase because its pretty slow to build. To
             // avoid state moving from test to test, we clone
@@ -59,7 +58,8 @@ class PhanTestListener
     /**
      * @param $time @phan-unused-param
      */
-    public function endTest(Test $test, $time) {
+    public function endTest(Test $test, $time)
+    {
         if ($test instanceof CodeBaseAwareTestInterface) {
             $test->setCodeBase(null);
         }

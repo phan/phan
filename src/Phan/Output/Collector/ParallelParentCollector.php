@@ -41,11 +41,13 @@ class ParallelParentCollector implements IssueCollectorInterface
     public function __construct(
         IssueCollectorInterface $base_collector
     ) {
-        \assert(extension_loaded('sysvsem'),
+        \assert(
+            extension_loaded('sysvsem'),
             'PHP must be compiled with --enable-sysvsem in order to use -j(>=2).'
         );
 
-        \assert(extension_loaded('sysvmsg'),
+        \assert(
+            extension_loaded('sysvmsg'),
             'PHP must be compiled with --enable-sysvmsg in order to use -j(>=2).'
         );
 
@@ -71,8 +73,10 @@ class ParallelParentCollector implements IssueCollectorInterface
             $this->message_queue_resource
         );
 
-        \assert($success,
-            "Failed to remove queue with ID {$this->message_queue_resource}");
+        \assert(
+            $success,
+            "Failed to remove queue with ID {$this->message_queue_resource}"
+        );
     }
 
     /**
@@ -100,7 +104,6 @@ class ParallelParentCollector implements IssueCollectorInterface
         // Read messages while there are still messages on
         // the queue
         while ($status['msg_qnum'] > 0) {
-
             $message = null;
             $message_type = 0;
 
@@ -114,8 +117,10 @@ class ParallelParentCollector implements IssueCollectorInterface
                 $message,
                 true
             )) {
-                \assert($message instanceof IssueInstance,
-                    "Messages must be of type IssueInstance.");
+                \assert(
+                    $message instanceof IssueInstance,
+                    "Messages must be of type IssueInstance."
+                );
 
                 // Cast the message to an IssueInstance
                 if ($message instanceof IssueInstance) {
@@ -138,7 +143,8 @@ class ParallelParentCollector implements IssueCollectorInterface
      * @param string[] $files - the relative paths to those files (@phan-unused-param)
      * @return void
      */
-    public function removeIssuesForFiles(array $files) {
+    public function removeIssuesForFiles(array $files)
+    {
         return;  // Never going to be called - daemon mode isn't combined with parallel execution.
     }
 
@@ -158,7 +164,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     /**
      * This method has not effect on a ParallelParentCollector.
      */
-     public function reset()
-     {
-     }
+    public function reset()
+    {
+    }
 }

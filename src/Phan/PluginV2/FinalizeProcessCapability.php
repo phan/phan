@@ -3,7 +3,8 @@ namespace Phan\PluginV2;
 
 use Phan\CodeBase;
 
-interface FinalizeProcessCapability {
+interface FinalizeProcessCapability
+{
     /**
      * This is called after the other forms of analysis are finished running.
      * Useful if a PluginV2 needs to aggregate results of analysis.

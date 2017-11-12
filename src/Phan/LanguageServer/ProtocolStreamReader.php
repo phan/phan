@@ -56,7 +56,7 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                             $this->parsingMode = self::PARSE_BODY;
                             $this->contentLength = (int)$this->headers['Content-Length'];
                             $this->buffer = '';
-                        } else if (substr($this->buffer, -2) === "\r\n") {
+                        } elseif (substr($this->buffer, -2) === "\r\n") {
                             $parts = explode(':', $this->buffer);
                             $this->headers[$parts[0]] = trim($parts[1]);
                             $this->buffer = '';

@@ -24,7 +24,6 @@ use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use ast\Node;
 
-
 // TODO: Make $x != null remove FalseType and NullType from $x
 // TODO: Make $x > 0, $x < 0, $x >= 50, etc.  remove FalseType and NullType from $x
 class ConditionVisitor extends KindVisitorImplementation
@@ -110,10 +109,10 @@ class ConditionVisitor extends KindVisitorImplementation
         $flags = ($node->flags ?? 0);
         if ($flags === \ast\flags\BINARY_BOOL_AND) {
             return $this->analyzeShortCircuitingAnd($node->children['left'], $node->children['right']);
-        } else if ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
+        } elseif ($flags === \ast\flags\BINARY_IS_IDENTICAL) {
             $this->checkVariablesDefined($node);
             return $this->analyzeIsIdentical($node->children['left'], $node->children['right']);
-        } else if ($flags === \ast\flags\BINARY_IS_NOT_IDENTICAL || $flags === \ast\flags\BINARY_IS_NOT_EQUAL) {
+        } elseif ($flags === \ast\flags\BINARY_IS_NOT_IDENTICAL || $flags === \ast\flags\BINARY_IS_NOT_EQUAL) {
             $this->checkVariablesDefined($node);
             // TODO: Add a different function for IS_NOT_EQUAL, e.g. analysis of != null should be different from !== null (First would remove FalseType)
             return $this->analyzeIsNotIdentical($node->children['left'], $node->children['right']);
@@ -133,7 +132,7 @@ class ConditionVisitor extends KindVisitorImplementation
         if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
             // e.g. if ($x === null)
             return $this->updateVariableToBeIdentical($left, $right, $this->context);
-        } else if (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
+        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
             // e.g. if (null === $x)
             return $this->updateVariableToBeIdentical($right, $left, $this->context);
         }
@@ -150,7 +149,7 @@ class ConditionVisitor extends KindVisitorImplementation
         if (($left instanceof Node) && $left->kind === \ast\AST_VAR) {
             // e.g. if ($x !== null)
             return $this->updateVariableToBeNotIdentical($left, $right, $this->context);
-        } else if (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
+        } elseif (($right instanceof Node) && $right->kind === \ast\AST_VAR) {
             // e.g. if (null !== $x)
             return $this->updateVariableToBeNotIdentical($right, $left, $this->context);
         }
@@ -382,15 +381,13 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     private static function initTypeModifyingClosuresForVisitCall() : array
     {
-        $make_basic_assertion_callback = static function(string $union_type_string) : \Closure
-        {
+        $make_basic_assertion_callback = static function(string $union_type_string) : \Closure {
             $type = UnionType::fromFullyQualifiedString(
                 $union_type_string
             );
 
             /** @return void */
-            return static function(Variable $variable, array $args) use($type)
-            {
+            return static function(Variable $variable, array $args) use ($type) {
                 // Otherwise, overwrite the type for any simple
                 // primitive types.
                 $variable->setUnionType(clone($type));
@@ -398,8 +395,7 @@ class ConditionVisitor extends KindVisitorImplementation
         };
 
         /** @return void */
-        $array_callback = static function(Variable $variable, array $args)
-        {
+        $array_callback = static function(Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have generic array types, then keep those
             // (E.g. T[]|false becomes T[], ?array|null becomes array
@@ -416,8 +412,7 @@ class ConditionVisitor extends KindVisitorImplementation
         };
 
         /** @return void */
-        $object_callback = static function(Variable $variable, array $args)
-        {
+        $object_callback = static function(Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have the `object` type or generic object types, then keep those
             // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
@@ -433,8 +428,7 @@ class ConditionVisitor extends KindVisitorImplementation
             $variable->setUnionType($newType);
         };
         /** @return void */
-        $is_a_callback = function(Variable $variable, array $args) use($object_callback)
-        {
+        $is_a_callback = function(Variable $variable, array $args) use ($object_callback) {
             $class_name = $args[1] ?? null;
             if (!\is_string($class_name)) {
                 // Limit the types of $variable to an object if we can't infer the class name.
@@ -452,8 +446,7 @@ class ConditionVisitor extends KindVisitorImplementation
         };
 
         /** @return void */
-        $scalar_callback = static function(Variable $variable, array $args)
-        {
+        $scalar_callback = static function(Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have possible scalar types, then keep those
             // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
@@ -466,8 +459,7 @@ class ConditionVisitor extends KindVisitorImplementation
             }
             $variable->setUnionType($newType);
         };
-        $callable_callback = static function(Variable $variable, array $args)
-        {
+        $callable_callback = static function(Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have possible callable types, then keep those
             // (E.g. Closure|false becomes Closure)
@@ -477,7 +469,7 @@ class ConditionVisitor extends KindVisitorImplementation
                 // assume there this can be any possible scalar.
                 // (Excludes `resource`, which is technically a scalar)
                 $newType->addType(CallableType::instance(false));
-            } else if ($newType->containsNullable()) {
+            } elseif ($newType->containsNullable()) {
                 $newType = $newType->nonNullableClone();
             }
             $variable->setUnionType($newType);

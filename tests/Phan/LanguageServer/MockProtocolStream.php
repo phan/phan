@@ -6,7 +6,9 @@ namespace Phan\Tests\LanguageServer;
 use Phan\LanguageServer\ProtocolReader;
 use Phan\LanguageServer\ProtocolWriter;
 use Phan\LanguageServer\Protocol\Message;
-use Sabre\Event\{Loop, Emitter, Promise};
+use Sabre\Event\Loop;
+use Sabre\Event\Emitter;
+use Sabre\Event\Promise;
 
 /**
  * A fake duplex protocol stream

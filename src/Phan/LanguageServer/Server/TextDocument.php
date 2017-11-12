@@ -114,7 +114,8 @@ class TextDocument
      * @suppress PhanTypeMismatchArgument
      * @return void
      */
-    public function didSave(TextDocumentIdentifier $textDocument, string $text = null) {
+    public function didSave(TextDocumentIdentifier $textDocument, string $text = null)
+    {
         $this->file_mapping->addOverrideURI($textDocument->uri, $text);
         Logger::logInfo("Called didSave, uri={$textDocument->uri} len(text)=" . strlen($text ?? ''));
         $this->server->analyzeURI($textDocument->uri);
@@ -184,5 +185,4 @@ class TextDocument
             });
         }
      */
-
 }

@@ -153,7 +153,8 @@ class ArgumentType
     /**
      * @return void
      */
-    private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method) {
+    private static function checkIsDeprecatedOrInternal(CodeBase $code_base, Context $context, FunctionInterface $method)
+    {
         // Special common cases where we want slightly
         // better multi-signature error messages
         if ($method->isPHPInternal()) {
@@ -203,7 +204,8 @@ class ArgumentType
         }
     }
 
-    private static function isVarargs(CodeBase $code_base, FunctionInterface $method) : bool {
+    private static function isVarargs(CodeBase $code_base, FunctionInterface $method) : bool
+    {
         foreach ($method->alternateGenerator($code_base) as $alternate_method) {
             foreach ($alternate_method->getParameterList() as $parameter) {
                 if ($parameter->isVariadic()) {
@@ -218,7 +220,8 @@ class ArgumentType
      * Figure out if any of the arguments are a call to unpack()
      * @param Node[]|string[]|int[] $children
      */
-    private static function isUnpack(array $children) : bool {
+    private static function isUnpack(array $children) : bool
+    {
         foreach ($children as $child) {
             if ($child instanceof Node) {
                 if ($child->kind === \ast\AST_UNPACK) {
@@ -473,7 +476,8 @@ class ArgumentType
      * @param int $lineno
      * @return void
      */
-    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i) {
+    public static function analyzeParameter(CodeBase $code_base, Context $context, FunctionInterface $method, UnionType $argument_type, int $lineno, int $i)
+    {
         // Expand it to include all parent types up the chain
         $argument_type_expanded =
             $argument_type->asExpandedTypes($code_base);
@@ -582,7 +586,7 @@ class ArgumentType
                     return true;
                 }
             }
-        } else if ($node_kind === \ast\AST_STATIC_CALL || $node_kind === \ast\AST_METHOD_CALL) {
+        } elseif ($node_kind === \ast\AST_STATIC_CALL || $node_kind === \ast\AST_METHOD_CALL) {
             $method_name = $node->children['method'] ?? null;
             if (is_string($method_name)) {
                 try {
@@ -590,8 +594,7 @@ class ArgumentType
                         $code_base,
                         $context,
                         $node->children['class'] ?? $node->children['expr']
-                        ) as $class
-                    ) {
+                    ) as $class) {
                         if (!$class->hasMethodWithName(
                             $code_base,
                             $method_name
@@ -608,7 +611,7 @@ class ArgumentType
                             return true;
                         }
                     }
-                } catch(IssueException $e) {
+                } catch (IssueException $e) {
                     // Swallow any issue esceptions here. They'll be caught elsewhere.
                 }
             }
@@ -713,7 +716,8 @@ class ArgumentType
                             // "arg#1(pieces) is %s but {$method->getFQSEN()}() takes array when passed only 1 arg"
                             return Issue::fromType(Issue::ParamSpecial2)(
                                 $context->getFile(),
-                                $context->getLineNumberStart(), [
+                                $context->getLineNumberStart(),
+                                [
                                     1,
                                     'pieces',
                                     (string)$method->getFQSEN(),
@@ -807,11 +811,12 @@ class ArgumentType
                     function (UnionType $unused_node_type) use ($context, $method) {
                         // "The last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial3)(
-                        $context->getFile(),
-                        $context->getLineNumberStart(), [
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [
                             (string)$method->getFQSEN(),
                             'callable'
-                        ]
+                            ]
                         );
                     }
                 );
@@ -825,13 +830,14 @@ class ArgumentType
                         function (UnionType $node_type) use ($context, $method, $i) {
                         // "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                             return Issue::fromType(Issue::ParamTypeMismatch)(
-                            $context->getFile(),
-                            $context->getLineNumberStart(), [
+                                $context->getFile(),
+                                $context->getLineNumberStart(),
+                                [
                                 ($i+1),
                                 (string)$node_type,
                                 (string)$method->getFQSEN(),
                                 'array'
-                            ]
+                                ]
                             );
                         }
                     );
@@ -864,11 +870,12 @@ class ArgumentType
                     function (UnionType $unused_node_type) use ($context, $method) {
                     // "The last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial3)(
-                        $context->getFile(),
-                        $context->getLineNumberStart(), [
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [
                             (string)$method->getFQSEN(),
                             'callable'
-                        ]
+                            ]
                         );
                     }
                 );
@@ -881,11 +888,12 @@ class ArgumentType
                     function (UnionType $unused_node_type) use ($context, $method) {
                     // "The second last argument to {$method->getFQSEN()} must be a callable"
                         return Issue::fromType(Issue::ParamSpecial4)(
-                        $context->getFile(),
-                        $context->getLineNumberStart(), [
+                            $context->getFile(),
+                            $context->getLineNumberStart(),
+                            [
                             (string)$method->getFQSEN(),
                             'callable'
-                        ]
+                            ]
                         );
                     }
                 );
@@ -899,13 +907,14 @@ class ArgumentType
                         function (UnionType $node_type) use ($context, $method, $i) {
                         // "arg#".($i+1)." is %s but {$method->getFQSEN()}() takes array"
                             return Issue::fromType(Issue::ParamTypeMismatch)(
-                            $context->getFile(),
-                            $context->getLineNumberStart(), [
+                                $context->getFile(),
+                                $context->getLineNumberStart(),
+                                [
                                 ($i+1),
                                 (string)$node_type,
                                 (string)$method->getFQSEN(),
                                 'array'
-                            ]
+                                ]
                             );
                         }
                     );
@@ -924,7 +933,8 @@ class ArgumentType
                         function (UnionType $node_type) use ($context, $method) {
                             return Issue::fromType(Issue::ParamSpecial2)(
                                 $context->getFile(),
-                                $context->getLineNumberStart(), [
+                                $context->getLineNumberStart(),
+                                [
                                     1,
                                     'token',
                                     (string)$node_type,
@@ -951,14 +961,15 @@ class ArgumentType
                         function (UnionType $node_type) use ($context, $method) {
                         // "arg#1(values) is %s but {$method->getFQSEN()}() takes array when passed only one arg"
                             return Issue::fromType(Issue::ParamSpecial2)(
-                            $context->getFile(),
-                            $context->getLineNumberStart(), [
+                                $context->getFile(),
+                                $context->getLineNumberStart(),
+                                [
                                 1,
                                 'values',
                                 (string)$node_type,
                                 (string)$method->getFQSEN(),
                                 'array'
-                            ]
+                                ]
                             );
                         }
                     )) {
