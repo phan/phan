@@ -8,6 +8,7 @@ use Phan\Language\Context;
  */
 class Issue
 {
+    // @codingStandardsIgnoreStart
     // Issue::CATEGORY_SYNTAX
     const SyntaxError               = 'PhanSyntaxError';
 
@@ -319,6 +320,7 @@ class Issue
         'TRAIT'         => '%s',
         'VARIABLE'      => '%s',
     ];
+    // @codingStandardsIgnoreEnd
 
     /** @var string */
     private $type;

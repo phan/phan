@@ -691,6 +691,8 @@ class Config
         return self::$configuration;
     }
 
+    // @codingStandardsIgnoreStart method naming is deliberate to make these getters easier to search.
+
     public static function get_null_casts_as_any_type() : bool
     {
         return self::$null_casts_as_any_type;
@@ -725,6 +727,7 @@ class Config
     {
         return self::$quick_mode;
     }
+    // @codingStandardsIgnoreEnd
 
     /**
      * @return mixed
