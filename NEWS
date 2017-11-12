@@ -47,6 +47,8 @@ Plugins
 Maintenance
 + Used PHP_CodeSniffer to automatically make Phan's source directory adhere closely to PSR-1 and PSR-2, making minor changes to many files.
   (e.g. which line each brace goes on, etc.)
++ Stop tracking references to internal (non user-defined) elements (constants, properties, functions, classes, and methods) during dead code detection.
+  (Dead code detection now requires an extra 15MB instead of 17MB for self-analysis)
 
 20 Oct 2017, Phan 0.10.1
 ------------------------
