@@ -292,6 +292,9 @@ class ReferenceCountsAnalyzer
                     if (\strcasecmp($element->getName(), "__autoload") === 0) {
                         return;
                     }
+                    if ($element->getFQSEN()->isClosure()) {
+                        $issue_type = Issue::UnreferencedClosure;
+                    }
                 }
 
                 // If there are duplicate declarations, display issues for unreferenced elements on each declaration.

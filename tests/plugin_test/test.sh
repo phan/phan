@@ -14,6 +14,8 @@ fi
 echo "Running phan in '$PWD' ..."
 rm $ACTUAL_PATH -f || exit 1
 ../../phan --memory-limit 1G | tee $ACTUAL_PATH
+sed -i 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' $ACTUAL_PATH
+sed -i 's,\<closure_[0-9a-f]\{12\}\>,closure_%s,g' $EXPECTED_PATH
 # diff returns a non-zero exit code if files differ or are missing
 # This outputs the difference between actual and expected output.
 echo
