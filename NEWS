@@ -13,6 +13,7 @@ New Features(Analysis)
   Analysis will now warn if a callable no longer exists.
   This change also reduces false positives in dead code detection.
 + Warn if attempting to read/write to an property or constant when the expression is a non-object (or not a class name, for static elements) (#1268)
++ Split `PhanUnreferencedClosure` out of `PhanUnreferencedFunction` (Emitted by `--dead-code-detection`)
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
@@ -33,7 +34,7 @@ Bug Fixes
 
 Plugins
 + Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)
-+ Support 'plugins' => ['AlwaysReturnPlugin'] as shorthand for full relative path to a bundled plugin such as AlwaysReturnPlugin.php (#1209)
++ Support `'plugins' => ['AlwaysReturnPlugin']` as shorthand for full relative path to a bundled plugin such as AlwaysReturnPlugin.php (#1209)
 
 20 Oct 2017, Phan 0.10.1
 ------------------------

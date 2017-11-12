@@ -170,6 +170,7 @@ class Issue
     const UnreferencedMethod        = 'PhanUnreferencedMethod';
     const UnreferencedProperty      = 'PhanUnreferencedProperty';
     const UnreferencedConstant      = 'PhanUnreferencedConstant';
+    const UnreferencedClosure       = 'PhanUnreferencedClosure';
 
     // Issue::CATEGORY_REDEFINE
     const RedefineClass             = 'PhanRedefineClass';
@@ -1547,6 +1548,14 @@ class Issue
                 "Possibly zero references to function {FUNCTION}",
                 self::REMEDIATION_B,
                 6009
+            ),
+            new Issue(
+                self::UnreferencedClosure,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to closure {FUNCTION}",
+                self::REMEDIATION_B,
+                6010
             ),
 
             // Issue::CATEGORY_REDEFINE
