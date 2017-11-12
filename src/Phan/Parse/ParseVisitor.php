@@ -1110,7 +1110,7 @@ class ParseVisitor extends ScopeVisitor
         Node $node,
         string $name,
         $value,
-        int $flags = 0,
+        int $flags,
         string $comment_string
     ) {
         // Give it a fully-qualified name
