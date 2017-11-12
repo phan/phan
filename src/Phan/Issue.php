@@ -168,9 +168,16 @@ class Issue
     const NoopVariable              = 'PhanNoopVariable';
     const UnreferencedClass         = 'PhanUnreferencedClass';
     const UnreferencedFunction      = 'PhanUnreferencedFunction';
-    const UnreferencedMethod        = 'PhanUnreferencedMethod';
-    const UnreferencedProperty      = 'PhanUnreferencedProperty';
+    const UnreferencedPublicMethod  = 'PhanUnreferencedPublicMethod';
+    const UnreferencedProtectedMethod = 'PhanUnreferencedProtectedMethod';
+    const UnreferencedPrivateMethod = 'PhanUnreferencedPrivateMethod';
+    const UnreferencedPublicProperty = 'PhanUnreferencedPublicProperty';
+    const UnreferencedProtectedProperty = 'PhanUnreferencedProtectedProperty';
+    const UnreferencedPrivateProperty = 'PhanUnreferencedPrivateProperty';
     const UnreferencedConstant      = 'PhanUnreferencedConstant';
+    const UnreferencedPublicClassConstant = 'PhanUnreferencedPublicClassConstant';
+    const UnreferencedProtectedClassConstant = 'PhanUnreferencedProtectedClassConstant';
+    const UnreferencedPrivateClassConstant = 'PhanUnreferencedPrivateClassConstant';
     const UnreferencedClosure       = 'PhanUnreferencedClosure';
 
     // Issue::CATEGORY_REDEFINE
@@ -1527,26 +1534,10 @@ class Issue
                 6005
             ),
             new Issue(
-                self::UnreferencedMethod,
-                self::CATEGORY_NOOP,
-                self::SEVERITY_NORMAL,
-                "Possibly zero references to method {METHOD}",
-                self::REMEDIATION_B,
-                6006
-            ),
-            new Issue(
-                self::UnreferencedProperty,
-                self::CATEGORY_NOOP,
-                self::SEVERITY_NORMAL,
-                "Possibly zero references to property {PROPERTY}",
-                self::REMEDIATION_B,
-                6007
-            ),
-            new Issue(
                 self::UnreferencedConstant,
                 self::CATEGORY_NOOP,
                 self::SEVERITY_NORMAL,
-                "Possibly zero references to constant {CONST}",
+                "Possibly zero references to global constant {CONST}",
                 self::REMEDIATION_B,
                 6008
             ),
@@ -1565,6 +1556,78 @@ class Issue
                 "Possibly zero references to closure {FUNCTION}",
                 self::REMEDIATION_B,
                 6010
+            ),
+            new Issue(
+                self::UnreferencedPublicMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to public method {METHOD}",
+                self::REMEDIATION_B,
+                6011
+            ),
+            new Issue(
+                self::UnreferencedProtectedMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to protected method {METHOD}",
+                self::REMEDIATION_B,
+                6012
+            ),
+            new Issue(
+                self::UnreferencedPrivateMethod,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private method {METHOD}",
+                self::REMEDIATION_B,
+                6013
+            ),
+            new Issue(
+                self::UnreferencedPublicProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to public property {PROPERTY}",
+                self::REMEDIATION_B,
+                6014
+            ),
+            new Issue(
+                self::UnreferencedProtectedProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to protected property {PROPERTY}",
+                self::REMEDIATION_B,
+                6015
+            ),
+            new Issue(
+                self::UnreferencedPrivateProperty,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to private property {PROPERTY}",
+                self::REMEDIATION_B,
+                6016
+            ),
+            new Issue(
+                self::UnreferencedPublicClassConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to public class constant {CONST}",
+                self::REMEDIATION_B,
+                6017
+            ),
+            new Issue(
+                self::UnreferencedProtectedClassConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to protected class constant {CONST}",
+                self::REMEDIATION_B,
+                6018
+            ),
+            new Issue(
+                self::UnreferencedPrivateClassConstant,
+                self::CATEGORY_NOOP,
+                self::SEVERITY_NORMAL,
+                "Possibly zero references to public class constant {CONST}",
+                self::REMEDIATION_B,
+                6019
             ),
 
             // Issue::CATEGORY_REDEFINE

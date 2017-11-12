@@ -12,8 +12,12 @@ New Features(Analysis)
 + Analyze existence and usage of callables passed to (internal and user-defined) function&methods expecting callable. (#1194)
   Analysis will now warn if a callable no longer exists.
   This change also reduces false positives in dead code detection.
-+ Warn if attempting to read/write to an property or constant when the expression is a non-object (or not a class name, for static elements) (#1268)
-+ Split `PhanUnreferencedClosure` out of `PhanUnreferencedFunction` (Emitted by `--dead-code-detection`)
++ Warn if attempting to read/write to an property or constant when the expression is a non-object. (or not a class name, for static elements) (#1268)
++ Split `PhanUnreferencedClosure` out of `PhanUnreferencedFunction`. (Emitted by `--dead-code-detection`)
++ Split `PhanUnreferencedMethod` into `PhanUnreferencedPublicMethod`, `PhanUnreferencedProtectedMethod`, and `PhanUnreferencedPrivateMethod`.
++ Split errors for class constants out of `PhanUnreferencedConst`:
+  Add `PhanUnreferencedPublicClassConst`, `PhanUnreferencedProtectedClassConst`, and `PhanUnreferencedPrivateClassConst`.
+  `PhanUnreferencedConst` is now exclusively used for global constants.
 + Analyze compact() for undefined variables (#1089)
 + Add `PhanParamSuspiciousOrder` to warn about mixing up variable and constant/literal arguments in calls to built in string/regex functions
   (`explode`, `strpos`, `preg_match`, etc.)
@@ -43,7 +47,7 @@ Plugins
 ------------------------
 
 New Features(Analysis)
-+ Support `@return $this` in phpdoc for methods and magic methods 
++ Support `@return $this` in phpdoc for methods and magic methods.
   (but not elsewhere. E.g. `@param $this $varName` is not supported, use `@param static $varName`) (#634)
 + Check if functions/methods passed to array_map and array_filter are compatible with their arguments.
   Recursively analyze the functions/methods passed to array_map/array_filter if no types were provided. (unless quick mode is being used)
@@ -151,7 +155,7 @@ New Features (Analysis)
 
   Don't infer variable types from blocks of code which unconditionally throw or return.
 
-  Infer the negation of type assertions from if statements that unconditionally throw/return/break/continue 
+  Infer the negation of type assertions from if statements that unconditionally throw/return/break/continue.
   (E.g. `if (!is_string($x)) { return false; } functionUsingX($x);`)
 
   When checking if a variable is defined by all branches of an if statement, ignore branches which inconditionally throw/return/break/continue.
@@ -242,7 +246,7 @@ New Features (CLI, Configs)
   to enable warning if phpdoc types are incompatible with the real types. True(enabled) by default.
 
   Create `prefer_narrowed_phpdoc_param_type` config setting (True by default, requires `check_docblock_signature_return_type_match` to be enabled).
-  When it is true, Phan will analyze each function using the phpdoc param types instead of the provided signature types 
+  When it is true, Phan will analyze each function using the phpdoc param types instead of the provided signature types
   if the possible phpdoc types are narrower and compatible with the signature.
   (E.g. indicate that subclasses are expected over base classes, indicate that non-nullable is expected instead of nullable)
   This affects analysis both inside and outside the method.
@@ -372,7 +376,7 @@ Backwards Incompatible Changes
   analyzed in a case sensitive way.
   This may affect projects using `define(name, value, case_insensitive = true)`.
   Change the code being analyzed to exactly match the constant name in define())
- 
+
 0.9.1 Mar 15, 2017
 ------------------
 
@@ -452,7 +456,7 @@ Backwards Incompatible Changes
 
 The 0.8.x versions will be tracking syntax from PHP versions 7.0.x and is runnable on PHP 7.0+.
 Please use version 0.8.x if you're using a version of PHP < 7.1.
-For best results, run version 0.8.x with PHP 7.0 if you are analyzing a codebase which normally runs on php <= 7.0 
+For best results, run version 0.8.x with PHP 7.0 if you are analyzing a codebase which normally runs on php <= 7.0
 (If php 7.1 is used, Phan will think that some new classes, methods, and functions exist or have different parameter lists because it gets this info from `Reflection`)
 
 ???
