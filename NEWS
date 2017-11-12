@@ -44,6 +44,10 @@ Plugins
 + Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)
 + Support `'plugins' => ['AlwaysReturnPlugin']` as shorthand for full relative path to a bundled plugin such as AlwaysReturnPlugin.php (#1209)
 
+Maintenance
++ Used PHP_CodeSniffer to automatically make Phan's source directory adhere closely to PSR-1 and PSR-2, making minor changes to many files.
+  (e.g. which line each brace goes on, etc.)
+
 20 Oct 2017, Phan 0.10.1
 ------------------------
 
