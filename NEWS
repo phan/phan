@@ -21,6 +21,7 @@ New Features(Analysis)
 + Analyze compact() for undefined variables (#1089)
 + Add `PhanParamSuspiciousOrder` to warn about mixing up variable and constant/literal arguments in calls to built in string/regex functions
   (`explode`, `strpos`, `preg_match`, etc.)
++ Preserve the closure's function signature in the inferred return value of `Closure::bind()`. (#869)
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)

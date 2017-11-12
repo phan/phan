@@ -12,6 +12,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type;
 use Phan\Language\UnionType;
 use Phan\PluginV2;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
@@ -131,6 +132,28 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $closure_types;
         };
+        $from_closure_callback = static function(
+            CodeBase $code_base,
+            Context $context,
+            Method $unused_method,
+            array $args
+        ) : UnionType {
+            if (\count($args) < 1) {
+                return ClosureType::instance(false)->asUnionType();
+            }
+            $types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], true);
+            $types = $types->makeFromFilter(function(Type $type) : bool {
+                if ($type instanceof ClosureType) {
+                    return $type->hasKnownFQSEN();
+                }
+                return false;
+            });
+
+            if ($types->isEmpty()) {
+                return ClosureType::instance(false)->asUnionType();
+            }
+            return $types;
+        };
         return [
             // call
             'call_user_func'            => $call_user_func_callback,
@@ -138,6 +161,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             'call_user_func_array'      => $call_user_func_array_callback,
             'forward_static_call_array' => $call_user_func_array_callback,
             'Closure::fromCallable'     => $from_callable_callback,
+            'Closure::bind'             => $from_closure_callback,
         ];
     }
 
