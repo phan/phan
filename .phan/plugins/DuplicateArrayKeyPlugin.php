@@ -4,6 +4,7 @@ use Phan\AST\AnalysisVisitor;
 use Phan\AST\ContextNode;
 use Phan\CodeBase;
 use Phan\Exception\IssueException;
+use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\PluginV2;
@@ -84,6 +85,10 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
                         $this->context,
                         $e->getIssueInstance()
                     );
+                    continue;
+                } catch (NodeException $e) {
+                    // E.g. Can't figure out constant class in node
+                    // (ignore)
                     continue;
                 }
             }
