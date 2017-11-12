@@ -9,7 +9,8 @@ use Phan\CodeBase;
  *
  * @see AnalyzeFunctionCallCapability for analyzing the parameters whether or not return types are used.
  */
-interface ReturnTypeOverrideCapability {
+interface ReturnTypeOverrideCapability
+{
     /**
      * @return \Closure[] maps FQSEN of function or method to a closure used to override the returned UnionType.
      *                    The returned type is not validated.

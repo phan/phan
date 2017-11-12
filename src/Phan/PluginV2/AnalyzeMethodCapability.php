@@ -4,7 +4,8 @@ namespace Phan\PluginV2;
 use Phan\CodeBase;
 use Phan\Language\Element\Method;
 
-interface AnalyzeMethodCapability {
+interface AnalyzeMethodCapability
+{
     /**
      * @param CodeBase $code_base
      * The code base in which the method exists

@@ -10,7 +10,8 @@ use Phan\Language\Element\Clazz;
  *
  * @see AnalyzeFunctionCallCapability for making the return type depend on the passed in parameters.
  */
-interface AnalyzeFunctionCallCapability {
+interface AnalyzeFunctionCallCapability
+{
     /**
      * @return \Closure[] maps FQSEN of function or method to a closure used to analyze the function in question.
      *                    '\A::foo' or 'A::foo' as a key will override a method, and '\foo' or 'foo' as a key will override a function.

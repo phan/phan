@@ -26,13 +26,15 @@ use ast\Node;
  */
 final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     AnalyzeFunctionCallCapability,
-    ReturnTypeOverrideCapability {
+    ReturnTypeOverrideCapability
+{
 
     /**
      * @param Node|int|string $arg_array_node
      * @return ?array
      */
-    private static function extractArrayArgs($arg_array_node) {
+    private static function extractArrayArgs($arg_array_node)
+    {
         if (($arg_array_node instanceof Node) && $arg_array_node->kind === \ast\AST_ARRAY) {
             $arguments = [];
             // TODO: Sanity check keys.
@@ -254,7 +256,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : \Closure
     {
         $cache = [];
-        return function($argument, int $i) use($code_base, $context, &$cache) : UnionType {
+        return function($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
             $argument_type = $cache[$i] ?? null;
             if (isset($argument_type)) {
                 return $argument_type;
@@ -280,7 +282,8 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
      *
      * @return void
      */
-    private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments) {
+    private static function analyzeFunctionAndNormalArgumentList(CodeBase $code_base, Context $context, array $function_like_list, array $arguments)
+    {
         $get_argument_type = self::createNormalArgumentCache($code_base, $context);
         foreach ($function_like_list as $function_like) {
             ArgumentType::analyzeForCallback($function_like, $arguments, $context, $code_base, $get_argument_type);

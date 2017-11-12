@@ -11,13 +11,16 @@ use Phan\AST\Visitor\Element;
  *
  * - If no closures were added for a given node kind, then there will be no entry in that array.
  */
-class ClosuresForKind {
+class ClosuresForKind
+{
     /**
      * @var \Closure[][] Maps a node kind to a list of 1 or more (unflattened) closures to execute on nodes of that kind.
      */
     private $closures = [];
 
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     /**
      * @param int $kind - A valid value of a node kind

@@ -24,6 +24,7 @@ use ast\Node;
  * - Phan is able to figure out which methods a subclass implements, and only call the plugin's visitor for those types,
  *   but only when the plugin's visitor does not override the fallback visit() method.
  */
-abstract class PluginAwarePreAnalysisVisitor extends PluginAwareBaseAnalysisVisitor {
+abstract class PluginAwarePreAnalysisVisitor extends PluginAwareBaseAnalysisVisitor
+{
     // For backwards compatibility reasons, parent_node isn't available in PreAnalysis visitors
 }
