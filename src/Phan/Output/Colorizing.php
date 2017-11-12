@@ -8,7 +8,7 @@ use Phan\Config;
 // Colorizing codes are based on https://github.com/kevinlebrun/colors.php/
 class Colorizing
 {
-    const styles = [
+    const STYLES = [
         'none'             => '0',  // Alias of 'reset'
         'reset'            => '0',  // Use 'reset' for the absence of color.
         'bold'             => '1',
@@ -54,12 +54,12 @@ class Colorizing
         'bg_white'         => '107',
     ];
 
-    const esc_pattern = "\033[%sm";
-    const esc_reset = "\033[0m";
+    const ESC_PATTERN = "\033[%sm";
+    const ESC_RESET = "\033[0m";
 
     // NOTE: Keep sorted and in sync with Issue::uncolored_format_string_for_template
-    // In future PRs, it will be possible for users to add their own color schemes in .phan/config.php
-    const default_color_for_template = [
+    // By using 'color_scheme' in .phan/config.php, these settings can be overridden
+    const DEFAULT_COLOR_FOR_TEMPLATE = [
         'CLASS'         => 'green',
         'CLASSLIKE'     => 'green',
         'COMMENT'       => 'light_green',
@@ -141,7 +141,7 @@ class Colorizing
             return $arg_str;
         }
         // TODO: Could extend this to support background colors.
-        $color_code = self::styles[$color] ?? null;
+        $color_code = self::STYLES[$color] ?? null;
         if ($color_code === null) {
             error_log("Invalid color name ($color) for template type $template_type");
             return $arg_str;
@@ -149,7 +149,7 @@ class Colorizing
         if ($color_code == '0') {
             return $arg_str;
         }
-        return sprintf(self::esc_pattern, $color_code) . ((string) $arg) . self::esc_reset;
+        return sprintf(self::ESC_PATTERN, $color_code) . ((string) $arg) . self::ESC_RESET;
     }
 
     /**
@@ -168,13 +168,13 @@ class Colorizing
      */
     private static function initColorScheme()
     {
-        self::$color_scheme = self::default_color_for_template;
+        self::$color_scheme = self::DEFAULT_COLOR_FOR_TEMPLATE;
         foreach (Config::getValue('color_scheme') ?? [] as $template_type => $color_name) {
-            if (!\is_scalar($color_name) || !\array_key_exists($color_name, self::styles)) {
+            if (!\is_scalar($color_name) || !\array_key_exists($color_name, self::STYLES)) {
                 error_log("Invalid color name ($color_name)");
                 continue;
             }
-            if (!\array_key_exists($template_type, Colorizing::default_color_for_template)) {
+            if (!\array_key_exists($template_type, Colorizing::DEFAULT_COLOR_FOR_TEMPLATE)) {
                 error_log("Unknown template_type ($template_type)");
                 continue;
             }

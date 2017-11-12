@@ -10,23 +10,23 @@ use Phan\Library\Hasher;
 class Sequential implements Hasher
 {
     /** @var int */
-    protected $_i;
+    protected $counter;
     /** @var int */
-    protected $_groupCount;
+    protected $groupCount;
 
     public function __construct(int $groupCount)
     {
-        $this->_i = 1;
-        $this->_groupCount = $groupCount;
+        $this->counter = 1;
+        $this->groupCount = $groupCount;
     }
 
     /**
      * @param string $key (Used by sibling class Consistent) (@phan-unused-param)
-     * @return int - an integer between 0 and $this->_groupCount - 1, inclusive
+     * @return int - an integer between 0 and $this->groupCount - 1, inclusive
      */
     public function getGroup(string $key) : int
     {
-        return ($this->_i++) % $this->_groupCount;
+        return ($this->counter++) % $this->groupCount;
     }
 
     /**
@@ -35,6 +35,6 @@ class Sequential implements Hasher
      */
     public function reset()
     {
-        $this->_i = 1;
+        $this->counter = 1;
     }
 }
