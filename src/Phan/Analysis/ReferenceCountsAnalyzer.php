@@ -187,7 +187,7 @@ class ReferenceCountsAnalyzer
             }
             // Currently, deferred analysis is only needed for class elements, which can be inherited
             // (And we may track the references to the inherited version of the original)
-            assert ($element instanceof ClassElement);
+            assert($element instanceof ClassElement);
             if ($element instanceof ClassConstant) {
                 // should not warn about self::class
                 if (strcasecmp($element->getName(), 'class') === 0) {
@@ -214,11 +214,11 @@ class ReferenceCountsAnalyzer
                         if ($code_base->hasMethodWithFQSEN($defining_fqsen)) {
                             $defining_element = $code_base->getMethodByFQSEN($defining_fqsen);
                         }
-                    } else if ($defining_fqsen instanceof FullyQualifiedPropertyName) {
+                    } elseif ($defining_fqsen instanceof FullyQualifiedPropertyName) {
                         if ($code_base->hasPropertyWithFQSEN($defining_fqsen)) {
                             $defining_element = $code_base->getPropertyByFQSEN($defining_fqsen);
                         }
-                    } else if ($defining_fqsen instanceof FullyQualifiedClassConstantName) {
+                    } elseif ($defining_fqsen instanceof FullyQualifiedClassConstantName) {
                         if ($code_base->hasClassConstantWithFQSEN($defining_fqsen)) {
                             $defining_element = $code_base->getClassConstantByFQSEN($defining_fqsen);
                         }
@@ -242,7 +242,7 @@ class ReferenceCountsAnalyzer
                 if ($element->isAbstract() || $defining_class->isInterface()) {
                     continue;
                 }
-            } else if ($element instanceof Property) {
+            } elseif ($element instanceof Property) {
                 // Skip properties on classes that have a magic
                 // __get or __set method given that we can't track
                 // their access
@@ -294,29 +294,29 @@ class ReferenceCountsAnalyzer
                     if ($element instanceof Method) {
                         if ($element->isPrivate()) {
                             $issue_type = Issue::UnreferencedPrivateMethod;
-                        } else if ($element->isProtected()) {
+                        } elseif ($element->isProtected()) {
                             $issue_type = Issue::UnreferencedProtectedMethod;
                         } else {
                             $issue_type = Issue::UnreferencedPublicMethod;
                         }
-                    } else if ($element instanceof Property) {
+                    } elseif ($element instanceof Property) {
                         if ($element->isPrivate()) {
                             $issue_type = Issue::UnreferencedPrivateProperty;
-                        } else if ($element->isProtected()) {
+                        } elseif ($element->isProtected()) {
                             $issue_type = Issue::UnreferencedProtectedProperty;
                         } else {
                             $issue_type = Issue::UnreferencedPublicProperty;
                         }
-                    } else if ($element instanceof ClassConstant) {
+                    } elseif ($element instanceof ClassConstant) {
                         if ($element->isPrivate()) {
                             $issue_type = Issue::UnreferencedPrivateClassConstant;
-                        } else if ($element->isProtected()) {
+                        } elseif ($element->isProtected()) {
                             $issue_type = Issue::UnreferencedProtectedClassConstant;
                         } else {
                             $issue_type = Issue::UnreferencedPublicClassConstant;
                         }
                     }
-                } else if ($element instanceof Func) {
+                } elseif ($element instanceof Func) {
                     if (\strcasecmp($element->getName(), "__autoload") === 0) {
                         return;
                     }
@@ -363,18 +363,18 @@ class ReferenceCountsAnalyzer
                     return $code_base->getFunctionByFQSEN($fqsen);
                 }
                 return null;
-            } else if ($fqsen instanceof FullyQualifiedClassName) {
+            } elseif ($fqsen instanceof FullyQualifiedClassName) {
                 if ($code_base->hasClassWithFQSEN($fqsen)) {
                     return $code_base->getClassByFQSEN($fqsen);
                 }
                 return null;
-            } else if ($fqsen instanceof FullyQualifiedGlobalConstantName) {
+            } elseif ($fqsen instanceof FullyQualifiedGlobalConstantName) {
                 if ($code_base->hasGlobalConstantWithFQSEN($fqsen)) {
                     return $code_base->getGlobalConstantByFQSEN($fqsen);
                 }
                 return null;
             }
-        } else if ($old_fqsen instanceof FullyQualifiedClassElement) {
+        } elseif ($old_fqsen instanceof FullyQualifiedClassElement) {
             // If this needed to be more thorough,
             // the code adding references could treat uses from within the classes differently from outside.
             $fqsen = $old_fqsen->getCanonicalFQSEN();
@@ -387,12 +387,12 @@ class ReferenceCountsAnalyzer
                     return $code_base->getMethodByFQSEN($fqsen);
                 }
                 return null;
-            } else if ($fqsen instanceof FullyQualifiedPropertyName) {
+            } elseif ($fqsen instanceof FullyQualifiedPropertyName) {
                 if ($code_base->hasPropertyWithFQSEN($fqsen)) {
                     return $code_base->getPropertyByFQSEN($fqsen);
                 }
                 return null;
-            } else if ($fqsen instanceof FullyQualifiedClassConstantName) {
+            } elseif ($fqsen instanceof FullyQualifiedClassConstantName) {
                 if ($code_base->hasClassConstantWithFQSEN($fqsen)) {
                     return $code_base->getClassConstantByFQSEN($fqsen);
                 }

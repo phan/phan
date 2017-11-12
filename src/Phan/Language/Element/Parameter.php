@@ -88,9 +88,11 @@ class Parameter extends Variable
         $result = clone($this);
         if ($result->isVariadic() && !$result->isCloneOfVariadic()) {
             $result->convertToNonVariadic();
-            $result->setPhanFlags(Flags::bitVectorWithState($result->getPhanFlags(),
-                                                           Flags::IS_CLONE_OF_VARIADIC,
-                                                           true));
+            $result->setPhanFlags(Flags::bitVectorWithState(
+                $result->getPhanFlags(),
+                Flags::IS_CLONE_OF_VARIADIC,
+                true
+            ));
         }
         return $result;
     }
@@ -264,7 +266,6 @@ class Parameter extends Variable
 
         // If there is a default value, store it and its type
         if (($default_node = $node->children['default']) !== null) {
-
             // We can't figure out default values during the
             // parsing phase, unfortunately
             if (!($default_node instanceof Node)) {
@@ -487,7 +488,7 @@ class Parameter extends Variable
         $flags = $this->getPhanFlags();
         if (Flags::bitVectorHasState($flags, Flags::IS_READ_REFERENCE)) {
             return self::REFERENCE_READ_WRITE;
-        } else if (Flags::bitVectorHasState($flags, Flags::IS_WRITE_REFERENCE)) {
+        } elseif (Flags::bitVectorHasState($flags, Flags::IS_WRITE_REFERENCE)) {
             return self::REFERENCE_WRITE_ONLY;
         }
         return self::REFERENCE_DEFAULT;
@@ -524,7 +525,8 @@ class Parameter extends Variable
         return $string;
     }
 
-    public function toStubString() : string {
+    public function toStubString() : string
+    {
         $string = '';
 
         $typeObj = $this->getNonVariadicUnionType();
@@ -558,7 +560,7 @@ class Parameter extends Variable
                 $kind = $default_value->kind;
                 if ($kind === \ast\AST_NAME) {
                     $default_repr = $default_value->children['name'];
-                } else if ($kind === \ast\AST_ARRAY) {
+                } elseif ($kind === \ast\AST_ARRAY) {
                     $default_repr = '[]';
                 } else {
                     $default_repr = 'null';

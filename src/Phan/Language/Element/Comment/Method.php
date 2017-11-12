@@ -103,7 +103,9 @@ class Method
             $this->parameters,
             function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isRequired() ? 1 : 0));
-            }, 0);
+            },
+            0
+        );
     }
 
     /**
@@ -116,7 +118,9 @@ class Method
             $this->parameters,
             function (int $carry, Parameter $parameter) : int {
                 return ($carry + ($parameter->isOptional() ? 1 : 0));
-            }, 0);
+            },
+            0
+        );
     }
 
     public function __toString() : string

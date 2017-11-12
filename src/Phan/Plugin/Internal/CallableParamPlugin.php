@@ -27,7 +27,8 @@ use ast\Node;
  * This would be difficult.
  */
 final class CallableParamPlugin extends PluginV2 implements
-    AnalyzeFunctionCallCapability {
+    AnalyzeFunctionCallCapability
+{
 
     /**
      * @param int[] $params

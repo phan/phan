@@ -10,19 +10,22 @@ use Phan\PluginV2\AnalyzeNodeCapability;
 use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
-class InvalidVariableIssetPlugin extends PluginV2 implements AnalyzeNodeCapability {
+class InvalidVariableIssetPlugin extends PluginV2 implements AnalyzeNodeCapability
+{
 
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
      *
      * @override
      */
-    public static function getAnalyzeNodeVisitorClassName() : string {
+    public static function getAnalyzeNodeVisitorClassName() : string
+    {
         return InvalidVariableIssetVisitor::class;
     }
 }
 
-class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor {
+class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor
+{
 
     /** define classes to parse */
     const CLASSES = [
@@ -42,15 +45,16 @@ class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor {
     // A plugin's visitors should not override visit() unless they need to.
 
     /** @override */
-    public function visitIsset(Node $node) : Context {
+    public function visitIsset(Node $node) : Context
+    {
         $argument = $node->children['var'];
         $variable = $argument;
 
         // get variable name from argument
-        while (!isset($variable->children['name'])){
-            if (in_array($variable->kind, self::EXPRESSIONS)){
+        while (!isset($variable->children['name'])) {
+            if (in_array($variable->kind, self::EXPRESSIONS)) {
                 $variable = $variable->children['expr'];
-            } elseif (in_array($variable->kind, self::CLASSES)){
+            } elseif (in_array($variable->kind, self::CLASSES)) {
                 $variable = $variable->children['class'];
             }
         }
@@ -74,7 +78,7 @@ class InvalidVariableIssetVisitor extends PluginAwareAnalysisVisitor {
                 "non array/property access in isset()",
                 []
             );
-        } else if (!is_string($name)) {
+        } elseif (!is_string($name)) {
             // emit issue if argument is not array access
             $this->emit(
                 'PhanPluginComplexVariableInIsset',

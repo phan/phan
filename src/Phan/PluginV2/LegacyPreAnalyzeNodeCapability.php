@@ -10,7 +10,8 @@ use ast\Node;
 /**
  * @deprecated - New plugins should use PreAnalyzeNodeCapability
  */
-interface LegacyPreAnalyzeNodeCapability {
+interface LegacyPreAnalyzeNodeCapability
+{
     /**
      * Do a first-pass analysis of a node before Phan
      * does its full analysis. This hook allows you to

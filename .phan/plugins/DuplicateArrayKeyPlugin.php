@@ -17,12 +17,14 @@ use ast\Node;
  *
  * @see DollarDollarPlugin for generic plugin documentation.
  */
-class DuplicateArrayKeyPlugin extends PluginV2 implements AnalyzeNodeCapability {
+class DuplicateArrayKeyPlugin extends PluginV2 implements AnalyzeNodeCapability
+{
     /**
      * @return string - name of PluginAwareAnalysisVisitor subclass
      * @override
      */
-    public static function getAnalyzeNodeVisitorClassName() : string {
+    public static function getAnalyzeNodeVisitorClassName() : string
+    {
         return DuplicateArrayKeyVisitor::class;
     }
 }
@@ -36,7 +38,8 @@ class DuplicateArrayKeyPlugin extends PluginV2 implements AnalyzeNodeCapability 
  * Visitors such as this are useful for defining lots of different
  * checks on a node based on its kind.
  */
-class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
+class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor
+{
     // Do not define the visit() method unless a plugin has code and needs to visit most/all node types.
 
     /**
@@ -47,7 +50,8 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
      *
      * @override
      */
-    public function visitArray(Node $node) {
+    public function visitArray(Node $node)
+    {
         $children = $node->children;
         if (count($children) <= 1) {
             // This plugin will never emit errors if there are 0 or 1 elements.
@@ -133,7 +137,8 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
      * @param int|string|float $key - The array key literal to be normalized.
      * @return string - The normalized representation.
      */
-    private static function normalizeKey($key) : string {
+    private static function normalizeKey($key) : string
+    {
         $tmp = [$key => true];
         return var_export(key($tmp), true);
     }

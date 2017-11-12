@@ -59,4 +59,3 @@ class Tuple4 extends Tuple3
         ];
     }
 }
-

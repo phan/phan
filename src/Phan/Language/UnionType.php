@@ -295,8 +295,6 @@ class UnionType implements \Serializable
 
         $configurations = [];
         while (isset($map[$function_name])) {
-
-
             // Get some static data about the function
             $type_name_struct = $map[$function_name];
             if (empty($type_name_struct)) {
@@ -428,7 +426,8 @@ class UnionType implements \Serializable
             return [];
         }
 
-        return \array_reduce($this->type_set,
+        return \array_reduce(
+            $this->type_set,
             function (array $map, Type $type) {
                 return \array_merge(
                     $type->getTemplateParameterTypeList(),
@@ -457,7 +456,8 @@ class UnionType implements \Serializable
             return [];
         }
 
-        return \array_reduce($this->type_set,
+        return \array_reduce(
+            $this->type_set,
             function (array $map, Type $type) use ($code_base) {
                 return \array_merge(
                     $type->getTemplateParameterTypeMap($code_base),
@@ -1012,7 +1012,7 @@ class UnionType implements \Serializable
             // If null_casts_as_any_type isn't set, then try the other two fallbacks.
             if (Config::get_null_casts_as_array() && $this->isType($null_type) && $target->hasArrayLike()) {
                 return true;
-            } else if (Config::get_array_casts_as_null() && $target->isType($null_type) && $this->hasArrayLike()) {
+            } elseif (Config::get_array_casts_as_null() && $target->isType($null_type) && $this->hasArrayLike()) {
                 return true;
             }
         }
@@ -1158,7 +1158,8 @@ class UnionType implements \Serializable
      * A memory efficient way to create a UnionType from a filter operation.
      * If this the filter preserves everything, calls clone() instead.
      */
-    public function makeFromFilter(\Closure $cb) : UnionType {
+    public function makeFromFilter(\Closure $cb) : UnionType
+    {
         $new_type_set = \array_filter($this->type_set, $cb);
         if (\count($new_type_set) === \count($this->type_set)) {
             return clone($this);
@@ -1192,7 +1193,6 @@ class UnionType implements \Serializable
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->nonNativeTypes()->type_set as $class_type) {
-
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
 
@@ -1207,7 +1207,6 @@ class UnionType implements \Serializable
                             ]
                         )
                     );
-
                 }
                 yield $class_fqsen;
             } else {
@@ -1244,7 +1243,6 @@ class UnionType implements \Serializable
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
         foreach ($this->nonNativeTypes()->type_set as $class_type) {
-
             // Get the class FQSEN
             $class_fqsen = $class_type->asClassFQSEN();
 
@@ -1259,7 +1257,6 @@ class UnionType implements \Serializable
                             ]
                         )
                     );
-
                 }
                 yield $context->getClassInScope($code_base);
             } else {
@@ -1444,7 +1441,8 @@ class UnionType implements \Serializable
     {
 
         return new UnionType(
-            \array_filter($this->type_set,
+            \array_filter(
+                $this->type_set,
                 function (Type $type) : bool {
                     return !$type->isGenericArray()
                         && $type !== ArrayType::instance(false);
@@ -1677,7 +1675,8 @@ class UnionType implements \Serializable
      * 2. If both "true" and "false" (possibly nullable) coexist, or either coexists with "bool" (possibly nullable),
      *    then remove "true" and "false"
      */
-    public function asNormalizedTypes() : UnionType {
+    public function asNormalizedTypes() : UnionType
+    {
         $type_set = $this->type_set;
         if (count($type_set) <= 1) {
             // Optimization: can't simplify if there's only one type
@@ -1698,7 +1697,8 @@ class UnionType implements \Serializable
      * @param Type[] $type_set
      * @param int $flags non-zero
      */
-    public static function asNormalizedTypesInner(array $type_set, int $flags) : UnionType {
+    public static function asNormalizedTypesInner(array $type_set, int $flags) : UnionType
+    {
         $new_type_set = $type_set;
         $nullable = ($flags & Type::_bit_nullable) !== 0;
         if ($nullable) {
@@ -1787,7 +1787,8 @@ class UnionType implements \Serializable
         return $type_set;
     }
 
-    private static function asNullableTypeSet(array $type_set) {
+    private static function asNullableTypeSet(array $type_set)
+    {
         $new_types_set = $type_set;
         foreach ($type_set as $type_id => $type) {
             if (!$type->getIsNullable()) {

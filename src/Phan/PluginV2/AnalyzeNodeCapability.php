@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\PluginV2;
 
-interface AnalyzeNodeCapability {
+interface AnalyzeNodeCapability
+{
     /**
      * Returns the name of the visitor class to be instantiated and invoked to analyze a node in the analysis phase.
      * (To analyze a node. AnalyzeNodeCapability is run after PreAnalyzeNodeCapability)

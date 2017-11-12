@@ -26,7 +26,8 @@ try {
         Config::AST_VERSION
     );
 } catch (LogicException $throwable) {
-    assert(false,
+    assert(
+        false,
         'Unknown AST version ('
         . Config::AST_VERSION
         . ') in configuration. '
@@ -41,7 +42,8 @@ try {
         '<?php syntaxerror',
         Config::AST_VERSION
     );
-    assert(false,
+    assert(
+        false,
         'Expected ast\\parse_code to throw ParseError on invalid inputs. Configured AST version: '
         . Config::AST_VERSION
         . '. '
@@ -68,7 +70,9 @@ $cli = new CLI();
 $is_issue_found =
     Phan::analyzeFileList(
         $code_base,
-        function() use($cli) { return $cli->getFileList(); }  // Daemon mode will reload the file list.
+        function() use ($cli) {
+            return $cli->getFileList();
+        }  // Daemon mode will reload the file list.
     );
 
 // Provide an exit status code based on if

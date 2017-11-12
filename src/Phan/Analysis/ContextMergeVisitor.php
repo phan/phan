@@ -103,7 +103,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
         foreach ($try_scope->getVariableMap() as $variable_name => $variable) {
             $variable_name = (string)$variable_name;  // e.g. ${42}
             foreach ($catch_scope_list as $catch_scope) {
-
                 // Merge types if try and catch have a variable in common
                 if ($catch_scope->hasVariableWithName($variable_name)) {
                     $catch_variable = $catch_scope->getVariableByName(
@@ -122,7 +121,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
             foreach ($catch_scope->getVariableMap() as $variable_name => $variable) {
                 $variable_name = (string)$variable_name;
                 if (!$try_scope->hasVariableWithName($variable_name)) {
-
                     // Note that it can be null
                     $variable->getUnionType()->addType(
                         NullType::instance(false)
@@ -260,7 +258,8 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 }
                 // compute the un-normalized types
                 $result = (new UnionType(
-                    ArraySet::unionAll($type_set_list), true
+                    ArraySet::unionAll($type_set_list),
+                    true
                 ));
                 $result_count = $result->typeCount();
                 foreach ($type_set_list as $type_set) {
@@ -274,7 +273,6 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 }
                 // Otherwise, don't normalize it - The different contexts didn't differ in the union types
                 return $result;
-
             };
 
         // Clone the incoming scope so we can modify it

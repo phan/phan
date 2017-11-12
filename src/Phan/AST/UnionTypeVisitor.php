@@ -505,13 +505,14 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param int|float|string|Node $node
      * @return ?UnionType
      */
-    public static function unionTypeFromLiteralOrConstant(CodeBase $code_base, Context $context, $node) {
+    public static function unionTypeFromLiteralOrConstant(CodeBase $code_base, Context $context, $node)
+    {
         if ($node instanceof Node) {
             // TODO: Could check for arrays of constants or literals, and convert those to the generic array types
             if ($node->kind === \ast\AST_CONST || $node->kind === \ast\AST_CLASS_CONST) {
                 try {
                     return UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node, false);
-                } catch(IssueException $e) {
+                } catch (IssueException $e) {
                     return null;
                 }
             }
@@ -526,23 +527,24 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param int|float|string|Node $cond
      * @return ?bool
      */
-    public static function checkCondUnconditionalTruthiness($cond) {
+    public static function checkCondUnconditionalTruthiness($cond)
+    {
         if ($cond instanceof Node) {
             if ($cond->kind === \ast\AST_CONST) {
                 $name = $cond->children['name'];
                 if ($name->kind === \ast\AST_NAME) {
-                    switch(strtolower($name->children['name'])) {
-                    case 'true':
-                        return true;
-                    case 'false':
-                        return false;
-                    case 'null':
-                        return false;
-                    default:
-                        // Could add heuristics based on internal/user-defined constant values, but that is unreliable.
-                        // (E.g. feature flags for an extension may be true or false, depending on the environment)
-                        // (and Phan doesn't store constant values for user-defined constants, only the types)
-                        return null;
+                    switch (strtolower($name->children['name'])) {
+                        case 'true':
+                            return true;
+                        case 'false':
+                            return false;
+                        case 'null':
+                            return false;
+                        default:
+                            // Could add heuristics based on internal/user-defined constant values, but that is unreliable.
+                            // (E.g. feature flags for an extension may be true or false, depending on the environment)
+                            // (and Phan doesn't store constant values for user-defined constants, only the types)
+                            return null;
                     }
                 }
             }
@@ -1102,7 +1104,6 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
 
         if ($element_types->isEmpty()) {
-
             // Hunt for any types that are viable class names and
             // see if they inherit from ArrayAccess
             try {
@@ -1113,7 +1114,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                         return $element_types;
                     }
                 }
-            } catch (CodeBaseException $exception) {}
+            } catch (CodeBaseException $exception) {
+            }
 
             $this->emitIssue(
                 Issue::TypeArraySuspicious,
@@ -1367,7 +1369,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             // Map template types to concrete types
             if ($property->getUnionType()->hasTemplateType()) {
-
                 // Get the type of the object calling the property
                 $expression_type = UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
@@ -1505,9 +1506,8 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         try {
             foreach ($this->classListFromNode(
-                    $node->children['class'] ?? $node->children['expr']
-                ) as $class
-            ) {
+                $node->children['class'] ?? $node->children['expr']
+            ) as $class) {
                 if (!$class->hasMethodWithName(
                     $this->code_base,
                     $method_name
@@ -1529,7 +1529,6 @@ class UnionTypeVisitor extends AnalysisVisitor
 
                     // Map template types to concrete types
                     if ($union_type->hasTemplateType()) {
-
                         // Get the type of the object calling the property
                         $expression_type = UnionTypeVisitor::unionTypeFromNode(
                             $this->code_base,
@@ -1552,7 +1551,6 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
 
                     if ($union_type->genericArrayElementTypes()->hasStaticType()) {
-
                         $union_type = clone($union_type);
 
                         // Find the static type on the list
@@ -1869,7 +1867,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $context,
                 Type::FROM_NODE
             );
-        } else if ($node->flags & \ast\flags\NAME_RELATIVE) {
+        } elseif ($node->flags & \ast\flags\NAME_RELATIVE) {
             // Relative to current namespace
             if (0 !== strpos($class_name, '\\')) {
                 $class_name = '\\' . $class_name;
@@ -1895,7 +1893,8 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @return \Generator|Clazz[]
      */
-    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node) {
+    public static function classListFromNodeAndContext(CodeBase $code_base, Context $context, Node $node)
+    {
         return (new UnionTypeVisitor($code_base, $context, true))->classListFromNode($node);
     }
 
@@ -1986,7 +1985,8 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @return FullyQualifiedMethodName[]
      * A list of CallableTypes associated with the given node
      */
-    private function methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name) : array {
+    private function methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name) : array
+    {
         $code_base = $this->code_base;
         $context = $this->context;
 
@@ -2066,50 +2066,50 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function lookupClassOfCallableByName(string $class_name)
     {
-        switch(\strtolower($class_name)) {
-        case 'self':
-        case 'static':
-            $context = $this->context;
-            if (!$context->isInClassScope()) {
-                $this->emitIssue(
-                    Issue::ContextNotObject,
-                    $context->getLineNumberStart(),
-                    \strtolower($class_name)
-                );
-                return null;
-            }
-            return $context->getClassFQSEN();
-        case 'parent':
-            $context = $this->context;
-            if (!$context->isInClassScope()) {
-                $this->emitIssue(
-                    Issue::ContextNotObject,
-                    $context->getLineNumberStart(),
-                    \strtolower($class_name)
-                );
-                return null;
-            }
-            $class = $context->getClassInScope($this->code_base);
-            if ($class->isTrait()) {
-                $this->emitIssue(
-                    Issue::TraitParentReference,
-                    $context->getLineNumberStart(),
-                    (string)$class->getFQSEN()
-                );
-                return null;
-            }
-            if (!$class->hasParentType()) {
-                $this->emitIssue(
-                    Issue::ParentlessClass,
-                    $context->getLineNumberStart(),
-                    (string)$class->getFQSEN()
-                );
-                return null;
-            }
-            return $class->getParentClassFQSEN();  // may or may not exist.
-        default:
-            // TODO: Reject invalid/empty class names earlier
-            return FullyQualifiedClassName::makeFromExtractedNamespaceAndName($class_name);
+        switch (\strtolower($class_name)) {
+            case 'self':
+            case 'static':
+                $context = $this->context;
+                if (!$context->isInClassScope()) {
+                    $this->emitIssue(
+                        Issue::ContextNotObject,
+                        $context->getLineNumberStart(),
+                        \strtolower($class_name)
+                    );
+                    return null;
+                }
+                return $context->getClassFQSEN();
+            case 'parent':
+                $context = $this->context;
+                if (!$context->isInClassScope()) {
+                    $this->emitIssue(
+                        Issue::ContextNotObject,
+                        $context->getLineNumberStart(),
+                        \strtolower($class_name)
+                    );
+                    return null;
+                }
+                $class = $context->getClassInScope($this->code_base);
+                if ($class->isTrait()) {
+                    $this->emitIssue(
+                        Issue::TraitParentReference,
+                        $context->getLineNumberStart(),
+                        (string)$class->getFQSEN()
+                    );
+                    return null;
+                }
+                if (!$class->hasParentType()) {
+                    $this->emitIssue(
+                        Issue::ParentlessClass,
+                        $context->getLineNumberStart(),
+                        (string)$class->getFQSEN()
+                    );
+                    return null;
+                }
+                return $class->getParentClassFQSEN();  // may or may not exist.
+            default:
+                // TODO: Reject invalid/empty class names earlier
+                return FullyQualifiedClassName::makeFromExtractedNamespaceAndName($class_name);
         }
     }
 
@@ -2284,7 +2284,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($type instanceof ClosureType && $type->hasKnownFQSEN()) {
                 // TODO: Support class instances with __invoke()
                 $fqsen = $type->asFQSEN();
-                assert ($fqsen instanceof FullyQualifiedFunctionLikeName);
+                assert($fqsen instanceof FullyQualifiedFunctionLikeName);
                 $closure_types[] = $fqsen;
             }
         }

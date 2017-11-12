@@ -5,7 +5,8 @@ use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 
 // TODO: Wrap this with a ClosureLikeScope
-class ClosureScope extends FunctionLikeScope {
+class ClosureScope extends FunctionLikeScope
+{
     /**
      * @var FullyQualifiedClassName|null
      */
@@ -50,5 +51,4 @@ class ClosureScope extends FunctionLikeScope {
         }
         return parent::getClassFQSEN();
     }
-
 }

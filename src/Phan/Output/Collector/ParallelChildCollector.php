@@ -25,11 +25,13 @@ class ParallelChildCollector implements IssueCollectorInterface
      */
     public function __construct()
     {
-        \assert(extension_loaded('sysvsem'),
+        \assert(
+            extension_loaded('sysvsem'),
             'PHP must be compiled with --enable-sysvsem in order to use -j(>=2).'
         );
 
-        \assert(extension_loaded('sysvmsg'),
+        \assert(
+            extension_loaded('sysvmsg'),
             'PHP must be compiled with --enable-sysvmsg in order to use -j(>=2).'
         );
 
@@ -66,8 +68,10 @@ class ParallelChildCollector implements IssueCollectorInterface
 
         // Make sure that the message was successfully
         // sent
-        \assert($success,
-            "msg_send failed with error code '$error_code'");
+        \assert(
+            $success,
+            "msg_send failed with error code '$error_code'"
+        );
     }
 
     /**
@@ -88,7 +92,8 @@ class ParallelChildCollector implements IssueCollectorInterface
      * @param string[] $files - the relative paths to those files
      * @return void
      */
-    public function removeIssuesForFiles(array $files) {
+    public function removeIssuesForFiles(array $files)
+    {
         return;  // Never going to be called - daemon mode isn't combined with parallel execution.
     }
 

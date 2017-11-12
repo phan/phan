@@ -3,7 +3,8 @@ namespace Phan;
 
 use ast\Node;
 
-class Prep {
+class Prep
+{
 
     /**
      * Scan a list of files, applying the given closure to every
@@ -68,7 +69,5 @@ class Prep {
 
             self::scanNodeInFile($child_node, $file_path, $visit_node);
         }
-
     }
-
 }

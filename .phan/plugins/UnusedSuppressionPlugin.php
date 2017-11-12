@@ -27,7 +27,8 @@ class UnusedSuppressionPlugin extends PluginV2 implements
     AnalyzeFunctionCapability,
     AnalyzeMethodCapability,
     AnalyzePropertyCapability,
-    FinalizeProcessCapability {
+    FinalizeProcessCapability
+{
 
     /**
      * @var AddressableElement[] - Analysis is postponed until finalizeProcess.
@@ -161,7 +162,8 @@ class UnusedSuppressionPlugin extends PluginV2 implements
      *       Putting this hook in finalizeProcess() just minimizes the incorrect result counts.
      * @override
      */
-    public function finalizeProcess(CodeBase $code_base) {
+    public function finalizeProcess(CodeBase $code_base)
+    {
         foreach ($this->elements_for_postponed_analysis as $element) {
             $this->analyzeAddressableElement($code_base, $element);
         }

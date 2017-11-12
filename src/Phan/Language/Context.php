@@ -157,18 +157,18 @@ class Context extends FileRef
 
         // Create something of the corresponding type (which may or may not be within a suffix)
         switch ($flags) {
-        case \ast\flags\USE_NORMAL:
-            return FullyQualifiedClassName::fromFullyQualifiedString(
-                (string)$fqsen . '\\' . $suffix
-            );
-        case \ast\flags\USE_FUNCTION:
-            return FullyQualifiedFunctionName::fromFullyQualifiedString(
-                (string)$fqsen . '\\' . $suffix
-            );
-        case \ast\flags\USE_CONST:
-            return FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
-                (string)$fqsen . '\\' . $suffix
-            );
+            case \ast\flags\USE_NORMAL:
+                return FullyQualifiedClassName::fromFullyQualifiedString(
+                    (string)$fqsen . '\\' . $suffix
+                );
+            case \ast\flags\USE_FUNCTION:
+                return FullyQualifiedFunctionName::fromFullyQualifiedString(
+                    (string)$fqsen . '\\' . $suffix
+                );
+            case \ast\flags\USE_CONST:
+                return FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                    (string)$fqsen . '\\' . $suffix
+                );
         }
 
         throw new \AssertionError("Unknown flag $flags");
@@ -274,7 +274,8 @@ class Context extends FileRef
      *
      * @return void
      */
-    public function addGlobalScopeVariable(Variable $variable) {
+    public function addGlobalScopeVariable(Variable $variable)
+    {
         $this->getScope()->addGlobalVariable($variable);
     }
 
@@ -348,8 +349,10 @@ class Context extends FileRef
      */
     public function getClassInScope(CodeBase $code_base) : Clazz
     {
-        \assert($this->isInClassScope(),
-            "Must be in class scope to get class");
+        \assert(
+            $this->isInClassScope(),
+            "Must be in class scope to get class"
+        );
 
         if (!$code_base->hasClassWithFQSEN($this->getClassFQSEN())) {
             throw new CodeBaseException(
@@ -376,8 +379,10 @@ class Context extends FileRef
      */
     public function getPropertyInScope(CodeBase $code_base) : Property
     {
-        \assert($this->isInPropertyScope(),
-            "Must be in property scope to get property");
+        \assert(
+            $this->isInPropertyScope(),
+            "Must be in property scope to get property"
+        );
 
         $property_fqsen = $this->getPropertyFQSEN();
         if (!$code_base->hasPropertyWithFQSEN($property_fqsen)) {
@@ -435,20 +440,26 @@ class Context extends FileRef
     public function getFunctionLikeInScope(
         CodeBase $code_base
     ) : FunctionInterface {
-        \assert($this->isInFunctionLikeScope(),
-            "Must be in method scope to get method.");
+        \assert(
+            $this->isInFunctionLikeScope(),
+            "Must be in method scope to get method."
+        );
 
         $fqsen = $this->getFunctionLikeFQSEN();
 
         if ($fqsen instanceof FullyQualifiedFunctionName) {
-            \assert($code_base->hasFunctionWithFQSEN($fqsen),
-                "The function does not exist");
+            \assert(
+                $code_base->hasFunctionWithFQSEN($fqsen),
+                "The function does not exist"
+            );
             return $code_base->getFunctionByFQSEN($fqsen);
         }
 
         if ($fqsen instanceof FullyQualifiedMethodName) {
-            \assert($code_base->hasMethodWithFQSEN($fqsen),
-                "Method does not exist");
+            \assert(
+                $code_base->hasMethodWithFQSEN($fqsen),
+                "Method does not exist"
+            );
             return $code_base->getMethodByFQSEN($fqsen);
         }
 
@@ -490,18 +501,21 @@ class Context extends FileRef
      */
     public function getElementInScope(CodeBase $code_base) : TypedElement
     {
-        \assert($this->isInElementScope(),
-            "Cannot get element in scope if we're in the global scope");
+        \assert(
+            $this->isInElementScope(),
+            "Cannot get element in scope if we're in the global scope"
+        );
 
         if ($this->isInFunctionLikeScope()) {
             return $this->getFunctionLikeInScope($code_base);
-        } else if ($this->isInPropertyScope()) {
+        } elseif ($this->isInPropertyScope()) {
             return $this->getPropertyInScope($code_base);
-        } else if ($this->isInClassScope()) {
+        } elseif ($this->isInClassScope()) {
             return $this->getClassInScope($code_base);
         }
 
-        throw new CodeBaseException(null,
+        throw new CodeBaseException(
+            null,
             "Cannot get element in scope if we're in the global scope"
         );
     }
@@ -518,8 +532,7 @@ class Context extends FileRef
     public function hasSuppressIssue(
         CodeBase $code_base,
         string $issue_name
-    ) : bool
-    {
+    ) : bool {
         if (!$this->isInElementScope()) {
             return false;
         }

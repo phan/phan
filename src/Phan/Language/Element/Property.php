@@ -53,7 +53,8 @@ class Property extends ClassElement
         // (plugins acting on properties would then pick those up).
         // $fqsen is used to locate this property.
         $this->setInternalScope(new PropertyScope(
-            $context->getScope(), $fqsen
+            $context->getScope(),
+            $fqsen
         ));
     }
 
@@ -111,7 +112,8 @@ class Property extends ClassElement
         return $this->fqsen;
     }
 
-    public function toStub() {
+    public function toStub()
+    {
         $string = '    ';
 
         if ($this->isPublic()) {

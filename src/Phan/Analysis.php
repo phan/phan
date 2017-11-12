@@ -167,7 +167,8 @@ class Analysis
     /**
      * @see self::parseNodeInContext
      */
-    private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node) : Context {
+    private static function parseNodeInContextInner(CodeBase $code_base, Context $context, Node $node) : Context
+    {
         // Save a reference to the outer context
         $outer_context = $context;
 
@@ -194,7 +195,6 @@ class Analysis
         // Recurse into each child node
         $child_context = $context;
         foreach ($node->children ?? [] as $child_node) {
-
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -251,17 +251,20 @@ class Analysis
             }
 
             DuplicateFunctionAnalyzer::analyzeDuplicateFunction(
-                $code_base, $function_or_method
+                $code_base,
+                $function_or_method
             );
 
             // This is the most time consuming step.
             // Can probably apply this to other functions, but this was the slowest.
             ParameterTypesAnalyzer::analyzeParameterTypes(
-                $code_base, $function_or_method
+                $code_base,
+                $function_or_method
             );
 
             ReturnTypesAnalyzer::analyzeReturnTypes(
-                $code_base, $function_or_method
+                $code_base,
+                $function_or_method
             );
             // Let any plugins analyze the methods or functions
             // XXX: Add a way to run plugins on all functions/methods, this was limited for speed.
@@ -271,11 +274,13 @@ class Analysis
             if ($has_function_or_method_plugins) {
                 if ($function_or_method instanceof Func) {
                     $plugin_set->analyzeFunction(
-                        $code_base, $function_or_method
+                        $code_base,
+                        $function_or_method
                     );
-                } else if ($function_or_method instanceof Method) {
+                } elseif ($function_or_method instanceof Method) {
                     $plugin_set->analyzeMethod(
-                        $code_base, $function_or_method
+                        $code_base,
+                        $function_or_method
                     );
                 }
             }
@@ -284,10 +289,11 @@ class Analysis
         // Analyze user-defined method declarations.
         // Plugins may also analyze user-defined methods here.
         $i = 0;
-        if ($show_progress) { CLI::progress('function', 0.0); }
+        if ($show_progress) {
+            CLI::progress('function', 0.0);
+        }
         $function_map = $code_base->getFunctionMap();
-        foreach ($function_map as $function)  // iterate, ignoring $fqsen
-        {
+        foreach ($function_map as $function) {  // iterate, ignoring $fqsen
             if ($show_progress) {
                 CLI::progress('function', (++$i)/(\count($function_map)));
             }
@@ -298,9 +304,10 @@ class Analysis
         // Plugins may also analyze user-defined methods here.
         $i = 0;
         $method_set = $code_base->getMethodSet();
-        if ($show_progress) { CLI::progress('method', 0.0); }
-        foreach ($method_set as $method)
-        {
+        if ($show_progress) {
+            CLI::progress('method', 0.0);
+        }
+        foreach ($method_set as $method) {
             if ($show_progress) {
                 // I suspect that method analysis is hydrating some of the classes,
                 // adding even more inherited methods to the end of the set.

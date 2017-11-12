@@ -7,8 +7,7 @@ use ast\Node;
 /**
  * A Fully-Qualified Function Name
  */
-class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
-    implements FullyQualifiedFunctionLikeName
+class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement implements FullyQualifiedFunctionLikeName
 {
 
     /**
@@ -103,8 +102,8 @@ class FullyQualifiedFunctionName extends FullyQualifiedGlobalStructuralElement
      * @return bool
      * True if this FQSEN represents a closure
      */
-    public function isClosure() : bool {
+    public function isClosure() : bool
+    {
         return (\preg_match('/^closure_/', $this->getName()) === 1);
     }
-
 }
