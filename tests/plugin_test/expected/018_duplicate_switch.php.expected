@@ -1,0 +1,5 @@
+src/018_duplicate_switch.php:18 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1) detected in switch statement - the later entry will be ignored.
+src/018_duplicate_switch.php:19 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1) detected in switch statement - the later entry will be ignored.
+src/018_duplicate_switch.php:25 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case(1) detected in switch statement - the later entry will be ignored.
+src/018_duplicate_switch.php:27 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case('') detected in switch statement - the later entry will be ignored.
+src/018_duplicate_switch.php:29 PhanPluginDuplicateSwitchCase Duplicate/Equivalent switch case('(test literal)') detected in switch statement - the later entry will be ignored.

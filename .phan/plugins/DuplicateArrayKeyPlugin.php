@@ -13,7 +13,7 @@ use Phan\PluginV2\PluginAwareAnalysisVisitor;
 use ast\Node;
 
 /**
- * Checks for duplicate/equivalent array keys, as well as arrays mixing `key => value, with `value,`.
+ * Checks for duplicate/equivalent array keys and case statements, as well as arrays mixing `key => value, with `value,`.
  *
  * @see DollarDollarPlugin for generic plugin documentation.
  */
@@ -44,7 +44,53 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor
 
     /**
      * @param Node $node
-     * A node to analyze
+     * A switch statement's case statement(AST_SWITCH_LIST) node to analyze
+     *
+     * @return void
+     *
+     * @override
+     */
+    public function visitSwitchList(Node $node)
+    {
+        $children = $node->children;
+        if (count($children) <= 1) {
+            // This plugin will never emit errors if there are 0 or 1 elements.
+            return;
+        }
+
+        $case_constant_set = [];
+        foreach ($children as $case_node) {
+            $case_cond = $case_node->children['cond'];
+            if ($case_cond === null) {
+                continue;  // This is `default:`. php --syntax-check already checks for duplicates.
+            }
+            // Skip array entries without literal keys. (Do it before resolving the key value)
+            $case_cond = $this->tryToResolveKey($case_cond);
+
+            if (!is_scalar($case_cond)) {
+                // Skip non-literal keys.
+                continue;
+            }
+            if (isset($case_constant_set[$case_cond])) {
+                $normalized_case_cond = self::normalizeKey($case_cond);
+                $this->emitPluginIssue(
+                    $this->code_base,
+                    clone($this->context)->withLineNumberStart($case_node->lineno),
+                    'PhanPluginDuplicateSwitchCase',
+                    "Duplicate/Equivalent switch case({STRING_LITERAL}) detected in switch statement - the later entry will be ignored.",
+                    [(string)$normalized_case_cond],
+                    Issue::SEVERITY_NORMAL,
+                    Issue::REMEDIATION_A,
+                    15071
+                );
+            }
+            $case_constant_set[$case_cond] = true;
+        }
+    }
+
+    /**
+     * @param Node $node
+     * An array literal(AST_ARRAY) node to analyze
      *
      * @return void
      *
@@ -70,45 +116,20 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor
                 $hasEntryWithoutKey = true;
                 continue;
             }
-            if ($key instanceof ast\Node && in_array($key->kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST], true)) {
-                // if key is constant, take it in account
-                $constant = new ContextNode($this->code_base, $this->context, $key);
-                try {
-                    if ($key->kind === \ast\AST_CLASS_CONST) {
-                        $key = $constant->getClassConst()->getNodeForValue();
-                    } else {
-                        $key = $constant->getConst()->getNodeForValue();
-                    }
-                    if ($key === null) {
-                        $key = '';
-                    }
-                } catch (IssueException $e) {
-                    // This is redundant, but do it anyway
-                    Issue::maybeEmitInstance(
-                        $this->code_base,
-                        $this->context,
-                        $e->getIssueInstance()
-                    );
-                    continue;
-                } catch (NodeException $e) {
-                    // E.g. Can't figure out constant class in node
-                    // (ignore)
-                    continue;
-                }
-            }
+            $key = $this->tryToResolveKey($key);
+
             if (!is_scalar($key)) {
                 // Skip non-literal keys.
                 continue;
             }
-            \assert(is_scalar($key));  // redundant Phan annotation.
             if (isset($keySet[$key])) {
-                $normalizedKey = self::normalizeKey($key);
+                $normalized_key = self::normalizeKey($key);
                 $this->emitPluginIssue(
                     $this->code_base,
                     clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
                     'PhanPluginDuplicateArrayKey',
-                    "Duplicate/Equivalent array key value({VARIABLE}) detected in array - the earlier entry will be ignored.",
-                    [(string)$normalizedKey],
+                    "Duplicate/Equivalent array key value({STRING_LITERAL}) detected in array - the earlier entry will be ignored.",
+                    [(string)$normalized_key],
                     Issue::SEVERITY_NORMAL,
                     Issue::REMEDIATION_A,
                     15071
@@ -128,6 +149,43 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor
                 15071
             );
         }
+    }
+
+    /**
+     * @param int|string|float|Node $key
+     * @return int|string|float|Node|array - If possible, converted to a scalar.
+     */
+    private function tryToResolveKey($key)
+    {
+        if (!($key instanceof ast\Node)) {
+            return $key;
+        }
+        if (!in_array($key->kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST], true)) {
+            return $key;
+        }
+        // if key is constant, take it in account
+        $constant = new ContextNode($this->code_base, $this->context, $key);
+        try {
+            if ($key->kind === \ast\AST_CLASS_CONST) {
+                $key = $constant->getClassConst()->getNodeForValue();
+            } else {
+                $key = $constant->getConst()->getNodeForValue();
+            }
+            if ($key === null) {
+                $key = '';
+            }
+        } catch (IssueException $e) {
+            // This is redundant, but do it anyway
+            Issue::maybeEmitInstance(
+                $this->code_base,
+                $this->context,
+                $e->getIssueInstance()
+            );
+        } catch (NodeException $e) {
+            // E.g. Can't figure out constant class in node
+            // (ignore)
+        }
+        return $key;
     }
 
     /**
