@@ -1,0 +1,4 @@
+%s:11 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \TestStaticCallable377::triple() takes int defined at %s:24
+%s:12 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \TestStaticCallable377::triple() takes int defined at %s:24
+%s:20 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \TestStaticCallable377::triple() takes int defined at %s:24
+%s:21 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \TestStaticCallable377::triple() takes int defined at %s:24

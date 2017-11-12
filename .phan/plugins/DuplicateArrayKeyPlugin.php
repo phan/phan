@@ -1,7 +1,10 @@
 <?php declare(strict_types=1);
 
 use Phan\AST\AnalysisVisitor;
+use Phan\AST\ContextNode;
 use Phan\CodeBase;
+use Phan\Exception\IssueException;
+use Phan\Exception\NodeException;
 use Phan\Issue;
 use Phan\Language\Context;
 use Phan\PluginV2;
@@ -58,13 +61,39 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
                 continue;  // Triggered by code such as `list(, $a) = $expr`. In php 7.1, the array and list() syntax was unified.
             }
             $key = $entry->children['key'];
-            // Skip array entries without literal keys.
+            // Skip array entries without literal keys. (Do it before resolving the key value)
             if ($key === null) {
                 $hasEntryWithoutKey = true;
                 continue;
             }
+            if ($key instanceof ast\Node && in_array($key->kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST], true)) {
+                // if key is constant, take it in account
+                $constant = new ContextNode($this->code_base, $this->context, $key);
+                try {
+                    if ($key->kind === \ast\AST_CLASS_CONST) {
+                        $key = $constant->getClassConst()->getNodeForValue();
+                    } else {
+                        $key = $constant->getConst()->getNodeForValue();
+                    }
+                    if ($key === null) {
+                        $key = '';
+                    }
+                } catch (IssueException $e) {
+                    // This is redundant, but do it anyway
+                    Issue::maybeEmitInstance(
+                        $this->code_base,
+                        $this->context,
+                        $e->getIssueInstance()
+                    );
+                    continue;
+                } catch (NodeException $e) {
+                    // E.g. Can't figure out constant class in node
+                    // (ignore)
+                    continue;
+                }
+            }
             if (!is_scalar($key)) {
-                // Skip non-literal keys. (TODO: Could check for constants (e.g. A::B) being used twice)
+                // Skip non-literal keys.
                 continue;
             }
             \assert(is_scalar($key));  // redundant Phan annotation.
@@ -74,7 +103,7 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor {
                     $this->code_base,
                     clone($this->context)->withLineNumberStart($entry->lineno ?? $node->lineno),
                     'PhanPluginDuplicateArrayKey',
-                    "Duplicate/Equivalent array key literal({VARIABLE}) detected in array - the earlier entry will be ignored.",
+                    "Duplicate/Equivalent array key value({VARIABLE}) detected in array - the earlier entry will be ignored.",
                     [(string)$normalizedKey],
                     Issue::SEVERITY_NORMAL,
                     Issue::REMEDIATION_A,

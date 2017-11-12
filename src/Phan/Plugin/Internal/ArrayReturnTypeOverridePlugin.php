@@ -91,18 +91,30 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
                 $generic_passed_array_type = $passed_array_type->genericArrayTypes();
                 if (!$generic_passed_array_type->isEmpty()) {
-                    if (\count($args) === 2) {
+                    if (\count($args) >= 2) {
+                        // As a side effect of getting the list of callables, this warns about invalid callables
                         $filter_function_list = UnionTypeVisitor::functionLikeListFromNodeAndContext($code_base, $context, $args[1], true);
-                        foreach ($filter_function_list as $filter_function) {
-                            // Analyze that the individual elements passed to array_filter()'s callback make sense.
-                            // TODO: analyze ARRAY_FILTER_USE_KEY, ARRAY_FILTER_USE_BOTH
-                            $passed_array_element_types = $passed_array_type->genericArrayElementTypes();
-                            ArgumentType::analyzeParameter($code_base, $context, $filter_function, $passed_array_element_types, $context->getLineNumberStart(), 0);
-                            if (!Config::get_quick_mode()) {
-                                $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
-                                $analyzer->analyzeCallableWithArgumentTypes([$passed_array_element_types], $filter_function);
+                        if (Config::get_track_references()) {
+                            foreach ($filter_function_list as $filter_function) {
+                                $filter_function->addReference($context);
                             }
                         }
+                        if (count($args) === 2) {
+                            foreach ($filter_function_list as $filter_function) {
+                                // Analyze that the individual elements passed to array_filter()'s callback make sense.
+                                // TODO: analyze ARRAY_FILTER_USE_KEY, ARRAY_FILTER_USE_BOTH
+                                $passed_array_element_types = $passed_array_type->genericArrayElementTypes();
+                                ArgumentType::analyzeParameter($code_base, $context, $filter_function, $passed_array_element_types, $context->getLineNumberStart(), 0);
+                                if (!Config::get_quick_mode()) {
+                                    $analyzer = new PostOrderAnalysisVisitor($code_base, $context, null);
+                                    $analyzer->analyzeCallableWithArgumentTypes([$passed_array_element_types], $filter_function);
+                                }
+                            }
+                        }
+                        // TODO: Handle 3 args?
+                        //
+                        // ARRAY_FILTER_USE_KEY - pass key as the only argument to callback instead of the value
+                        // ARRAY_FILTER_USE_BOTH - pass both value and key as arguments to callback instead of the value
                     }
                     // TODO: Analyze if it and the flags are compatible with the arguments to the closure provided.
                     return $generic_passed_array_type;
@@ -180,6 +192,11 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                     $possible_return_types->addUnionType($map_function->getDependentReturnType($code_base, $context, $arguments));
                 } else {
                     $possible_return_types->addUnionType($map_function->getUnionType());
+                }
+            }
+            if (Config::get_track_references()) {
+                foreach ($function_like_list as $map_function) {
+                    $map_function->addReference($context);
                 }
             }
             if (!Config::get_quick_mode()) {

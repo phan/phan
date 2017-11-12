@@ -369,19 +369,13 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitProp(Node $node) : Context
     {
-        $property_name = $node->children['prop'];
-
-        // Things like $foo->$bar
-        if (!\is_string($property_name)) {
-            return $this->context;
-        }
-
+        // Get class list first, warn if the class list is invalid.
         try {
             $class_list = (new ContextNode(
                 $this->code_base,
                 $this->context,
                 $node->children['expr']
-            ))->getClassList();
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT, Issue::TypeExpectedObjectPropAccess);
         } catch (CodeBaseException $exception) {
             // This really shouldn't happen since the code
             // parsed cleanly. This should fatal.
@@ -390,6 +384,13 @@ class AssignmentVisitor extends AnalysisVisitor
         } catch (\Exception $exception) {
             // If we can't figure out what kind of a class
             // this is, don't worry about it
+            return $this->context;
+        }
+
+        $property_name = $node->children['prop'];
+
+        // Things like $foo->$bar
+        if (!\is_string($property_name)) {
             return $this->context;
         }
 
@@ -457,7 +458,7 @@ class AssignmentVisitor extends AnalysisVisitor
             } else if ($clazz->isPHPInternal() && $clazz->getFQSEN() !== FullyQualifiedClassName::getStdClassFQSEN()) {
                 // We don't want to modify the types of internal classes such as \ast\Node even if they are compatible
                 // This would result in unpredictable results, and types which are more specific than they really are.
-                // stdClass is an exception to this, for issues such as https://github.com/etsy/phan/pull/700
+                // stdClass is an exception to this, for issues such as https://github.com/phan/phan/pull/700
                 return $this->context;
             } else {
                 if (!$this->right_type->canCastToExpandedUnionType(
@@ -566,7 +567,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 $this->code_base,
                 $this->context,
                 $node->children['class']
-            ))->getClassList();
+            ))->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME, Issue::TypeExpectedObjectStaticPropAccess);
         } catch (CodeBaseException $exception) {
             // This really shouldn't happen since the code
             // parsed cleanly. This should fatal.

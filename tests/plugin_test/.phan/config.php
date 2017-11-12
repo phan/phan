@@ -61,19 +61,19 @@ return [
 
     // A list of plugin files to execute
     // (Execute all of them.)
+    // FooName is shorthand for /path/to/phan/.phan/plugins/FooName.php.
     'plugins' => [
-        '../../.phan/plugins/AlwaysReturnPlugin.php',
-        '../../.phan/plugins/DemoPlugin.php',
-        '../../.phan/plugins/DollarDollarPlugin.php',
-        '../../.phan/plugins/DuplicateArrayKeyPlugin.php',
-        '../../.phan/plugins/InvalidVariableIssetPlugin.php',
-        '../../.phan/plugins/NonBoolBranchPlugin.php',
-        '../../.phan/plugins/NonBoolInLogicalArithPlugin.php',
-        '../../.phan/plugins/NumericalComparisonPlugin.php',
-        '../../.phan/plugins/PregRegexCheckerPlugin.php',
-        '../../.phan/plugins/PrintfCheckerPlugin.php',
-        '../../.phan/plugins/UnreachableCodePlugin.php',
-        '../../.phan/plugins/UnusedSuppressionPlugin.php',
+        __DIR__ . '/../../../.phan/plugins/AlwaysReturnPlugin.php',  // This is testing the plugin locator, use old syntax
+        '../../.phan/plugins/DemoPlugin.php',  // Test behavior of the plugin locator.
+        'DollarDollarPlugin',
+        'DuplicateArrayKeyPlugin',
+        'InvalidVariableIssetPlugin',
+        'NonBoolBranchPlugin',
+        'NonBoolInLogicalArithPlugin',
+        'NumericalComparisonPlugin',
+        'PregRegexCheckerPlugin',
+        'PrintfCheckerPlugin',
+        'UnreachableCodePlugin',
+        'UnusedSuppressionPlugin',
     ],
-
 ];

@@ -1,0 +1,6 @@
+%s:5 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type string
+%s:7 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type float
+%s:9 PhanTypeExpectedObjectStaticPropAccess Expected an object instance or a class name when accessing a static property, but saw an expression with type float
+%s:11 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type int
+%s:14 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression with type int
+%s:22 PhanTypeArraySuspicious Suspicious array access to object

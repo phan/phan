@@ -1,0 +1,2 @@
+%s:10 PhanTypeMismatchArgument Argument 1 (x) is \stdClass but \test378() takes float[] defined at %s:7
+%s:10 PhanTypeMismatchArgument Argument 2 (y) is \stdClass but \test378() takes int[] defined at %s:7

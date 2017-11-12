@@ -1,0 +1,1 @@
+%s:6 PhanCommentParamWithoutRealParam Saw an @param annotation for notX, but it was not found in the param list of function badNarrowingNoType373($x);

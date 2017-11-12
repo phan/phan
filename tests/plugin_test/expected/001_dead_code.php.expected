@@ -1,0 +1,15 @@
+src/001_dead_code.php:8 PhanUnreferencedFunction Possibly zero references to function \duplicateFnB
+src/001_dead_code.php:19 PhanUnreferencedPublicProperty Possibly zero references to public property \DuplicateClass001::static_prop2
+src/001_dead_code.php:22 PhanUnreferencedPublicProperty Possibly zero references to public property \DuplicateClass001::instance_prop2
+src/001_dead_code.php:25 PhanUnreferencedPublicMethod Possibly zero references to public method \DuplicateClass001::f2
+src/001_dead_code.php:26 PhanUnreferencedPublicMethod Possibly zero references to public method \DuplicateClass001::f3
+src/001_dead_code.php:29 PhanRedefineFunction Function duplicateFnA defined at src/001_dead_code.php:29 was previously defined at src/001_dead_code.php:4
+src/001_dead_code.php:33 PhanRedefineFunction Function duplicateFnB defined at src/001_dead_code.php:33 was previously defined at src/001_dead_code.php:8
+src/001_dead_code.php:33 PhanUnreferencedFunction Possibly zero references to function \duplicateFnB,1
+src/001_dead_code.php:37 PhanUnreferencedConstant Possibly zero references to global constant \Const1B
+src/001_dead_code.php:39 PhanRedefineClass Class \DuplicateClass001 defined at src/001_dead_code.php:39 was previously defined as Class \DuplicateClass001 at src/001_dead_code.php:15
+src/001_dead_code.php:41 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \DuplicateClass001,1::D
+src/001_dead_code.php:44 PhanUnreferencedPublicProperty Possibly zero references to public property \DuplicateClass001,1::static_prop2
+src/001_dead_code.php:47 PhanUnreferencedPublicProperty Possibly zero references to public property \DuplicateClass001,1::instance_prop2
+src/001_dead_code.php:50 PhanUnreferencedPublicMethod Possibly zero references to public method \DuplicateClass001,1::f2
+src/001_dead_code.php:51 PhanUnreferencedPublicMethod Possibly zero references to public method \DuplicateClass001,1::f4

@@ -225,7 +225,7 @@ abstract class FullyQualifiedGlobalStructuralElement extends AbstractFQSEN
     /**
      * @return string
      * The namespace+name associated with this FQSEN.
-     * (e.g. '\ast\parse_code')
+     * (e.g. 'ast\parse_code')
      */
     public function getNamespacedName() : string {
         if ($this->namespace === '\\') {

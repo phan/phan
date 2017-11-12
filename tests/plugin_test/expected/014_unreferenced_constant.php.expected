@@ -1,0 +1,3 @@
+src/014_unreferenced_constant.php:6 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \A14::unreferencedconst
+src/014_unreferenced_constant.php:10 PhanUnreferencedPublicProperty Possibly zero references to public property \A14::prop2
+src/014_unreferenced_constant.php:12 PhanUnreferencedPublicMethod Possibly zero references to public method \A14::foo_unused

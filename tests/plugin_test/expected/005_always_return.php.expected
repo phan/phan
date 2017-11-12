@@ -1,0 +1,4 @@
+src/005_always_return.php:3 PhanPluginAlwaysReturnFunction Function \test5 has a return type of ?string, but may fail to return a value
+src/005_always_return.php:23 PhanPluginAlwaysReturnFunction Function \soft_non_nullable_test5 has a return type of string, but may fail to return a value
+src/005_always_return.php:39 PhanPluginAlwaysReturnMethod Method \C5::test has a return type of ?string, but may fail to return a value
+src/005_always_return.php:59 PhanPluginAlwaysReturnMethod Method \C5::soft_non_nullable_test5 has a return type of string, but may fail to return a value

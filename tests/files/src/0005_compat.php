@@ -3,7 +3,7 @@
 class A {
 
     /**
-     * @param $collection
+     * @param $a
      */
     public function f($a = []) {
     }

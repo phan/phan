@@ -29,6 +29,9 @@ class BlockExitStatusCheckerTest extends BaseTest
             case BlockExitStatusChecker::STATUS_PROCEED:
                 $parts[] = 'proceed';
                 break;
+            case BlockExitStatusChecker::STATUS_GOTO:
+                $parts[] = 'goto';
+                break;
             case BlockExitStatusChecker::STATUS_CONTINUE:
                 $parts[] = 'continue';
                 break;
@@ -245,6 +248,44 @@ class BlockExitStatusCheckerTest extends BaseTest
             [
                 'proceed/return',
                 'try { foo(); } catch(RuntimeException $e) { return; } finally { $a = $otherFn(); }',
+            ],
+            // Phan doesn't track labels, it doesn't seem to be worth the effort involved.
+            [
+                'goto/break',
+                'if (cond2()) { if (cond()) { goto end; } break; } else { break; } end: ;',
+            ],
+            [
+                'proceed/goto/break',
+                'if (cond2()) { if (cond()) { goto end; } break; }  end: ;',
+            ],
+            // trigger_error can make it throw/exit. The returned code for exit is 'return'
+            [
+                'return',
+                'trigger_error("err msg", E_USER_ERROR);',
+            ],
+            [
+                'throw',
+                'TRIGGER_ERROR("err msg", E_RECOVERABLE_ERROR);',
+            ],
+            [
+                'proceed',
+                'TRIGGER_ERROR_NOT("err msg", E_RECOVERABLE_ERROR);',
+            ],
+            [
+                'throw',
+                '\trigger_error("err msg", E_RECOVERABLE_ERROR);',
+            ],
+            [
+                'proceed',
+                'trigger_error("err msg", E_DEPRECATED);',
+            ],
+            [
+                'return',
+                '@trigger_error("err msg", E_USER_ERROR);',
+            ],
+            [
+                'proceed',
+                '@trigger_error("err msg", E_DEPRECATED);',
             ],
         ];
     }

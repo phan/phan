@@ -545,7 +545,7 @@ class Parameter extends Variable
             // Some PECL extensions have invalid parameter names.
             // Replace invalid characters with U+FFFD replacement character.
             $name = \preg_replace('@[^a-zA-Z0-9_\x7f-\xff]@', '�', $name);
-            if (!\preg_match($name, '@' . Comment::word_regex . '@')) {
+            if (!\preg_match('@' . Comment::word_regex . '@', $name)) {
                 $name = '_' . $name;
             }
         }

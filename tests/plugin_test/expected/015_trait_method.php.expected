@@ -1,0 +1,5 @@
+src/015_trait_method.php:9 PhanUnreferencedProtectedMethod Possibly zero references to protected method \T15::fn2
+src/015_trait_method.php:19 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \I15::CI2
+src/015_trait_method.php:31 PhanUnreferencedPublicMethod Possibly zero references to public method \Base15::baseInstanceMethod2
+src/015_trait_method.php:35 PhanUnreferencedPublicClassConstant Possibly zero references to public class constant \Base15::C2
+src/015_trait_method.php:37 PhanUnreferencedPublicProperty Possibly zero references to public property \Base15::p2
