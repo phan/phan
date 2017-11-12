@@ -3,7 +3,8 @@ namespace Phan\Language\Element;
 
 use ast\Node;
 
-trait ConstantTrait {
+trait ConstantTrait
+{
     /** @var Node|string|float|int */
     protected $defining_node;
 

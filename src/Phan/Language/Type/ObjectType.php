@@ -9,7 +9,8 @@ final class ObjectType extends NativeType
     /** @phan-override */
     const NAME = 'object';
 
-    protected function canCastToNonNullableType(Type $type) : bool {
+    protected function canCastToNonNullableType(Type $type) : bool
+    {
         // Inverse of check in Type->canCastToNullableType
         if (!$type->isNativeType() && !($type instanceof ArrayType)) {
             return true;

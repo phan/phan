@@ -141,7 +141,6 @@ abstract class NativeType extends Type
             TrueType::NAME     => $generateRow(TrueType::NAME, BoolType::NAME),
             VoidType::NAME     => $generateRow(VoidType::NAME),
         ];
-
     }
 
     public function __toString() : string

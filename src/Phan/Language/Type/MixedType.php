@@ -13,13 +13,15 @@ final class MixedType extends NativeType
 
     // mixed or ?mixed can cast to/from anything.
     // For purposes of analysis, there's no difference between mixed and nullable mixed.
-    public function canCastToType(Type $unused_type) : bool {
+    public function canCastToType(Type $unused_type) : bool
+    {
         return true;
     }
 
     // mixed or ?mixed can cast to/from anything.
     // For purposes of analysis, there's no difference between mixed and nullable mixed.
-    protected function canCastToNonNullableType(Type $unused_type) : bool {
+    protected function canCastToNonNullableType(Type $unused_type) : bool
+    {
         return true;
     }
 

@@ -259,11 +259,13 @@ class Type
     // Override two magic methods to ensure that Type isn't being cloned accidentally.
     // (It has previously been accidentally cloned in unit tests by phpunit (global_state helper),
     //  which saves and restores some static properties)
-    public function __wakeup() {
+    public function __wakeup()
+    {
         throw new \Error("Cannot unserialize Type");
     }
 
-    public function __clone() {
+    public function __clone()
+    {
         throw new \Error("Cannot clone Type");
     }
 
@@ -390,7 +392,8 @@ class Type
      *
      * @return void
      */
-    public static function clearAllMemoizations() {
+    public static function clearAllMemoizations()
+    {
         // Clear anything that has memoized state
         foreach (self::$canonical_object_map as $type) {
             $type->memoizeFlushAll();
@@ -425,7 +428,8 @@ class Type
      * Otherwise, this returns null.
      * @return Option<NativeType>
      */
-    public static function fromReservedConstantName(string $name) : Option {
+    public static function fromReservedConstantName(string $name) : Option
+    {
         static $lookup;
         if ($lookup === null) {
             $lookup = self::createReservedConstantNameLookup();
@@ -441,7 +445,8 @@ class Type
      * @return NativeType[] a map from the **uppercase** reserved constant name to the subclass of NativeType for that constant.
      * Uses the constants and types from https://secure.php.net/manual/en/reserved.constants.php
      */
-    private static function createReservedConstantNameLookup() : array {
+    private static function createReservedConstantNameLookup() : array
+    {
         $false  = FalseType::instance(false);
         // $float  = FloatType::instance(false);
         $int    = IntType::instance(false);
@@ -868,7 +873,8 @@ class Type
             return GenericArrayType::fromElementType(
                 static::fromFullyQualifiedString(
                     (string)$context->getClassFQSEN()
-                ), $is_nullable
+                ),
+                $is_nullable
             );
         }
 
@@ -895,7 +901,7 @@ class Type
         // namespace
         if (!empty($context->getNamespace()) && !empty($namespace)) {
             $namespace = $context->getNamespace() . '\\' . $namespace;
-        } else if (!empty($context->getNamespace())) {
+        } elseif (!empty($context->getNamespace())) {
             $namespace = $context->getNamespace();
         } else {
             $namespace = '\\' . $namespace;
@@ -1501,13 +1507,12 @@ class Type
 
         // A nullable type cannot cast to a non-nullable type
         if ($this->getIsNullable() && !$type->getIsNullable()) {
-
             // If this is nullable, but that isn't, and we've
             // configured nulls to cast as anything (or as arrays), ignore
             // the nullable part.
             if (Config::get_null_casts_as_any_type()) {
                 return $this->withIsNullable(false)->canCastToType($type);
-            } else if (Config::get_null_casts_as_array() && $type->isArrayLike()) {
+            } elseif (Config::get_null_casts_as_array() && $type->isArrayLike()) {
                 return $this->withIsNullable(false)->canCastToType($type);
             }
 
@@ -1686,7 +1691,8 @@ class Type
      * Gets the part of the Type string for the template parameters.
      * Precondition: $this->template_parameter_string is not null.
      */
-    private function templateParameterTypeListAsString() : string {
+    private function templateParameterTypeListAsString() : string
+    {
         return '<' .
             implode(',', array_map(function (UnionType $type) {
                 return (string)$type;
@@ -1806,7 +1812,7 @@ class Type
             $delta = $bracket_count - \substr_count($result, '>');
             if ($delta === 0) {
                 $results[] = $result;
-            } else if ($delta > 0) {
+            } elseif ($delta > 0) {
                 $prev_parts[] = $result;
             }  // otherwise ignore unparseable data such as ">" (should be impossible)
 
@@ -1819,7 +1825,8 @@ class Type
      * Helper function for internal use by UnionType.
      * Overridden by subclasses.
      */
-    public function getNormalizationFlags() : int {
+    public function getNormalizationFlags() : int
+    {
         return $this->is_nullable ? self::_bit_nullable : 0;
     }
 }

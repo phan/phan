@@ -100,7 +100,8 @@ class Variable extends UnaddressableTypedElement
      * TODO: Should that code create a new Parameter instance instead?
      * @return static
      */
-    public function asNonVariadic() {
+    public function asNonVariadic()
+    {
         return $this;
     }
 
@@ -216,7 +217,8 @@ class Variable extends UnaddressableTypedElement
      * for subclasses. Method will return the element
      * type (such as `DateTime`) for variadic parameters.
      */
-    public function getNonVariadicUnionType() : UnionType {
+    public function getNonVariadicUnionType() : UnionType
+    {
         return parent::getUnionType();
     }
 

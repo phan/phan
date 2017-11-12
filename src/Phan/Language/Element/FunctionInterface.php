@@ -13,7 +13,8 @@ use ast\Node;
  * Interface defining the behavior of both Methods
  *  and Functions
  */
-interface FunctionInterface extends AddressableElementInterface {
+interface FunctionInterface extends AddressableElementInterface
+{
 
     /**
      * @return FullyQualifiedMethodName|FullyQualifiedFunctionName

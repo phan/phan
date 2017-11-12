@@ -4,7 +4,8 @@ namespace Phan\Language\Scope;
 use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 
-class BranchScope extends Scope {
+class BranchScope extends Scope
+{
 
     /**
      * @return bool

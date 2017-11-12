@@ -7,7 +7,8 @@ use Phan\Language\Scope\ClosedScope;
  * A trait for closed scope elements (classes, functions, methods,
  * closures).
  */
-trait ClosedScopeElement {
+trait ClosedScopeElement
+{
 
     /**
      * @var ClosedScope

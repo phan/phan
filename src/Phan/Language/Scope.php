@@ -101,8 +101,10 @@ abstract class Scope
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
-        \assert($this->hasParentScope(),
-            "Cannot get class FQSEN on scope");
+        \assert(
+            $this->hasParentScope(),
+            "Cannot get class FQSEN on scope"
+        );
 
         return $this->getParentScope()->getClassFQSEN();
     }
@@ -123,8 +125,10 @@ abstract class Scope
      */
     public function getPropertyFQSEN() : FullyQualifiedPropertyName
     {
-        \assert($this->hasParentScope(),
-            "Cannot get class FQSEN on scope");
+        \assert(
+            $this->hasParentScope(),
+            "Cannot get class FQSEN on scope"
+        );
 
         return $this->getParentScope()->getPropertyFQSEN();
     }
@@ -145,8 +149,10 @@ abstract class Scope
      */
     public function getFunctionLikeFQSEN()
     {
-        \assert($this->hasParentScope(),
-            "Cannot get method/function/closure FQSEN on scope");
+        \assert(
+            $this->hasParentScope(),
+            "Cannot get method/function/closure FQSEN on scope"
+        );
 
         return $this->getParentScope()->getFunctionLikeFQSEN();
     }
@@ -207,8 +213,10 @@ abstract class Scope
      */
     public function addGlobalVariable(Variable $variable)
     {
-        \assert($this->hasParentScope(),
-            "No global scope available. This should not happen.");
+        \assert(
+            $this->hasParentScope(),
+            "No global scope available. This should not happen."
+        );
 
         $this->getParentScope()->addGlobalVariable($variable);
     }
@@ -219,8 +227,10 @@ abstract class Scope
      */
     public function hasGlobalVariableWithName(string $name) : bool
     {
-        \assert($this->hasParentScope(),
-            "No global scope available. This should not happen.");
+        \assert(
+            $this->hasParentScope(),
+            "No global scope available. This should not happen."
+        );
 
         return $this->getParentScope()->hasGlobalVariableWithName(
             $name
@@ -233,8 +243,10 @@ abstract class Scope
      */
     public function getGlobalVariableByName(string $name) : Variable
     {
-        \assert($this->hasParentScope(),
-            "No global scope available. This should not happen.");
+        \assert(
+            $this->hasParentScope(),
+            "No global scope available. This should not happen."
+        );
 
         return $this->getParentScope()->getGlobalVariableByName($name);
     }
@@ -291,7 +303,8 @@ abstract class Scope
      *
      * @return void
      */
-    public function addTemplateType(TemplateType $template_type) {
+    public function addTemplateType(TemplateType $template_type)
+    {
         $this->template_type_map[$template_type->getName()] = $template_type;
     }
 

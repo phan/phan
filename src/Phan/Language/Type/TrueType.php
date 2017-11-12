@@ -43,7 +43,8 @@ final class TrueType extends ScalarType
     /**
      * Helper function for internal use by UnionType
      */
-    public function getNormalizationFlags() : int {
+    public function getNormalizationFlags() : int
+    {
         return $this->is_nullable ? (self::_bit_nullable | self::_bit_true) : self::_bit_true;
     }
 }
