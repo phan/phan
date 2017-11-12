@@ -17,7 +17,8 @@ use Symfony\Component\Console\Output\BufferedOutput;
 /**
  * Represents the state of a client request to a daemon, and contains methods for sending formatted responses.
  */
-class Request {
+class Request
+{
     const METHOD_ANALYZE_FILES = 'analyze_files';  // has shorthand analyze_file with param 'file'
 
     const PARAM_METHOD = 'method';
@@ -261,12 +262,11 @@ class Request {
                     Daemon::debugf("child process %d completed successfully", $pid);
                 }
                 unset(self::$child_pids[$pid]);
-            } else if ($pid > 0) {
+            } elseif ($pid > 0) {
                 self::$exited_pid_status[$pid] = $status;
             }
             $pid = pcntl_waitpid(-1, $status, WNOHANG);
         }
-
     }
 
     /**
@@ -284,7 +284,7 @@ class Request {
             if (!\is_string($file)) {
                 $error_message = 'Passed non-string in list of files to map';
                 return [];
-            } else if (!\is_string($contents)) {
+            } elseif (!\is_string($contents)) {
                 $error_message = 'Passed non-string in as new file contents';
                 return [];
             }
@@ -320,57 +320,57 @@ class Request {
         }
         $new_file_mapping_contents = [];
         $method = $request['method'] ?? null;
-        switch($method) {
-        case 'analyze_all':
-            // Analyze the default list of files. No expected params.
-            break;
-        case 'analyze_file':
-            $method = 'analyze_files';
-            $request = [
+        switch ($method) {
+            case 'analyze_all':
+                // Analyze the default list of files. No expected params.
+                break;
+            case 'analyze_file':
+                $method = 'analyze_files';
+                $request = [
                 self::PARAM_METHOD => $method,
                 self::PARAM_FILES => [$request['file']],
                 self::PARAM_FORMAT => $request[self::PARAM_FORMAT] ?? 'json',
-            ];
-            // Fall through, this is an alias of analyze_files
-        case 'analyze_files':
-            // Analyze the list of strings provided in "files"
-            // TODO: Actually do that.
-            $files = $request[self::PARAM_FILES] ?? null;
-            $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
-            $error_message = null;
-            if (\is_array($files) && count($files)) {
-                foreach ($files as $file) {
-                    if (!\is_string($file)) {
-                        $error_message = 'Passed non-string in list of files';
-                        break;
+                ];
+                // Fall through, this is an alias of analyze_files
+            case 'analyze_files':
+                // Analyze the list of strings provided in "files"
+                // TODO: Actually do that.
+                $files = $request[self::PARAM_FILES] ?? null;
+                $request[self::PARAM_FORMAT] = $request[self::PARAM_FORMAT] ?? 'json';
+                $error_message = null;
+                if (\is_array($files) && count($files)) {
+                    foreach ($files as $file) {
+                        if (!\is_string($file)) {
+                            $error_message = 'Passed non-string in list of files';
+                            break;
+                        }
                     }
+                } else {
+                    $error_message = 'Must pass a non-empty array of file paths for field files';
                 }
-            } else {
-                $error_message = 'Must pass a non-empty array of file paths for field files';
-            }
-            if (\is_null($error_message)) {
-                $file_mapping_contents = $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
-                $new_file_mapping_contents = self::normalizeFileMappingContents($file_mapping_contents, $error_message);
-                $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] = $new_file_mapping_contents;
-            }
-            if ($error_message !== null) {
-                Daemon::debugf($error_message);
-                self::sendJSONResponseOverSocket($response_connection, [
+                if (\is_null($error_message)) {
+                    $file_mapping_contents = $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] ?? [];
+                    $new_file_mapping_contents = self::normalizeFileMappingContents($file_mapping_contents, $error_message);
+                    $request[self::PARAM_TEMPORARY_FILE_MAPPING_CONTENTS] = $new_file_mapping_contents;
+                }
+                if ($error_message !== null) {
+                    Daemon::debugf($error_message);
+                    self::sendJSONResponseOverSocket($response_connection, [
                     'status'  => self::STATUS_INVALID_FILES,
                     'message' => $error_message,
-                ]);
-                return null;
-            }
-            break;
+                    ]);
+                    return null;
+                }
+                break;
         // TODO(optional): add APIs to resolve types of variables/properties/etc (e.g. accept byte offset or line/column offset)
-        default:
-            $message = sprintf("expected method to be analyze_all or analyze_files, got %s", json_encode($method));
-            Daemon::debugf($message);
-            self::sendJSONResponseOverSocket($response_connection, [
+            default:
+                $message = sprintf("expected method to be analyze_all or analyze_files, got %s", json_encode($method));
+                Daemon::debugf($message);
+                self::sendJSONResponseOverSocket($response_connection, [
                 'status'  => self::STATUS_INVALID_METHOD,
                 'message' => $message,
-            ]);
-            return null;
+                ]);
+                return null;
         }
 
         self::reloadFilePathListForDaemon($code_base, $file_path_lister, $new_file_mapping_contents);
@@ -378,7 +378,7 @@ class Request {
         $fork_result = pcntl_fork();
         if ($fork_result < 0) {
             error_log("The daemon failed to fork. Going to terminate");
-        } else if ($fork_result == 0) {
+        } elseif ($fork_result == 0) {
             Daemon::debugf("This is the fork");
             self::$child_pids = [];
             // TODO: Re-parse the file list.

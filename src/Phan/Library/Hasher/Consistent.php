@@ -8,7 +8,8 @@ use Phan\Library\Hasher;
  * getGroup() is called exactly once on each string to be hashed.
  * See https://en.wikipedia.org/wiki/Consistent_hashing
  */
-class Consistent implements Hasher {
+class Consistent implements Hasher
+{
     const VIRTUAL_COPY_COUNT = 16;  // Larger number means a more balanced distribution.
     const MAX = 0x40000000;  // i.e. (1 << 30)
     /** @var int */
@@ -18,7 +19,8 @@ class Consistent implements Hasher {
     /** @var int[] - Groups corresponding to hash values in _hashRingIds */
     protected $_hashRingGroups;
 
-    public function __construct(int $groupCount) {
+    public function __construct(int $groupCount)
+    {
         $this->_groupCount = $groupCount;
 
         $map = [];
@@ -46,7 +48,8 @@ class Consistent implements Hasher {
      * Do a binary search in the consistent hashing ring to find the group.
      * @return int - an integer between 0 and $this->_groupCount - 1, inclusive
      */
-    public function getGroup(string $key) : int {
+    public function getGroup(string $key) : int
+    {
         $searchHash = self::generate_key_hash($key);
         $begin = 0;
         $end = count($this->_hashRingIds) - 1;
@@ -69,12 +72,15 @@ class Consistent implements Hasher {
      * No-op reset
      * @return void
      */
-    public function reset() { }
+    public function reset()
+    {
+    }
 
     /**
      * @return int[]
      */
-    public static function get_hashes_for_group(int $group) : array {
+    public static function get_hashes_for_group(int $group) : array
+    {
         $hashes = [];
         for ($i = 0; $i < self::VIRTUAL_COPY_COUNT; $i++) {
             $hashes[$i] = self::generate_key_hash("${i}@$group");
@@ -86,7 +92,8 @@ class Consistent implements Hasher {
      * Returns a 30-bit signed integer (i.e. in the range [0, self::MAX-1])
      * Designed to work on 32-bit php installations as well.
      */
-    public static function generate_key_hash(string $material) : int {
+    public static function generate_key_hash(string $material) : int
+    {
         $bits = md5($material);
         $result = ((intval($bits[0], 16) & 3) << 28) ^ intval(substr($bits, 1, 7), 16);
         return $result;

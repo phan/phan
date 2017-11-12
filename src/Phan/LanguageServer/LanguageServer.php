@@ -57,7 +57,8 @@ use Throwable;
  * TODO: Does it make sense for everything (data structures without code) in the Protocol folder to be a composer project? Check.
  *       (NOTE: The way we represent the project state and the parse state varies between projects. The callbacks used also vary.)
  */
-class LanguageServer extends AdvancedJsonRpc\Dispatcher {
+class LanguageServer extends AdvancedJsonRpc\Dispatcher
+{
     /**
      * Handles workspace/* method calls
      *
@@ -187,7 +188,8 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher {
      *
      * @suppress PhanUndeclaredConstant (pcntl unavailable on Windows)
      */
-    public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options) {
+    public static function run(CodeBase $code_base, \Closure $file_path_lister, array $options)
+    {
         \assert($code_base->isUndoTrackingEnabled());
 
         $make_language_server = function(ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
@@ -268,7 +270,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher {
             Loop\run();
             Logger::logInfo("Finished connecting to $address to receive requests");
             return $ls->most_recent_request;
-        } else if (!empty($options['tcp-server'])) {
+        } elseif (!empty($options['tcp-server'])) {
             // Run a TCP Server
             $address = $options['tcp-server'];
             $tcpServer = stream_socket_server('tcp://' . $address, $errno, $errstr);
@@ -430,16 +432,16 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher {
         // Language server has 0 based lines and columns, phan has 1-based lines and columns.
         $range = new Range(new Position($start_line - 1, 0), new Position($start_line, 0));
         switch ($severity) {
-        case Issue::SEVERITY_LOW:
-            $diagnostic_severity = DiagnosticSeverity::INFORMATION;
-            break;
-        case Issue::SEVERITY_NORMAL:
-            $diagnostic_severity = DiagnosticSeverity::WARNING;
-            break;
-        case Issue::SEVERITY_CRITICAL:
-        default:
-            $diagnostic_severity = DiagnosticSeverity::ERROR;
-            break;
+            case Issue::SEVERITY_LOW:
+                $diagnostic_severity = DiagnosticSeverity::INFORMATION;
+                break;
+            case Issue::SEVERITY_NORMAL:
+                $diagnostic_severity = DiagnosticSeverity::WARNING;
+                break;
+            case Issue::SEVERITY_CRITICAL:
+            default:
+                $diagnostic_severity = DiagnosticSeverity::ERROR;
+                break;
         }
         // TODO: copy issue code in 'json' format
         return [$issue_uri, new Diagnostic($description, $range, $issue['type_id'], $diagnostic_severity, 'Phan')];
@@ -500,7 +502,9 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher {
     {
         return coroutine(function () : \Generator {
             // Eventually, this might block on something. Leave it as a generator.
-            if (false) { yield; }
+            if (false) {
+                yield;
+            }
 
             // There would be an asynchronous indexing step, but the startup already did the indexing.
             if ($this->textDocument === null) {

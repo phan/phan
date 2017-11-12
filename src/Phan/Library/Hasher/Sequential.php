@@ -7,13 +7,15 @@ use Phan\Library\Hasher;
  * Hasher implementation mapping keys to sequential groups (first key to 0, second key to 1, looping back to 0)
  * getGroup() is called exactly once on each string to be hashed.
  */
-class Sequential implements Hasher {
+class Sequential implements Hasher
+{
     /** @var int */
     protected $_i;
     /** @var int */
     protected $_groupCount;
 
-    public function __construct(int $groupCount) {
+    public function __construct(int $groupCount)
+    {
         $this->_i = 1;
         $this->_groupCount = $groupCount;
     }
@@ -22,7 +24,8 @@ class Sequential implements Hasher {
      * @param string $key (Used by sibling class Consistent) (@phan-unused-param)
      * @return int - an integer between 0 and $this->_groupCount - 1, inclusive
      */
-    public function getGroup(string $key) : int {
+    public function getGroup(string $key) : int
+    {
         return ($this->_i++) % $this->_groupCount;
     }
 
@@ -30,7 +33,8 @@ class Sequential implements Hasher {
      * Resets counter
      * @return void
      */
-    public function reset() {
+    public function reset()
+    {
         $this->_i = 1;
     }
 }
