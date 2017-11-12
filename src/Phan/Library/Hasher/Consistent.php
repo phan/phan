@@ -25,20 +25,20 @@ class Consistent implements Hasher
 
         $map = [];
         for ($group = 0; $group < $groupCount; $group++) {
-            foreach (self::get_hashes_for_group($group) as $hash) {
+            foreach (self::getHashesForGroup($group) as $hash) {
                 $map[$hash] = $group;
             }
         }
         $hashRingIds = [];
         $hashRingGroups = [];
-        ksort($map);
+        \ksort($map);
         foreach ($map as $key => $group) {
             $hashRingIds[] = $key;
             $hashRingGroups[] = $group;
         }
         // ... and make the map wrap around.
         $hashRingIds[] = self::MAX - 1;
-        $hashRingGroups[] = reset($map);
+        $hashRingGroups[] = \reset($map);
 
         $this->hashRingIds = $hashRingIds;
         $this->hashRingGroups = $hashRingGroups;
@@ -50,7 +50,7 @@ class Consistent implements Hasher
      */
     public function getGroup(string $key) : int
     {
-        $searchHash = self::generate_key_hash($key);
+        $searchHash = self::generateKeyHash($key);
         $begin = 0;
         $end = count($this->hashRingIds) - 1;
         while ($begin <= $end) {
@@ -79,11 +79,11 @@ class Consistent implements Hasher
     /**
      * @return int[]
      */
-    public static function get_hashes_for_group(int $group) : array
+    public static function getHashesForGroup(int $group) : array
     {
         $hashes = [];
         for ($i = 0; $i < self::VIRTUAL_COPY_COUNT; $i++) {
-            $hashes[$i] = self::generate_key_hash("${i}@$group");
+            $hashes[$i] = self::generateKeyHash("${i}@$group");
         }
         return $hashes;
     }
@@ -92,10 +92,10 @@ class Consistent implements Hasher
      * Returns a 30-bit signed integer (i.e. in the range [0, self::MAX-1])
      * Designed to work on 32-bit php installations as well.
      */
-    public static function generate_key_hash(string $material) : int
+    public static function generateKeyHash(string $material) : int
     {
-        $bits = md5($material);
-        $result = ((intval($bits[0], 16) & 3) << 28) ^ intval(substr($bits, 1, 7), 16);
+        $bits = \md5($material);
+        $result = ((\intval($bits[0], 16) & 3) << 28) ^ \intval(\substr($bits, 1, 7), 16);
         return $result;
     }
 }

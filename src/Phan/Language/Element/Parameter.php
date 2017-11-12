@@ -543,11 +543,11 @@ class Parameter extends Variable
         }
 
         $name = $this->getName();
-        if (!\preg_match('@' . Comment::word_regex . '@', $name)) {
+        if (!\preg_match('@' . Comment::WORD_REGEX . '@', $name)) {
             // Some PECL extensions have invalid parameter names.
             // Replace invalid characters with U+FFFD replacement character.
             $name = \preg_replace('@[^a-zA-Z0-9_\x7f-\xff]@', '�', $name);
-            if (!\preg_match('@' . Comment::word_regex . '@', $name)) {
+            if (!\preg_match('@' . Comment::WORD_REGEX . '@', $name)) {
                 $name = '_' . $name;
             }
         }

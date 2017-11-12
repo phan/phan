@@ -31,7 +31,8 @@ class Phan implements IgnoredFilesFilterInterface {
     /**
      * @return IssueCollectorInterface
      */
-    public static function getIssueCollector() : IssueCollectorInterface {
+    public static function getIssueCollector() : IssueCollectorInterface
+    {
         return self::$issueCollector;
     }
 
@@ -178,9 +179,13 @@ class Phan implements IgnoredFilesFilterInterface {
             if ($is_daemon_request) {
                 \assert(!is_array($language_server_config), 'not supported yet');
                 // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
-                // TODO: check for conflicts with other config options - incompatible with dump_ast, dump_signatures_file, output-file, etc.
-                // incompatible with dead_code_detection
-                $request = Daemon::run($code_base, $file_path_lister);  // This will fork and fall through every time a request to re-analyze the file set comes in. The daemon should be periodically restarted?
+                // TODO: check for conflicts with other config options -
+                //    incompatible with dump_ast, dump_signatures_file, output-file, etc.
+                //    incompatible with dead_code_detection
+
+                // This will fork and fall through every time a request to re-analyze the file set comes in.
+                // TODO: The daemon should be periodically restarted?
+                $request = Daemon::run($code_base, $file_path_lister);
                 if (!$request) {
                     // TODO: Add a way to cleanly shut down.
                     error_log("Finished serving requests, exiting");
@@ -466,7 +471,8 @@ class Phan implements IgnoredFilesFilterInterface {
      *
      * @return void
      */
-    private static function display() {
+    private static function display()
+    {
         $collector = self::$issueCollector;
 
         $printer = self::$printer;
@@ -488,7 +494,8 @@ class Phan implements IgnoredFilesFilterInterface {
      * Save json encoded function&method signature to a map.
      * @return int - Exit code for process
      */
-    private static function dumpSignaturesToFile(CodeBase $code_base, string $filename) : int {
+    private static function dumpSignaturesToFile(CodeBase $code_base, string $filename) : int
+    {
         $encoded_signatures = json_encode($code_base->exportFunctionAndMethodSet(), JSON_PRETTY_PRINT);
         if (!file_put_contents($filename, $encoded_signatures)) {
             error_log(sprintf("Could not save contents to path '%s'\n", $filename));
@@ -521,7 +528,8 @@ class Phan implements IgnoredFilesFilterInterface {
      *
      * @return bool True if filename is ignored during analysis
      */
-    public function isFilenameIgnored(string $filename):bool {
+    public function isFilenameIgnored(string $filename) : bool
+    {
         return self::isExcludedAnalysisFile($filename);
     }
 
@@ -529,7 +537,8 @@ class Phan implements IgnoredFilesFilterInterface {
      * Logs slow php options to stdout
      * @return void
      */
-    private static function checkForSlowPHPOptions() {
+    private static function checkForSlowPHPOptions()
+    {
         if (Config::getValue('skip_slow_php_options_warning')) {
             return;
         }
@@ -552,7 +561,8 @@ class Phan implements IgnoredFilesFilterInterface {
      * Loads configured stubs for internal PHP extensions.
      * @return void
      */
-    private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base) {
+    private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base)
+    {
         $stubs = Config::getValue('autoload_internal_extension_signatures');
         foreach ($stubs ?: [] as $extension_name => $path_to_extension) {
             // Prefer using reflection info from the running extension over what's in the stub files.

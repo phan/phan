@@ -23,14 +23,14 @@ final class PylintPrinter implements IssuePrinterInterface
             "%s:%d: [%s] %s",
             $instance->getFile(),
             $instance->getLine(),
-            self::get_severity_code($instance),
+            self::getSeverityCode($instance),
             $message
         );
 
         $this->output->writeln($line);
     }
 
-    public static function get_severity_code(IssueInstance $instance) : string
+    public static function getSeverityCode(IssueInstance $instance) : string
     {
         $issue = $instance->getIssue();
         $categoryId = $issue->getTypeId();

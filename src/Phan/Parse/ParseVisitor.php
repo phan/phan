@@ -94,8 +94,10 @@ class ParseVisitor extends ScopeVisitor
             $this->context
         );
 
-        \assert($class_fqsen instanceof FullyQualifiedClassName,
-            "The class FQSEN must be a FullyQualifiedClassName");
+        \assert(
+            $class_fqsen instanceof FullyQualifiedClassName,
+            "The class FQSEN must be a FullyQualifiedClassName"
+        );
 
         // Hunt for an available alternate ID if necessary
         $alternate_id = 0;
@@ -195,7 +197,7 @@ class ParseVisitor extends ScopeVisitor
                     $parent_class_name =
                         $this->context->getNamespace() . '\\' . $parent_class_name;
                 }
-            } else if ($extends_node->flags & \ast\flags\NAME_RELATIVE) {
+            } elseif ($extends_node->flags & \ast\flags\NAME_RELATIVE) {
                 $parent_class_name =
                     $this->context->getNamespace() . '\\' . $parent_class_name;
             }
@@ -304,7 +306,8 @@ class ParseVisitor extends ScopeVisitor
         $method_name = (string)$node->children['name'];
 
         $method_fqsen = FullyQualifiedMethodName::fromStringInContext(
-            $method_name, $context
+            $method_name,
+            $context
         );
 
         // Hunt for an available alternate ID if necessary
@@ -335,7 +338,6 @@ class ParseVisitor extends ScopeVisitor
             $class->setIsParentConstructorCalled(false);
 
             if ($class->isGeneric()) {
-
                 // Get the set of template type identifiers defined on
                 // the class
                 $template_type_identifiers = \array_keys(
@@ -346,9 +348,7 @@ class ParseVisitor extends ScopeVisitor
                 // across all parameter types
                 $parameter_template_type_identifiers = [];
                 foreach ($method->getParameterList() as $parameter) {
-                    foreach ($parameter->getUnionType()->getTypeSet()
-                        as $type
-                    ) {
+                    foreach ($parameter->getUnionType()->getTypeSet() as $type) {
                         if ($type instanceof TemplateType) {
                             $parameter_template_type_identifiers[] =
                                 $type->getName();
@@ -370,8 +370,6 @@ class ParseVisitor extends ScopeVisitor
                     );
                 }
             }
-
-
         } elseif ('__invoke' === $method_name) {
             $class->getUnionType()->addType(
                 CallableType::instance(false)
@@ -527,7 +525,6 @@ class ParseVisitor extends ScopeVisitor
             if ($future_union_type instanceof FutureUnionType) {
                 $property->setFutureUnionType($future_union_type);
             }
-
         }
 
         return $this->context;
@@ -655,7 +652,6 @@ class ParseVisitor extends ScopeVisitor
                 )
                 ->withNamespace($context->getNamespace())
                 ->withAlternateId($alternate_id++);
-
         } while ($code_base->hasFunctionWithFQSEN(
             $function_fqsen
         ));
@@ -749,7 +745,7 @@ class ParseVisitor extends ScopeVisitor
                     $this->context->getFunctionLikeInScope($this->code_base)
                                   ->setNumberOfOptionalParameters(999999);
                 }
-            } else if ($function_name === 'define') {
+            } elseif ($function_name === 'define') {
                 // TODO: infer constant type from literal, string concatenation operators, etc?
                 $args = $node->children['args'];
                 if ($args->kind === \ast\AST_ARG_LIST
@@ -764,7 +760,7 @@ class ParseVisitor extends ScopeVisitor
                         ''
                     );
                 }
-            } else if ($function_name === 'class_alias') {
+            } elseif ($function_name === 'class_alias') {
                 if (Config::getValue('enable_class_alias_support') && $this->context->isInGlobalScope()) {
                     $this->recordClassAlias($node);
                 }
@@ -853,7 +849,8 @@ class ParseVisitor extends ScopeVisitor
             $this->code_base
         );
 
-        \assert(!empty($method),
+        \assert(
+            !empty($method),
             "We're supposed to be in either method or closure scope."
         );
 
@@ -906,7 +903,8 @@ class ParseVisitor extends ScopeVisitor
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    private function analyzeYield(Node $node) : Context {
+    private function analyzeYield(Node $node) : Context
+    {
         $this->analyzeBackwardCompatibility($node);
 
         // Make sure we're actually returning from a method.
@@ -919,7 +917,8 @@ class ParseVisitor extends ScopeVisitor
             $this->code_base
         );
 
-        \assert(!empty($method),
+        \assert(
+            !empty($method),
             "We're supposed to be in either method or closure scope."
         );
 
@@ -1162,8 +1161,10 @@ class ParseVisitor extends ScopeVisitor
      */
     private function getContextClass() : Clazz
     {
-        \assert($this->context->isInClassScope(),
-            "Must be in class scope");
+        \assert(
+            $this->context->isInClassScope(),
+            "Must be in class scope"
+        );
         return $this->context->getClassInScope($this->code_base);
     }
 
