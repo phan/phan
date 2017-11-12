@@ -9,7 +9,8 @@ use Phan\Language\FQSEN\FullyQualifiedGlobalConstantName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use ast\Node;
 
-abstract class ScopeVisitor extends AnalysisVisitor {
+abstract class ScopeVisitor extends AnalysisVisitor
+{
 
     /**
      * @param CodeBase $code_base
@@ -38,7 +39,8 @@ abstract class ScopeVisitor extends AnalysisVisitor {
      * parsing the node
      * @suppress PhanPluginUnusedMethodArgument
      */
-    public function visit(Node $node) : Context {
+    public function visit(Node $node) : Context
+    {
         // Many nodes don't change the context and we
         // don't need to read them.
         return $this->context;
@@ -76,7 +78,8 @@ abstract class ScopeVisitor extends AnalysisVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitNamespace(Node $node) : Context {
+    public function visitNamespace(Node $node) : Context
+    {
         $namespace = '\\' . (string)$node->children['name'];
         return $this->context->withNamespace($namespace);
     }
@@ -92,22 +95,25 @@ abstract class ScopeVisitor extends AnalysisVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitGroupUse(Node $node) : Context {
+    public function visitGroupUse(Node $node) : Context
+    {
         $children = $node->children ?? [];
 
         $prefix = \array_shift($children);
 
         $context = $this->context;
 
-        foreach ($this->aliasTargetMapFromUseNode(
-                $children['uses'],
-                $prefix,
-                $node->flags ?? 0
-            ) as $alias => $map
-        ) {
+        $alias_target_map = $this->aliasTargetMapFromUseNode(
+            $children['uses'],
+            $prefix,
+            $node->flags ?? 0
+        );
+        foreach ($alias_target_map as $alias => $map) {
             list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
-                $flags, $alias, $target
+                $flags,
+                $alias,
+                $target
             );
         }
 
@@ -125,15 +131,16 @@ abstract class ScopeVisitor extends AnalysisVisitor {
      * A new or an unchanged context resulting from
      * parsing the node
      */
-    public function visitUse(Node $node) : Context {
+    public function visitUse(Node $node) : Context
+    {
         $context = $this->context;
 
-        foreach ($this->aliasTargetMapFromUseNode($node)
-            as $alias => $map
-        ) {
+        foreach ($this->aliasTargetMapFromUseNode($node) as $alias => $map) {
             list($flags, $target) = $map;
             $context = $context->withNamespaceMap(
-                $node->flags ?: $flags, $alias, $target
+                $node->flags ?: $flags,
+                $alias,
+                $target
             );
         }
 
@@ -156,16 +163,17 @@ abstract class ScopeVisitor extends AnalysisVisitor {
         string $prefix = '',
         int $flags = 0
     ) : array {
-        \assert($node->kind == \ast\AST_USE,
-            'Method takes AST_USE nodes');
+        \assert(
+            $node->kind == \ast\AST_USE,
+            'Method takes AST_USE nodes'
+        );
 
         $map = [];
-        foreach($node->children ?? [] as $child_node) {
-
+        foreach ($node->children ?? [] as $child_node) {
             $target = $child_node->children['name'];
 
-            if(empty($child_node->children['alias'])) {
-                if(($pos = \strrpos($target, '\\'))!==false) {
+            if (empty($child_node->children['alias'])) {
+                if (($pos = \strrpos($target, '\\'))!==false) {
                     $alias = \substr($target, $pos + 1);
                 } else {
                     $alias = $target;
@@ -190,14 +198,14 @@ abstract class ScopeVisitor extends AnalysisVisitor {
                     $prefix . '\\' . implode('\\', $parts),
                     $function_name
                 );
-            } else if ($use_flag === \ast\flags\USE_CONST) {
+            } elseif ($use_flag === \ast\flags\USE_CONST) {
                 $parts = \explode('\\', $target);
                 $name = \array_pop($parts);
                 $target = FullyQualifiedGlobalConstantName::make(
                     $prefix . '\\' . implode('\\', $parts),
                     $name
                 );
-            } else if ($use_flag === \ast\flags\USE_NORMAL) {
+            } elseif ($use_flag === \ast\flags\USE_NORMAL) {
                 $target = FullyQualifiedClassName::fromFullyQualifiedString(
                     $prefix . '\\' . $target
                 );

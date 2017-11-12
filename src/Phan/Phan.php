@@ -20,8 +20,8 @@ use Phan\Plugin\ConfigPluginSet;
  *
  * @see self::analyzeFileList
  */
-class Phan implements IgnoredFilesFilterInterface {
-
+class Phan implements IgnoredFilesFilterInterface
+{
     /** @var IssuePrinterInterface */
     public static $printer;
 
@@ -147,8 +147,6 @@ class Phan implements IgnoredFilesFilterInterface {
 
                 // Save this to the set of files to analyze
                 $analyze_file_path_list[] = $file_path;
-
-
             } catch (\AssertionError $assertion_error) {
                 error_log("While parsing $file_path...\n");
                 error_log("$assertion_error\n");
@@ -196,7 +194,7 @@ class Phan implements IgnoredFilesFilterInterface {
                 // This is the list of all of the parsed files
                 // (Also includes files which don't declare classes/functions/constants)
                 $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
-                if (count($analyze_file_path_list) === 0)  {
+                if (count($analyze_file_path_list) === 0) {
                     $request->respondWithNoFilesToAnalyze();  // respond and exit.
                 }
                 // Do this before we stop tracking undo operations.
@@ -217,7 +215,7 @@ class Phan implements IgnoredFilesFilterInterface {
                 // This is the list of all of the parsed files
                 // (Also includes files which don't declare classes/functions/constants)
                 $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
-                if (count($analyze_file_path_list) === 0)  {
+                if (count($analyze_file_path_list) === 0) {
                     $request->respondWithNoFilesToAnalyze();  // respond and exit.
                 }
                 // Do this before we stop tracking undo operations.
@@ -225,7 +223,6 @@ class Phan implements IgnoredFilesFilterInterface {
 
                 // FIXME use sabre or some other async code
                 // FIXME implement
-
             }
 
             // Stop tracking undo operations, now that the parse phase is done.
@@ -275,7 +272,7 @@ class Phan implements IgnoredFilesFilterInterface {
                 return !self::isExcludedAnalysisFile($file_path);
             }
         );
-        if ($request instanceof Request && count($analyze_file_path_list) === 0)  {
+        if ($request instanceof Request && count($analyze_file_path_list) === 0) {
             $request->respondWithNoFilesToAnalyze();
             exit(0);
         }
@@ -301,19 +298,20 @@ class Phan implements IgnoredFilesFilterInterface {
          * This worker takes a file and analyzes it
          * @return void
          */
-        $analysis_worker = function($i, $file_path)
-            use ($file_count, $code_base, $temporary_file_mapping) {
-                CLI::progress('analyze', ($i + 1) / $file_count);
-                Analysis::analyzeFile($code_base, $file_path, $temporary_file_mapping[$file_path] ?? null);
-            };
+        $analysis_worker = function($i, $file_path) use ($file_count, $code_base, $temporary_file_mapping) {
+            CLI::progress('analyze', ($i + 1) / $file_count);
+            Analysis::analyzeFile($code_base, $file_path, $temporary_file_mapping[$file_path] ?? null);
+        };
 
         // Determine how many processes we're running on. This may be
         // less than the provided number if the files are bunched up
         // excessively.
         $process_count = count($process_file_list_map);
 
-        \assert($process_count > 0 && $process_count <= Config::getValue('processes'),
-            "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used.");
+        \assert(
+            $process_count > 0 && $process_count <= Config::getValue('processes'),
+            "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used."
+        );
 
         $did_fork_pool_have_error = false;
 
@@ -321,7 +319,6 @@ class Phan implements IgnoredFilesFilterInterface {
         // Check to see if we're running as multiple processes
         // or not
         if ($process_count > 1) {
-
             // Run analysis one file at a time, splitting the set of
             // files up among a given number of child processes.
             $pool = new ForkPool(
@@ -333,7 +330,7 @@ class Phan implements IgnoredFilesFilterInterface {
                     self::getIssueCollector()->reset();
                 },
                 $analysis_worker,
-                function () use($code_base) : array {
+                function () use ($code_base) : array {
                     // This closure is run once, after running analysis_worker on each input.
                     // If there are any plugins defining finalizeProcess(), run those.
                     ConfigPluginSet::instance()->finalizeProcess($code_base);
@@ -346,7 +343,6 @@ class Phan implements IgnoredFilesFilterInterface {
             // Wait for all tasks to complete and collect the results.
             self::collectSerializedResults($pool->wait());
             $did_fork_pool_have_error = $pool->didHaveError();
-
         } else {
             // Get the task data from the 0th processor
             $analyze_file_path_list = array_values($process_file_list_map)[0];
@@ -454,9 +450,7 @@ class Phan implements IgnoredFilesFilterInterface {
         }
 
         $file_path = str_replace('\\', '/', $file_path);
-        foreach (Config::getValue('exclude_analysis_directory_list')
-                 as $directory
-        ) {
+        foreach (Config::getValue('exclude_analysis_directory_list') as $directory) {
             if (0 === strpos($file_path, $directory)
                 || 0 === strpos($file_path, "./$directory")) {
                 return true;
