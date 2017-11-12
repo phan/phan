@@ -117,6 +117,7 @@ class Issue
     const ParamSpecial2             = 'PhanParamSpecial2';
     const ParamSpecial3             = 'PhanParamSpecial3';
     const ParamSpecial4             = 'PhanParamSpecial4';
+    const ParamSuspiciousOrder      = 'PhanParamSuspiciousOrder';
     const ParamTooFew               = 'PhanParamTooFew';
     const ParamTooFewInternal       = 'PhanParamTooFewInternal';
     const ParamTooFewCallable       = 'PhanParamTooFewCallable';
@@ -1466,6 +1467,14 @@ class Issue
                 "Declaration of real/@method {METHOD} should be compatible with real/@method {METHOD} (the method override requires {COUNT} parameter(s), but the overridden method requires only {COUNT}) defined in {FILE}:{LINE}",
                 self::REMEDIATION_B,
                 7042
+            ),
+            new Issue(
+                self::ParamSuspiciousOrder,
+                self::CATEGORY_PARAMETER,
+                self::SEVERITY_NORMAL,
+                "Argument #{INDEX} of this call to {FUNCTIONLIKE} is typically a literal or constant but isn't, but argument #{INDEX} (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.",
+                self::REMEDIATION_B,
+                7045
             ),
 
             // Issue::CATEGORY_NOOP

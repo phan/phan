@@ -15,6 +15,8 @@ New Features(Analysis)
 + Warn if attempting to read/write to an property or constant when the expression is a non-object (or not a class name, for static elements) (#1268)
 + Split `PhanUnreferencedClosure` out of `PhanUnreferencedFunction` (Emitted by `--dead-code-detection`)
 + Analyze compact() for undefined variables (#1089)
++ Add `PhanParamSuspiciousOrder` to warn about mixing up variable and constant/literal arguments in calls to built in string/regex functions
+  (`explode`, `strpos`, `preg_match`, etc.)
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
