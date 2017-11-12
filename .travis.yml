@@ -7,8 +7,7 @@ php:
 # PhanTest (tests/files) is the slowest test (~20 seconds).
 # Group the remaining tests into groups.
 env:
-  - TEST_SUITES="PhanTest"
-  - TEST_SUITES="UtilTest RasmusTest LanguageTest"
+  - TEST_SUITES="PhanTest UtilTest RasmusTest LanguageTest"
   - TEST_SUITES="__FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest"
 
 sudo: false
