@@ -24,7 +24,8 @@ use Phan\Language\Element\Variable;
 use Phan\Language\UnionType;
 use ast\Node;
 
-trait ConditionVisitorUtil {
+trait ConditionVisitorUtil
+{
     protected $code_base;
 
     /**
@@ -253,13 +254,13 @@ trait ConditionVisitorUtil {
                     if ($exprNameNode->kind === \ast\AST_NAME) {
                         // Currently, only add this inference when we're absolutely sure this is a check rejecting null/false/true
                         $exprName = $exprNameNode->children['name'];
-                        switch(\strtolower($exprName)) {
-                        case 'null':
-                            return $this->removeNullFromVariable($var_node, $context, false);
-                        case 'false':
-                            return $this->removeFalseFromVariable($var_node, $context);
-                        case 'true':
-                            return $this->removeTrueFromVariable($var_node, $context);
+                        switch (\strtolower($exprName)) {
+                            case 'null':
+                                return $this->removeNullFromVariable($var_node, $context, false);
+                            case 'false':
+                                return $this->removeFalseFromVariable($var_node, $context);
+                            case 'true':
+                                return $this->removeTrueFromVariable($var_node, $context);
                         }
                     }
                 }
@@ -268,7 +269,6 @@ trait ConditionVisitorUtil {
             }
         }
         return $context;
-
     }
 
     /**
@@ -279,7 +279,8 @@ trait ConditionVisitorUtil {
      *
      * TODO: support assertions on superglobals, within the current file scope?
      */
-    protected final function getVariableFromScope(Node $var_node, Context $context) {
+    protected final function getVariableFromScope(Node $var_node, Context $context)
+    {
         if ($var_node->kind !== \ast\AST_VAR) {
             return null;
         }
@@ -340,7 +341,8 @@ trait ConditionVisitorUtil {
      * Fetches the function name. Does not check for function uses or namespaces.
      * @return ?string (null if function name could not be found)
      */
-    protected static final function getFunctionName(Node $node) {
+    protected static final function getFunctionName(Node $node)
+    {
         $expr = $node->children['expr'];
         if (!($expr instanceof Node)) {
             return null;
@@ -351,5 +353,4 @@ trait ConditionVisitorUtil {
         }
         return $raw_function_name;
     }
-
 }

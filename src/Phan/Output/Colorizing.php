@@ -6,7 +6,8 @@ use Phan\Issue;
 use Phan\Config;
 
 // Colorizing codes are based on https://github.com/kevinlebrun/colors.php/
-class Colorizing {
+class Colorizing
+{
     const styles = [
         'none'             => '0',  // Alias of 'reset'
         'reset'            => '0',  // Use 'reset' for the absence of color.
@@ -120,12 +121,15 @@ class Colorizing {
      * @param int|string $arg (Argument for format string, e.g. a type name, method fqsen, line number, etc.)
      * @return string - Colorized for unix terminals.
      */
-    public static function colorizeField(string $template_type, $arg) : string {
+    public static function colorizeField(string $template_type, $arg) : string
+    {
         $fmt_directive = Issue::uncolored_format_string_for_template[$template_type] ?? null;
         if ($fmt_directive === null) {
-            error_log(sprintf("Unknown template type '%s'. Known template types: %s",
-                    $template_type,
-                    implode(', ', array_keys(Issue::uncolored_format_string_for_template))));
+            error_log(sprintf(
+                "Unknown template type '%s'. Known template types: %s",
+                $template_type,
+                implode(', ', array_keys(Issue::uncolored_format_string_for_template))
+            ));
             return (string)$arg;
         }
         // TODO: Add more complicated color coding, e.g. MyClass::method should have the option for multiple colors.
@@ -151,7 +155,8 @@ class Colorizing {
     /**
      * @return ?string - null if there is no valid color
      */
-    private static function colorForTemplate(string $template_type) {
+    private static function colorForTemplate(string $template_type)
+    {
         if (self::$color_scheme === null) {
             self::initColorScheme();
         }
@@ -161,7 +166,8 @@ class Colorizing {
     /**
      * Initialize the color scheme, merging it with Config::color_scheme
      */
-    private static function initColorScheme() {
+    private static function initColorScheme()
+    {
         self::$color_scheme = self::default_color_for_template;
         foreach (Config::getValue('color_scheme') ?? [] as $template_type => $color_name) {
             if (!\is_scalar($color_name) || !\array_key_exists($color_name, self::styles)) {

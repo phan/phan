@@ -54,20 +54,20 @@ final class CheckstylePrinter implements BufferedPrinterInterface
                 // of the error
                  $error->appendChild(
                      new \DOMAttr('line', htmlspecialchars((string)$error_map['line'], ENT_NOQUOTES, 'UTF-8'))
-                );
+                 );
 
                 // Map phan severity to Jenkins/Checkstyle severity levels
-                switch($error_map['severity']) {
-                case 'low':
-                    $level = 'info';
-                    break;
-                case 'critical':
-                    $level = 'error';
-                    break;
-                case 'normal':
-                default:
-                    $level = 'warning';
-                    break;
+                switch ($error_map['severity']) {
+                    case 'low':
+                        $level = 'info';
+                        break;
+                    case 'critical':
+                        $level = 'error';
+                        break;
+                    case 'normal':
+                    default:
+                        $level = 'warning';
+                        break;
                 }
 
                 $error->appendChild(

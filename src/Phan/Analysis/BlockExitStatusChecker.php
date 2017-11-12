@@ -27,7 +27,8 @@ use Phan\AST\Visitor\KindVisitorImplementation;
  * TODO: Analyze switch (if there is a default) in another PR (And handle fallthrough)
  * TODO: Refactor this class to be able to express return values such as "This will return or break, but it won't throw".
  */
-final class BlockExitStatusChecker extends KindVisitorImplementation {
+final class BlockExitStatusChecker extends KindVisitorImplementation
+{
     // These should be at most 1 << 31, in order to work in 32-bit php.
     // NOTE: Any exit status must be a combination of at least one of these bits
     // E.g. if STATUS_PROCEED is mixed with STATUS_RETURN, it would mean it is possible both to go to completion or return.
@@ -58,7 +59,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         self::STATUS_PROCEED |
         self::STATUS_GOTO;
 
-    public function __construct() { }
+    public function __construct()
+    {
+    }
 
     public function check(Node $node = null) : int
     {
@@ -468,7 +471,8 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
         return $status;
     }
 
-    private function computeStatusOfIf(Node $node) : int {
+    private function computeStatusOfIf(Node $node) : int
+    {
         $has_if_elems_for_all_cases = false;
         $combined_statuses = 0;
         foreach ($node->children as $child_node) {
@@ -558,7 +562,8 @@ final class BlockExitStatusChecker extends KindVisitorImplementation {
             }
             $maybe_status |= $status;
         }
-        return self::STATUS_PROCEED | $maybe_status;;
+        return self::STATUS_PROCEED | $maybe_status;
+        ;
     }
 
     public static function willUnconditionallySkipRemainingStatements(Node $node) : bool

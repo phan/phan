@@ -7,13 +7,11 @@ use Phan\AST\Visitor\FlagVisitorImplementation;
 use Phan\CodeBase;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
-use Phan\Language\Type\{
-    ArrayType,
-    BoolType,
-    FloatType,
-    IntType,
-    StringType
-};
+use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\BoolType;
+use Phan\Language\Type\FloatType;
+use Phan\Language\Type\IntType;
+use Phan\Language\Type\StringType;
 use Phan\Issue;
 use ast\Node;
 
@@ -83,7 +81,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->context,
                 Issue::TypeArrayOperator,
                 $node->lineno ?? 0,
-                $left, $right
+                $left,
+                $right
             );
 
             return new UnionType();
@@ -126,7 +125,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $this->context,
                 Issue::TypeArrayOperator,
                 $node->lineno ?? 0,
-                $left, $right
+                $left,
+                $right
             );
 
             return new UnionType();
