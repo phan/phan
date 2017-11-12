@@ -1970,10 +1970,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
-     * @param bool $unused_log_error whether or not to log errors while searching (TODO: use)
      * @return FullyQualifiedFunctionLikeName[]
+     * @suppress PhanUnreferencedPublicMethod may be used in the future.
      */
-    public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $unused_log_error) : array
+    public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node) : array
     {
         return (new UnionTypeVisitor($code_base, $context, true))->functionLikeFQSENListFromNode($node);
     }

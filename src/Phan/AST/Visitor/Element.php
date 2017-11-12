@@ -216,7 +216,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptClassFlagVisitor(FlagVisitor $visitor)
     {
@@ -245,7 +245,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptNameFlagVisitor(FlagVisitor $visitor)
     {
@@ -270,7 +270,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptParamFlagVisitor(FlagVisitor $visitor)
     {
@@ -293,7 +293,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptTypeFlagVisitor(FlagVisitor $visitor)
     {
@@ -328,7 +328,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptUnaryFlagVisitor(FlagVisitor $visitor)
     {
@@ -357,7 +357,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptExecFlagVisitor(FlagVisitor $visitor)
     {
@@ -386,7 +386,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptMagicFlagVisitor(FlagVisitor $visitor)
     {
@@ -421,7 +421,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptUseFlagVisitor(FlagVisitor $visitor)
     {
@@ -446,7 +446,7 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptAnyFlagVisitor(FlagVisitor $visitor)
     {

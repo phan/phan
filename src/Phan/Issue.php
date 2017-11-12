@@ -2216,6 +2216,7 @@ class Issue
      * message
      *
      * @return void
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function emit(
         string $type,

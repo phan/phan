@@ -182,6 +182,12 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     public function addReference(FileRef $file_ref)
     {
         if (Config::get_track_references()) {
+            // Currently, we don't need to track references to PHP-internal methods/functions/constants
+            // such as PHP_VERSION, strlen(), Closure::bind(), etc.
+            // This may change in the future.
+            if ($this->isPHPInternal()) {
+                return;
+            }
             $this->reference_list[(string)$file_ref] = $file_ref;
         }
     }

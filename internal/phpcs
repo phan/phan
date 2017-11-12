@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# This has been tested with phpcs.phar 3.1.1 (3.1.1 or newer is suggested)
+set -xu
+# Automatically detect PSR-2 syntax issues in Phan itself
+if [[ "$#" != 0 ]]; then
+	echo "Executing phpcs.phar --standard=ruleset.xml $@"  1>&2
+	phpcs.phar --standard=ruleset.xml "$@"
+else
+	# Automatically fix PSR-2 syntax issues in Phan itself
+	phpcs.phar --standard=ruleset.xml tests/Phan src
+fi

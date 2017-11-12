@@ -492,23 +492,20 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      */
     public function visitConst(Node $node) : Context
     {
+        $context = $this->context;
         try {
             $nameNode = $node->children['name'];
             // Based on UnionTypeVisitor::visitConst
             if ($nameNode->kind == \ast\AST_NAME) {
-                if (defined($nameNode->children['name'])) {
-                    // Do nothing, this is an internal type such as `true` or `\ast\AST_NAME`
-                } else {
-                    $constant = (new ContextNode(
-                        $this->code_base,
-                        $this->context,
-                        $node
-                    ))->getConst();
+                $constant = (new ContextNode(
+                    $this->code_base,
+                    $context,
+                    $node
+                ))->getConst();
 
-                    // Mark that this constant has been referenced from
-                    // this context
-                    $constant->addReference($this->context);
-                }
+                // Mark that this constant has been referenced from
+                // this context
+                $constant->addReference($context);
             }
         } catch (IssueException $exception) {
             // We need to do this in order to check keys and (after the first 5) values in AST arrays.
@@ -516,7 +513,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             // (This issue may be a duplicate)
             Issue::maybeEmitInstance(
                 $this->code_base,
-                $this->context,
+                $context,
                 $exception->getIssueInstance()
             );
         } catch (\Exception $exception) {
@@ -528,7 +525,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // constant
         $this->analyzeNoOp($node, Issue::NoopConstant);
 
-        return $this->context;
+        return $context;
     }
 
     /**

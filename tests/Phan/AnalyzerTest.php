@@ -6,9 +6,6 @@ namespace Phan\Tests;
 $internal_class_name_list = get_declared_classes();
 $internal_interface_name_list = get_declared_interfaces();
 $internal_trait_name_list = get_declared_traits();
-$internal_const_name_list = array_keys(array_merge(...array_values(
-    array_diff_key(get_defined_constants(true), ['user' => []])
-)));
 $internal_function_name_list = get_defined_functions()['internal'];
 
 use Phan\Analysis;
@@ -41,7 +38,7 @@ class AnalyzerTest extends BaseTest
         $this->class_name_list = $internal_class_name_list;
         $this->interface_name_list = $internal_interface_name_list;
         $this->trait_name_list = $internal_trait_name_list;
-        $this->const_name_list = $internal_const_name_list;
+        $this->const_name_list = CodeBase::getPHPInternalConstantNameList();
         $this->function_name_list = $internal_function_name_list;
 
 
