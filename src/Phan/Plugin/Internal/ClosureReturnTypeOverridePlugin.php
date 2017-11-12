@@ -13,9 +13,9 @@ use Phan\Language\Element\FunctionInterface;
 use Phan\Language\Element\Method;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\UnionType;
-use Phan\PluginV2\ReturnTypeOverrideCapability;
-use Phan\PluginV2\AnalyzeFunctionCallCapability;
 use Phan\PluginV2;
+use Phan\PluginV2\AnalyzeFunctionCallCapability;
+use Phan\PluginV2\ReturnTypeOverrideCapability;
 use ast\Node;
 
 /**
@@ -201,6 +201,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
 
     /**
      * @return \Closure[]
+     * @override
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
@@ -214,6 +215,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
 
     /**
      * @return \Closure[]
+     * @override
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array
     {
