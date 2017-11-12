@@ -6,8 +6,8 @@
 gc_disable();
 
 // Check the environment to make sure Phan can run successfully
-require_once(__DIR__ . '/requirements.php');
-require_once(__DIR__ . '/Phan/Bootstrap.php');
+require_once __DIR__ . '/requirements.php';
+require_once __DIR__ . '/Phan/Bootstrap.php';
 
 use Phan\CLI;
 use Phan\Prep;
@@ -19,12 +19,11 @@ $file_list = $cli->getFileList();
 
 // This is an example visitor. Do whatever you like here
 // to scan all nodes.
-$visit_node = function(\ast\Node $node, string $file_path) {
+$visit_node = function (\ast\Node $node, string $file_path) {
 
     // Take a look at Phan\AST\Visitor\Element to see all
     // of the kinds of nodes
     if ($node->kind == \ast\AST_CLASS_CONST) {
-
         // Debug::printNode($node);
 
         if (\is_string($node->children['const'])) {
@@ -34,7 +33,6 @@ $visit_node = function(\ast\Node $node, string $file_path) {
             }
         }
     }
-
 };
 
 // Apply the closure to every single node in the

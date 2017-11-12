@@ -364,8 +364,8 @@ class CodeBase
                 $function_alternate_generator = FunctionFactory::functionListFromReflectionFunction(
                     $this,
                     $function_fqsen,
-                    new \ReflectionFunction($function_fqsen->getNamespacedName()
-                ));
+                    new \ReflectionFunction($function_fqsen->getNamespacedName())
+                );
                 foreach ($function_alternate_generator as $function) {
                     $this->addFunction($function);
                 }
