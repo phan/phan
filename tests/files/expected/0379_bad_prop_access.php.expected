@@ -4,3 +4,4 @@
 %s:11 PhanTypeExpectedObjectPropAccess Expected an object instance when accessing an instance property, but saw an expression with type int
 %s:14 PhanTypeExpectedObjectOrClassName Expected an object instance or the name of a class but saw expression with type int
 %s:22 PhanTypeArraySuspicious Suspicious array access to object
+%s:28 PhanTypeExpectedObjectPropAccessButGotNull Expected an object instance when accessing an instance property, but saw an expression with type null

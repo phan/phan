@@ -88,6 +88,7 @@ class Issue
     const TypeExpectedObject        = 'PhanTypeExpectedObject';
     const TypeExpectedObjectOrClassName = 'PhanTypeExpectedObjectOrClassName';
     const TypeExpectedObjectPropAccess = 'PhanTypeExpectedObjectPropAccess';
+    const TypeExpectedObjectPropAccessButGotNull = 'PhanTypeExpectedObjectPropAccessButGotNull';
     const TypeExpectedObjectStaticPropAccess = 'PhanTypeExpectedObjectStaticPropAccess';
 
     // Issue::CATEGORY_ANALYSIS
@@ -1028,6 +1029,14 @@ class Issue
                 'Expected an object instance or a class name when accessing a static property, but saw an expression with type {TYPE}',
                 self::REMEDIATION_B,
                 10039
+            ),
+            new Issue(
+                self::TypeExpectedObjectPropAccessButGotNull,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}',
+                self::REMEDIATION_B,
+                10040
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

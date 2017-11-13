@@ -435,6 +435,11 @@ class ContextNode
             if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories) : bool {
                 return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME && $type instanceof StringType);
             })) {
+                if ($custom_issue_type === Issue::TypeExpectedObjectPropAccess) {
+                    if ($union_type->isType(NullType::instance(false))) {
+                        $custom_issue_type = Issue::TypeExpectedObjectPropAccessButGotNull;
+                    }
+                }
                 Issue::maybeEmit(
                     $this->code_base,
                     $this->context,

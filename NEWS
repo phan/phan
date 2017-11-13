@@ -31,6 +31,9 @@ New Features(Analysis)
   (In other words, Phan will analyze a user-defined reference parameter the same way as it would `$matches` in `preg_match($pattern, $string, $matches)`)
   Example usage: `/** @param string $x @phan-output-reference */ function set_x(&$x) { $x = 'result'; }`
 + Make phan infer unreachability from fatal errors such as `trigger_error($message, E_USER_ERROR);` (#1224)
++ Add new issue types for places where an object would be expected:
+  `PhanTypeExpectedObjectPropAccess`, `PhanTypeExpectedObjectPropAccessButGotNull`, `PhanTypeExpectedObjectStaticPropAccess`,
+  `PhanTypeExpectedObject`, and `PhanTypeExpectedObjectOrClassName
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
