@@ -12,8 +12,10 @@ New Features(Analysis)
 + Speed up phan analysis on small projects, reduce memory usage (Around 0.15 seconds and 15MB)
   This was done by deferring loading the information about internal classes and functions until that information was needed for analysis.
 + Analyze existence and usage of callables passed to (internal and user-defined) function&methods expecting callable. (#1194)
-  Analysis will now warn if a callable no longer exists.
-  This change also reduces false positives in dead code detection.
+  Analysis will now warn if the referenced function/method of a callable array/string
+  (passed to a function/method expecting a callable param) does not exist.
+
+  This change also reduces false positives in dead code detection (Passing in these callable arrays/strings counts as a reference now)
 + Warn if attempting to read/write to an property or constant when the expression is a non-object. (or not a class name, for static elements) (#1268)
 + Split `PhanUnreferencedClosure` out of `PhanUnreferencedFunction`. (Emitted by `--dead-code-detection`)
 + Split `PhanUnreferencedMethod` into `PhanUnreferencedPublicMethod`, `PhanUnreferencedProtectedMethod`, and `PhanUnreferencedPrivateMethod`.
