@@ -129,16 +129,19 @@ return [
     // to be tracked.
     'force_tracking_references' => false,
 
-    // Run a quick version of checks that takes less
-    // time
+    // If true, then run a quick version of checks that takes less time.
+    // False by default.
     "quick_mode" => false,
 
-    // If true, then try to simplify AST into a form which improves Phan's type inference.
-    // E.g. rewrites `if (!is_string($foo)) { return; } b($foo);`
-    // into `if (is_string($foo)) {b($foo);} else {return;}`
-    // This may conflict with 'dead_code_detection'
-    // This slows down analysis noticeably.
-    "simplify_ast" => false,
+    // If true, then before analysis, try to simplify AST into a form
+    // which improves Phan's type inference in edge cases.
+    //
+    // This may conflict with 'dead_code_detection'.
+    // When this is true, this slows down analysis slightly.
+    //
+    // E.g. rewrites `if ($a = value() && $a > 0) {...}`
+    // into $a = value(); if ($a) { if ($a > 0) {...}}`
+    "simplify_ast" => true,
 
     // If true, Phan will read `class_alias` calls in the global scope,
     // then (1) create aliases from the *parsed* files if no class definition was found,

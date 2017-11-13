@@ -3,6 +3,8 @@ Phan NEWS
 ?? ??? 2017, Phan 0.10.2 (dev)
 
 New Features(Analysis)
++ Enable `simplify_ast` by default.
+  The new default value should reduce false positives when analyzing conditions of if statements. (#407, #1066)
 + Support less ambiguous `?(T[])` and `(?T)[]` in phpdoc (#1213)
   Note that `(S|T)[]` is **not** supported yet.
 + Support alternate syntax `array<T>` and `array<Key, T>` in phpdoc (PR #1213)

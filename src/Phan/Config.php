@@ -125,10 +125,10 @@ class Config
         // a call to parent::__construct() is required.
         'parent_constructor_required' => [],
 
-        // Run a quick version of checks that takes less
+        // If true, this run a quick version of checks that takes less
         // time at the cost of not running as thorough
         // an analysis. You should consider setting this
-        // to true only when you wish you had more issues
+        // to true only when you wish you had more **undiagnosed** issues
         // to fix in your code base.
         //
         // In quick-mode the scanner doesn't rescan a function
@@ -265,12 +265,15 @@ class Config
         // what references what.
         'dead_code_detection_prefer_false_negative' => true,
 
-        // If true, then try to simplify AST into a form which improves Phan's type inference.
-        // E.g. rewrites `if (!is_string($foo)) { return; } b($foo);`
-        // into `if (is_string($foo)) {b($foo);} else {return;}`
+        // If true, then before analysis, try to simplify AST into a form
+        // which improves Phan's type inference in edge cases.
+        //
         // This may conflict with 'dead_code_detection'.
-        // This option also slows down analysis noticeably.
-        'simplify_ast' => false,
+        // When this is true, this slows down analysis slightly.
+        //
+        // E.g. rewrites `if ($a = value() && $a > 0) {...}`
+        // into $a = value(); if ($a) { if ($a > 0) {...}}`
+        'simplify_ast' => true,
 
         // If true, Phan will read `class_alias` calls in the global scope,
         // then (1) create aliases from the *parsed* files if no class definition was found,
