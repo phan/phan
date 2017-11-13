@@ -30,6 +30,7 @@ New Features(Analysis)
   This indicates that Phan should not warn about the passed in type, and should not preserve the passed in type after the call to the function/method.
   (In other words, Phan will analyze a user-defined reference parameter the same way as it would `$matches` in `preg_match($pattern, $string, $matches)`)
   Example usage: `/** @param string $x @phan-output-reference */ function set_x(&$x) { $x = 'result'; }`
++ Make phan infer unreachability from fatal errors such as `trigger_error($message, E_USER_ERROR);` (#1224)
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
