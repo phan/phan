@@ -169,11 +169,14 @@ class ASTSimplifier
             }
 
             if ($if_cond->kind === \ast\AST_UNARY_OP &&
-                    $if_cond->flags === \ast\flags\UNARY_BOOL_NOT &&
-                    $if_cond->children['expr']->kind === \ast\AST_UNARY_OP &&
-                    $if_cond->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT) {
-                self::replaceLastNodeWithNodeList($nodes, $this->applyIfDoubleNegateReduction($node));
-                continue;
+                $if_cond->flags === \ast\flags\UNARY_BOOL_NOT) {
+                $cond_node = $if_cond->children['expr'];
+                if ($cond_node instanceof Node &&
+                        $cond_node->kind === \ast\AST_UNARY_OP &&
+                        $if_cond->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT) {
+                    self::replaceLastNodeWithNodeList($nodes, $this->applyIfDoubleNegateReduction($node));
+                    continue;
+                }
             }
             if (count($node->children) === 1) {
                 if ($if_cond->kind === \ast\AST_BINARY_OP &&
