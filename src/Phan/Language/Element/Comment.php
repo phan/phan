@@ -298,7 +298,7 @@ class Comment
                 if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
                     $variable_list[] = $comment_var;
                 }
-            } elseif (\stripos($line, '@template') !== false) {
+            } elseif (\strpos($line, '@template') !== false) {
                 // Make sure support for generic types is enabled
                 if (Config::getValue('generic_types_enabled')) {
                     $check_compatible('@template', [Comment::ON_CLASS]);
