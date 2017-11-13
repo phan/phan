@@ -50,12 +50,15 @@ final class StringFunctionPlugin extends PluginV2 implements
     }
 
     /**
-     * @param Node|string|float|int $arg
+     * @param Node|string|float|int|null $arg
      * @return bool true if the expression is simple to look up.
      */
     private static function isSimpleExpression($arg) : bool
     {
         if (\is_scalar($arg)) {
+            return true;
+        }
+        if ($arg === null) {
             return true;
         }
         if ($arg instanceof Node) {
