@@ -510,7 +510,9 @@ class Comment
         bool $is_var,
         int $lineno
     ) {
-        if (preg_match('/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*(?:\\$' . self::WORD_REGEX . '))?/', $line, $match)) {
+        // Parse https://docs.phpdoc.org/references/phpdoc/tags/param.html
+        // Exceptions: Deliberately allow "&" in "@param int &$x" when documenting references.
+        if (preg_match('/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/', $line, $match)) {
             if (!isset($match[2])) {
                 return new CommentParameter('', new UnionType());
             }
@@ -523,13 +525,9 @@ class Comment
             } else {
                 $variable_name = $match[17] ?? '';
             }
-            // If the parameter has a type which is labelled as a typo (type maps to ''),
-            // then treat it the same way as a parameter without a type in the doc comment.
-            // Otherwise, continue with the (possibly renamed) type.
+            // Fix typos or non-standard phpdoc tags, according to the user's configuration.
+            // Does nothing by default.
             $type = self::rewritePHPDocType($original_type);
-            if ($type !== $original_type && $type === '') {
-                return new CommentParameter('', new UnionType());
-            }
 
             // If the type looks like a variable name, make it an
             // empty type so that other stuff can match it. We can't
@@ -545,11 +543,14 @@ class Comment
             } else {
                 $union_type = new UnionType();
             }
+            $is_output_parameter = \stripos($line, '@phan-output-reference') !== false;
 
             return new CommentParameter(
                 $variable_name,
                 $union_type,
-                $is_variadic
+                $is_variadic,
+                false,  // has_default_value
+                $is_output_parameter
             );
         } else {
             // Don't warn about @param $x Description of $x goes here

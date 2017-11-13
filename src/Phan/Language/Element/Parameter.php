@@ -494,6 +494,24 @@ class Parameter extends Variable
         return self::REFERENCE_DEFAULT;
     }
 
+    /**
+     * @return void
+     */
+    public function setIsOutputReference()
+    {
+        $this->setPhanFlags(
+            Flags::bitVectorWithState(
+                Flags::bitVectorWithState(
+                    $this->getPhanFlags(),
+                    Flags::IS_READ_REFERENCE,
+                    false
+                ),
+                Flags::IS_WRITE_REFERENCE,
+                true
+            )
+        );
+    }
+
     public function __toString() : string
     {
         $string = '';
