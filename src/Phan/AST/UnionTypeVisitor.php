@@ -765,7 +765,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     return ArrayType::instance(false)->asUnionType();
                 }
             }
-            return $common_type->asGenericArrayTypes();
+            return $common_type->asNonEmptyGenericArrayTypes();
         }
 
         return ArrayType::instance(false)->asUnionType();

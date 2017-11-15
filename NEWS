@@ -52,6 +52,7 @@ Bug Fixes
   Also, start warning about a subset of issues from interfaces and abstract classes (e.g. unused interface constants)
 + Properly handle `static::class` as a class name in an array callable, or `static::method_name` in a string callable (#1232)
 + Make `@template` tag for [Generic Types](https://github.com/phan/phan/wiki/Generic-Types) case sensitive. (#1243)
++ Fix a bug causing Phan to infer an empty union type (which can cast to any type) for arrays with elements of empty union types. (#1296)
 
 Plugins
 + Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)

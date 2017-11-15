@@ -1539,6 +1539,8 @@ class UnionType implements \Serializable
      * Get a new type for each type in this union which is
      * the generic array version of this type. For instance,
      * 'int|float' will produce 'int[]|float[]'.
+     *
+     * If $this is an empty UnionType, this method will produce an empty UnionType
      */
     public function asGenericArrayTypes() : UnionType
     {
@@ -1549,6 +1551,25 @@ class UnionType implements \Serializable
         );
     }
 
+    /**
+     * @return UnionType
+     * Get a new type for each type in this union which is
+     * the generic array version of this type. For instance,
+     * 'int|float' will produce 'int[]|float[]'.
+     *
+     * If $this is an empty UnionType, this method will produce 'array'
+     */
+    public function asNonEmptyGenericArrayTypes() : UnionType
+    {
+        if (\count($this->type_set) === 0) {
+            return ArrayType::instance(false)->asUnionType();
+        }
+        return $this->asMappedUnionType(
+            function (Type $type) : Type {
+                return $type->asGenericArrayType();
+            }
+        );
+    }
     /**
      * @param CodeBase
      * The code base to use in order to find super classes, etc.

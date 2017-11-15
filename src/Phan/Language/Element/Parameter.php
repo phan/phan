@@ -429,6 +429,7 @@ class Parameter extends Variable
     public function getUnionType() : UnionType
     {
         if ($this->isVariadic() && !$this->isCloneOfVariadic()) {
+            // TODO: Figure out why asNonEmptyGenericArrayTypes() causes test failures
             return parent::getUnionType()->asGenericArrayTypes();
         }
         return parent::getUnionType();
