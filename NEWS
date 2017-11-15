@@ -34,6 +34,8 @@ New Features(Analysis)
 + Add new issue types for places where an object would be expected:
   `PhanTypeExpectedObjectPropAccess`, `PhanTypeExpectedObjectPropAccessButGotNull`, `PhanTypeExpectedObjectStaticPropAccess`,
   `PhanTypeExpectedObject`, and `PhanTypeExpectedObjectOrClassName
++ Emit more accurate line numbers for phpdoc comments, when warning about phpdoc in doc comments being invalid. (#1294)
+  This gives up and uses the element's line number if the phpdoc ends over 10 lines before the start of the element.
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)

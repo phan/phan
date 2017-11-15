@@ -812,15 +812,15 @@ class Config
     public static function projectPath(string $relative_path)
     {
         // Make sure its actually relative
-        if (DIRECTORY_SEPARATOR === \substr($relative_path, 0, 1)) {
+        if (\DIRECTORY_SEPARATOR === \substr($relative_path, 0, 1)) {
             return $relative_path;
         }
         // Check for absolute path in windows, e.g. C:\
-        if (DIRECTORY_SEPARATOR === "\\" &&
-                strlen($relative_path) > 3 &&
-                ctype_alpha($relative_path[0]) &&
+        if (\DIRECTORY_SEPARATOR === "\\" &&
+                \strlen($relative_path) > 3 &&
+                \ctype_alpha($relative_path[0]) &&
                 $relative_path[1] === ':' &&
-                strspn($relative_path, '/\\', 2, 1)) {
+                \strspn($relative_path, '/\\', 2, 1)) {
             return $relative_path;
         }
 
