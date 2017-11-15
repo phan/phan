@@ -265,19 +265,27 @@ class ASTSimplifier
         $inner_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $inner_node_elem->children['cond'] = $inner_node_elem->children['cond']->children['right'];
         $inner_node_elem->flags = 0;
-        $inner_node = clone($node);  // AST_IF
-        $inner_node->children[0] = $inner_node_elem;
-        $inner_node->lineno = $inner_node_elem->lineno ?? 0;
-        $inner_node->flags = 0;
-        $inner_node_stmt_list = self::buildStatementList($inner_node->lineno, $inner_node);  // AST_STMT_LIST
+        $inner_node_lineno = $inner_node_elem->lineno ?? 0;
+
+        // Normalize code such as `if (A && (B && C)) {...}` recursively.
+        $inner_node_stmts = $this->normalizeIfStatement(new Node(
+            \ast\AST_IF,
+            0,
+            [$inner_node_elem],
+            $inner_node_lineno
+        ));
+
+        $inner_node_stmt_list = new Node(\ast\AST_STMT_LIST, 0, $inner_node_stmts, $inner_node_lineno);
         $outer_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $outer_node_elem->children['cond'] = $node->children[0]->children['cond']->children['left'];
         $outer_node_elem->children['stmts'] = $inner_node_stmt_list;
         $outer_node_elem->flags = 0;
-        $outer_node = clone($node);  // AST_IF
-        $outer_node->children[0] = $outer_node_elem;
-        $outer_node->flags = 0;
-        return $outer_node;
+        return new Node(
+            \ast\AST_IF,
+            $node->lineno,
+            [$outer_node_elem],
+            0
+        );
     }
 
     /**
