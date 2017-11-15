@@ -24,7 +24,7 @@ New Features(Analysis)
   `PhanUnreferencedConst` is now exclusively used for global constants.
 + Analyze compact() for undefined variables (#1089)
 + Add `PhanParamSuspiciousOrder` to warn about mixing up variable and constant/literal arguments in calls to built in string/regex functions
-  (`explode`, `strpos`, `preg_match`, etc.)
+  (`explode`, `strpos`, `mb_strpos`, `preg_match`, etc.)
 + Preserve the closure's function signature in the inferred return value of `Closure::bind()`. (#869)
 + Support indicating that a reference parameter's input value is unused by writing `@phan-output-reference` on the same line as an `@param` annotation.
   This indicates that Phan should not warn about the passed in type, and should not preserve the passed in type after the call to the function/method.
