@@ -170,7 +170,6 @@ final class StringFunctionPlugin extends PluginV2 implements
             'mb_strrchr'                => $var_1_const_2,  // what about mb_strchr?
             'mb_strrichr'               => $var_1_const_2,
             'mb_strripos'               => $var_1_const_2,
-            'mb_strpos'                 => $var_1_const_2,
             'mb_strtolower'             => $var_1_const_2,
             'mb_strtoupper'             => $var_1_const_2,
             'mb_strwidth'               => $var_1_const_2,
