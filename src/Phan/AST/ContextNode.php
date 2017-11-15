@@ -38,6 +38,7 @@ use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\Some;
 use ast\Node;
+use ast;
 
 /**
  * Methods for an AST node in context
@@ -143,7 +144,7 @@ class ContextNode
     }
 
     /**
-     * Get a list of traits adaptations from a node of kind \ast\AST_TRAIT_ADAPTATIONS
+     * Get a list of traits adaptations from a node of kind ast\AST_TRAIT_ADAPTATIONS
      * (with fully qualified names and `as`/`instead` info)
      *
      * @param FQSEN[] $trait_fqsen_list TODO: use this for sanity check
@@ -156,7 +157,7 @@ class ContextNode
         if (!($node instanceof Node)) {
             return [];
         }
-        \assert($node->kind === \ast\AST_TRAIT_ADAPTATIONS);
+        \assert($node->kind === ast\AST_TRAIT_ADAPTATIONS);
 
         // NOTE: This fetches fully qualified names more than needed,
         // but this isn't optimized, since traits aren't frequently used in classes.
@@ -168,9 +169,9 @@ class ContextNode
 
         foreach ($this->node->children ?? [] as $adaptation_node) {
             \assert($adaptation_node instanceof Node);
-            if ($adaptation_node->kind === \ast\AST_TRAIT_ALIAS) {
+            if ($adaptation_node->kind === ast\AST_TRAIT_ALIAS) {
                 $this->handleTraitAlias($adaptations_map, $adaptation_node);
-            } elseif ($adaptation_node->kind === \ast\AST_TRAIT_PRECEDENCE) {
+            } elseif ($adaptation_node->kind === ast\AST_TRAIT_PRECEDENCE) {
                 $this->handleTraitPrecedence($adaptations_map, $adaptation_node);
             } else {
                 \assert(false, ("Unknown adaptation node kind " . $adaptation_node->kind));
@@ -180,7 +181,7 @@ class ContextNode
     }
 
     /**
-     * Handles a node of kind \ast\AST_TRAIT_ALIAS, modifying the corresponding TraitAdaptations instance
+     * Handles a node of kind ast\AST_TRAIT_ALIAS, modifying the corresponding TraitAdaptations instance
      * @param TraitAdaptations[] $adaptations_map
      * @param Node $adaptation_node
      * @return void
@@ -239,7 +240,7 @@ class ContextNode
     }
 
     /**
-     * Handles a node of kind \ast\AST_TRAIT_PRECEDENCE, modifying the corresponding TraitAdaptations instance
+     * Handles a node of kind ast\AST_TRAIT_PRECEDENCE, modifying the corresponding TraitAdaptations instance
      * @param TraitAdaptations[] $adaptations_map
      * @param Node $adaptation_node
      * @return void
@@ -310,21 +311,21 @@ class ContextNode
      */
     public function getVariableName() : string
     {
-        if (!($this->node instanceof \ast\Node)) {
+        if (!($this->node instanceof ast\Node)) {
             return (string)$this->node;
         }
 
         $node = $this->node;
 
-        while (($node instanceof \ast\Node)
-            && ($node->kind != \ast\AST_VAR)
-            && ($node->kind != \ast\AST_STATIC)
-            && ($node->kind != \ast\AST_MAGIC_CONST)
+        while (($node instanceof ast\Node)
+            && ($node->kind != ast\AST_VAR)
+            && ($node->kind != ast\AST_STATIC)
+            && ($node->kind != ast\AST_MAGIC_CONST)
         ) {
             $node = \array_values($node->children ?? [])[0];
         }
 
-        if (!($node instanceof \ast\Node)) {
+        if (!($node instanceof ast\Node)) {
             return (string)$node;
         }
 
@@ -333,7 +334,7 @@ class ContextNode
             return '';
         }
 
-        if ($name_node instanceof \ast\Node) {
+        if ($name_node instanceof ast\Node) {
             // This is nonsense. Give up, but check if it's a type other than int/string.
             // (e.g. to catch typos such as $$this->foo = bar;)
             try {
@@ -503,7 +504,7 @@ class ContextNode
         );
 
         \assert(
-            $this->node instanceof \ast\Node,
+            $this->node instanceof ast\Node,
             '$this->node must be a node'
         );
 
@@ -612,7 +613,7 @@ class ContextNode
     {
         $expression = $this->node;
 
-        if ($expression->kind == \ast\AST_VAR) {
+        if ($expression->kind == ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -658,7 +659,7 @@ class ContextNode
                     }
                 }
             }
-        } elseif ($expression->kind == \ast\AST_NAME
+        } elseif ($expression->kind == ast\AST_NAME
             // nothing to do
         ) {
             try {
@@ -677,10 +678,10 @@ class ContextNode
             }
 
             yield $method;
-        } elseif ($expression->kind == \ast\AST_CALL
-            || $expression->kind == \ast\AST_STATIC_CALL
-            || $expression->kind == \ast\AST_NEW
-            || $expression->kind == \ast\AST_METHOD_CALL
+        } elseif ($expression->kind == ast\AST_CALL
+            || $expression->kind == ast\AST_STATIC_CALL
+            || $expression->kind == ast\AST_NEW
+            || $expression->kind == ast\AST_METHOD_CALL
         ) {
             $class_list = (new ContextNode(
                 $this->code_base,
@@ -704,7 +705,7 @@ class ContextNode
                 // Check the call for parameter and argument types
                 yield $method;
             }
-        } elseif ($expression->kind === \ast\AST_CLOSURE) {
+        } elseif ($expression->kind === ast\AST_CLOSURE) {
             $closure_fqsen = FullyQualifiedFunctionName::fromClosureInContext(
                 $this->context->withLineNumberStart($expression->lineno ?? 0),
                 $expression
@@ -737,7 +738,7 @@ class ContextNode
     ) : FunctionInterface {
 
         \assert(
-            $this->node instanceof \ast\Node,
+            $this->node instanceof ast\Node,
             '$this->node must be a node'
         );
         $namespace = $this->context->getNamespace();
@@ -749,7 +750,7 @@ class ContextNode
                     $function_name
                 );
         } else {
-            if (($this->node->flags & (\ast\flags\NAME_RELATIVE | \ast\flags\NAME_NOT_FQ)) !== 0) {
+            if (($this->node->flags & (ast\flags\NAME_RELATIVE | ast\flags\NAME_NOT_FQ)) !== 0) {
                 // For relative and non-fully qualified functions (e.g. namespace\foo(), foo())
                 $function_fqsen =
                     FullyQualifiedFunctionName::make(
@@ -760,7 +761,7 @@ class ContextNode
                 if ($this->code_base->hasFunctionWithFQSEN($function_fqsen)) {
                     return $this->code_base->getFunctionByFQSEN($function_fqsen);
                 }
-                if (($this->node->flags & \ast\flags\NAME_RELATIVE) !== 0 || $namespace === '') {
+                if (($this->node->flags & ast\flags\NAME_RELATIVE) !== 0 || $namespace === '') {
                     throw new IssueException(
                         Issue::fromType(Issue::UndeclaredFunction)(
                             $this->context->getFile(),
@@ -807,7 +808,7 @@ class ContextNode
     public function getVariable() : Variable
     {
         \assert(
-            $this->node instanceof \ast\Node,
+            $this->node instanceof ast\Node,
             '$this->node must be a node'
         );
 
@@ -853,7 +854,7 @@ class ContextNode
         }
 
         \assert(
-            $this->node instanceof \ast\Node,
+            $this->node instanceof ast\Node,
             '$this->node must be a node'
         );
 
@@ -904,7 +905,7 @@ class ContextNode
     ) : Property {
 
         \assert(
-            $this->node instanceof \ast\Node,
+            $this->node instanceof ast\Node,
             '$this->node must be a node'
         );
 
@@ -1130,7 +1131,7 @@ class ContextNode
         }
 
         \assert(
-            $this->node instanceof \ast\Node,
+            $this->node instanceof ast\Node,
             '$this->node must be a node'
         );
 
@@ -1163,8 +1164,8 @@ class ContextNode
         }
 
         $flags = 0;
-        if ($this->node->kind == \ast\AST_STATIC_PROP) {
-            $flags |= \ast\flags\MODIFIER_STATIC;
+        if ($this->node->kind == ast\AST_STATIC_PROP) {
+            $flags |= ast\flags\MODIFIER_STATIC;
         }
 
         $property_fqsen = FullyQualifiedPropertyName::make(
@@ -1202,16 +1203,16 @@ class ContextNode
     {
         $node = $this->node;
         \assert(
-            $node instanceof \ast\Node,
+            $node instanceof ast\Node,
             '$node must be a node'
         );
 
         \assert(
-            $node->kind === \ast\AST_CONST,
-            "Node must be of type \ast\AST_CONST"
+            $node->kind === ast\AST_CONST,
+            "Node must be of type ast\AST_CONST"
         );
 
-        if ($node->children['name']->kind !== \ast\AST_NAME) {
+        if ($node->children['name']->kind !== ast\AST_NAME) {
             throw new NodeException(
                 $node,
                 "Can't determine constant name"
@@ -1301,13 +1302,13 @@ class ContextNode
     public function getClassConst() : ClassConstant
     {
         \assert(
-            $this->node instanceof \ast\Node,
+            $this->node instanceof ast\Node,
             '$this->node must be a node'
         );
 
         \assert(
-            $this->node->kind === \ast\AST_CLASS_CONST,
-            "Node must be of type \ast\AST_CLASS_CONST"
+            $this->node->kind === ast\AST_CLASS_CONST,
+            "Node must be of type ast\AST_CLASS_CONST"
         );
 
         $constant_name = $this->node->children['const'];
@@ -1394,12 +1395,12 @@ class ContextNode
     public function getUnqualifiedNameForAnonymousClass() : string
     {
         \assert(
-            $this->node instanceof \ast\Node,
+            $this->node instanceof ast\Node,
             '$this->node must be a node'
         );
 
         \assert(
-            (bool)($this->node->flags & \ast\flags\CLASS_ANONYMOUS),
+            (bool)($this->node->flags & ast\flags\CLASS_ANONYMOUS),
             "Node must be an anonymous class node"
         );
 
@@ -1446,23 +1447,23 @@ class ContextNode
             return;
         }
 
-        if (!($this->node instanceof \ast\Node) || empty($this->node->children['expr'])) {
+        if (!($this->node instanceof ast\Node) || empty($this->node->children['expr'])) {
             return;
         }
 
-        if ($this->node->kind === \ast\AST_STATIC_CALL ||
-           $this->node->kind === \ast\AST_METHOD_CALL) {
+        if ($this->node->kind === ast\AST_STATIC_CALL ||
+           $this->node->kind === ast\AST_METHOD_CALL) {
             return;
         }
 
         $llnode = $this->node;
 
-        if ($this->node->kind !== \ast\AST_DIM) {
+        if ($this->node->kind !== ast\AST_DIM) {
             if (!($this->node->children['expr'] instanceof Node)) {
                 return;
             }
 
-            if ($this->node->children['expr']->kind !== \ast\AST_DIM) {
+            if ($this->node->children['expr']->kind !== ast\AST_DIM) {
                 (new ContextNode(
                     $this->code_base,
                     $this->context,
@@ -1484,15 +1485,15 @@ class ContextNode
             return;
         }
 
-        if (!($temp->kind == \ast\AST_PROP
-            || $temp->kind == \ast\AST_STATIC_PROP
+        if (!($temp->kind == ast\AST_PROP
+            || $temp->kind == ast\AST_STATIC_PROP
         )) {
             return;
         }
 
         while ($temp instanceof Node
-            && ($temp->kind == \ast\AST_PROP
-            || $temp->kind == \ast\AST_STATIC_PROP)
+            && ($temp->kind == ast\AST_PROP
+            || $temp->kind == ast\AST_STATIC_PROP)
         ) {
             $llnode = $lnode;
             $lnode = $temp;
@@ -1508,15 +1509,15 @@ class ContextNode
 
         // Foo::$bar['baz'](); is a problem
         // Foo::$bar['baz'] is not
-        if ($lnode->kind === \ast\AST_STATIC_PROP
-            && $this->node->kind !== \ast\AST_CALL
+        if ($lnode->kind === ast\AST_STATIC_PROP
+            && $this->node->kind !== ast\AST_CALL
         ) {
             return;
         }
 
         // $this->$bar['baz']; is a problem
         // $this->bar['baz'] is not
-        if ($lnode->kind === \ast\AST_PROP
+        if ($lnode->kind === ast\AST_PROP
             && !($lnode->children['prop'] instanceof Node)
             && !($llnode->children['prop'] instanceof Node)
         ) {
@@ -1526,15 +1527,15 @@ class ContextNode
         if ((
                 (
                     $lnode->children['prop'] instanceof Node
-                    && $lnode->children['prop']->kind == \ast\AST_VAR
+                    && $lnode->children['prop']->kind == ast\AST_VAR
                 )
                 ||
                 (
                     !empty($lnode->children['class'])
                     && $lnode->children['class'] instanceof Node
                     && (
-                        $lnode->children['class']->kind == \ast\AST_VAR
-                        || $lnode->children['class']->kind == \ast\AST_NAME
+                        $lnode->children['class']->kind == ast\AST_VAR
+                        || $lnode->children['class']->kind == ast\AST_NAME
                     )
                 )
                 ||
@@ -1542,15 +1543,15 @@ class ContextNode
                     !empty($lnode->children['expr'])
                     && $lnode->children['expr'] instanceof Node
                     && (
-                        $lnode->children['expr']->kind == \ast\AST_VAR
-                        || $lnode->children['expr']->kind == \ast\AST_NAME
+                        $lnode->children['expr']->kind == ast\AST_VAR
+                        || $lnode->children['expr']->kind == ast\AST_NAME
                     )
                 )
             )
             &&
             (
-                $temp->kind == \ast\AST_VAR
-                || $temp->kind == \ast\AST_NAME
+                $temp->kind == ast\AST_VAR
+                || $temp->kind == ast\AST_NAME
             )
         ) {
             $cache_entry = FileCache::getOrReadEntry($this->context->getFile());
@@ -1585,7 +1586,7 @@ class ContextNode
             return FullyQualifiedClassName::fromFullyQualifiedString($arg);
         }
         if ($arg instanceof Node
-            && $arg->kind === \ast\AST_CLASS_CONST
+            && $arg->kind === ast\AST_CLASS_CONST
             && \strcasecmp($arg->children['const'], 'class') === 0
         ) {
             $class_type = (new ContextNode(
@@ -1598,6 +1599,14 @@ class ContextNode
             // (Expressions such as 'int::class' are syntactically valid, but would have 0 results).
             foreach ($class_type->asClassFQSENList($this->context) as $class_fqsen) {
                 return $class_fqsen;
+            }
+        }
+
+        $class_name = $this->getEquivalentPHPScalarValue();
+        // TODO: Emit
+        if (\is_string($class_name)) {
+            if (\preg_match('/^\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\]*$/', $class_name)) {
+                return FullyQualifiedClassName::fromFullyQualifiedString($class_name);
             }
         }
 
@@ -1677,11 +1686,11 @@ class ContextNode
      */
     private function getEquivalentPHPValueForNode($node, int $flags)
     {
-        if (!$node instanceof Node) {
+        if (!($node instanceof Node)) {
             return $node;
         }
         $kind = $node->kind;
-        if ($kind === \ast\AST_ARRAY) {
+        if ($kind === ast\AST_ARRAY) {
             if (($flags & self::RESOLVE_ARRAYS) === 0) {
                 return $node;
             }
@@ -1691,7 +1700,7 @@ class ContextNode
                 return $node;
             }
             return $elements;
-        } elseif ($kind === \ast\AST_CONST) {
+        } elseif ($kind === ast\AST_CONST) {
             $name = $node->children['name']->children['name'] ?? null;
             if (\is_string($name)) {
                 switch (\strtolower($name)) {
@@ -1718,7 +1727,7 @@ class ContextNode
                 $new_node = $this->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
             }
             return $new_node;
-        } elseif ($kind === \ast\AST_CLASS_CONST) {
+        } elseif ($kind === ast\AST_CLASS_CONST) {
             if (($flags & self::RESOLVE_CONSTANTS) === 0) {
                 return $node;
             }
@@ -1734,6 +1743,53 @@ class ContextNode
                 $new_node = $this->getEquivalentPHPValueForNode($new_node, $flags & ~self::RESOLVE_CONSTANTS);
             }
             return $new_node;
+        } elseif ($kind === ast\AST_MAGIC_CONST) {
+            return $this->getValueForMagicConstByNode($node);
+        }
+        return $node;
+    }
+
+    public function getValueForMagicConst()
+    {
+        assert($this->node->kind === ast\AST_MAGIC_CONST);
+        return $this->getValueForMagicConstByNode($this->node);
+    }
+
+    public function getValueForMagicConstByNode(Node $node) {
+        $context = $this->context;
+        switch ($node->flags) {
+        case ast\flags\MAGIC_CLASS:
+            if ($context->isInClassScope()) {
+                return (string)$context->getClassFQSEN();
+            }
+            return $node;
+        case ast\flags\MAGIC_FUNCTION:
+            if ($context->isInFunctionLikeScope()) {
+                $fqsen = $context->getFunctionLikeFQSEN();
+                return $fqsen->isClosure() ? '{closure}' : $fqsen->getName();
+            }
+            return $node;
+        case ast\flags\MAGIC_METHOD:
+            // TODO: Is this right?
+            if ($context->isInMethodScope()) {
+                return \ltrim((string)$context->getFunctionLikeFQSEN(), '\\');
+            }
+            return $node;
+        case ast\flags\MAGIC_DIR:
+            // TODO: Absolute directory?
+            return \dirname($context->getFile());
+        case ast\flags\MAGIC_FILE:
+            return $context->getFile();
+        case ast\flags\MAGIC_LINE:
+            return $node->lineno ?? $context->getLineNumberStart();
+        case ast\flags\MAGIC_NAMESPACE:
+            return \ltrim($context->getNamespace(), '\\');
+        case ast\flags\MAGIC_TRAIT:
+            // TODO: Could check if in trait, low importance.
+            if ($context->isInClassScope()) {
+                return (string)$context->getClassFQSEN();
+            }
+            return $node;
         }
         return $node;
     }

@@ -160,16 +160,19 @@ class DuplicateArrayKeyVisitor extends PluginAwareAnalysisVisitor
         if (!($key instanceof ast\Node)) {
             return $key;
         }
-        if (!in_array($key->kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST], true)) {
+        $kind = $key->kind;
+        if (!in_array($kind, [\ast\AST_CLASS_CONST, \ast\AST_CONST, \ast\AST_MAGIC_CONST], true)) {
             return $key;
         }
         // if key is constant, take it in account
-        $constant = new ContextNode($this->code_base, $this->context, $key);
+        $context_node = new ContextNode($this->code_base, $this->context, $key);
         try {
-            if ($key->kind === \ast\AST_CLASS_CONST) {
-                $key = $constant->getClassConst()->getNodeForValue();
+            if ($kind === \ast\AST_CLASS_CONST) {
+                $key = $context_node->getClassConst()->getNodeForValue();
+            } elseif ($kind === \ast\AST_CONST) {
+                $key = $context_node->getConst()->getNodeForValue();
             } else {
-                $key = $constant->getConst()->getNodeForValue();
+                $key = $context_node->getValueForMagicConst();
             }
             if ($key === null) {
                 $key = '';

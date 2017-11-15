@@ -2137,14 +2137,20 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function methodFQSENListFromParts($class_or_expr, $method_name) : array
     {
-        if (!\is_string($method_name)) {
-            // Currently only works with string literals.
-            // TODO: Check if union type is sane, e.g. callable ['MyClass', new stdClass()] is nonsense.
-            return [];
-        }
         $code_base = $this->code_base;
         $context = $this->context;
 
+        if (!\is_string($method_name)) {
+            if (!($method_name instanceof Node))  {
+                // TODO: Warn about int/float here
+                return [];
+            }
+            $method_name = (new ContextNode($code_base, $context, $method_name))->getEquivalentPHPScalarValue();
+            if (!\is_string($method_name)) {
+                // TODO: Check if union type is sane, e.g. callable ['MyClass', new stdClass()] is nonsense.
+                return [];
+            }
+        }
         if (is_string($class_or_expr)) {
             if (\in_array(\strtolower($class_or_expr), ['static', 'self', 'parent'], true)) {
                 // Allow 'static' but not '\static'
@@ -2234,6 +2240,10 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     private function functionLikeFQSENListFromNode($node) : array
     {
+        $orig_node = $node;
+        if ($node instanceof Node) {
+            $node = (new ContextNode($this->code_base, $this->context, $node))->getEquivalentPHPValue();
+        }
         if (\is_string($node)) {
             if (\stripos($node, '::') !== false) {
                 list($class_name, $method_name) = \explode('::', $node, 2);
@@ -2241,36 +2251,33 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
             return $this->functionFQSENListFromFunctionName($node);
         }
-        if (!($node instanceof Node)) {
-            // warning is probably redundant
-            return [];
-        }
-        if ($node->kind === \ast\AST_ARRAY) {
-            $elements = $node->children;
-            if (\count($elements) !== 2) {
+        if (\is_array($node)) {
+            if (\count($node) !== 2) {
                 $this->emitIssue(
                     Issue::TypeInvalidCallableArraySize,
-                    $node->lineno ?? 0,
-                    \count($elements)
+                    $orig_node->lineno ?? 0,
+                    \count($node)
                 );
                 return [];
             }
-            $parts = [];
-            foreach ($elements as $i => $elem) {
-                $key = $elem->children['key'];
-                $parts[] = $elem->children['value'];
-                if ($key !== null && $key !== $i) {
+            $i = 0;
+            foreach ($node as $key => $value) {
+                if ($key !== $i) {
                     $this->emitIssue(
-                        Issue::TypeInvalidCallableArraySize,
-                        $node->lineno ?? 0,
+                        Issue::TypeInvalidCallableArrayKey,
+                        $orig_node->lineno ?? 0,
                         $i
                     );
                     return [];
                 }
+                $i++;
             }
-            return $this->methodFQSENListFromParts($parts[0], $parts[1]);
+            return $this->methodFQSENListFromParts($node[0], $node[1]);
         }
-        // TODO: Look up functions by name.
+        if (!($node instanceof Node)) {
+            // TODO: Warn?
+            return [];
+        }
 
         // Get the types associated with the node
         $union_type = self::unionTypeFromNode(
