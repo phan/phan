@@ -62,6 +62,7 @@ Plugins
 + Support `'plugins' => ['AlwaysReturnPlugin']` as shorthand for full relative path to a bundled plugin such as AlwaysReturnPlugin.php (#1209)
 
 Maintenance
++ Performance improvements: Phan analysis is 13%-22% faster than 0.10.1, with `simplify_ast` enabled.
 + Used PHP_CodeSniffer to automatically make Phan's source directory adhere closely to PSR-1 and PSR-2, making minor changes to many files.
   (e.g. which line each brace goes on, etc.)
 + Stop tracking references to internal (non user-defined) elements (constants, properties, functions, classes, and methods) during dead code detection.
