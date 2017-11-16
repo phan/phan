@@ -35,6 +35,12 @@ class Parameter
     private $has_default_value;
 
     /**
+     * @var bool
+     * True if a given parameter is an output-only parameter and ignores the passed in type.
+     */
+    private $is_output_reference;
+
+    /**
      * @param string $name
      * The name of the parameter
      *
@@ -45,12 +51,14 @@ class Parameter
         string $name,
         UnionType $type,
         bool $is_variadic = false,
-        bool $has_default_value = false
+        bool $has_default_value = false,
+        bool $is_output_reference = false
     ) {
         $this->name = $name;
         $this->type = $type;
         $this->is_variadic = $is_variadic;
         $this->has_default_value = $has_default_value;
+        $this->is_output_reference = $is_output_reference;
     }
 
     /**
@@ -119,6 +127,15 @@ class Parameter
     public function isVariadic() : bool
     {
         return $this->is_variadic;
+    }
+
+    /**
+     * @return bool
+     * Whether or not the parameter is an output reference
+     */
+    public function isOutputReference() : bool
+    {
+        return $this->is_output_reference;
     }
 
     /**

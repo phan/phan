@@ -2,6 +2,9 @@
 namespace Phan\Language\Type;
 
 use Phan\Language\Type;
+use Phan\Language\UnionType;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\CodeBase;
 
 final class GenericArrayType extends ArrayType
 {
@@ -145,4 +148,81 @@ final class GenericArrayType extends ArrayType
 
         return $string;
     }
+
+    /**
+     * @param CodeBase
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Expands class types to all inherited classes returning
+     * a superset of this type.
+     * @override
+     */
+    public function asExpandedTypes(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        // We're going to assume that if the type hierarchy
+        // is taller than some value we probably messed up
+        // and should bail out.
+        \assert(
+            $recursion_depth < 20,
+            "Recursion has gotten out of hand"
+        );
+
+        $union_type = $this->asUnionType();
+
+        $class_fqsen = $this->genericArrayElementType()->asFQSEN();
+
+        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+            return $union_type;
+        }
+
+        \assert($class_fqsen instanceof FullyQualifiedClassName);
+
+        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+            return $union_type;
+        }
+
+        $clazz = $code_base->getClassByFQSEN($class_fqsen);
+
+        $union_type->addUnionType(
+             $clazz->getUnionType()->asGenericArrayTypes()
+        );
+
+        // Recurse up the tree to include all types
+        $recursive_union_type = new UnionType();
+        $representation = (string)$this;
+        foreach ($union_type->getTypeSet() as $clazz_type) {
+            if ((string)$clazz_type != $representation) {
+                $recursive_union_type->addUnionType(
+                    $clazz_type->asExpandedTypes(
+                        $code_base,
+                        $recursion_depth + 1
+                    )
+                );
+            } else {
+                $recursive_union_type->addType($clazz_type);
+            }
+        }
+
+        // Add in aliases
+        // (If enable_class_alias_support is false, this will do nothing)
+        $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
+        foreach ($fqsen_aliases as $alias_fqsen_record) {
+            $alias_fqsen = $alias_fqsen_record->alias_fqsen;
+            $recursive_union_type->addUnionType(
+                 $alias_fqsen->asUnionType()->asGenericArrayTypes()
+            );
+        }
+        // TODO: Investigate caching this and returning clones after analysis is done.
+
+        return $recursive_union_type;
+    }
+
 }

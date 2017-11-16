@@ -271,7 +271,7 @@ class Request
 
     /**
      * @param string[] $file_mapping_contents
-     * @param ?string &$error_message
+     * @param ?string &$error_message @phan-output-reference
      */
     public static function normalizeFileMappingContents($file_mapping_contents, &$error_message) : array
     {

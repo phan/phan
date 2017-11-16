@@ -90,7 +90,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             $clazz = $this->code_base->getClassByFQSEN(
                 $class_fqsen
             );
-
         } while ($this->context->getProjectRelativePath()
                 != $clazz->getFileRef()->getProjectRelativePath()
             || $this->context->getLineNumberStart() != $clazz->getFileRef()->getLineNumberStart()
@@ -115,8 +114,10 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     {
         $method_name = (string)$node->children['name'];
 
-        \assert($this->context->isInClassScope(),
-            "Must be in class context to see a method");
+        \assert(
+            $this->context->isInClassScope(),
+            "Must be in class context to see a method"
+        );
 
         $clazz = $this->getContextClass();
 
@@ -220,9 +221,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         // Hunt for the alternate associated with the file we're
         // looking at currently in this context.
         $function = null;
-        foreach ($canonical_function->alternateGenerator($this->code_base)
-            as $alternate_function
-        ) {
+        foreach ($canonical_function->alternateGenerator($this->code_base) as $alternate_function) {
             if ($alternate_function->getFileRef()->getProjectRelativePath()
                 === $this->context->getProjectRelativePath()
             ) {
@@ -288,7 +287,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
     private static function getOverrideClassFQSEN(CodeBase $code_base, Func $func)
     {
         $closure_scope = $func->getInternalScope();
-		if ($closure_scope instanceof ClosureScope) {
+        if ($closure_scope instanceof ClosureScope) {
             $class_fqsen = $closure_scope->getOverrideClassFQSEN();
             if (!$class_fqsen) {
                 return null;
@@ -467,9 +466,11 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         }
         if (!$func->isReturnTypeUndefined()) {
             $func_return_type = $func->getUnionType();
-            if (!$func_return_type->canCastToExpandedUnionType(
-                    Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
-                    $this->code_base)) {
+            $func_return_type_can_cast = $func_return_type->canCastToExpandedUnionType(
+                Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType(),
+                $this->code_base
+            );
+            if (!$func_return_type_can_cast) {
                 // At least one of the documented return types must
                 // be Generator, Iterable, or Traversable.
                 // Check for the issue here instead of in visitReturn/visitYield so that
@@ -508,7 +509,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
 
         if ($node->children['value']->kind == \ast\AST_ARRAY) {
             foreach ($node->children['value']->children ?? [] as $child_node) {
-
                 // $key_node = $child_node->children['key'] ?? null;
                 $value_node = $child_node->children['value'] ?? null;
 
@@ -537,7 +537,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                             $second_order_non_generic_expression_union_type
                         );
                     }
-
                 }
 
                 $this->context->addScopeVariable($variable);
@@ -618,7 +617,6 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
             foreach ($class_list as $class) {
                 $class->addReference($this->context);
             }
-
         } catch (CodeBaseException $exception) {
             $this->emitIssue(
                 Issue::UndeclaredClassCatch,

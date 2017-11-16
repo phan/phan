@@ -50,6 +50,7 @@ use ReflectionClass;
  *     $internal_class_name_list,
  *     $internal_interface_name_list,
  *     $internal_trait_name_list,
+ *     CodeBase::getPHPInternalConstantNameList(),
  *     $internal_function_name_list
  *  );
  *
@@ -613,7 +614,7 @@ class CodeBase
     public function hasClassWithFQSEN(
         FullyQualifiedClassName $fqsen
     ) : bool {
-        if (!empty($this->fqsen_class_map[$fqsen])) {
+        if ($this->fqsen_class_map->offsetExists($fqsen)) {
             return true;
         }
         return $this->lazyLoadPHPInternalClassWithFQSEN($fqsen);
@@ -1016,7 +1017,7 @@ class CodeBase
     public function hasGlobalConstantWithFQSEN(
         FullyQualifiedGlobalConstantName $fqsen
     ) : bool {
-        return !empty($this->fqsen_global_constant_map[$fqsen]);
+        return $this->fqsen_global_constant_map->offsetExists($fqsen);
     }
 
     /**
@@ -1119,7 +1120,7 @@ class CodeBase
     private function getClassMapByFullyQualifiedClassName(
         FullyQualifiedClassName $fqsen
     ) : ClassMap {
-        if (empty($this->class_fqsen_class_map_map[$fqsen])) {
+        if (!$this->class_fqsen_class_map_map->offsetExists($fqsen)) {
             $this->class_fqsen_class_map_map[$fqsen] = new ClassMap;
         }
 
@@ -1258,5 +1259,21 @@ class CodeBase
     {
         // TODO: ...
         return [];
+    }
+
+    /**
+     * @return string[] every constant name except user-defined constants.
+     */
+    public static function getPHPInternalConstantNameList() : array
+    {
+        // Unit tests call this on every test case. Cache the **internal** constants in a static variable for efficiency; those won't change.
+        static $constant_name_list = null;
+        if ($constant_name_list === null) {
+            // 'true', 'false', and 'null' aren't actually defined constants, they're keywords? Add them so that analysis won't break.
+            $constant_name_list = \array_keys(\array_merge(['true' => true, 'false' => false, 'null' => null], ...\array_values(
+                \array_diff_key(\get_defined_constants(true), ['user' => []])
+            )));
+        }
+        return $constant_name_list;
     }
 }

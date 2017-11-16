@@ -21,11 +21,12 @@ class Config
 
     /**
      * The version of the Phan plugin system.
-     * Plugin files that wish to be backwards compatible may check this and return different classes based on its existence
-     * and the results of version_compare.
+     * Plugin files that wish to be backwards compatible may check this and
+     * return different classes based on its existence and
+     * the results of version_compare.
      * PluginV2 will correspond to 2.x.y, PluginV3 will correspond to 3.x.y, etc.
      * New features increment minor versions, and bug fixes increment patch versions.
-     * @suppress PhanUnreferencedConstant
+     * @suppress PhanUnreferencedPublicClassConstant
      */
     const PHAN_PLUGIN_VERSION = '2.2.0';
 
@@ -124,10 +125,10 @@ class Config
         // a call to parent::__construct() is required.
         'parent_constructor_required' => [],
 
-        // Run a quick version of checks that takes less
+        // If true, this run a quick version of checks that takes less
         // time at the cost of not running as thorough
         // an analysis. You should consider setting this
-        // to true only when you wish you had more issues
+        // to true only when you wish you had more **undiagnosed** issues
         // to fix in your code base.
         //
         // In quick-mode the scanner doesn't rescan a function
@@ -271,12 +272,15 @@ class Config
         // what references what.
         'dead_code_detection_prefer_false_negative' => true,
 
-        // If true, then try to simplify AST into a form which improves Phan's type inference.
-        // E.g. rewrites `if (!is_string($foo)) { return; } b($foo);`
-        // into `if (is_string($foo)) {b($foo);} else {return;}`
+        // If true, then before analysis, try to simplify AST into a form
+        // which improves Phan's type inference in edge cases.
+        //
         // This may conflict with 'dead_code_detection'.
-        // This option also slows down analysis noticeably.
-        'simplify_ast' => false,
+        // When this is true, this slows down analysis slightly.
+        //
+        // E.g. rewrites `if ($a = value() && $a > 0) {...}`
+        // into $a = value(); if ($a) { if ($a > 0) {...}}`
+        'simplify_ast' => true,
 
         // If true, Phan will read `class_alias` calls in the global scope,
         // then (1) create aliases from the *parsed* files if no class definition was found,
@@ -524,8 +528,16 @@ class Config
             // 'PhanUnextractableAnnotationPart',
             // 'PhanUnreferencedClass',
             // 'PhanUnreferencedConstant',
-            // 'PhanUnreferencedMethod',
-            // 'PhanUnreferencedProperty',
+            // 'PhanUnreferencedPublicClassConstant',
+            // 'PhanUnreferencedProtectedClassConstant',
+            // 'PhanUnreferencedPrivateClassConstant',
+            // 'PhanUnreferencedPublicMethod',
+            // 'PhanUnreferencedProtectedMethod',
+            // 'PhanUnreferencedPrivateMethod',
+            // 'PhanUnreferencedPublicMethod',
+            // 'PhanUnreferencedPublicProperty',
+            // 'PhanUnreferencedProtectedProperty',
+            // 'PhanUnreferencedPublicProperty',
             // 'PhanVariableUseClause',
         ],
 
@@ -585,7 +597,9 @@ class Config
 
         // You can put paths to stubs of internal extensions in this config option.
         // If the corresponding extension is **not** loaded, then phan will use the stubs instead.
-        // Phan will continue using its detailed type annotations, but load the constants, classes, functions, and classes (and their Reflection types) from these stub files (doubling as valid php files).
+        // Phan will continue using its detailed type annotations,
+        // but load the constants, classes, functions, and classes (and their Reflection types)
+        // from these stub files (doubling as valid php files).
         // Use a different extension from php to avoid accidentally loading these.
         // The 'tools/make_stubs' script can be used to generate your own stubs (compatible with php 7.0+ right now)
         'autoload_internal_extension_signatures' => [
@@ -593,7 +607,8 @@ class Config
         ],
 
         // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
-        // but aren't available in the codebase, or the internal functions used to run phan (may lead to false positives if an extension isn't loaded)
+        // but aren't available in the codebase, or the internal functions used to run phan
+        // (may lead to false positives if an extension isn't loaded)
         // If this is true(default), then Phan will not warn.
         'ignore_undeclared_functions_with_known_signatures' => true,
 
@@ -799,20 +814,20 @@ class Config
      * @return string
      * The relative path appended to the project root directory.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public static function projectPath(string $relative_path)
     {
         // Make sure its actually relative
-        if (DIRECTORY_SEPARATOR === \substr($relative_path, 0, 1)) {
+        if (\DIRECTORY_SEPARATOR === \substr($relative_path, 0, 1)) {
             return $relative_path;
         }
         // Check for absolute path in windows, e.g. C:\
-        if (DIRECTORY_SEPARATOR === "\\" &&
-                strlen($relative_path) > 3 &&
-                ctype_alpha($relative_path[0]) &&
+        if (\DIRECTORY_SEPARATOR === "\\" &&
+                \strlen($relative_path) > 3 &&
+                \ctype_alpha($relative_path[0]) &&
                 $relative_path[1] === ':' &&
-                strspn($relative_path, '/\\', 2, 1)) {
+                \strspn($relative_path, '/\\', 2, 1)) {
             return $relative_path;
         }
 

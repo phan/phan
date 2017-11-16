@@ -77,7 +77,7 @@ class Set extends \SplObjectStorage
      * A new set which contains only items in this
      * Set and the given Set.
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function union(Set $other) : Set
     {

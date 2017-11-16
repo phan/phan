@@ -206,7 +206,7 @@ class ArgumentVisitor extends KindVisitorImplementation
      */
     public function visitMethodCall(Node $node)
     {
-        return $this->visitCall($node);
+        $this->visitCall($node);
     }
 
     /**
@@ -217,6 +217,6 @@ class ArgumentVisitor extends KindVisitorImplementation
      */
     public function visitStaticCall(Node $node)
     {
-        return $this->visitCall($node);
+        $this->visitCall($node);
     }
 }

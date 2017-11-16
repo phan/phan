@@ -844,7 +844,6 @@ class ArgumentType
                 }
                 return true;
 
-            case 'array_diff_uassoc':
             case 'array_uintersect_uassoc':
                 if ($argcount < 4) {
                     Issue::maybeEmit(

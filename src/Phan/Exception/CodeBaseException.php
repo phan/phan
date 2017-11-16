@@ -28,7 +28,7 @@ class CodeBaseException extends \Exception
      * @return bool
      * True if we have an FQSEN defined
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function hasFQSEN() : bool
     {
