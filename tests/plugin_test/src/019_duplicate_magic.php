@@ -13,6 +13,11 @@ function main19() {
         'Bar' => 6,
         __DIR__ => 'dir',
         __DIR__ => 'dir',
+        false => 7,
+        true => 8,
+        Null => 9,
+        true => 10,
+        0 => 11,
     ]);
 }
 main19();

@@ -1224,9 +1224,8 @@ class ContextNode
         $constant_name_lower = \strtolower($constant_name);
         if ($constant_name_lower === 'true' || $constant_name_lower === 'false' || $constant_name_lower === 'null') {
             return $this->code_base->getGlobalConstantByFQSEN(
-                FullyQualifiedGlobalConstantName::fromStringInContext(
-                    $constant_name,
-                    $this->context
+                FullyQualifiedGlobalConstantName::fromFullyQualifiedString(
+                    $constant_name_lower
                 )
             );
         }
