@@ -1,3 +1,4 @@
 %s:4 PhanParamSuspiciousOrder Argument #1 of this call to \explode is typically a literal or constant but isn't, but argument #2 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
 %s:6 PhanParamSuspiciousOrder Argument #1 of this call to \preg_replace is typically a literal or constant but isn't, but argument #3 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
 %s:7 PhanParamSuspiciousOrder Argument #2 of this call to \stripos is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.
+%s:8 PhanParamSuspiciousOrder Argument #2 of this call to \mb_stripos is typically a literal or constant but isn't, but argument #1 (which is typically a variable) is a literal or constant. The arguments may be in the wrong order.

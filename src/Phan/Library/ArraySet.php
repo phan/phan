@@ -18,6 +18,7 @@ final class ArraySet
     /**
      * @param Type $object
      * @return Type[]
+     * @suppress PhanUnreferencedPublicMethod callers inlined this for performanced.
      */
     public static function singleton($object) : array
     {
@@ -91,6 +92,8 @@ final class ArraySet
      * Just use array_filter - array_filter preserves keys.
      * @param Type[] $object_set
      * @param \Closure $cb
+     * @deprecated
+     * @suppress PhanUnreferencedPublicMethod callers inlined this for performanced.
      */
     public static function filter(array $object_set, \Closure $cb) : array
     {
@@ -150,6 +153,7 @@ final class ArraySet
      * Helper function for assertions.
      * @param Type[] $object_set
      * @return bool - Whether or not this is an object set.
+     * @suppress PhanUnreferencedPublicMethod this is only used as a sanity check
      */
     public static function is_array_set(array $object_set)
     {

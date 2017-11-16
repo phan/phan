@@ -8,6 +8,8 @@ Phan 0.8.x switched from using AST version 40 (php-ast 0.1.4+) to AST version 50
 ### Backported from Phan 0.10.2 (dev)
 
 New Features(Analysis)
++ Enable `simplify_ast` by default.
+  The new default value should reduce false positives when analyzing conditions of if statements. (#407, #1066)
 + Support less ambiguous `?(T[])` and `(?T)[]` in phpdoc (#1213)
   Note that `(S|T)[]` is **not** supported yet.
 + Support alternate syntax `array<T>` and `array<Key, T>` in phpdoc (PR #1213)
@@ -15,8 +17,10 @@ New Features(Analysis)
 + Speed up phan analysis on small projects, reduce memory usage (Around 0.15 seconds and 15MB)
   This was done by deferring loading the information about internal classes and functions until that information was needed for analysis.
 + Analyze existence and usage of callables passed to (internal and user-defined) function&methods expecting callable. (#1194)
-  Analysis will now warn if a callable no longer exists.
-  This change also reduces false positives in dead code detection.
+  Analysis will now warn if the referenced function/method of a callable array/string
+  (passed to a function/method expecting a callable param) does not exist.
+
+  This change also reduces false positives in dead code detection (Passing in these callable arrays/strings counts as a reference now)
 + Warn if attempting to read/write to an property or constant when the expression is a non-object. (or not a class name, for static elements) (#1268)
 + Split `PhanUnreferencedClosure` out of `PhanUnreferencedFunction`. (Emitted by `--dead-code-detection`)
 + Split `PhanUnreferencedMethod` into `PhanUnreferencedPublicMethod`, `PhanUnreferencedProtectedMethod`, and `PhanUnreferencedPrivateMethod`.
@@ -25,8 +29,18 @@ New Features(Analysis)
   `PhanUnreferencedConst` is now exclusively used for global constants.
 + Analyze compact() for undefined variables (#1089)
 + Add `PhanParamSuspiciousOrder` to warn about mixing up variable and constant/literal arguments in calls to built in string/regex functions
-  (`explode`, `strpos`, `preg_match`, etc.)
+  (`explode`, `strpos`, `mb_strpos`, `preg_match`, etc.)
 + Preserve the closure's function signature in the inferred return value of `Closure::bind()`. (#869)
++ Support indicating that a reference parameter's input value is unused by writing `@phan-output-reference` on the same line as an `@param` annotation.
+  This indicates that Phan should not warn about the passed in type, and should not preserve the passed in type after the call to the function/method.
+  (In other words, Phan will analyze a user-defined reference parameter the same way as it would `$matches` in `preg_match($pattern, $string, $matches)`)
+  Example usage: `/** @param string $x @phan-output-reference */ function set_x(&$x) { $x = 'result'; }`
++ Make phan infer unreachability from fatal errors such as `trigger_error($message, E_USER_ERROR);` (#1224)
++ Add new issue types for places where an object would be expected:
+  `PhanTypeExpectedObjectPropAccess`, `PhanTypeExpectedObjectPropAccessButGotNull`, `PhanTypeExpectedObjectStaticPropAccess`,
+  `PhanTypeExpectedObject`, and `PhanTypeExpectedObjectOrClassName
++ Emit more accurate line numbers for phpdoc comments, when warning about phpdoc in doc comments being invalid. (#1294)
+  This gives up and uses the element's line number if the phpdoc ends over 10 lines before the start of the element.
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
@@ -44,14 +58,20 @@ Bug Fixes
   Fix the way that uses of private/protected methods from traits were tracked.
   Also, start warning about a subset of issues from interfaces and abstract classes (e.g. unused interface constants)
 + Properly handle `static::class` as a class name in an array callable, or `static::method_name` in a string callable (#1232)
++ Make `@template` tag for [Generic Types](https://github.com/phan/phan/wiki/Generic-Types) case sensitive. (#1243)
++ Fix a bug causing Phan to infer an empty union type (which can cast to any type) for arrays with elements of empty union types. (#1296)
 
 Plugins
 + Make DuplicateArrayKeyPlugin start warning about duplicate values of known global constants and class constants. (#1139)
++ Make DuplicateArrayKeyPlugin start warning about case statements with duplicate values (This resolves constant values the same way as array key checks)
 + Support `'plugins' => ['AlwaysReturnPlugin']` as shorthand for full relative path to a bundled plugin such as AlwaysReturnPlugin.php (#1209)
 
 Maintenance
++ Performance improvements: Phan analysis is 13%-22% faster than 0.10.1, with `simplify_ast` enabled.
 + Used PHP_CodeSniffer to automatically make Phan's source directory adhere closely to PSR-1 and PSR-2, making minor changes to many files.
   (e.g. which line each brace goes on, etc.)
++ Stop tracking references to internal (non user-defined) elements (constants, properties, functions, classes, and methods) during dead code detection.
+  (Dead code detection now requires an extra 15MB instead of 17MB for self-analysis)
 
 20 Oct 2017, Phan 0.8.9
 -----------------------

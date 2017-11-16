@@ -3,6 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\Language\FQSEN;
 use Phan\Language\Type;
+use Phan\Language\UnionType;
 
 final class ClosureType extends Type
 {
@@ -42,6 +43,19 @@ final class ClosureType extends Type
     {
         assert($this->fqsen === null, 'should only clone null fqsen');
         // same as new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
+    }
+
+    /**
+     * @return UnionType
+     * A UnionType representing this and only this type
+     * @override so that cloning ClosureType won't break singleton_type_list
+     */
+    public function asUnionType() : UnionType
+    {
+        return new UnionType(
+            [\spl_object_id($this) => $this],
+            true
+        );
     }
 
     public function hasKnownFQSEN() : bool

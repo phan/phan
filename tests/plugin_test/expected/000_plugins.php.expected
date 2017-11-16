@@ -7,7 +7,7 @@ src/000_plugins.php:28 PhanPluginUndeclaredVariableIsset undeclared variable $fo
 src/000_plugins.php:29 PhanPluginComplexVariableInIsset Unanalyzable complex variable expression in isset
 src/000_plugins.php:29 PhanPluginDollarDollar $$ Variables are not allowed.
 src/000_plugins.php:33 PhanPluginNonBoolBranch Non bool value evaluated in if clause
-src/000_plugins.php:40 PhanPluginNonBoolInLogicalArith Non bool value in logical arithmetic
+src/000_plugins.php:40 PhanPluginNonBoolBranch Non bool value evaluated in if clause
 src/000_plugins.php:47 PhanPluginNumericalComparison non numerical values compared by the operators '==' or '!=='
 src/000_plugins.php:49 PhanPluginNumericalComparison numerical values compared by the operators '===' or '!=='
 src/000_plugins.php:55 UnusedSuppression Element \testUnusedSuppressionPlugin suppresses issue PhanParamTooFew but does not use it

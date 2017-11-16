@@ -20,8 +20,8 @@ use Phan\Plugin\ConfigPluginSet;
  *
  * @see self::analyzeFileList
  */
-class Phan implements IgnoredFilesFilterInterface {
-
+class Phan implements IgnoredFilesFilterInterface
+{
     /** @var IssuePrinterInterface */
     public static $printer;
 
@@ -31,7 +31,8 @@ class Phan implements IgnoredFilesFilterInterface {
     /**
      * @return IssueCollectorInterface
      */
-    public static function getIssueCollector() : IssueCollectorInterface {
+    public static function getIssueCollector() : IssueCollectorInterface
+    {
         return self::$issueCollector;
     }
 
@@ -146,8 +147,6 @@ class Phan implements IgnoredFilesFilterInterface {
 
                 // Save this to the set of files to analyze
                 $analyze_file_path_list[] = $file_path;
-
-
             } catch (\AssertionError $assertion_error) {
                 error_log("While parsing $file_path...\n");
                 error_log("$assertion_error\n");
@@ -178,9 +177,13 @@ class Phan implements IgnoredFilesFilterInterface {
             if ($is_daemon_request) {
                 \assert(!is_array($language_server_config), 'not supported yet');
                 // Garbage collecting cycles doesn't help or hurt much here. Thought it would change something..
-                // TODO: check for conflicts with other config options - incompatible with dump_ast, dump_signatures_file, output-file, etc.
-                // incompatible with dead_code_detection
-                $request = Daemon::run($code_base, $file_path_lister);  // This will fork and fall through every time a request to re-analyze the file set comes in. The daemon should be periodically restarted?
+                // TODO: check for conflicts with other config options -
+                //    incompatible with dump_ast, dump_signatures_file, output-file, etc.
+                //    incompatible with dead_code_detection
+
+                // This will fork and fall through every time a request to re-analyze the file set comes in.
+                // TODO: The daemon should be periodically restarted?
+                $request = Daemon::run($code_base, $file_path_lister);
                 if (!$request) {
                     // TODO: Add a way to cleanly shut down.
                     error_log("Finished serving requests, exiting");
@@ -191,7 +194,7 @@ class Phan implements IgnoredFilesFilterInterface {
                 // This is the list of all of the parsed files
                 // (Also includes files which don't declare classes/functions/constants)
                 $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
-                if (count($analyze_file_path_list) === 0)  {
+                if (count($analyze_file_path_list) === 0) {
                     $request->respondWithNoFilesToAnalyze();  // respond and exit.
                 }
                 // Do this before we stop tracking undo operations.
@@ -212,7 +215,7 @@ class Phan implements IgnoredFilesFilterInterface {
                 // This is the list of all of the parsed files
                 // (Also includes files which don't declare classes/functions/constants)
                 $analyze_file_path_list = $request->filterFilesToAnalyze($code_base->getParsedFilePathList());
-                if (count($analyze_file_path_list) === 0)  {
+                if (count($analyze_file_path_list) === 0) {
                     $request->respondWithNoFilesToAnalyze();  // respond and exit.
                 }
                 // Do this before we stop tracking undo operations.
@@ -220,7 +223,6 @@ class Phan implements IgnoredFilesFilterInterface {
 
                 // FIXME use sabre or some other async code
                 // FIXME implement
-
             }
 
             // Stop tracking undo operations, now that the parse phase is done.
@@ -270,7 +272,7 @@ class Phan implements IgnoredFilesFilterInterface {
                 return !self::isExcludedAnalysisFile($file_path);
             }
         );
-        if ($request instanceof Request && count($analyze_file_path_list) === 0)  {
+        if ($request instanceof Request && count($analyze_file_path_list) === 0) {
             $request->respondWithNoFilesToAnalyze();
             exit(0);
         }
@@ -296,19 +298,20 @@ class Phan implements IgnoredFilesFilterInterface {
          * This worker takes a file and analyzes it
          * @return void
          */
-        $analysis_worker = function($i, $file_path)
-            use ($file_count, $code_base, $temporary_file_mapping) {
-                CLI::progress('analyze', ($i + 1) / $file_count);
-                Analysis::analyzeFile($code_base, $file_path, $temporary_file_mapping[$file_path] ?? null);
-            };
+        $analysis_worker = function($i, $file_path) use ($file_count, $code_base, $temporary_file_mapping) {
+            CLI::progress('analyze', ($i + 1) / $file_count);
+            Analysis::analyzeFile($code_base, $file_path, $temporary_file_mapping[$file_path] ?? null);
+        };
 
         // Determine how many processes we're running on. This may be
         // less than the provided number if the files are bunched up
         // excessively.
         $process_count = count($process_file_list_map);
 
-        \assert($process_count > 0 && $process_count <= Config::getValue('processes'),
-            "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used.");
+        \assert(
+            $process_count > 0 && $process_count <= Config::getValue('processes'),
+            "The process count must be between 1 and the given number of processes. After mapping files to cores, $process_count process were set to be used."
+        );
 
         $did_fork_pool_have_error = false;
 
@@ -316,7 +319,6 @@ class Phan implements IgnoredFilesFilterInterface {
         // Check to see if we're running as multiple processes
         // or not
         if ($process_count > 1) {
-
             // Run analysis one file at a time, splitting the set of
             // files up among a given number of child processes.
             $pool = new ForkPool(
@@ -328,7 +330,7 @@ class Phan implements IgnoredFilesFilterInterface {
                     self::getIssueCollector()->reset();
                 },
                 $analysis_worker,
-                function () use($code_base) : array {
+                function () use ($code_base) : array {
                     // This closure is run once, after running analysis_worker on each input.
                     // If there are any plugins defining finalizeProcess(), run those.
                     ConfigPluginSet::instance()->finalizeProcess($code_base);
@@ -341,7 +343,6 @@ class Phan implements IgnoredFilesFilterInterface {
             // Wait for all tasks to complete and collect the results.
             self::collectSerializedResults($pool->wait());
             $did_fork_pool_have_error = $pool->didHaveError();
-
         } else {
             // Get the task data from the 0th processor
             $analyze_file_path_list = array_values($process_file_list_map)[0];
@@ -449,9 +450,7 @@ class Phan implements IgnoredFilesFilterInterface {
         }
 
         $file_path = str_replace('\\', '/', $file_path);
-        foreach (Config::getValue('exclude_analysis_directory_list')
-                 as $directory
-        ) {
+        foreach (Config::getValue('exclude_analysis_directory_list') as $directory) {
             if (0 === strpos($file_path, $directory)
                 || 0 === strpos($file_path, "./$directory")) {
                 return true;
@@ -466,7 +465,8 @@ class Phan implements IgnoredFilesFilterInterface {
      *
      * @return void
      */
-    private static function display() {
+    private static function display()
+    {
         $collector = self::$issueCollector;
 
         $printer = self::$printer;
@@ -488,7 +488,8 @@ class Phan implements IgnoredFilesFilterInterface {
      * Save json encoded function&method signature to a map.
      * @return int - Exit code for process
      */
-    private static function dumpSignaturesToFile(CodeBase $code_base, string $filename) : int {
+    private static function dumpSignaturesToFile(CodeBase $code_base, string $filename) : int
+    {
         $encoded_signatures = json_encode($code_base->exportFunctionAndMethodSet(), JSON_PRETTY_PRINT);
         if (!file_put_contents($filename, $encoded_signatures)) {
             error_log(sprintf("Could not save contents to path '%s'\n", $filename));
@@ -521,7 +522,8 @@ class Phan implements IgnoredFilesFilterInterface {
      *
      * @return bool True if filename is ignored during analysis
      */
-    public function isFilenameIgnored(string $filename):bool {
+    public function isFilenameIgnored(string $filename) : bool
+    {
         return self::isExcludedAnalysisFile($filename);
     }
 
@@ -529,7 +531,8 @@ class Phan implements IgnoredFilesFilterInterface {
      * Logs slow php options to stdout
      * @return void
      */
-    private static function checkForSlowPHPOptions() {
+    private static function checkForSlowPHPOptions()
+    {
         if (Config::getValue('skip_slow_php_options_warning')) {
             return;
         }
@@ -552,7 +555,8 @@ class Phan implements IgnoredFilesFilterInterface {
      * Loads configured stubs for internal PHP extensions.
      * @return void
      */
-    private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base) {
+    private static function loadConfiguredPHPExtensionStubs(CodeBase $code_base)
+    {
         $stubs = Config::getValue('autoload_internal_extension_signatures');
         foreach ($stubs ?: [] as $extension_name => $path_to_extension) {
             // Prefer using reflection info from the running extension over what's in the stub files.

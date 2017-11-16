@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Type;
 
+use Phan\CodeBase;
+use Phan\Language\UnionType;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 
@@ -159,6 +161,26 @@ abstract class NativeType extends Type
     public function asFQSENString() : string
     {
         return $this->name;
+    }
+
+    /**
+     * @param CodeBase
+     * The code base to use in order to find super classes, etc.
+     *
+     * @param $recursion_depth
+     * This thing has a tendency to run-away on me. This tracks
+     * how bad I messed up by seeing how far the expanded types
+     * go
+     *
+     * @return UnionType
+     * Does nothing for Native Types, but GenericArrayType is an exception to that.
+     * @override
+     */
+    public function asExpandedTypes(
+        CodeBase $code_base,
+        int $recursion_depth = 0
+    ) : UnionType {
+        return $this->asUnionType();
     }
 }
 \class_exists(ArrayType::class);

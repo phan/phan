@@ -84,6 +84,28 @@ class CommentTest extends BaseTest
         $this->assertSame(true, $my_param_doc->isRequired());
         $this->assertSame(false, $my_param_doc->isVariadic());
         $this->assertSame('myParam', $my_param_doc->getName());
+        $this->assertSame(false, $my_param_doc->isOutputReference());
+    }
+
+    public function testGetParameterMapReferenceIgnored()
+    {
+        $comment = Comment::fromStringInContext(
+            '/** @param int &$myParam */',
+            $this->code_base,
+            new Context(),
+            1,
+            Comment::ON_METHOD
+        );
+        $parameter_map = $comment->getParameterMap();
+        $this->assertSame(['myParam'], \array_keys($parameter_map));
+        $this->assertSame([], $comment->getParameterList());
+        $my_param_doc = $parameter_map['myParam'];
+        $this->assertSame('int $myParam', (string)$my_param_doc);
+        $this->assertSame(false, $my_param_doc->isOptional());
+        $this->assertSame(true, $my_param_doc->isRequired());
+        $this->assertSame(false, $my_param_doc->isVariadic());
+        $this->assertSame('myParam', $my_param_doc->getName());
+        $this->assertSame(false, $my_param_doc->isOutputReference());
     }
 
     public function testGetVariadicParameterMap()
@@ -104,7 +126,25 @@ class CommentTest extends BaseTest
         $this->assertSame(false, $my_param_doc->isRequired());
         $this->assertSame(true, $my_param_doc->isVariadic());
         $this->assertSame('args', $my_param_doc->getName());
+        $this->assertSame(false, $my_param_doc->isOutputReference());
     }
+
+    public function testGetOutputParameter()
+    {
+        $comment = Comment::fromStringInContext(
+            "/** @param int|string \$args @phan-output-reference\n@param string \$other*/",
+            $this->code_base,
+            new Context(),
+            1,
+            Comment::ON_METHOD
+        );
+
+        $parameter_map = $comment->getParameterMap();
+        $this->assertSame(['args', 'other'], \array_keys($parameter_map));
+        $this->assertTrue($parameter_map['args']->isOutputReference());
+        $this->assertFalse($parameter_map['other']->isOutputReference());
+    }
+
 
     public function testGetReturnType()
     {
@@ -178,7 +218,9 @@ EOT;
     {
         $commentText = <<<'EOT'
 /**
+ * The check for template is case sensitive.
  * @template T1
+ * @Template TestIgnored
  * @template u
  */
 EOT;

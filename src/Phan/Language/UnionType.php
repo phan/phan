@@ -394,18 +394,6 @@ class UnionType implements \Serializable
 
     /**
      * @return bool
-     * True if this union type has any types that are generic
-     * types.
-     */
-    private function hasGenericType() : bool
-    {
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
-            return $type->hasTemplateParameterTypes();
-        });
-    }
-
-    /**
-     * @return bool
      * True if this union type has any types that are bool/false/true types
      */
     public function hasTypeInBoolFamily() : bool
@@ -1131,6 +1119,7 @@ class UnionType implements \Serializable
      * @return bool
      * True if this union type represents types that are arrays
      * or generic arrays, but nothing else.
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function isExclusivelyArray() : bool
     {
@@ -1297,6 +1286,8 @@ class UnionType implements \Serializable
      *
      * @return UnionType
      * A UnionType with generic array types filtered out
+     *
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function nonGenericArrayTypes() : UnionType
     {
@@ -1399,8 +1390,9 @@ class UnionType implements \Serializable
      * @return bool
      * A UnionType with known callable types kept, other types filtered out.
      *
-     * @see nonGenericArrayTypes
-     * @see genericArrayElementTypes
+     * @see $this->callableTypes()
+     *
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function hasCallableType() : bool
     {
@@ -1547,6 +1539,8 @@ class UnionType implements \Serializable
      * Get a new type for each type in this union which is
      * the generic array version of this type. For instance,
      * 'int|float' will produce 'int[]|float[]'.
+     *
+     * If $this is an empty UnionType, this method will produce an empty UnionType
      */
     public function asGenericArrayTypes() : UnionType
     {
@@ -1557,6 +1551,25 @@ class UnionType implements \Serializable
         );
     }
 
+    /**
+     * @return UnionType
+     * Get a new type for each type in this union which is
+     * the generic array version of this type. For instance,
+     * 'int|float' will produce 'int[]|float[]'.
+     *
+     * If $this is an empty UnionType, this method will produce 'array'
+     */
+    public function asNonEmptyGenericArrayTypes() : UnionType
+    {
+        if (\count($this->type_set) === 0) {
+            return ArrayType::instance(false)->asUnionType();
+        }
+        return $this->asMappedUnionType(
+            function (Type $type) : Type {
+                return $type->asGenericArrayType();
+            }
+        );
+    }
     /**
      * @param CodeBase
      * The code base to use in order to find super classes, etc.

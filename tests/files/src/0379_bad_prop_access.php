@@ -22,3 +22,8 @@ function test_object($x) {
     var_export($x[0]);  // invalid
     return $x->prop;
 }
+
+function test_null() {
+    $x = null;
+    return $x->prop;
+}

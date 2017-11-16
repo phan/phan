@@ -60,7 +60,7 @@ function with_disabled_phan_error_handler(Closure $closure)
  * The error handler for PHP notices, etc.
  * This is a named function instead of a closure to make stack traces easier to read.
  *
- * @suppress PhanUnreferencedMethod
+ * @suppress PhanUnreferencedFunction
  */
 function phan_error_handler($errno, $errstr, $errfile, $errline)
 {

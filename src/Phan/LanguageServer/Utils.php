@@ -15,7 +15,10 @@ use Throwable;
  */
 class Utils
 {
-    /** @return void */
+    /**
+     * @return void
+     * @suppress PhanUnreferencedPublicMethod
+     */
     public static function crash(Throwable $err)
     {
         Loop\nextTick(function () use ($err) {

@@ -170,6 +170,18 @@ interface FunctionInterface extends AddressableElementInterface
     public function clearParameterList();
 
     /**
+     * Records the fact that $parameter_name is an output-only reference.
+     * @param string $parameter_name
+     * @return void
+     */
+    public function recordOutputReferenceParamName(string $parameter_name);
+
+    /**
+     * @return string[] list of output references (annotated with (at)phan-output-reference. Usually empty.
+     */
+    public function getOutputReferenceParamNames() : array;
+
+    /**
      * @return \Generator
      * The set of all alternates to this function
      */
