@@ -8756,7 +8756,7 @@ return [
 'SplObjectStorage::getInfo' => ['mixed'],
 'SplObjectStorage::key' => ['int'],
 'SplObjectStorage::next' => ['void'],
-'SplObjectStorage::offsetExists' => ['object', 'object'=>'object'],
+'SplObjectStorage::offsetExists' => ['bool', 'object'=>'object'],
 'SplObjectStorage::offsetGet' => ['mixed', 'obj'=>'object'],
 'SplObjectStorage::offsetSet' => ['object', 'object'=>'object', 'data='=>''],
 'SplObjectStorage::offsetUnset' => ['object', 'object'=>'object'],
