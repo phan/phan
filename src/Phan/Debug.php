@@ -241,12 +241,6 @@ class Debug
             if (\ast\kind_uses_flags($ast->kind) || $ast->flags != 0) {
                 $result .= "\n    flags: " . self::formatFlags($ast->kind, $ast->flags);
             }
-            if (isset($ast->children['name'])) {
-                $result .= "\n    name: {$ast->children['name']}";
-            }
-            if (isset($ast->children['docComment'])) {
-                $result .= "\n    docComment: {$ast->children['docComment']}";
-            }
             foreach ($ast->children as $i => $child) {
                 $result .= "\n    $i: " . str_replace("\n", "\n    ", self::astDump($child, $options));
             }

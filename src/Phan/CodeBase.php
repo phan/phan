@@ -614,7 +614,7 @@ class CodeBase
     public function hasClassWithFQSEN(
         FullyQualifiedClassName $fqsen
     ) : bool {
-        if (!empty($this->fqsen_class_map[$fqsen])) {
+        if ($this->fqsen_class_map->offsetExists($fqsen)) {
             return true;
         }
         return $this->lazyLoadPHPInternalClassWithFQSEN($fqsen);
@@ -1017,7 +1017,7 @@ class CodeBase
     public function hasGlobalConstantWithFQSEN(
         FullyQualifiedGlobalConstantName $fqsen
     ) : bool {
-        return !empty($this->fqsen_global_constant_map[$fqsen]);
+        return $this->fqsen_global_constant_map->offsetExists($fqsen);
     }
 
     /**
@@ -1120,7 +1120,7 @@ class CodeBase
     private function getClassMapByFullyQualifiedClassName(
         FullyQualifiedClassName $fqsen
     ) : ClassMap {
-        if (empty($this->class_fqsen_class_map_map[$fqsen])) {
+        if (!$this->class_fqsen_class_map_map->offsetExists($fqsen)) {
             $this->class_fqsen_class_map_map[$fqsen] = new ClassMap;
         }
 

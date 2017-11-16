@@ -24,7 +24,7 @@ abstract class KindVisitorImplementation implements KindVisitor
         return $this->{$fn_name}($node);
     }
 
-    private function handleMissingNodeKind(Node $node)
+    public function handleMissingNodeKind(Node $node)
     {
         Debug::printNode($node);
         assert(false, 'All node kinds must match');
