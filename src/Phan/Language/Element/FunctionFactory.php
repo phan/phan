@@ -9,7 +9,8 @@ use Phan\Language\Type;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
 
-class FunctionFactory {
+class FunctionFactory
+{
 
     /**
      * @return Func[]
@@ -190,9 +191,7 @@ class FunctionFactory {
             $alternate_function->clearParameterList();
 
             // Load parameter types if defined
-            foreach ($map['parameter_name_type_map'] ?? []
-                as $parameter_name => $parameter_type
-            ) {
+            foreach ($map['parameter_name_type_map'] ?? [] as $parameter_name => $parameter_type) {
                 $flags = 0;
                 $phan_flags = 0;
                 $is_optional = false;
@@ -204,7 +203,7 @@ class FunctionFactory {
                     if (\strncmp($parameter_name, 'rw_', 3) === 0) {
                         $phan_flags |= Flags::IS_READ_REFERENCE | Flags::IS_WRITE_REFERENCE;
                         $parameter_name = \substr($parameter_name, 3);
-                    } else if (\strncmp($parameter_name, 'w_', 2) === 0) {
+                    } elseif (\strncmp($parameter_name, 'w_', 2) === 0) {
                         $phan_flags |= Flags::IS_WRITE_REFERENCE;
                         $parameter_name = \substr($parameter_name, 2);
                     }
@@ -250,12 +249,14 @@ class FunctionFactory {
             // if this is out of sync with the extension's ReflectionMethod->getParameterList()?
             // (e.g. third party extensions may add more required parameters?)
             $alternate_function->setNumberOfRequiredParameters(
-                \array_reduce($alternate_function->getParameterList(),
+                \array_reduce(
+                    $alternate_function->getParameterList(),
                     function(int $carry, Parameter $parameter) : int {
                         return ($carry + (
                             $parameter->isOptional() ? 0 : 1
                         ));
-                    }, 0
+                    },
+                    0
                 )
             );
 

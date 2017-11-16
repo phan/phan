@@ -752,59 +752,89 @@ class ParameterTypesAnalyzer
                 continue;
             }
             $phpdoc_param_union_type = $phpdoc_parameter_map[$parameter->getName()] ?? null;
-            if ($phpdoc_param_union_type) {
-                $context = $method->getContext();
-                $resolved_real_param_type = $real_param_type->withStaticResolvedInContext($context);
-                $is_exclusively_narrowed = true;
-                foreach ($phpdoc_param_union_type->getTypeSet() as $phpdoc_type) {
-                    // Make sure that the commented type is a narrowed
-                    // or equivalent form of the syntax-level declared
-                    // return type.
-                    if (!$phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
-                        $resolved_real_param_type,
+            if ($phpdoc_param_union_type && !$phpdoc_param_union_type->isEmpty()) {
+                self::tryToAssignPHPDocTypeToParameter($code_base, $method, $i, $parameter, $real_param_type, $phpdoc_param_union_type);
+            }
+        }
+        self::recordOutputReferences($method);
+    }
+
+    /**
+     * @return void
+     */
+    private static function tryToAssignPHPDocTypeToParameter(
+        CodeBase $code_base,
+        FunctionInterface $method,
+        int $i,
+        Parameter $parameter,
+        UnionType $real_param_type,
+        UnionType $phpdoc_param_union_type
+    ) {
+        $context = $method->getContext();
+        $resolved_real_param_type = $real_param_type->withStaticResolvedInContext($context);
+        $is_exclusively_narrowed = true;
+        foreach ($phpdoc_param_union_type->getTypeSet() as $phpdoc_type) {
+            // Make sure that the commented type is a narrowed
+            // or equivalent form of the syntax-level declared
+            // return type.
+            if (!$phpdoc_type->isExclusivelyNarrowedFormOrEquivalentTo(
+                $resolved_real_param_type,
+                $context,
+                $code_base
+            )
+            ) {
+                $is_exclusively_narrowed = false;
+                if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParam)) {
+                    Issue::maybeEmit(
+                        $code_base,
                         $context,
-                        $code_base
-                    )
-                    ) {
-                        $is_exclusively_narrowed = false;
-                        if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParam)) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $context,
-                                Issue::TypeMismatchDeclaredParam,
-                                $context->getLineNumberStart(),
-                                $parameter->getName(),
-                                $method->getName(),
-                                $phpdoc_type->__toString(),
-                                $real_param_type->__toString()
-                            );
-                        }
-                    }
+                        Issue::TypeMismatchDeclaredParam,
+                        $context->getLineNumberStart(),
+                        $parameter->getName(),
+                        $method->getName(),
+                        $phpdoc_type->__toString(),
+                        $real_param_type->__toString()
+                    );
                 }
-                // TODO: test edge cases of variadic signatures
-                if ($is_exclusively_narrowed && Config::getValue('prefer_narrowed_phpdoc_param_type')) {
-                    $normalized_phpdoc_param_union_type = self::normalizeNarrowedParamType($phpdoc_param_union_type, $real_param_type);
-                    if ($normalized_phpdoc_param_union_type) {
-                        $param_to_modify = $method->getParameterList()[$i] ?? null;
-                        if ($param_to_modify) {
-                            $param_to_modify->setUnionType($normalized_phpdoc_param_union_type);
-                        }
-                    } else {
-                        // This check isn't urgent to fix, and is specific to nullable casting rules,
-                        // so use a different issue type.
-                        if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParamNullable)) {
-                            Issue::maybeEmit(
-                                $code_base,
-                                $context,
-                                Issue::TypeMismatchDeclaredParamNullable,
-                                $context->getLineNumberStart(),
-                                $parameter->getName(),
-                                $method->getName(),
-                                $phpdoc_param_union_type->__toString(),
-                                $real_param_type->__toString()
-                            );
-                        }
-                    }
+            }
+        }
+        // TODO: test edge cases of variadic signatures
+        if ($is_exclusively_narrowed && Config::getValue('prefer_narrowed_phpdoc_param_type')) {
+            $normalized_phpdoc_param_union_type = self::normalizeNarrowedParamType($phpdoc_param_union_type, $real_param_type);
+            if ($normalized_phpdoc_param_union_type) {
+                $param_to_modify = $method->getParameterList()[$i] ?? null;
+                if ($param_to_modify) {
+                    $param_to_modify->setUnionType($normalized_phpdoc_param_union_type);
+                }
+            } else {
+                // This check isn't urgent to fix, and is specific to nullable casting rules,
+                // so use a different issue type.
+                if (!$method->hasSuppressIssue(Issue::TypeMismatchDeclaredParamNullable)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $context,
+                        Issue::TypeMismatchDeclaredParamNullable,
+                        $context->getLineNumberStart(),
+                        $parameter->getName(),
+                        $method->getName(),
+                        $phpdoc_param_union_type->__toString(),
+                        $real_param_type->__toString()
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @param FunctionInterface $method
+     */
+    private static function recordOutputReferences(FunctionInterface $method)
+    {
+        foreach ($method->getOutputReferenceParamNames() as $output_param_name) {
+            foreach ($method->getRealParameterList() as $parameter) {
+                // TODO: Emit an issue if the (at)phan-output-reference is on a non-reference (at)param?
+                if ($parameter->getName() === $output_param_name && $parameter->isPassByReference()) {
+                    $parameter->setIsOutputReference();
                 }
             }
         }

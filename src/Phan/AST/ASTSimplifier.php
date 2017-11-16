@@ -94,8 +94,7 @@ class ASTSimplifier
                 $new_children[] = $child_node;
             }
         }
-        list($new_children, $modified) = $this->normalizeStatementList($new_children);
-        if (!$modified && $new_children === $statement_list->children) {
+        if ($new_children === $statement_list->children) {
             return $statement_list;
         }
         $clone_node = clone($statement_list);
@@ -130,99 +129,6 @@ class ASTSimplifier
         }
         // $parent->children['stmts'] is a statement, not a statement list.
         return self::buildStatementList($stmt_list->lineno ?? 0, $stmt_list);
-    }
-
-    /**
-     * @param \ast\Node[] $statements
-     * @return \ast\Node[][]|bool[] - [New/old list, bool $modified] An equivalent list after simplifying (or the original list)
-     */
-    private function normalizeStatementList(array $statements) : array
-    {
-        $modified = false;
-        for ($i = \count($statements) - 1; $i >= 0; $i--) {
-            $stmt = $statements[$i];
-            if (!($stmt instanceof Node)) {
-                continue;
-            }
-            if ($stmt->kind !== \ast\AST_IF) {
-                continue;
-            }
-            if (\count($statements) > $i + 1) {
-                $N = \count($stmt->children);
-                if ($N > 2) {
-                    continue;  // early exit, no simplification rules apply
-                }
-                // if (A) {X} else {Y_NOEXIT} Z -> if (A) {X; Z} else {Y_NOEXIT}
-                // (Note that the above rule does not apply to elseifs)
-                if ($N === 2 &&
-                        ($stmt->children[1]->children['stmts'] instanceof Node) &&
-                        $stmt->children[1]->children['cond'] === null &&  // cannot be elseif
-                        BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmt->children[1]->children['stmts'])) {
-                    // If the else statement is guaranteed to break/continue/return/throw,
-                    // then merge the remaining statements following that into the `if` block.
-                    $new_if_elem = clone($stmt->children[0]);
-                    $new_stmts = self::cloneStatementList($new_if_elem->children['stmts']);
-                    $new_stmts->children = array_merge($new_stmts->children, array_slice($statements, $i + 1));
-                    $new_stmts->flags = 0;
-                    $new_if_elem->children['stmts'] = $new_stmts;
-                    $new_if_elem->flags = 0;
-                    $new_if = new \ast\Node(
-                        \ast\AST_IF,
-                        0,
-                        [$new_if_elem],
-                        $stmt->lineno
-                    );
-                    // Replace the old `if` node (followed by statements) with the new `if` node
-                    while (\count($statements) > $i) {
-                        \array_pop($statements);
-                    }
-                    $statements[$i] = $new_if;
-                    $modified = true;
-                    continue;
-                }
-                if (($N == 1 || ($N == 2 && $stmt->children[1]->children['cond'] === null)) &&
-                        $stmt->children[0]->children['stmts'] instanceof Node &&  // Why does php-ast sometime return string.
-                        BlockExitStatusChecker::willUnconditionallySkipRemainingStatements($stmt->children[0]->children['stmts'])) {
-                    // If the if statement is guaranteed to break/continue/return/throw,
-                    // then merge the remaining statements following that into the `else` block (not `elseif`)
-                    // Create an `else` block if necessary.
-                    // This prevents inferences(e.g. in Phan) from the `if` block from leaking out into the remaining statements.
-                    if ($N == 1) {
-                        // TODO: creating an `else` block should no longer be necessary.
-                        $new_else_elem = new \ast\Node(
-                            \ast\AST_IF_ELEM,
-                            0,
-                            [
-                                'cond' => null,
-                                // Don't clone the original if statement - It might not be a statement list.
-                                'stmts' => self::buildStatementList($stmt->children[0]->lineno ?? 0),
-                            ],
-                            $stmt->children[0]->lineno
-                        );
-                    } else {
-                        \assert($N === 2);
-                        $new_else_elem = clone($stmt->children[1]);
-                        // Convert a singular statement (or null) into a statement list, if necessary.
-                        $new_else_elem->children['stmts'] = self::cloneStatementList($new_else_elem->children['stmts']);
-                        $new_else_elem->flags = 0;
-                    }
-                    $new_else_elem->children['stmts']->children = array_merge($new_else_elem->children['stmts']->children, array_slice($statements, $i + 1));
-                    $new_else_elem->children['stmts']->flags = 0;
-                    $new_if_else = clone($stmt);
-                    $new_if_else->flags = 0;
-                    $new_if_else->children[1] = $new_else_elem;
-                    // We might end up undoing a negation as well, now that there is an else branch.
-                    // Run normalizeIfStatement again.
-                    while (\count($statements) > $i) {
-                        \array_pop($statements);
-                    }
-                    \array_push($statements, ...$this->normalizeIfStatement($new_if_else));
-                    $modified = true;
-                    continue;
-                }
-            }
-        }
-        return [$statements, $modified];
     }
 
     /**
@@ -263,11 +169,14 @@ class ASTSimplifier
             }
 
             if ($if_cond->kind === \ast\AST_UNARY_OP &&
-                    $if_cond->flags === \ast\flags\UNARY_BOOL_NOT &&
-                    $if_cond->children['expr']->kind === \ast\AST_UNARY_OP &&
-                    $if_cond->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT) {
-                self::replaceLastNodeWithNodeList($nodes, $this->applyIfDoubleNegateReduction($node));
-                continue;
+                $if_cond->flags === \ast\flags\UNARY_BOOL_NOT) {
+                $cond_node = $if_cond->children['expr'];
+                if ($cond_node instanceof Node &&
+                        $cond_node->kind === \ast\AST_UNARY_OP &&
+                        $if_cond->children['expr']->flags === \ast\flags\UNARY_BOOL_NOT) {
+                    self::replaceLastNodeWithNodeList($nodes, $this->applyIfDoubleNegateReduction($node));
+                    continue;
+                }
             }
             if (count($node->children) === 1) {
                 if ($if_cond->kind === \ast\AST_BINARY_OP &&
@@ -356,19 +265,27 @@ class ASTSimplifier
         $inner_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $inner_node_elem->children['cond'] = $inner_node_elem->children['cond']->children['right'];
         $inner_node_elem->flags = 0;
-        $inner_node = clone($node);  // AST_IF
-        $inner_node->children[0] = $inner_node_elem;
-        $inner_node->lineno = $inner_node_elem->lineno ?? 0;
-        $inner_node->flags = 0;
-        $inner_node_stmt_list = self::buildStatementList($inner_node->lineno, $inner_node);  // AST_STMT_LIST
+        $inner_node_lineno = $inner_node_elem->lineno ?? 0;
+
+        // Normalize code such as `if (A && (B && C)) {...}` recursively.
+        $inner_node_stmts = $this->normalizeIfStatement(new Node(
+            \ast\AST_IF,
+            0,
+            [$inner_node_elem],
+            $inner_node_lineno
+        ));
+
+        $inner_node_stmt_list = new Node(\ast\AST_STMT_LIST, 0, $inner_node_stmts, $inner_node_lineno);
         $outer_node_elem = clone($node->children[0]);  // AST_IF_ELEM
         $outer_node_elem->children['cond'] = $node->children[0]->children['cond']->children['left'];
         $outer_node_elem->children['stmts'] = $inner_node_stmt_list;
         $outer_node_elem->flags = 0;
-        $outer_node = clone($node);  // AST_IF
-        $outer_node->children[0] = $outer_node_elem;
-        $outer_node->flags = 0;
-        return $outer_node;
+        return new Node(
+            \ast\AST_IF,
+            $node->lineno,
+            [$outer_node_elem],
+            0
+        );
     }
 
     /**

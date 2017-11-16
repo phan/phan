@@ -1,0 +1,1 @@
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array but \intdiv() takes int

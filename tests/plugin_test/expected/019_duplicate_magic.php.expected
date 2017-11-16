@@ -1,0 +1,7 @@
+src/019_duplicate_magic.php:9 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(9) detected in array - the earlier entry will be ignored.
+src/019_duplicate_magic.php:10 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('src/019_duplicate_magic.php') detected in array - the earlier entry will be ignored.
+src/019_duplicate_magic.php:12 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('Bar') detected in array - the earlier entry will be ignored.
+src/019_duplicate_magic.php:13 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('Bar') detected in array - the earlier entry will be ignored.
+src/019_duplicate_magic.php:15 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value('src') detected in array - the earlier entry will be ignored.
+src/019_duplicate_magic.php:19 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(1) detected in array - the earlier entry will be ignored.
+src/019_duplicate_magic.php:20 PhanPluginDuplicateArrayKey Duplicate/Equivalent array key value(0) detected in array - the earlier entry will be ignored.

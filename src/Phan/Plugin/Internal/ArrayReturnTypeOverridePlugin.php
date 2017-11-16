@@ -71,7 +71,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($args) == 2) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
                 if (!$element_types->isEmpty()) {
-                    return $element_types->asGenericArrayTypes();
+                    return $element_types->asNonEmptyGenericArrayTypes();
                 }
             }
             return $array_type->asUnionType();
@@ -80,9 +80,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
         $array_fill_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) == 3) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
-                if (!$element_types->isEmpty()) {
-                    return $element_types->asGenericArrayTypes();
-                }
+                return $element_types->asNonEmptyGenericArrayTypes();
             }
             return $array_type->asUnionType();
         };

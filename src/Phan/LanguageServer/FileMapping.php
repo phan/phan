@@ -32,12 +32,7 @@ class FileMapping
      */
     public function addOverrideURI(string $uri, $new_contents)
     {
-        $path = Utils::uriToPath($uri);
-        if ($new_contents === null) {
-            $this->removeOverride($path);
-            return;
-        }
-        $this->overrides[$path] = $new_contents;
+        $this->addOverride(Utils::uriToPath($uri), $new_contents);
     }
 
     /**

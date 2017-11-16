@@ -13,6 +13,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use Phan\Library\FileCache;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
@@ -20,6 +21,10 @@ use Phan\Library\Some;
 /**
  * Handles extracting information(param types, return types, magic methods/properties, etc.) from phpdoc comments.
  * Instances of Comment contain the extracted information.
+ *
+ * TODO: Pass the doccomment line's index to the Element that will use the client,
+ * so that it can be used for more precise line numbers (E.g. for where magic methods were declared,
+ * where functions with no signature types but phpdoc types declared types that are invalid class names, etc.
  */
 class Comment
 {
@@ -60,7 +65,7 @@ class Comment
      * (e.g. for variable names, magic property names, etc.
      * This does not allow backslashes.
      */
-    const word_regex = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
+    const WORD_REGEX = '([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)';
 
     /**
      * @var int - contains a subset of flags to set on elements
@@ -218,6 +223,35 @@ class Comment
         }
     }
 
+    private static function guessActualLineLocation(Context $context, int $declaration_lineno, int $i, int $comment_lines_count, string $line) {
+        $path = Config::projectPath($context->getFile());
+        $entry = FileCache::getEntry($path);
+        if (!$entry) {
+            return $declaration_lineno;
+        }
+        // $lineno_search <= $declaration_lineno
+        $lineno_search = $declaration_lineno - ($comment_lines_count - $i - 1);
+        // Search up to 10 lines before $lineno_search
+        $lineno_stop = \max(1, $lineno_search - 9);
+        $lines_array = $entry->getLines();
+        $j = $i;
+        for ($check_lineno = $lineno_search; $check_lineno >= $lineno_stop; $check_lineno--) {
+            $cur_line = $lines_array[$check_lineno];
+            if (\stripos($cur_line, $line) !== false) {
+                // Better heuristic: Lines in the middle of phpdoc are guaranteed to be complete, including a few newlines at the end.
+                $j = $i - ($lineno_search - $check_lineno);
+                if ($j > 0 && $j < $comment_lines_count - 1) {
+                    if (\trim($line) !== \trim($cur_line)) {
+                        continue;
+                    }
+                }
+                return $check_lineno;
+            }
+        }
+        // We couldn't identify the line;
+        return $declaration_lineno;
+    }
+
     /**
      * @param string $comment full text of doc comment
      * @param CodeBase $code_base
@@ -263,45 +297,46 @@ class Comment
         $closure_scope = new None;
         $comment_flags = 0;
 
-        $lines = explode("\n", $comment);
+        $lines = \explode("\n", $comment);
+        $comment_lines_count = \count($lines);
 
         /**
          * @param int[] $validTypes
          * @return void
          */
-        $check_compatible = function(string $paramName, array $validTypes) use ($code_base, $context, $comment_type, $lineno) {
-            if (!in_array($comment_type, $validTypes, true)) {
+        $check_compatible = function(string $paramName, array $validTypes, int $i, string $line) use ($code_base, $context, $comment_type, $lineno, $comment_lines_count) {
+            if (!\in_array($comment_type, $validTypes, true)) {
                 self::emitInvalidCommentForDeclarationType(
                     $code_base,
                     $context,
                     $paramName,
                     $comment_type,
-                    $lineno
+                    self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line)
                 );
             }
         };
 
-        foreach ($lines as $line) {
+        foreach ($lines as $i => $line) {
             if (\strpos($line, '@') === false) {
                 continue;
             }
 
             if (\stripos($line, '@param') !== false) {
                 if (\preg_match('/@param\b/i', $line)) {
-                    $check_compatible('@param', Comment::FUNCTION_LIKE);
+                    $check_compatible('@param', Comment::FUNCTION_LIKE, $i, $line);
                     $parameter_list[] =
-                        self::parameterFromCommentLine($code_base, $context, $line, false, $lineno);
+                        self::parameterFromCommentLine($code_base, $context, $line, false, $lineno, $i, $comment_lines_count);
                 }
             } elseif (\stripos($line, '@var') !== false && \preg_match('/@var\b/i', $line)) {
-                $check_compatible('@var', Comment::HAS_VAR_ANNOTATION);
-                $comment_var = self::parameterFromCommentLine($code_base, $context, $line, true, $lineno);
+                $check_compatible('@var', Comment::HAS_VAR_ANNOTATION, $i, $line);
+                $comment_var = self::parameterFromCommentLine($code_base, $context, $line, true, $lineno, $i, $comment_lines_count);
                 if ($comment_var->getName() !== '' || !\in_array($comment_type, self::FUNCTION_LIKE)) {
                     $variable_list[] = $comment_var;
                 }
-            } elseif (\stripos($line, '@template') !== false) {
+            } elseif (\strpos($line, '@template') !== false) {
                 // Make sure support for generic types is enabled
                 if (Config::getValue('generic_types_enabled')) {
-                    $check_compatible('@template', [Comment::ON_CLASS]);
+                    $check_compatible('@template', [Comment::ON_CLASS], $i, $line);
                     if (($template_type =
                         self::templateTypeFromCommentLine($line))
                     ) {
@@ -309,7 +344,7 @@ class Comment
                     }
                 }
             } elseif (\stripos($line, '@inherits') !== false) {
-                $check_compatible('@inherits', [Comment::ON_CLASS]);
+                $check_compatible('@inherits', [Comment::ON_CLASS], $i, $line);
                 // Make sure support for generic types is enabled
                 if (Config::getValue('generic_types_enabled')) {
                     $inherited_type =
@@ -317,7 +352,7 @@ class Comment
                 }
             } elseif (\stripos($line, '@return') !== false) {
                 if (preg_match('/@return\b/i', $line)) {
-                    $check_compatible('@return', Comment::FUNCTION_LIKE);
+                    $check_compatible('@return', Comment::FUNCTION_LIKE, $i, $line);
                     $return_union_type =
                         self::returnTypeFromCommentLine($context, $line);
                 } elseif (\stripos($line, '@returns') !== false) {
@@ -325,7 +360,7 @@ class Comment
                         $code_base,
                         $context,
                         Issue::MisspelledAnnotation,
-                        $lineno,
+                        self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
                         '@returns',
                         '@return'
                     );
@@ -334,7 +369,7 @@ class Comment
                 $suppress_issue_list[] =
                     self::suppressIssueFromCommentLine($line);
             } elseif (\strpos($line, '@property') !== false) {
-                $check_compatible('@property', [Comment::ON_CLASS]);
+                $check_compatible('@property', [Comment::ON_CLASS], $i, $line);
                 // Make sure support for magic properties is enabled.
                 if (Config::getValue('read_magic_property_annotations')) {
                     $magic_property = self::magicPropertyFromCommentLine($code_base, $context, $line, $lineno);
@@ -345,36 +380,36 @@ class Comment
             } elseif (\strpos($line, '@method') !== false) {
                 // Make sure support for magic methods is enabled.
                 if (Config::getValue('read_magic_method_annotations')) {
-                    $check_compatible('@method', [Comment::ON_CLASS]);
-                    $magic_method = self::magicMethodFromCommentLine($code_base, $context, $line, $lineno);
+                    $check_compatible('@method', [Comment::ON_CLASS], $i, $line);
+                    $magic_method = self::magicMethodFromCommentLine($code_base, $context, $line, $lineno, $i, $comment_lines_count);
                     if ($magic_method !== null) {
                         $magic_method_list[] = $magic_method;
                     }
                 }
             } elseif (\strpos($line, '@PhanClosureScope') !== false) {
                 // TODO: different type for closures
-                $check_compatible('@PhanClosureScope', Comment::FUNCTION_LIKE);
+                $check_compatible('@PhanClosureScope', Comment::FUNCTION_LIKE, $i, $line);
                 $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
             } elseif (\stripos($line, '@phan-') !== false) {
                 if (\stripos($line, '@phan-forbid-undeclared-magic-properties') !== false) {
-                    $check_compatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS]);
+                    $check_compatible('@phan-forbid-undeclared-magic-properties', [Comment::ON_CLASS], $i, $line);
                     $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES;
                 } elseif (\stripos($line, '@phan-forbid-undeclared-magic-methods') !== false) {
-                    $check_compatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS]);
+                    $check_compatible('@phan-forbid-undeclared-magic-methods', [Comment::ON_CLASS], $i, $line);
                     $comment_flags |= Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS;
                 } elseif (\stripos($line, '@phan-closure-scope') !== false && \preg_match('/@phan-closure-scope\b/', $line)) {
-                    $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE);
+                    $check_compatible('@phan-closure-scope', Comment::FUNCTION_LIKE, $i, $line);
                     $closure_scope = self::getPhanClosureScopeFromCommentLine($context, $line);
                 } elseif (\stripos($line, '@phan-override') !== false) {
-                    $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST]);
+                    $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i, $line);
                     $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
                 } elseif (\stripos($line, '@phan-') !== false) {
-                    preg_match('/@phan-\S*/', $line, $match);
+                    \preg_match('/@phan-\S*/', $line, $match);
                     Issue::maybeEmit(
                         $code_base,
                         $context,
                         Issue::MisspelledAnnotation,
-                        $lineno,
+                        self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
                         $match[0],
                         '@phan-forbid-undeclared-magic-methods @phan-forbid-undeclared-magic-properties @phan-closure-scope @phan-override'
                     );
@@ -396,7 +431,7 @@ class Comment
             if (\stripos($line, 'override') !== false) {
                 if (\preg_match('/@([Oo]verride)\b/', $line, $match)) {
                     // TODO: split class const and global const.
-                    $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST]);
+                    $check_compatible('@override', [Comment::ON_METHOD, Comment::ON_CONST], $i, $line);
                     $comment_flags |= Flags::IS_OVERRIDE_INTENDED;
                 }
             }
@@ -474,8 +509,8 @@ class Comment
         string $original_type
     ) : string {
         // TODO: Would need to pass in CodeBase to emit an issue:
-        $type = Config::get()->phpdoc_type_mapping[strtolower($original_type)] ?? null;
-        if (is_string($type)) {
+        $type = Config::get()->phpdoc_type_mapping[\strtolower($original_type)] ?? null;
+        if (\is_string($type)) {
             return $type;
         }
         return $original_type;
@@ -508,9 +543,14 @@ class Comment
         Context $context,
         string $line,
         bool $is_var,
-        int $lineno
+        int $lineno,
+        int $i,
+        int $comment_lines_count
     ) {
-        if (preg_match('/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*(?:\\$' . self::word_regex . '))?/', $line, $match)) {
+        // Parse https://docs.phpdoc.org/references/phpdoc/tags/param.html
+        // Exceptions: Deliberately allow "&" in "@param int &$x" when documenting references.
+        // Warn if there is neither a union type nor a variable
+        if (\preg_match('/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/', $line, $match) && (isset($match[2]) || isset($match[17]))) {
             if (!isset($match[2])) {
                 return new CommentParameter('', new UnionType());
             }
@@ -523,13 +563,9 @@ class Comment
             } else {
                 $variable_name = $match[17] ?? '';
             }
-            // If the parameter has a type which is labelled as a typo (type maps to ''),
-            // then treat it the same way as a parameter without a type in the doc comment.
-            // Otherwise, continue with the (possibly renamed) type.
+            // Fix typos or non-standard phpdoc tags, according to the user's configuration.
+            // Does nothing by default.
             $type = self::rewritePHPDocType($original_type);
-            if ($type !== $original_type && $type === '') {
-                return new CommentParameter('', new UnionType());
-            }
 
             // If the type looks like a variable name, make it an
             // empty type so that other stuff can match it. We can't
@@ -545,24 +581,27 @@ class Comment
             } else {
                 $union_type = new UnionType();
             }
+            $is_output_parameter = \stripos($line, '@phan-output-reference') !== false;
 
             return new CommentParameter(
                 $variable_name,
                 $union_type,
-                $is_variadic
+                $is_variadic,
+                false,  // has_default_value
+                $is_output_parameter
             );
         } else {
             // Don't warn about @param $x Description of $x goes here
             // TODO: extract doc comment of @param &$x?
             // TODO: Use the right for the name of the comment parameter?
             //       (don't see a benefit, would create a type if it was (at)var on a function-like)
-            if (!preg_match('/@(param|var)\s+(\.\.\.)?\s*(\\$\S+)/', $line)) {
+            if (!\preg_match('/@(param|var)\s+(\.\.\.)?\s*(\\$\S+)/', $line)) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
                     Issue::UnextractableAnnotation,
-                    $lineno,
-                    trim($line)
+                    self::guessActualLineLocation($context, $lineno, $i, $comment_lines_count, $line),
+                    \trim($line)
                 );
             }
         }
@@ -582,7 +621,7 @@ class Comment
         string $line
     ) {
         $match = [];
-        // TODO: Just use word_regex? Backslashes or nested templates wouldn't make sense.
+        // TODO: Just use WORD_REGEX? Backslashes or nested templates wouldn't make sense.
         if (preg_match('/@template\s+(' . Type::simple_type_regex. ')/', $line, $match)) {
             $template_type_identifier = $match[1];
             return new TemplateType($template_type_identifier);
@@ -631,7 +670,7 @@ class Comment
     private static function suppressIssueFromCommentLine(
         string $line
     ) : string {
-        if (preg_match('/@suppress\s+' . self::word_regex . '/', $line, $match)) {
+        if (preg_match('/@suppress\s+' . self::WORD_REGEX . '/', $line, $match)) {
             return $match[1];
         }
 
@@ -656,7 +695,7 @@ class Comment
         // https://github.com/phpDocumentor/phpDocumentor2/pull/1271/files - phpdoc allows passing an default value.
         // Phan allows `=.*`, to indicate that a parameter is optional
         // TODO: in another PR, check that optional parameters aren't before required parameters.
-        if (preg_match('/^(' . UnionType::union_type_regex . ')?\s*(?:(\.\.\.)\s*)?(?:\$' . self::word_regex . ')?((?:\s*=.*)?)$/', $param_string, $param_match)) {
+        if (preg_match('/^(' . UnionType::union_type_regex . ')?\s*(?:(\.\.\.)\s*)?(?:\$' . self::WORD_REGEX . ')?((?:\s*=.*)?)$/', $param_string, $param_match)) {
             // Note: a magic method parameter can be variadic, but it can't be pass-by-reference? (No support in __call)
             $union_type_string = $param_match[1];
             $union_type = UnionType::fromStringInContext(
@@ -696,7 +735,9 @@ class Comment
         CodeBase $code_base,
         Context $context,
         string $line,
-        int $lineno
+        int $lineno,
+        int $comment_line_offset,
+        int $comment_lines_count
     ) {
         // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
         // TODO: properly handle duplicates...
@@ -709,7 +750,7 @@ class Comment
         //    Assumes the parameters end at the first ")" after "("
         //    As an exception, allows one level of matching brackets
         //    to support old style arrays such as $x = array(), $x = array(2) (Default values are ignored)
-        if (preg_match('/@method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::word_regex . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
+        if (preg_match('/@method(?:\s+(static))?(?:(?:\s+(' . UnionType::union_type_regex_or_this . '))?)\s+' . self::WORD_REGEX . '\s*\(((?:[^()]|\([()]*\))*)\)\s*(.*)/', $line, $match)) {
             $is_static = $match[1] === 'static';
             $return_union_type_string = $match[2];
             if ($return_union_type_string !== '') {
@@ -741,8 +782,8 @@ class Comment
                             $code_base,
                             $context,
                             Issue::UnextractableAnnotationPart,
-                            $lineno,
-                            trim($line),
+                            self::guessActualLineLocation($context, $lineno, $comment_line_offset, $comment_lines_count, $line),
+                            \trim($line),
                             $param_string
                         );
                         $failed = true;
@@ -755,13 +796,14 @@ class Comment
                 }
             }
 
+            // TODO: Track the line number for comment methods?
             return new CommentMethod($method_name, $return_union_type, $comment_params, $is_static);
         } else {
             Issue::maybeEmit(
                 $code_base,
                 $context,
                 Issue::UnextractableAnnotation,
-                $lineno,
+                self::guessActualLineLocation($context, $lineno, $comment_line_offset, $comment_lines_count, $line),
                 trim($line)
             );
         }
@@ -788,7 +830,7 @@ class Comment
         // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
         // TODO: properly handle duplicates...
         // TODO: support read-only/write-only checks elsewhere in the codebase?
-        if (\preg_match('/@(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::word_regex . '))/', $line, $match)) {
+        if (\preg_match('/@(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {
             $type = $match[2] ?? '';
 
             $property_name = $match[16] ?? '';
@@ -939,7 +981,7 @@ class Comment
     /**
      * @return CommentParameter[] (The leftover parameters without a name)
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getParameterList() : array
     {
@@ -949,7 +991,7 @@ class Comment
     /**
      * @return CommentParameter[] (maps the names of parameters to their values. Does not include parameters which didn't provide names)
      *
-     * @suppress PhanUnreferencedMethod
+     * @suppress PhanUnreferencedPublicMethod
      */
     public function getParameterMap() : array
     {
@@ -976,7 +1018,7 @@ class Comment
 
     /**
      * @return string[]
-     * A set of issue names like 'PhanUnreferencedMethod' to suppress
+     * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress
      */
     public function getSuppressIssueList() : array
     {

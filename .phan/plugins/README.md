@@ -46,9 +46,12 @@ This is stricter than Phan's default checks (Phan accepts a function or method t
 
 #### DuplicateArrayKeyPlugin.php
 
-Warns about common errors in php array keys. Has the following checks (Doesn't try to resolve constants).
+Warns about common errors in php array keys and switch statements. Has the following checks (This is able to resolve global and class constants to their scalar values).
 
-- **PhanPluginDuplicateArrayKey**: a duplicate or equivalent array key literal
+- **PhanPluginDuplicateArrayKey**: a duplicate or equivalent array key literal.
+
+  (E.g `switch ($x) { case 2: echo "A\n"; break; case 2: echo "B\n"; break;}` duplicates the key `2`. The later case statements are ignored.)
+- **PhanPluginDuplicateSwitchCase**: a duplicate or equivalent case statement.
 
   (E.g `[2 => "value", "other" => "s", "2" => "value2"]` duplicates the key `2`)
 - **PhanPluginMixedKeyNoKey**: mixing array entries of the form [key => value,] with entries of the form [value,].

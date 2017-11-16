@@ -460,7 +460,14 @@ final class ConfigPluginSet extends PluginV2 implements
             } elseif ($plugin instanceof PreAnalyzeNodeCapability) {
                 $plugin_analysis_class = $plugin->getPreAnalyzeNodeVisitorClassName();
                 if (!\is_subclass_of($plugin_analysis_class, PluginAwarePreAnalysisVisitor::class)) {
-                    throw new \TypeError(sprintf("Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not", get_class($plugin), PluginAwarePreAnalysisVisitor::class, $plugin_analysis_class));
+                    throw new \TypeError(
+                        sprintf(
+                            "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
+                            get_class($plugin),
+                            PluginAwarePreAnalysisVisitor::class,
+                            $plugin_analysis_class
+                        )
+                    );
                 }
                 /**
                  * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.
@@ -503,7 +510,12 @@ final class ConfigPluginSet extends PluginV2 implements
         foreach ($plugin_set as $plugin) {
             if ($plugin instanceof LegacyAnalyzeNodeCapability) {
                 if ($plugin instanceof AnalyzeNodeCapability) {
-                    throw new \TypeError(sprintf("plugin %s should implement only one of LegacyAnalyzeNodeCapability and AnalyzeNodeCapability, not both", get_class($plugin)));
+                    throw new \TypeError(
+                        sprintf(
+                            "plugin %s should implement only one of LegacyAnalyzeNodeCapability and AnalyzeNodeCapability, not both",
+                            get_class($plugin)
+                        )
+                    );
                 }
                 if ($plugin instanceof PluginImplementation) {
                     if (!$plugin->isDefinedInSubclass('analyzeNode')) {
@@ -515,7 +527,14 @@ final class ConfigPluginSet extends PluginV2 implements
             } elseif ($plugin instanceof AnalyzeNodeCapability) {
                 $plugin_analysis_class = $plugin->getAnalyzeNodeVisitorClassName();
                 if (!\is_subclass_of($plugin_analysis_class, PluginAwareAnalysisVisitor::class)) {
-                    throw new \TypeError(sprintf("Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not", get_class($plugin), PluginAwareAnalysisVisitor::class, $plugin_analysis_class));
+                    throw new \TypeError(
+                        sprintf(
+                            "Result of %s::getAnalyzeNodeVisitorClassName must be the name of a subclass of '%s', but '%s' is not",
+                            get_class($plugin),
+                            PluginAwareAnalysisVisitor::class,
+                            $plugin_analysis_class
+                        )
+                    );
                 }
                 /**
                  * Create an instance of $plugin_analysis_class and run the visit*() method corresponding to $node->kind.

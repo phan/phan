@@ -1,0 +1,1 @@
+src/003_preg_match.php:13 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array but \intdiv() takes int

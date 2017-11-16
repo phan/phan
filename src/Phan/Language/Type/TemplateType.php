@@ -28,6 +28,16 @@ final class TemplateType extends Type
     }
 
     /**
+     * @return string
+     * A string representation of this type in FQSEN form.
+     * @override
+     */
+    public function asFQSENString() : string
+    {
+        return $this->template_type_identifier;
+    }
+
+    /**
      * @return bool
      * True if this namespace is defined
      */

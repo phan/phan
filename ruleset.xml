@@ -8,6 +8,7 @@
     <!-- Exclude the rule to allow 0 spaces after the function keyword for closures. This exclusion may be removed later. -->
     <exclude name="Squiz.Functions.MultiLineFunctionDeclaration.SpaceAfterFunction" />
     <exclude name="Generic.Files.LineLength.TooLong" />
+    <exclude name="PSR1.Files.SideEffects.FoundWithSymbols" />
   </rule>
   <!-- Arbitrary increase of line length limit -->
   <rule ref="Generic.Files.LineLength">

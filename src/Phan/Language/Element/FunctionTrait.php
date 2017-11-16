@@ -108,6 +108,12 @@ trait FunctionTrait
     private $phpdoc_parameter_type_map = [];
 
     /**
+     * @var true[]
+     * A set of parameter names that are output-only references
+     */
+    private $phpdoc_output_references = [];
+
+    /**
      * @var ?UnionType
      * The unmodified *phpdoc* union type for this method.
      * Will be null without any (at)return statements.
@@ -523,9 +529,9 @@ trait FunctionTrait
         }
         $parameter_offset = 0;
         $function_parameter_list = $function->getParameterList();
-        $real_parameter_name_set = [];
+        $real_parameter_name_map = [];
         foreach ($function_parameter_list as $parameter) {
-            $real_parameter_name_set[$parameter->getName()] = true;
+            $real_parameter_name_map[$parameter->getName()] = $parameter;
             self::addParamToScopeOfFunctionOrMethod(
                 $context,
                 $code_base,
@@ -540,22 +546,25 @@ trait FunctionTrait
 
         $valid_comment_parameter_type_map = [];
         foreach ($comment->getParameterMap() as $comment_parameter_name => $comment_parameter) {
-            if (!\array_key_exists($comment_parameter_name, $real_parameter_name_set)) {
+            if (!\array_key_exists($comment_parameter_name, $real_parameter_name_map)) {
                 Issue::maybeEmit(
                     $code_base,
                     $context,
-                    count($real_parameter_name_set) > 0 ? Issue::CommentParamWithoutRealParam : Issue::CommentParamOnEmptyParamList,
+                    count($real_parameter_name_map) > 0 ? Issue::CommentParamWithoutRealParam : Issue::CommentParamOnEmptyParamList,
                     $node->lineno ?? 0,
                     $comment_parameter_name,
                     (string)$function
                 );
-            } else {
-                // Record phpdoc types to check if they are narrower than real types, later.
-                // Only keep non-empty types.
-                $comment_parameter_type = $comment_parameter->getUnionType();
-                if (!$comment_parameter_type->isEmpty()) {
-                    $valid_comment_parameter_type_map[$comment_parameter_name] = $comment_parameter_type;
-                }
+                continue;
+            }
+            // Record phpdoc types to check if they are narrower than real types, later.
+            // Only keep non-empty types.
+            $comment_parameter_type = $comment_parameter->getUnionType();
+            if (!$comment_parameter_type->isEmpty()) {
+                $valid_comment_parameter_type_map[$comment_parameter_name] = $comment_parameter_type;
+            }
+            if ($comment_parameter->isOutputReference()) {
+                $real_parameter_name_map[$comment_parameter_name]->setIsOutputReference();
             }
         }
         $function->setPHPDocParameterTypeMap($valid_comment_parameter_type_map);
@@ -673,6 +682,24 @@ trait FunctionTrait
     public function setPHPDocParameterTypeMap(array $parameter_map)
     {
         $this->phpdoc_parameter_type_map = $parameter_map;
+    }
+
+    /**
+     * Records the fact that $parameter_name is an output-only reference.
+     * @param string $parameter_name
+     * @return void
+     */
+    public function recordOutputReferenceParamName(string $parameter_name)
+    {
+        $this->phpdoc_output_references[] = $parameter_name;
+    }
+
+    /**
+     * @return string[] list of output references. Usually empty.
+     */
+    public function getOutputReferenceParamNames() : array
+    {
+        return $this->phpdoc_output_references;
     }
 
     /**
