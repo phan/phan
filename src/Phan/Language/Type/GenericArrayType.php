@@ -183,53 +183,54 @@ final class GenericArrayType extends ArrayType
             "Recursion has gotten out of hand"
         );
 
-        $union_type = $this->asUnionType();
+        $union_type = $this->memoize(__METHOD__, function() use ($code_base, $recursion_depth) {
+            $union_type = $this->asUnionType();
 
-        $class_fqsen = $this->genericArrayElementType()->asFQSEN();
+            $class_fqsen = $this->genericArrayElementType()->asFQSEN();
 
-        if (!($class_fqsen instanceof FullyQualifiedClassName)) {
-            return $union_type;
-        }
-
-        \assert($class_fqsen instanceof FullyQualifiedClassName);
-
-        if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
-            return $union_type;
-        }
-
-        $clazz = $code_base->getClassByFQSEN($class_fqsen);
-
-        $union_type->addUnionType(
-            $clazz->getUnionType()->asGenericArrayTypes()
-        );
-
-        // Recurse up the tree to include all types
-        $recursive_union_type = new UnionType();
-        $representation = (string)$this;
-        foreach ($union_type->getTypeSet() as $clazz_type) {
-            if ((string)$clazz_type != $representation) {
-                $recursive_union_type->addUnionType(
-                    $clazz_type->asExpandedTypes(
-                        $code_base,
-                        $recursion_depth + 1
-                    )
-                );
-            } else {
-                $recursive_union_type->addType($clazz_type);
+            if (!($class_fqsen instanceof FullyQualifiedClassName)) {
+                return $union_type;
             }
-        }
 
-        // Add in aliases
-        // (If enable_class_alias_support is false, this will do nothing)
-        $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
-        foreach ($fqsen_aliases as $alias_fqsen_record) {
-            $alias_fqsen = $alias_fqsen_record->alias_fqsen;
-            $recursive_union_type->addUnionType(
-                $alias_fqsen->asUnionType()->asGenericArrayTypes()
+            \assert($class_fqsen instanceof FullyQualifiedClassName);
+
+            if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
+                return $union_type;
+            }
+
+            $clazz = $code_base->getClassByFQSEN($class_fqsen);
+
+            $union_type->addUnionType(
+                 $clazz->getUnionType()->asGenericArrayTypes()
             );
-        }
-        // TODO: Investigate caching this and returning clones after analysis is done.
 
-        return $recursive_union_type;
+            // Recurse up the tree to include all types
+            $recursive_union_type = new UnionType();
+            $representation = (string)$this;
+            foreach ($union_type->getTypeSet() as $clazz_type) {
+                if ((string)$clazz_type != $representation) {
+                    $recursive_union_type->addUnionType(
+                        $clazz_type->asExpandedTypes(
+                            $code_base,
+                            $recursion_depth + 1
+                        )
+                    );
+                } else {
+                    $recursive_union_type->addType($clazz_type);
+                }
+            }
+
+            // Add in aliases
+            // (If enable_class_alias_support is false, this will do nothing)
+            $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
+            foreach ($fqsen_aliases as $alias_fqsen_record) {
+                $alias_fqsen = $alias_fqsen_record->alias_fqsen;
+                $recursive_union_type->addUnionType(
+                     $alias_fqsen->asUnionType()->asGenericArrayTypes()
+                );
+            }
+            return $recursive_union_type;
+        });
+        return clone($union_type);
     }
 }

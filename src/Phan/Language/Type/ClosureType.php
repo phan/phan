@@ -53,7 +53,7 @@ final class ClosureType extends Type
     public function asUnionType() : UnionType
     {
         return new UnionType(
-            [\spl_object_id($this) => $this],
+            [$this],
             true
         );
     }
