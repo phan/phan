@@ -29,9 +29,10 @@ use Phan\Language\Type\VoidType;
  */
 class TypeTest extends BaseTest
 {
-    private function makePHPDocType(string $type) : Type
+    private function makePHPDocType(string $type_string) : Type
     {
-        return Type::fromStringInContext($type, new Context(), Type::FROM_PHPDOC);
+        $this->assertTrue(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string'");
+        return Type::fromStringInContext($type_string, new Context(), Type::FROM_PHPDOC);
     }
 
     public function testBracketedTypes()
@@ -196,5 +197,38 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType($expectedStringArrayArrayType, 'array<string>[]');
         $this->assertParsesAsType($expectedStringArrayArrayType, 'array<array<string>>');
         $this->assertParsesAsType($expectedStringArrayArrayType, 'array<mixed,array<mixed,string>>');
+    }
+
+    public function testArrayExtraBrackets()
+    {
+        $stringArrayType = self::makePHPDocType('?(float[])');
+        $expectedStringArrayType = GenericArrayType::fromElementType(
+            FloatType::instance(false),
+            true
+        );
+        $this->assertSameType($expectedStringArrayType, $stringArrayType);
+        $this->assertSame('?float[]', (string)$stringArrayType);
+    }
+
+    public function testArrayExtraBracketsForElement()
+    {
+        $stringArrayType = self::makePHPDocType('(?float)[]');
+        $expectedStringArrayType = GenericArrayType::fromElementType(
+            FloatType::instance(true),
+            false
+        );
+        $this->assertSameType($expectedStringArrayType, $stringArrayType);
+        $this->assertSame('(?float)[]', (string)$stringArrayType);
+    }
+
+    public function testArrayExtraBracketsAfterNullable()
+    {
+        $stringArrayType = self::makePHPDocType('?(float)[]');
+        $expectedStringArrayType = GenericArrayType::fromElementType(
+            FloatType::instance(false),
+            true
+        );
+        $this->assertSameType($expectedStringArrayType, $stringArrayType);
+        $this->assertSame('?float[]', (string)$stringArrayType);
     }
 }
