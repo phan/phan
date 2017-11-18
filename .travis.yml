@@ -23,7 +23,7 @@ before_install:
   - composer validate
 
 install:
-  - composer --prefer-dist install
+  - composer --ignore-platform-reqs --prefer-dist install
 
 # TEST_SUITES contains 1 or more space-separated value for TEST_SUITE
 # We have a fake TEST_SUITE which runs phan, and check if the exit code is non-zero and the standard output is non-empty.
