@@ -72,7 +72,7 @@ build_script:
 
 test_script:
 - cmd: cd C:\projects\phan
-- cmd: php composer.phar install --ignore-platform-reqs
+- cmd: php composer.phar install --ignore-platform-reqs --prefer-dist
 - cmd: php phan
 - cmd: .\vendor\bin\phpunit --verbose
 # Verify that a phar can be built and executed under windows
