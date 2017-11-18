@@ -149,7 +149,7 @@ class UnionType implements \Serializable
                     $source
                 );
             },
-            \array_filter(self::extractTypeParts($type_string), function(string $type_name) {
+            \array_filter(self::extractTypeParts($type_string), function (string $type_name) {
                 // Exclude empty type names
                 // Exclude namespaces without type names (e.g. `\`, `\NS\`)
                 return $type_name !== '' && \preg_match('@\\\\[\[\]]*$@', $type_name) === 0;
@@ -354,7 +354,7 @@ class UnionType implements \Serializable
          * @param string|null $type_name
          * @return UnionType|null
          */
-        $get_for_global_context = function($type_name) {
+        $get_for_global_context = function ($type_name) {
             if (!$type_name) {
                 return null;
             }

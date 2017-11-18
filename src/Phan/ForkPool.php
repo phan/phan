@@ -209,7 +209,7 @@ class ForkPool
         }
 
         // Unmarshal the content into its original form.
-        return array_values(array_map(function($data) {
+        return array_values(array_map(function ($data) {
             $result = unserialize($data);
             if (!\is_array($result)) {
                 error_log("Child terminated without returning a serialized array (threw or crashed - not enough memory?): response type=" . gettype($result));

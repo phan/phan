@@ -400,7 +400,7 @@ trait FunctionTrait
         if (Config::get_quick_mode()) {
             return 0;
         }
-        $param_repr = implode(',', array_map(function(Variable $param) {
+        $param_repr = implode(',', array_map(function (Variable $param) {
             return (string)($param->getNonVariadicUnionType());
         }, $parameter_list));
         $raw_bytes = md5($param_repr, true);
@@ -414,7 +414,7 @@ trait FunctionTrait
     public function getRealParameterList()
     {
         // Excessive cloning, to ensure that this stays immutable.
-        return array_map(function(Parameter $param) {
+        return array_map(function (Parameter $param) {
             return clone($param);
         }, $this->real_parameter_list);
     }
@@ -427,7 +427,7 @@ trait FunctionTrait
      */
     public function setRealParameterList(array $parameter_list)
     {
-        $this->real_parameter_list = array_map(function(Parameter $param) {
+        $this->real_parameter_list = array_map(function (Parameter $param) {
             return clone($param);
         }, $parameter_list);
 

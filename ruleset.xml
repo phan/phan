@@ -5,8 +5,6 @@
 <ruleset name="Custom Standard">
   <rule ref="PSR1" />
   <rule ref="PSR2">
-    <!-- Exclude the rule to allow 0 spaces after the function keyword for closures. This exclusion may be removed later. -->
-    <exclude name="Squiz.Functions.MultiLineFunctionDeclaration.SpaceAfterFunction" />
     <exclude name="Generic.Files.LineLength.TooLong" />
     <exclude name="PSR1.Files.SideEffects.FoundWithSymbols" />
   </rule>

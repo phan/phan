@@ -373,7 +373,7 @@ class Issue
         string $template
     ) : string {
         /** @param string[] $matches */
-        return preg_replace_callback('/{([A-Z_]+)}/', function(array $matches) use ($template): string {
+        return preg_replace_callback('/{([A-Z_]+)}/', function (array $matches) use ($template): string {
             $key = $matches[1];
             $replacement_exists = \array_key_exists($key, self::uncolored_format_string_for_template);
             if (!$replacement_exists) {

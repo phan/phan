@@ -52,7 +52,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
      */
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
-        $call_user_func_callback = static function(
+        $call_user_func_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -80,7 +80,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $element_types;
         };
-        $call_user_func_array_callback = static function(
+        $call_user_func_array_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -115,7 +115,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $element_types;
         };
-        $from_callable_callback = static function(
+        $from_callable_callback = static function (
             CodeBase $code_base,
             Context $context,
             Method $unused_method,
@@ -134,7 +134,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $closure_types;
         };
-        $from_closure_callback = static function(
+        $from_closure_callback = static function (
             CodeBase $code_base,
             Context $context,
             Method $unused_method,
@@ -144,7 +144,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
                 return ClosureType::instance(false)->asUnionType();
             }
             $types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0], true);
-            $types = $types->makeFromFilter(function(Type $type) : bool {
+            $types = $types->makeFromFilter(function (Type $type) : bool {
                 if ($type instanceof ClosureType) {
                     return $type->hasKnownFQSEN();
                 }
@@ -175,7 +175,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         /**
          * @return void
          */
-        $call_user_func_callback = static function(
+        $call_user_func_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -195,7 +195,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
         /**
          * @return void
          */
-        $call_user_func_array_callback = static function(
+        $call_user_func_array_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -256,7 +256,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
     public static function createNormalArgumentCache(CodeBase $code_base, Context $context) : \Closure
     {
         $cache = [];
-        return function($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
+        return function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
             $argument_type = $cache[$i] ?? null;
             if (isset($argument_type)) {
                 return $argument_type;

@@ -114,7 +114,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
         parent::__construct($this, '/');
         $this->protocolReader = $reader;
         $this->file_mapping = new FileMapping();
-        $reader->on('close', function() {
+        $reader->on('close', function () {
             $this->shutdown();
             $this->exit();
         });
@@ -192,7 +192,7 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
     {
         \assert($code_base->isUndoTrackingEnabled());
 
-        $make_language_server = function(ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
+        $make_language_server = function (ProtocolStreamReader $in, ProtocolStreamWriter $out) use ($code_base, $file_path_lister) : LanguageServer {
             return new LanguageServer(
                 $in,
                 $out,
