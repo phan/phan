@@ -171,7 +171,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          * Analyzes a printf-like function with a format directive in the first position.
          * @return void
          */
-        $printf_callback = function(
+        $printf_callback = function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -193,7 +193,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          * Analyzes a printf-like function with a format directive in the first position.
          * @return void
          */
-        $fprintf_callback = function(
+        $fprintf_callback = function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -215,7 +215,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          * Analyzes a printf-like function with a format directive in the first position.
          * @return void
          */
-        $vprintf_callback = function(
+        $vprintf_callback = function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -238,7 +238,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          * Analyzes a printf-like function with a format directive in the first position.
          * @return void
          */
-        $vfprintf_callback = function(
+        $vfprintf_callback = function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -325,7 +325,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
          *
          * @param int $issue_type_id An issue id for pylint
          */
-        $emit_issue = function(string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context) {
+        $emit_issue = function (string $issue_type, string $issue_message_format, array $issue_message_args, int $severity, int $issue_type_id) use ($code_base, $context) {
             $this->emitIssue(
                 $code_base,
                 $context,
@@ -542,7 +542,7 @@ class PrintfCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapabil
      */
     private function getSpecStringsRepresentation(array $specs) : string
     {
-        return \implode(',', \array_unique(\array_map(function(ConversionSpec $spec) {
+        return \implode(',', \array_unique(\array_map(function (ConversionSpec $spec) {
             return $spec->directive;
         }, $specs)));
     }

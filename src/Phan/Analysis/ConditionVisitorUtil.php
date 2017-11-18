@@ -39,10 +39,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function(UnionType $type) : bool {
+            function (UnionType $type) : bool {
                 return $type->containsTruthy();
             },
-            function(UnionType $type) : UnionType {
+            function (UnionType $type) : UnionType {
                 return $type->nonTruthyClone();
             },
             $suppress_issues
@@ -55,10 +55,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function(UnionType $type) : bool {
+            function (UnionType $type) : bool {
                 return $type->containsFalsey();
             },
-            function(UnionType $type) : UnionType {
+            function (UnionType $type) : UnionType {
                 return $type->nonFalseyClone();
             },
             $suppress_issues
@@ -71,10 +71,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function(UnionType $type) : bool {
+            function (UnionType $type) : bool {
                 return $type->containsNullable();
             },
-            function(UnionType $type) : UnionType {
+            function (UnionType $type) : UnionType {
                 return $type->nonNullableClone();
             },
             $suppress_issues
@@ -86,10 +86,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function(UnionType $type) : bool {
+            function (UnionType $type) : bool {
                 return $type->containsFalse();
             },
-            function(UnionType $type) : UnionType {
+            function (UnionType $type) : UnionType {
                 return $type->nonFalseClone();
             },
             false
@@ -101,10 +101,10 @@ trait ConditionVisitorUtil
         return $this->updateVariableWithConditionalFilter(
             $var_node,
             $context,
-            function(UnionType $type) : bool {
+            function (UnionType $type) : bool {
                 return $type->containsTrue();
             },
-            function(UnionType $type) : UnionType {
+            function (UnionType $type) : UnionType {
                 return $type->nonTrueClone();
             },
             false

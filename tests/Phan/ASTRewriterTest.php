@@ -14,7 +14,7 @@ class ASTRewriterTest extends AbstractPhanFileTest
     public function getTestFiles()
     {
         /** @return string[] - Original file and expected file */
-        return array_map(function(array $values) : array {
+        return array_map(function (array $values) : array {
             assert(count($values[0]) === 1, 'expected only one source file');
             return [$values[0][0], $values[1]];
         }, $this->scanSourceFilesDir(AST_TEST_FILE_DIR, AST_EXPECTED_DIR));

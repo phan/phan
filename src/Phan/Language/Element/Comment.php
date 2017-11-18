@@ -305,7 +305,7 @@ class Comment
          * @param int[] $validTypes
          * @return void
          */
-        $check_compatible = function(string $paramName, array $validTypes, int $i, string $line) use ($code_base, $context, $comment_type, $lineno, $comment_lines_count) {
+        $check_compatible = function (string $paramName, array $validTypes, int $i, string $line) use ($code_base, $context, $comment_type, $lineno, $comment_lines_count) {
             if (!\in_array($comment_type, $validTypes, true)) {
                 self::emitInvalidCommentForDeclarationType(
                     $code_base,

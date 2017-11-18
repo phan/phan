@@ -172,7 +172,7 @@ class FunctionFactory
         }
 
         $alternate_id = 0;
-        return \array_map(function($map) use (
+        return \array_map(function ($map) use (
             $function,
             &$alternate_id
         ) : FunctionInterface {
@@ -251,7 +251,7 @@ class FunctionFactory
             $alternate_function->setNumberOfRequiredParameters(
                 \array_reduce(
                     $alternate_function->getParameterList(),
-                    function(int $carry, Parameter $parameter) : int {
+                    function (int $carry, Parameter $parameter) : int {
                         return ($carry + (
                             $parameter->isOptional() ? 0 : 1
                         ));

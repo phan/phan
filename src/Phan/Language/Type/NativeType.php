@@ -104,7 +104,7 @@ abstract class NativeType extends Type
      */
     private static function initializeTypeCastingMatrix() : array
     {
-        $generateRow = function(string ...$permittedCastTypeNames) {
+        $generateRow = function (string ...$permittedCastTypeNames) {
             return [
                 ArrayType::NAME    => in_array(ArrayType::NAME, $permittedCastTypeNames, true),
                 IterableType::NAME => in_array(IterableType::NAME, $permittedCastTypeNames, true),

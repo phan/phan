@@ -1585,7 +1585,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 // Find out of any of them have a __get magic method
                 // (Only check if looking for instance properties)
                 $has_getter =
-                    \array_reduce($class_list, function($carry, $class) {
+                    \array_reduce($class_list, function ($carry, $class) {
                         return (
                             $carry ||
                             $class->hasGetMethod($this->code_base)

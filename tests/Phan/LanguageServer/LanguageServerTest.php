@@ -16,7 +16,7 @@ class LanguageServerTest extends BaseTest
 {
     public function testInitialize()
     {
-        $mock_file_path_lister = function() {
+        $mock_file_path_lister = function () {
             return [];
         };
         $code_base = new CodeBase([], [], [], [], []);

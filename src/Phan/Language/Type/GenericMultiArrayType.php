@@ -65,7 +65,7 @@ final class GenericMultiArrayType extends ArrayType
      */
     public function asGenericArrayTypeInstances() : array
     {
-        return \array_map(function(Type $type) {
+        return \array_map(function (Type $type) {
             return GenericArrayType::fromElementType($type, $this->is_nullable);
         }, $this->element_types);
     }

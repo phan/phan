@@ -330,7 +330,7 @@ final class ConfigPluginSet extends PluginV2 implements
                 $other_closure = $result[$fqsen_name] ?? null;
                 if ($other_closure !== null) {
                     $old_closure = $closure;
-                    $closure = static function(CodeBase $code_base, Context $context, FunctionInterface $func, array $args) use ($old_closure, $other_closure) {
+                    $closure = static function (CodeBase $code_base, Context $context, FunctionInterface $func, array $args) use ($old_closure, $other_closure) {
                         $other_closure($code_base, $context, $func, $args);
                         $old_closure($code_base, $context, $func, $args);
                     };
@@ -427,7 +427,7 @@ final class ConfigPluginSet extends PluginV2 implements
      */
     private static function filterOutEmptyMethodBodies(array $plugin_set, string $method_name) : array
     {
-        return \array_values(\array_filter($plugin_set, function(PluginV2 $plugin) use ($method_name) : bool {
+        return \array_values(\array_filter($plugin_set, function (PluginV2 $plugin) use ($method_name) : bool {
             if ($plugin instanceof PluginImplementation) {
                 if (!$plugin->isDefinedInSubclass($method_name)) {
                     // PluginImplementation defines empty method bodies for each of the plugin $method_names
@@ -474,7 +474,7 @@ final class ConfigPluginSet extends PluginV2 implements
                  *
                  * @phan-closure-scope PluginAwarePreAnalysisVisitor
                  */
-                $closure = (static function(CodeBase $code_base, Context $context, Node $node) {
+                $closure = (static function (CodeBase $code_base, Context $context, Node $node) {
                     $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
                     return (new static($code_base, $context))->{$fn_name}($node);
                 })->bindTo(null, $plugin_analysis_class);
@@ -491,8 +491,8 @@ final class ConfigPluginSet extends PluginV2 implements
                 $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
             }
         }
-        return $closures_for_kind->getFlattenedClosures(static function(array $closure_list) : \Closure {
-            return static function(CodeBase $code_base, Context $context, Node $node) use ($closure_list) {
+        return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
+            return static function (CodeBase $code_base, Context $context, Node $node) use ($closure_list) {
                 foreach ($closure_list as $closure) {
                     $closure($code_base, $context, $node);
                 }
@@ -543,7 +543,7 @@ final class ConfigPluginSet extends PluginV2 implements
                  * @suppress PhanUndeclaredProperty
                  * @suppress PhanDeprecatedInterface (TODO: Fix bugs in PhanClosureScope)
                  */
-                $closure = (static function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null) {
+                $closure = (static function (CodeBase $code_base, Context $context, Node $node, Node $parent_node = null) {
                     $visitor = new static($code_base, $context);
                     $visitor->parent_node = $parent_node;
                     $fn_name = Element::VISIT_LOOKUP_TABLE[$node->kind];
@@ -563,8 +563,8 @@ final class ConfigPluginSet extends PluginV2 implements
                 $closures_for_kind->recordForKinds($handled_node_kinds, $closure);
             }
         }
-        return $closures_for_kind->getFlattenedClosures(static function(array $closure_list) : \Closure {
-            return static function(CodeBase $code_base, Context $context, Node $node, Node $parent_node = null) use ($closure_list) {
+        return $closures_for_kind->getFlattenedClosures(static function (array $closure_list) : \Closure {
+            return static function (CodeBase $code_base, Context $context, Node $node, Node $parent_node = null) use ($closure_list) {
                 foreach ($closure_list as $closure) {
                     $closure($code_base, $context, $node, $parent_node);
                 }

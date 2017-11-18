@@ -254,6 +254,6 @@ class DemoLegacyNodeVisitor extends AnalysisVisitor
 // Every plugin needs to return an instance of itself at the
 // end of the file in which its defined.
 /** @suppress PhanDeprecatedClass - Only using a closure so that I can suppress Phan issue types */
-return (function() : DemoLegacyPlugin {
+return (function () : DemoLegacyPlugin {
     return new DemoLegacyPlugin();
 })();

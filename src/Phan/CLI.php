@@ -425,7 +425,7 @@ class CLI
 
             $this->file_list = array_filter(
                 $this->file_list,
-                function(string $file) use ($exclude_file_set) : bool {
+                function (string $file) use ($exclude_file_set) : bool {
                     return empty($exclude_file_set[$file]);
                 }
             );
@@ -678,7 +678,7 @@ EOB;
                         \RecursiveDirectoryIterator::FOLLOW_SYMLINKS
                     )
                 ),
-                function(\SplFileInfo $file_info) use ($file_extensions, $exclude_file_regex) {
+                function (\SplFileInfo $file_info) use ($file_extensions, $exclude_file_regex) {
                     if (!in_array($file_info->getExtension(), $file_extensions, true)) {
                         return false;
                     }
@@ -703,7 +703,7 @@ EOB;
         } catch (\Exception $exception) {
             error_log($exception->getMessage());
         }
-        usort($file_list, function(string $a, string $b) : int {
+        usort($file_list, function (string $a, string $b) : int {
             // Sort lexicographically by paths **within the results for a directory**,
             // to work around some file systems not returning results lexicographically.
             // Keep directories together by replacing directory separators with the null byte

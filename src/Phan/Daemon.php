@@ -42,7 +42,7 @@ class Daemon
         // TODO: accept SIGCHLD when child terminates, somehow?
         try {
             $gotSignal = false;
-            pcntl_signal(SIGCHLD, function(...$args) use (&$gotSignal) {
+            pcntl_signal(SIGCHLD, function (...$args) use (&$gotSignal) {
                 $gotSignal = true;
                 Request::childSignalHandler(...$args);
             });

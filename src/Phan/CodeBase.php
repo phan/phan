@@ -483,7 +483,7 @@ class CodeBase
         $this->fqsen_class_map[$fqsen] = $class;
         $this->fqsen_class_map_user_defined[$fqsen] = $class;
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($fqsen) {
+            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($fqsen) {
                 Daemon::debugf("Undoing addClass %s\n", $fqsen);
                 unset($inner->fqsen_class_map[$fqsen]);
                 unset($inner->fqsen_class_map_user_defined[$fqsen]);
@@ -535,7 +535,7 @@ class CodeBase
         if ($this->undo_tracker) {
             // TODO: Track a count of aliases instead? This doesn't work in daemon mode if multiple files add the same alias to the same class.
             // TODO: Allow .phan/config.php to specify aliases or precedences for aliases?
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($original, $alias_record) {
+            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($original, $alias_record) {
                 $fqsen_alias_map = $inner->fqsen_alias_map[$original] ?? null;
                 if ($fqsen_alias_map) {
                     $fqsen_alias_map->detach($alias_record);
@@ -757,7 +757,7 @@ class CodeBase
         }
         if ($this->undo_tracker) {
             // The addClass's recordUndo should remove the class map. Only need to remove it from method_set
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($method) {
+            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($method) {
                 $inner->method_set->detach($method);
             });
         }
@@ -891,7 +891,7 @@ class CodeBase
         $this->fqsen_func_map[$function->getFQSEN()] = $function;
 
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($function) {
+            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($function) {
                 Daemon::debugf("Undoing addFunction on %s\n", $function->getFQSEN());
                 unset($inner->fqsen_func_map[$function->getFQSEN()]);
             });
@@ -1003,7 +1003,7 @@ class CodeBase
             $global_constant->getFQSEN()
         ] = $global_constant;
         if ($this->undo_tracker) {
-            $this->undo_tracker->recordUndo(function(CodeBase $inner) use ($global_constant) {
+            $this->undo_tracker->recordUndo(function (CodeBase $inner) use ($global_constant) {
                 Daemon::debugf("Undoing addGlobalConstant on %s\n", $global_constant->getFQSEN());
                 unset($inner->fqsen_global_constant_map[$global_constant->getFQSEN()]);
             });

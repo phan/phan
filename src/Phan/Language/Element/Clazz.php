@@ -710,7 +710,7 @@ class Clazz extends AddressableElement
                 $flags,
                 $method_fqsen
             );
-            $real_parameter_list = \array_map(function(\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
+            $real_parameter_list = \array_map(function (\Phan\Language\Element\Comment\Parameter $parameter) use ($context) : Parameter {
                 return $parameter->asRealParameter($context);
             }, $comment_method->getParameterList());
 
@@ -2205,12 +2205,12 @@ class Clazz extends AddressableElement
         if (count($property_map) > 0) {
             $stub .= "\n\n    // properties\n";
 
-            $stub .= implode("\n", array_map(function(Property $property) {
+            $stub .= implode("\n", array_map(function (Property $property) {
                 return $property->toStub();
             }, $property_map));
         }
         $reflection_class = new \ReflectionClass((string)$this->getFQSEN());
-        $method_map = array_filter($this->getMethodMap($code_base), function(Method $method) use ($reflection_class) : bool {
+        $method_map = array_filter($this->getMethodMap($code_base), function (Method $method) use ($reflection_class) : bool {
             if ($method->getFQSEN()->isAlternate()) {
                 return false;
             }

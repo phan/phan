@@ -240,7 +240,7 @@ class Analysis
         $plugin_set = ConfigPluginSet::instance();
         $has_function_or_method_plugins = $plugin_set->hasAnalyzeFunctionPlugins() || $plugin_set->hasAnalyzeMethodPlugins();
         $show_progress = CLI::shouldShowProgress();
-        $analyze_function_or_method = function(FunctionInterface $function_or_method) use (
+        $analyze_function_or_method = function (FunctionInterface $function_or_method) use (
             $code_base,
             $plugin_set,
             $has_function_or_method_plugins,

@@ -934,7 +934,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $class->getMethodByName($this->code_base, '__construct');
 
             // Map each argument to its type
-            $arg_type_list = \array_map(function($arg_node) {
+            $arg_type_list = \array_map(function ($arg_node) {
                 return UnionTypeVisitor::unionTypeFromNode(
                     $this->code_base,
                     $this->context,
@@ -1554,7 +1554,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $union_type = clone($union_type);
 
                         // Find the static type on the list
-                        $static_type = ArraySet::find($union_type->getTypeSet(), function (Type $type) : bool {
+                        $static_type = $union_type->findTypeMatchingCallback(function (Type $type) : bool {
                             return (
                                 $type->isGenericArray()
                                 && $type->genericArrayElementType()->isStaticType()
