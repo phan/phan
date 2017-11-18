@@ -1,6 +1,7 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.10.2 (dev)
+17 Nov 2017, Phan 0.10.2
+------------------------
 
 New Features(Analysis)
 + Enable `simplify_ast` by default.
