@@ -15,6 +15,7 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
@@ -95,10 +96,12 @@ class UnionType implements \Serializable
         $type_set = $memoize_map[$fully_qualified_string] ?? null;
 
         if (!isset($type_set)) {
-            // TODO: Support brackets, template types within <>, etc.
-            $type_set = ArraySet::from_list(\array_map(function (string $type_name) {
+            $types = \array_map(function (string $type_name) {
                 return Type::fromFullyQualifiedString($type_name);
-            }, \explode('|', $fully_qualified_string)));
+            }, self::extractTypeParts($fully_qualified_string));
+
+            // TODO: Support brackets, template types within <>, etc.
+            $type_set = ArraySet::from_list(self::normalizeGenericMultiArrayTypes($types));
             $memoize_map[$fully_qualified_string] = $type_set;
         }
 
@@ -134,23 +137,95 @@ class UnionType implements \Serializable
                 $type_string
             )->asUnionType();
         }
-
-        return new UnionType(
-            \array_map(function (string $type_name) use ($context, $source) {
+        $types = \array_map(
+            function (string $type_name) use ($context, $source) : Type {
                 \assert($type_name !== '', "Type cannot be empty.");
                 return Type::fromStringInContext(
                     $type_name,
                     $context,
                     $source
                 );
-            }, \array_filter(\array_map(function (string $type_name) {
-                return \trim($type_name);
-            }, explode('|', $type_string)), function(string $type_name) {
+            },
+            \array_filter(self::extractTypeParts($type_string), function(string $type_name) {
                 // Exclude empty type names
                 // Exclude namespaces without type names (e.g. `\`, `\NS\`)
                 return $type_name !== '' && \preg_match('@\\\\[\[\]]*$@', $type_name) === 0;
-            }))
+            })
         );
+
+        return new UnionType(self::normalizeGenericMultiArrayTypes($types));
+    }
+
+    /**
+     * @return string[]
+     */
+    private static function extractTypeParts(string $type_string) : array
+    {
+        $parts = \array_map('trim', \explode('|', $type_string));
+        if (\count($parts) <= 1) {
+            return $parts;
+        }
+        if (!\preg_match('/[<(]/', $type_string)) {
+            return $parts;
+        }
+        return self::mergeTypeParts($parts);
+    }
+
+    /**
+     * Expands any GenericMultiArrayType instances in $types if necessary.
+     *
+     * @param Type[] $types
+     * @return Type[]
+     */
+    private static function normalizeGenericMultiArrayTypes(array $types) : array
+    {
+        foreach ($types as $i => $type) {
+            if ($type instanceof GenericMultiArrayType) {
+                foreach ($type->asGenericArrayTypeInstances() as $new_type) {
+                    $types[] = $new_type;
+                }
+                unset($types[$i]);
+            }
+        }
+        return $types;
+    }
+
+    /**
+     * @param string[] $parts (already trimmed)
+     * @return string[]
+     * @see Type::extractTemplateParameterTypeNameList (Similar method)
+     */
+    private static function mergeTypeParts(array $parts) : array
+    {
+        $prev_parts = [];
+        $delta = 0;
+        $results = [];
+        foreach ($parts as $part) {
+            if (\count($prev_parts) > 0) {
+                $prev_parts[] = $part;
+                $delta += \substr_count($part, '<') + \substr_count($part, '(') - \substr_count($part, '>') - \substr_count($part, ')');
+                if ($delta <= 0) {
+                    if ($delta === 0) {
+                        $results[] = \implode('|', $prev_parts);
+                    }  // ignore unparseable data such as "<T,T2>>"
+                    $prev_parts = [];
+                    $delta = 0;
+                    continue;
+                }
+            }
+            $bracket_count = \substr_count($part, '<') + \substr_count($part, '(');
+            if ($bracket_count === 0) {
+                $results[] = $part;
+                continue;
+            }
+            $delta = $bracket_count - \substr_count($part, '>') - \substr_count($part, ')');
+            if ($delta === 0) {
+                $results[] = $part;
+            } elseif ($delta > 0) {
+                $prev_parts[] = $part;
+            }  // otherwise ignore unparseable data such as ">" (should be impossible)
+        }
+        return $results;
     }
 
     /**

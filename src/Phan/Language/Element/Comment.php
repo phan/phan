@@ -223,7 +223,8 @@ class Comment
         }
     }
 
-    private static function guessActualLineLocation(Context $context, int $declaration_lineno, int $i, int $comment_lines_count, string $line) {
+    private static function guessActualLineLocation(Context $context, int $declaration_lineno, int $i, int $comment_lines_count, string $line)
+    {
         $path = Config::projectPath($context->getFile());
         $entry = FileCache::getEntry($path);
         if (!$entry) {

@@ -2141,7 +2141,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         $context = $this->context;
 
         if (!\is_string($method_name)) {
-            if (!($method_name instanceof Node))  {
+            if (!($method_name instanceof Node)) {
                 // TODO: Warn about int/float here
                 return [];
             }

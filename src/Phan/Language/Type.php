@@ -11,6 +11,7 @@ use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FalseType;
 use Phan\Language\Type\FloatType;
 use Phan\Language\Type\GenericArrayType;
+use Phan\Language\Type\GenericMultiArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -106,9 +107,9 @@ class Type
         . '(' . self::simple_type_regex . ')'  // 2 patterns
         . '(?:<'
           . '('
-            . '(?-4)'
+            . '(?-4)(?:\|(?-4))*'
             . '(\s*,\s*'
-              . '(?-6)'
+              . '(?-5)(?:\|(?-5))*'
             . ')*'
           . ')'
         . '>)?'
@@ -128,9 +129,9 @@ class Type
           . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
           . '(?:<'
             . '('
-              . '(?-6)'  // We use relative references instead of named references so that more than one one type_regex can be used in a regex.
+              . '(?-6)(?:\|(?-6))*'  // We use relative references instead of named references so that more than one one type_regex can be used in a regex.
               . '(\s*,\s*'
-                . '(?-7)'
+                . '(?-7)(?:\|(?-7))*'
               . ')*'
             . ')'
           . '>)?'
@@ -294,7 +295,7 @@ class Type
     protected static function make(
         string $namespace,
         string $type_name,
-        $template_parameter_type_list,
+        array $template_parameter_type_list,
         bool $is_nullable,
         int $source
     ) : Type {
@@ -412,7 +413,7 @@ class Type
      */
     public static function fromType(
         Type $type,
-        $template_parameter_type_list
+        array $template_parameter_type_list
     ) : Type {
         return self::make(
             $type->getNamespace(),
@@ -622,7 +623,7 @@ class Type
     public static function fromNamespaceAndName(
         string $namespace,
         string $type_name,
-        bool  $is_nullable
+        bool $is_nullable
     ) : Type {
         return self::make($namespace, $type_name, [], $is_nullable, Type::FROM_NODE);
     }
@@ -684,7 +685,7 @@ class Type
         // Map the names of the types to actual types in the
         // template parameter type list
         $template_parameter_type_list = \array_map(function (string $type_name) {
-            return Type::fromFullyQualifiedString($type_name)->asUnionType();
+            return UnionType::fromFullyQualifiedString($type_name);
         }, $template_parameter_type_name_list);
 
         if (0 !== strpos($namespace, '\\')) {
@@ -762,7 +763,7 @@ class Type
         // template parameter type list
         $template_parameter_type_list =
             array_map(function (string $type_name) use ($context, $source) {
-                return Type::fromStringInContext($type_name, $context, $source)->asUnionType();
+                return UnionType::fromStringInContext($type_name, $context, $source);
             }, $template_parameter_type_name_list);
 
         // @var bool
@@ -848,6 +849,8 @@ class Type
                         $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
                         if (\count($types) === 1) {
                             return GenericArrayType::fromElementType(\reset($types), $is_nullable);
+                        } elseif (\count($types) > 1) {
+                            return new GenericMultiArrayType($types, $is_nullable);
                         }
                     }
                 }
@@ -1407,7 +1410,7 @@ class Type
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
             $union_type->addUnionType(
-                 $clazz->getUnionType()
+                $clazz->getUnionType()
             );
 
             // Recurse up the tree to include all types
