@@ -1754,41 +1754,42 @@ class ContextNode
         return $this->getValueForMagicConstByNode($this->node);
     }
 
-    public function getValueForMagicConstByNode(Node $node) {
+    public function getValueForMagicConstByNode(Node $node)
+    {
         $context = $this->context;
         switch ($node->flags) {
-        case ast\flags\MAGIC_CLASS:
-            if ($context->isInClassScope()) {
-                return (string)$context->getClassFQSEN();
-            }
-            return $node;
-        case ast\flags\MAGIC_FUNCTION:
-            if ($context->isInFunctionLikeScope()) {
-                $fqsen = $context->getFunctionLikeFQSEN();
-                return $fqsen->isClosure() ? '{closure}' : $fqsen->getName();
-            }
-            return $node;
-        case ast\flags\MAGIC_METHOD:
-            // TODO: Is this right?
-            if ($context->isInMethodScope()) {
-                return \ltrim((string)$context->getFunctionLikeFQSEN(), '\\');
-            }
-            return $node;
-        case ast\flags\MAGIC_DIR:
-            // TODO: Absolute directory?
-            return \dirname($context->getFile());
-        case ast\flags\MAGIC_FILE:
-            return $context->getFile();
-        case ast\flags\MAGIC_LINE:
-            return $node->lineno ?? $context->getLineNumberStart();
-        case ast\flags\MAGIC_NAMESPACE:
-            return \ltrim($context->getNamespace(), '\\');
-        case ast\flags\MAGIC_TRAIT:
-            // TODO: Could check if in trait, low importance.
-            if ($context->isInClassScope()) {
-                return (string)$context->getClassFQSEN();
-            }
-            return $node;
+            case ast\flags\MAGIC_CLASS:
+                if ($context->isInClassScope()) {
+                    return (string)$context->getClassFQSEN();
+                }
+                return $node;
+            case ast\flags\MAGIC_FUNCTION:
+                if ($context->isInFunctionLikeScope()) {
+                    $fqsen = $context->getFunctionLikeFQSEN();
+                    return $fqsen->isClosure() ? '{closure}' : $fqsen->getName();
+                }
+                return $node;
+            case ast\flags\MAGIC_METHOD:
+                // TODO: Is this right?
+                if ($context->isInMethodScope()) {
+                    return \ltrim((string)$context->getFunctionLikeFQSEN(), '\\');
+                }
+                return $node;
+            case ast\flags\MAGIC_DIR:
+                // TODO: Absolute directory?
+                return \dirname($context->getFile());
+            case ast\flags\MAGIC_FILE:
+                return $context->getFile();
+            case ast\flags\MAGIC_LINE:
+                return $node->lineno ?? $context->getLineNumberStart();
+            case ast\flags\MAGIC_NAMESPACE:
+                return \ltrim($context->getNamespace(), '\\');
+            case ast\flags\MAGIC_TRAIT:
+                // TODO: Could check if in trait, low importance.
+                if ($context->isInClassScope()) {
+                    return (string)$context->getClassFQSEN();
+                }
+                return $node;
         }
         return $node;
     }

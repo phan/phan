@@ -1410,7 +1410,7 @@ class Type
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
             $union_type->addUnionType(
-                 $clazz->getUnionType()
+                $clazz->getUnionType()
             );
 
             // Recurse up the tree to include all types

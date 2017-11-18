@@ -195,7 +195,8 @@ class UnionType implements \Serializable
      * @return string[]
      * @see Type::extractTemplateParameterTypeNameList (Similar method)
      */
-    private static function mergeTypeParts(array $parts) : array {
+    private static function mergeTypeParts(array $parts) : array
+    {
         $prev_parts = [];
         $delta = 0;
         $results = [];
