@@ -250,4 +250,22 @@ class UnionTypeTest extends BaseTest
         $this->assertTrue($parts[0]->isType(self::makePHPDocType('A1')));
         $this->assertTrue($parts[1]->isType(self::makePHPDocType('B2')));
     }
+
+    public function testTemplateNullableTypes()
+    {
+        $this->assertSame(1, preg_match('/^' . Type::type_regex . '$/', 'TypeTestClass<A1|null,B2|null>'), 'type_regex does not support nested pipes');
+        $this->assertSame(1, preg_match('/^' . Type::type_regex_or_this . '$/', 'TypeTestClass<A1|null>'), 'type_regex_or_this does not support nested pipes');
+        $this->assertSame(1, preg_match('/^' . Type::type_regex_or_this . '$/', 'TypeTestClass<A1|null,B2|null>'), 'type_regex_or_this does not support nested pipes');
+        $union_type = self::makePHPDocUnionType('TypeTestClass<A1,B2|null>');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('\\', $type->getNamespace());
+        $this->assertSame('TypeTestClass', $type->getName());
+        $parts = $type->getTemplateParameterTypeList();
+        $this->assertCount(2, $parts);
+        $this->assertTrue($parts[0]->isType(self::makePHPDocType('A1')));
+        $this->assertTrue($parts[1]->isEqualTo(self::makePHPDocUnionType('B2|null')));
+    }
 }
