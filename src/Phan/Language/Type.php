@@ -57,84 +57,48 @@ class Type
 
     /**
      * @var string
-     * A regex matching template parameter types such
-     * as '<int,DateTime|null,string>'
-     *
-     * See https://secure.php.net/manual/en/regexp.reference.recursive.php
-     */
-    /*
-    const template_parameter_type_list_regex =
-        '<'
-        . '('
-        . '(' . self::simple_type_regex . '(\[\])*' . ')'
-        . '(' . '\s*,\s*'
-        . '(' . self::simple_type_regex . '(\[\])*' . ')'
-        . ')*'
-        . ')'
-        . '>';
-     */
-
-    /**
-     * @var string
-     * A type with an optional template parameter list
-     * such as 'Set<Datetime>', 'int' or 'Tuple2<int>'.
-     */
-    /*
-    const simple_type_with_template_parameter_list_regex =
-        '(' . self::simple_type_regex . ')'
-        . '(' . self::_template_parameter_type_list_regex_recursive . ')?';
-     */
-
-    /**
-     * @var string
-     * A type with an optional template parameter list
-     * such as 'Set<Datetime>', 'int' or 'Tuple2<int>' or $this
-     */
-    /*
-    const simple_type_with_template_parameter_list_regex_or_this =
-        '(' . self::simple_type_regex_or_this . ')'
-        . '(' . self::_template_parameter_type_list_regex_recursive . ')?';
-     */
-
-    /**
-     * @var string
      * A legal type identifier matching a type optionally with a []
      * indicating that it's a generic typed array (e.g. 'int[]',
      * 'string' or 'Set<DateTime>')
      */
     const type_regex =
         '('
+        . '(?:\??\((?-1)\)|'
         . '(' . self::simple_type_regex . ')'  // 2 patterns
-        . '(?:<'
-          . '('
-            . '(?-4)(?:\|(?-4))*'
-            . '(\s*,\s*'
-              . '(?-5)(?:\|(?-5))*'
-            . ')*'
-          . ')'
-        . '>)?'
+        . '(?:'
+          . '<'
+            . '('
+              . '(?-4)(?:\|(?-4))*'
+              . '(\s*,\s*'
+                . '(?-5)(?:\|(?-5))*'
+              . ')*'
+            . ')'
+          . '>)?'
+        . ')'
         . '(\[\])*'
-       .')';
+      . ')';
 
     /**
      * @var string
      * A legal type identifier matching a type optionally with a []
      * indicating that it's a generic typed array (e.g. 'int[]' or '$this[]',
-     * 'string' or 'Set<DateTime>')
+     * 'string' or 'Set<DateTime>' or 'array<int>' or 'array<int|string>')
      */
     const type_regex_or_this =
         '('
-        . '\((?-1)\)|'
         . '('
-          . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
-          . '(?:<'
-            . '('
-              . '(?-6)(?:\|(?-6))*'  // We use relative references instead of named references so that more than one one type_regex can be used in a regex.
-              . '(\s*,\s*'
-                . '(?-7)(?:\|(?-7))*'
-              . ')*'
+          . '(?:'
+            . '\??\((?-1)\)|'
+            . '(' . self::simple_type_regex_or_this . ')'  // 3 patterns
+            . '(?:<'
+              . '('
+                . '(?-6)(?:\|(?-6))*'  // We use relative references instead of named references so that more than one one type_regex can be used in a regex.
+                . '(\s*,\s*'
+                  . '(?-7)(?:\|(?-7))*'
+                . ')*'
+              . ')'
+              . '>)?'
             . ')'
-          . '>)?'
           . '(\[\])*'
         . ')'
        . ')';
@@ -653,6 +617,13 @@ class Type
             !empty($fully_qualified_string),
             "Type cannot be empty"
         );
+        while (\substr($fully_qualified_string, -1) === ')') {
+            if ($fully_qualified_string[0] === '?') {
+                $fully_qualified_string = '?' . \substr($fully_qualified_string, 2, -1);
+            } else {
+                $fully_qualified_string = \substr($fully_qualified_string, 1, -1);
+            }
+        }
         if (\substr($fully_qualified_string, -2) === '[]') {
             if ($fully_qualified_string[0] === '?') {
                 $is_nullable = true;
@@ -729,6 +700,13 @@ class Type
             $string !== '',
             "Type cannot be empty"
         );
+        while (\substr($string, -1) === ')') {
+            if ($string[0] === '?') {
+                $string = '?' . \substr($string, 2, -1);
+            } else {
+                $string = \substr($string, 1, -1);
+            }
+        }
 
         if (\substr($string, -2) === '[]') {
             if ($string[0] === '?') {
@@ -1727,6 +1705,9 @@ class Type
             if (!isset($match[2])) {
                 // Parse '(X)' as 'X'
                 return self::typeStringComponents(\substr($match[1], 1, -1));
+            } else if (!isset($match[3])) {
+                // Parse '?(X[]) as '?X[]'
+                return self::typeStringComponents('?' . \substr($match[2], 2, -1));
             }
             $type_string = $match[3];
 
@@ -1738,7 +1719,7 @@ class Type
             }
 
             // Recursively parse this
-            $template_parameter_type_name_list = isset($match[6])
+            $template_parameter_type_name_list = ($match[6] ?? '') !== ''
                 ? self::extractTemplateParameterTypeNameList($match[6])
                 : [];
         }
