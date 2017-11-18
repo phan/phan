@@ -322,7 +322,7 @@ class UnionTypeTest extends BaseTest
         $union_type = self::makePHPDocUnionType('(?string)[]|(int)[]');
         $this->assertSame(2, $union_type->typeCount());
         $types = $union_type->getTypeSet();
-        [$type1, $type2] = \array_values($types);
+        list($type1, $type2) = \array_values($types);
 
         $this->assertSame('(?string)[]', (string)$type1);
         $this->assertSame(GenericArrayType::fromElementType(StringType::instance(true), false), $type1);
