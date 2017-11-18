@@ -1,0 +1,1 @@
+%s:8 PhanTypeMismatchReturn Returning type \stdClass[] but testPipeInTemplate386() is declared to return bool[]|null[]

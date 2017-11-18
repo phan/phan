@@ -36,6 +36,10 @@ New Features(Analysis)
   `PhanTypeExpectedObject`, and `PhanTypeExpectedObjectOrClassName
 + Emit more accurate line numbers for phpdoc comments, when warning about phpdoc in doc comments being invalid. (#1294)
   This gives up and uses the element's line number if the phpdoc ends over 10 lines before the start of the element.
++ Work on allowing union types to be part of template types in doc comments,
+  as well as types with template syntax.
+  (e.g. `array<int|string>` is now equivalent to `int[]|string[]`,
+  and `MyClass<T1|T2,T3|T4>` can now be parsed in doc comments)
 
 New Features (CLI, Configs)
 + Improve default update rate of `--progress-bar` (Update it every 0.10 seconds)
