@@ -268,4 +268,90 @@ class UnionTypeTest extends BaseTest
         $this->assertTrue($parts[0]->isType(self::makePHPDocType('A1')));
         $this->assertTrue($parts[1]->isEqualTo(self::makePHPDocUnionType('B2|null')));
     }
+
+    public function testNormalize()
+    {
+        $union_type = self::makePHPDocUnionType('object|null');
+        $this->assertSame(2, $union_type->typeCount());
+
+        $new_union_type = $union_type->asNormalizedTypes();
+        $this->assertSame('?object', (string)$new_union_type);
+        $type_set = $new_union_type->getTypeSet();
+        $this->assertSame(ObjectType::instance(true), reset($type_set));
+    }
+
+    public function testAlternateArrayTypes()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('array<int,string>');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('string[]', (string)$type);
+        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(false), false), $type);
+    }
+
+    public function testNullableArrayType()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('?string[]');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('?string[]', (string)$type);
+        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(false), true), $type);
+    }
+
+    public function testNullableBracketedArrayType()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('(?string)[]');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('(?string)[]', (string)$type);
+        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(true), false), $type);
+    }
+
+    public function testNullableBracketedArrayType2()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('(?string)[]|(int)[]');
+        $this->assertSame(2, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        [$type1, $type2] = \array_values($types);
+
+        $this->assertSame('(?string)[]', (string)$type1);
+        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(true), false), $type1);
+
+        $this->assertSame('int[]', (string)$type2);
+        $this->assertSame(GenericArrayType::fromElementType(IntType::instance(false), false), $type2);
+    }
+
+    public function testNullableArrayOfNullables()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('?(?string)[]');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('?(?string)[]', (string)$type);
+        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(true), true), $type);
+    }
+
+    public function testNullableExtraBracket()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('?(string[])');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('?string[]', (string)$type);
+        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(false), true), $type);
+    }
 }
