@@ -41,7 +41,7 @@ final class CallableParamPlugin extends PluginV2 implements
         if ($closure !== null) {
             return $closure;
         }
-        $closure = function(
+        $closure = function (
             CodeBase $code_base,
             Context $context,
             FunctionInterface $function,
@@ -78,7 +78,7 @@ final class CallableParamPlugin extends PluginV2 implements
     private function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {
         $result = [];
-        $add_callable_checker_closure = function(FunctionInterface $function) use (&$result) {
+        $add_callable_checker_closure = function (FunctionInterface $function) use (&$result) {
             $params = [];
             foreach ($function->getParameterList() as $i => $param) {
                 // If there's a type such as Closure|string|int, don't automatically assume that any string or array passed in is meant to be a callable.

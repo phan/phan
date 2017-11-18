@@ -124,7 +124,7 @@ class Ordering
         foreach ($root_fqsen_list as $root_fqsen => $list) {
             // Sort first by depth, and break ties by file name lexicographically
             // (usort is not a stable sort).
-            usort($list, function(array $a, array $b) {
+            usort($list, function (array $a, array $b) {
                 return ($a['depth'] <=> $b['depth']) ?:
                        strcmp($a['file'], $b['file']);
             });

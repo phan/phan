@@ -290,22 +290,22 @@ class NegatedConditionVisitor extends KindVisitorImplementation
      */
     private static function createNegationCallbackMap() : array
     {
-        $remove_null_cb = function(NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+        $remove_null_cb = function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->removeNullFromVariable($var_node, $context, false);
         };
 
         // Remove any Types from UnionType that are subclasses of $base_class_name
-        $make_basic_negated_assertion_callback = static function(string $base_class_name) : \Closure {
-            return static function(NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($base_class_name) : Context {
+        $make_basic_negated_assertion_callback = static function (string $base_class_name) : \Closure {
+            return static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) use ($base_class_name) : Context {
                 return $cv->updateVariableWithConditionalFilter(
                     $var_node,
                     $context,
-                    function(UnionType $union_type) use ($base_class_name) : bool {
-                        return $union_type->hasTypeMatchingCallback(function(Type $type) use ($base_class_name) : bool {
+                    function (UnionType $union_type) use ($base_class_name) : bool {
+                        return $union_type->hasTypeMatchingCallback(function (Type $type) use ($base_class_name) : bool {
                             return $type instanceof $base_class_name;
                         });
                     },
-                    function(UnionType $union_type) use ($base_class_name) : UnionType {
+                    function (UnionType $union_type) use ($base_class_name) : UnionType {
                         $new_type = new UnionType();
                         $has_null = false;
                         $has_other_nullable_types = false;
@@ -331,17 +331,17 @@ class NegatedConditionVisitor extends KindVisitorImplementation
         };
         $remove_float_callback = $make_basic_negated_assertion_callback(FloatType::class);
         $remove_int_callback = $make_basic_negated_assertion_callback(IntType::class);
-        $remove_scalar_callback = static function(NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+        $remove_scalar_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
                 $context,
                 // if (!is_scalar($x)) removes scalar types from $x, but $x can still be null.
-                function(UnionType $union_type) : bool {
-                    return $union_type->hasTypeMatchingCallback(function(Type $type) : bool {
+                function (UnionType $union_type) : bool {
+                    return $union_type->hasTypeMatchingCallback(function (Type $type) : bool {
                         return ($type instanceof ScalarType) && !($type instanceof NullType);
                     });
                 },
-                function(UnionType $union_type) : UnionType {
+                function (UnionType $union_type) : UnionType {
                     $new_type = new UnionType();
                     $has_null = false;
                     $has_other_nullable_types = false;
@@ -364,18 +364,18 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                 false
             );
         };
-        $remove_callable_callback = static function(NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
+        $remove_callable_callback = static function (NegatedConditionVisitor $cv, Node $var_node, Context $context) : Context {
             return $cv->updateVariableWithConditionalFilter(
                 $var_node,
                 $context,
                 // if (!is_callable($x)) removes non-callable/closure types from $x.
                 // TODO: Could check for __invoke()
-                function(UnionType $union_type) : bool {
-                    return $union_type->hasTypeMatchingCallback(function(Type $type) : bool {
+                function (UnionType $union_type) : bool {
+                    return $union_type->hasTypeMatchingCallback(function (Type $type) : bool {
                         return $type->isCallable();
                     });
                 },
-                function(UnionType $union_type) : UnionType {
+                function (UnionType $union_type) : UnionType {
                     $new_type = new UnionType();
                     $has_null = false;
                     $has_other_nullable_types = false;

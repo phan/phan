@@ -206,7 +206,7 @@ class Parameter extends Variable
     public static function listFromReflectionParameterList(
         array $reflection_parameters
     ) : array {
-        return \array_map(function(\ReflectionParameter $reflection_parameter) {
+        return \array_map(function (\ReflectionParameter $reflection_parameter) {
             return self::fromReflectionParameter($reflection_parameter);
         }, $reflection_parameters);
     }

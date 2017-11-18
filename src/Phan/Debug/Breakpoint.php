@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 namespace Phan\Debug;
 
-readline_completion_function(function($input) {
+readline_completion_function(function ($input) {
     $matches = [];
     foreach (\get_declared_classes() as $className) {
         if (\strpos($className, $input) == 0) {

@@ -8,7 +8,6 @@ use Phan\Language\Element\Variable;
 use Phan\Language\Scope;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
-use Phan\Library\ArraySet;
 use ast\Node;
 
 class ContextMergeVisitor extends KindVisitorImplementation
@@ -237,33 +236,26 @@ class ContextMergeVisitor extends KindVisitorImplementation
 
                 // Get a list of all variables with the given name from
                 // each scope
-                $variable_list = \array_filter(\array_map(
+                $type_list = \array_filter(\array_map(
                     function (Scope $scope) use ($variable_name) {
                         if (!$scope->hasVariableWithName($variable_name)) {
                             return null;
                         }
 
-                        return $scope->getVariableByName($variable_name);
+                        return $scope->getVariableByName($variable_name)->getUnionType();
                     },
                     $scope_list
                 ));
 
-                // Get the list of types for each version of the variable
-                $type_set_list = \array_map(function (Variable $variable) : array {
-                    return $variable->getUnionType()->getTypeSet();
-                }, $variable_list);
-
-                if (\count($type_set_list) < 2) {
-                    return new UnionType($type_set_list[0] ?? [], true);
+                if (\count($type_list) < 2) {
+                    return new UnionType(\count($type_list) === 1 ? \reset($type_list)->getTypeSet() : []);
                 }
                 // compute the un-normalized types
-                $result = (new UnionType(
-                    ArraySet::unionAll($type_set_list),
-                    true
-                ));
+                $result = UnionType::merge($type_list);
+
                 $result_count = $result->typeCount();
-                foreach ($type_set_list as $type_set) {
-                    if (\count($type_set) < $result_count) {
+                foreach ($type_list as $type) {
+                    if ($type->typeCount() < $result_count) {
                         // normalize it if any of the types varied
                         // (i.e. one of the types lacks types in the type union)
                         //

@@ -111,7 +111,7 @@ class ContextNode
             return [];
         }
 
-        return \array_map(function($name_node) : FQSEN {
+        return \array_map(function ($name_node) : FQSEN {
             return (new ContextNode(
                 $this->code_base,
                 $this->context,
@@ -209,7 +209,7 @@ class ContextNode
                 $trait_method_node->lineno ?? 0,
                 $trait_new_method_name,
                 $trait_original_method_name,
-                '[' . implode(', ', \array_map(function(TraitAdaptations $t) : string {
+                '[' . implode(', ', \array_map(function (TraitAdaptations $t) : string {
                     return (string) $t->getTraitFQSEN();
                 }, $adaptations_map)) . ']'
             );

@@ -381,13 +381,13 @@ class ConditionVisitor extends KindVisitorImplementation
      */
     private static function initTypeModifyingClosuresForVisitCall() : array
     {
-        $make_basic_assertion_callback = static function(string $union_type_string) : \Closure {
+        $make_basic_assertion_callback = static function (string $union_type_string) : \Closure {
             $type = UnionType::fromFullyQualifiedString(
                 $union_type_string
             );
 
             /** @return void */
-            return static function(Variable $variable, array $args) use ($type) {
+            return static function (Variable $variable, array $args) use ($type) {
                 // Otherwise, overwrite the type for any simple
                 // primitive types.
                 $variable->setUnionType(clone($type));
@@ -395,7 +395,7 @@ class ConditionVisitor extends KindVisitorImplementation
         };
 
         /** @return void */
-        $array_callback = static function(Variable $variable, array $args) {
+        $array_callback = static function (Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have generic array types, then keep those
             // (E.g. T[]|false becomes T[], ?array|null becomes array
@@ -412,7 +412,7 @@ class ConditionVisitor extends KindVisitorImplementation
         };
 
         /** @return void */
-        $object_callback = static function(Variable $variable, array $args) {
+        $object_callback = static function (Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have the `object` type or generic object types, then keep those
             // (E.g. T|false becomes T, object|T[]|iterable|null becomes object)
@@ -428,7 +428,7 @@ class ConditionVisitor extends KindVisitorImplementation
             $variable->setUnionType($newType);
         };
         /** @return void */
-        $is_a_callback = function(Variable $variable, array $args) use ($object_callback) {
+        $is_a_callback = function (Variable $variable, array $args) use ($object_callback) {
             $class_name = $args[1] ?? null;
             if (!\is_string($class_name)) {
                 // Limit the types of $variable to an object if we can't infer the class name.
@@ -446,7 +446,7 @@ class ConditionVisitor extends KindVisitorImplementation
         };
 
         /** @return void */
-        $scalar_callback = static function(Variable $variable, array $args) {
+        $scalar_callback = static function (Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have possible scalar types, then keep those
             // (E.g. T|false becomes bool, T becomes int|float|bool|string|null)
@@ -459,7 +459,7 @@ class ConditionVisitor extends KindVisitorImplementation
             }
             $variable->setUnionType($newType);
         };
-        $callable_callback = static function(Variable $variable, array $args) {
+        $callable_callback = static function (Variable $variable, array $args) {
             // Change the type to match the is_a relationship
             // If we already have possible callable types, then keep those
             // (E.g. Closure|false becomes Closure)

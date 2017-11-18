@@ -9,7 +9,7 @@ if (function_exists('spl_object_id')) {
     return;
 }
 // Workaround for global suppression
-call_user_func(/** @suppress PhanUndeclaredFunctionInCallable for ReflectionFunction */ function() {
+call_user_func(/** @suppress PhanUndeclaredFunctionInCallable for ReflectionFunction */ function () {
     if (function_exists('runkit_object_id') &&
         !(new ReflectionFunction('runkit_object_id'))->isUserDefined()) {
         /**

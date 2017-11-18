@@ -338,7 +338,7 @@ class Func extends AddressableElement implements FunctionInterface
             $stub .= '&';
         }
         $stub .= $this->getName();
-        $stub .= '(' . implode(', ', array_map(function(Parameter $parameter) : string {
+        $stub .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
             return $parameter->toStubString();
         }, $this->getRealParameterList())) . ')';
         if ($this->real_return_type && !$this->getRealReturnType()->isEmpty()) {

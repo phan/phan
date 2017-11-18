@@ -31,7 +31,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         /**
          * @suppress PhanParamSuspiciousOrder 100% deliberate use of varying regex and constant $subject for preg_match
          */
-        $err = with_disabled_phan_error_handler(function() use ($pattern) {
+        $err = with_disabled_phan_error_handler(function () use ($pattern) {
             $old_error_reporting = error_reporting();
             \error_reporting(0);
             \ob_start();
@@ -69,7 +69,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         /**
          * @return void
          */
-        $preg_pattern_callback = function(
+        $preg_pattern_callback = function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -91,7 +91,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         /**
          * @return void
          */
-        $preg_pattern_or_array_callback = function(
+        $preg_pattern_or_array_callback = function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -122,7 +122,7 @@ class PregRegexCheckerPlugin extends PluginV2 implements AnalyzeFunctionCallCapa
         /**
          * @return void
          */
-        $preg_replace_callback_array_callback = function(
+        $preg_replace_callback_array_callback = function (
             CodeBase $code_base,
             Context $context,
             Func $function,

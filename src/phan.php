@@ -70,7 +70,7 @@ $cli = new CLI();
 $is_issue_found =
     Phan::analyzeFileList(
         $code_base,
-        function() use ($cli) {
+        function () use ($cli) {
             return $cli->getFileList();
         }  // Daemon mode will reload the file list.
     );

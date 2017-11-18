@@ -38,7 +38,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
         $mixed_type = MixedType::instance(false);
         $false_type = FalseType::instance(false);
         $array_type = ArrayType::instance(false);
-        $get_element_type_of_first_arg = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type) : UnionType {
+        $get_element_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type) : UnionType {
             if (\count($args) >= 1) {
                 $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
                 $element_types = $array_type->genericArrayElementTypes();
@@ -49,7 +49,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $mixed_type->asUnionType();
         };
-        $get_first_array_arg = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+        $get_first_array_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) >= 1) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
                 if (!$element_types->isEmpty()) {
@@ -58,7 +58,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $array_type->asUnionType();
         };
-        $get_second_array_arg = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+        $get_second_array_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) >= 2) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1])->genericArrayTypes();
                 if (!$element_types->isEmpty()) {
@@ -67,7 +67,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $array_type->asUnionType();
         };
-        $array_fill_keys_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+        $array_fill_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) == 2) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
                 if (!$element_types->isEmpty()) {
@@ -77,7 +77,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $array_type->asUnionType();
         };
 
-        $array_fill_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+        $array_fill_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) == 3) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
                 return $element_types->asNonEmptyGenericArrayTypes();
@@ -85,7 +85,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $array_type->asUnionType();
         };
 
-        $array_filter_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+        $array_filter_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) >= 1) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
                 $generic_passed_array_type = $passed_array_type->genericArrayTypes();
@@ -122,7 +122,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $array_type->asUnionType();
         };
 
-        $array_reduce_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type) : UnionType {
+        $array_reduce_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type) : UnionType {
             if (\count($args) < 2) {
                 return $mixed_type->asUnionType();
             }
@@ -141,7 +141,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $function_return_types;
         };
 
-        $merge_array_types_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+        $merge_array_types_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             $types = new UnionType();
             foreach ($args as $arg) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
@@ -153,7 +153,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             return $types;
         };
 
-        $array_map_callback = static function(
+        $array_map_callback = static function (
             CodeBase $code_base,
             Context $context,
             Func $function,
@@ -170,7 +170,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             $possible_return_types = new UnionType();
             $cache = [];
             // Don't calculate argument types more than once.
-            $get_argument_type_for_array_map = function($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
+            $get_argument_type_for_array_map = function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
                 if (isset($cache[$i])) {
                     return $cache[$i];
                 }
@@ -217,7 +217,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $possible_return_types->elementTypesToGenericArray();
         };
-        $array_pad_callback = static function(CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
+        $array_pad_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) != 3) {
                 return $array_type->asUnionType();
             }

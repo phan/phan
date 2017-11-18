@@ -679,7 +679,7 @@ class Method extends ClassElement implements FunctionInterface
         }
         $string .= $this->getName();
 
-        $string .= '(' . implode(', ', array_map(function(Parameter $parameter) : string {
+        $string .= '(' . implode(', ', array_map(function (Parameter $parameter) : string {
             return $parameter->toStubString();
         }, $this->getRealParameterList())) . ')';
 

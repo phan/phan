@@ -23,7 +23,6 @@ use Phan\Language\Type\ObjectType;
 use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
-use Phan\Library\ArraySet;
 use ast\Node;
 
 class UnionType implements \Serializable
@@ -55,25 +54,14 @@ class UnionType implements \Serializable
     private $type_set;
 
     /**
-     * @param Type[]|\Iterator|null $type_list
-     * @param bool $is_an_array_set - Whether or not this is already a set. Only set to true within UnionSet code.
+     * @param Type[] $type_list
+     * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionSet code.
      *
      * An optional list of types represented by this union
      */
-    public function __construct($type_list = null, bool $is_an_array_set = false)
+    public function __construct(array $type_list = [], bool $is_unique = false)
     {
-        if ($is_an_array_set) {
-            // Disable asserts in production
-            /**
-            assert(is_array($type_list),
-                   'should be an array array');
-            assert(ArraySet::is_array_set($type_list),
-                   'Should be an array set');
-             */
-            $this->type_set = $type_list;
-            return;
-        }
-        $this->type_set = ArraySet::from_list($type_list);
+        $this->type_set = ($is_unique || \count($type_list) <= 1) ? $type_list : self::getUniqueTypes($type_list);
     }
 
     // __clone of $this->type_set would be a no-op due to copy on write semantics.
@@ -101,11 +89,26 @@ class UnionType implements \Serializable
             }, self::extractTypeParts($fully_qualified_string));
 
             // TODO: Support brackets, template types within <>, etc.
-            $type_set = ArraySet::from_list(self::normalizeGenericMultiArrayTypes($types));
+            $type_set = self::getUniqueTypes(self::normalizeGenericMultiArrayTypes($types));
             $memoize_map[$fully_qualified_string] = $type_set;
         }
 
         return new UnionType($type_set, true);
+    }
+
+    /**
+     * @param Type[] $type_list
+     * @return Type[]
+     */
+    public static function getUniqueTypes(array $type_list) : array
+    {
+        $new_type_list = [];
+        foreach ($type_list as $type) {
+            if (!\in_array($type, $new_type_list, true)) {
+                $new_type_list[] = $type;
+            }
+        }
+        return $new_type_list;
     }
 
     /**
@@ -146,7 +149,7 @@ class UnionType implements \Serializable
                     $source
                 );
             },
-            \array_filter(self::extractTypeParts($type_string), function(string $type_name) {
+            \array_filter(self::extractTypeParts($type_string), function (string $type_name) {
                 // Exclude empty type names
                 // Exclude namespaces without type names (e.g. `\`, `\NS\`)
                 return $type_name !== '' && \preg_match('@\\\\[\[\]]*$@', $type_name) === 0;
@@ -351,7 +354,7 @@ class UnionType implements \Serializable
          * @param string|null $type_name
          * @return UnionType|null
          */
-        $get_for_global_context = function($type_name) {
+        $get_for_global_context = function ($type_name) {
             if (!$type_name) {
                 return null;
             }
@@ -401,8 +404,8 @@ class UnionType implements \Serializable
 
     /**
      * @return Type[]
-     * The set of simple types associated with this
-     * union type. The key is based on spl_object_id()
+     * The list of simple types associated with this
+     * union type. Keys are consecutive.
      */
     public function getTypeSet() : array
     {
@@ -416,17 +419,29 @@ class UnionType implements \Serializable
      */
     public function addType(Type $type)
     {
-        $this->type_set[\spl_object_id($type)] = $type;
+        if (!\in_array($type, $this->type_set, true)) {
+            $this->type_set[] = $type;
+        }
     }
 
     /**
-     * Remove a type name to the list of types
+     * Remove a type name from the list of types,
+     * keeping the keys in a consecutive order.
+     *
+     * Each type in $this->type_set occurs exactly once.
      *
      * @return void
      */
     public function removeType(Type $type)
     {
-        unset($this->type_set[\spl_object_id($type)]);
+        $i = \array_search($type, $this->type_set, true);
+        if ($i === false) {
+            return;
+        }
+        $replacement_type = \array_pop($this->type_set);
+        if ($replacement_type !== $type) {
+            $this->type_set[$i] = $replacement_type;
+        }
     }
 
     /**
@@ -436,7 +451,7 @@ class UnionType implements \Serializable
      */
     public function hasType(Type $type) : bool
     {
-        return isset($this->type_set[\spl_object_id($type)]);
+        return \in_array($type, $this->type_set, true);
     }
 
     /**
@@ -446,11 +461,16 @@ class UnionType implements \Serializable
      */
     public function addUnionType(UnionType $union_type)
     {
-        if (count($this->type_set) === 0) {
+        $type_set = $this->type_set;
+        if (count($type_set) === 0) {
             // take advantage of array copy-on-write to save a bit of memory
             $this->type_set = $union_type->type_set;
         } else {
-            $this->type_set += $union_type->type_set;
+            foreach ($union_type->type_set as $type) {
+                if (!\in_array($type, $type_set, true)) {
+                    $this->type_set[] = $type;
+                }
+            }
         }
     }
 
@@ -462,7 +482,7 @@ class UnionType implements \Serializable
      */
     public function hasSelfType() : bool
     {
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isSelfType();
         });
     }
@@ -473,7 +493,7 @@ class UnionType implements \Serializable
      */
     public function hasTypeInBoolFamily() : bool
     {
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->getIsInBoolFamily();
         });
     }
@@ -570,7 +590,7 @@ class UnionType implements \Serializable
      */
     public function hasTemplateType() : bool
     {
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return ($type instanceof TemplateType);
         });
     }
@@ -589,7 +609,7 @@ class UnionType implements \Serializable
                 StaticType::instance(true),
             ];
         }
-        return ArraySet::containsAny($this->type_set, $static_types);
+        return $this->hasAnyType($static_types);
     }
 
     /**
@@ -614,8 +634,8 @@ class UnionType implements \Serializable
             $static_nullable_type = StaticType::instance(true);
         }
 
-        $has_static_type = ArraySet::contains($this->type_set, $static_type);
-        $has_static_nullable_type = ArraySet::contains($this->type_set, $static_nullable_type);
+        $has_static_type = \in_array($static_type, $this->type_set, true);
+        $has_static_nullable_type = \in_array($static_nullable_type, $this->type_set, true);
 
         // If this doesn't reference 'static', there's nothing to do.
         if (!($has_static_type || $has_static_nullable_type)) {
@@ -669,7 +689,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return !$this->hasTypeMatchingCallback(function (Type $type) : bool {
             return !$type->isNativeType();
         });
     }
@@ -690,8 +710,8 @@ class UnionType implements \Serializable
         if (\count($type_set) !== \count($other_type_set)) {
             return false;
         }
-        foreach ($type_set as $type_id => $unused_type) {
-            if (!isset($other_type_set[$type_id])) {
+        foreach ($type_set as $type) {
+            if (!\in_array($type, $other_type_set, true)) {
                 return false;
             }
         }
@@ -706,8 +726,8 @@ class UnionType implements \Serializable
     public function hasCommonType(UnionType $union_type) : bool
     {
         $other_type_set = $union_type->type_set;
-        foreach ($this->type_set as $type_id => $unused_type) {
-            if (isset($other_type_set[$type_id])) {
+        foreach ($this->type_set as $type) {
+            if (\in_array($type, $other_type_set, true)) {
                 return true;
             }
         }
@@ -966,7 +986,16 @@ class UnionType implements \Serializable
      */
     public function hasAnyType(array $type_list) : bool
     {
-        return ArraySet::containsAny($this->type_set, $type_list);
+        $type_set = $this->type_set;
+        if (\count($type_set) === 0) {
+            return false;
+        }
+        foreach ($type_list as $type) {
+            if (\in_array($type, $type_set, true)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -975,7 +1004,7 @@ class UnionType implements \Serializable
      */
     public function hasIterable() : bool
     {
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isIterable();
         });
     }
@@ -1120,7 +1149,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return !$this->hasTypeMatchingCallback(function (Type $type) : bool {
             return !$type->isScalar();
         });
     }
@@ -1136,7 +1165,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isArrayLike();
         });
     }
@@ -1152,7 +1181,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isGenericArray();
         });
     }
@@ -1168,7 +1197,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isArrayAccess();
         });
     }
@@ -1185,7 +1214,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return !$this->hasTypeMatchingCallback(function (Type $type) : bool {
             return !$type->isArrayLike() || $type->getIsNullable();
         });
     }
@@ -1202,7 +1231,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return !$this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type !== ArrayType::instance(false) && !$type->isGenericArray();
         });
     }
@@ -1224,11 +1253,16 @@ class UnionType implements \Serializable
      */
     public function makeFromFilter(\Closure $cb) : UnionType
     {
-        $new_type_set = \array_filter($this->type_set, $cb);
-        if (\count($new_type_set) === \count($this->type_set)) {
+        $new_type_list = [];
+        foreach ($this->type_set as $type) {
+            if ($cb($type)) {
+                $new_type_list[] = $type;
+            }
+        }
+        if (\count($new_type_list) === \count($this->type_set)) {
             return clone($this);
         }
-        return new UnionType($new_type_set, true);
+        return new UnionType($new_type_list, true);
     }
 
     /**
@@ -1410,7 +1444,7 @@ class UnionType implements \Serializable
      */
     public function hasObjectTypes() : bool
     {
-        return ArraySet::exists($this->type_set, (function (Type $type) : bool {
+        return $this->hasTypeMatchingCallback((function (Type $type) : bool {
             return $type->isObject();
         }));
     }
@@ -1430,10 +1464,9 @@ class UnionType implements \Serializable
     public function scalarTypes() : UnionType
     {
         // TODO: is_scalar(null) is false, account for that in analysis.
-        $types = \array_filter($this->type_set, function (Type $type) : bool {
+        return $this->makeFromFilter(function (Type $type) : bool {
             return $type->isScalar() && !($type instanceof NullType);
         });
-        return new UnionType($types, true);
     }
 
     /**
@@ -1450,10 +1483,9 @@ class UnionType implements \Serializable
      */
     public function callableTypes() : UnionType
     {
-        $types = \array_filter($this->type_set, function (Type $type) : bool {
+        return $this->makeFromFilter(function (Type $type) : bool {
             return $type->isCallable();
         });
-        return new UnionType($types, true);
     }
 
     /**
@@ -1471,7 +1503,7 @@ class UnionType implements \Serializable
      */
     public function hasCallableType() : bool
     {
-        return ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isCallable();
         });
     }
@@ -1490,7 +1522,7 @@ class UnionType implements \Serializable
      */
     public function isExclusivelyCallable() : bool
     {
-        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return !$this->hasTypeMatchingCallback(function (Type $type) : bool {
             return !$type->isCallable();
         });
     }
@@ -1506,16 +1538,11 @@ class UnionType implements \Serializable
      */
     public function nonArrayTypes() : UnionType
     {
-
-        return new UnionType(
-            \array_filter(
-                $this->type_set,
-                function (Type $type) : bool {
-                    return !$type->isGenericArray()
-                        && $type !== ArrayType::instance(false);
-                }
-            ),
-            true
+        return $this->makeFromFilter(
+            function (Type $type) : bool {
+                return !$type->isGenericArray()
+                    && $type !== ArrayType::instance(false);
+            }
         );
     }
 
@@ -1529,7 +1556,7 @@ class UnionType implements \Serializable
             return false;
         }
 
-        return !ArraySet::exists($this->type_set, function (Type $type) : bool {
+        return !$this->hasTypeMatchingCallback(function (Type $type) : bool {
             return !$type->isGenericArray();
         });
     }
@@ -1540,7 +1567,26 @@ class UnionType implements \Serializable
      */
     public function hasTypeMatchingCallback(\Closure $matcher_callback) : bool
     {
-        return ArraySet::exists($this->type_set, $matcher_callback);
+        foreach ($this->type_set as $type) {
+            if ($matcher_callback($type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return Type|false
+     * Returns the first type in this UnionType made $matcher_callback return true
+     */
+    public function findTypeMatchingCallback(\Closure $matcher_callback)
+    {
+        foreach ($this->type_set as $type) {
+            if ($matcher_callback($type)) {
+                return $type;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1552,11 +1598,12 @@ class UnionType implements \Serializable
     public function genericArrayElementTypes() : UnionType
     {
         $union_type = new UnionType(
-            ArraySet::map(array_filter($this->type_set, function (Type $type) : bool {
-                return $type->isGenericArray();
-            }), function (Type $type) : Type {
+            \array_map(function (Type $type) : Type {
                 return $type->genericArrayElementType();
+            }, \array_filter($this->type_set, function (Type $type) : bool {
+                return $type->isGenericArray();
             })
+            )
         );
 
         // If array is in there, then it can be any type
@@ -1587,12 +1634,12 @@ class UnionType implements \Serializable
     public function elementTypesToGenericArray() : UnionType
     {
         return new UnionType(
-            ArraySet::map($this->type_set, function (Type $type) : Type {
+            \array_map(function (Type $type) : Type {
                 if ($type instanceof MixedType) {
                     return ArrayType::instance(false);
                 }
                 return GenericArrayType::fromElementType($type, false);
-            })
+            }, $this->type_set)
         );
     }
 
@@ -1606,7 +1653,7 @@ class UnionType implements \Serializable
      */
     public function asMappedUnionType(\Closure $closure) : UnionType
     {
-        return new UnionType(ArraySet::map($this->type_set, $closure), true);
+        return new UnionType(\array_map($closure, $this->type_set));
     }
 
     /**
@@ -1704,7 +1751,7 @@ class UnionType implements \Serializable
      */
     public function unserialize($serialized)
     {
-        $this->type_set = ArraySet::from_list(
+        $this->type_set = self::getUniqueTypes(
             \array_map(function (string $type_name) : Type {
                 return Type::fromFullyQualifiedString($type_name);
             }, \explode('|', $serialized ?? ''))
@@ -1787,104 +1834,108 @@ class UnionType implements \Serializable
      */
     public static function asNormalizedTypesInner(array $type_set, int $flags) : UnionType
     {
-        $new_type_set = $type_set;
         $nullable = ($flags & Type::_bit_nullable) !== 0;
         if ($nullable) {
-            foreach ($type_set as $type_id => $type) {
-                if (!$type->getIsNullable()) {
-                    unset($new_type_set[$type_id]);
-                    $nullable_type = $type->withIsNullable(true);
-                    $new_type_set[\spl_object_id($nullable_type)] = $nullable_type;
+            $new_union_type = new UnionType();
+            if (\count($type_set) > 0) {
+                foreach ($type_set as $type) {
+                    if ($type->getIsNullable()) {
+                        $new_union_type->addType($type);
+                    } else {
+                        $new_union_type->addType($type->withIsNullable(true));
+                    }
                 }
+                static $nullable_type = null;
+                if ($nullable_type === null) {
+                    $nullable_type = NullType::instance(false);
+                }
+                $new_union_type->removeType($nullable_type);
             }
-            static $nullable_id = null;
-            if ($nullable_id === null) {
-                $nullable_id = \spl_object_id(NullType::instance(false));
-            }
-            unset($new_type_set[$nullable_id]);
+        } else {
+            $new_union_type = new UnionType($type_set);
         }
         // If this contains both true and false types, filter out both and add "bool" (or "?bool" for nullable)
         if (($flags & Type::_bit_bool_combination) === Type::_bit_bool_combination) {
             if ($nullable) {
-                $new_type_set = self::asTypeSetWithNormalizedNullableBools($new_type_set);
+                self::convertToTypeSetWithNormalizedNullableBools($new_union_type);
             } else {
-                $new_type_set = self::asTypeSetWithNormalizedNonNullableBools($new_type_set);
+                self::convertToTypeSetWithNormalizedNonNullableBools($new_union_type);
             }
         }
-        return new UnionType($new_type_set);
+        return $new_union_type;
+    }
+
+    /**
+     * @param UnionType[] $union_types
+     * @return UnionType union of these UnionTypes
+     */
+    public static function merge(array $union_types) : UnionType {
+        $new_type_set = [];
+        foreach ($union_types as $type) {
+            $type_set = $type->type_set;
+            if (\count($type_set) === 0) {
+                continue;
+            }
+            if (\count($new_type_set) === 0) {
+                $new_type_set = $type_set;
+                continue;
+            }
+            foreach ($type_set as $type) {
+                if (!\in_array($type, $new_type_set, true)) {
+                    $new_type_set[] = $type;
+                }
+            }
+        }
+        return new UnionType($new_type_set, true);
     }
 
     /**
      * Must be called after converting nullable to non-nullable.
      * Removes false|true types and adds bool
      *
-     * @param Type[] $type_set (Containing only non-nullable values)
-     * return Type[] possibly modified $type_set
+     * @param UnionType $type (Containing only non-nullable values)
+     * @return void
      * @var int $bool_id
      */
-    private static function asTypeSetWithNormalizedNonNullableBools(array $type_set) : array
+    private static function convertToTypeSetWithNormalizedNonNullableBools(UnionType $type)
     {
-        static $true_id = null;
-        static $false_id = null;
-        static $bool_id = null;
+        static $true_type = null;
+        static $false_type = null;
         static $bool_type = null;
         if ($bool_type === null) {
-            $true_id = \spl_object_id(TrueType::instance(false));
-            $false_id = \spl_object_id(FalseType::instance(false));
+            $true_type = TrueType::instance(false);
+            $false_type = FalseType::instance(false);
             $bool_type = BoolType::instance(false);
-            $bool_id = \spl_object_id($bool_type);
         }
-        \assert(\is_int($bool_id));
-        \assert(\is_int($true_id));
-        \assert(\is_int($false_id));
-        unset($type_set[$true_id]);
-        unset($type_set[$false_id]);
-        if (!isset($type_set[$bool_id])) {
-            $type_set[$bool_id] = $bool_type;
+        if (!$type->isEmpty()) {
+            $type->removeType($true_type);
+            $type->removeType($false_type);
         }
-        return $type_set;
+
+        $type->addType($bool_type);
     }
 
     /**
      * Must be called after converting all types to null.
      * Removes ?false|?true types and adds ?bool
      *
-     * @param Type[] $type_set (Containing only non-nullable values)
-     * return Type[] possibly modified $type_set
+     * @param UnionType $type (Containing only non-nullable values)
      */
-    private static function asTypeSetWithNormalizedNullableBools(array $type_set) : array
+    private static function convertToTypeSetWithNormalizedNullableBools(UnionType $type)
     {
-        static $true_id = null;
-        static $false_id = null;
-        static $bool_id = null;
+        static $true_type = null;
+        static $false_type = null;
         static $bool_type = null;
         if ($bool_type === null) {
-            $true_id = \spl_object_id(TrueType::instance(true));
-            $false_id = \spl_object_id(FalseType::instance(true));
+            $true_type = TrueType::instance(true);
+            $false_type = FalseType::instance(true);
             $bool_type = BoolType::instance(true);
-            $bool_id = \spl_object_id($bool_type);
         }
-        \assert(\is_int($bool_id));
-        \assert(\is_int($true_id));
-        \assert(\is_int($false_id));
-        unset($type_set[$true_id]);
-        unset($type_set[$false_id]);
-        if (!isset($type_set[$bool_id])) {
-            $type_set[$bool_id] = $bool_type;
+        if (!$type->isEmpty()) {
+            $type->removeType($true_type);
+            $type->removeType($false_type);
         }
-        return $type_set;
-    }
 
-    private static function asNullableTypeSet(array $type_set)
-    {
-        $new_types_set = $type_set;
-        foreach ($type_set as $type_id => $type) {
-            if (!$type->getIsNullable()) {
-                unset($type_set[$type_id]);
-                $nullable_type = $type->withIsNullable(true);
-                $new_types_set[\spl_object_id($nullable_type)] = $nullable_type;
-            }
-        }
-        return $new_types_set;
+        $type->addType($bool_type);
     }
 }

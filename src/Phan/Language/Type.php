@@ -25,17 +25,12 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\Library\ArraySet;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple4;
 
 use ast\Node;
-
-if (!function_exists('spl_object_id')) {
-    require_once __DIR__ . '/../../spl_object_id.php';
-}
 
 class Type
 {
@@ -899,7 +894,7 @@ class Type
     }
 
     /**
-     * @var ?Type[] - [\spl_object_id($this) => $this]
+     * @var ?Type[] - [$this]
      *                The object id doesn't change as long as there's one reference to that object (including singleton_map)
      */
     protected $singleton_type_list;
@@ -910,10 +905,10 @@ class Type
      */
     public function asUnionType() : UnionType
     {
-        // return new UnionType([\spl_object_id($this) => $this]);
+        // return new UnionType([$this]);
         // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
         return new UnionType(
-            ($this->singleton_type_list) ?? ($this->singleton_type_list = [\spl_object_id($this) => $this]),
+            ($this->singleton_type_list) ?? ($this->singleton_type_list = [$this]),
             true
         );
     }
@@ -1370,7 +1365,7 @@ class Type
             $recursion_depth < 20,
             "Recursion has gotten out of hand"
         );
-        $union_type = $this->memoize(__METHOD__, function() use ($code_base, $recursion_depth) {
+        $union_type = $this->memoize(__METHOD__, function () use ($code_base, $recursion_depth) {
             $union_type = $this->asUnionType();
 
             $class_fqsen = $this->asFQSEN();
@@ -1635,7 +1630,7 @@ class Type
      */
     public function __toString()
     {
-        return $this->memoize(__METHOD__, function() {
+        return $this->memoize(__METHOD__, function () {
             $string = $this->asFQSENString();
 
             if (\count($this->template_parameter_type_list) > 0) {
@@ -1705,7 +1700,7 @@ class Type
             if (!isset($match[2])) {
                 // Parse '(X)' as 'X'
                 return self::typeStringComponents(\substr($match[1], 1, -1));
-            } else if (!isset($match[3])) {
+            } elseif (!isset($match[3])) {
                 // Parse '?(X[]) as '?X[]'
                 return self::typeStringComponents('?' . \substr($match[2], 2, -1));
             }
