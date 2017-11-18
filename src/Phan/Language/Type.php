@@ -25,17 +25,12 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
-use Phan\Library\ArraySet;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
 use Phan\Library\Tuple4;
 
 use ast\Node;
-
-if (!function_exists('spl_object_id')) {
-    require_once __DIR__ . '/../../spl_object_id.php';
-}
 
 class Type
 {
@@ -899,7 +894,7 @@ class Type
     }
 
     /**
-     * @var ?Type[] - [\spl_object_id($this) => $this]
+     * @var ?Type[] - [$this]
      *                The object id doesn't change as long as there's one reference to that object (including singleton_map)
      */
     protected $singleton_type_list;
@@ -910,10 +905,10 @@ class Type
      */
     public function asUnionType() : UnionType
     {
-        // return new UnionType([\spl_object_id($this) => $this]);
+        // return new UnionType([$this]);
         // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
         return new UnionType(
-            ($this->singleton_type_list) ?? ($this->singleton_type_list = [\spl_object_id($this) => $this]),
+            ($this->singleton_type_list) ?? ($this->singleton_type_list = [$this]),
             true
         );
     }

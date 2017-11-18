@@ -1554,7 +1554,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $union_type = clone($union_type);
 
                         // Find the static type on the list
-                        $static_type = ArraySet::find($union_type->getTypeSet(), function (Type $type) : bool {
+                        $static_type = $union_type->findTypeMatchingCallback(function (Type $type) : bool {
                             return (
                                 $type->isGenericArray()
                                 && $type->genericArrayElementType()->isStaticType()
