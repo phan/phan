@@ -384,6 +384,7 @@ return [
         'src',
         'tests/Phan',
         'vendor/felixfbecker/advanced-json-rpc/lib',
+        'vendor/microsoft/tolerant-php-parser/src',
         'vendor/netresearch/jsonmapper/src',
         'vendor/nikic/php-parser/lib',
         'vendor/phpunit/phpunit/src',

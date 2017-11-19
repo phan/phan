@@ -3,6 +3,13 @@ Phan NEWS
 ?? ??? 2017, Phan 0.10.3 (dev)
 ------------------------
 
+New Features(CLI, Configs)
+
++ For `--fallback-parser`: Switch to [tolerant-php-parser](https://github.com/Microsoft/tolerant-php-parser)
+  as a dependency of the fallback implementation. (#1125)
+  This does a better job of generating PHP AST trees when attempting to parse code with a broader range of syntax errors.
+  Keep `PHP-Parser` as a dependency for now for parsing strings.
+
 Maintenance
 + Make `phan_client` and the vim snippet in `plugins/vim/phansnippet.vim` more compatible with neovim
 

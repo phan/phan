@@ -2,11 +2,12 @@
 
 namespace Phan\AST;
 
-use Phan\Phan;
+use Phan\AST\TolerantASTConverter\TolerantASTConverter;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
 use Phan\Language\Context;
+use Phan\Phan;
 
 use ast\Node;
 
@@ -53,12 +54,12 @@ class Parser
             if (Phan::isExcludedAnalysisFile($file_path)) {
                 throw $native_parse_error;
             }
-            // But if the user would see the syntax error, go ahead and rety.
+            // But if the user would see the syntax error, go ahead and retry.
 
-            $converter = new ASTConverter();
+            $converter = new TolerantASTConverter();
             $converter->setShouldAddPlaceholders(false);
             try {
-                $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, true, $errors);
+                $node = $converter->parseCodeAsPHPAST($file_contents, Config::AST_VERSION, $errors);
             } catch (\PhpParser\Error $fallback_parser_error) {
                 // Shouldn't happen, we're using the error collecting parser
                 throw new \ParseError('Fallback parser error: ' . $fallback_parser_error->getMessage(), $fallback_parser_error->getCode(), $fallback_parser_error);
