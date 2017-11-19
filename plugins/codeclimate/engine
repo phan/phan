@@ -10,6 +10,7 @@ use Phan\CLI;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Issue;
+use Phan\Language\Element\Flags;
 use Phan\Output\Collector\BufferingCollector;
 use Phan\Output\Filter\CategoryIssueFilter;
 use Phan\Output\Filter\ChainedIssueFilter;
@@ -41,26 +42,28 @@ if (isset($codeclimate_config['config']['minimum-severity'])) {
 $mask = -1;
 
 if (isset($codeclimate_config['config']['ignore-undeclared'])) {
-    $mask ^= Issue::CATEGORY_UNDEFINED;
+    $mask = Flags::bitVectorWithState(
+        $mask,
+        Issue::CATEGORY_UNDEFINED,
+        (bool)$codeclimate_config['config']['ignore-undeclared']
+    );
 }
 
 if (isset($codeclimate_config['config']['quick'])) {
-    Config::get()->quick_mode = true;
+    Config::get()->quick_mode = (bool)$codeclimate_config['config']['quick'];
 }
 
 if (isset($codeclimate_config['config']['backward-compatibility-checks'])) {
-    Config::get()->backward_compatibility_checks = true;
+    Config::get()->backward_compatibility_checks = (bool)$codeclimate_config['config']['backward-compatibility-checks'];
 }
 
 if (isset($codeclimate_config['config']['dead-code-detection'])) {
-    Config::get()->dead_code_detection = true;
+    Config::get()->dead_code_detection = $codeclimate_config['config']['dead-code-detection'];
 }
 
 if (isset($codeclimate_config['config']['file_extensions'])) {
     $file_extensions = explode(",", $codeclimate_config['config']['file_extensions']);
-}
-else
-{
+} else {
     $file_extensions = ['php'];
 }
 
@@ -88,7 +91,7 @@ $queue_with_include_paths = function ($dir_path) use (&$include_paths, &$queue_w
     }
 };
 
-foreach ($codeclimate_config['include_paths'] as $path) {
+foreach ($codeclimate_config['include_paths'] ?? [] as $path) {
     if (is_dir('/code/' . $path)) {
         $queue_with_include_paths('/code/' . $path);
     } else {
@@ -97,9 +100,12 @@ foreach ($codeclimate_config['include_paths'] as $path) {
 }
 
 // skip run if there are no paths
-if (empty($include_paths))
-{
-    exit();
+if (empty($include_paths)) {
+    $include_paths = $cli->getFileList();
+    if (empty($include_paths)) {
+        fwrite(STDERR, "Could not find include paths, neither in codeclimate.yml nor in .phan/config.php");
+        exit();
+    }
 }
 
 $output = new ConsoleOutput();

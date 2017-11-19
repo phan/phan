@@ -98,7 +98,6 @@ RUN apk add --no-cache bash \
       php7-dev \
       wget
 COPY plugins/codeclimate/ast.ini /etc/php7/conf.d/
-COPY plugins/codeclimate/engine /usr/src/app/plugins/codeclimate/engine
 
 COPY composer.json composer.lock ./
 RUN apk add --no-cache curl && \
@@ -109,6 +108,7 @@ RUN apk add --no-cache curl && \
 
 COPY .phan .phan
 COPY src src
+COPY plugins/codeclimate/engine /usr/src/app/plugins/codeclimate/engine
 
 USER app
 
