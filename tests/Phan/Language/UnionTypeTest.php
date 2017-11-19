@@ -50,7 +50,6 @@ class UnionTypeTest extends BaseTest
         'Phan\Language\Type' => [
             'canonical_object_map',
             'internal_fn_cache',
-            'singleton_map',
         ],
         // Back this up because it takes 306 ms.
         'Phan\Tests\Language\UnionTypeTest' => [
@@ -329,6 +328,21 @@ class UnionTypeTest extends BaseTest
 
         $this->assertSame('int[]', (string)$type2);
         $this->assertSame(GenericArrayType::fromElementType(IntType::instance(false), false), $type2);
+    }
+
+    public function testNullableBracketedArrayType3()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('?(string[])|?(int[])');
+        $this->assertSame(2, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        list($type1, $type2) = \array_values($types);
+
+        $this->assertSame('?string[]', (string)$type1);
+        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(false), true), $type1);
+
+        $this->assertSame('?int[]', (string)$type2);
+        $this->assertSame(GenericArrayType::fromElementType(IntType::instance(false), true), $type2);
     }
 
     public function testNullableArrayOfNullables()
