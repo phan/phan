@@ -22,7 +22,6 @@ your project to tell Phan how to analyze your source code. Once configured, you 
 
 This version (branch) of Phan depends on PHP 7.1.x with the [php-ast](https://github.com/nikic/php-ast) extension (0.1.5 or newer, uses AST version 50) and supports PHP version 7.1+ syntax.
 Installation instructions for php-ast can be found [here](https://github.com/nikic/php-ast#installation).
-The 0.9.x releases work with PHP 7.1.x and older versions of php-ast (requires php-ast 0.1.4 or newer, we recommend upgrading to php-ast 0.1.5+ and using Phan 0.10.x or newer.).
 For PHP 7.0.x use the [0.8 branch](https://github.com/phan/phan/tree/0.8).
 Having PHP's `pcntl` extension installed is strongly recommended (not available on Windows), in order to support using parallel processes for analysis (or to support daemon mode).
 
