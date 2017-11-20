@@ -291,6 +291,34 @@ class UnionTypeTest extends BaseTest
         $this->assertSame(GenericArrayType::fromElementType(StringType::instance(false), false), $type);
     }
 
+    public function testNestedArrayTypes()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('array<int|string>');
+        $this->assertSame('int[]|string[]', (string)$union_type);
+        $this->assertSame(2, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $array_type = function(Type $type, int $depth = 1) : GenericArrayType {
+            return GenericArrayType::fromElementType($type, false);
+        };
+
+        $this->assertSame($array_type(IntType::instance(false)), $type);
+
+        $union_type = self::makePHPDocUnionType('array<bool|array<array<int|string>>>');
+        $this->assertSame('bool[]|int[][][]|string[][][]', (string)$union_type);
+        $this->assertSame(3, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame($array_type(BoolType::instance(false)), $type);
+        $type = next($types);
+        $this->assertSame($array_type($array_type($array_type(IntType::instance(false)))), $type);
+        $type = next($types);
+        $this->assertSame($array_type($array_type($array_type(StringType::instance(false)))), $type);
+    }
+
     public function testNullableArrayType()
     {
         // array keys are integers, values are strings

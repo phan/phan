@@ -215,6 +215,7 @@ class UnionType implements \Serializable
                     $delta = 0;
                     continue;
                 }
+                continue;
             }
             $bracket_count = \substr_count($part, '<') + \substr_count($part, '(');
             if ($bracket_count === 0) {
