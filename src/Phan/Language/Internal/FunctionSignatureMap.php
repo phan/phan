@@ -4908,7 +4908,7 @@ return [
 'mb_convert_variables' => ['string', 'to-encoding'=>'string', 'from-encoding'=>'array|string', '&rw_vars'=>'string|array|object', '&...rw_vars='=>'string|array|object'],
 'mb_decode_mimeheader' => ['string', 'string'=>'string'],
 'mb_decode_numericentity' => ['string', 'string'=>'string', 'convmap'=>'array', 'encoding'=>'string'],
-'mb_detect_encoding' => ['string', 'str'=>'string', 'encoding_list='=>'', 'strict='=>'bool'],
+'mb_detect_encoding' => ['string|false', 'str'=>'string', 'encoding_list='=>'', 'strict='=>'bool'],
 'mb_detect_order' => ['bool|array', 'encoding-list='=>''],
 'mb_encode_mimeheader' => ['string', 'str'=>'string', 'charset='=>'string', 'transfer-encoding='=>'string', 'linefeed='=>'string', 'indent='=>'int'],
 'mb_encode_numericentity' => ['string', 'string'=>'string', 'convmap'=>'array', 'encoding'=>'string', 'is_hex='=>'bool'],
