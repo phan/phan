@@ -28,7 +28,7 @@ class FilePositionMap
     /** @var int (updated whenever current_offset is updated) */
     private $line_for_current_offset;
 
-    /** @var int[] */
+    /** @var int[] lazily initialized */
     private $offset_to_line_map = [];
 
     public function __construct(string $file_contents, Node $source_node)
@@ -37,31 +37,6 @@ class FilePositionMap
         $this->file_contents_length = \strlen($file_contents);
         $this->current_offset = 0;
         $this->line_for_current_offset = 1;
-        $this->init($source_node);
-    }
-
-    private function init(Node $source_node)
-    {
-        $offsets_set = [];
-        foreach ($source_node->getDescendantNodesAndTokens() as $child) {
-            if ($child instanceof Node) {
-                $start_offset = $child->getStart();
-                $end_offset = $child->getEndPosition();
-            } elseif ($child instanceof Token) {
-                $start_offset = $child->start;
-                $end_offset = $child->getEndPosition();
-            } else {
-                break;
-            }
-            $offsets_set[$start_offset] = true;
-            // TODO: May be unnecessary, since the end of a token is the start of another token?
-            // But maybe not for the leading padding
-            $offsets_set[$end_offset] = true;
-        }
-        ksort($offsets_set);
-        foreach ($offsets_set as $offset => $_) {
-            $this->offset_to_line_map[$offset] = $this->computeLineNumberForOffset($offset);
-        }
     }
 
     // TODO update if https://github.com/Microsoft/tolerant-php-parser/issues/166
@@ -95,13 +70,9 @@ class FilePositionMap
 
     public function fetchLineNumberForOffset(int $offset) : int
     {
-        $line = $this->offset_to_line_map[$offset] ?? null;
-        if ($line !== null) {
-            return $line;
-        }
-        $line = $this->computeLineNumberForOffset($offset);
-        $this->offset_to_line_map[$offset] = $line;
-        return $line;
+        // This is called frequently, optimize it.
+        return $this->offset_to_line_map[$offset] ??
+            ($this->offset_to_line_map[$offset] = $this->computeLineNumberForOffset($offset));
     }
 
     private function computeLineNumberForOffset(int $offset) : int
