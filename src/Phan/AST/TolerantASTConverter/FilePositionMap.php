@@ -28,9 +28,6 @@ class FilePositionMap
     /** @var int (updated whenever current_offset is updated) */
     private $line_for_current_offset;
 
-    /** @var int[] lazily initialized */
-    private $offset_to_line_map = [];
-
     public function __construct(string $file_contents, Node $source_node)
     {
         $this->file_contents = $file_contents;
@@ -43,12 +40,12 @@ class FilePositionMap
     // Add an alias?
     public function getNodeStartLine(Node $node) : int
     {
-        return $this->fetchLineNumberForOffset($node->getStart());
+        return $this->getLineNumberForOffset($node->getStart());
     }
 
     public function getTokenStartLine(Token $token) : int
     {
-        return $this->fetchLineNumberForOffset($token->start);
+        return $this->getLineNumberForOffset($token->start);
     }
 
     /** @param Node|Token $node */
@@ -59,34 +56,27 @@ class FilePositionMap
         } else {
             $offset = $node->getStart();
         }
-        return $this->fetchLineNumberForOffset($offset);
+        return $this->getLineNumberForOffset($offset);
     }
 
     /** @param Node|Token $node */
     public function getEndLine($node) : int
     {
-        return $this->fetchLineNumberForOffset($node->getEndPosition());
+        return $this->getLineNumberForOffset($node->getEndPosition());
     }
 
-    public function fetchLineNumberForOffset(int $offset) : int
-    {
-        // This is called frequently, optimize it.
-        return $this->offset_to_line_map[$offset] ??
-            ($this->offset_to_line_map[$offset] = $this->computeLineNumberForOffset($offset));
-    }
-
-    private function computeLineNumberForOffset(int $offset) : int
+    public function getLineNumberForOffset(int $offset) : int
     {
         if ($offset < 0) {
             $offset = 0;
-        } elseif ($offset >= $this->file_contents_length) {
+        } elseif ($offset > $this->file_contents_length) {
             $offset = $this->file_contents_length;
         }
         $current_offset = $this->current_offset;
         if ($offset > $current_offset) {
             $this->line_for_current_offset += \substr_count($this->file_contents, "\n", $current_offset, $offset - $current_offset);
             $this->current_offset = $offset;
-        } elseif ($offset < $this->current_offset) {
+        } elseif ($offset < $current_offset) {
             $this->line_for_current_offset -= \substr_count($this->file_contents, "\n", $offset, $current_offset - $offset);
             $this->current_offset = $offset;
         }
