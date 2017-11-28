@@ -69,8 +69,11 @@ class ProtocolStreamReader extends Emitter implements ProtocolReader
                             try {
                                 $msg = new Message(MessageBody::parse($this->buffer), $this->headers);
                             } catch (\Exception $e) {
+                                $msg = null;
                             }
-                            $this->emit('message', [$msg]);
+                            if ($msg) {
+                                $this->emit('message', [$msg]);
+                            }
                             $this->parsingMode = self::PARSE_HEADERS;
                             $this->headers = [];
                             $this->buffer = '';
