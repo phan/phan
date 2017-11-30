@@ -434,6 +434,11 @@ class Clazz extends AddressableElement
         $parent_fqsen = $parent_type_option->get()->asFQSEN();
         \assert($parent_fqsen instanceof FullyQualifiedClassName);
 
+        // invoking hasClassWithFQSEN also has the side effect of lazily loading the parent class definition.
+        if (!$code_base->hasClassWithFQSEN($parent_fqsen)) {
+            throw new \Exception("Failed to load parent Class $parent_fqsen of Class $this");
+        }
+
         return $code_base->getClassByFQSEN(
             $parent_fqsen
         );
