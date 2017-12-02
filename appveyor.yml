@@ -1,5 +1,5 @@
 # Based on igbinary and php-ast's appveyor config.
-# This tests against the latest stable minor version of PHP 7 (Currently 7.1)
+# This tests against PHP 7.2
 # The project name is the same as the build id used, e.g. https://www.appveyor.com/docs/environment-variables/
 
 version: '{branch}.{build}'
@@ -18,7 +18,6 @@ branches:
 
 install:
 - cmd: choco feature enable -n=allowGlobalConfirmation
-# TODO: Switch to php 7.2 when binary tools or https://pecl.php.net/package/ast/0.1.5/windows becomes available for download
 - cmd: mkdir %APPVEYOR_BUILD_FOLDER%\bin
 build_script:
 - cmd: >-
@@ -26,9 +25,9 @@ build_script:
 
     cd C:\projects\php
 
-    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/php-7.1.9-nts-Win32-VC14-x86.zip
+    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/php-7.2.1-nts-Win32-VC15-x86.zip || appveyor DownloadFile http://windows.php.net/downloads/releases/php-7.2.1-nts-Win32-VC15-x86.zip
 
-    7z x -y php-7.1.9-nts-Win32-VC14-x86.zip
+    7z x -y php-7.2.1-nts-Win32-VC15-x86.zip
 
     del /Q *.zip
 
@@ -36,9 +35,9 @@ build_script:
 
     git clone --depth=1 --branch=master https://github.com/nikic/php-ast C:\projects\php-src\ext\ast
 
-    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.6/php_ast-0.1.6-7.1-nts-vc14-x86.zip
+    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.6/php_ast-0.1.6-7.2-nts-vc15-x86.zip
 
-    7z x php_ast-0.1.6-7.1-nts-vc14-x86.zip php_ast.dll -y >nul
+    7z x php_ast-0.1.6-7.2-nts-vc15-x86.zip php_ast.dll -y >nul
 
     cd C:\projects\php
 
