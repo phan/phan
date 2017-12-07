@@ -13,6 +13,9 @@ New Features(CLI, Configs)
 Maintenance
 + Make `phan_client` and the vim snippet in `plugins/vim/phansnippet.vim` more compatible with neovim
 
+Bug Fixes
++ Allow `null` to be passed in where a union type of `mixed` was expected.
+
 17 Nov 2017, Phan 0.10.2
 ------------------------
 

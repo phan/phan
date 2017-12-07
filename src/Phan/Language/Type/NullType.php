@@ -80,6 +80,9 @@ final class NullType extends ScalarType
                 return true;
             }
         }
+        if ($type instanceof MixedType) {
+            return true;
+        }
 
         return false;
     }
