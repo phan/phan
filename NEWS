@@ -15,6 +15,8 @@ Maintenance
 
 Bug Fixes
 + Allow `null` to be passed in where a union type of `mixed` was expected.
++ Don't warn when passing `?T` (PHPDoc or real) where the PHPDoc type was `T|null`. (#609, #1090, #1192, #1337)
+  This is useful for expressions used for property assignments, return statements, function calls, etc.
 
 17 Nov 2017, Phan 0.10.2
 ------------------------

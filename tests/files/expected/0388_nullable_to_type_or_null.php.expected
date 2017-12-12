@@ -1,0 +1,2 @@
+%s:27 PhanTypeMismatchProperty Assigning ?int to property but \A388::prop2 is null|string
+%s:28 PhanTypeMismatchArgument Argument 2 (arg2) is ?int but \helper388() takes null|string defined at %s:16
