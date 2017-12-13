@@ -53,16 +53,16 @@ class CommentTest extends BaseTest
             1,
             Comment::ON_METHOD
         );
-        $this->assertSame(false, $comment->isDeprecated());
-        $this->assertSame(false, $comment->isOverrideIntended());
-        $this->assertSame(false, $comment->isNSInternal());
+        $this->assertFalse($comment->isDeprecated());
+        $this->assertFalse($comment->isOverrideIntended());
+        $this->assertFalse($comment->isNSInternal());
         $this->assertSame('', (string)$comment->getReturnType());
-        $this->assertSame(false, $comment->hasReturnUnionType());
+        $this->assertFalse($comment->hasReturnUnionType());
         $this->assertInstanceOf(None::class, $comment->getClosureScopeOption());
         $this->assertSame([], $comment->getParameterList());
         $this->assertSame([], $comment->getParameterMap());
         $this->assertSame([], $comment->getSuppressIssueList());
-        $this->assertSame(false, $comment->hasParameterWithNameOrOffset('bar', 0));
+        $this->assertFalse($comment->hasParameterWithNameOrOffset('bar', 0));
         $this->assertSame([], $comment->getVariableList());
     }
 
@@ -80,11 +80,11 @@ class CommentTest extends BaseTest
         $this->assertSame([], $comment->getParameterList());
         $my_param_doc = $parameter_map['myParam'];
         $this->assertSame('int $myParam', (string)$my_param_doc);
-        $this->assertSame(false, $my_param_doc->isOptional());
-        $this->assertSame(true, $my_param_doc->isRequired());
-        $this->assertSame(false, $my_param_doc->isVariadic());
+        $this->assertFalse($my_param_doc->isOptional());
+        $this->assertTrue($my_param_doc->isRequired());
+        $this->assertFalse($my_param_doc->isVariadic());
         $this->assertSame('myParam', $my_param_doc->getName());
-        $this->assertSame(false, $my_param_doc->isOutputReference());
+        $this->assertFalse($my_param_doc->isOutputReference());
     }
 
     public function testGetParameterMapReferenceIgnored()
@@ -101,11 +101,11 @@ class CommentTest extends BaseTest
         $this->assertSame([], $comment->getParameterList());
         $my_param_doc = $parameter_map['myParam'];
         $this->assertSame('int $myParam', (string)$my_param_doc);
-        $this->assertSame(false, $my_param_doc->isOptional());
-        $this->assertSame(true, $my_param_doc->isRequired());
-        $this->assertSame(false, $my_param_doc->isVariadic());
+        $this->assertFalse($my_param_doc->isOptional());
+        $this->assertTrue($my_param_doc->isRequired());
+        $this->assertFalse($my_param_doc->isVariadic());
         $this->assertSame('myParam', $my_param_doc->getName());
-        $this->assertSame(false, $my_param_doc->isOutputReference());
+        $this->assertFalse($my_param_doc->isOutputReference());
     }
 
     public function testGetVariadicParameterMap()
@@ -122,11 +122,11 @@ class CommentTest extends BaseTest
         $this->assertSame([], $comment->getParameterList());
         $my_param_doc = $parameter_map['args'];
         $this->assertSame('int|string ...$args', (string)$my_param_doc);
-        $this->assertSame(true, $my_param_doc->isOptional());
-        $this->assertSame(false, $my_param_doc->isRequired());
-        $this->assertSame(true, $my_param_doc->isVariadic());
+        $this->assertTrue($my_param_doc->isOptional());
+        $this->assertFalse($my_param_doc->isRequired());
+        $this->assertTrue($my_param_doc->isVariadic());
         $this->assertSame('args', $my_param_doc->getName());
-        $this->assertSame(false, $my_param_doc->isOutputReference());
+        $this->assertFalse($my_param_doc->isOutputReference());
     }
 
     public function testGetOutputParameter()
@@ -260,17 +260,17 @@ EOT;
         $this->assertSame([], $comment->getParameterList());
         $my_param_doc = $parameter_map['myParam'];
         $this->assertSame('string[] $myParam', (string)$my_param_doc);
-        $this->assertSame(false, $my_param_doc->isOptional());
-        $this->assertSame(true, $my_param_doc->isRequired());
-        $this->assertSame(false, $my_param_doc->isVariadic());
+        $this->assertFalse($my_param_doc->isOptional());
+        $this->assertTrue($my_param_doc->isRequired());
+        $this->assertFalse($my_param_doc->isVariadic());
         $this->assertSame('myParam', $my_param_doc->getName());
 
         // Argument #2, #3, etc. passed by callers are arrays of stdClasses
         $restDoc = $parameter_map['rest'];
         $this->assertSame('\stdClass[] ...$rest', (string)$restDoc);
-        $this->assertSame(true, $restDoc->isOptional());
-        $this->assertSame(false, $restDoc->isRequired());
-        $this->assertSame(true, $restDoc->isVariadic());
+        $this->assertTrue($restDoc->isOptional());
+        $this->assertFalse($restDoc->isRequired());
+        $this->assertTrue($restDoc->isVariadic());
         $this->assertSame('rest', $restDoc->getName());
     }
 

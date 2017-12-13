@@ -39,7 +39,7 @@ class FileCacheTest extends BaseTest
     public function testLRU()
     {
         $expectedPaths = [];
-        $this->assertTrue(FileCache::MINIMUM_CACHE_SIZE >= 5);
+        $this->assertGreaterThanOrEqual(5, FileCache::MINIMUM_CACHE_SIZE);
         for ($i = 0; $i < FileCache::MINIMUM_CACHE_SIZE; $i++) {
             $path = "/path/to/$i";
             $expectedPaths[] = $path;

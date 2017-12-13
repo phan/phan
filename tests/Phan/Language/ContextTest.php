@@ -49,10 +49,10 @@ class ContextTest extends BaseTest
             )
         );
 
-        $this->assertTrue(!empty($context));
-        $this->assertTrue(!empty($context_namespace));
-        $this->assertTrue(!empty($context_class));
-        $this->assertTrue(!empty($context_method));
+        $this->assertNotEmpty($context);
+        $this->assertNotEmpty($context_namespace);
+        $this->assertNotEmpty($context_class);
+        $this->assertNotEmpty($context_method);
     }
 
     public function testClassContext()
