@@ -215,6 +215,7 @@ class UnionType implements \Serializable
                     $delta = 0;
                     continue;
                 }
+                continue;
             }
             $bracket_count = \substr_count($part, '<') + \substr_count($part, '(');
             if ($bracket_count === 0) {
@@ -1130,6 +1131,21 @@ class UnionType implements \Serializable
             foreach ($target->type_set as $target_type) {
                 if ($source_type->canCastToType($target_type)) {
                     return true;
+                }
+            }
+        }
+
+        // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
+        if ($target->hasType($null_type)) {
+            foreach ($this->type_set as $source_type) {
+                // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
+                if ($source_type->getIsNullable()) {
+                    $non_null_source_type = $source_type->withIsNullable(false);
+                    foreach ($target->type_set as $target_type) {
+                        if ($non_null_source_type->canCastToType($target_type)) {
+                            return true;
+                        }
+                    }
                 }
             }
         }

@@ -231,4 +231,26 @@ class TypeTest extends BaseTest
         $this->assertSameType($expectedStringArrayType, $stringArrayType);
         $this->assertSame('?float[]', (string)$stringArrayType);
     }
+
+    /**
+     * @dataProvider canCastToTypeProvider
+     */
+    public function testCanCastToType(string $fromTypeString, string $toTypeString)
+    {
+        $fromType = self::makePHPDocType($fromTypeString);
+        $toType = self::makePHPDocType($toTypeString);
+        $this->assertTrue($fromType->canCastToType($toType), "expected $fromTypeString to be able to cast to $toTypeString");
+    }
+
+    public function canCastToTypeProvider() : array
+    {
+        return [
+            ['int', 'int'],
+            ['int', 'float'],
+            ['int', 'mixed'],
+            ['mixed', 'int'],
+            ['null', 'mixed'],
+            ['null[]', 'mixed[]'],
+        ];
+    }
 }

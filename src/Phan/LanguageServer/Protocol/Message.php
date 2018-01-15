@@ -57,7 +57,7 @@ class Message
     {
         $body = (string)$this->body;
         $contentLength = strlen($body);
-        $this->headers['Content-Length'] = $contentLength;
+        $this->headers['Content-Length'] = (string)$contentLength;
         $headers = '';
         foreach ($this->headers as $name => $value) {
             $headers .= "$name: $value\r\n";

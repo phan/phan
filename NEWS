@@ -1,9 +1,25 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.11.1 (dev)
+?? ??? 2018, Phan 0.11.1 (dev)
 ------------------------
 
 ### Ported from Phan 0.10.3 (dev)
+
+New Features(CLI, Configs)
+
++ For `--fallback-parser`: Switch to [tolerant-php-parser](https://github.com/Microsoft/tolerant-php-parser)
+  as a dependency of the fallback implementation. (#1125)
+  This does a better job of generating PHP AST trees when attempting to parse code with a broader range of syntax errors.
+  Keep `PHP-Parser` as a dependency for now for parsing strings.
+
+Maintenance
++ Make `phan_client` and the vim snippet in `plugins/vim/phansnippet.vim` more compatible with neovim
++ Upgrade felixfbecker/advanced-json-rpc dependency to ^3.0.0 (#1354)
+
+Bug Fixes
++ Allow `null` to be passed in where a union type of `mixed` was expected.
++ Don't warn when passing `?T` (PHPDoc or real) where the PHPDoc type was `T|null`. (#609, #1090, #1192, #1337)
+  This is useful for expressions used for property assignments, return statements, function calls, etc.
 
 17 Nov 2017, Phan 0.11.0
 ------------------------

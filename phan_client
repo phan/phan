@@ -26,7 +26,8 @@
  *
  * TODO: tutorial or repo.
  */
-class PhanPHPLinter {
+class PhanPHPLinter
+{
     // Wait at most 3 seconds to lint a file.
     const TIMEOUT_MS = 3000;
 
@@ -37,7 +38,8 @@ class PhanPHPLinter {
      * @param string $msg
      * @return void
      */
-    private static function debugError($msg) {
+    private static function debugError($msg)
+    {
         error_log($msg);
     }
 
@@ -45,13 +47,15 @@ class PhanPHPLinter {
      * @param string $msg
      * @return void
      */
-    private static function debugInfo($msg) {
+    private static function debugInfo($msg)
+    {
         if (self::$verbose) {
             self::debugError($msg);
         }
     }
 
-    public static function run() {
+    public static function run()
+    {
         error_reporting(E_ALL);
         // TODO: check for .phan/lock to see if daemon is running?
 
@@ -69,22 +73,36 @@ class PhanPHPLinter {
                     $failure_code = 1;
                     continue;
                 }
+                $exit_code = 0;
                 if (!$opts->use_fallback_parser) {
-                    system("php -l --no-php-ini " . escapeshellarg($temporary_path), $exit_code);
-                } else {
-                    $exit_code = 0;
+                    ob_start();
+                    try {
+                        system("php -l --no-php-ini " . escapeshellarg($temporary_path), $exit_code);
+                    } finally {
+                        $output = ob_get_clean();
+                    }
                 }
                 if ($exit_code === 0) {
                     $temporary_file_mapping_contents[$path] = $temporary_contents;
+                }
+                if ($exit_code !== 0) {
+                    echo $output;
                 }
             } else {
                 // TODO: use popen instead
                 // TODO: add option to capture output, suppress "No syntax error"?
                 // --no-php-ini is a faster way to parse since php doesn't need to load multiple extensions. Assumes none of the extensions change the way php is parsed.
+                $exit_code = 0;
                 if (!$opts->use_fallback_parser) {
-                    system("php -l --no-php-ini " . escapeshellarg($path), $exit_code);
-                } else {
-                    $exit_code = 0;
+                    ob_start();
+                    try {
+                        system("php -l --no-php-ini " . escapeshellarg($path), $exit_code);
+                    } finally {
+                        $output = ob_get_clean();
+                    }
+                }
+                if ($exit_code !== 0) {
+                    echo $output;
                 }
             }
             if ($exit_code !== 0) {
@@ -188,7 +206,7 @@ class PhanPHPLinter {
         if ($status === 'ok') {
             self::dumpJSONIssues($response, $file_mapping);
         } else {
-            self::debugError(sprintf("Invalid response from phan for url %s, files %s: %s\n", $opts->url, json_encode($file_mapping), $response_bytes));
+            self::debugError(sprintf("Invalid response from phan for %s: %s", $opts->url, $response_bytes));
         }
     }
 
@@ -198,8 +216,10 @@ class PhanPHPLinter {
      * @return void
      * @suppress PhanPluginUnusedVariable $did_debug false positive
      */
-    private static function dumpJSONIssues(array $response, array $file_mapping) {
+    private static function dumpJSONIssues(array $response, array $file_mapping)
+    {
         $did_debug = false;
+        $lines = [];
         // if ($response['issue_count'] > 0)
         $issues = $response['issues'];
         if (!\is_array($issues)) {
@@ -228,12 +248,15 @@ class PhanPHPLinter {
             if (count($parts) === 3 && $parts[1] === $issue['check_name']) {
                 $description = implode(': ', $parts);
             }
-            printf("Phan error: %s in %s on line %d\n", $description, $file_mapping[$pathInProject], $line);
+            $lines[] = sprintf("Phan error: %s in %s on line %d\n", $description, $file_mapping[$pathInProject], $line);
         }
+        // https://github.com/neomake/neomake/issues/153
+        echo implode('', $lines);
     }
 }
 
-class PhanPHPLinterOpts {
+class PhanPHPLinterOpts
+{
     /** @var string tcp:// or unix:// socket URL of the daemon. */
     public $url;
 
@@ -254,7 +277,8 @@ class PhanPHPLinterOpts {
      * @param int $exit_code - process exit code.
      * @return void - exits with $exit_code
      */
-    public function usage($msg = '', $exit_code = 0) {
+    public function usage($msg = '', $exit_code = 0)
+    {
         global $argv;
         if (!empty($msg)) {
             echo "$msg\n";
@@ -302,7 +326,8 @@ EOB;
      * @suppress PhanParamTooManyInternal - `getopt` added an optional third parameter in php 7.1
      * @suppress UnusedSuppression
      */
-    public function __construct()  {
+    public function __construct()
+    {
         global $argv;
 
         // Parse command line args
@@ -337,86 +362,85 @@ EOB;
         }
 
         foreach ((\is_array($opts) ? $opts : []) as $key => $value) {
-            switch($key) {
-            case 's':
-            case 'daemonize-socket':
-                $this->checkCanConnectToDaemon('unix');
-                if ($this->url !== null) {
-                    $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
-                }
-                // Check if the socket is valid after parsing the file list.
-                $socket_dirname = realpath(dirname($value));
-                if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
-                    // The client doesn't require that the file exists if the daemon isn't running, but we do require that the folder exists.
-                    $msg = sprintf('Configured to connect to unix socket server at socket %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
-                    $this->usage($msg, 1);
-                } else {
-                    $this->url = sprintf('unix://%s/%s', $socket_dirname, basename($value));
-                }
-                break;
-            case 'use-fallback-parser':
-                $this->use_fallback_parser = true;
-                break;
-            case 'f':
-            case 'flycheck-file':
-                // Add alias, for use in flycheck
-                if (\is_array($this->temporary_file_map)) {
-                    $this->usage('--flycheck-file should be specified only once.', 1);
-                }
-                if (!\is_array($this->file_list) || count($this->file_list) !== 1) {
-                    $this->usage('--flycheck-file should be specified after the first occurrence of -l.', 1);
-                }
-                $this->temporary_file_map = [
+            switch ($key) {
+                case 's':
+                case 'daemonize-socket':
+                    $this->checkCanConnectToDaemon('unix');
+                    if ($this->url !== null) {
+                        $this->usage('Can specify --daemonize-socket or --daemonize-tcp-port only once', 1);
+                    }
+                    // Check if the socket is valid after parsing the file list.
+                    $socket_dirname = realpath(dirname($value));
+                    if (!file_exists($socket_dirname) || !is_dir($socket_dirname)) {
+                        // The client doesn't require that the file exists if the daemon isn't running, but we do require that the folder exists.
+                        $msg = sprintf('Configured to connect to unix socket server at socket %s, but folder %s does not exist', json_encode($value), json_encode($socket_dirname));
+                        $this->usage($msg, 1);
+                    } else {
+                        $this->url = sprintf('unix://%s/%s', $socket_dirname, basename($value));
+                    }
+                    break;
+                case 'use-fallback-parser':
+                    $this->use_fallback_parser = true;
+                    break;
+                case 'f':
+                case 'flycheck-file':
+                    // Add alias, for use in flycheck
+                    if (\is_array($this->temporary_file_map)) {
+                        $this->usage('--flycheck-file should be specified only once.', 1);
+                    }
+                    if (!\is_array($this->file_list) || count($this->file_list) !== 1) {
+                        $this->usage('--flycheck-file should be specified after the first occurrence of -l.', 1);
+                    }
+                    $this->temporary_file_map = [
                     $this->file_list[0] => $value,
-                ];
-                break;
-            case 't':
-            case 'temporary-file-map':
-                if (\is_array($this->temporary_file_map)) {
-                    $this->usage('--temporary-file-map should be specified only once.', 1);
-                }
-                $mapping = json_decode($value, true);
-                if (!\is_array($mapping)) {
-                    $this->usage('--temporary-file-map should be a JSON encoded map from source file to temporary file to analyze instead', 1);
-                }
-                $this->temporary_file_map = $mapping;
+                    ];
+                    break;
+                case 't':
+                case 'temporary-file-map':
+                    if (\is_array($this->temporary_file_map)) {
+                        $this->usage('--temporary-file-map should be specified only once.', 1);
+                    }
+                    $mapping = json_decode($value, true);
+                    if (!\is_array($mapping)) {
+                        $this->usage('--temporary-file-map should be a JSON encoded map from source file to temporary file to analyze instead', 1);
+                    }
+                    $this->temporary_file_map = $mapping;
 
-                break;
-            case 'p':
-            case 'daemonize-tcp-port':
-                $this->checkCanConnectToDaemon('tcp');
-                if (strcasecmp($value, 'default') === 0) {
-                    $port = 4846;
-                } else {
-                    $port = filter_var($value, FILTER_VALIDATE_INT);
-                }
-                if ($port >= 1024 && $port <= 65535) {
-                    $this->url = sprintf('tcp://127.0.0.1:%d', $port);
-                } else {
-                    $this->usage("daemonize-tcp-port must be the string 'default' or an integer between 1024 and 65535, got '$value'", 1);
-                }
-                break;
-            case 'l':
-            case 'syntax-check':
-                $path = $value;
-                if (!file_exists($path)) {
-                    $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path)), 1);
-                    exit(1);
-                }
-                $this->file_list[] = $path;
-                break;
-            case 'h':
-            case 'help':
-                $this->usage();
-                break;
-            case 'v':
-            case 'verbose':
-                break;  // already parsed.
-            default:
-                $this->usage("Unknown option '-$key'", 1);
-                break;
+                    break;
+                case 'p':
+                case 'daemonize-tcp-port':
+                    $this->checkCanConnectToDaemon('tcp');
+                    if (strcasecmp($value, 'default') === 0) {
+                        $port = 4846;
+                    } else {
+                        $port = filter_var($value, FILTER_VALIDATE_INT);
+                    }
+                    if ($port >= 1024 && $port <= 65535) {
+                        $this->url = sprintf('tcp://127.0.0.1:%d', $port);
+                    } else {
+                        $this->usage("daemonize-tcp-port must be the string 'default' or an integer between 1024 and 65535, got '$value'", 1);
+                    }
+                    break;
+                case 'l':
+                case 'syntax-check':
+                    $path = $value;
+                    if (!file_exists($path)) {
+                        $this->usage(sprintf("Error: asked to analyze file %s which does not exist", json_encode($path)), 1);
+                        exit(1);
+                    }
+                    $this->file_list[] = $path;
+                    break;
+                case 'h':
+                case 'help':
+                    $this->usage();
+                    break;
+                case 'v':
+                case 'verbose':
+                    break;  // already parsed.
+                default:
+                    $this->usage("Unknown option '-$key'", 1);
+                    break;
             }
-
         }
         if (count($this->file_list) === 0) {
             $this->usage("This requires at least one file to analyze (with -l path/to/file", 1);
@@ -437,7 +461,8 @@ EOB;
      * prints error message if php doesn't support connecting to a daemon with a given protocol.
      * @return void
      */
-    private function checkCanConnectToDaemon($protocol) {
+    private function checkCanConnectToDaemon($protocol)
+    {
         $opt = $protocol === 'unix' ? '--daemonize-socket' : '--daemonize-tcp-port';
         if (!in_array($protocol, stream_get_transports())) {
             $this->usage("The $protocol:///path/to/file schema is not supported on this system, cannot connect to a daemon with $opt", 1);
