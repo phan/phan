@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2017, Phan 0.10.3 (dev)
+?? ??? 2018, Phan 0.10.3 (dev)
 ------------------------
 
 New Features(CLI, Configs)
@@ -12,6 +12,7 @@ New Features(CLI, Configs)
 
 Maintenance
 + Make `phan_client` and the vim snippet in `plugins/vim/phansnippet.vim` more compatible with neovim
++ Upgrade felixfbecker/advanced-json-rpc dependency to ^3.0.0 (#1354)
 
 Bug Fixes
 + Allow `null` to be passed in where a union type of `mixed` was expected.
