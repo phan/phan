@@ -15,8 +15,8 @@ rm $ACTUAL_PATH -f || exit 1
 ../../../phan --use-fallback-parser | tee $ACTUAL_PATH
 # normalize output for https://github.com/phan/phan/issues/1130
 sed -i "s/ syntax error, unexpected return (T_RETURN)/ syntax error, unexpected 'return' (T_RETURN)/" $ACTUAL_PATH
+sed -i "s/ syntax error, unexpected new (T_NEW)/ syntax error, unexpected 'new' (T_NEW)/" $ACTUAL_PATH
 # diff returns a non-zero exit code if files differ or are missing
-# This outputs the 
 echo
 echo "Comparing the output:"
 diff $EXPECTED_PATH $ACTUAL_PATH
