@@ -19,9 +19,14 @@ function helper388($arg1, $arg2) {
 }
 
 /**
+ * @param ?string $a1
+ * @param ?int $a2
+ * @param ?string $a3
+ * @param ?int $a4
+ * @param ?string $retval
  * @return string|null
  */
-function test388(?string $a1, ?int $a2, ?string $a3, ?int $a4, ?string $retval) {
+function test388($a1, $a2, $a3, $a4, $retval) {
     $a = new A388();
     $a->prop1 = $a1;
     $a->prop2 = $a2;  // should warn
