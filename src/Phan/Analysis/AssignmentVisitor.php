@@ -707,8 +707,7 @@ class AssignmentVisitor extends AnalysisVisitor
                 // we clone it so as to not disturb its previous types
                 // as we replace it.
                 if ($variable instanceof Parameter) {
-                    if ($variable->isPassByReference()) {
-                    } else {
+                    if (!$variable->isPassByReference()) {
                         $variable = clone($variable);
                     }
                 } elseif (!($variable instanceof PassByReferenceVariable)) {

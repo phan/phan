@@ -25,9 +25,9 @@ build_script:
 
     cd C:\projects\php
 
-    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/php-7.1.9-nts-Win32-VC14-x86.zip
+    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/php-7.1.10-nts-Win32-VC14-x86.zip
 
-    7z x -y php-7.1.9-nts-Win32-VC14-x86.zip
+    7z x -y php-7.1.10-nts-Win32-VC14-x86.zip
 
     del /Q *.zip
 

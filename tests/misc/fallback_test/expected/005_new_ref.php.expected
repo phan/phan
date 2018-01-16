@@ -1,0 +1,2 @@
+src/005_new_ref.php:8 PhanSyntaxError syntax error, unexpected 'new' (T_NEW)
+src/005_new_ref.php:9 PhanTypeMismatchReturn Returning type int but test5() is declared to return string
