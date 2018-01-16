@@ -7671,7 +7671,7 @@ return [
 'ReflectionFunctionAbstract::__toString' => [''],
 'ReflectionFunction::__construct' => ['void', 'name'=>'string|Closure'],
 'ReflectionFunction::export' => ['string', 'name'=>'string', 'return='=>'bool'],
-'ReflectionFunction::getClosure' => ['Closure'],
+'ReflectionFunction::getClosure' => ['?Closure'],
 'ReflectionFunction::getClosureScopeClass' => ['ReflectionClass'],
 'ReflectionFunction::getClosureThis' => ['bool'],
 'ReflectionFunction::getDocComment' => ['string|false'],
