@@ -2470,7 +2470,7 @@ return [
 'get_declared_interfaces' => ['array'],
 'get_declared_traits' => ['array'],
 'get_defined_constants' => ['array', 'categorize='=>'bool'],
-'get_defined_functions' => ['string[][]'],
+'get_defined_functions' => ['string[][]', 'exclude_disabled='=>'bool'],
 'get_defined_vars' => ['array'],
 'getenv' => ['string|string[]|false', 'varname='=>'string', 'local_only='=>'bool'],
 'get_extension_funcs' => ['array', 'extension_name'=>'string'],
