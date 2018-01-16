@@ -895,7 +895,6 @@ class Type
 
     /**
      * @var ?Type[] - [$this]
-     *                The object id doesn't change as long as there's one reference to that object (including singleton_map)
      */
     protected $singleton_type_list;
 

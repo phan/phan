@@ -175,7 +175,7 @@ final class StringFunctionPlugin extends PluginV2 implements
             'mb_strwidth'               => $var_1_const_2,
             'mb_substr_count'           => $var_1_const_2,
             'mb_substr'                 => $var_1_const_2,
-            'money_format'              => $var_1_const_2,
+            'money_format'              => $var_2_const_1,
             'nl2br'                     => $var_1_const_2,
             'number_format'             => $var_1_const_2,
             'rtrim'                     => $var_1_const_2,

@@ -8,6 +8,9 @@ clone_folder: C:\projects\phan
 clone_depth: 1
 # Test 32-bit builds
 platform: x86
+environment:
+  PHP_EXT_VERSION: '7.0'
+  PHP_VERSION: '7.0.26'
 
 branches:
   only:
@@ -25,9 +28,11 @@ build_script:
 
     cd C:\projects\php
 
-    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/php-7.1.9-nts-Win32-VC14-x86.zip
+    SET PHP_ZIP_BASENAME=php-%PHP_VERSION%-nts-Win32-VC14-x86.zip
 
-    7z x -y php-7.1.9-nts-Win32-VC14-x86.zip
+    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/%PHP_ZIP_BASENAME% || appveyor DownloadFile http://windows.php.net/downloads/releases/%PHP_ZIP_BASENAME%
+
+    7z x -y %PHP_ZIP_BASENAME%
 
     del /Q *.zip
 
@@ -35,9 +40,9 @@ build_script:
 
     git clone --depth=1 --branch=master https://github.com/nikic/php-ast C:\projects\php-src\ext\ast
 
-    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.6/php_ast-0.1.6-7.1-nts-vc14-x86.zip
+    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.6/php_ast-0.1.6-%PHP_EXT_VERSION%-nts-vc14-x86.zip
 
-    7z x php_ast-0.1.6-7.1-nts-vc14-x86.zip php_ast.dll -y >nul
+    7z x php_ast-0.1.6-%PHP_EXT_VERSION%-nts-vc14-x86.zip php_ast.dll -y >nul
 
     cd C:\projects\php
 
@@ -71,7 +76,7 @@ build_script:
 
 test_script:
 - cmd: cd C:\projects\phan
-- cmd: php composer.phar install
+- cmd: php composer.phar install --prefer-dist
 - cmd: php phan
 - cmd: .\vendor\bin\phpunit --verbose
 # Verify that a phar can be built and executed under windows
