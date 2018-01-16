@@ -25,9 +25,9 @@ build_script:
 
     cd C:\projects\php
 
-    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/php-7.1.10-nts-Win32-VC14-x86.zip
+    appveyor DownloadFile http://windows.php.net/downloads/releases/archives/php-7.0.27-nts-Win32-VC14-x86.zip || appveyor DownloadFile http://windows.php.net/downloads/releases/php-7.0.27-Win32-VC14-x86.zip
 
-    7z x -y php-7.1.10-nts-Win32-VC14-x86.zip
+    7z x -y php-7.0.27-nts-Win32-VC14-x86.zip
 
     del /Q *.zip
 
@@ -35,9 +35,9 @@ build_script:
 
     git clone --depth=1 --branch=master https://github.com/nikic/php-ast C:\projects\php-src\ext\ast
 
-    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.6/php_ast-0.1.6-7.1-nts-vc14-x86.zip
+    appveyor DownloadFile http://windows.php.net/downloads/pecl/releases/ast/0.1.6/php_ast-0.1.6-7.0-nts-vc14-x86.zip
 
-    7z x php_ast-0.1.6-7.1-nts-vc14-x86.zip php_ast.dll -y >nul
+    7z x php_ast-0.1.6-7.0-nts-vc14-x86.zip php_ast.dll -y >nul
 
     cd C:\projects\php
 
@@ -71,7 +71,7 @@ build_script:
 
 test_script:
 - cmd: cd C:\projects\phan
-- cmd: php composer.phar install
+- cmd: php composer.phar install --prefer-dist
 - cmd: php phan
 - cmd: .\vendor\bin\phpunit --verbose
 # Verify that a phar can be built and executed under windows
