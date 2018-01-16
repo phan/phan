@@ -422,11 +422,12 @@ return [
     // Use a different extension from php to avoid accidentally loading these.
     // The 'mkstubs' script can be used to generate your own stubs (compatible with php 7.0+ right now)
     'autoload_internal_extension_signatures' => [
-        'pcntl'   => '.phan/internal_stubs/pcntl.phan_php',
-        'posix'   => '.phan/internal_stubs/posix.phan_php',
-        'sysvmsg' => '.phan/internal_stubs/sysvmsg.phan_php',
-        'sysvsem' => '.phan/internal_stubs/sysvsem.phan_php',
-        'sysvshm' => '.phan/internal_stubs/sysvshm.phan_php',
+        'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
+        'posix'       => '.phan/internal_stubs/posix.phan_php',
+        'readline'    => '.phan/internal_stubs/readline.phan_php',
+        'sysvmsg'     => '.phan/internal_stubs/sysvmsg.phan_php',
+        'sysvsem'     => '.phan/internal_stubs/sysvsem.phan_php',
+        'sysvshm'     => '.phan/internal_stubs/sysvshm.phan_php',
     ],
 
     // Set this to false to emit PhanUndeclaredFunction issues for internal functions that Phan has signatures for,
