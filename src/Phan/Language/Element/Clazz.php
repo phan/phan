@@ -2228,8 +2228,9 @@ class Clazz extends AddressableElement
         if (count($method_map) > 0) {
             $stub .= "\n\n    // methods\n";
 
-            $stub .= implode("\n", array_map(function (Method $method) use ($code_base) {
-                return $method->toStub($code_base);
+            $is_interface = $this->isInterface();
+            $stub .= implode("\n", array_map(function (Method $method) use ($code_base, $is_interface) {
+                return $method->toStub($code_base, $is_interface);
             }, $method_map));
         }
 

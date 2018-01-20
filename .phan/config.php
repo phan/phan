@@ -422,6 +422,7 @@ return [
     // Use a different extension from php to avoid accidentally loading these.
     // The 'mkstubs' script can be used to generate your own stubs (compatible with php 7.0+ right now)
     'autoload_internal_extension_signatures' => [
+        'ctype'       => '.phan/internal_stubs/ctype.phan_php',
         'pcntl'       => '.phan/internal_stubs/pcntl.phan_php',
         'posix'       => '.phan/internal_stubs/posix.phan_php',
         'readline'    => '.phan/internal_stubs/readline.phan_php',

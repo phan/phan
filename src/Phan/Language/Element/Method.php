@@ -653,20 +653,22 @@ class Method extends ClassElement implements FunctionInterface
         return $string;
     }
 
-    public function toStub(CodeBase $code_base) : string
+    public function toStub(CodeBase $code_base, bool $class_is_interface = false) : string
     {
-        // TODO: Include whether or not it is abstract
         $string = '    ';
-        if ($this->isPrivate()) {
-            $string .= 'private ';
-        } elseif ($this->isProtected()) {
-            $string .= 'protected ';
-        } else {
-            $string .= 'public ';
-        }
+        // It's an error to have visibility or abstract in an interface's stub (e.g. JsonSerializable)
+        if (!$class_is_interface) {
+            if ($this->isPrivate()) {
+                $string .= 'private ';
+            } elseif ($this->isProtected()) {
+                $string .= 'protected ';
+            } else {
+                $string .= 'public ';
+            }
 
-        if ($this->isAbstract()) {
-            $string .= 'abstract ';
+            if ($this->isAbstract()) {
+                $string .= 'abstract ';
+            }
         }
 
         if ($this->isStatic()) {
