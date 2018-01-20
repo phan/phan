@@ -79,7 +79,7 @@ EOT;
         echo "\n";
 
         foreach ($reflection_extension->getClassNames() as $class_name) {
-            [$namespace, $name] = self::extractNamespaceAndName($class_name);
+            list($namespace, $name) = self::extractNamespaceAndName($class_name);
             $class_fqsen = FullyQualifiedClassName::make($namespace, $name);
             if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
                 fwrite(STDERR, "Failed to find class $class_fqsen\n");
@@ -89,7 +89,7 @@ EOT;
         }
 
         foreach ($reflection_extension->getFunctions() as $function_name => $unused_reflection_function) {
-            [$namespace, $name] = self::extractNamespaceAndName($function_name);
+            list($namespace, $name) = self::extractNamespaceAndName($function_name);
             $function_fqsen = FullyQualifiedFunctionName::make($namespace, $name);
             if (!$code_base->hasFunctionWithFQSEN($function_fqsen)) {
                 fwrite(STDERR, "Failed to find function $function_fqsen\n");
@@ -99,7 +99,7 @@ EOT;
         }
 
         foreach ($reflection_extension->getConstants() as $constant_name => $constant_value) {
-            [$namespace, $name] = self::extractNamespaceAndName($constant_name);
+            list($namespace, $name) = self::extractNamespaceAndName($constant_name);
             $const_fqsen = FullyQualifiedGlobalConstantName::make($namespace, $name);
             if (!$code_base->hasGlobalConstantWithFQSEN($const_fqsen)) {
                 fwrite(STDERR, "Failed to find global constant $const_fqsen\n");
@@ -155,19 +155,19 @@ class StubCollection {
 
     /** @return void */
     public function addClazz(Clazz $class) {
-        [$namespace, $name] = $class->toStubInfo($this->code_base);
+        list($namespace, $name) = $class->toStubInfo($this->code_base);
         $this->class_stubs[$namespace][(string)$class->getFQSEN()] = $name;
     }
 
     /** @return void */
     public function addGlobalConstant(GlobalConstant $global_constant) {
-        [$namespace, $name] = $global_constant->toStubInfo();
+        list($namespace, $name) = $global_constant->toStubInfo();
         $this->global_constant_stubs[$namespace][(string)$global_constant->getFQSEN()] = $name;
     }
 
     /** @return void */
     public function addFunc(Func $function) {
-        [$namespace, $name] = $function->toStubInfo();
+        list($namespace, $name) = $function->toStubInfo();
         $this->function_stubs[$namespace][(string)$function->getFQSEN()] = $name;
     }
 
