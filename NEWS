@@ -1,6 +1,6 @@
 Phan NEWS
 
-?? ??? 2018, Phan 0.8.11 (dev)
+20 Jan 2018, Phan 0.8.11 (dev)
 ------------------------
 
 ### Backported from Phan 0.10.3 (dev)
@@ -15,11 +15,14 @@ New Features(CLI, Configs)
 Maintenance
 + Make `phan_client` and the vim snippet in `plugins/vim/phansnippet.vim` more compatible with neovim
 + Upgrade felixfbecker/advanced-json-rpc dependency to ^3.0.0 (#1354)
++ Performance improvements.
+  Changed the internal representation of union types to no longer require `spl_object_id` or the polyfill.
 
 Bug Fixes
 + Allow `null` to be passed in where a union type of `mixed` was expected.
 + Don't warn when passing `?T` (PHPDoc or real) where the PHPDoc type was `T|null`. (#609, #1090, #1192, #1337)
   This is useful for expressions used for property assignments, return statements, function calls, etc.
++ Fix a few of Phan's signatures for internal functions and methods.
 
 17 Nov 2017, Phan 0.8.10
 ------------------------
