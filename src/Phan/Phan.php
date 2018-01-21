@@ -2,6 +2,7 @@
 namespace Phan;
 
 use Phan\Daemon\Request;
+use Phan\Language\Type;
 use Phan\LanguageServer\LanguageServer;
 use Phan\LanguageServer\Logger as LanguageServerLogger;
 use Phan\Library\FileCache;
@@ -172,6 +173,7 @@ class Phan implements IgnoredFilesFilterInterface
         $temporary_file_mapping = [];
 
         $request = null;
+        Type::clearAllMemoizations();
         if ($is_undoable_request) {
             \assert($code_base->isUndoTrackingEnabled());
             if ($is_daemon_request) {

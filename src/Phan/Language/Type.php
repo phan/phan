@@ -350,6 +350,8 @@ class Type
      * It's important to clear asExpandedTypes(),
      * as the parent classes may have changed since the last parse attempt.
      *
+     * This gets called immediately after the parse phase but before the analysis phase.
+     *
      * @return void
      */
     public static function clearAllMemoizations()
@@ -1410,7 +1412,6 @@ class Type
                     $alias_fqsen->asUnionType()
                 );
             }
-            // TODO: Investigate caching this and returning clones after analysis is done.
 
             return $recursive_union_type;
         });
