@@ -300,7 +300,7 @@ class UnionTypeTest extends BaseTest
         $types = $union_type->getTypeSet();
         $type = reset($types);
 
-        $array_type = function(Type $type, int $depth = 1) : GenericArrayType {
+        $array_type = function (Type $type, int $depth = 1) : GenericArrayType {
             return GenericArrayType::fromElementType($type, false);
         };
 
