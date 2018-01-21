@@ -14,7 +14,7 @@ class B extends A {
 	}
 }
 
-class C {
+class C {  // Wrong because C doesn't extend A or B
 	static function test() {
 		$b = new B;
 		$b->text = [];
@@ -23,3 +23,12 @@ class C {
 }
 
 C::test();
+
+class D extends A {  // Correct because D extends A
+	static function test() {
+		$b = new B;
+		$b->text = [];
+		$b->test([1,2,3]);
+	}
+}
+D::test();
