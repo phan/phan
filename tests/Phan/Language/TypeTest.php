@@ -5,6 +5,7 @@ use Phan\Tests\BaseTest;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
@@ -23,6 +24,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
+use Phan\Language\UnionType;
 
 /**
  * Unit tests of Type
@@ -251,6 +253,81 @@ class TypeTest extends BaseTest
             ['mixed', 'int'],
             ['null', 'mixed'],
             ['null[]', 'mixed[]'],
+        ];
+    }
+
+    /**
+     * @dataProvider arrayShapeProvider
+     */
+    public function testArrayShape($normalized_union_type_string, $type_string) {
+        $this->assertTrue(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
+        $this->assertTrue(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
+        $actual_type = self::makePHPDocType($type_string);
+        $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
+        $this->assertInstanceOf(ArrayShapeType::class, $actual_type, "Failed to create expected class for $type_string");
+        assert($actual_type instanceof ArrayShapeType);
+        $actual_flattened_type = new UnionType($actual_type->asGenericArrayTypeInstances());
+        $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
+    }
+
+    public function arrayShapeProvider() {
+        return [
+            [
+                'array',
+                'array{}'
+            ],
+            [
+                'int[]',
+                'array{field:int}'
+            ],
+            [
+                'int[]|string[]',
+                'array{0:int,1:string}'
+            ],
+            [
+                'int[]|stdClass[]|string[]',
+                'array{0:int,1:string,2:stdClass}'
+            ],
+            [
+                'int[]',
+                'array{string:int}'
+            ],
+            [
+                'T<int>[]',
+                'array{field:T<int>}'
+            ],
+            [
+                '(?int)[]',
+                'array{field:?int}',
+            ],
+            [
+                '(?int)[]|int[][]',
+                'array{field:int[],field2:?int}'
+            ],
+            [
+                'array[]',
+                'array{field:array{}}'
+            ],
+            [
+                'int[][]',
+                'array{field:array{innerField:int}}'
+            ],
+        ];
+    }
+
+    /** @dataProvider unparseableArrayShapeProvider */
+    public function testUnparseableArrayShape($type_string) {
+        $this->assertFalse(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
+        $this->assertFalse(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
+    }
+
+    public function unparseableArrayShapeProvider() {
+        return [
+            ['array{'],
+            ['{}'],
+            ['array{,field:int}'],
+            ['array{field:}'],
+            ['array{::int}'],
         ];
     }
 }

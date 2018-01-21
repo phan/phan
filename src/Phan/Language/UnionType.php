@@ -10,6 +10,7 @@ use Phan\Issue;
 use Phan\Language\Element\Clazz;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FalseType;
@@ -180,10 +181,15 @@ class UnionType implements \Serializable
      * @param Type[] $types
      * @return Type[]
      */
-    private static function normalizeGenericMultiArrayTypes(array $types) : array
+    public static function normalizeGenericMultiArrayTypes(array $types) : array
     {
         foreach ($types as $i => $type) {
             if ($type instanceof GenericMultiArrayType) {
+                foreach ($type->asGenericArrayTypeInstances() as $new_type) {
+                    $types[] = $new_type;
+                }
+                unset($types[$i]);
+            } elseif ($type instanceof ArrayShapeType) {
                 foreach ($type->asGenericArrayTypeInstances() as $new_type) {
                     $types[] = $new_type;
                 }

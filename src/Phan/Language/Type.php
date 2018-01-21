@@ -5,6 +5,7 @@ use Phan\CodeBase;
 use Phan\Config;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
@@ -28,7 +29,7 @@ use Phan\Language\UnionType;
 use Phan\Library\None;
 use Phan\Library\Option;
 use Phan\Library\Some;
-use Phan\Library\Tuple4;
+use Phan\Library\Tuple5;
 
 use ast\Node;
 
@@ -50,11 +51,23 @@ class Type
     const simple_type_regex_or_this =
         '(\??)([a-zA-Z_\x7f-\xff\\\][a-zA-Z0-9_\x7f-\xff\\\]*|\$this)';
 
+    const shape_key_regex =
+        '[-._a-zA-Z0-9\x7f-\xff]+';
+
+    /**
+     * @var string
+     * A legal array entry in an array shape (e.g. 'field:string[]')
+     */
+    const array_shape_entry_regex_noncapturing =
+        '(?:' . self::shape_key_regex . ')\s*:\s*(?:' . self::simple_type_regex . ')';
+
     /**
      * @var string
      * A legal type identifier matching a type optionally with a []
      * indicating that it's a generic typed array (e.g. 'int[]',
-     * 'string' or 'Set<DateTime>')
+     * 'string' or 'Set<DateTime>' or 'array{field:string}')
+     *
+     * https://www.debuggex.com/ is useful for a visual description of these regexes
      */
     const type_regex =
         '('
@@ -68,7 +81,12 @@ class Type
                 . '(?-5)(?:\|(?-5))*'
               . ')*'
             . ')'
-          . '>)?'
+          . '>'
+          . '|'
+          . '\{('  // Expect either '{' or '<', after a word token.
+            . '(?:' . self::shape_key_regex . '\s*:\s*(?-6))'  // {shape_key_regex:<type_regex>}
+            . '(?:,' . self::shape_key_regex . '\s*:\s*(?-6))*'  // {shape_key_regex:<type_regex>}
+          . ')?\})?'
         . ')'
         . '(\[\])*'
       . ')';
@@ -78,6 +96,8 @@ class Type
      * A legal type identifier matching a type optionally with a []
      * indicating that it's a generic typed array (e.g. 'int[]' or '$this[]',
      * 'string' or 'Set<DateTime>' or 'array<int>' or 'array<int|string>')
+     *
+     * https://www.debuggex.com/ is useful for a visual description of these regexes
      */
     const type_regex_or_this =
         '('
@@ -92,7 +112,12 @@ class Type
                   . '(?-7)(?:\|(?-7))*'
                 . ')*'
               . ')'
-              . '>)?'
+              . '>'
+              . '|'
+              . '(\{)('  // Expect either '{' or '<', after a word token. Match '{' to disambiguate 'array{}'
+                . '(?:' . self::shape_key_regex . '\s*:\s*(?-9))'  // {shape_key_regex:<type_regex>}
+                . '(?:,' . self::shape_key_regex . '\s*:\s*(?-9))*'  // {shape_key_regex:<type_regex>}
+              . ')?\})?'
             . ')'
           . '(\[\])*'
         . ')'
@@ -641,6 +666,15 @@ class Type
         $type_name = $tuple->_1;
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
+        $shape_components = $tuple->_4;
+        if (\is_array($shape_components)) {
+            if (\strcasecmp($type_name, 'array') === 0) {
+                return ArrayShapeType::fromFieldTypes(
+                    self::shapeComponentStringsToTypes($shape_components, new Context(), Type::FROM_NODE),
+                    $is_nullable
+                );
+            }
+        }
 
         if (empty($namespace)) {
             return self::fromInternalTypeName(
@@ -733,6 +767,13 @@ class Type
         $type_name = $tuple->_1;
         $template_parameter_type_name_list = $tuple->_2;
         $is_nullable = $tuple->_3;
+        $shape_components = $tuple->_4;
+        if (\is_array($shape_components)) {
+            return ArrayShapeType::fromFieldTypes(
+                self::shapeComponentStringsToTypes($shape_components, $context, $source),
+                $is_nullable
+            );
+        }
 
         // Map the names of the types to actual types in the
         // template parameter type list
@@ -892,6 +933,21 @@ class Type
             $template_parameter_type_list,
             $is_nullable,
             $source
+        );
+    }
+
+    /**
+     * @param array<string|int,string> $shape_components Maps field keys (integers or strings) to the corresponding type representations
+     * @param Context $context
+     * @param int $source
+     * @return array<string|int,Type> The types for the representations of types, in the given $context
+     */
+    private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source) : array {
+        return array_map(
+            function(string $component_string) use ($context, $source) : Type {
+                return Type::fromStringInContext($component_string, $context, $source);
+            },
+            $shape_components
         );
     }
 
@@ -1682,17 +1738,22 @@ class Type
      * @param string $type_string
      * Any type string such as 'int' or 'Set<int>'
      *
-     * @return Tuple4<string,string,array,bool>
-     * A pair with the 0th element being the namespace and the first
-     * element being the type name.
+     * @return Tuple5<string,string,array<int,string>,bool,?array<string|int,string>>
+     * A 5-tuple with the following types:
+     * 0: the namespace
+     * 1: the type name.
+     * 2: The template parameters, if any
+     * 3: Whether or not the type is nullable
+     * 4: The shape components, if any. Null unless this is an array shape type string such as 'array{field:int}'
      *
-     * NOTE: callers must check for the generic array symbol
+     * NOTE: callers must check for the generic array symbol in the type name or for type names beginning with 'array{' (case insensitive)
      */
     private static function typeStringComponents(
         string $type_string
     ) {
         // Check to see if we have template parameter types
         $template_parameter_type_name_list = [];
+        $shape_components = null;
 
         $match = [];
         $is_nullable = false;
@@ -1713,10 +1774,14 @@ class Type
                 $type_string = \substr($type_string, 1);
             }
 
-            // Recursively parse this
-            $template_parameter_type_name_list = ($match[6] ?? '') !== ''
-                ? self::extractTemplateParameterTypeNameList($match[6])
-                : [];
+            if (($match[8] ?? '') !== '') {
+                $shape_components = self::extractShapeComponents($match[9] ?? '');  // will be empty array for 'array{}'
+            } else {
+                // Recursively parse this
+                $template_parameter_type_name_list = ($match[6] ?? '') !== ''
+                    ? self::extractNameList($match[6])
+                    : [];
+            }
         }
 
         // Determine if the type name is fully qualified
@@ -1734,43 +1799,68 @@ class Type
                 $fq_class_name_elements
             ));
 
-        return new Tuple4(
+        return new Tuple5(
             $namespace,
             $class_name,
             $template_parameter_type_name_list,
-            $is_nullable
+            $is_nullable,
+            $shape_components
         );
     }
 
     /**
+     * @return array<string|int,string> maps field name to field type.
+     */
+    private static function extractShapeComponents(string $shape_component_string) : array
+    {
+        $result = [];
+        foreach (self::extractNameList($shape_component_string) as $shape_component) {
+            // Because these can be nested, there may be more than one ':'. Only consider the first.
+            $parts = \explode(':', $shape_component, 2);
+            if (count($parts) !== 2) {
+                continue;
+            }
+            $field_name = \trim($parts[0]);
+            if ($field_name === '') {
+                continue;
+            }
+            $field_value = \trim($parts[1]);
+            $result[$field_name] = $field_value;
+        }
+        return $result;
+    }
+
+    /**
+     * Extracts the inner parts of a template name list (i.e. within <>) or a shape component list (i.e. within {})
      * @return string[]
      * @suppress PhanPluginUnusedVariable
      */
-    private static function extractTemplateParameterTypeNameList(string $template_list_string)
+    private static function extractNameList(string $list_string) : array
     {
         $results = [];
         $prev_parts = [];
         $delta = 0;
-        foreach (\explode(',', $template_list_string) as $result) {
+        foreach (\explode(',', $list_string) as $result) {
             $result = \trim($result);
+            $open_bracket_count = \substr_count($result, '<') + \substr_count($result, '{');
+            $close_bracket_count = \substr_count($result, '>') + \substr_count($result, '}');
             if (\count($prev_parts) > 0) {
                 $prev_parts[] = $result;
-                $delta += \substr_count($result, '<') - \substr_count($result, '>');
+                $delta += $open_bracket_count - $close_bracket_count;
                 if ($delta <= 0) {
                     if ($delta === 0) {
                         $results[] = \implode(',', $prev_parts);
-                    }  // ignore unparseable data such as "<T,T2>>"
+                    }  // ignore unparseable data such as "<T,T2>>" or "T, T2{}}"
                     $prev_parts = [];
                     $delta = 0;
                     continue;
                 }
             }
-            $bracket_count = \substr_count($result, '<');
-            if ($bracket_count === 0) {
+            if ($open_bracket_count === 0) {
                 $results[] = $result;
                 continue;
             }
-            $delta = $bracket_count - \substr_count($result, '>');
+            $delta = $open_bracket_count - $close_bracket_count;
             if ($delta === 0) {
                 $results[] = $result;
             } elseif ($delta > 0) {

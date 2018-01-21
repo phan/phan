@@ -3,6 +3,18 @@ Phan NEWS
 ?? ??? 2018, Phan 0.10.4 (dev)
 ------------------------
 
+New Features(Analysis)
+
++ Support **parsing** PHPDoc array shapes
+  (E.g. a function expecting `['field' => 'a string']` can document this as `@param array{field:string}` $options)
+  For now, this is converted to generic arrays (Equivalent to `string[]`).
+
+  `[[0, ...], new stdClass]` would have type `array{0:int[], 1:string}`
+
+  - The field value types can be any union type.
+  - Field keys are currently limited to keys matching the regex `[-_.a-zA-Z0-9\x7f-\xff]+`. (Identifiers, numbers, '-', and '.')
+    Escape mechanisms such as backslashes (e.g. "\x20" for " ") may be supported in the future.
+
 Bug fixes
 + Warn when attempting to call an instance method on an expression with type string (#1314).
 

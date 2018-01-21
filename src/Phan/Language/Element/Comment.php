@@ -472,6 +472,9 @@ class Comment
         );
     }
 
+    // TODO: Is `@return &array` valid phpdoc2?
+    const return_comment_regex = '/@return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/';
+
     /**
      * @param Context $context
      * The context in which the comment line appears
@@ -488,13 +491,10 @@ class Comment
     ) {
         $return_union_type_string = '';
 
-        if (preg_match('/@return\s+/', $line)) {
-            // TODO: Is `@return &array` valid phpdoc2?
-            if (preg_match('/@return\s+(&\s*)?(' . UnionType::union_type_regex_or_this . '+)/', $line, $match)) {
-                $return_union_type_string = $match[2];
-            }
-            // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
+        if (\preg_match(self::return_comment_regex, $line, $match)) {
+            $return_union_type_string = $match[2];
         }
+        // Not emitting any issues about failing to extract, e.g. `@return - Description of what this returns` is a valid comment.
         $return_union_type_string = self::rewritePHPDocType($return_union_type_string);
 
         $return_union_type = UnionType::fromStringInContext(
@@ -516,6 +516,9 @@ class Comment
         }
         return $original_type;
     }
+
+    const param_comment_regex =
+        '/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/';
 
     /**
      * @param CodeBase $code_base
@@ -551,18 +554,18 @@ class Comment
         // Parse https://docs.phpdoc.org/references/phpdoc/tags/param.html
         // Exceptions: Deliberately allow "&" in "@param int &$x" when documenting references.
         // Warn if there is neither a union type nor a variable
-        if (\preg_match('/@(param|var)\b\s*(' . UnionType::union_type_regex . ')?(?:\s*(\.\.\.)?\s*&?(?:\\$' . self::WORD_REGEX . '))?/', $line, $match) && (isset($match[2]) || isset($match[17]))) {
+        if (\preg_match(self::param_comment_regex, $line, $match) && (isset($match[2]) || isset($match[17]))) {
             if (!isset($match[2])) {
                 return new CommentParameter('', new UnionType());
             }
             $original_type = $match[2];
 
-            $is_variadic = ($match[16] ?? '') === '...';
+            $is_variadic = ($match[18] ?? '') === '...';
 
             if ($is_var && $is_variadic) {
                 $variable_name = '';  // "@var int ...$x" is nonsense and invalid phpdoc.
             } else {
-                $variable_name = $match[17] ?? '';
+                $variable_name = $match[19] ?? '';
             }
             // Fix typos or non-standard phpdoc tags, according to the user's configuration.
             // Does nothing by default.
@@ -704,8 +707,8 @@ class Comment
                 $context,
                 Type::FROM_PHPDOC
             );
-            $is_variadic = $param_match[15] === '...';
-            $default_str = $param_match[17];
+            $is_variadic = $param_match[17] === '...';
+            $default_str = $param_match[19];
             $has_default_value = $default_str !== '';
             if ($has_default_value) {
                 $default_value_repr = trim(explode('=', $default_str, 2)[1]);
@@ -713,7 +716,7 @@ class Comment
                     $union_type = $union_type->nullableClone();
                 }
             }
-            $var_name = $param_match[16];
+            $var_name = $param_match[18];
             if ($var_name === '') {
                 // placeholder names are p1, p2, ...
                 $var_name = 'p' . ($param_index + 1);
@@ -740,8 +743,6 @@ class Comment
         int $comment_line_offset,
         int $comment_lines_count
     ) {
-        // Note that the type of a property can be left out (@property $myVar) - This is equivalent to @property mixed $myVar
-        // TODO: properly handle duplicates...
         // https://phpdoc.org/docs/latest/references/phpdoc/tags/method.html
         // > Going to assume "static" is a magic keyword, based on https://github.com/phpDocumentor/phpDocumentor2/issues/822
         // > TODO: forbid in trait?
@@ -766,9 +767,9 @@ class Comment
                 // > When the intended method does not have a return value then the return type MAY be omitted; in which case 'void' is implied.
                 $return_union_type = VoidType::instance(false)->asUnionType();
             }
-            $method_name = $match[20];
+            $method_name = $match[24];
 
-            $arg_list = trim($match[21]);
+            $arg_list = trim($match[25]);
             $comment_params = [];
             // Special check if param list has 0 params.
             if ($arg_list !== '') {
@@ -834,7 +835,7 @@ class Comment
         if (\preg_match('/@(property|property-read|property-write)(?:\s+(' . UnionType::union_type_regex . '))?(?:\s+(?:\\$' . self::WORD_REGEX . '))/', $line, $match)) {
             $type = $match[2] ?? '';
 
-            $property_name = $match[16] ?? '';
+            $property_name = $match[18] ?? '';
             if ($property_name === '') {
                 return null;
             }
