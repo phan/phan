@@ -915,7 +915,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method = $context_node->getMethod(
                 '__construct',
                 false,
-                false
+                false,
+                true
             );
 
             $class_list = $context_node->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);

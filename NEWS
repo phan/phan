@@ -3,6 +3,8 @@ Phan NEWS
 ?? ??? 2018, Phan 0.10.4 (dev)
 ------------------------
 
+Bug fixes
++ Warn when attempting to call an instance method on an expression with type string (#1314).
 
 20 Jan 2018, Phan 0.10.3
 ------------------------
