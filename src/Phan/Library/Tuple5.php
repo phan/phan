@@ -2,7 +2,7 @@
 namespace Phan\Library;
 
 /**
- * A tuple of 4 elements.
+ * A tuple of 5 elements.
  *
  * @template T0
  * The type of element zero
@@ -16,15 +16,18 @@ namespace Phan\Library;
  * @template T3
  * The type of element three
  *
- * @inherits Tuple3<T0, T1, T2>
+ * @template T4
+ * The type of element four
+ *
+ * @inherits Tuple4<T0, T1, T2, T3>
  */
-class Tuple4 extends Tuple3
+class Tuple5 extends Tuple4
 {
     /** @var int */
     const ARITY = 4;
 
-    /** @var T3 */
-    public $_3;
+    /** @var T4 */
+    public $_4;
 
     /**
      * @param T0 $_0
@@ -38,11 +41,17 @@ class Tuple4 extends Tuple3
      *
      * @param T3 $_3
      * The 3rd element
+     *
+     * @param T4 $_4
+     * The 4th element
      */
-    public function __construct($_0, $_1, $_2, $_3)
+    public function __construct($_0, $_1, $_2, $_3, $_4)
     {
-        parent::__construct($_0, $_1, $_2);
+        $this->_0 = $_0;
+        $this->_1 = $_1;
+        $this->_2 = $_2;
         $this->_3 = $_3;
+        $this->_4 = $_4;
     }
 
     /**
@@ -56,6 +65,7 @@ class Tuple4 extends Tuple3
             $this->_1,
             $this->_2,
             $this->_3,
+            $this->_4,
         ];
     }
 }

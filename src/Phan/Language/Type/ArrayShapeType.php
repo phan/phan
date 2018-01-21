@@ -11,31 +11,30 @@ use Phan\CodeBase;
  *
  * This is generated from phpdoc array<int, T1|T2> where callers expect a subclass of Type.
  */
-final class GenericMultiArrayType extends ArrayType
+final class ArrayShapeType extends ArrayType
 {
     /** @phan-override */
     const NAME = 'array';
 
     /**
-     * @var Type[]
-     * The list of possible types of every element in this array (2 or more)
+     * @var array<string|int,Type>
+     * Maps 0 or more field names to the corresponding types
      */
-    private $element_types = [];
+    private $field_types = [];
 
     /**
-     * @param Type[] $types
-     * The 2 or more possible types of every element in this array
+     * @param array<string|int,Type> $types
+     * Maps 0 or more field names to the corresponding types
      *
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass false
      */
     protected function __construct(array $types, bool $is_nullable)
     {
-        \assert(\count($types) >= 2);
         // Could de-duplicate, but callers should be able to do that as well when converting to UnionType.
         // E.g. array<int|int> is int[].
         parent::__construct('\\', self::NAME, [], false);
-        $this->element_types = $types;
+        $this->field_types = $types;
         $this->is_nullable = $is_nullable;
     }
 
@@ -54,32 +53,37 @@ final class GenericMultiArrayType extends ArrayType
             return $this;
         }
 
-        return GenericMultiArrayType::fromElementTypes(
-            $this->element_types,
+        return ArrayShapeType::fromFieldTypes(
+            $this->field_types,
             $is_nullable
         );
     }
 
     /**
-     * @return GenericArrayType[]
+     * @return ArrayType[]
      */
     public function asGenericArrayTypeInstances() : array
     {
+        if (\count($this->field_types) === 0) {
+            // There are 0 fields, so we know nothing about the field types (And there's no way to indicate an empty array yet)
+            return [ArrayType::instance($this->is_nullable)];
+        }
+        // TODO:
         return \array_map(function (Type $type) {
             return GenericArrayType::fromElementType($type, $this->is_nullable);
-        }, UnionType::normalizeGenericMultiArrayTypes($this->element_types));
+        }, UnionType::normalizeGenericMultiArrayTypes($this->field_types));
     }
 
     /**
-     * @param Type[] $element_types
+     * @param array<string|int,Type> $field_types
      * @param bool $is_nullable
-     * @return GenericMultiArrayType
+     * @return ArrayShapeType
      */
-    public static function fromElementTypes(
-        array $element_types,
+    public static function fromFieldTypes(
+        array $field_types,
         bool $is_nullable
-    ) : GenericMultiArrayType {
-        return new self($element_types, $is_nullable);
+    ) : ArrayShapeType {
+        return new self($field_types, $is_nullable);
     }
 
     /**
@@ -90,7 +94,7 @@ final class GenericMultiArrayType extends ArrayType
     protected function canCastToNonNullableType(Type $type) : bool
     {
         if ($type instanceof GenericArrayType) {
-            foreach ($this->genericArrayElementTypes() as $inner_type) {
+            foreach ($this->arrayShapeFieldTypes() as $inner_type) {
                 if ($type->canCastToType($type->genericArrayElementType())) {
                     return true;
                 }
@@ -119,18 +123,21 @@ final class GenericMultiArrayType extends ArrayType
     }
 
     /**
-     * @return Type[]
-     * A variation of this type that is not generic.
-     * i.e. 'int[]' becomes 'int'.
+     * @return array<string|int,Type>
+     * An array of mapping field keys of this type to field types
      */
-    public function genericArrayElementTypes() : array
+    public function arrayShapeFieldTypes() : array
     {
-        return $this->element_types;
+        return $this->field_types;
     }
 
     public function __toString() : string
     {
-        $string = 'array<' . \implode('|', $this->element_types) . '>';
+        $parts = [];
+        foreach ($this->field_types as $key => $value) {
+            $parts[] = "$key:$value";
+        }
+        $string = 'array{' . \implode(',', $parts) . '}';
         if ($this->is_nullable) {
             $string = '?' . $string;
         }
@@ -149,6 +156,9 @@ final class GenericMultiArrayType extends ArrayType
      * @return UnionType
      * Expands class types to all inherited classes returning
      * a superset of this type.
+     *
+     * TODO: Once Phan has full support for ArrayShapeType in the type system,
+     * make asExpandedTypes return a UnionType with a single ArrayShapeType?
      * @override
      */
     public function asExpandedTypes(
@@ -164,7 +174,7 @@ final class GenericMultiArrayType extends ArrayType
         );
         // TODO: Use UnionType::merge from a future change?
         $result = new UnionType();
-        foreach ($this->element_types as $type) {
+        foreach ($this->field_types as $type) {
             $result->addUnionType(GenericArrayType::fromElementType($type, $this->is_nullable)->asExpandedTypes($code_base, $recursion_depth + 1));
         }
         return $result;
