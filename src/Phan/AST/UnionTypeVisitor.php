@@ -766,7 +766,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     return ArrayType::instance(false)->asUnionType();
                 }
             }
-            $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node);
+            $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node, $this->should_catch_issue_exception);
             return $common_type->asNonEmptyGenericArrayTypes($key_type_enum);
         }
 

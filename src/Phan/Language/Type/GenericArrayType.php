@@ -375,7 +375,7 @@ final class GenericArrayType extends ArrayType
      * @return int
      * Corresponds to the type of the array keys of $array. This is a GenericArrayType::KEY_* constant (KEY_INT, KEY_STRING, or KEY_MIXED).
      */
-    public static function getKeyTypeOfArrayNode(CodeBase $code_base, Context $context, Node $node) : int
+    public static function getKeyTypeOfArrayNode(CodeBase $code_base, Context $context, Node $node, bool $should_catch_issue_exception = true) : int
     {
         $children = $node->children;
         if (!empty($children)
@@ -398,7 +398,7 @@ final class GenericArrayType extends ArrayType
                         $code_base,
                         $context,
                         $key_node,
-                        true
+                        $should_catch_issue_exception
                     ));
                 } else if ($key_node !== null) {
                     if (\is_string($key_node)) {
