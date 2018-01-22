@@ -1895,8 +1895,8 @@ class Type
                     }  // ignore unparseable data such as "<T,T2>>" or "T, T2{}}"
                     $prev_parts = [];
                     $delta = 0;
-                    continue;
                 }
+                continue;
             }
             if ($open_bracket_count === 0) {
                 $results[] = $result;

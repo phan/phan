@@ -210,6 +210,12 @@ class TypeTest extends BaseTest
         $this->assertParsesAsType($expectedStringArrayArrayType, 'array<mixed,array<mixed,string>>');
     }
 
+    public function testArrayNested()
+    {
+        $deeplyNestedArray = self::makePHPDocType('array<int,array<mixed,array<mixed,stdClass>>>');
+        $this->assertSame('array<int,\stdClass[][]>', (string)$deeplyNestedArray);
+    }
+
     public function testArrayExtraBrackets()
     {
         $stringArrayType = self::makePHPDocType('?(float[])');
