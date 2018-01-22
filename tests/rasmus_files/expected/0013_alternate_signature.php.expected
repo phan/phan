@@ -1,3 +1,2 @@
 %s:4 PhanParamTooFewInternal Call with 1 arg(s) to \strtr() which requires 3 arg(s)
-%s:4 PhanTypeMismatchArgumentInternal Argument 1 (str) is string[] but \strtr() takes string
-
+%s:4 PhanTypeMismatchArgumentInternal Argument 1 (str) is array<string,string> but \strtr() takes string

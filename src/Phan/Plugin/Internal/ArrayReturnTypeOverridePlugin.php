@@ -171,18 +171,28 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             $arguments = \array_slice($args, 1);
             $possible_return_types = new UnionType();
-            $cache = [];
-            // Don't calculate argument types more than once.
-            $get_argument_type_for_array_map = function ($argument, int $i) use ($code_base, $context, &$cache) : UnionType {
-                if (isset($cache[$i])) {
-                    return $cache[$i];
+            $cache_outer = [];
+            $get_argument_type = function ($argument, int $i) use ($code_base, $context, &$cache_outer) : UnionType {
+                if (isset($cache_outer[$i])) {
+                    return $cache_outer[$i];
                 }
                 $argument_type = UnionTypeVisitor::unionTypeFromNode(
                     $code_base,
                     $context,
                     $argument,
                     true
-                )->genericArrayElementTypes();
+                );
+                $cache_outer[$i] = $argument_type;
+                return $argument_type;
+            };
+            $cache = [];
+            // Don't calculate argument types more than once.
+            $get_argument_type_for_array_map = function ($argument, int $i) use ($get_argument_type, &$cache) : UnionType {
+                if (isset($cache[$i])) {
+                    return $cache[$i];
+                }
+                // Convert T[] to T
+                $argument_type = $get_argument_type($argument, $i)->genericArrayElementTypes();
                 $cache[$i] = $argument_type;
                 return $argument_type;
             };
@@ -218,7 +228,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if ($possible_return_types->isEmpty()) {
                 return $array_type->asUnionType();
             }
-            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($get_argument_type_for_array_map($arguments[0], 0));
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($get_argument_type($arguments[0], 0));
 
             return $possible_return_types->elementTypesToGenericArray($key_type_enum);
         };

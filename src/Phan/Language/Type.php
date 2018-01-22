@@ -679,6 +679,13 @@ class Type
         }
 
         if (empty($namespace)) {
+            if (\strcasecmp($type_name, 'array') === 0 && !empty($template_parameter_type_name_list)) {
+                // template parameter type list
+                $template_parameter_type_list = \array_map(function (string $type_name) {
+                    return UnionType::fromFullyQualifiedString($type_name);
+                }, $template_parameter_type_name_list);
+                return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
+            }
             return self::fromInternalTypeName(
                 $fully_qualified_string,
                 $is_nullable,
@@ -708,6 +715,37 @@ class Type
             $is_nullable,
             Type::FROM_NODE
         );
+    }
+
+    /**
+     * @param array<int,UnionType> $template_parameter_type_list
+     * @param bool $is_nullable
+     */
+    private static function parseGenericArrayTypeFromTemplateParameterList(
+        array $template_parameter_type_list,
+        bool $is_nullable
+    ) : Type {
+        $template_count = \count($template_parameter_type_list);
+        if ($template_count <= 2) {  // array<T> or array<key, T>
+            $key_type = ($template_count === 2)
+                ? GenericArrayType::keyTypeFromUnionTypeValues($template_parameter_type_list[0])
+                : GenericArrayType::KEY_MIXED;
+            $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
+            if (\count($types) === 1) {
+                return GenericArrayType::fromElementType(
+                    \reset($types),
+                    $is_nullable,
+                    $key_type
+                );
+            } elseif (\count($types) > 1) {
+                return new GenericMultiArrayType(
+                    $types,
+                    $is_nullable,
+                    $key_type
+                );
+            }
+        }
+        return ArrayType::instance($is_nullable);
     }
 
     /**
@@ -868,26 +906,7 @@ class Type
         if (self::isInternalTypeString($type_name, $source)) {
             if (!empty($template_parameter_type_list)) {
                 if (\strtolower($type_name) === 'array') {
-                    $template_count = \count($template_parameter_type_list);
-                    if ($template_count <= 2) {  // array<T> or array<key, T>
-                        $key_type = ($template_count === 2)
-                            ? GenericArrayType::keyTypeFromUnionTypeValues($template_parameter_type_list[0])
-                            : GenericArrayType::KEY_MIXED;
-                        $types = $template_parameter_type_list[$template_count - 1]->getTypeSet();
-                        if (\count($types) === 1) {
-                            return GenericArrayType::fromElementType(
-                                \reset($types),
-                                $is_nullable,
-                                $key_type
-                            );
-                        } elseif (\count($types) > 1) {
-                            return new GenericMultiArrayType(
-                                $types,
-                                $is_nullable,
-                                $key_type
-                            );
-                        }
-                    }
+                    return self::parseGenericArrayTypeFromTemplateParameterList($template_parameter_type_list, $is_nullable);
                 }
                 // TODO: Warn about unrecognized types.
             }
