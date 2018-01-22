@@ -14,8 +14,10 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\IntType;
 use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
+use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
 use Phan\PluginV2\AnalyzeFunctionCallCapability;
@@ -36,9 +38,12 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
      */
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
-        $mixed_type = MixedType::instance(false);
-        $false_type = FalseType::instance(false);
-        $array_type = ArrayType::instance(false);
+        $mixed_type  = MixedType::instance(false);
+        $false_type  = FalseType::instance(false);
+        $array_type  = ArrayType::instance(false);
+        $int_type    = IntType::instance(false);
+        $string_type = StringType::instance(false);
+
         $get_element_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type) : UnionType {
             if (\count($args) >= 1) {
                 $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
@@ -244,6 +249,16 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $result_types;
         };
+        $array_keys_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type, $int_type, $string_type) : UnionType {
+            if (\count($args) != 1) {
+                return $array_type->asUnionType();
+            }
+            $key_union_type = UnionTypeVisitor::unionTypeOfArrayKeyForNode($code_base, $context, $args[0]);
+            if ($key_union_type === null) {
+                $key_union_type = new UnionType([$int_type, $string_type], true);
+            }
+            return $key_union_type->asGenericArrayTypes(GenericArrayType::KEY_INT);
+        };
         return [
             // Gets the element types of the first
             'array_pop'   => $get_element_type_of_first_arg,
@@ -274,6 +289,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'array_intersect_key'       => $merge_array_types_callback,
             'array_intersect_uassoc'    => $merge_array_types_callback,
             'array_intersect_ukey'      => $merge_array_types_callback,
+            'array_keys'                => $array_keys_callback,
             'array_merge'               => $merge_array_types_callback,
             'array_merge_recursive'     => $merge_array_types_callback,
             'array_pad'                 => $array_pad_callback,

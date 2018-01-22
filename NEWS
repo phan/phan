@@ -5,6 +5,15 @@ Phan NEWS
 
 New Features(Analysis)
 
++ Support array key types of `int`, `string`, and `mixed` (i.e. `int|string`) in union types such as `array<int,T>` (#824)
+
+  Check that the array key types match when assigning Expected param types, return types, property types, etc.
+  They don't match when casting a union type of `int` to `string`, or vice versa.
+  Mixed union types in keys can cast to/from any key type.
+
+  - To allow casting `array<int,T>` to `array<string,T>`, enable `scalar_array_key_cast` in your `.phan/config.php`.
++ Infer array key types of `int`, `string`, or `int|string` in foreach over arrays. (#1300)
+  (Phan's type system doesn't support inferring key types for `iterable` or `Traversable` right now)
 + Support **parsing** PHPDoc array shapes
   (E.g. a function expecting `['field' => 'a string']` can document this as `@param array{field:string}` $options)
   For now, this is converted to generic arrays (Equivalent to `string[]`).

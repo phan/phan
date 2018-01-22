@@ -7,6 +7,7 @@ use Phan\Language\Context;
 use Phan\Language\UnionType;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\CodeBase;
+use Phan\Config;
 
 use ast\Node;
 
@@ -128,8 +129,16 @@ final class GenericArrayType extends ArrayType
     protected function canCastToNonNullableType(Type $type) : bool
     {
         if ($type instanceof GenericArrayType) {
-            return $this->genericArrayElementType()
-                ->canCastToType($type->genericArrayElementType());
+            if (!$this->genericArrayElementType()
+                ->canCastToType($type->genericArrayElementType())) {
+                return false;
+            }
+            if ((($this->key_type ?: self::KEY_MIXED) & ($type->key_type ?: self::KEY_MIXED)) === 0) {
+                // Attempting to cast an int key to a string key (or vice versa) is normally invalid.
+                // However, the scalar_array_key_cast config would make any cast of array keys a valid cast.
+                return Config::getValue('scalar_array_key_cast');
+            }
+            return true;
         }
 
         if ($type->isArrayLike()) {
@@ -320,6 +329,17 @@ final class GenericArrayType extends ArrayType
         return $key_types ?: self::KEY_MIXED;
     }
 
+    /**
+     * @return UnionType
+     */
+    public static function unionTypeForKeyType(int $key_type) : UnionType {
+        switch ($key_type) {
+        case self::KEY_INT: return IntType::instance(false)->asUnionType();
+        case self::KEY_STRING: return StringType::instance(false)->asUnionType();
+        default: return new UnionType();
+        }
+    }
+
     public static function keyTypeFromUnionTypeValues(UnionType $union_type) : int {
         $key_types = self::KEY_EMPTY;
         foreach ($union_type->getTypeSet() as $type) {
@@ -355,7 +375,7 @@ final class GenericArrayType extends ArrayType
      * @return int
      * Corresponds to the type of the array keys of $array. This is a GenericArrayType::KEY_* constant (KEY_INT, KEY_STRING, or KEY_MIXED).
      */
-    public static function getKeyTypeOfArrayNode(CodeBase $code_base, Context $context, Node $node)
+    public static function getKeyTypeOfArrayNode(CodeBase $code_base, Context $context, Node $node) : int
     {
         $children = $node->children;
         if (!empty($children)
