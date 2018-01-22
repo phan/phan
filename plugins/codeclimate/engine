@@ -20,6 +20,22 @@ use Phan\Output\PrinterFactory;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Phan\Phan;
 
+try {
+    $node = \ast\parse_code(
+        '<'.'?php 42;',
+        Config::AST_VERSION
+    );
+} catch (LogicException $throwable) {
+    assert(
+        false,
+        'Unknown AST version ('
+        . Config::AST_VERSION
+        . ') in configuration. '
+        . 'You may need to rebuild the latest '
+        . 'version of the php-ast extension.'
+    );
+}
+
 // chdir to the code path in order to support the .phan/config.php file
 $old_cwd = getcwd();
 
@@ -31,8 +47,10 @@ chdir($old_cwd);
 // Obtain the config
 $codeclimate_config = json_decode(file_get_contents('/config.json'), true);
 
+$inner_config = $codeclimate_config['config'] ?? [];
+
 // Parse the config
-if (isset($codeclimate_config['config']['minimum-severity'])) {
+if (isset($inner_config['minimum-severity'])) {
     $minimum_severity = (int) $codeclimate_config['config']['minimum-severity'];
 } else {
     $minimum_severity = 0;
@@ -40,27 +58,25 @@ if (isset($codeclimate_config['config']['minimum-severity'])) {
 
 $mask = -1;
 
-if (isset($codeclimate_config['config']['ignore-undeclared'])) {
-    $mask ^= Issue::CATEGORY_UNDEFINED;
+if ($inner_config['ignore-undeclared'] ?? false) {
+    $mask &= ~Issue::CATEGORY_UNDEFINED;
 }
 
-if (isset($codeclimate_config['config']['quick'])) {
-    Config::get()->quick_mode = true;
+if (isset($inner_config['quick'])) {
+    Config::get()->quick_mode = (bool)$inner_config['quick'];
 }
 
-if (isset($codeclimate_config['config']['backward-compatibility-checks'])) {
-    Config::get()->backward_compatibility_checks = true;
+if (isset($inner_config['backward-compatibility-checks'])) {
+    Config::get()->backward_compatibility_checks = (bool)$inner_config['backward-compatibility-checks'];
 }
 
-if (isset($codeclimate_config['config']['dead-code-detection'])) {
-    Config::get()->dead_code_detection = true;
+if (isset($inner_config['dead-code-detection'])) {
+    Config::get()->dead_code_detection = (bool)$inner_config['dead-code-detection'];
 }
 
-if (isset($codeclimate_config['config']['file_extensions'])) {
-    $file_extensions = explode(",", $codeclimate_config['config']['file_extensions']);
-}
-else
-{
+if (isset($inner_config['file_extensions'])) {
+    $file_extensions = explode(",", $inner_config['file_extensions']);
+} else {
     $file_extensions = ['php'];
 }
 
@@ -97,8 +113,7 @@ foreach ($codeclimate_config['include_paths'] as $path) {
 }
 
 // skip run if there are no paths
-if (empty($include_paths))
-{
+if (empty($include_paths)) {
     exit();
 }
 
@@ -116,5 +131,16 @@ $filter = new ChainedIssueFilter([
 $collector = new BufferingCollector($filter);
 Phan::setIssueCollector($collector);
 
+// If .phan/config.php specified a list of files to parse and analyze, prefer those over codeclimate.
+$file_list_from_cli = $cli->getFileList();
+if (count($file_list_from_cli) > 0) {
+	$force_codeclimate_filelist = $inner_config['force-codeclimate-filelist'] ?? false;
+	if (!$force_codeclimate_filelist) {
+		$include_paths = $file_list_from_cli;
+	}
+}
+
 // Analyze the file list provided via the CLI
-Phan::analyzeFileList($code_base, function() use($include_paths) { return $include_paths; });
+Phan::analyzeFileList($code_base, function() use($include_paths) {
+	return $include_paths;
+});

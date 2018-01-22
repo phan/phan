@@ -30,6 +30,7 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -765,9 +766,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     return ArrayType::instance(false)->asUnionType();
                 }
             }
-            return $common_type->asNonEmptyGenericArrayTypes();
+            $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node);
+            return $common_type->asNonEmptyGenericArrayTypes($key_type_enum);
         }
 
+        // TODO: Also return types such as array<int, mixed>?
         return ArrayType::instance(false)->asUnionType();
     }
 
@@ -2296,5 +2299,57 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
         return $closure_types;
+    }
+
+    /**
+     * @param CodeBase $code_base
+     * @param Context $context
+     * @param Node|string|float|int $node
+     *
+     * @return ?UnionType (Returns null when mixed)
+     * TODO: Add an equivalent for Traversable and subclasses, once we have template support for Traversable<Key,T>
+     */
+    public static function unionTypeOfArrayKeyForNode(CodeBase $code_base, Context $context, $node)
+    {
+        $arg_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $node);
+        return self::arrayKeyUnionTypeOfUnionType($arg_type);
+    }
+
+    /**
+     *
+     * @return ?UnionType (Returns null when mixed)
+     * TODO: Add an equivalent for Traversable and subclasses, once we have template support for Traversable<Key,T>
+     */
+    public static function arrayKeyUnionTypeOfUnionType(UnionType $union_type)
+    {
+        if ($union_type->isEmpty()) {
+            return null;
+        }
+        static $int_type;
+        static $string_type;
+        if ($int_type === null) {
+            $int_type = IntType::instance(false);
+            $string_type = StringType::instance(false);
+        }
+        $key_enum_type = GenericArrayType::keyTypeFromUnionTypeKeys($union_type);
+        switch ($key_enum_type) {
+        case GenericArrayType::KEY_INT:
+            return $int_type->asUnionType();
+        case GenericArrayType::KEY_STRING:
+            return $string_type->asUnionType();
+        default:
+            foreach ($union_type->getTypeSet() as $type) {
+                // The exact class Type is potentially invalid (includes objects) but not the subclass NativeType.
+                // The subclass IterableType of Native type is invalid, but ArrayType is a valid subclass of IterableType.
+                // And we just ignore scalars.
+                // And mixed could be a Traversable.
+                // So, don't infer anything if the union type contains any instances of the four classes.
+                // TODO: Check the expanded union type instead of anything with a class of exactly Type, searching for Traversable?
+                if (\in_array(\get_class($type), [Type::class, IterableType::class, TemplateType::class, MixedType::class])) {
+                    return null;
+                }
+            }
+            return new UnionType([$int_type, $string_type], true);
+        }
     }
 }

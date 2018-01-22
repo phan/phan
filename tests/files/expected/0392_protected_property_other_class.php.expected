@@ -1,0 +1,4 @@
+%s:18 PhanAccessPropertyProtected Cannot access protected property \A392::$prop1
+%s:19 PhanAccessPropertyPrivate Cannot access private property \A392::$prop2
+%s:21 PhanAccessPropertyProtected Cannot access protected property \A392::$prop1
+%s:22 PhanAccessPropertyPrivate Cannot access private property \A392::$prop2

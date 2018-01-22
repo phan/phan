@@ -1,2 +1,1 @@
-%s:13 PhanTypeMismatchReturn Returning type string[] but test2() is declared to return \DateTime[]
-
+%s:13 PhanTypeMismatchReturn Returning type array<int,string> but test2() is declared to return \DateTime[]

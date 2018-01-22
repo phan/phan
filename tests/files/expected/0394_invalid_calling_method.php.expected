@@ -1,0 +1,2 @@
+%s:9 PhanNonClassMethodCall Call to method callMethod on non-class type string
+%s:11 PhanNonClassMethodCall Call to method callMethod on non-class type array<int,string>

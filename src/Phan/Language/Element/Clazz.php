@@ -575,12 +575,15 @@ class Clazz extends AddressableElement
      * A possibly defined type used to define template
      * parameter types when importing the property
      *
+     * @param bool $from_trait
+     *
      * @return void
      */
     public function addProperty(
         CodeBase $code_base,
         Property $property,
-        $type_option
+        $type_option,
+        bool $from_trait = false
     ) {
         // Ignore properties we already have
         // TODO: warn about private properties in subclass overriding ancestor private property.
@@ -611,6 +614,13 @@ class Clazz extends AddressableElement
         if ($property->getFQSEN() !== $property_fqsen) {
             $property = clone($property);
             $property->setFQSEN($property_fqsen);
+
+            // Private properties of traits are accessible from the class that used that trait
+            // (as well as from within the trait itself).
+            // Also, for inheritance purposes, treat protected properties the same way.
+            if ($from_trait && !$property->isPublic()) {
+                $property->setDefiningFQSEN($property_fqsen);
+            }
 
             try {
                 // If we have a parent type defined, map the property's
@@ -758,6 +768,52 @@ class Clazz extends AddressableElement
     }
 
     /**
+     * Checks if a given property can be accessed by the class in the current Context
+     * (if any)
+     *
+     * @param CodeBase $code_base
+     * A reference to the entire code base in which the
+     * property exists.
+     *
+     * @param Property $property
+     * A property with the given name
+     *
+     * @param Context $context
+     * The context of the caller requesting the property
+     *
+     * @return bool - is $property accessible from $context
+     */
+    private function isPropertyAccessible(
+        CodeBase $code_base,
+        Property $property,
+        Context $context
+    ) : bool {
+        if ($property->isPublic()) {
+            return true;
+        }
+        if (!$context->isInClassScope()) {
+            return false;
+        }
+        // NOTE: This gets the **unexpanded** union type (Should be 1 class and no parent classes).
+        $type_of_class_of_property = $property->getDefiningClassFQSEN()->asUnionType();
+
+        // We are in a class scope, and the property is either private or protected.
+        if ($property->isPrivate()) {
+            $accessing_class_type = $context->getClassFQSEN()->asUnionType();
+            return $accessing_class_type->canCastToUnionType(
+                $type_of_class_of_property
+            );
+        } else {
+            // TODO: Remove, should be unnecessary
+            $accessing_class_type = $context->getClassFQSEN()->asUnionType();
+            // If the definition of the property is protected, then the subclasses of the defining class can access it.
+            return $accessing_class_type->asExpandedTypes($code_base)->canCastToUnionType(
+                $type_of_class_of_property
+            );
+        }
+    }
+
+    /**
      * @param CodeBase $code_base
      * A reference to the entire code base in which the
      * property exists.
@@ -821,19 +877,7 @@ class Clazz extends AddressableElement
                 }
             }
 
-            $is_remote_access = (
-                !$context->isInClassScope()
-                || !$context->getClassInScope($code_base)
-                    ->getUnionType()->canCastToExpandedUnionType(
-                        $this->getUnionType(),
-                        $code_base
-                    )
-            );
-
-            $is_property_accessible = (
-                !$is_remote_access
-                || $property->isPublic()
-            );
+            $is_property_accessible = $this->isPropertyAccessible($code_base, $property, $context);
         }
 
         // If the property exists and is accessible, return it
@@ -846,6 +890,7 @@ class Clazz extends AddressableElement
             $method = $this->getMethodByName($code_base, '__get');
 
             // Make sure the magic method is accessible
+            // TODO: Add defined at %s:%d for the property definition
             if ($method->isPrivate()) {
                 throw new IssueException(
                     Issue::fromType(Issue::AccessPropertyPrivate)(
@@ -878,6 +923,7 @@ class Clazz extends AddressableElement
         } elseif ($has_property) {
             // If we have a property, but its inaccessible, emit
             // an issue
+            // TODO: Add defined at %s:%d for the property definition - see https://github.com/phan/phan/issues/1375
             if ($property->isPrivate()) {
                 throw new IssueException(
                     Issue::fromType(Issue::AccessPropertyPrivate)(
@@ -1968,7 +2014,8 @@ class Clazz extends AddressableElement
             $this->addProperty(
                 $code_base,
                 $property,
-                $type_option
+                $type_option,
+                $is_trait
             );
         }
 
@@ -2228,8 +2275,9 @@ class Clazz extends AddressableElement
         if (count($method_map) > 0) {
             $stub .= "\n\n    // methods\n";
 
-            $stub .= implode("\n", array_map(function (Method $method) use ($code_base) {
-                return $method->toStub($code_base);
+            $is_interface = $this->isInterface();
+            $stub .= implode("\n", array_map(function (Method $method) use ($code_base, $is_interface) {
+                return $method->toStub($code_base, $is_interface);
             }, $method_map));
         }
 

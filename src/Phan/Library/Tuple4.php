@@ -11,10 +11,10 @@ namespace Phan\Library;
  * The type of element one
  *
  * @template T2
- * The type of element one
+ * The type of element two
  *
  * @template T3
- * The type of element one
+ * The type of element three
  *
  * @inherits Tuple3<T0, T1, T2>
  */

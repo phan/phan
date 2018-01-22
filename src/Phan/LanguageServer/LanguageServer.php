@@ -219,13 +219,13 @@ class LanguageServer extends AdvancedJsonRpc\Dispatcher
             while (true) {
                 $gotSignal = false;  // reset this.
                 // We get an error from stream_socket_accept. After the RuntimeException is thrown, pcntl_signal is called.
-				$previousErrorHandler = set_error_handler(function ($severity, $message, $file, $line) use (&$previousErrorHandler) {
+                $previousErrorHandler = set_error_handler(function ($severity, $message, $file, $line) use (&$previousErrorHandler) {
                     self::debugf("In new error handler '$message'");
-					if (!preg_match('/stream_socket_accept/i', $message)) {
-						return $previousErrorHandler($severity, $message, $file, $line);
-					}
+                    if (!preg_match('/stream_socket_accept/i', $message)) {
+                        return $previousErrorHandler($severity, $message, $file, $line);
+                    }
                     throw new \RuntimeException("Got signal");
-				});
+                });
 
                 $conn = false;
                 try {

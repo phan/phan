@@ -5,6 +5,7 @@ use Phan\Tests\BaseTest;
 use Phan\Language\Context;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\ArrayShapeType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
@@ -23,6 +24,7 @@ use Phan\Language\Type\StringType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use Phan\Language\Type\VoidType;
+use Phan\Language\UnionType;
 
 /**
  * Unit tests of Type
@@ -85,8 +87,8 @@ class TypeTest extends BaseTest
     public function testGenericArray()
     {
         $genericArrayType = self::makePHPDocType('int[][]');
-        $expectedGenericArrayType = GenericArrayType::fromElementType(
-            GenericArrayType::fromElementType(
+        $expectedGenericArrayType = self::createGenericArrayTypeWithMixedKey(
+            self::createGenericArrayTypeWithMixedKey(
                 IntType::instance(false),
                 false
             ),
@@ -152,14 +154,14 @@ class TypeTest extends BaseTest
     public function testGenericArrayNullable()
     {
         $genericArrayType = self::makePHPDocType('?int[]');
-        $expectedGenericArrayType = GenericArrayType::fromElementType(
+        $expectedGenericArrayType = self::createGenericArrayTypeWithMixedKey(
             IntType::instance(false),
             true
         );
         $this->assertSameType($expectedGenericArrayType, $genericArrayType);
         $genericArrayArrayType = self::makePHPDocType('?int[][]');
-        $expectedGenericArrayArrayType = GenericArrayType::fromElementType(
-            GenericArrayType::fromElementType(
+        $expectedGenericArrayArrayType = self::createGenericArrayTypeWithMixedKey(
+            self::createGenericArrayTypeWithMixedKey(
                 IntType::instance(false),
                 false
             ),
@@ -171,7 +173,7 @@ class TypeTest extends BaseTest
     public function testArrayAlternate()
     {
         $stringArrayType = self::makePHPDocType('array<string>');
-        $expectedStringArrayType = GenericArrayType::fromElementType(
+        $expectedStringArrayType = self::createGenericArrayTypeWithMixedKey(
             StringType::instance(false),
             false
         );
@@ -180,16 +182,25 @@ class TypeTest extends BaseTest
         $stringArrayType2 = self::makePHPDocType('array<mixed,string>');
         $this->assertSameType($expectedStringArrayType, $stringArrayType2);
 
-        // We don't track key types yet, but may track them in the future.
+        // We track key types.
+        $expectedStringArrayTypeWithIntKey = GenericArrayType::fromElementType(
+            StringType::instance(false),
+            false,
+            GenericArrayType::KEY_INT
+        );
         $stringArrayType3 = self::makePHPDocType('array<int,string>');
-        $this->assertSameType($expectedStringArrayType, $stringArrayType3);
+        $this->assertSameType($expectedStringArrayTypeWithIntKey, $stringArrayType3);
 
         // Allow space
         $stringArrayType4 = self::makePHPDocType('array<mixed, string>');
         $this->assertSameType($expectedStringArrayType, $stringArrayType4);
 
+        // Combination of int|string in array key results in mixed key
+        $stringArrayType5 = self::makePHPDocType('array<int|string, string>');
+        $this->assertSameType($expectedStringArrayType, $stringArrayType5);
+
         // Nested array types.
-        $expectedStringArrayArrayType = GenericArrayType::fromElementType(
+        $expectedStringArrayArrayType = self::createGenericArrayTypeWithMixedKey(
             $expectedStringArrayType,
             false
         );
@@ -202,7 +213,7 @@ class TypeTest extends BaseTest
     public function testArrayExtraBrackets()
     {
         $stringArrayType = self::makePHPDocType('?(float[])');
-        $expectedStringArrayType = GenericArrayType::fromElementType(
+        $expectedStringArrayType = self::createGenericArrayTypeWithMixedKey(
             FloatType::instance(false),
             true
         );
@@ -213,7 +224,7 @@ class TypeTest extends BaseTest
     public function testArrayExtraBracketsForElement()
     {
         $stringArrayType = self::makePHPDocType('(?float)[]');
-        $expectedStringArrayType = GenericArrayType::fromElementType(
+        $expectedStringArrayType = self::createGenericArrayTypeWithMixedKey(
             FloatType::instance(true),
             false
         );
@@ -224,7 +235,7 @@ class TypeTest extends BaseTest
     public function testArrayExtraBracketsAfterNullable()
     {
         $stringArrayType = self::makePHPDocType('?(float)[]');
-        $expectedStringArrayType = GenericArrayType::fromElementType(
+        $expectedStringArrayType = self::createGenericArrayTypeWithMixedKey(
             FloatType::instance(false),
             true
         );
@@ -252,5 +263,85 @@ class TypeTest extends BaseTest
             ['null', 'mixed'],
             ['null[]', 'mixed[]'],
         ];
+    }
+
+    /**
+     * @dataProvider arrayShapeProvider
+     */
+    public function testArrayShape($normalized_union_type_string, $type_string) {
+        $this->assertTrue(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
+        $this->assertTrue(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
+        $actual_type = self::makePHPDocType($type_string);
+        $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
+        $this->assertInstanceOf(ArrayShapeType::class, $actual_type, "Failed to create expected class for $type_string");
+        assert($actual_type instanceof ArrayShapeType);
+        $actual_flattened_type = new UnionType($actual_type->asGenericArrayTypeInstances());
+        $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
+    }
+
+    public function arrayShapeProvider() {
+        return [
+            [
+                'array',
+                'array{}'
+            ],
+            [
+                'array<string,int>',
+                'array{field:int}'
+            ],
+            [
+                'array<int,int>|array<int,string>',
+                'array{0:int,1:string}'
+            ],
+            [
+                'array<int,int>|array<int,stdClass>|array<int,string>',
+                'array{0:int,1:string,2:stdClass}'
+            ],
+            [
+                'array<string,int>',
+                'array{string:int}'
+            ],
+            [
+                'array<string,T<int>>',
+                'array{field:T<int>}'
+            ],
+            [
+                'array<string,?int>',
+                'array{field:?int}',
+            ],
+            [
+                'array<string,?int>|array<string,int[]>',
+                'array{field:int[],field2:?int}'
+            ],
+            [
+                'array<string,array>',
+                'array{field:array{}}'
+            ],
+            [
+                'array<string,array<string,int>>',
+                'array{field:array{innerField:int}}'
+            ],
+        ];
+    }
+
+    /** @dataProvider unparseableArrayShapeProvider */
+    public function testUnparseableArrayShape($type_string) {
+        $this->assertFalse(\preg_match('@^' . Type::type_regex . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex");
+        $this->assertFalse(\preg_match('@^' . Type::type_regex_or_this . '$@', $type_string) > 0, "Failed to parse '$type_string' with type_regex_or_this");
+    }
+
+    public function unparseableArrayShapeProvider() {
+        return [
+            ['array{'],
+            ['{}'],
+            ['array{,field:int}'],
+            ['array{field:}'],
+            ['array{::int}'],
+        ];
+    }
+
+    private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType
+    {
+        return GenericArrayType::fromElementType($type, $is_nullable, GenericArrayType::KEY_MIXED);
     }
 }

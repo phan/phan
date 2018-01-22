@@ -15,32 +15,40 @@ class Variable extends UnaddressableTypedElement
     /**
      * @access private
      * @var string[] - Maps from a built in superglobal name to a UnionType spec string.
+     * The string array keys **can** be integers in edge cases, but those should be rare.
+     * (e.g. ${4} = 'x'; adds 4 to $GLOBALS.
+     * And user-provided input of integer representations of strings as keys would also become integers.
      */
     const _BUILTIN_SUPERGLOBAL_TYPES = [
-        '_GET' => 'string[]|string[][]',
-        '_POST' => 'string[]|string[][]',
-        '_COOKIE' => 'string[]|string[][]',
-        '_REQUEST' => 'string[]|string[][]',
-        '_SERVER' => 'array',
-        '_ENV' => 'string[]',
-        '_FILES' => 'int[][]|string[][]|int[][][]|string[][][]',  // Can have multiple files with the same name.
-        '_SESSION' => 'array',
-        'GLOBALS' => 'array',
-        'http_response_header' => 'string[]|null', // Revisit when we implement sub-block type refining
+        '_GET' => 'array<string,string|string[]>',
+        '_POST' => 'array<string,string|string[]>',
+        '_COOKIE' => 'array<string,string|string[]>',
+        '_REQUEST' => 'array<string,string|string[]>',
+        '_SERVER' => 'array<string,mixed>',
+        '_ENV' => 'array<string,string>',
+        '_FILES' => 'array<string,array<string,int|string|array<string,int|string>>>',  // Can have multiple files with the same name.
+        '_SESSION' => 'array<string,mixed>',
+        'GLOBALS' => 'array<string,mixed>',
+        'http_response_header' => 'array<int,string>|null', // Revisit when we implement sub-block type refining
     ];
 
+    /**
+     * The string array keys **can** be integers in edge cases, but those should be rare.
+     * (e.g. ${4} = 'x'; adds 4 to $GLOBALS.
+     * And user-provided input of integer representations of strings as keys would also become integers.
+     */
     const _BUILTIN_GLOBAL_TYPES = [
-        '_GET' => 'string[]|string[][]',
-        '_POST' => 'string[]|string[][]',
-        '_COOKIE' => 'string[]|string[][]',
-        '_REQUEST' => 'string[]|string[][]',
-        '_SERVER' => 'array',
-        '_ENV' => 'string[]',
-        '_FILES' => 'int[][]|string[][]|int[][][]|string[][][]',  // Can have multiple files with the same name.
-        '_SESSION' => 'array',
-        'GLOBALS' => 'array',
-        'http_response_header' => 'string[]|null', // Revisit when we implement sub-block type refining
-        'argv' => 'string[]',
+        '_GET' => 'array<string,string|string[]>',
+        '_POST' => 'array<string,string|string[]>',
+        '_COOKIE' => 'array<string,string|string[]>',
+        '_REQUEST' => 'array<string,string|string[]>',
+        '_SERVER' => 'array<string,mixed>',
+        '_ENV' => 'array<string,string>',
+        '_FILES' => 'array<string,array<string,int>>|array<string,array<string,string>>|array<string,array<string,array<int,int>>>|array<string,array<string,array<int,string>>>',  // Can have multiple files with the same name.
+        '_SESSION' => 'array<string,mixed>',
+        'GLOBALS' => 'array<string,mixed>',
+        'http_response_header' => 'array<int,string>|null', // Revisit when we implement sub-block type refining
+        'argv' => 'array<int,string>',
         'argc' => 'int',
     ];
 

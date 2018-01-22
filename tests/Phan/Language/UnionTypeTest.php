@@ -107,7 +107,7 @@ class UnionTypeTest extends BaseTest
     {
         $this->assertUnionTypeStringEqual(
             '[1, 2, 3]',
-            'int[]'
+            'array<int,int>'
         );
     }
 
@@ -136,8 +136,8 @@ class UnionTypeTest extends BaseTest
 
     public function testGenericArrayType()
     {
-        $type = GenericArrayType::fromElementType(
-            GenericArrayType::fromElementType(
+        $type = self::createGenericArrayTypeWithMixedKey(
+            self::createGenericArrayTypeWithMixedKey(
                 IntType::instance(false),
                 false
             ),
@@ -287,8 +287,22 @@ class UnionTypeTest extends BaseTest
         $types = $union_type->getTypeSet();
         $type = reset($types);
 
-        $this->assertSame('string[]', (string)$type);
-        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(false), false), $type);
+        $this->assertSame('array<int,string>', (string)$type);
+        $expected_type = GenericArrayType::fromElementType(StringType::instance(false), false, GenericArrayType::KEY_INT);
+        $this->assertSame($expected_type, $type);
+    }
+
+    public function testAlternateArrayTypesNullable()
+    {
+        // array keys are integers, values are strings
+        $union_type = self::makePHPDocUnionType('array<string,?int>');
+        $this->assertSame(1, $union_type->typeCount());
+        $types = $union_type->getTypeSet();
+        $type = reset($types);
+
+        $this->assertSame('array<string,?int>', (string)$type);
+        $expected_type = GenericArrayType::fromElementType(IntType::instance(true), false, GenericArrayType::KEY_STRING);
+        $this->assertSame($expected_type, $type);
     }
 
     public function testNestedArrayTypes()
@@ -300,8 +314,8 @@ class UnionTypeTest extends BaseTest
         $types = $union_type->getTypeSet();
         $type = reset($types);
 
-        $array_type = function(Type $type, int $depth = 1) : GenericArrayType {
-            return GenericArrayType::fromElementType($type, false);
+        $array_type = function (Type $type) : GenericArrayType {
+            return self::createGenericArrayTypeWithMixedKey($type, false);
         };
 
         $this->assertSame($array_type(IntType::instance(false)), $type);
@@ -328,7 +342,7 @@ class UnionTypeTest extends BaseTest
         $type = reset($types);
 
         $this->assertSame('?string[]', (string)$type);
-        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(false), true), $type);
+        $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(false), true), $type);
     }
 
     public function testNullableBracketedArrayType()
@@ -340,7 +354,7 @@ class UnionTypeTest extends BaseTest
         $type = reset($types);
 
         $this->assertSame('(?string)[]', (string)$type);
-        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(true), false), $type);
+        $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(true), false), $type);
     }
 
     public function testNullableBracketedArrayType2()
@@ -352,10 +366,10 @@ class UnionTypeTest extends BaseTest
         list($type1, $type2) = \array_values($types);
 
         $this->assertSame('(?string)[]', (string)$type1);
-        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(true), false), $type1);
+        $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(true), false), $type1);
 
         $this->assertSame('int[]', (string)$type2);
-        $this->assertSame(GenericArrayType::fromElementType(IntType::instance(false), false), $type2);
+        $this->assertSame(self::createGenericArrayTypeWithMixedKey(IntType::instance(false), false), $type2);
     }
 
     public function testNullableBracketedArrayType3()
@@ -367,10 +381,10 @@ class UnionTypeTest extends BaseTest
         list($type1, $type2) = \array_values($types);
 
         $this->assertSame('?string[]', (string)$type1);
-        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(false), true), $type1);
+        $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(false), true), $type1);
 
         $this->assertSame('?int[]', (string)$type2);
-        $this->assertSame(GenericArrayType::fromElementType(IntType::instance(false), true), $type2);
+        $this->assertSame(self::createGenericArrayTypeWithMixedKey(IntType::instance(false), true), $type2);
     }
 
     public function testNullableArrayOfNullables()
@@ -382,7 +396,7 @@ class UnionTypeTest extends BaseTest
         $type = reset($types);
 
         $this->assertSame('?(?string)[]', (string)$type);
-        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(true), true), $type);
+        $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(true), true), $type);
     }
 
     public function testNullableExtraBracket()
@@ -394,6 +408,11 @@ class UnionTypeTest extends BaseTest
         $type = reset($types);
 
         $this->assertSame('?string[]', (string)$type);
-        $this->assertSame(GenericArrayType::fromElementType(StringType::instance(false), true), $type);
+        $this->assertSame(self::createGenericArrayTypeWithMixedKey(StringType::instance(false), true), $type);
+    }
+
+    private static function createGenericArrayTypeWithMixedKey(Type $type, bool $is_nullable) : GenericArrayType
+    {
+        return GenericArrayType::fromElementType($type, $is_nullable, GenericArrayType::KEY_MIXED);
     }
 }

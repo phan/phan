@@ -22,6 +22,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\ClosureType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
@@ -715,8 +716,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             yield from self::deduplicateUnionTypes($this->getReturnTypesOfConditional($context, $node));
             return;
         } elseif ($kind === \ast\AST_ARRAY) {
+            $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $context, $node);
             foreach (self::deduplicateUnionTypes($this->getReturnTypesOfArray($context, $node)) as $elem_type) {
-                yield $elem_type->asGenericArrayTypes();
+                yield $elem_type->asGenericArrayTypes($key_type_enum);  // TODO: Infer corresponding key types
             }
             return;
         }
@@ -831,16 +833,17 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                 }
 
                 // Don't bother recursing more than one level to iterate over possible types.
-                if ($node->children[$i]->children['value'] instanceof Node) {
+                $value_node = $node->children[$i]->children['value'];
+                if ($value_node instanceof Node) {
                     yield UnionTypeVisitor::unionTypeFromNode(
                         $this->code_base,
                         $context,
-                        $node->children[$i]->children['value'],
+                        $value_node,
                         true
                     );
                 } else {
                     yield Type::fromObject(
-                        $node->children[$i]->children['value']
+                        $value_node
                     )->asUnionType();
                 }
             }
@@ -915,7 +918,8 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
             $method = $context_node->getMethod(
                 '__construct',
                 false,
-                false
+                false,
+                true
             );
 
             $class_list = $context_node->getClassList(false, ContextNode::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME);

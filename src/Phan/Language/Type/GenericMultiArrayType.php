@@ -23,13 +23,22 @@ final class GenericMultiArrayType extends ArrayType
     private $element_types = [];
 
     /**
+     * @var int
+     * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
+     */
+    private $key_type;
+
+    /**
      * @param Type[] $types
      * The 2 or more possible types of every element in this array
      *
      * @param bool $is_nullable
      * Set to true if the type should be nullable, else pass false
+     *
+     * @param int $key_type
+     * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
      */
-    protected function __construct(array $types, bool $is_nullable)
+    protected function __construct(array $types, bool $is_nullable, int $key_type)
     {
         \assert(\count($types) >= 2);
         // Could de-duplicate, but callers should be able to do that as well when converting to UnionType.
@@ -37,6 +46,7 @@ final class GenericMultiArrayType extends ArrayType
         parent::__construct('\\', self::NAME, [], false);
         $this->element_types = $types;
         $this->is_nullable = $is_nullable;
+        $this->key_type = $key_type;
     }
 
     /**
@@ -56,7 +66,8 @@ final class GenericMultiArrayType extends ArrayType
 
         return GenericMultiArrayType::fromElementTypes(
             $this->element_types,
-            $is_nullable
+            $is_nullable,
+            $this->key_type
         );
     }
 
@@ -66,8 +77,8 @@ final class GenericMultiArrayType extends ArrayType
     public function asGenericArrayTypeInstances() : array
     {
         return \array_map(function (Type $type) {
-            return GenericArrayType::fromElementType($type, $this->is_nullable);
-        }, $this->element_types);
+            return GenericArrayType::fromElementType($type, $this->is_nullable, $this->key_type);
+        }, UnionType::normalizeGenericMultiArrayTypes($this->element_types));
     }
 
     /**
@@ -77,9 +88,10 @@ final class GenericMultiArrayType extends ArrayType
      */
     public static function fromElementTypes(
         array $element_types,
-        bool $is_nullable
+        bool $is_nullable,
+        int $key_type
     ) : GenericMultiArrayType {
-        return new self($element_types, $is_nullable);
+        return new self($element_types, $is_nullable, $key_type);
     }
 
     /**
@@ -165,7 +177,13 @@ final class GenericMultiArrayType extends ArrayType
         // TODO: Use UnionType::merge from a future change?
         $result = new UnionType();
         foreach ($this->element_types as $type) {
-            $result->addUnionType(GenericArrayType::fromElementType($type, $this->is_nullable)->asExpandedTypes($code_base, $recursion_depth + 1));
+            $result->addUnionType(
+                GenericArrayType::fromElementType(
+                    $type,
+                    $this->is_nullable,
+                    $this->key_type
+                )->asExpandedTypes($code_base, $recursion_depth + 1)
+            );
         }
         return $result;
     }

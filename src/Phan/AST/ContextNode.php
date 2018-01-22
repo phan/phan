@@ -465,6 +465,9 @@ class ContextNode
      * @param bool $is_direct
      * Set to true if this is directly invoking the method (guaranteed not to be special syntax)
      *
+     * @param bool $is_new_expression
+     * Set to true if this is (new (expr)())
+     *
      * @return Method
      * A method with the given name on the class referenced
      * from the given node
@@ -485,7 +488,8 @@ class ContextNode
     public function getMethod(
         $method_name,
         bool $is_static,
-        bool $is_direct = false
+        bool $is_direct = false,
+        bool $is_new_expression = false
     ) : Method {
 
         if ($method_name instanceof Node) {
@@ -543,8 +547,8 @@ class ContextNode
                 && !$union_type->hasAnyType([
                     MixedType::instance(false),
                     ObjectType::instance(false),
-                    StringType::instance(false)
                 ])
+                && !(($is_static || $is_new_expression) && $union_type->hasType(StringType::instance(false)))  // reject `$stringVar->method()` but not `$stringVar::method()` and not (`new $stringVar()`
                 && !(
                     Config::get_null_casts_as_any_type()
                     && $union_type->hasType(NullType::instance(false))

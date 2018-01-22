@@ -24,24 +24,22 @@
 # SOFTWARE.
 
 
-FROM alpine:3.6
+FROM alpine:3.7
 
 WORKDIR /usr/src/app
 
 RUN adduser -u 9000 -D app
 
-ENV LAST_MODIFIED_DATE 2017-11-05
+ENV LAST_MODIFIED_DATE 2018-01-20
 
 ENV PHP_AST_VERSION=0.1.6
-
-# Increment the last digit when updating codeclimate docker images.
-ENV PHAN_ITERATION 0.10.2-dev-1
 
 RUN apk add --no-cache \
 	php7 && \
 	test -d /etc/php7/conf.d || ((test -e /etc/php7/conf.d && rm /etc/php7/conf.d) && mkdir /etc/php7/conf.d)	&& \
 	apk add --no-cache \
 	php7-bcmath \
+	php7-ctype \
 	php7-curl \
 	php7-gd \
 	php7-gettext \

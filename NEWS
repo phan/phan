@@ -1,9 +1,38 @@
 Phan NEWS
 
-20 Jan 2018, Phan 0.11.1 (dev)
+?? ??? 2018, Phan 0.11.2 (dev)
 ------------------------
 
-### Ported from Phan 0.10.3 (dev)
+### Ported from Phan 0.10.4 (dev)
+
+New Features(Analysis)
+
++ Support array key types of `int`, `string`, and `mixed` (i.e. `int|string`) in union types such as `array<int,T>` (#824)
+
+  Check that the array key types match when assigning Expected param types, return types, property types, etc.
+  They don't match when casting a union type of `int` to `string`, or vice versa.
+  Mixed union types in keys can cast to/from any key type.
+
+  - To allow casting `array<int,T>` to `array<string,T>`, enable `scalar_array_key_cast` in your `.phan/config.php`.
++ Infer array key types of `int`, `string`, or `int|string` in foreach over arrays. (#1300)
+  (Phan's type system doesn't support inferring key types for `iterable` or `Traversable` right now)
++ Support **parsing** PHPDoc array shapes
+  (E.g. a function expecting `['field' => 'a string']` can document this as `@param array{field:string}` $options)
+  For now, this is converted to generic arrays (Equivalent to `string[]`).
+
+  `[[0, ...], new stdClass]` would have type `array{0:int[], 1:string}`
+
+  - The field value types can be any union type.
+  - Field keys are currently limited to keys matching the regex `[-_.a-zA-Z0-9\x7f-\xff]+`. (Identifiers, numbers, '-', and '.')
+    Escape mechanisms such as backslashes (e.g. "\x20" for " ") may be supported in the future.
+
+Bug fixes
++ Warn when attempting to call an instance method on an expression with type string (#1314).
+
+20 Jan 2018, Phan 0.11.1
+------------------------
+
+### Ported from Phan 0.10.3
 
 New Features(CLI, Configs)
 

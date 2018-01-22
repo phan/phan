@@ -11,6 +11,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -503,8 +504,10 @@ class Method extends ClassElement implements FunctionInterface
         // a generic array of this context's class to the return type
         if ($union_type->genericArrayElementTypes()->hasStaticType()) {
             $union_type = clone($union_type);
+            // TODO: Base this on the static array type...
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($union_type);
             $union_type->addType(
-                $this->getFQSEN()->getFullyQualifiedClassName()->asType()->asGenericArrayType()
+                $this->getFQSEN()->getFullyQualifiedClassName()->asType()->asGenericArrayType($key_type_enum)
             );
         }
 
@@ -653,20 +656,22 @@ class Method extends ClassElement implements FunctionInterface
         return $string;
     }
 
-    public function toStub(CodeBase $code_base) : string
+    public function toStub(CodeBase $code_base, bool $class_is_interface = false) : string
     {
-        // TODO: Include whether or not it is abstract
         $string = '    ';
-        if ($this->isPrivate()) {
-            $string .= 'private ';
-        } elseif ($this->isProtected()) {
-            $string .= 'protected ';
-        } else {
-            $string .= 'public ';
-        }
+        // It's an error to have visibility or abstract in an interface's stub (e.g. JsonSerializable)
+        if (!$class_is_interface) {
+            if ($this->isPrivate()) {
+                $string .= 'private ';
+            } elseif ($this->isProtected()) {
+                $string .= 'protected ';
+            } else {
+                $string .= 'public ';
+            }
 
-        if ($this->isAbstract()) {
-            $string .= 'abstract ';
+            if ($this->isAbstract()) {
+                $string .= 'abstract ';
+            }
         }
 
         if ($this->isStatic()) {
