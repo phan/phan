@@ -1,0 +1,2 @@
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,\stdClass[][]> but \strlen() takes string
+%s:17 PhanTypeMismatchArgumentInternal Argument 1 (string) is \stdClass[][] but \strlen() takes string
