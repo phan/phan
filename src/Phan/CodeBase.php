@@ -11,6 +11,7 @@ use Phan\Language\Element\Func;
 use Phan\Language\Element\FunctionFactory;
 use Phan\Language\Element\GlobalConstant;
 use Phan\Language\Element\Method;
+use Phan\Language\Element\Parameter;
 use Phan\Language\Element\Property;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassConstantName;
@@ -1189,6 +1190,12 @@ class CodeBase
                 $canonical_fqsen,
                 $signature
             ) as $function) {
+                if ($found) {
+                    $reflection_function = new \ReflectionFunction($name);
+                    $function->setIsDeprecated($reflection_function->isDeprecated());
+                    $function->setRealReturnType(UnionType::fromReflectionType($reflection_function->getReturnType()));
+                    $function->setRealParameterList(Parameter::listFromReflectionParameterList($reflection_function->getParameters()));
+                }
                 $this->addFunction($function);
             }
 
