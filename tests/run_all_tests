@@ -7,7 +7,7 @@ fi
 
 TEST_SUITES="PhanTest"
 TEST_SUITES+=" UtilTest RasmusTest LanguageTest"
-TEST_SUITES+=" __FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest"
+TEST_SUITES+=" __FakeSelfTest __FakeRewritingTest __FakePluginTest __FakeFallbackTest __FakeToolTest"
 
 FAILURES=""
 for TEST_SUITE in $TEST_SUITES; do
