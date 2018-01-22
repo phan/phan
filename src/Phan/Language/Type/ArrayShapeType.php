@@ -68,9 +68,11 @@ final class ArrayShapeType extends ArrayType
             // There are 0 fields, so we know nothing about the field types (And there's no way to indicate an empty array yet)
             return [ArrayType::instance($this->is_nullable)];
         }
-        // TODO:
-        return \array_map(function (Type $type) {
-            return GenericArrayType::fromElementType($type, $this->is_nullable);
+
+        $key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types);
+
+        return \array_map(function (Type $type) use ($key_type) {
+            return GenericArrayType::fromElementType($type, $this->is_nullable, $key_type);
         }, UnionType::normalizeGenericMultiArrayTypes($this->field_types));
     }
 
@@ -174,8 +176,9 @@ final class ArrayShapeType extends ArrayType
         );
         // TODO: Use UnionType::merge from a future change?
         $result = new UnionType();
+        $key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types);
         foreach ($this->field_types as $type) {
-            $result->addUnionType(GenericArrayType::fromElementType($type, $this->is_nullable)->asExpandedTypes($code_base, $recursion_depth + 1));
+            $result->addUnionType(GenericArrayType::fromElementType($type, $this->is_nullable, $key_type)->asExpandedTypes($code_base, $recursion_depth + 1));
         }
         return $result;
     }

@@ -11,6 +11,7 @@ use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\BoolType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\NullType;
 use Phan\Language\Type\StringType;
@@ -430,7 +431,7 @@ class Parameter extends Variable
     {
         if ($this->isVariadic() && !$this->isCloneOfVariadic()) {
             // TODO: Figure out why asNonEmptyGenericArrayTypes() causes test failures
-            return parent::getUnionType()->asGenericArrayTypes();
+            return parent::getUnionType()->asGenericArrayTypes(GenericArrayType::KEY_INT);
         }
         return parent::getUnionType();
     }

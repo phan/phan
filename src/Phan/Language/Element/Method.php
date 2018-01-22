@@ -11,6 +11,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Scope\FunctionLikeScope;
 use Phan\Language\Type;
 use Phan\Language\Type\ArrayType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\NullType;
 use Phan\Language\UnionType;
@@ -503,8 +504,10 @@ class Method extends ClassElement implements FunctionInterface
         // a generic array of this context's class to the return type
         if ($union_type->genericArrayElementTypes()->hasStaticType()) {
             $union_type = clone($union_type);
+            // TODO: Base this on the static array type...
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($union_type);
             $union_type->addType(
-                $this->getFQSEN()->getFullyQualifiedClassName()->asType()->asGenericArrayType()
+                $this->getFQSEN()->getFullyQualifiedClassName()->asType()->asGenericArrayType($key_type_enum)
             );
         }
 

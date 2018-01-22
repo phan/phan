@@ -1,14 +1,14 @@
-%s:5 PhanTypeMismatchArgumentInternal Argument 1 (string) is string[]|string[][] but \strlen() takes string
-%s:10 PhanTypeMismatchArgumentInternal Argument 1 (string) is string[] but \strlen() takes string
+%s:5 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,string>|array<string,string[]> but \strlen() takes string
+%s:10 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,string> but \strlen() takes string
 %s:12 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
-%s:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is string[]|string[][] but \strlen() takes string
-%s:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is string[]|string[][] but \strlen() takes string
+%s:13 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,string>|array<string,string[]> but \strlen() takes string
+%s:15 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,string>|array<string,string[]> but \strlen() takes string
 %s:19 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
-%s:20 PhanTypeMismatchArgumentInternal Argument 1 (string) is string[] but \strlen() takes string
+%s:20 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,string> but \strlen() takes string
 %s:22 PhanTypeMismatchArgumentInternal Argument 1 (var) is string but \count() takes \Countable|array
-%s:27 PhanTypeMismatchArgumentInternal Argument 1 (string) is array but \strlen() takes string
-%s:34 PhanTypeMismatchArgumentInternal Argument 1 (string) is int[]|int[][]|string[]|string[][] but \strlen() takes string
-%s:37 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is int[]|int[][]|string[]|string[][] but \intdiv() takes int
-%s:40 PhanTypeMismatchArgumentInternal Argument 1 (string) is null|string[] but \strlen() takes string
+%s:27 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<string,mixed> but \strlen() takes string
+%s:35 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is string but \intdiv() takes int
+%s:37 PhanTypeMismatchArgumentInternal Argument 1 (numerator) is array<string,int>|array<string,string>|string but \intdiv() takes int
+%s:40 PhanTypeMismatchArgumentInternal Argument 1 (string) is array<int,string>|null but \strlen() takes string
 %s:49 PhanUndeclaredVariable Variable $argc is undeclared
 %s:50 PhanUndeclaredVariable Variable $argv is undeclared

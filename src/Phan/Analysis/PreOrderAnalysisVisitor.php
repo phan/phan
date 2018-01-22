@@ -20,6 +20,7 @@ use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Scope\ClassScope;
 use Phan\Language\Scope\ClosureScope;
 use Phan\Language\Type;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\UnionType;
 use ast\Node;
 
@@ -582,6 +583,14 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
                 $this->code_base,
                 false
             );
+            if (!$expression_union_type->isEmpty()) {
+                // TODO: Support Traversable<Key, T> then return Key.
+                // If we see array<int,T> or array<string,T> and no other array types, we're reasonably sure the foreach key is an integer or a string, so set it.
+                $union_type_of_array_key = UnionTypeVisitor::arrayKeyUnionTypeOfUnionType($expression_union_type);
+                if ($union_type_of_array_key !== null) {
+                    $variable->setUnionType($union_type_of_array_key);
+                }
+            }
 
             $this->context->addScopeVariable($variable);
         }

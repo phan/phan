@@ -1,2 +1,2 @@
-%s:6 PhanTypeMismatchProperty Assigning string[] to property but \A::property is \bad
+%s:6 PhanTypeMismatchProperty Assigning array<int,string> to property but \A::property is \bad
 %s:6 PhanUndeclaredTypeProperty Property \A::property has undeclared type \bad

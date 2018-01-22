@@ -17,13 +17,13 @@ use stdClass;
 /** @return string[] (incorrect) */
 function my_test371B() {
     $str = 'x';
-    return array_map('Foo\NS371\strlen371', [$str]);
+    return array_map('Foo\NS371\strlen371', ['key' => $str]);
 }
 
 /** @return int[] (correct) */
 function my_test371C() {
     $obj = new stdClass();
-    return array_map('\Foo\NS371\strlen371', [$obj]);
+    return array_map('\Foo\NS371\strlen371', ['key' => $obj]);
 }
 
 /** @return int[] (correct) */
