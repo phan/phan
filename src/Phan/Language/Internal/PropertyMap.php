@@ -416,7 +416,7 @@ return [
     'ast\metadata' => [
         'kind' => 'int',
         'name' => 'string',
-        'flags' => 'string[]',
+        'flags' => 'array<int,string>',
         'flagsCombinable' => 'bool',
     ],
 ];
