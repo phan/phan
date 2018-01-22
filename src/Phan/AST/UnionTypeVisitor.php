@@ -2333,23 +2333,23 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         $key_enum_type = GenericArrayType::keyTypeFromUnionTypeKeys($union_type);
         switch ($key_enum_type) {
-        case GenericArrayType::KEY_INT:
-            return $int_type->asUnionType();
-        case GenericArrayType::KEY_STRING:
-            return $string_type->asUnionType();
-        default:
-            foreach ($union_type->getTypeSet() as $type) {
-                // The exact class Type is potentially invalid (includes objects) but not the subclass NativeType.
-                // The subclass IterableType of Native type is invalid, but ArrayType is a valid subclass of IterableType.
-                // And we just ignore scalars.
-                // And mixed could be a Traversable.
-                // So, don't infer anything if the union type contains any instances of the four classes.
-                // TODO: Check the expanded union type instead of anything with a class of exactly Type, searching for Traversable?
-                if (\in_array(\get_class($type), [Type::class, IterableType::class, TemplateType::class, MixedType::class])) {
-                    return null;
+            case GenericArrayType::KEY_INT:
+                return $int_type->asUnionType();
+            case GenericArrayType::KEY_STRING:
+                return $string_type->asUnionType();
+            default:
+                foreach ($union_type->getTypeSet() as $type) {
+                    // The exact class Type is potentially invalid (includes objects) but not the subclass NativeType.
+                    // The subclass IterableType of Native type is invalid, but ArrayType is a valid subclass of IterableType.
+                    // And we just ignore scalars.
+                    // And mixed could be a Traversable.
+                    // So, don't infer anything if the union type contains any instances of the four classes.
+                    // TODO: Check the expanded union type instead of anything with a class of exactly Type, searching for Traversable?
+                    if (\in_array(\get_class($type), [Type::class, IterableType::class, TemplateType::class, MixedType::class])) {
+                        return null;
+                    }
                 }
-            }
-            return new UnionType([$int_type, $string_type], true);
+                return new UnionType([$int_type, $string_type], true);
         }
     }
 }

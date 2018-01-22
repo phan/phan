@@ -981,9 +981,10 @@ class Type
      * @param int $source
      * @return array<string|int,Type> The types for the representations of types, in the given $context
      */
-    private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source) : array {
+    private static function shapeComponentStringsToTypes(array $shape_components, Context $context, int $source) : array
+    {
         return array_map(
-            function(string $component_string) use ($context, $source) : Type {
+            function (string $component_string) use ($context, $source) : Type {
                 return Type::fromStringInContext($component_string, $context, $source);
             },
             $shape_components

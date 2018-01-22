@@ -315,7 +315,8 @@ final class GenericArrayType extends ArrayType
         return clone($union_type);
     }
 
-    public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int {
+    public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int
+    {
         $key_types = self::KEY_EMPTY;
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof GenericArrayType) {
@@ -332,15 +333,20 @@ final class GenericArrayType extends ArrayType
     /**
      * @return UnionType
      */
-    public static function unionTypeForKeyType(int $key_type) : UnionType {
+    public static function unionTypeForKeyType(int $key_type) : UnionType
+    {
         switch ($key_type) {
-        case self::KEY_INT: return IntType::instance(false)->asUnionType();
-        case self::KEY_STRING: return StringType::instance(false)->asUnionType();
-        default: return new UnionType();
+            case self::KEY_INT:
+                return IntType::instance(false)->asUnionType();
+            case self::KEY_STRING:
+                return StringType::instance(false)->asUnionType();
+            default:
+                return new UnionType();
         }
     }
 
-    public static function keyTypeFromUnionTypeValues(UnionType $union_type) : int {
+    public static function keyTypeFromUnionTypeValues(UnionType $union_type) : int
+    {
         $key_types = self::KEY_EMPTY;
         foreach ($union_type->getTypeSet() as $type) {
             if ($type instanceof StringType) {
@@ -363,7 +369,8 @@ final class GenericArrayType extends ArrayType
      * @return int
      * Corresponds to the type of the array keys of $array. This is a GenericArrayType::KEY_* constant (KEY_INT, KEY_STRING, or KEY_MIXED).
      */
-    public static function getKeyTypeForArrayLiteral(array $array) : int {
+    public static function getKeyTypeForArrayLiteral(array $array) : int
+    {
         $key_type = GenericArrayType::KEY_EMPTY;
         foreach ($array as $key => $_) {
             $key_type |= (\is_string($key) ? GenericArrayType::KEY_STRING : GenericArrayType::KEY_INT);
@@ -400,7 +407,7 @@ final class GenericArrayType extends ArrayType
                         $key_node,
                         $should_catch_issue_exception
                     ));
-                } else if ($key_node !== null) {
+                } elseif ($key_node !== null) {
                     if (\is_string($key_node)) {
                         $key_type_enum |= GenericArrayType::KEY_STRING;
                     } elseif (\is_int($key_node)) {
@@ -414,5 +421,4 @@ final class GenericArrayType extends ArrayType
         }
         return GenericArrayType::KEY_MIXED;
     }
-
 }

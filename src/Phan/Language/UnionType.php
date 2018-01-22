@@ -1694,7 +1694,7 @@ class UnionType implements \Serializable
     public function asGenericArrayTypes(int $key_type) : UnionType
     {
         return $this->asMappedUnionType(
-            function (Type $type) use($key_type) : Type {
+            function (Type $type) use ($key_type) : Type {
                 return $type->asGenericArrayType($key_type);
             }
         );
