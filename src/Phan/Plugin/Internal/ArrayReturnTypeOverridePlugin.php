@@ -14,6 +14,7 @@ use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\Type\ArrayType;
 use Phan\Language\Type\FalseType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\UnionType;
 use Phan\PluginV2\ReturnTypeOverrideCapability;
@@ -71,7 +72,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($args) == 2) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
                 if (!$element_types->isEmpty()) {
-                    return $element_types->asNonEmptyGenericArrayTypes();
+                    $key_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_types);
+                    return $element_types->asNonEmptyGenericArrayTypes($key_type_enum);
                 }
             }
             return $array_type->asUnionType();
@@ -80,7 +83,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
         $array_fill_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) == 3) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2]);
-                return $element_types->asNonEmptyGenericArrayTypes();
+                return $element_types->asNonEmptyGenericArrayTypes(GenericArrayType::KEY_INT);
             }
             return $array_type->asUnionType();
         };
@@ -215,14 +218,16 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if ($possible_return_types->isEmpty()) {
                 return $array_type->asUnionType();
             }
-            return $possible_return_types->elementTypesToGenericArray();
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($get_argument_type_for_array_map($arguments[0], 0));
+
+            return $possible_return_types->elementTypesToGenericArray($key_type_enum);
         };
         $array_pad_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) != 3) {
                 return $array_type->asUnionType();
             }
             $padded_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
-            $result_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2])->asGenericArrayTypes();
+            $result_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[2])->asGenericArrayTypes(GenericArrayType::KEY_INT);
             $result_types->addUnionType($padded_array_type->genericArrayTypes());
             if ($result_types->isEmpty()) {
                 $result_types->addType($array_type);

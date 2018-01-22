@@ -1649,17 +1649,20 @@ class UnionType implements \Serializable
     /**
      * Takes "b|d[]" and returns "b[]|d[][]"
      *
+     * @param int $key_type
+     * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
+     *
      * @return UnionType
      * The subset of types in this
      */
-    public function elementTypesToGenericArray() : UnionType
+    public function elementTypesToGenericArray(int $key_type) : UnionType
     {
         return new UnionType(
-            \array_map(function (Type $type) : Type {
+            \array_map(function (Type $type) use ($key_type) : Type {
                 if ($type instanceof MixedType) {
                     return ArrayType::instance(false);
                 }
-                return GenericArrayType::fromElementType($type, false);
+                return GenericArrayType::fromElementType($type, false, $key_type);
             }, $this->type_set)
         );
     }
@@ -1678,6 +1681,9 @@ class UnionType implements \Serializable
     }
 
     /**
+     * @param int $key_type
+     * Corresponds to the type of the array keys. Set this to a GenericArrayType::KEY_* constant.
+     *
      * @return UnionType
      * Get a new type for each type in this union which is
      * the generic array version of this type. For instance,
@@ -1685,11 +1691,11 @@ class UnionType implements \Serializable
      *
      * If $this is an empty UnionType, this method will produce an empty UnionType
      */
-    public function asGenericArrayTypes() : UnionType
+    public function asGenericArrayTypes(int $key_type) : UnionType
     {
         return $this->asMappedUnionType(
-            function (Type $type) : Type {
-                return $type->asGenericArrayType();
+            function (Type $type) use($key_type) : Type {
+                return $type->asGenericArrayType($key_type);
             }
         );
     }
@@ -1702,14 +1708,14 @@ class UnionType implements \Serializable
      *
      * If $this is an empty UnionType, this method will produce 'array'
      */
-    public function asNonEmptyGenericArrayTypes() : UnionType
+    public function asNonEmptyGenericArrayTypes(int $key_type) : UnionType
     {
         if (\count($this->type_set) === 0) {
             return ArrayType::instance(false)->asUnionType();
         }
         return $this->asMappedUnionType(
-            function (Type $type) : Type {
-                return $type->asGenericArrayType();
+            function (Type $type) use ($key_type) : Type {
+                return $type->asGenericArrayType($key_type);
             }
         );
     }

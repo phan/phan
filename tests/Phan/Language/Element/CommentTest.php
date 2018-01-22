@@ -267,7 +267,7 @@ EOT;
 
         // Argument #2, #3, etc. passed by callers are arrays of stdClasses
         $restDoc = $parameter_map['rest'];
-        $this->assertSame('\stdClass[] ...$rest', (string)$restDoc);
+        $this->assertSame('array<string,\stdClass> ...$rest', (string)$restDoc);
         $this->assertTrue($restDoc->isOptional());
         $this->assertFalse($restDoc->isRequired());
         $this->assertTrue($restDoc->isVariadic());
@@ -300,7 +300,7 @@ EOT;
         $this->assertSame('my_int', $my_int_doc->getName());
 
         $array_doc = $var_map[1];
-        $this->assertSame('\stdClass[] $array', (string)$array_doc);
+        $this->assertSame('array<string,\stdClass> $array', (string)$array_doc);
         $this->assertSame('array', $array_doc->getName());
     }
 

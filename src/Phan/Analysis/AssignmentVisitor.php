@@ -19,6 +19,7 @@ use Phan\Language\Element\Property;
 use Phan\Language\Element\Variable;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\Type;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\MixedType;
 use Phan\Language\Type\StringType;
@@ -279,10 +280,6 @@ class AssignmentVisitor extends AnalysisVisitor
      */
     public function visitDim(Node $node) : Context
     {
-        // Make the right type a generic (i.e. int -> int[])
-        $right_type =
-            $this->right_type->asGenericArrayTypes();
-
         if ($node->children['expr']->kind == \ast\AST_VAR) {
             $variable_name = (new ContextNode(
                 $this->code_base,
@@ -310,6 +307,19 @@ class AssignmentVisitor extends AnalysisVisitor
         } else {
             $dim_type = null;
         }
+
+        if ($dim_type !== null) {
+            $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($dim_type);
+        } elseif ($dim_node !== null) {
+            $key_type_enum = GenericArrayType::KEY_MIXED;
+        } else {
+            $key_type_enum = GenericArrayType::KEY_INT;
+        }
+
+        // Make the right type a generic (i.e. int -> int[])
+        $right_type =
+            $this->right_type->asGenericArrayTypes($key_type_enum);
+
 
         // Recurse into whatever we're []'ing
         $context = (new AssignmentVisitor(

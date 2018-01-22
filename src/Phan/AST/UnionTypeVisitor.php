@@ -30,6 +30,7 @@ use Phan\Language\Type\BoolType;
 use Phan\Language\Type\CallableType;
 use Phan\Language\Type\ClosureType;
 use Phan\Language\Type\FloatType;
+use Phan\Language\Type\GenericArrayType;
 use Phan\Language\Type\IntType;
 use Phan\Language\Type\IterableType;
 use Phan\Language\Type\MixedType;
@@ -765,9 +766,11 @@ class UnionTypeVisitor extends AnalysisVisitor
                     return ArrayType::instance(false)->asUnionType();
                 }
             }
-            return $common_type->asNonEmptyGenericArrayTypes();
+            $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node);
+            return $common_type->asNonEmptyGenericArrayTypes($key_type_enum);
         }
 
+        // TODO: Also return types such as array<int, mixed>?
         return ArrayType::instance(false)->asUnionType();
     }
 
