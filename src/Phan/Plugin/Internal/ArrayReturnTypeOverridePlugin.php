@@ -55,6 +55,34 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $mixed_type->asUnionType();
         };
+        $get_key_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_type, $string_type, $false_type) : UnionType {
+            if (\count($args) >= 1) {
+                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
+                if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
+                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
+                    $key_type->addType($false_type);
+                    return $key_type;
+                }
+            }
+            static $types = null;
+            $types = $types ?? [$int_type, $string_type, $false_type];
+            return new UnionType($types, true);
+        };
+        $get_key_type_of_second_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_type, $string_type, $false_type) : UnionType {
+            if (\count($args) >= 2) {
+                $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
+                $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
+                if ($key_type_enum !== GenericArrayType::KEY_MIXED) {
+                    $key_type = GenericArrayType::unionTypeForKeyType($key_type_enum);
+                    $key_type->addType($false_type);
+                    return $key_type;
+                }
+            }
+            static $types = null;
+            $types = $types ?? [$int_type, $string_type, $false_type];
+            return new UnionType($types, true);
+        };
         $get_first_array_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) >= 1) {
                 $element_types = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0])->genericArrayTypes();
@@ -269,6 +297,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             'pos'         => $get_element_type_of_first_arg,  // alias of 'current'
             'prev'        => $get_element_type_of_first_arg,
             'reset'       => $get_element_type_of_first_arg,
+
+            'key'          => $get_key_type_of_first_arg,
+            'array_search' => $get_key_type_of_second_arg,
 
             // array_filter and array_map
             'array_map'    => $array_map_callback,

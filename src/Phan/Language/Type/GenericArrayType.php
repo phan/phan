@@ -337,14 +337,20 @@ final class GenericArrayType extends ArrayType
      */
     public static function unionTypeForKeyType(int $key_type, int $behavior = self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE) : UnionType
     {
+        static $int_type = null;
+        static $string_type = null;
+        if ($int_type === null) {
+            $int_type = IntType::instance(false);
+            $string_type = StringType::instance(false);
+        }
         switch ($key_type) {
             case self::KEY_INT:
-                return IntType::instance(false)->asUnionType();
+                return $int_type->asUnionType();
             case self::KEY_STRING:
-                return StringType::instance(false)->asUnionType();
+                return $string_type->asUnionType();
             default:
                 if ($behavior === self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE) {
-                    return new UnionType([IntType::instance(false), StringType::instance(false)], true);
+                    return new UnionType([$int_type, $string_type], true);
                 }
                 return new UnionType();
         }

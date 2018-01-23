@@ -4528,7 +4528,7 @@ return [
 'kadm5_get_principals' => ['array', 'handle'=>''],
 'kadm5_init_with_password' => ['resource', 'admin_server'=>'string', 'realm'=>'string', 'principal'=>'string', 'password'=>'string'],
 'kadm5_modify_principal' => ['bool', 'handle'=>'', 'principal'=>'string', 'options'=>'array'],
-'key' => ['', 'array_arg'=>'array'],
+'key' => ['int|string|false', 'array_arg'=>'array'],
 'krsort' => ['bool', '&rw_array_arg'=>'array', 'sort_flags='=>'int'],
 'ksort' => ['bool', '&rw_array_arg'=>'array', 'sort_flags='=>'int'],
 'KTaglib_ID3v2_AttachedPictureFrame::getDescription' => ['string'],
