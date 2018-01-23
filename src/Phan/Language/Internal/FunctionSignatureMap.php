@@ -237,7 +237,7 @@ return [
 'array_replace' => ['array', 'arr1'=>'array', 'arr2'=>'array', '...='=>'array'],
 'array_replace_recursive' => ['array', 'arr1'=>'array', 'arr2'=>'array', '...='=>'array'],
 'array_reverse' => ['array', 'input'=>'array', 'preserve='=>'bool'],
-'array_search' => ['int|string', 'needle'=>'', 'haystack'=>'array', 'strict='=>'bool'],
+'array_search' => ['int|string|false', 'needle'=>'', 'haystack'=>'array', 'strict='=>'bool'],
 'array_shift' => ['', '&rw_stack'=>'array'],
 'array_slice' => ['array', 'input'=>'array', 'offset'=>'int', 'length='=>'?int', 'preserve_keys='=>'bool'],
 'array_splice' => ['array', '&rw_input'=>'array', 'offset'=>'int', 'length='=>'int', 'replacement='=>'array|string'],
