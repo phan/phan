@@ -69,6 +69,8 @@ class Issue
     const TypeMismatchDimAssignment = 'PhanTypeMismatchDimAssignment';
     const TypeMismatchDimEmpty      = 'PhanTypeMismatchDimEmpty';
     const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
+    const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
+    const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
     const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
@@ -1037,6 +1039,22 @@ class Issue
                 'Expected an object instance when accessing an instance property, but saw an expression with type {TYPE}',
                 self::REMEDIATION_B,
                 10040
+            ),
+            new Issue(
+                self::TypeMismatchUnpackKey,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'When unpacking a value of type {TYPE}, the value\'s keys were of type {TYPE}, but the keys should be consecutive integers starting from 0',
+                self::REMEDIATION_B,
+                10041
+            ),
+            new Issue(
+                self::TypeMismatchUnpackValue,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Attempting to unpack a value of type {TYPE} which does not contain any subtypes of iterable (such as array or Traversable)',
+                self::REMEDIATION_B,
+                10042
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

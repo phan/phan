@@ -1141,6 +1141,62 @@ class UnionTypeVisitor extends AnalysisVisitor
     }
 
     /**
+     * Visit a node with kind `\ast\AST_DIM`
+     *
+     * @param Node $node
+     * A node of the type indicated by the method name that we'd
+     * like to figure out the type that it produces.
+     *
+     * @return UnionType
+     * The set of types that are possibly produced by the
+     * given node
+     */
+    public function visitUnpack(Node $node) : UnionType
+    {
+        $union_type = self::unionTypeFromNode(
+            $this->code_base,
+            $this->context,
+            $node->children['expr'],
+            $this->should_catch_issue_exception
+        );
+
+        if ($union_type->isEmpty()) {
+            return $union_type;
+        }
+
+        // Figure out what the types of accessed array
+        // elements would be
+        // TODO: Account for Traversable once there are generics for Traversable
+        $generic_types =
+            $union_type->genericArrayElementTypes();
+
+        // If we have generics, we're all set
+        if ($generic_types->isEmpty()) {
+            if (!$union_type->asExpandedTypes($this->code_base)->hasIterable() && !$union_type->hasType(MixedType::instance(false))) {
+                throw new IssueException(
+                    Issue::fromType(Issue::TypeMismatchUnpackValue)(
+                        $this->context->getFile(),
+                        $node->lineno ?? 0,
+                        [(string)$union_type]
+                    )
+                );
+            }
+            return $generic_types;
+        }
+        // TODO: Once we have generic template types for Traversable and subclasses, rewrite this check to account for `new ArrayObject([2])`, etc.
+        if (GenericArrayType::KEY_STRING === GenericArrayType::keyTypeFromUnionTypeKeys($union_type)) {
+            throw new IssueException(
+                Issue::fromType(Issue::TypeMismatchUnpackKey)(
+                    $this->context->getFile(),
+                    $node->lineno ?? 0,
+                    [(string)$union_type, 'string']
+                )
+            );
+        }
+        return $generic_types;
+    }
+
+    /**
      * Visit a node with kind `\ast\AST_CLOSURE`
      *
      * @param Node $node

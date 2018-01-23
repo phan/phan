@@ -25,6 +25,12 @@ New Features(Analysis)
   - The field value types can be any union type.
   - Field keys are currently limited to keys matching the regex `[-_.a-zA-Z0-9\x7f-\xff]+`. (Identifiers, numbers, '-', and '.')
     Escape mechanisms such as backslashes (e.g. "\x20" for " ") may be supported in the future.
++ Add `PhanTypeMismatchUnpackKey` and `PhanTypeMismatchUnpackValue` to analyze array unpacking operator (also known as splat) (#1384)
+
+  Emit `PhanTypeMismatchUnpackKey` when passing iterables/arrays with invalid keys to the unpacking operator (i.e. `...`).
+
+  Emit `PhanTypeMismatchUnpackValue` when passing values that aren't iterables or arrays to the unpacking operator.
+  (See https://secure.php.net/manual/en/migration56.new-features.php#migration56.new-features.splat)
 
 Bug fixes
 + Warn when attempting to call an instance method on an expression with type string (#1314).
