@@ -150,7 +150,7 @@ final class GenericArrayType extends ArrayType
             $d = \substr($d, 1);
         }
         if ($d === 'callable') {
-            return true;
+            return $this->key_type !== self::KEY_STRING;
         }
 
         return parent::canCastToNonNullableType($type);
