@@ -204,7 +204,12 @@ class AssignmentVisitor extends AnalysisVisitor
         $element_type =
             $this->right_type->genericArrayElementTypes();
 
-        foreach ($node->children as $child_node) {
+        $expect_string_keys_lineno = false;
+        $expect_int_keys_lineno = false;
+
+        $scalar_array_key_cast = Config::getValue('scalar_array_key_cast');
+
+        foreach ($node->children ?? [] as $child_node) {
             // Some times folks like to pass a null to
             // a list to throw the element away. I'm not
             // here to judge.
@@ -215,7 +220,22 @@ class AssignmentVisitor extends AnalysisVisitor
             // Get the key and value nodes for each
             // array element we're assigning to
             // TODO: Check key types are valid?
-            // $key_node = $child_node->children['key'];
+            $key_node = $child_node->children['key'];
+            if (!$scalar_array_key_cast) {
+                if ($key_node === null) {
+                    $expect_int_keys_lineno = $child_node->lineno;  // list($x, $y) = ... is equivalent to list(0 => $x, 1 => $y) = ...
+                } else {
+                    $key_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $key_node);
+                    $key_type_enum = GenericArrayType::keyTypeFromUnionTypeValues($key_type);
+                    // TODO: Warn about types that can't cast to int|string
+                    if ($key_type_enum === GenericArrayType::KEY_INT) {
+                        $expect_int_keys_lineno = $child_node->lineno;
+                    } elseif ($key_type_enum === GenericArrayType::KEY_STRING) {
+                        $expect_string_keys_lineno = $child_node->lineno;
+                    }
+                }
+            }
+
             $value_node = $child_node->children['value'];
 
             if ($value_node->kind == \ast\AST_VAR) {
@@ -264,6 +284,29 @@ class AssignmentVisitor extends AnalysisVisitor
                     $element_type,
                     false
                 ))($value_node);
+            }
+        }
+
+        if ($expect_int_keys_lineno !== false || $expect_string_keys_lineno !== false) {
+            $right_hand_key_type = GenericArrayType::keyTypeFromUnionTypeKeys($this->right_type);
+            if ($expect_int_keys_lineno !== false && ($right_hand_key_type & GenericArrayType::KEY_INT) === 0) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::TypeMismatchArrayDestructuringKey,
+                    $expect_int_keys_lineno,
+                    'int',
+                    'string'
+                );
+            } elseif ($expect_string_keys_lineno !== false && ($right_hand_key_type & GenericArrayType::KEY_STRING) === 0) {
+                Issue::maybeEmit(
+                    $this->code_base,
+                    $this->context,
+                    Issue::TypeMismatchArrayDestructuringKey,
+                    $expect_string_keys_lineno,
+                    'string',
+                    'int'
+                );
             }
         }
 

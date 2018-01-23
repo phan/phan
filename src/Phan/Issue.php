@@ -71,6 +71,7 @@ class Issue
     const TypeMismatchDimFetch      = 'PhanTypeMismatchDimFetch';
     const TypeMismatchUnpackKey     = 'PhanTypeMismatchUnpackKey';
     const TypeMismatchUnpackValue   = 'PhanTypeMismatchUnpackValue';
+    const TypeMismatchArrayDestructuringKey = 'PhanTypeMismatchArrayDestructuringKey';
     const TypeMismatchVariadicComment = 'PhanMismatchVariadicComment';
     const TypeMismatchVariadicParam = 'PhanMismatchVariadicParam';
     const TypeMismatchForeach       = 'PhanTypeMismatchForeach';
@@ -1061,6 +1062,14 @@ class Issue
                 'Attempting to unpack a value of type {TYPE} which does not contain any subtypes of iterable (such as array or Traversable)',
                 self::REMEDIATION_B,
                 10042
+            ),
+            new Issue(
+                self::TypeMismatchArrayDestructuringKey,
+                self::CATEGORY_TYPE,
+                self::SEVERITY_NORMAL,
+                'Attempting an array destructing assignment with a key of type {TYPE} but the only key types of the right hand side are of type {TYPE}',
+                self::REMEDIATION_B,
+                10043
             ),
             // Issue::CATEGORY_VARIABLE
             new Issue(

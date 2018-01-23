@@ -15,6 +15,7 @@ New Features(Analysis)
   Added `PhanUnreferencedUseNormal`, `PhanUnreferencedUseFunction`, `PhanUnreferencedUseConstant`.
 
   (Note that Phan does not parse inline doc comments, which may cause false positives for `PhanUnreferencedUseNormal`)
++ Add `PhanTypeMismatchArrayDestructuringKey` checks for invalid array key types in list assignments (E.g. `list($x) = ['key' => 'value']` (#1383)
 
 Language Server
 + Make Phan Language Server analyze new files added to a project (Issue #920)

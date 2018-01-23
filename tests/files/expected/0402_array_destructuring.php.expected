@@ -1,0 +1,3 @@
+%s:4 PhanTypeMismatchArrayDestructuringKey Attempting an array destructing assignment with a key of type int but the only key types of the right hand side are of type string
+%s:5 PhanTypeMismatchArrayDestructuringKey Attempting an array destructing assignment with a key of type string but the only key types of the right hand side are of type int
+%s:6 PhanTypeMismatchArrayDestructuringKey Attempting an array destructing assignment with a key of type int but the only key types of the right hand side are of type string
