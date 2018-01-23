@@ -401,14 +401,14 @@ return [
         'kind' => 'int',
         'flags' => 'int',
         'lineno' => 'int',
-        'children' => 'array',  // NOTE: in the latest version, this is consistently an array, even for edge cases like statement lists of single statements.
+        'children' => 'ast\Node\Decl[]|ast\Node[]|array[]|int[]|string[]|float[]|bool[]|null[]',  // NOTE: in the latest version, this is consistently an array, even for edge cases like statement lists of single statements.
         'endLineno' => 'int',
     ],
     'ast\node\decl' => [
         'kind' => 'int',
         'flags' => 'int',
         'lineno' => 'int',
-        'children' => 'array',  // NOTE: in the latest version, this is consistently an array, even for edge cases like statement lists of single statements.
+        'children' => 'ast\Node\Decl[]|ast\Node[]|array[]|int[]|string[]|float[]|bool[]|null[]',  // NOTE: in the latest version, this is consistently an array, even for edge cases like statement lists of single statements.
         'endLineno' => 'int',
         'name' => '?string',
         'docComment' => '?string',
