@@ -1226,6 +1226,22 @@ class UnionType implements \Serializable
 
     /**
      * @return bool
+     * True if this union contains the Traversable type.
+     * (Call asExpandedTypes() first to check for subclasses of Traversable)
+     */
+    public function hasTraversable() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+
+        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
+            return $type->isTraversable();
+        });
+    }
+
+    /**
+     * @return bool
      * True if this union type represents types that are
      * array-like, and nothing else (e.g. can't be null).
      * If any of the array-like types are nullable, this returns false.
