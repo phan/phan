@@ -1,0 +1,1 @@
+%s:18 PhanTypeMismatchArgumentInternal Argument 1 (function) is array<string,string> but \call_user_func() takes callable
