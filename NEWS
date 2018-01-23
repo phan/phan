@@ -12,6 +12,8 @@ New Features(Analysis)
   Mixed union types in keys can cast to/from any key type.
 
   - To allow casting `array<int,T>` to `array<string,T>`, enable `scalar_array_key_cast` in your `.phan/config.php`.
+
+  Warn when fetching with the wrong type of array keys (E.g. string key for `array<int,T>`) (Issue #1390)
 + Infer array key types of `int`, `string`, or `int|string` in foreach over arrays. (#1300)
   (Phan's type system doesn't support inferring key types for `iterable` or `Traversable` right now)
 + Support **parsing** PHPDoc array shapes

@@ -1034,8 +1034,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         static $simple_xml_element_type;  // SimpleXMLElement doesn't `implement` ArrayAccess, but can be accessed that way. See #542
         static $null_type;
         static $string_type;
-        static $int_or_string_union_type;
         static $int_union_type;
+        static $int_or_string_union_type;
         if ($array_access_type === null) {
             // array offsets work on strings, unfortunately
             // Double check that any classes in the type don't
@@ -1046,8 +1046,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 Type::fromNamespaceAndName('\\', 'SimpleXMLElement', false);
             $null_type = NullType::instance(false);
             $string_type = StringType::instance(false);
-            $int_or_string_union_type = UnionType::fromFullyQualifiedString('int|string');
             $int_union_type = IntType::instance(false)->asUnionType();
+            $int_or_string_union_type = new UnionType([IntType::instance(false), StringType::instance(false)], true);
         }
         $dim_type = self::unionTypeFromNode(
             $this->code_base,
@@ -1063,15 +1063,25 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // If we have generics, we're all set
         if (!$generic_types->isEmpty()) {
-            if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
-                if (!$dim_type->isEmpty() && !$dim_type->canCastToUnionType($int_or_string_union_type)) {
-                    $this->emitIssue(
-                        Issue::TypeMismatchDimFetch,
-                        $node->lineno ?? 0,
-                        $union_type,
-                        (string)$dim_type,
-                        $int_or_string_union_type
-                    );
+            if (!$dim_type->isEmpty()) {
+                if (!$union_type->asExpandedTypes($this->code_base)->hasArrayAccess()) {
+                    if (Config::getValue('scalar_array_key_cast')) {
+                        $expected_key_type = $int_or_string_union_type;
+                    } else {
+                        $expected_key_type = GenericArrayType::unionTypeForKeyType(
+                            GenericArrayType::keyTypeFromUnionTypeKeys($union_type),
+                            GenericArrayType::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE
+                        );
+                    }
+                    if (!$dim_type->canCastToUnionType($expected_key_type)) {
+                        throw new IssueException(
+                            Issue::fromType(Issue::TypeMismatchDimFetch)(
+                                $this->context->getFile(),
+                                $node->lineno ?? 0,
+                                [$union_type, (string)$dim_type, $expected_key_type]
+                            )
+                        );
+                    }
                 }
             }
             return $generic_types;
