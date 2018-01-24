@@ -1,0 +1,1 @@
+%s:16 PhanParamSignatureMismatch Declaration of function run() : void should be compatible with function run() : string defined in ./tests/files/src/0403_suppress_signature_mismatch.php:5

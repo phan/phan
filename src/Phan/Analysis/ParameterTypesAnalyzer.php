@@ -388,16 +388,18 @@ class ParameterTypesAnalyzer
                     );
                 }
             } else {
-                Issue::maybeEmit(
-                    $code_base,
-                    $method->getContext(),
-                    Issue::ParamSignatureMismatch,
-                    $method->getFileRef()->getLineNumberStart(),
-                    $method,
-                    $o_method,
-                    $o_method->getFileRef()->getFile(),
-                    $o_method->getFileRef()->getLineNumberStart()
-                );
+                if (!$method->hasSuppressIssue(Issue::ParamSignatureMismatch)) {
+                    Issue::maybeEmit(
+                        $code_base,
+                        $method->getContext(),
+                        Issue::ParamSignatureMismatch,
+                        $method->getFileRef()->getLineNumberStart(),
+                        $method,
+                        $o_method,
+                        $o_method->getFileRef()->getFile(),
+                        $o_method->getFileRef()->getLineNumberStart()
+                    );
+                }
             }
         }
 
