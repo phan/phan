@@ -65,6 +65,26 @@ class UnionType implements \Serializable
         $this->type_set = ($is_unique || \count($type_list) <= 1) ? $type_list : self::getUniqueTypes($type_list);
     }
 
+    /** @var UnionType */
+    private static $instance;
+
+    /**
+     * @return UnionType
+     */
+    public static function empty() {
+        return self::$instance;
+    }
+
+    /**
+     * @return void
+     * @internal
+     */
+    public static function init() {
+        if (is_null(self::$instance)) {
+            self::$instance = new UnionType();
+        }
+    }
+
     // __clone of $this->type_set would be a no-op due to copy on write semantics.
     // And clone isn't necessary anymore now that type_set is immutable
 
@@ -2015,5 +2035,6 @@ class UnionType implements \Serializable
     public static function createBuilderFromTypeList(array $type_list) : UnionTypeBuilder {
         return new UnionTypeBuilder(\count($type_list) <= 1 ? $type_list : self::getUniqueTypes($type_list));
     }
-
 }
+
+UnionType::init();
