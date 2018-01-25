@@ -380,20 +380,15 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
-                    $modified = false;
                     // Add types which are not callable
                     foreach ($union_type->getTypeSet() as $type) {
                         if ($type->isCallable()) {
-                            $modified = true;
                             $has_null = $has_null || $type->getIsNullable();
                             continue;
                         }
                         assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
                         $new_type_builder->addType($type);
-                    }
-                    if (!$modified) {
-                        return $union_type;
                     }
                     // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                     if ($has_null && !$has_other_nullable_types) {

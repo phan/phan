@@ -1594,7 +1594,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // once we're talking about the method's return
                     // type outside of its class
                     if ($union_type->hasStaticType()) {
-                        $union_type = $union_type->withType(\Phan\Language\Type\StaticType::instance(false));
+                        $union_type = $union_type->withoutType(\Phan\Language\Type\StaticType::instance(false));
                     }
 
                     if ($union_type->genericArrayElementTypes()->hasStaticType()) {

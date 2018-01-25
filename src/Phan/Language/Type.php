@@ -635,7 +635,14 @@ class Type
     public static function fromFullyQualifiedString(
         string $fully_qualified_string
     ) : Type {
+        static $type_cache = [];
+        return $type_cache[$fully_qualified_string] ?? ($type_cache[$fully_qualified_string] = self::fromFullyQualifiedStringInner($fully_qualified_string));
+    }
 
+
+    public static function fromFullyQualifiedStringInner(
+        string $fully_qualified_string
+    ) : Type {
         \assert(
             !empty($fully_qualified_string),
             "Type cannot be empty"
