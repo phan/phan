@@ -763,42 +763,36 @@ class UnionType implements \Serializable
 
     public function nonNullableClone() : UnionType
     {
-        $result = new UnionType();
-        $result_type_set = [];
+        $builder = new UnionTypeBuilder();
         $did_change = false;
         foreach ($this->type_set as $type) {
             if (!$type->getIsNullable()) {
-                $result_type_set[] = $type;
+                $builder->addType($type);
+                continue;
             }
             $did_change = true;
             if ($type === NullType::instance(false)) {
                 continue;
             }
 
-            $new_type = $type->withIsNullable(false);
-            if (!\in_array($new_type, $result_type_set, true)) {
-                $result_type_set[] = $new_type;
-            }
+            $builder->addType($type->withIsNullable(false));
         }
-        return $result;
+        return $did_change ? $builder->getUnionType() : $this;
     }
 
     public function nullableClone() : UnionType
     {
-        $result = new UnionTypeBuilder();
+        $builder = new UnionTypeBuilder();
         $did_change = false;
         foreach ($this->type_set as $type) {
             if ($type->getIsNullable()) {
-                $result->addType($type);
+                $builder->addType($type);
                 continue;
             }
             $did_change = true;
-            $result->addType($type->withIsNullable(true));
+            $builder->addType($type->withIsNullable(true));
         }
-        if (!$did_change) {
-            return $this;
-        }
-        return $result->getUnionType();
+        return $did_change ? $builder->getUnionType() : $this;
     }
 
     /**
@@ -834,10 +828,7 @@ class UnionType implements \Serializable
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
             $builder->addType($type->asNonFalseyType());
         }
-        if (!$did_change) {
-            return $this;
-        }
-        return $builder->getUnionType();
+        return $did_change ? $builder->getUnionType() : $this;
     }
 
     /**
@@ -873,10 +864,7 @@ class UnionType implements \Serializable
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
             $builder->addType($type->asNonTruthyType());
         }
-        if (!$did_change) {
-            return $this;
-        }
-        return $builder->getUnionType();
+        return $did_change ? $builder->getUnionType() : $this;
     }
 
     /**
@@ -923,10 +911,7 @@ class UnionType implements \Serializable
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
             $builder->addType($type->asNonFalseType());
         }
-        if (!$did_change) {
-            return $this;
-        }
-        return $builder->getUnionType();
+        return $did_change ? $builder->getUnionType() : $this;
     }
 
     public function nonTrueClone() : UnionType
@@ -947,10 +932,7 @@ class UnionType implements \Serializable
             // add non-nullable equivalents, and replace BoolType with non-nullable TrueType
             $builder->addType($type->asNonTrueType());
         }
-        if (!$did_change) {
-            return $this;
-        }
-        return $builder->getUnionType();
+        return $did_change ? $builder->getUnionType() : $this;
     }
 
     /**

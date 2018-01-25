@@ -873,7 +873,7 @@ class ParameterTypesAnalyzer
             // Attempting to narrow nullable to non-nullable is usually a mistake, currently not supported.
             return null;
         }
-        // Create a clone, converting "T|S|null" to "T|S"
+        // Create a clone, converting "T|S|null" to "?T|?S"
         return $phpdoc_param_union_type->nullableClone()->withoutType(NullType::instance(false));
     }
 
