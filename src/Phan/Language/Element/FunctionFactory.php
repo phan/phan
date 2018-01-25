@@ -45,7 +45,7 @@ class FunctionFactory
         $function = new Func(
             $context,
             $fqsen->getNamespacedName(),
-            new UnionType(),
+            UnionType::empty(),
             0,
             $fqsen
         );
@@ -118,7 +118,7 @@ class FunctionFactory
         $method = new Method(
             $context,
             $reflection_method->name,
-            new UnionType(),
+            UnionType::empty(),
             $reflection_method->getModifiers(),
             $method_fqsen
         );

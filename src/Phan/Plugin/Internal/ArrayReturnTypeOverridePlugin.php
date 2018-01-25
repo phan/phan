@@ -163,7 +163,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($function_like_list) === 0) {
                 return $mixed_type->asUnionType();
             }
-            $function_return_types = new UnionType();
+            $function_return_types = UnionType::empty();
             foreach ($function_like_list as $function_like) {
                 // TODO: Support analysis of map/reduce functions with dependent union types?
                 $function_return_types = $function_return_types->withUnionType($function_like->getUnionType());
@@ -175,7 +175,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
         };
 
         $merge_array_types_callback = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
-            $types = new UnionType();
+            $types = UnionType::empty();
             foreach ($args as $arg) {
                 $passed_array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $arg);
                 $types = $types->withUnionType($passed_array_type->genericArrayTypes());
@@ -200,7 +200,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                 return $array_type->asUnionType();
             }
             $arguments = \array_slice($args, 1);
-            $possible_return_types = new UnionType();
+            $possible_return_types = UnionType::empty();
             $cache_outer = [];
             $get_argument_type = function ($argument, int $i) use ($code_base, $context, &$cache_outer) : UnionType {
                 if (isset($cache_outer[$i])) {

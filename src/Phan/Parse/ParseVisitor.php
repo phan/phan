@@ -448,13 +448,13 @@ class ParseVisitor extends ScopeVisitor
                     $this->context,
                     $child_node->children['default']
                 );
-                $union_type = new UnionType();
+                $union_type = UnionType::empty();
             }
 
             // Don't set 'null' as the type if that's the default
             // given that its the default default.
             if ($union_type->isType(NullType::instance(false))) {
-                $union_type = new UnionType();
+                $union_type = UnionType::empty();
             }
 
             $property_name = $child_node->children['name'];
@@ -569,7 +569,7 @@ class ParseVisitor extends ScopeVisitor
                     ->withLineNumberStart($line_number_start)
                     ->withLineNumberEnd($child_node->endLineno ?? $line_number_start),
                 $name,
-                new UnionType(),
+                UnionType::empty(),
                 $node->flags ?? 0,
                 $fqsen
             );
@@ -1123,7 +1123,7 @@ class ParseVisitor extends ScopeVisitor
             $this->context
                 ->withLineNumberStart($node->lineno ?? 0),
             $name,
-            new UnionType(),
+            UnionType::empty(),
             $flags,
             $fqsen
         );

@@ -79,7 +79,7 @@ class Property extends ClassElement
         try {
             $union_type = $this->getUnionType();
         } catch (\Exception $exception) {
-            $union_type = new UnionType();
+            $union_type = UnionType::empty();
         }
 
         $string .= "$union_type \${$this->getName()}";

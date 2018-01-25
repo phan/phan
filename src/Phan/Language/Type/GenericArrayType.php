@@ -353,7 +353,7 @@ final class GenericArrayType extends ArrayType
                 if ($behavior === self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE) {
                     return new UnionType([$int_type, $string_type], true);
                 }
-                return new UnionType();
+                return UnionType::empty();
         }
     }
 

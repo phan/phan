@@ -1178,7 +1178,7 @@ class ContextNode
         $property = new Property(
             $this->context,
             $property_name,
-            new UnionType(),
+            UnionType::empty(),
             $flags,
             $property_fqsen
         );

@@ -148,7 +148,7 @@ class Func extends AddressableElement implements FunctionInterface
         $func = new Func(
             $context,
             (string)$node->children['name'],
-            new UnionType(),
+            UnionType::empty(),
             $node->flags ?? 0,
             $fqsen
         );

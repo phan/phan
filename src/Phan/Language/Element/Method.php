@@ -363,7 +363,7 @@ class Method extends ClassElement implements FunctionInterface
         $method = new Method(
             $context,
             (string)$node->children['name'],
-            new UnionType(),
+            UnionType::empty(),
             $node->flags ?? 0,
             $fqsen
         );

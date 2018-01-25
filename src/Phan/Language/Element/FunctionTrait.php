@@ -464,7 +464,7 @@ trait FunctionTrait
     {
         if (!$this->real_return_type) {
             // Incomplete patch for https://github.com/phan/phan/issues/670
-            return new UnionType();
+            return UnionType::empty();
             // throw new \Error(sprintf("Failed to get real return type in %s method %s", (string)$this->getClassFQSEN(), (string)$this));
         }
         // Clone the union type, to be certain it will remain immutable.

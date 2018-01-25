@@ -279,7 +279,7 @@ class Comment
                 [],
                 [],
                 new None,
-                new UnionType(),
+                UnionType::empty(),
                 [],
                 [],
                 [],
@@ -291,7 +291,7 @@ class Comment
         $parameter_list = [];
         $template_type_list = [];
         $inherited_type = new None;
-        $return_union_type = new UnionType();
+        $return_union_type = UnionType::empty();
         $suppress_issue_list = [];
         $magic_property_list = [];
         $magic_method_list = [];
@@ -558,7 +558,7 @@ class Comment
         // Warn if there is neither a union type nor a variable
         if (\preg_match(self::param_comment_regex, $line, $match) && (isset($match[2]) || isset($match[17]))) {
             if (!isset($match[2])) {
-                return new CommentParameter('', new UnionType());
+                return new CommentParameter('', UnionType::empty());
             }
             $original_type = $match[2];
 
@@ -585,7 +585,7 @@ class Comment
                         Type::FROM_PHPDOC
                     );
             } else {
-                $union_type = new UnionType();
+                $union_type = UnionType::empty();
             }
             $is_output_parameter = \stripos($line, '@phan-output-reference') !== false;
 
@@ -612,7 +612,7 @@ class Comment
             }
         }
 
-        return new CommentParameter('', new UnionType());
+        return new CommentParameter('', UnionType::empty());
     }
 
     /**

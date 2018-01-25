@@ -112,7 +112,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     ) : UnionType {
         if (!($node instanceof Node)) {
             if ($node === null || $node === 'null') {
-                return new UnionType();
+                return UnionType::empty();
             }
 
             return Type::fromObject($node)->asUnionType();
@@ -131,7 +131,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $context,
                     $exception->getIssueInstance()
                 );
-                return new UnionType();
+                return UnionType::empty();
             }
         }
 
@@ -161,7 +161,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             . Debug::nodeName($node)
         );
         */
-        return new UnionType();
+        return UnionType::empty();
     }
 
     /**
@@ -311,7 +311,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         // require() can return arbitrary objects. Lets just
         // say that we don't know what it is and move on
-        return new UnionType();
+        return UnionType::empty();
     }
 
     /**
@@ -410,7 +410,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         );
                     }
 
-                    return new UnionType();
+                    return UnionType::empty();
                 }
             }
 
@@ -1068,10 +1068,10 @@ class UnionTypeVisitor extends AnalysisVisitor
         // If the only type is null, we don't know what
         // accessed items will be
         if ($union_type->isType($null_type)) {
-            return new UnionType();
+            return UnionType::empty();
         }
 
-        $element_types = new UnionType();
+        $element_types = UnionType::empty();
 
         // You can access string characters via array index,
         // so we'll add the string type to the result if we're
@@ -1262,7 +1262,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return $variable->getUnionType();
         }
 
-        return new UnionType();
+        return UnionType::empty();
     }
 
     /**
@@ -1339,7 +1339,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             return $constant->getUnionType();
         }
 
-        return new UnionType();
+        return UnionType::empty();
     }
 
     /**
@@ -1373,7 +1373,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        return new UnionType();
+        return UnionType::empty();
     }
 
     /**
@@ -1453,7 +1453,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             // just can't figure out.
         }
 
-        return new UnionType();
+        return UnionType::empty();
     }
 
     /**
@@ -1493,7 +1493,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $expression
         ))->getFunctionFromNode();
 
-        $possible_types = new UnionType();
+        $possible_types = UnionType::empty();
         foreach ($function_list_generator as $function) {
             assert($function instanceof FunctionInterface);
             if ($function->hasDependentReturnType()) {
@@ -1542,7 +1542,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // method name is a variable such as in
         // `$variable->$function_name()`.
         if ($method_name instanceof Node) {
-            return new UnionType();
+            return UnionType::empty();
         }
 
         // Method names can some times turn up being
@@ -1612,7 +1612,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
                     return $union_type;
                 } catch (IssueException $exception) {
-                    return new UnionType();
+                    return UnionType::empty();
                 }
             }
         } catch (IssueException $exception) {
@@ -1626,7 +1626,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        return new UnionType();
+        return UnionType::empty();
     }
 
     /**
@@ -1707,7 +1707,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     {
         // Things of the form `new $class_name();`
         if ($node->kind == \ast\AST_VAR) {
-            return new UnionType();
+            return UnionType::empty();
         }
 
         // Anonymous class of form `new class { ... }`
@@ -1734,7 +1734,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // Things of the form `new $method->name()`
         if ($node->kind !== \ast\AST_NAME) {
-            return new UnionType();
+            return UnionType::empty();
         }
 
         // Get the name of the class
@@ -1759,7 +1759,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                 $class_name
             );
 
-            return new UnionType();
+            return UnionType::empty();
         }
 
         // Reference to a parent class
@@ -1775,7 +1775,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     (string)$class->getFQSEN()
                 );
 
-                return new UnionType();
+                return UnionType::empty();
             }
 
             return Type::fromFullyQualifiedString(

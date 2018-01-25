@@ -85,7 +85,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $right
             );
 
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($left->hasType(IntType::instance(false))
             && $right->hasType(IntType::instance(false))
         ) {
@@ -129,7 +129,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $right
             );
 
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($left->hasType(IntType::instance(false))
             && $right->hasType(IntType::instance(false))
         ) {
@@ -417,7 +417,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 Issue::TypeInvalidRightOperand,
                 $node->lineno ?? 0
             );
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($right_is_array
             && !$left->canCastToUnionType(ArrayType::instance(false)->asUnionType())
         ) {
@@ -427,7 +427,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 Issue::TypeInvalidLeftOperand,
                 $node->lineno ?? 0
             );
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($left_is_array || $right_is_array) {
             // If it is a '+' and we know one side is an array
             // and the other is unknown, assume array

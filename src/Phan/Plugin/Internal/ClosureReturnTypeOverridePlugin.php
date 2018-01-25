@@ -58,7 +58,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             Func $function,
             array $args
         ) : UnionType {
-            $element_types = new UnionType();
+            $element_types = UnionType::empty();
             if (\count($args) < 1) {
                 return $element_types;
             }
@@ -86,7 +86,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             Func $function,
             array $args
         ) : UnionType {
-            $element_types = new UnionType();
+            $element_types = UnionType::empty();
             if (\count($args) < 2) {
                 return $element_types;
             }
@@ -96,7 +96,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
                 return $element_types;
             }
             $arguments = self::extractArrayArgs($args[1]);
-            $element_types = new UnionType();
+            $element_types = UnionType::empty();
 
             foreach ($function_like_list as $function_like) {
                 if ($arguments !== null && $function_like->hasDependentReturnType()) {
@@ -128,7 +128,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             if (\count($function_like_list) === 0) {
                 return ClosureType::instance(false)->asUnionType();
             }
-            $closure_types = new UnionType();
+            $closure_types = UnionType::empty();
             foreach ($function_like_list as $function_like) {
                 $closure_types = $closure_types->withType(ClosureType::instanceWithClosureFQSEN($function_like->getFQSEN()));
             }

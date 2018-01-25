@@ -259,7 +259,7 @@ class ConditionVisitor extends KindVisitorImplementation
             $context->setScope($context->getScope()->withVariable(new Variable(
                 $context->withLineNumberStart($var_node->lineno ?? 0),
                 $var_name,
-                new UnionType(),
+                UnionType::empty(),
                 $var_node->flags ?? 0
             )));
         }

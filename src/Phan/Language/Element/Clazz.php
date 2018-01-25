@@ -941,7 +941,7 @@ class Clazz extends AddressableElement
             $property = new Property(
                 $context,
                 $name,
-                new UnionType(),
+                UnionType::empty(),
                 0,
                 $property_fqsen
             );
