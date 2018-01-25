@@ -652,7 +652,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
 
                     // Set the inferred type of the method based
                     // on what we're returning
-                    $method->getUnionType()->addUnionType($expression_type);
+                    $method->setUnionType($method->getUnionType()->withUnionType($expression_type));
                 }
 
                 // No point in comparing this type to the
