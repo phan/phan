@@ -730,44 +730,31 @@ class UnionTypeVisitor extends AnalysisVisitor
             /** @var UnionType[] */
             $element_types = [];
 
-            // Check the first 5 (completely arbitrary) elements
-            // and assume the rest are the same type
-            foreach ($children as $i => $child) {
-                if (empty($child)) {
-                    // Check to see if we're out of elements (shouldn't happen)
-                    break;
-                }
-                if ($i >= 5) {
-                    break;
-                }
+            $unique_string_type = null;
+            $value_types = new UnionType();
+            $is_mixed = false;
 
+            foreach ($children as $child) {
                 $value = $child->children['value'];
                 if ($value instanceof Node) {
-                    $element_types[] = UnionTypeVisitor::unionTypeFromNode(
+                    $element_value_type = UnionTypeVisitor::unionTypeFromNode(
                         $this->code_base,
                         $this->context,
                         $value,
                         $this->should_catch_issue_exception
                     );
+                    if ($element_value_type->isEmpty()) {
+                        $value_types->addType(MixedType::instance(false));
+                    } else {
+                        $value_types->addUnionType($element_value_type);
+                    }
                 } else {
-                    $element_types[] = Type::fromObject(
-                        $value
-                    )->asUnionType();
+                    $value_types->addType(Type::fromObject($value));
                 }
             }
-
-            // Should be slightly faster than checking if array_unique is of length 1, doesn't require sorting.
-            // Not using isEqualTo() because the old behavior is that closures cast to the same string ('callable').
-            $common_type = \array_pop($element_types);
-            $common_type_repr = (string)$common_type;
-            foreach ($element_types as $type) {
-                if ((string)$type !== $common_type_repr) {
-                    // 2 or more unique types exist, give up.
-                    return ArrayType::instance(false)->asUnionType();
-                }
-            }
+            // TODO: Normalize value_types, e.g. false+true=bool, array<int,T>+array<string,T>=array<mixed,T>
             $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node, $this->should_catch_issue_exception);
-            return $common_type->asNonEmptyGenericArrayTypes($key_type_enum);
+            return $value_types->asNonEmptyGenericArrayTypes($key_type_enum);
         }
 
         // TODO: Also return types such as array<int, mixed>?
