@@ -3,6 +3,7 @@ namespace Phan\Language\Type;
 
 use Phan\Language\Type;
 use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\CodeBase;
 
@@ -175,11 +176,11 @@ final class ArrayShapeType extends ArrayType
             "Recursion has gotten out of hand"
         );
         // TODO: Use UnionType::merge from a future change?
-        $result = new UnionType();
+        $result = new UnionTypeBuilder();
         $key_type = GenericArrayType::getKeyTypeForArrayLiteral($this->field_types);
         foreach ($this->field_types as $type) {
             $result->addUnionType(GenericArrayType::fromElementType($type, $this->is_nullable, $key_type)->asExpandedTypes($code_base, $recursion_depth + 1));
         }
-        return $result;
+        return $result->getUnionType();
     }
 }

@@ -963,6 +963,15 @@ class Comment
     }
 
     /**
+     * Sets A UnionType defined by a (at)return directive
+     * @return void
+     */
+    public function setReturnType(UnionType $return_union_type)
+    {
+        $this->return_union_type = $return_union_type;
+    }
+
+    /**
      * @return bool
      * True if this doc block contains a (at)return
      * directive specifying a type.

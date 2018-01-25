@@ -450,7 +450,7 @@ class Method extends ClassElement implements FunctionInterface
                 $code_base,
                 $node->children['returnType']
             );
-            $method->getUnionType()->addUnionType($return_union_type);
+            $method->setUnionType($method->getUnionType()->withUnionType($return_union_type));
         }
         $method->setRealReturnType($return_union_type);
 
@@ -467,13 +467,14 @@ class Method extends ClassElement implements FunctionInterface
                     //       or $this in the type because I'm guessing
                     //       it doesn't really matter. Apologies if it
                     //       ends up being an issue.
-                    $comment_return_union_type->addUnionType(
+                    $comment_return_union_type = $comment_return_union_type->withUnionType(
                         $context->getClassFQSEN()->asUnionType()
                     );
+                    // $comment->setReturnType($comment_return_union_type);
                 }
             }
 
-            $method->getUnionType()->addUnionType($comment_return_union_type);
+            $method->setUnionType($method->getUnionType()->withUnionType($comment_return_union_type));
             $method->setPHPDocReturnType($comment_return_union_type);
         }
 
@@ -494,8 +495,7 @@ class Method extends ClassElement implements FunctionInterface
         // If the type is 'static', add this context's class
         // to the return type
         if ($union_type->hasStaticType()) {
-            $union_type = clone($union_type);
-            $union_type->addType(
+            $union_type = $union_type->withType(
                 $this->getFQSEN()->getFullyQualifiedClassName()->asType()
             );
         }
@@ -503,10 +503,9 @@ class Method extends ClassElement implements FunctionInterface
         // If the type is a generic array of 'static', add
         // a generic array of this context's class to the return type
         if ($union_type->genericArrayElementTypes()->hasStaticType()) {
-            $union_type = clone($union_type);
             // TODO: Base this on the static array type...
             $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($union_type);
-            $union_type->addType(
+            $union_type = $union_type->withType(
                 $this->getFQSEN()->getFullyQualifiedClassName()->asType()->asGenericArrayType($key_type_enum)
             );
         }

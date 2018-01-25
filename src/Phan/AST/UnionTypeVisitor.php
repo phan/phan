@@ -41,6 +41,7 @@ use Phan\Language\Type\StaticType;
 use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\VoidType;
 use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 use Phan\Library\ArraySet;
 use ast\Node;
 
@@ -646,13 +647,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                     }
                 }
 
-                $union_type = new UnionType();
-
-                // Add the type for the 'true' side
-                $union_type->addUnionType($true_type);
-
-                // Add the type for the 'false' side
-                $union_type->addUnionType($false_type);
+                // Add the type for the 'true' side to the 'false' side
+                $union_type = $true_type->withUnionType($false_type);
 
                 // If one side has an unknown type but the other doesn't
                 // we can't let the unseen type get erased. Unfortunately,
@@ -661,8 +657,8 @@ class UnionTypeVisitor extends AnalysisVisitor
                 //
                 // See Issue #104
                 if ($true_type_is_empty xor $false_type->isEmpty()) {
-                    $union_type->addUnionType(
-                        MixedType::instance(false)->asUnionType()
+                    $union_type = $union_type->withType(
+                        MixedType::instance(false)
                     );
                 }
 
@@ -686,13 +682,8 @@ class UnionTypeVisitor extends AnalysisVisitor
             $node->children['false'] ?? ''
         );
 
-        $union_type = new UnionType();
-
-        // Add the type for the 'true' side
-        $union_type->addUnionType($true_type);
-
-        // Add the type for the 'false' side
-        $union_type->addUnionType($false_type);
+        // Add the type for the 'true' side to the 'false' side
+        $union_type = $true_type->withUnionType($false_type);
 
         // If one side has an unknown type but the other doesn't
         // we can't let the unseen type get erased. Unfortunately,
@@ -701,8 +692,8 @@ class UnionTypeVisitor extends AnalysisVisitor
         //
         // See Issue #104
         if ($true_type->isEmpty() xor $false_type->isEmpty()) {
-            $union_type->addUnionType(
-                MixedType::instance(false)->asUnionType()
+            $union_type = $union_type->withType(
+                MixedType::instance(false)
             );
         }
 
@@ -731,7 +722,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $element_types = [];
 
             $unique_string_type = null;
-            $value_types = new UnionType();
+            $value_types_builder = new UnionTypeBuilder();
             $is_mixed = false;
 
             foreach ($children as $child) {
@@ -744,17 +735,17 @@ class UnionTypeVisitor extends AnalysisVisitor
                         $this->should_catch_issue_exception
                     );
                     if ($element_value_type->isEmpty()) {
-                        $value_types->addType(MixedType::instance(false));
+                        $value_types_builder->addType(MixedType::instance(false));
                     } else {
-                        $value_types->addUnionType($element_value_type);
+                        $value_types_builder->addUnionType($element_value_type);
                     }
                 } else {
-                    $value_types->addType(Type::fromObject($value));
+                    $value_types_builder->addType(Type::fromObject($value));
                 }
             }
             // TODO: Normalize value_types, e.g. false+true=bool, array<int,T>+array<string,T>=array<mixed,T>
             $key_type_enum = GenericArrayType::getKeyTypeOfArrayNode($this->code_base, $this->context, $node, $this->should_catch_issue_exception);
-            return $value_types->asNonEmptyGenericArrayTypes($key_type_enum);
+            return $value_types_builder->getUnionType()->asNonEmptyGenericArrayTypes($key_type_enum);
         }
 
         // TODO: Also return types such as array<int, mixed>?
@@ -1100,7 +1091,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     );
                 }
             }
-            $element_types->addType($string_type);
+            $element_types = $element_types->withType($string_type);
         }
 
         if ($element_types->isEmpty()) {
@@ -1231,10 +1222,11 @@ class UnionTypeVisitor extends AnalysisVisitor
             $name_node_type = $this($name_node);
             static $int_or_string_type;
             if ($int_or_string_type === null) {
-                $int_or_string_type = new UnionType();
-                $int_or_string_type->addType(StringType::instance(false));
-                $int_or_string_type->addType(IntType::instance(false));
-                $int_or_string_type->addType(NullType::instance(false));
+                $int_or_string_type = new UnionType([
+                    StringType::instance(false),
+                    IntType::instance(false),
+                    NullType::instance(false)
+                ]);
             }
             if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
                 Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
@@ -1509,7 +1501,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             } else {
                 $function_types = $function->getUnionType();
             }
-            $possible_types->addUnionType($function_types);
+            $possible_types = $possible_types->withUnionType($function_types);
         }
 
         return $possible_types;
@@ -1602,13 +1594,10 @@ class UnionTypeVisitor extends AnalysisVisitor
                     // once we're talking about the method's return
                     // type outside of its class
                     if ($union_type->hasStaticType()) {
-                        $union_type = clone($union_type);
-                        $union_type->removeType(\Phan\Language\Type\StaticType::instance(false));
+                        $union_type = $union_type->withType(\Phan\Language\Type\StaticType::instance(false));
                     }
 
                     if ($union_type->genericArrayElementTypes()->hasStaticType()) {
-                        $union_type = clone($union_type);
-
                         // Find the static type on the list
                         $static_type = $union_type->findTypeMatchingCallback(function (Type $type) : bool {
                             return (
@@ -1618,7 +1607,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         });
 
                         // Remove it from the list
-                        $union_type->removeType($static_type);
+                        $union_type = $union_type->withoutType($static_type);
                     }
 
                     return $union_type;
@@ -1794,12 +1783,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             )->asUnionType();
         }
 
+        // TODO: UnionType::fromFullyQualifiedString()
         $result = Type::fromFullyQualifiedString(
             (string)$this->context->getClassFQSEN()
         )->asUnionType();
 
         if ($is_static_type_string) {
-            $result->addType(StaticType::instance(false));
+            $result = $result->withType(StaticType::instance(false));
         }
         return $result;
     }
@@ -1836,7 +1826,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         ) {
             $union_type = new UnionType;
             foreach ($node->children ?? [] as $child_node) {
-                $union_type->addUnionType(
+                $union_type = $union_type->withUnionType(
                     self::unionTypeFromClassNode(
                         $code_base,
                         $context,

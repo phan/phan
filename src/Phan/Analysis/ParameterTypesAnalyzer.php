@@ -874,9 +874,7 @@ class ParameterTypesAnalyzer
             return null;
         }
         // Create a clone, converting "T|S|null" to "T|S"
-        $phpdoc_param_union_type = $phpdoc_param_union_type->nullableClone();
-        $phpdoc_param_union_type->removeType(NullType::instance(false));
-        return $phpdoc_param_union_type;
+        return $phpdoc_param_union_type->nullableClone()->withoutType(NullType::instance(false));
     }
 
     /**

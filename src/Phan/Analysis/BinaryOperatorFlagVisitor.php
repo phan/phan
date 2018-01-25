@@ -478,8 +478,6 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryCoalesce(Node $node) : UnionType
     {
-        $union_type = new UnionType();
-
         $left_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -498,14 +496,6 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $left_type = $left_type->nonNullableClone();
         }
 
-        $union_type->addUnionType(
-            $left_type
-        );
-
-        $union_type->addUnionType(
-            $right_type
-        );
-
-        return $union_type;
+        return $left_type->withUnionType($right_type);
     }
 }

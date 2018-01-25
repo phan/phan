@@ -17,25 +17,25 @@ class DebugUnionType extends UnionType
     /**
      * Add a type name to the list of types
      *
-     * @return void
+     * @return UnionType
      * @override
      */
-    public function addType(Type $type)
+    public function withType(Type $type) : UnionType
     {
         \printf("%s: Adding type %s to %s", \spl_object_hash($this), (string)$type, (string)$this);
         \debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        parent::addType($type);
+        return parent::withType($type);
     }
 
     /**
      * Add the given types to this type
      *
-     * @return void
+     * @return UnionType
      */
-    public function addUnionType(UnionType $union_type)
+    public function withUnionType(UnionType $union_type) : UnionType
     {
         \printf("%s: Adding union type %s to %s", \spl_object_hash($this), (string)$union_type, (string)$this);
         \debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-        parent::addUnionType($union_type);
+        return parent::withUnionType($union_type);
     }
 }

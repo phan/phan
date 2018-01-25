@@ -292,10 +292,11 @@ trait ConditionVisitorUtil
             $name_node_type = (new UnionTypeVisitor($this->code_base, $context, true))($var_name_node);
             static $int_or_string_type;
             if ($int_or_string_type === null) {
-                $int_or_string_type = new UnionType();
-                $int_or_string_type->addType(StringType::instance(false));
-                $int_or_string_type->addType(IntType::instance(false));
-                $int_or_string_type->addType(NullType::instance(false));
+                $int_or_string_type = new UnionType([
+                    StringType::instance(false),
+                    IntType::instance(false),
+                    NullType::instance(false),
+                ]);
             }
             if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
                 Issue::maybeEmit($this->code_base, $context, Issue::TypeSuspiciousIndirectVariable, $var_name_node->lineno ?? 0, (string)$name_node_type);

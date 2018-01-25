@@ -66,6 +66,7 @@ class UnionType implements \Serializable
     }
 
     // __clone of $this->type_set would be a no-op due to copy on write semantics.
+    // And clone isn't necessary anymore now that type_set is immutable
 
     /**
      * @param string $fully_qualified_string
@@ -91,11 +92,11 @@ class UnionType implements \Serializable
             }, self::extractTypeParts($fully_qualified_string));
 
             // TODO: Support brackets, template types within <>, etc.
-            $type_set = new UnionType(
+            $union_type = new UnionType(
                 self::getUniqueTypes(self::normalizeGenericMultiArrayTypes($types)),
                 true
             );
-            $memoize_map[$fully_qualified_string] = $type_set;
+            $memoize_map[$fully_qualified_string] = $union_type;
         }
 
         return $union_type;
@@ -379,7 +380,7 @@ class UnionType implements \Serializable
                 $result = UnionType::fromStringInContext($type_name, $context, Type::FROM_PHPDOC);
                 $internal_fn_cache[$type_name] = $result;
             }
-            return clone($result);
+            return $result;
         };
 
         $configurations = [];
@@ -667,11 +668,6 @@ class UnionType implements \Serializable
         if (!($has_static_type || $has_static_nullable_type)) {
             return $this;
         }
-
-        // Get a copy of this UnionType to avoid having to know
-        // who has copies of it out in the wild and what they're
-        // hoping for.
-        $union_type = clone($this);
 
         if ($has_static_type) {
             // Remove the static type and add in the class in scope
@@ -1327,7 +1323,7 @@ class UnionType implements \Serializable
 
     /**
      * A memory efficient way to create a UnionType from a filter operation.
-     * If this the filter preserves everything, calls clone() instead.
+     * If this the filter preserves everything, returns $this instead
      */
     public function makeFromFilter(\Closure $cb) : UnionType
     {
@@ -1338,7 +1334,7 @@ class UnionType implements \Serializable
             }
         }
         if (\count($new_type_list) === \count($this->type_set)) {
-            return clone($this);
+            return $this;
         }
         return new UnionType($new_type_list, true);
     }

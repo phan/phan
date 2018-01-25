@@ -22,6 +22,7 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 use ast\Node;
 
 // TODO: Make $x != null remove FalseType and NullType from $x
@@ -306,7 +307,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         });
                     },
                     function (UnionType $union_type) use ($base_class_name) : UnionType {
-                        $new_type = new UnionType();
+                        $new_type_builder = new UnionTypeBuilder();
                         $has_null = false;
                         $has_other_nullable_types = false;
                         // Add types which are not instances of $base_class_name
@@ -317,13 +318,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             }
                             assert($type instanceof Type);
                             $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                            $new_type->addType($type);
+                            $new_type_builder->addType($type);
                         }
                         // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                         if ($has_null && !$has_other_nullable_types) {
-                            $new_type->addType(NullType::instance(false));
+                            $new_type_builder->addType(NullType::instance(false));
                         }
-                        return $new_type;
+                        return $new_type_builder->getUnionType();
                     },
                     false
                 );
@@ -342,7 +343,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     });
                 },
                 function (UnionType $union_type) : UnionType {
-                    $new_type = new UnionType();
+                    $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
                     // Add types which are not scalars
@@ -353,13 +354,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         }
                         assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                        $new_type->addType($type);
+                        $new_type_builder->addType($type);
                     }
                     // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                     if ($has_null && !$has_other_nullable_types) {
-                        $new_type->addType(NullType::instance(false));
+                        $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type;
+                    return $new_type_builder->getUnionType();
                 },
                 false
             );
@@ -376,24 +377,29 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     });
                 },
                 function (UnionType $union_type) : UnionType {
-                    $new_type = new UnionType();
+                    $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
+                    $modified = false;
                     // Add types which are not callable
                     foreach ($union_type->getTypeSet() as $type) {
                         if ($type->isCallable()) {
+                            $modified = true;
                             $has_null = $has_null || $type->getIsNullable();
                             continue;
                         }
                         assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                        $new_type->addType($type);
+                        $new_type_builder->addType($type);
+                    }
+                    if (!$modified) {
+                        return $union_type;
                     }
                     // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                     if ($has_null && !$has_other_nullable_types) {
-                        $new_type->addType(NullType::instance(false));
+                        $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type;
+                    return $new_type_builder->getUnionType();
                 },
                 false
             );

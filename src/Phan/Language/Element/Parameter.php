@@ -441,7 +441,7 @@ class Parameter extends Variable
      * (We avoid bugs by adding new types to a variadic parameter if this is cloned.)
      * However, error messages still need to convert variadic parameters to a string.
      */
-    protected function isCloneOfVariadic() : bool
+    public function isCloneOfVariadic() : bool
     {
         return Flags::bitVectorHasState($this->getPhanFlags(), Flags::IS_CLONE_OF_VARIADIC);
     }
@@ -456,7 +456,7 @@ class Parameter extends Variable
      */
     public function addUnionType(UnionType $union_type)
     {
-        parent::getUnionType()->addUnionType($union_type);
+        parent::setUnionType(parent::getUnionType()->withUnionType($union_type));
     }
 
     /**
@@ -469,7 +469,7 @@ class Parameter extends Variable
      */
     public function addType(Type $type)
     {
-        parent::getUnionType()->addType($type);
+        parent::setUnionType(parent::getUnionType()->withType($type));
     }
 
     /**

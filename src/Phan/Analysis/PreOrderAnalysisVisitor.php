@@ -463,7 +463,7 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
         $func->setHasYield(true);
         if ($func->getUnionType()->isEmpty()) {
             $func->setIsReturnTypeUndefined(true);
-            $func->getUnionType()->addUnionType(Type::fromNamespaceAndName('\\', 'Generator', false)->asUnionType());
+            $func->setUnionType($func->getUnionType()->withType(Type::fromNamespaceAndName('\\', 'Generator', false)));
         }
         if (!$func->isReturnTypeUndefined()) {
             $func_return_type = $func->getUnionType();

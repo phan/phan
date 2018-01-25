@@ -1855,9 +1855,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                                 // Phan already warned about incompatible types.
                                 // But analyze the following statements as if it could have been the type expected,
                                 // to reduce false positives.
-                                $variable->getUnionType()->addUnionType(
+                                $variable->setUnionType($variable->getUnionType()->withUnionType(
                                     $reference_parameter_type
-                                );
+                                ));
                             }
                             // don't modify - assume the function takes the same type in that it returns,
                             // and we want to preserve generic array types for sorting functions (May change later on)
@@ -1867,9 +1867,9 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
                         default:
                             // We have no idea what type of reference this is.
                             // Probably user defined code.
-                            $variable->getUnionType()->addUnionType(
+                            $variable->setUnionType($variable->getUnionType()->withUnionType(
                                 $reference_parameter_type
-                            );
+                            ));
                             break;
                     }
                 }
@@ -2139,10 +2139,11 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // on the argument's type. We'll use this to
         // retest the method with the passed in types
         // TODO: if $argument_type is non-empty and !isType(NullType), instead use setUnionType?
-        $parameter->getNonVariadicUnionType()->addUnionType(
-            $argument_type
-        );
-
+        if (!$parameter->isCloneOfVariadic()) {
+            $parameter->setUnionType($parameter->getUnionType()->withUnionType(
+                $argument_type
+            ));
+        }
 
         // If we're passing by reference, get the variable
         // we're dealing with wrapped up and shoved into

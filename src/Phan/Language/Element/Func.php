@@ -244,7 +244,7 @@ class Func extends AddressableElement implements FunctionInterface
             );
             $func->setRealReturnType($union_type);
 
-            $func->getUnionType()->addUnionType($union_type);
+            $func->setUnionType($func->getUnionType()->withUnionType($union_type));
         }
 
         if ($comment->hasReturnUnionType()) {
@@ -256,7 +256,7 @@ class Func extends AddressableElement implements FunctionInterface
                 "Function referencing self in $context"
             );
 
-            $func->getUnionType()->addUnionType($union_type);
+            $func->setUnionType($func->getUnionType()->withUnionType($union_type));
             $func->setPHPDocReturnType($union_type);
         }
 

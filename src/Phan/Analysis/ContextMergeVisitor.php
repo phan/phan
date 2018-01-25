@@ -165,9 +165,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
                         $variable_name
                     );
 
-                    $variable->getUnionType()->addUnionType(
+                    $variable->setUnionType($variable->getUnionType()->withUnionType(
                         $catch_variable->getUnionType()
-                    );
+                    ));
                 }
             }
         }
@@ -178,9 +178,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
                 $variable_name = (string)$variable_name;
                 if (!$try_scope->hasVariableWithName($variable_name)) {
                     // Note that it can be null
-                    $variable->getUnionType()->addType(
+                    $variable->setUnionType($variable->getUnionType()->withType(
                         NullType::instance(false)
-                    );
+                    ));
 
                     // Add it to the try scope
                     $try_scope->addVariable($variable);
@@ -315,12 +315,9 @@ class ContextMergeVisitor extends KindVisitorImplementation
                     $variable = clone($variable);
 
                     $variable->setUnionType(
-                        $union_type($name)
-                    );
-
-                    // TODO: convert to nullable?
-                    $variable->getUnionType()->addType(
-                        NullType::instance(false)
+                        $union_type($name)->withType(
+                            NullType::instance(false)
+                        )
                     );
 
                     // Add the variable to the outgoing scope
