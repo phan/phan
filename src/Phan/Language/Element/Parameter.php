@@ -68,20 +68,6 @@ class Parameter extends Variable
     }
 
     /**
-     * After a clone is called on this object, clone our
-     * deep objects.
-     *
-     * @return null
-     */
-    public function __clone()
-    {
-        parent::__clone();
-        $this->default_value_type = $this->default_value_type
-            ? clone($this->default_value_type)
-            : $this->default_value_type;
-    }
-
-    /**
      * @return static - non-variadic clone which can be modified.
      */
     public function cloneAsNonVariadic()

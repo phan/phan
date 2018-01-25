@@ -660,7 +660,7 @@ class ParameterTypesAnalyzer
                 if ($parent_parameter_type->isEmpty()) {
                     continue;
                 }
-                $parameter->setUnionType(clone($parent_parameter_type));
+                $parameter->setUnionType($parent_parameter_type);
             }
         }
 
@@ -668,7 +668,7 @@ class ParameterTypesAnalyzer
         if ($phpdoc_return_type->isEmpty()) {
             $parent_phpdoc_return_type = $o_method->getUnionType();
             if (!$parent_phpdoc_return_type->isEmpty()) {
-                $method->setUnionType(clone($parent_phpdoc_return_type));
+                $method->setUnionType($parent_phpdoc_return_type);
             }
         }
     }

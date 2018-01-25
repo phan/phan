@@ -390,7 +390,7 @@ class ConditionVisitor extends KindVisitorImplementation
             return static function (Variable $variable, array $args) use ($type) {
                 // Otherwise, overwrite the type for any simple
                 // primitive types.
-                $variable->setUnionType(clone($type));
+                $variable->setUnionType($type);
             };
         };
 

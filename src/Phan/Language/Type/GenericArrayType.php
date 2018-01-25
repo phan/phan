@@ -313,7 +313,7 @@ final class GenericArrayType extends ArrayType
             }
             return $recursive_union_type_builder->getUnionType();
         });
-        return clone($union_type);
+        return $union_type;
     }
 
     public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int

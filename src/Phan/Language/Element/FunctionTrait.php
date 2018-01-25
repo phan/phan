@@ -453,8 +453,7 @@ trait FunctionTrait
     public function setRealReturnType(UnionType $union_type)
     {
         // TODO: was `self` properly resolved already? What about in subclasses?
-        // Clone it, since caller has a mutable version of this.
-        $this->real_return_type = clone($union_type);
+        $this->real_return_type = $union_type;
     }
 
     /**
@@ -469,8 +468,7 @@ trait FunctionTrait
             // throw new \Error(sprintf("Failed to get real return type in %s method %s", (string)$this->getClassFQSEN(), (string)$this));
         }
         // Clone the union type, to be certain it will remain immutable.
-        $union_type = clone($this->real_return_type);
-        return $union_type;
+        return $this->real_return_type;
     }
 
     /**
