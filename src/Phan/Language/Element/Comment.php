@@ -367,8 +367,10 @@ class Comment
                     );
                 }
             } elseif (\stripos($line, '@suppress') !== false) {
-                $suppress_issue_list[] =
-                    self::suppressIssueFromCommentLine($line);
+                $suppress_issue_type = self::suppressIssueFromCommentLine($line);
+                if ($suppress_issue_type !== '') {
+                    $suppress_issue_list[] = $suppress_issue_type;
+                }
             } elseif (\strpos($line, '@property') !== false) {
                 $check_compatible('@property', [Comment::ON_CLASS], $i, $line);
                 // Make sure support for magic properties is enabled.
