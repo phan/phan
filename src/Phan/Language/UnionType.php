@@ -111,11 +111,16 @@ class UnionType implements \Serializable
                 return Type::fromFullyQualifiedString($type_name);
             }, self::extractTypeParts($fully_qualified_string));
 
-            // TODO: Support brackets, template types within <>, etc.
-            $union_type = new UnionType(
-                self::getUniqueTypes(self::normalizeGenericMultiArrayTypes($types)),
-                true
-            );
+            $unique_types = self::getUniqueTypes(self::normalizeGenericMultiArrayTypes($types));
+            if (\count($unique_types) === 1) {
+                $union_type = \reset($unique_types)->asUnionType();
+            } else {
+                // TODO: Support brackets, template types within <>, etc.
+                $union_type = new UnionType(
+                    $unique_types,
+                    true
+                );
+            }
             $memoize_map[$fully_qualified_string] = $union_type;
         }
 
@@ -182,7 +187,11 @@ class UnionType implements \Serializable
             })
         );
 
-        return new UnionType(self::normalizeGenericMultiArrayTypes($types));
+        $instances = self::normalizeGenericMultiArrayTypes($types);
+        if (\count($instances) === 1) {
+            return \reset($instances)->asUnionType();
+        }
+        return new UnionType($instances);
     }
 
     /**

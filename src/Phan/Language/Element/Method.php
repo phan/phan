@@ -443,7 +443,7 @@ class Method extends ClassElement implements FunctionInterface
 
         // Add the syntax-level return type to the method's union type
         // if it exists
-        $return_union_type = new UnionType;
+        $return_union_type = UnionType::empty();
         if ($node->children['returnType'] !== null) {
             $return_union_type = UnionType::fromNode(
                 $context,

@@ -41,7 +41,7 @@ class CompositionAnalyzer
             try {
                 $property_union_type = $property->getUnionType();
             } catch (IssueException $exception) {
-                $property_union_type = new UnionType;
+                $property_union_type = UnionType::empty();
             }
 
             // Check for that property on each inherited

@@ -1333,7 +1333,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                     $this->context,
                     $exception->getIssueInstance()
                 );
-                return new UnionType;
+                return UnionType::empty();
             }
 
             return $constant->getUnionType();
@@ -1824,7 +1824,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         if ($node instanceof Node
             && $node->kind == \ast\AST_NAME_LIST
         ) {
-            $union_type = new UnionType;
+            $union_type = UnionType::empty();
             foreach ($node->children ?? [] as $child_node) {
                 $union_type = $union_type->withUnionType(
                     self::unionTypeFromClassNode(
