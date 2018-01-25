@@ -68,9 +68,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             foreach ($function_like_list as $function_like) {
                 if ($function_like->hasDependentReturnType()) {
-                    $element_types->addUnionType($function_like->getDependentReturnType($code_base, $context, \array_slice($args, 1)));
+                    $element_types = $element_types->withUnionType($function_like->getDependentReturnType($code_base, $context, \array_slice($args, 1)));
                 } else {
-                    $element_types->addUnionType($function_like->getUnionType());
+                    $element_types = $element_types->withUnionType($function_like->getUnionType());
                 }
             }
             if (Config::get_track_references()) {
@@ -100,9 +100,9 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
 
             foreach ($function_like_list as $function_like) {
                 if ($arguments !== null && $function_like->hasDependentReturnType()) {
-                    $element_types->addUnionType($function_like->getDependentReturnType($code_base, $context, $arguments));
+                    $element_types = $element_types->withUnionType($function_like->getDependentReturnType($code_base, $context, $arguments));
                 } else {
-                    $element_types->addUnionType($function_like->getUnionType());
+                    $element_types = $element_types->withUnionType($function_like->getUnionType());
                 }
             }
             if (Config::get_track_references()) {
@@ -130,7 +130,7 @@ final class ClosureReturnTypeOverridePlugin extends PluginV2 implements
             }
             $closure_types = new UnionType();
             foreach ($function_like_list as $function_like) {
-                $closure_types->addType(ClosureType::instanceWithClosureFQSEN($function_like->getFQSEN()));
+                $closure_types = $closure_types->withType(ClosureType::instanceWithClosureFQSEN($function_like->getFQSEN()));
             }
             return $closure_types;
         };

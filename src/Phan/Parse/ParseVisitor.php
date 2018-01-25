@@ -179,7 +179,7 @@ class ParseVisitor extends ScopeVisitor
         $extends_node = $node->children['extends'] ?? null;
         if ($extends_node instanceof Node) {
             $parent_class_name =
-                $extends_node->children['name'];
+                (string)$extends_node->children['name'];
 
             // Check to see if the name isn't fully qualified
             if ($extends_node->flags & \ast\flags\NAME_NOT_FQ) {
@@ -371,15 +371,15 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
         } elseif ('__invoke' === $method_name) {
-            $class->getUnionType()->addType(
+            $class->setUnionType($class->getUnionType()->withType(
                 CallableType::instance(false)
-            );
+            ));
         } elseif ('__toString' === $method_name
             && !$this->context->getIsStrictTypes()
         ) {
-            $class->getUnionType()->addType(
+            $class->setUnionType($class->getUnionType()->withType(
                 StringType::instance(false)
-            );
+            ));
         }
 
 
@@ -510,9 +510,9 @@ class ParseVisitor extends ScopeVisitor
 
                 // Set the declared type to the doc-comment type and add
                 // |null if the default value is null
-                $property->getUnionType()->addUnionType(
+                $property->setUnionType($property->getUnionType()->withUnionType(
                     $variable->getUnionType()
-                );
+                ));
             }
 
             $property->setIsDeprecated($comment->isDeprecated());
