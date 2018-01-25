@@ -992,9 +992,9 @@ class Type
     }
 
     /**
-     * @var ?array<int,Type> - [$this]
+     * @var ?UnionType of [$this]
      */
-    protected $singleton_type_list;
+    protected $singleton_union_type;
 
     /**
      * @return UnionType
@@ -1004,10 +1004,7 @@ class Type
     {
         // return new UnionType([$this]);
         // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
-        return new UnionType(
-            ($this->singleton_type_list) ?? ($this->singleton_type_list = [$this]),
-            true
-        );
+        return $this->singleton_union_type ?? ($this->singleton_union_type = new UnionType([$this], true));
     }
 
     /**
