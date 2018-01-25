@@ -31,6 +31,19 @@ New Features(Analysis)
 
   Emit `PhanTypeMismatchUnpackValue` when passing values that aren't iterables or arrays to the unpacking operator.
   (See https://secure.php.net/manual/en/migration56.new-features.php#migration56.new-features.splat)
++ When determining the union type of an array literal,
+  base it on the union types of **all** of the values (and all of the keys) instead of just the first 5 array elements.
++ When determining the union type of the possible value types of a array literal,
+  combine the generic types into a union type instead of simplifying the types to `array`.
+  In practical terms, this means that `[1,2,'a']` is seen as `array<int,int|string>`,
+  which Phan represents as `array<int,int>|array<int,string>`.
+
+  In the previous phan release, that would be represented as `int[]|string[]`,
+  which is equivalent to `array<mixed,int>|array<mixed,string>`
+
+  Another example: `[$strKey => new MyClass(), $strKey2 => $unknown]` will be represented as
+  `array<string,MyClass>|array<string,mixed>`.
+  (If phan can't infer a type of a key or value, `mixed` gets added to that key or value.)
 
 Bug fixes
 + Warn when attempting to call an instance method on an expression with type string (#1314).
