@@ -739,7 +739,6 @@ class CodeBase
      */
     public function addMethod(Method $method)
     {
-
         // Add the method to the map
         $this->getClassMapByFQSEN(
             $method->getFQSEN()
@@ -771,7 +770,9 @@ class CodeBase
     public function hasMethodWithFQSEN(
         FullyQualifiedMethodName $fqsen
     ) : bool {
-        return $this->getClassMapByFQSEN($fqsen)->hasMethodWithName(
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
+        )->hasMethodWithName(
             $fqsen->getNameWithAlternateId()
         );
     }
@@ -786,7 +787,9 @@ class CodeBase
     public function getMethodByFQSEN(
         FullyQualifiedMethodName $fqsen
     ) : Method {
-        return $this->getClassMapByFQSEN($fqsen)->getMethodByName(
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
+        )->getMethodByName(
             $fqsen->getNameWithAlternateId()
         );
     }
@@ -948,8 +951,8 @@ class CodeBase
      */
     public function addClassConstant(ClassConstant $class_constant)
     {
-        return $this->getClassMapByFQSEN(
-            $class_constant->getFQSEN()
+        return $this->getClassMapByFullyQualifiedClassName(
+            $class_constant->getClassFQSEN()
         )->addClassConstant($class_constant);
     }
 
@@ -960,8 +963,8 @@ class CodeBase
     public function hasClassConstantWithFQSEN(
         FullyQualifiedClassConstantName $fqsen
     ) : bool {
-        return $this->getClassMapByFQSEN(
-            $fqsen
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
         )->hasClassConstantWithName($fqsen->getNameWithAlternateId());
     }
 
@@ -975,8 +978,8 @@ class CodeBase
     public function getClassConstantByFQSEN(
         FullyQualifiedClassConstantName $fqsen
     ) : ClassConstant {
-        return $this->getClassMapByFQSEN(
-            $fqsen
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
         )->getClassConstantByName($fqsen->getNameWithAlternateId());
     }
 
@@ -1050,8 +1053,8 @@ class CodeBase
      */
     public function addProperty(Property $property)
     {
-        return $this->getClassMapByFQSEN(
-            $property->getFQSEN()
+        return $this->getClassMapByFullyQualifiedClassName(
+            $property->getClassFQSEN()
         )->addProperty($property);
     }
 
@@ -1062,8 +1065,8 @@ class CodeBase
     public function hasPropertyWithFQSEN(
         FullyQualifiedPropertyName $fqsen
     ) : bool {
-        return $this->getClassMapByFQSEN(
-            $fqsen
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
         )->hasPropertyWithName($fqsen->getNameWithAlternateId());
     }
 
@@ -1077,8 +1080,8 @@ class CodeBase
     public function getPropertyByFQSEN(
         FullyQualifiedPropertyName $fqsen
     ) : Property {
-        return $this->getClassMapByFQSEN(
-            $fqsen
+        return $this->getClassMapByFullyQualifiedClassName(
+            $fqsen->getFullyQualifiedClassName()
         )->getPropertyByName($fqsen->getNameWithAlternateId());
     }
 

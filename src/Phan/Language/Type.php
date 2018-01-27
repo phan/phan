@@ -506,8 +506,21 @@ class Type
      */
     public static function fromObject($object) : Type
     {
+        static $type_map = null;
+        if ($type_map === null) {
+            $type_map = [
+                'integer' => IntType::instance(false),
+                'boolean' => BoolType::instance(false),
+                'double'   => FloatType::instance(false),
+                'string'  => StringType::instance(false),
+                'object'  => ObjectType::instance(false),
+                'NULL'    => NullType::instance(false),
+                'array'   => ArrayType::instance(false),
+                'resource' => ResourceType::instance(false),  // For inferring the type of constants STDIN, etc.
+            ];
+        }
         // gettype(2) doesn't return 'int', it returns 'integer', so use FROM_PHPDOC
-        return Type::fromInternalTypeName(\gettype($object), false, self::FROM_PHPDOC);
+        return $type_map[\gettype($object)];
     }
 
     /**

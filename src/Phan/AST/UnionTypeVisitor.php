@@ -76,7 +76,10 @@ class UnionTypeVisitor extends AnalysisVisitor
         Context $context,
         bool $should_catch_issue_exception = true
     ) {
-        parent::__construct($code_base, $context);
+        // Inlined to be more efficient.
+        // parent::__construct($code_base, $context);
+        $this->code_base = $code_base;
+        $this->context = $context;
 
         $this->should_catch_issue_exception =
             $should_catch_issue_exception;
@@ -785,7 +788,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         return (new BinaryOperatorFlagVisitor(
             $this->code_base,
             $this->context
-        ))($node);
+        ))->__invoke($node);
     }
 
     /**

@@ -48,7 +48,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     {
         // AST_ASSIGN_OP uses \ast\flags\BINARY_* in ast versions >= 20.
         // NOTE: Some operations currently don't exist in any php version, such as `$x ||= 2;`, `$x xor= 2;`
-        return (new Element($node))->acceptBinaryFlagVisitor($this);
+        return Element::acceptBinaryFlagVisitor($node, $this);
     }
 
     /**

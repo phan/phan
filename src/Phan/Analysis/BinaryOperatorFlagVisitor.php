@@ -46,7 +46,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function __invoke(Node $node)
     {
-        return (new Element($node))->acceptBinaryFlagVisitor($this);
+        return Element::acceptBinaryFlagVisitor($node, $this);
     }
 
     /**

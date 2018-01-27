@@ -1211,4 +1211,22 @@ class ParseVisitor extends ScopeVisitor
         // Figure out if any of the aliases are wrong after analysis phase.
         $this->code_base->addClassAlias($original_fqsen, $alias_fqsen, $context, $node->lineno ?? 0);
     }
+
+    // common no-ops
+    /** @return Context */
+    public function visitArrayElem(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitVar(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitName(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitArgList(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitStmtList(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitProp(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitArray(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitBinaryOp(Node $node) { return $this->context; }
 }
