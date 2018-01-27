@@ -15,7 +15,7 @@ abstract class Scope
     /**
      * @var Scope|null
      */
-    private $parent_scope = null;
+    protected $parent_scope = null;
 
     /**
      * @var FQSEN|null
@@ -53,10 +53,7 @@ abstract class Scope
      */
     public function hasParentScope() : bool
     {
-        return (
-            !empty($this->parent_scope)
-            && $this->parent_scope !== null
-        );
+        return $this->parent_scope !== null;
     }
 
     /**
@@ -74,7 +71,7 @@ abstract class Scope
      */
     public function hasFQSEN() : bool
     {
-        return !empty($this->fqsen);
+        return $this->fqsen !== null;
     }
 
     /**
@@ -164,7 +161,7 @@ abstract class Scope
      */
     public function hasVariableWithName(string $name) : bool
     {
-        return (!empty($this->variable_map[$name]));
+        return \array_key_exists($name, $this->variable_map);
     }
 
     /**

@@ -69,7 +69,8 @@ class UnionType implements \Serializable
      * @param Type[] $type_list
      * @return UnionType
      */
-    public static function of(array $type_list) {
+    public static function of(array $type_list)
+    {
         $n = \count($type_list);
         if ($n === 0) {
             return self::$empty_instance;
@@ -77,6 +78,18 @@ class UnionType implements \Serializable
             return \reset($type_list)->asUnionType();
         } else {
             return new self($type_list);
+        }
+    }
+
+    private static function ofUniqueTypes(array $type_list)
+    {
+        $n = \count($type_list);
+        if ($n === 0) {
+            return self::$empty_instance;
+        } elseif ($n === 1) {
+            return \reset($type_list)->asUnionType();
+        } else {
+            return new self($type_list, true);
         }
     }
 
@@ -503,7 +516,7 @@ class UnionType implements \Serializable
             if ($type === $other_type) {
                 // Remove the only instance of $type from the copy.
                 unset($type_set[$key]);
-                return self::of($type_set);
+                return self::ofUniqueTypes($type_set);
             }
         }
         // We did not find $type in type_set. The resulting union type is unchanged.
@@ -2012,6 +2025,10 @@ class UnionType implements \Serializable
      */
     public static function merge(array $union_types) : UnionType
     {
+        $n = \count($union_types);
+        if ($n < 2) {
+            return \reset($union_types) ?: UnionType::$empty_instance;
+        }
         $new_type_set = [];
         foreach ($union_types as $type) {
             $type_set = $type->type_set;
@@ -2028,7 +2045,7 @@ class UnionType implements \Serializable
                 }
             }
         }
-        return new UnionType($new_type_set, true);
+        return UnionType::ofUniqueTypes($new_type_set);
     }
 
     /**

@@ -265,25 +265,30 @@ class ContextMergeVisitor extends KindVisitorImplementation
         // the variable from every side of the branch
         $union_type =
             function (string $variable_name) use ($scope_list) {
-
+                $previous_type = null;
+                $type_list = [];
                 // Get a list of all variables with the given name from
                 // each scope
-                $type_list = \array_filter(\array_map(
-                    function (Scope $scope) use ($variable_name) {
-                        if (!$scope->hasVariableWithName($variable_name)) {
-                            return null;
-                        }
+                foreach ($scope_list as $scope) {
+                    if (!$scope->hasVariableWithName($variable_name)) {
+                        continue;
+                    }
 
-                        return $scope->getVariableByName($variable_name)->getUnionType();
-                    },
-                    $scope_list
-                ));
+                    $type = $scope->getVariableByName($variable_name)->getUnionType();
+                    // Frequently, a branch won't even modify a variable's type.
+                    // The immutable UnionType might have the exact same instance
+                    if ($type !== $previous_type) {
+                        $type_list[] = $type;
+                        $previous_type = $type;
+                    }
+                };
 
                 if (\count($type_list) < 2) {
-                    return new UnionType(\count($type_list) === 1 ? \reset($type_list)->getTypeSet() : []);
+                    $result = \reset($type_list) ?: UnionType::empty();
+                } else {
+                    // compute the un-normalized types
+                    $result = UnionType::merge($type_list);
                 }
-                // compute the un-normalized types
-                $result = UnionType::merge($type_list);
 
                 $result_count = $result->typeCount();
                 foreach ($type_list as $type) {

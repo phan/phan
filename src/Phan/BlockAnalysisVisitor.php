@@ -66,6 +66,58 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $this->depth = $depth;
     }
 
+    // No-ops for frequent node types
+    public function visitVar(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        // Let any configured plugins do a pre-order
+        // analysis of the node.
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        \assert(!empty($context), 'Context cannot be null');
+
+        // With a context that is inside of the node passed
+        // to this method, we analyze all children of the
+        // node.
+        $name_node = $node->children['name'];
+        // E.g. ${expr()} is valid PHP. Recurse if that's a node.
+        if ($name_node instanceof Node) {
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $name_node);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        return $context;
+    }
+
+    public function visitParam(Node $node) : Context
+    {
+        // Could invoke plugins, but not right now
+        return $this->context;
+    }
+
+    public function visitUseElem(Node $node) : Context
+    {
+        // Could invoke plugins, but not right now
+        return $this->context;
+    }
+
+    public function visitName(Node $node) : Context
+    {
+        // Could invoke plugins, but not right now
+        return $this->context;
+    }
+    // end No-ops
+
     /**
      * For non-special nodes, we propagate the context and scope
      * from the parent, through the children and return the
@@ -100,7 +152,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = (new PreOrderAnalysisVisitor(
             $this->code_base,
             $context
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -939,7 +991,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         $context = (new PreOrderAnalysisVisitor(
             $this->code_base,
             $context
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
