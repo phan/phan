@@ -179,6 +179,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitPostInc(Node $node) : UnionType
     {
+        // TODO: Check if union type is sane (string/int)
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -199,6 +200,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitPostDec(Node $node) : UnionType
     {
+        // TODO: Check if union type is sane (string/int)
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -219,6 +221,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitPreDec(Node $node) : UnionType
     {
+        // TODO: Check if union type is sane (string/int)
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -239,6 +242,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitPreInc(Node $node) : UnionType
     {
+        // TODO: Check if union type is sane (string/int)
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -259,6 +263,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      */
     public function visitClone(Node $node) : UnionType
     {
+        // TODO: Check if union type is sane (Any object type)
         return self::unionTypeFromNode(
             $this->code_base,
             $this->context,

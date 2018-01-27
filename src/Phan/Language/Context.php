@@ -50,12 +50,16 @@ class Context extends FileRef
     private $scope;
 
     /**
+     * @var array<int,UnionType>
+     * caches union types for a given node
+     */
+    private $union_type_cache  = [];
+
+    /**
      * Create a new context
      */
     public function __construct()
     {
-        $this->namespace = '';
-        $this->namespace_map = [];
         $this->scope = new GlobalScope;
     }
 
