@@ -87,7 +87,8 @@ class XdebugHandler
         Automatically disabling xdebug, it's unnecessary unless you are debugging or developing phan itself, and makes phan slower.
         To run Phan with xdebug, set the environment variable PHAN_ALLOW_XDEBUG to 1.
         To disable this warning, set the environment variable PHAN_DISABLE_XDEBUG_WARN to 1.
-        To include function signatures of xdebug, see .phan/internal_stubs/xdebug.xdebug.phan_php
+        To include function signatures of xdebug, see .phan/internal_stubs/xdebug.phan_php
+
 EOT
                 );
             }
