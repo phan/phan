@@ -270,6 +270,8 @@ class Element
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      *
+     * TODO: This is wrong, a parameter can be neither ref nor variadic, or both.
+     *
      * @suppress PhanUnreferencedPublicMethod
      */
     public function acceptParamFlagVisitor(FlagVisitor $visitor)

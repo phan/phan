@@ -221,7 +221,7 @@ class FunctionFactory
                     $parameter_name = \str_replace('=', '', $parameter_name);
                 }
 
-                $parameter = new Parameter(
+                $parameter = Parameter::create(
                     $function->getContext(),
                     $parameter_name,
                     $parameter_type,

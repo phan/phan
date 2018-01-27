@@ -87,7 +87,7 @@ class Parameter
             $flags |= \ast\flags\PARAM_VARIADIC;
         }
         $union_type = $this->getUnionType();
-        $param = new \Phan\Language\Element\Parameter(
+        $param = \Phan\Language\Element\Parameter::create(
             $context,
             $this->getName(),
             $union_type,

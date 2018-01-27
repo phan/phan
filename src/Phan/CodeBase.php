@@ -1181,8 +1181,8 @@ class CodeBase
         // Don't need to track this any more
         unset($this->internal_function_fqsen_set[$canonical_fqsen]);
 
-        if (!$function_signature_map->offsetExists($name)) {
-            $signature = $function_signature_map->offsetGet($name);
+        if (isset($function_signature_map[$name])) {
+            $signature = $function_signature_map[$name];
 
             // Add each method returned for the signature
             foreach (FunctionFactory::functionListFromSignature(
