@@ -131,6 +131,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if (!($child_node instanceof Node)) {
                 continue;
             }
+            $context->clearCachedUnionTypes();
 
             // Step into each child node and get an
             // updated context for the node

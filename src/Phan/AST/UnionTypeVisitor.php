@@ -119,14 +119,22 @@ class UnionTypeVisitor extends AnalysisVisitor
 
             return Type::fromObject($node)->asUnionType();
         }
+        $node_id = \spl_object_id($node);
+
+        $cached_union_type = $context->getUnionTypeOfNodeIfCached($node_id);
+        if ($cached_union_type !== null) {
+            return $cached_union_type;
+        }
 
         if ($should_catch_issue_exception) {
             try {
-                return (new self(
+                $union_type = (new self(
                     $code_base,
                     $context,
                     $should_catch_issue_exception
-                ))($node);
+                ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'visit'}($node);
+                $context->setCachedUnionTypeOfNode($node_id, $union_type);
+                return $union_type;
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
                     $code_base,
@@ -137,11 +145,13 @@ class UnionTypeVisitor extends AnalysisVisitor
             }
         }
 
-        return (new self(
+        $union_type = (new self(
             $code_base,
             $context,
             $should_catch_issue_exception
-        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'visit'}($node);
+        $context->setCachedUnionTypeOfNode($node_id, $union_type);
+        return $union_type;
     }
 
     /**

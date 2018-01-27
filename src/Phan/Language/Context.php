@@ -241,6 +241,8 @@ class Context extends FileRef
     public function setScope(Scope $scope)
     {
         $this->scope = $scope;
+        // TODO: Less aggressive? ConditionVisitor creates a lot of scopes
+        $this->union_type_cache = [];
     }
 
     /**
@@ -552,5 +554,31 @@ class Context extends FileRef
         }
 
         return $has_suppress_issue;
+    }
+
+    /**
+     * @param int $node_id
+     * @return ?UnionType
+     */
+    public function getUnionTypeOfNodeIfCached(int $node_id)
+    {
+        return $this->union_type_cache[$node_id] ?? null;
+    }
+
+    /**
+     * TODO: This may be unsafe? Clear the cache after a function goes out of scope.
+     * @return void
+     */
+    public function setCachedUnionTypeOfNode(int $node_id, UnionType $type)
+    {
+        $this->union_type_cache[$node_id] = $type;
+    }
+
+    /**
+     * @return void
+     */
+    public function clearCachedUnionTypes()
+    {
+        $this->union_type_cache = [];
     }
 }
