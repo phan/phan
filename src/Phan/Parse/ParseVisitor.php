@@ -836,6 +836,8 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * TODO: Defer analysis of the inside of methods until the class gets hydrated.
      */
     public function visitReturn(Node $node) : Context
     {
@@ -873,6 +875,8 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * TODO: Defer analysis of the inside of methods until the method/function gets hydrated.
      */
     public function visitYield(Node $node) : Context
     {
