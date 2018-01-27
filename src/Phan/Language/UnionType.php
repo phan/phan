@@ -554,9 +554,12 @@ class UnionType implements \Serializable
      */
     public function hasSelfType() : bool
     {
-        return $this->hasTypeMatchingCallback(function (Type $type) : bool {
-            return $type->isSelfType();
-        });
+        foreach ($this->type_set as $type) {
+            if ($type->isSelfType()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1142,10 +1145,14 @@ class UnionType implements \Serializable
         UnionType $target
     ) : bool {
         // Fast-track most common cases first
-
+        $type_set = $this->type_set;
         // If either type is unknown, we can't call it
         // a success
-        if ($this->isEmpty() || $target->isEmpty()) {
+        if (\count($type_set) === 0) {
+            return true;
+        }
+        $target_type_set = $target->type_set;
+        if (\count($target_type_set) === 0) {
             return true;
         }
 
@@ -1181,15 +1188,15 @@ class UnionType implements \Serializable
         }
 
         // mixed <-> mixed
-        if ($target->hasType($mixed_type)
-            || $this->hasType($mixed_type)
+        if (\in_array($mixed_type, $type_set, true)
+            || \in_array($mixed_type, $target_type_set, true)
         ) {
             return true;
         }
 
         // int -> float
-        if ($this->hasType($int_type)
-            && $target->hasType($float_type)
+        if (\in_array($int_type, $type_set, true)
+            && \in_array($float_type, $target_type_set, true)
         ) {
             return true;
         }
@@ -1197,8 +1204,8 @@ class UnionType implements \Serializable
         // Check conversion on the cross product of all
         // type combinations and see if any can cast to
         // any.
-        foreach ($this->type_set as $source_type) {
-            foreach ($target->type_set as $target_type) {
+        foreach ($type_set as $source_type) {
+            foreach ($target_type_set as $target_type) {
                 if ($source_type->canCastToType($target_type)) {
                     return true;
                 }
@@ -1206,12 +1213,12 @@ class UnionType implements \Serializable
         }
 
         // Allow casting ?T to T|null for any type T. Check if null is part of this type first.
-        if ($target->hasType($null_type)) {
-            foreach ($this->type_set as $source_type) {
+        if (\in_array($null_type, $target_type_set, true)) {
+            foreach ($type_set as $source_type) {
                 // Only redo this check for the nullable types, we already failed the checks for non-nullable types.
                 if ($source_type->getIsNullable()) {
                     $non_null_source_type = $source_type->withIsNullable(false);
-                    foreach ($target->type_set as $target_type) {
+                    foreach ($target_type_set as $target_type) {
                         if ($non_null_source_type->canCastToType($target_type)) {
                             return true;
                         }
@@ -1514,7 +1521,6 @@ class UnionType implements \Serializable
      * A UnionType with generic array types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
-     * @see genericArrayElementTypes
      */
     public function genericArrayTypes() : UnionType
     {
@@ -1530,7 +1536,6 @@ class UnionType implements \Serializable
      * A UnionType with known object types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
-     * @see genericArrayElementTypes
      */
     public function objectTypes() : UnionType
     {
@@ -1561,7 +1566,6 @@ class UnionType implements \Serializable
      * A UnionType with known scalar types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
-     * @see genericArrayElementTypes
      */
     public function scalarTypes() : UnionType
     {
@@ -1581,7 +1585,6 @@ class UnionType implements \Serializable
      * A UnionType with known callable types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
-     * @see genericArrayElementTypes
      */
     public function callableTypes() : UnionType
     {
@@ -1620,7 +1623,6 @@ class UnionType implements \Serializable
      * A UnionType with known callable types kept, other types filtered out.
      *
      * @see nonGenericArrayTypes
-     * @see genericArrayElementTypes
      */
     public function isExclusivelyCallable() : bool
     {
@@ -1712,8 +1714,13 @@ class UnionType implements \Serializable
      */
     public function genericArrayElementTypes() : UnionType
     {
+        // This is frequently called, and has been optimized
         $builder = new UnionTypeBuilder();
-        foreach ($this->type_set as $type) {
+        $type_set = $this->type_set;
+        if (\count($type_set) === 0) {
+            return self::$empty_instance;
+        }
+        foreach ($type_set as $type) {
             if ($type->isGenericArray()) {
                 $builder->addType($type->genericArrayElementType());
             }
@@ -1730,13 +1737,13 @@ class UnionType implements \Serializable
         }
 
         // If array is in there, then it can be any type
-        if ($this->hasType($array_type_nonnull)) {
+        if (\in_array($array_type_nonnull, $type_set, true)) {
             $builder->addType($mixed_type);
             $builder->addType($null_type);
-        } elseif ($this->hasType($mixed_type)
+        } elseif (\in_array($mixed_type, $type_set, true)
             || (
                 Config::get_null_casts_as_any_type()
-                && $this->hasType($array_type_nullable)
+                && \in_array($array_type_nullable, $type_set, true)
             )
         ) {
             // Same for mixed
@@ -1841,8 +1848,19 @@ class UnionType implements \Serializable
             "Recursion has gotten out of hand"
         );
 
+        $type_set = $this->type_set;
+        if (\count($type_set) === 0) {
+            return self::$empty_instance;
+        } elseif (\count($type_set) === 1) {
+            return \reset($type_set)->asExpandedTypes(
+                $code_base,
+                $recursion_depth + 1
+            );
+        }
+        // 2 or more union types to merge
+
         $builder = new UnionTypeBuilder();
-        foreach ($this->type_set as $type) {
+        foreach ($type_set as $type) {
             $builder->addUnionType(
                 $type->asExpandedTypes(
                     $code_base,

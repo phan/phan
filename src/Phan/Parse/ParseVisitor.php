@@ -1031,8 +1031,8 @@ class ParseVisitor extends ScopeVisitor
             $line = $ftemp->current();
             \assert(\is_string($line));
             unset($ftemp);
-            if (strpos($line, '{') === false
-                || strpos($line, '}') === false
+            if (\strpos($line, '{') === false
+                || \strpos($line, '}') === false
             ) {
                 $this->emitIssue(
                     Issue::CompatibleExpressionPHP7,

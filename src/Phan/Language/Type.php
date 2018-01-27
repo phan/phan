@@ -709,7 +709,7 @@ class Type
             return UnionType::fromFullyQualifiedString($type_name);
         }, $template_parameter_type_name_list);
 
-        if (0 !== strpos($namespace, '\\')) {
+        if (0 !== \strpos($namespace, '\\')) {
             $namespace = '\\' . $namespace;
         }
 
@@ -1205,7 +1205,7 @@ class Type
      */
     public function isSelfType() : bool
     {
-        return self::isSelfTypeString((string)$this);
+        return $this->namespace === '\\' && self::isSelfTypeString($this->name);
     }
 
     /**

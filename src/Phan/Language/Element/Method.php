@@ -467,8 +467,8 @@ class Method extends ClassElement implements FunctionInterface
                     //       or $this in the type because I'm guessing
                     //       it doesn't really matter. Apologies if it
                     //       ends up being an issue.
-                    $comment_return_union_type = $comment_return_union_type->withUnionType(
-                        $context->getClassFQSEN()->asUnionType()
+                    $comment_return_union_type = $comment_return_union_type->withType(
+                        $context->getClassFQSEN()->asType()
                     );
                     // $comment->setReturnType($comment_return_union_type);
                 }
