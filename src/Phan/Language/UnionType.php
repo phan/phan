@@ -1878,11 +1878,9 @@ class UnionType implements \Serializable
      */
     public function unserialize($serialized)
     {
-        $this->type_set = self::getUniqueTypes(
-            \array_map(function (string $type_name) : Type {
-                return Type::fromFullyQualifiedString($type_name);
-            }, \explode('|', $serialized ?? ''))
-        );
+        // NOTE: Potentially need to handle "array{field:int|string}" in the future.
+        // TODO: Not going to work with template types
+        $this->type_set = UnionType::fromFullyQualifiedString($serialized)->getTypeSet();
     }
 
     /**

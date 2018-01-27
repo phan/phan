@@ -643,6 +643,9 @@ class Type
     public static function fromFullyQualifiedStringInner(
         string $fully_qualified_string
     ) : Type {
+        if (empty($fully_qualified_string)) {
+            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        }
         \assert(
             !empty($fully_qualified_string),
             "Type cannot be empty"

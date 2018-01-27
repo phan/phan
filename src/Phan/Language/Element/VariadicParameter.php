@@ -91,7 +91,7 @@ class VariadicParameter extends Parameter {
         // corresponding method/function.
         // e.g. $this->getUnionType() is of type T[]
         //      $this->non_variadic->getUnionType() is of type T
-        return Parameter::create(
+        return new Parameter(
             $this->getFileRef(),
             $this->getName(),
             $this->getNonVariadicUnionType(),
@@ -100,9 +100,20 @@ class VariadicParameter extends Parameter {
     }
 
     /**
+     * If this Parameter is variadic, calling `getUnionType`
+     * will return an array type such as `DateTime[]`. This
+     * method will return the element type (such as `DateTime`)
+     * for variadic parameters.
+     */
+    public function getNonVariadicUnionType() : UnionType
+    {
+        return parent::getUnionType();
+    }
+
+    /**
      * If this parameter is variadic (e.g. `DateTime ...$args`),
      * then this returns the corresponding array type(s) of $args.
-     * (e.g. `DateTime[]`)
+     * (e.g. `array<int,DateTime>`)
      *
      * NOTE: For analyzing the code within a function,
      * code should pass $param->cloneAsNonVariadic() instead.

@@ -429,7 +429,7 @@ class CodeBase
         $name_method_map = $this->name_method_map;
         $this->name_method_map = [];
         foreach ($name_method_map as $name => $method_map) {
-            $this->name_method_map->offsetSet($name, $method_map->deepCopy());
+            $this->name_method_map[$name] = $method_map->deepCopy();
         }
     }
 

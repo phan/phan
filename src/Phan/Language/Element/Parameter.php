@@ -83,14 +83,6 @@ class Parameter extends Variable
     }
 
     /**
-     * @return static - non-variadic clone which can be modified.
-     */
-    public function cloneAsNonVariadic()
-    {
-        return clone($this);  // See override in VariadicParameter;
-    }
-
-    /**
      * @return bool
      * True if this parameter has a type for its
      * default value
@@ -223,6 +215,11 @@ class Parameter extends Variable
             UnionType::fromReflectionType($reflection_parameter->getType()),
             $flags
         );
+        if ($reflection_parameter->isOptional()) {
+            $parameter->setDefaultValueType(
+                NullType::instance(false)->asUnionType()
+            );
+        }
         return $parameter;
     }
 
@@ -243,7 +240,7 @@ class Parameter extends Variable
         );
 
         // Create the skeleton parameter from what we know so far
-        $parameter = new Parameter(
+        $parameter = Parameter::create(
             $context,
             (string)$node->children['name'],
             $union_type,
@@ -364,11 +361,7 @@ class Parameter extends Variable
      */
     public function getNonVariadicUnionType() : UnionType
     {
-        $union_type = parent::getUnionType();
-        if ($this->isCloneOfVariadic()) {
-            return $union_type->nonArrayTypes();  // clones converted inner types to a generic array T[]. Convert it back to T.
-        }
-        return $union_type;
+        return self::getUnionType();
     }
 
     /**
@@ -391,7 +384,7 @@ class Parameter extends Variable
      */
     public function addUnionType(UnionType $union_type)
     {
-        parent::setUnionType(parent::getUnionType()->withUnionType($union_type));
+        parent::setUnionType(self::getUnionType()->withUnionType($union_type));
     }
 
     /**
@@ -404,7 +397,7 @@ class Parameter extends Variable
      */
     public function addType(Type $type)
     {
-        parent::setUnionType(parent::getUnionType()->withType($type));
+        parent::setUnionType(self::getUnionType()->withType($type));
     }
 
     /**
