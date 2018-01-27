@@ -429,7 +429,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if (!\is_string($name)) {
             return self::STATUS_PROCEED;
         }
-        if (\in_array($name, ['E_ERROR', 'E_PARSE', 'E_CORE_ERROR', 'E_COMPILE_ERROR', 'E_USER_ERROR'])) {
+        if (\in_array($name, ['E_ERROR', 'E_PARSE', 'E_CORE_ERROR', 'E_COMPILE_ERROR', 'E_USER_ERROR'], true)) {
             return self::STATUS_RETURN;
         }
         if ($name === 'E_RECOVERABLE_ERROR') {

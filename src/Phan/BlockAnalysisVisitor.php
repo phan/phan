@@ -866,10 +866,11 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // with anything we learn and get a new context
         // indicating the state of the world within the
         // given node
+        // Equivalent to (new PostOrderAnalysisVisitor(...)($node)) but faster than using __invoke()
         $context = (new PreOrderAnalysisVisitor(
             $this->code_base,
             $context
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // Let any configured plugins do a pre-order
         // analysis of the node.
@@ -898,11 +899,12 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Now that we know all about our context (like what
         // 'self' means), we can analyze statements like
         // assignments and method calls.
+        // Equivalent to (new PostOrderAnalysisVisitor(...)($node)) but faster than using __invoke()
         $context = (new PostOrderAnalysisVisitor(
             $this->code_base,
             $context->withLineNumberStart($node->lineno ?? 0),
             $this->parent_node
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
 
         // let any configured plugins analyze the node
         ConfigPluginSet::instance()->analyzeNode(

@@ -65,6 +65,21 @@ class UnionType implements \Serializable
         $this->type_set = ($is_unique || \count($type_list) <= 1) ? $type_list : self::getUniqueTypes($type_list);
     }
 
+    /**
+     * @param Type[] $type_list
+     * @return UnionType
+     */
+    public static function of(array $type_list) {
+        $n = \count($type_list);
+        if ($n === 0) {
+            return self::$empty_instance;
+        } elseif ($n === 1) {
+            return \reset($type_list)->asUnionType();
+        } else {
+            return new self($type_list);
+        }
+    }
+
     /** @var UnionType */
     private static $empty_instance;
 
@@ -460,12 +475,15 @@ class UnionType implements \Serializable
      */
     public function withType(Type $type)
     {
-        if (\in_array($type, $this->type_set, true)) {
+        $type_set = $this->type_set;
+        if (\count($type_set) === 0) {
+            return $type->asUnionType();
+        }
+        if (\in_array($type, $type_set, true)) {
             return $this;
         }
-        $new_type_set = $this->type_set;
-        $new_type_set[] = $type;
-        return new UnionType($new_type_set, true);
+        $type_set[] = $type;
+        return new UnionType($type_set, true);
     }
 
     /**
@@ -479,18 +497,14 @@ class UnionType implements \Serializable
      */
     public function withoutType(Type $type)
     {
-        $i = \array_search($type, $this->type_set, true);
+        $type_set = $this->type_set;
+        $i = \array_search($type, $type_set, true);
         if ($i === false) {
             return $this;
         }
         $new_type_set = $this->type_set;
-        // equivalent to unset($new_type_set[$i]) but fills in the gap in array keys.
-        // TODO: How do other versions affect performance on large projects?
-        $replacement_type = \array_pop($new_type_set);
-        if ($replacement_type !== $type) {
-            $new_type_set[$i] = $replacement_type;
-        }
-        return new UnionType($new_type_set, true);
+        unset($new_type_set[$i]);
+        return self::of($new_type_set);
     }
 
     /**
@@ -1695,28 +1709,35 @@ class UnionType implements \Serializable
      */
     public function genericArrayElementTypes() : UnionType
     {
-        $builder = UnionType::createBuilderFromTypeList(
-            \array_map(function (Type $type) : Type {
-                return $type->genericArrayElementType();
-            }, \array_filter($this->type_set, function (Type $type) : bool {
-                return $type->isGenericArray();
-            }))
-        );
-
-        // If array is in there, then it can be any type
-        // Same for mixed
-        if ($this->hasType(ArrayType::instance(false))
-            || $this->hasType(MixedType::instance(false))
-            || (
-                Config::get_null_casts_as_any_type()
-                && $this->hasType(ArrayType::instance(true))
-            )
-        ) {
-            $builder->addType(MixedType::instance(false));
+        $builder = new UnionTypeBuilder();
+        foreach ($this->type_set as $type) {
+            if ($type->isGenericArray()) {
+                $builder->addType($type->genericArrayElementType());
+            }
+        }
+        static $array_type_nonnull = null;
+        static $array_type_nullable = null;
+        static $mixed_type = null;
+        static $null_type = null;
+        if ($array_type_nonnull === null) {
+            $array_type_nonnull = ArrayType::instance(false);
+            $array_type_nullable = ArrayType::instance(true);
+            $mixed_type = MixedType::instance(false);
+            $null_type = NullType::instance(false);
         }
 
-        if ($this->hasType(ArrayType::instance(false))) {
-            $builder->addType(NullType::instance(false));
+        // If array is in there, then it can be any type
+        if ($this->hasType($array_type_nonnull)) {
+            $builder->addType($mixed_type);
+            $builder->addType($null_type);
+        } elseif ($this->hasType($mixed_type)
+            || (
+                Config::get_null_casts_as_any_type()
+                && $this->hasType($array_type_nullable)
+            )
+        ) {
+            // Same for mixed
+            $builder->addType($mixed_type);
         }
 
         return $builder->getUnionType();
