@@ -897,7 +897,7 @@ class UnionTypeVisitor extends AnalysisVisitor
 
         // For any types that are templates, map them to concrete
         // types based on the parameters passed in.
-        return new UnionType(\array_map(function (Type $type) use ($node) {
+        return UnionType::of(\array_map(function (Type $type) use ($node) {
 
             // Get a fully qualified name for the type
             $fqsen = $type->asFQSEN();
@@ -2387,9 +2387,11 @@ class UnionTypeVisitor extends AnalysisVisitor
         }
         static $int_type;
         static $string_type;
+        static $int_or_string_type;
         if ($int_type === null) {
             $int_type = IntType::instance(false);
             $string_type = StringType::instance(false);
+            $int_or_string_type = new UnionType([$int_type, $string_type], true);
         }
         $key_enum_type = GenericArrayType::keyTypeFromUnionTypeKeys($union_type);
         switch ($key_enum_type) {
@@ -2409,7 +2411,7 @@ class UnionTypeVisitor extends AnalysisVisitor
                         return null;
                     }
                 }
-                return new UnionType([$int_type, $string_type], true);
+                return $int_or_string_type;
         }
     }
 }

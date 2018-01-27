@@ -338,7 +338,7 @@ class ContextNode
             // This is nonsense. Give up, but check if it's a type other than int/string.
             // (e.g. to catch typos such as $$this->foo = bar;)
             try {
-                $name_node_type = (new UnionTypeVisitor($this->code_base, $this->context, true))($name_node);
+                $name_node_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $name_node, true);
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
                     $this->code_base,

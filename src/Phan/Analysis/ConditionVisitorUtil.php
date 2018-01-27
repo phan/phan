@@ -289,7 +289,7 @@ trait ConditionVisitorUtil
         if ($var_name_node instanceof Node) {
             // This is nonsense. Give up, but check if it's a type other than int/string.
             // (e.g. to catch typos such as $$this->foo = bar;)
-            $name_node_type = (new UnionTypeVisitor($this->code_base, $context, true))($var_name_node);
+            $name_node_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $context, $var_name_node, true);
             static $int_or_string_type;
             if ($int_or_string_type === null) {
                 $int_or_string_type = new UnionType([

@@ -1014,7 +1014,7 @@ class Type
     {
         // return new UnionType([$this]);
         // Memoize the set of types. The constructed UnionType object can be modified later, so it isn't memoized.
-        return $this->singleton_union_type ?? ($this->singleton_union_type = UnionType([$this], true));
+        return $this->singleton_union_type ?? ($this->singleton_union_type = new UnionType([$this], true));
     }
 
     /**
