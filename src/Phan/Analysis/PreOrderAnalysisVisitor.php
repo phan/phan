@@ -34,13 +34,16 @@ class PreOrderAnalysisVisitor extends ScopeVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      */
+    /*
     public function __construct(
         CodeBase $code_base,
         Context $context
     ) {
         parent::__construct($code_base, $context);
     }
+     */
 
+    /** @param Node $unused_node implementation for unhandled nodes */
     public function visit(Node $unused_node) : Context
     {
         return $this->context;

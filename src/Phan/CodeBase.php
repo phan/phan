@@ -429,7 +429,7 @@ class CodeBase
         $name_method_map = $this->name_method_map;
         $this->name_method_map = [];
         foreach ($name_method_map as $name => $method_map) {
-            $this->name_method_map[$name] = $method_map->deepCopy();
+            $this->name_method_map->offsetSet($name, $method_map->deepCopy());
         }
     }
 
@@ -1122,10 +1122,10 @@ class CodeBase
         FullyQualifiedClassName $fqsen
     ) : ClassMap {
         if (!$this->class_fqsen_class_map_map->offsetExists($fqsen)) {
-            $this->class_fqsen_class_map_map[$fqsen] = new ClassMap;
+            $this->class_fqsen_class_map_map->offsetSet($fqsen, new ClassMap);
         }
 
-        return $this->class_fqsen_class_map_map[$fqsen];
+        return $this->class_fqsen_class_map_map->offsetGet($fqsen);
     }
 
     /**
@@ -1160,7 +1160,7 @@ class CodeBase
             }
             // If we already created the alternates, do nothing.
             // TODO: This assumes we call hasFunctionWithFQSEN before adding.
-            if (isset($this->fqsen_func_map[$canonical_fqsen])) {
+            if ($this->fqsen_func_map->offsetExists($canonical_fqsen)) {
                 return false;
             }
         }
@@ -1181,8 +1181,8 @@ class CodeBase
         // Don't need to track this any more
         unset($this->internal_function_fqsen_set[$canonical_fqsen]);
 
-        if (!empty($function_signature_map[$name])) {
-            $signature = $function_signature_map[$name];
+        if (!$function_signature_map->offsetExists($name)) {
+            $signature = $function_signature_map->offsetGet($name);
 
             // Add each method returned for the signature
             foreach (FunctionFactory::functionListFromSignature(

@@ -20,12 +20,14 @@ abstract class ScopeVisitor extends AnalysisVisitor
      * The context of the parser at the node for which we'd
      * like to determine a type
      */
+    /*
     public function __construct(
         CodeBase $code_base,
         Context $context
     ) {
         parent::__construct($code_base, $context);
     }
+     */
 
     /**
      * Default visitor for node kinds that do not have

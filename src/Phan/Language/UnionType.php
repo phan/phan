@@ -497,14 +497,17 @@ class UnionType implements \Serializable
      */
     public function withoutType(Type $type)
     {
+        // Copy the array $this->type_set
         $type_set = $this->type_set;
-        $i = \array_search($type, $type_set, true);
-        if ($i === false) {
-            return $this;
+        foreach ($type_set as $key => $other_type) {
+            if ($type === $other_type) {
+                // Remove the only instance of $type from the copy.
+                unset($type_set[$key]);
+                return self::of($type_set);
+            }
         }
-        $new_type_set = $this->type_set;
-        unset($new_type_set[$i]);
-        return self::of($new_type_set);
+        // We did not find $type in type_set. The resulting union type is unchanged.
+        return $this;
     }
 
     /**
