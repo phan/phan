@@ -575,6 +575,26 @@ class Context extends FileRef
     }
 
     /**
+     * @param int $node_id
+     * @return ?array{0:UnionType,1:Clazz[]} $result
+     */
+    public function getCachedClassListOfNode(int $node_id)
+    {
+        return $this->union_type_cache[-$node_id] ?? null;
+    }
+
+    /**
+     * TODO: This may be unsafe? Clear the cache after a function goes out of scope.
+     * @param array{0:UnionType,1:Clazz[]} $result
+     * @return void
+     */
+    public function setCachedClassListOfNode(int $node_id, array $result)
+    {
+        // TODO: Rename
+        $this->union_type_cache[-$node_id] = $result;
+    }
+
+    /**
      * @return void
      */
     public function clearCachedUnionTypes()

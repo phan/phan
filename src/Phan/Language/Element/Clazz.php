@@ -783,20 +783,23 @@ class Clazz extends AddressableElement
             return false;
         }
         // NOTE: This gets the **unexpanded** union type (Should be 1 class and no parent classes).
-        $type_of_class_of_property = $property->getDefiningClassFQSEN()->asUnionType();
+        $type_of_class_of_property = $property->getDefiningClassFQSEN()->asType();
+        $accessing_class_type = $context->getClassFQSEN()->asType();
+
+        if ($type_of_class_of_property === $accessing_class_type) {
+            // Check for common case: Same class
+            return true;
+        }
 
         // We are in a class scope, and the property is either private or protected.
         if ($property->isPrivate()) {
-            $accessing_class_type = $context->getClassFQSEN()->asUnionType();
-            return $accessing_class_type->canCastToUnionType(
+            return $accessing_class_type->canCastToType(
                 $type_of_class_of_property
             );
         } else {
-            // TODO: Remove, should be unnecessary
-            $accessing_class_type = $context->getClassFQSEN()->asUnionType();
             // If the definition of the property is protected, then the subclasses of the defining class can access it.
             return $accessing_class_type->asExpandedTypes($code_base)->canCastToUnionType(
-                $type_of_class_of_property
+                $type_of_class_of_property->asUnionType()
             );
         }
     }

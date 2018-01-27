@@ -1124,11 +1124,12 @@ class CodeBase
     private function getClassMapByFullyQualifiedClassName(
         FullyQualifiedClassName $fqsen
     ) : ClassMap {
-        if (!$this->class_fqsen_class_map_map->offsetExists($fqsen)) {
-            $this->class_fqsen_class_map_map->offsetSet($fqsen, new ClassMap);
+        $class_fqsen_class_map_map = $this->class_fqsen_class_map_map;
+        if ($class_fqsen_class_map_map->offsetExists($fqsen)) {
+            return $class_fqsen_class_map_map->offsetGet($fqsen);
         }
-
-        return $this->class_fqsen_class_map_map->offsetGet($fqsen);
+        $class_fqsen_class_map_map->offsetSet($fqsen, new ClassMap);
+        return $class_fqsen_class_map_map->offsetGet($fqsen);
     }
 
     /**

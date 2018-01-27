@@ -1985,7 +1985,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         // have the constant we're looking for
         foreach ($union_type->nonNativeTypes()->getTypeSet() as $class_type) {
             // Get the class FQSEN
-            $class_fqsen = $class_type->asClassFQSEN();
+            $class_fqsen = FullyQualifiedClassName::fromType($class_type);
 
             // See if the class exists
             if (!$this->code_base->hasClassWithFQSEN($class_fqsen)) {

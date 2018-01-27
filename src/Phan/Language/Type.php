@@ -1353,7 +1353,7 @@ class Type
      */
     private static function isGenericArrayString(string $type_name) : bool
     {
-        if (strrpos($type_name, '[]') !== false) {
+        if (\strrpos($type_name, '[]') !== false) {
             return $type_name !== '[]';
         }
         return false;
@@ -1371,7 +1371,7 @@ class Type
             "Cannot call genericArrayElementType on non-generic array"
         );
 
-        if (($pos = strrpos($this->getName(), '[]')) !== false) {
+        if (($pos = \strrpos($this->getName(), '[]')) !== false) {
             \assert(
                 $this->getName() !== '[]' && $this->getName() !== 'array',
                 "Non-generic type requested to be non-generic"
@@ -1780,7 +1780,7 @@ class Type
     private function templateParameterTypeListAsString() : string
     {
         return '<' .
-            implode(',', array_map(function (UnionType $type) {
+            \implode(',', \array_map(function (UnionType $type) {
                 return (string)$type;
             }, $this->template_parameter_type_list)) . '>';
     }
@@ -1819,8 +1819,18 @@ class Type
      * 4: The shape components, if any. Null unless this is an array shape type string such as 'array{field:int}'
      *
      * NOTE: callers must check for the generic array symbol in the type name or for type names beginning with 'array{' (case insensitive)
+     *
+     * NOTE: callers must not mutate the result.
      */
     private static function typeStringComponents(
+        string $type_string
+    ) {
+        // This doesn't depend on any configs; the result can be safely cached.
+        static $cache = [];
+        return $cache[$type_string] ?? ($cache[$type_string] = self::typeStringComponentsInner($type_string));
+    }
+
+    private static function typeStringComponentsInner(
         string $type_string
     ) {
         // Check to see if we have template parameter types
@@ -1867,7 +1877,7 @@ class Type
             (string)\array_pop($fq_class_name_elements);
 
         $namespace = ($is_fully_qualified ? '\\' : '')
-            . implode('\\', \array_filter(
+            . \implode('\\', \array_filter(
                 $fq_class_name_elements
             ));
 

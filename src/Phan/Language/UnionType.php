@@ -8,6 +8,7 @@ use Phan\Exception\CodeBaseException;
 use Phan\Exception\IssueException;
 use Phan\Issue;
 use Phan\Language\Element\Clazz;
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 use Phan\Language\Type\ArrayShapeType;
@@ -199,28 +200,37 @@ class UnionType implements \Serializable
                 $type_string
             )->asUnionType();
         }
-        $types = \array_map(
-            function (string $type_name) use ($context, $source) : Type {
-                \assert($type_name !== '', "Type cannot be empty.");
-                return Type::fromStringInContext(
-                    $type_name,
-                    $context,
-                    $source
-                );
-            },
-            \array_filter(self::extractTypeParts($type_string), function (string $type_name) {
-                // Exclude empty type names
-                // Exclude namespaces without type names (e.g. `\`, `\NS\`)
-                return $type_name !== '' && \preg_match('@\\\\[\[\]]*$@', $type_name) === 0;
-            })
-        );
-
-        $instances = self::normalizeGenericMultiArrayTypes($types);
-        if (\count($instances) === 1) {
-            return \reset($instances)->asUnionType();
+        $types = [];
+        foreach (self::extractTypePartsForStringInContext($type_string) as $type_name) {
+            $types[] = Type::fromStringInContext(
+                $type_name,
+                $context,
+                $source
+            );
         }
-        // 2 or more
-        return new UnionType($instances);
+        return UnionType::of(self::normalizeGenericMultiArrayTypes($types));
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    private static function extractTypePartsForStringInContext(string $type_string)
+    {
+        static $cache = [];
+        $parts = $cache[$type_string] ?? null;
+        if (\is_array($parts)) {
+            return $parts;
+        }
+        $parts = [];
+        foreach (self::extractTypeParts($type_string) as $type_name) {
+            // Exclude empty type names
+            // Exclude namespaces without type names (e.g. `\`, `\NS\`)
+            if ($type_name !== '' && \preg_match('@\\\\[\[\]]*$@', $type_name) === 0) {
+                $parts[] = $type_name;
+            }
+        }
+        $cache[$type_string] = $parts;
+        return $parts;
     }
 
     /**
@@ -228,7 +238,11 @@ class UnionType implements \Serializable
      */
     private static function extractTypeParts(string $type_string) : array
     {
-        $parts = \array_map('trim', \explode('|', $type_string));
+        $parts = [];
+        foreach (\explode('|', $type_string) as $part) {
+            $parts[] = \trim($part);
+        }
+
         if (\count($parts) <= 1) {
             return $parts;
         }
@@ -1450,7 +1464,7 @@ class UnionType implements \Serializable
                 continue;
             }
             // Get the class FQSEN
-            $class_fqsen = $class_type->asClassFQSEN();
+            $class_fqsen = FullyQualifiedClassName::fromType($class_type);
 
             if ($class_type->isStaticType()) {
                 if (!$context->isInClassScope()) {
@@ -1716,9 +1730,6 @@ class UnionType implements \Serializable
         // This is frequently called, and has been optimized
         $builder = new UnionTypeBuilder();
         $type_set = $this->type_set;
-        if (\count($type_set) === 0) {
-            return self::$empty_instance;
-        }
         foreach ($type_set as $type) {
             if ($type->isGenericArray()) {
                 $builder->addType($type->genericArrayElementType());

@@ -379,6 +379,64 @@ class ContextNode
     const CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME = 2;
 
     /**
+     * @return array{0:UnionType,1:Clazz[]}
+     */
+    public function getClassListInner(bool $ignore_missing_classes)
+    {
+        $node = $this->node;
+        if (!($node instanceof Node)) {
+            return [UnionType::empty(), []];
+        }
+        $context = $this->context;
+        $node_id = \spl_object_id($node);
+
+        $cached_result = $context->getCachedClassListOfNode($node_id);
+        if ($cached_result) {
+            // About 25% of requests are cache hits
+            return $cached_result;
+        }
+        $code_base = $this->code_base;
+        $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+            $code_base,
+            $context,
+            $node
+        );
+        if ($union_type->isEmpty()) {
+            $result = [$union_type, []];
+            $context->setCachedClassListOfNode($node_id, $result);
+            return $result;
+        }
+
+        $class_list = [];
+        if ($ignore_missing_classes) {
+            try {
+                // TODO: Not sure why iterator_to_array would cause a test failure
+                foreach ($union_type->asClassList(
+                    $code_base,
+                    $context
+                ) as $clazz) {
+                    $class_list[] = $clazz;
+                }
+                $result = [$union_type, $class_list];
+                $context->setCachedClassListOfNode($node_id, $result);
+                return $result;
+            } catch (CodeBaseException $exception) {
+                // swallow it
+                // TODO: Is it appropriate to return class_list
+                return [$union_type, $class_list];
+            }
+        }
+        foreach ($union_type->asClassList(
+            $code_base,
+            $context
+        ) as $clazz) {
+            $class_list[] = $clazz;
+        }
+        $result = [$union_type, $class_list];
+        $context->setCachedClassListOfNode($node_id, $result);
+        return $result;
+    }
+    /**
      * @param bool $ignore_missing_classes
      * If set to true, missing classes will be ignored and
      * exceptions will be inhibited
@@ -402,33 +460,12 @@ class ContextNode
      */
     public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null) : array
     {
-        $union_type = $this->getClassUnionType();
+        [$union_type, $class_list] = $this->getClassListInner($ignore_missing_classes);
         if ($union_type->isEmpty()) {
             return [];
         }
 
-        $class_list = [];
-
-        if ($ignore_missing_classes) {
-            try {
-                foreach ($union_type->asClassList(
-                    $this->code_base,
-                    $this->context
-                ) as $clazz) {
-                    $class_list[] = $clazz;
-                }
-            } catch (CodeBaseException $exception) {
-                // swallow it
-            }
-        } else {
-            foreach ($union_type->asClassList(
-                $this->code_base,
-                $this->context
-            ) as $clazz) {
-                $class_list[] = $clazz;
-            }
-        }
-
+        // TODO: Should this check that count($cclass_list) > 0 instead? Or just always check?
         if (\count($class_list) === 0 && $expected_type_categories !== self::CLASS_LIST_ACCEPT_ANY) {
             if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories) : bool {
                 return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME && $type instanceof StringType);
