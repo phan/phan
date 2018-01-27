@@ -93,11 +93,11 @@ class UnionType implements \Serializable
         }
     }
 
-    /** @var UnionType */
+    /** @var EmptyUnionType */
     private static $empty_instance;
 
     /**
-     * @return UnionType
+     * @return EmptyUnionType (Real return type omitted for performance)
      */
     public static function empty() {
         return self::$empty_instance;
@@ -109,7 +109,7 @@ class UnionType implements \Serializable
      */
     public static function init() {
         if (is_null(self::$empty_instance)) {
-            self::$empty_instance = new UnionType();
+            self::$empty_instance = EmptyUnionType::instance();
         }
     }
 
@@ -596,10 +596,6 @@ class UnionType implements \Serializable
      */
     public function getTemplateParameterTypeList() : array
     {
-        if ($this->isEmpty()) {
-            return [];
-        }
-
         return \array_reduce(
             $this->type_set,
             function (array $map, Type $type) {
@@ -693,14 +689,12 @@ class UnionType implements \Serializable
      */
     public function hasStaticType() : bool
     {
-        static $static_types = null;
-        if ($static_types === null) {
-            $static_types = [
-                StaticType::instance(false),
-                StaticType::instance(true),
-            ];
+        foreach ($this->type_set as $type) {
+            if ($type instanceof StaticType) {
+                return true;
+            }
         }
-        return $this->hasAnyType($static_types);
+        return false;
     }
 
     /**
@@ -1269,10 +1263,6 @@ class UnionType implements \Serializable
      */
     public function hasArrayLike() : bool
     {
-        if ($this->isEmpty()) {
-            return false;
-        }
-
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isArrayLike();
         });
@@ -1285,10 +1275,6 @@ class UnionType implements \Serializable
      */
     public function hasGenericArray() : bool
     {
-        if ($this->isEmpty()) {
-            return false;
-        }
-
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isGenericArray();
         });
@@ -1301,10 +1287,6 @@ class UnionType implements \Serializable
      */
     public function hasArrayAccess() : bool
     {
-        if ($this->isEmpty()) {
-            return false;
-        }
-
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isArrayAccess();
         });
@@ -1317,10 +1299,6 @@ class UnionType implements \Serializable
      */
     public function hasTraversable() : bool
     {
-        if ($this->isEmpty()) {
-            return false;
-        }
-
         return $this->hasTypeMatchingCallback(function (Type $type) : bool {
             return $type->isTraversable();
         });
@@ -1414,7 +1392,10 @@ class UnionType implements \Serializable
     ) {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
-        foreach ($this->nonNativeTypes()->type_set as $class_type) {
+        foreach ($this->type_set as $class_type) {
+            if ($class_type->isNativeType()) {
+                continue;
+            }
             // Get the class FQSEN
             $class_fqsen = $class_type->asFQSEN();
 
@@ -1464,7 +1445,10 @@ class UnionType implements \Serializable
     ) {
         // Iterate over each viable class type to see if any
         // have the constant we're looking for
-        foreach ($this->nonNativeTypes()->type_set as $class_type) {
+        foreach ($this->type_set as $class_type) {
+            if ($class_type->isNativeType()) {
+                continue;
+            }
             // Get the class FQSEN
             $class_fqsen = $class_type->asClassFQSEN();
 
