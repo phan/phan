@@ -164,7 +164,7 @@ class ContextNode
 
         $adaptations_map = [];
         foreach ($trait_fqsen_list as $trait_fqsen) {
-            $adaptations_map[strtolower($trait_fqsen->__toString())] = new TraitAdaptations($trait_fqsen);
+            $adaptations_map[\strtolower($trait_fqsen->__toString())] = new TraitAdaptations($trait_fqsen);
         }
 
         foreach ($this->node->children ?? [] as $adaptation_node) {
@@ -216,7 +216,7 @@ class ContextNode
             return;
         }
 
-        $fqsen_key = strtolower($trait_fqsen->__toString());
+        $fqsen_key = \strtolower($trait_fqsen->__toString());
 
         $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
         if ($adaptations_info === null) {
@@ -235,7 +235,7 @@ class ContextNode
         // Handle `use MyTrait { myMethod as private; }` by skipping the original method.
         // TODO: Do this a cleaner way.
         if (strcasecmp($trait_new_method_name, $trait_original_method_name) === 0) {
-            $adaptations_info->hidden_methods[strtolower($trait_original_method_name)] = true;
+            $adaptations_info->hidden_methods[\strtolower($trait_original_method_name)] = true;
         }
     }
 
@@ -264,7 +264,7 @@ class ContextNode
             throw new UnanalyzableException($trait_chosen_class_name_node, "This shouldn't happen. Could not determine trait fqsen for trait with higher precedence for method $trait_chosen_method_name");
         }
 
-        if (($adaptations_map[strtolower($trait_chosen_fqsen->__toString())] ?? null) === null) {
+        if (($adaptations_map[\strtolower($trait_chosen_fqsen->__toString())] ?? null) === null) {
             // This will probably correspond to a PHP fatal error, but keep going anyway.
             Issue::maybeEmit(
                 $this->code_base,
@@ -287,7 +287,7 @@ class ContextNode
                 throw new UnanalyzableException($trait_insteadof_class_name, "This shouldn't happen. Could not determine trait fqsen for trait with lower precedence for method $trait_chosen_method_name");
             }
 
-            $fqsen_key = strtolower($trait_insteadof_fqsen->__toString());
+            $fqsen_key = \strtolower($trait_insteadof_fqsen->__toString());
 
             $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
             if ($adaptations_info === null) {

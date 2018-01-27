@@ -54,12 +54,14 @@ class ParseVisitor extends ScopeVisitor
      * The global code base in which we store all
      * state
      */
+    /*
     public function __construct(
         CodeBase $code_base,
         Context $context
     ) {
         parent::__construct($code_base, $context);
     }
+     */
 
     /**
      * Visit a node with kind `\ast\AST_CLASS`
@@ -793,7 +795,7 @@ class ParseVisitor extends ScopeVisitor
         $call = $node->children['class'];
 
         if ($call->kind == \ast\AST_NAME) {
-            $func_name = strtolower($call->children['name']);
+            $func_name = \strtolower($call->children['name']);
             if ($func_name == 'parent') {
                 // Make sure it is not a crazy dynamic parent method call
                 if (!($node->children['method'] instanceof Node)) {

@@ -535,7 +535,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             if ($cond->kind === \ast\AST_CONST) {
                 $name = $cond->children['name'];
                 if ($name->kind === \ast\AST_NAME) {
-                    switch (strtolower($name->children['name'])) {
+                    switch (\strtolower($name->children['name'])) {
                         case 'true':
                             return true;
                         case 'false':

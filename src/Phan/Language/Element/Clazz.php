@@ -1296,7 +1296,7 @@ class Clazz extends AddressableElement
     ) : bool {
         // All classes have a constructor even if it hasn't
         // been declared yet
-        if (!$is_direct_invocation && '__construct' === strtolower($name)) {
+        if (!$is_direct_invocation && '__construct' === \strtolower($name)) {
             return true;
         }
 
@@ -1516,7 +1516,7 @@ class Clazz extends AddressableElement
      */
     public function addTraitAdaptations(TraitAdaptations $trait_adaptations)
     {
-        $this->trait_adaptations_map[strtolower($trait_adaptations->getTraitFQSEN()->__toString())] = $trait_adaptations;
+        $this->trait_adaptations_map[\strtolower($trait_adaptations->getTraitFQSEN()->__toString())] = $trait_adaptations;
     }
 
     /**
@@ -1981,7 +1981,7 @@ class Clazz extends AddressableElement
         Clazz $class,
         $type_option
     ) {
-        $key = strtolower((string)$class->getFQSEN());
+        $key = \strtolower((string)$class->getFQSEN());
         if (!$this->isFirstExecution(
             __METHOD__ . ':' . $key
         )) {
@@ -2015,7 +2015,7 @@ class Clazz extends AddressableElement
         // Copy methods
         foreach ($class->getMethodMap($code_base) as $method) {
             if (!\is_null($trait_adaptations) && count($trait_adaptations->hidden_methods) > 0) {
-                $method_name_key = strtolower($method->getName());
+                $method_name_key = \strtolower($method->getName());
                 if (isset($trait_adaptations->hidden_methods[$method_name_key])) {
                     // TODO: Record that the method was hidden, and check later on that all method that were hidden were actually defined?
                     continue;

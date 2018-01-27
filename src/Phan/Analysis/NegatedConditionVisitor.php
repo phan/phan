@@ -247,7 +247,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
 
         $context = $this->context;
         if (self::isArgumentListWithVarAsFirstArgument($args)) {
-            $function_name = strtolower(ltrim($raw_function_name, '\\'));
+            $function_name = \strtolower(\ltrim($raw_function_name, '\\'));
             if (\count($args) !== 1) {
                 if (\strcasecmp($function_name, 'is_a') === 0) {
                     return $this->analyzeNegationOfVariableIsA($args, $context);

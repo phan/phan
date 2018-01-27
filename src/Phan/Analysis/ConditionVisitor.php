@@ -538,7 +538,7 @@ class ConditionVisitor extends KindVisitorImplementation
              $map = self::initTypeModifyingClosuresForVisitCall();
         }
 
-        $function_name = strtolower($raw_function_name);
+        $function_name = \strtolower($raw_function_name);
         $type_modification_callback = $map[$function_name] ?? null;
         if ($type_modification_callback === null) {
             return $this->context;

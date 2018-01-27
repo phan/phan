@@ -1468,7 +1468,7 @@ Node\SourceFileNode
 
     private static function phpParserIncludeTokenToAstIncludeFlags(Token $type) : int
     {
-        $type_name = strtolower(self::tokenToString($type));
+        $type_name = \strtolower(self::tokenToString($type));
         switch ($type_name) {
             case 'include':
                 return ast\flags\EXEC_INCLUDE;
