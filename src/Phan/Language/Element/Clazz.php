@@ -1039,6 +1039,17 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         string $name
     ) : bool {
+        if ($code_base->hasClassConstantWithFQSEN(
+            FullyQualifiedClassConstantName::make(
+                $this->getFQSEN(),
+                $name
+            )
+        )) {
+            return true;
+        }
+        if (!$this->hydrateIndicatingFirstTime($code_base)) {
+            return false;
+        }
         return $code_base->hasClassConstantWithFQSEN(
             FullyQualifiedClassConstantName::make(
                 $this->getFQSEN(),

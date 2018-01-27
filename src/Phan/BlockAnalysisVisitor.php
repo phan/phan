@@ -196,7 +196,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -284,7 +284,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -546,7 +546,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Skip any non Node children.
             if (!($child_node instanceof Node)) {
                 continue;
@@ -603,7 +603,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $fallthrough_context = $context;
         }
 
-        $child_nodes = $node->children ?? [];
+        $child_nodes = $node->children;
         $excluded_elem_count = 0;
 
         // With a context that is inside of the node passed
@@ -739,7 +739,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // them
         $catch_context_list = [$try_context];
 
-        foreach ($node->children['catches']->children ?? [] as $catch_node) {
+        foreach ($node->children['catches']->children as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
             assert($catch_node instanceof Node);
             // The conditions need to communicate to the outer

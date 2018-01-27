@@ -230,6 +230,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         return \count($this->reference_list);
     }
 
+    /** @var bool */
     private $is_hydrated = false;
 
     /**
@@ -247,6 +248,21 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
         $this->is_hydrated = true;
 
         $this->hydrateOnce($code_base);
+    }
+
+    /**
+     * This method must be called before analysis begins.
+     * This is identical to hydrate(), but returns true only if this is the first time the element was hydrated.
+     */
+    final public function hydrateIndicatingFirstTime(CodeBase $code_base) : bool
+    {
+        if ($this->is_hydrated) {  // Same as isFirstExecution(), inlined due to being called frequently.
+            return false;
+        }
+        $this->is_hydrated = true;
+
+        $this->hydrateOnce($code_base);
+        return true;
     }
 
     protected function hydrateOnce(CodeBase $unused_code_base)

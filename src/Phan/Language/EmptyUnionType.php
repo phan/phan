@@ -12,8 +12,9 @@ final class EmptyUnionType extends UnionType
 {
     /**
      * An optional list of types represented by this union
+     * @internal
      */
-    private function __construct()
+    public function __construct()
     {
         parent::__construct([], true);
     }

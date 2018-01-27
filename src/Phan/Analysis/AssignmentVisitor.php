@@ -204,7 +204,7 @@ class AssignmentVisitor extends AnalysisVisitor
         $element_type =
             $this->right_type->genericArrayElementTypes();
 
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             // Some times folks like to pass a null to
             // a list to throw the element away. I'm not
             // here to judge.

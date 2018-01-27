@@ -27,6 +27,10 @@ use Phan\Language\Type\TemplateType;
 use Phan\Language\Type\TrueType;
 use ast\Node;
 
+if (!\function_exists('spl_object_id')) {
+    require_once __DIR__ . '/../../spl_object_id.php';
+}
+
 class UnionType implements \Serializable
 {
     /**

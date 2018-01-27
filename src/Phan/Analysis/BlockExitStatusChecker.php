@@ -308,9 +308,9 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     {
         $inner_status = $this->check($node->children['stmts']);
         // for loops have an expression list as a condition.
-        $cond_nodes = $node->children['cond']->children ?? [];
+        $cond_nodes = $node->children['cond']->children ?? [];  // NOTE: $node->children['cond'] is null for the expression `for (;;)`
         // TODO: Check for unconditionally false conditions.
-        if (count($cond_nodes) === 0 || self::isTruthyLiteral(end($cond_nodes))) {
+        if (count($cond_nodes) === 0 || self::isTruthyLiteral(\end($cond_nodes))) {
             // Use a special case to analyze "while (1) {exprs}" or "for (; true; ) {exprs}"
             // TODO: identify infinite loops, mark those as STATUS_NO_PROCEED or STATUS_RETURN.
             return $this->computeDerivedStatusOfInfiniteLoop($inner_status);
@@ -450,7 +450,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
         if ($status) {
             return $status;
         }
-        $status = $this->computeStatusOfBlock($node->children ?? []);
+        $status = $this->computeStatusOfBlock($node->children);
         $node->flags = $status;
         return $status;
     }

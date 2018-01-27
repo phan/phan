@@ -419,7 +419,7 @@ class ParseVisitor extends ScopeVisitor
             Comment::ON_PROPERTY
         );
 
-        foreach ($node->children ?? [] as $i => $child_node) {
+        foreach ($node->children as $i => $child_node) {
             // Ignore children which are not property elements
             if (!$child_node
                 || $child_node->kind != \ast\AST_PROP_ELEM
@@ -547,7 +547,7 @@ class ParseVisitor extends ScopeVisitor
     {
         $class = $this->getContextClass();
 
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             \assert($child_node instanceof Node, 'expected class const element to be a Node');
             $name = $child_node->children['name'];
 
@@ -612,7 +612,7 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitConstDecl(Node $node) : Context
     {
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             \assert($child_node instanceof Node);
 
             $this->addConstant(
@@ -771,7 +771,7 @@ class ParseVisitor extends ScopeVisitor
         if (Config::get_backward_compatibility_checks()) {
             $this->analyzeBackwardCompatibility($node);
 
-            foreach ($node->children['args']->children ?? [] as $arg_node) {
+            foreach ($node->children['args']->children as $arg_node) {
                 if ($arg_node instanceof Node) {
                     $this->analyzeBackwardCompatibility($arg_node);
                 }

@@ -24,6 +24,8 @@ class Parameter extends Variable
     const REFERENCE_READ_WRITE = 2;
     const REFERENCE_WRITE_ONLY = 3;
 
+    // __construct inherited from Variable
+
     /**
      * @var UnionType|null
      * The type of the default value if any
@@ -35,37 +37,6 @@ class Parameter extends Variable
      * The value of the default, if one is set
      */
     private $default_value = null;
-
-    /**
-     * @param FileRef $file_ref
-     * The file and lines in which the unaddressable element lives
-     *
-     * @param string $name
-     * The name of the typed structural element
-     *
-     * @param UnionType $type
-     * A '|' delimited set of types satisfyped by this
-     * typed structural element.
-     *
-     * @param int $flags
-     * The flags property contains node specific flags. It is
-     * always defined, but for most nodes it is always zero.
-     * ast\kind_uses_flags() can be used to determine whether
-     * a certain kind has a meaningful flags value.
-     */
-    protected function __construct(
-        FileRef $file_ref,
-        string $name,
-        UnionType $type,
-        int $flags
-    ) {
-        parent::__construct(
-            $file_ref,
-            $name,
-            $type,
-            $flags
-        );
-    }
 
     /**
      * @return static
@@ -160,7 +131,7 @@ class Parameter extends Variable
     ) : array {
         $parameter_list = [];
         $is_optional_seen = false;
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             $parameter =
                 Parameter::fromNode($context, $code_base, $child_node);
 

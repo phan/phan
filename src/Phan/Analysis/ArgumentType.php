@@ -47,7 +47,7 @@ class ArgumentType
         // better multi-signature error messages
         self::checkIsDeprecatedOrInternal($code_base, $context, $method);
         if ($method->hasFunctionCallAnalyzer()) {
-            $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno ?? 0), $node->children['args']->children ?? []);
+            $method->analyzeFunctionCall($code_base, $context->withLineNumberStart($node->lineno ?? 0), $node->children['args']->children);
         }
 
         if ($method->isPHPInternal()) {
@@ -401,7 +401,7 @@ class ArgumentType
             }
         }
 
-        foreach ($node->children ?? [] as $i => $argument) {
+        foreach ($node->children as $i => $argument) {
             // Get the parameter associated with this argument
             $parameter = $method->getParameterForCaller($i);
 
