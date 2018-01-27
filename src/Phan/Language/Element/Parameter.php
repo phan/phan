@@ -279,15 +279,14 @@ class Parameter extends Variable
                     if ($default_node instanceof Node
                         && $default_node->kind === \ast\AST_ARRAY
                     ) {
-                        $union_type = new UnionType([
-                            ArrayType::instance(false),
-                        ]);
+                        $union_type = ArrayType::instance(false)->asUnionType();
                     } else {
                         // If we're in the parsing phase and we
                         // depend on a constant that isn't yet
                         // defined, give up and set it to
                         // bool|float|int|string to avoid having
                         // to handle a future type.
+                        // TODO: This can also be Null or an Array
                         $union_type = new UnionType([
                             BoolType::instance(false),
                             FloatType::instance(false),

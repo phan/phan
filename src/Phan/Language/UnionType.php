@@ -219,6 +219,7 @@ class UnionType implements \Serializable
         if (\count($instances) === 1) {
             return \reset($instances)->asUnionType();
         }
+        // 2 or more
         return new UnionType($instances);
     }
 
@@ -495,6 +496,7 @@ class UnionType implements \Serializable
         if (\in_array($type, $type_set, true)) {
             return $this;
         }
+        // 2 or more types in type_set
         $type_set[] = $type;
         return new UnionType($type_set, true);
     }

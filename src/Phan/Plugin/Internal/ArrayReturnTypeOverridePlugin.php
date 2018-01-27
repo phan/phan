@@ -43,6 +43,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
         $array_type  = ArrayType::instance(false);
         $int_type    = IntType::instance(false);
         $string_type = StringType::instance(false);
+        $int_or_string_or_false = new UnionType([$int_type, $string_type, $false_type]);
 
         $get_element_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($mixed_type, $false_type) : UnionType {
             if (\count($args) >= 1) {
@@ -54,7 +55,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
             }
             return $mixed_type->asUnionType();
         };
-        $get_key_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_type, $string_type, $false_type) : UnionType {
+        $get_key_type_of_first_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string_or_false, $false_type) : UnionType {
             if (\count($args) >= 1) {
                 $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[0]);
                 $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
@@ -63,11 +64,9 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                     return $key_type->withType($false_type);
                 }
             }
-            static $types = null;
-            $types = $types ?? [$int_type, $string_type, $false_type];
-            return new UnionType($types, true);
+            return $int_or_string_or_false;
         };
-        $get_key_type_of_second_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_type, $string_type, $false_type) : UnionType {
+        $get_key_type_of_second_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($int_or_string_or_false, $false_type) : UnionType {
             if (\count($args) >= 2) {
                 $array_type = UnionTypeVisitor::unionTypeFromNode($code_base, $context, $args[1]);
                 $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($array_type);
@@ -76,9 +75,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
                     return $key_type->withType($false_type);
                 }
             }
-            static $types = null;
-            $types = $types ?? [$int_type, $string_type, $false_type];
-            return new UnionType($types, true);
+            return $int_or_string_or_false;
         };
         $get_first_array_arg = static function (CodeBase $code_base, Context $context, Func $function, array $args) use ($array_type) : UnionType {
             if (\count($args) >= 1) {

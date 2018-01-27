@@ -96,10 +96,11 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             return FloatType::instance(false)->asUnionType();
         }
 
-        return new UnionType([
+        static $int_or_float = null;
+        return $int_or_float ?? ($int_or_float = new UnionType([
             IntType::instance(false),
             FloatType::instance(false)
-        ]);
+        ]));
     }
 
     // Code can bitwise xor strings byte by byte in PHP

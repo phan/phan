@@ -100,10 +100,11 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             return FloatType::instance(false)->asUnionType();
         }
 
-        return new UnionType([
+        static $int_or_float;
+        return $int_or_float ?? ($int_or_float = new UnionType([
             IntType::instance(false),
             FloatType::instance(false)
-        ]);
+        ]));
     }
 
     public function visitBinaryBitwiseAnd(Node $node)
@@ -294,9 +295,10 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             return ArrayType::instance(false)->asUnionType();
         }
 
-        return new UnionType([
+        static $int_or_float;
+        return $int_or_float ?? ($int_or_float = new UnionType([
             IntType::instance(false),
             FloatType::instance(false)
-        ]);
+        ]));
     }
 }

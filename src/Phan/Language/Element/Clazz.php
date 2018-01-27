@@ -358,7 +358,7 @@ class Clazz extends AddressableElement
                 $parent_type = Type::fromType(
                     $parent_type,
                     \array_map(function (UnionType $union_type) use ($template_type_map) : UnionType {
-                        return new UnionType(
+                        return UnionType::of(
                             \array_map(function (Type $type) use ($template_type_map) : Type {
                                 return $template_type_map[$type->getName()] ?? $type;
                             }, $union_type->getTypeSet())
