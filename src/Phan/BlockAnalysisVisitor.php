@@ -116,6 +116,34 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Could invoke plugins, but not right now
         return $this->context;
     }
+
+    public function visitStmtList(Node $node) : Context
+    {
+        $context = $this->context;
+        $plugin_set = ConfigPluginSet::instance();
+        $plugin_set->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+        foreach ($node->children as $child_node) {
+            // Skip any non Node children.
+            if (!($child_node instanceof Node)) {
+                continue;
+            }
+
+            // Step into each child node and get an
+            // updated context for the node
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $child_node);
+        }
+        $plugin_set->analyzeNode(
+            $this->code_base,
+            $context,
+            $node,
+            $this->parent_node
+        );
+        return $context;
+    }
     // end No-ops
 
     /**

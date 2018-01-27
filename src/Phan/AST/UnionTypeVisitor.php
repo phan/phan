@@ -5,6 +5,7 @@ use Phan\Analysis\AssignOperatorFlagVisitor;
 use Phan\Analysis\BinaryOperatorFlagVisitor;
 use Phan\Analysis\ConditionVisitor;
 use Phan\Analysis\NegatedConditionVisitor;
+use Phan\AST\Visitor\Element;
 use Phan\CodeBase;
 use Phan\Config;
 use Phan\Debug;
@@ -111,6 +112,7 @@ class UnionTypeVisitor extends AnalysisVisitor
         bool $should_catch_issue_exception = true
     ) : UnionType {
         if (!($node instanceof Node)) {
+            // TODO: String null shouldn't be a special case (or should be case insensitive)?
             if ($node === null || $node === 'null') {
                 return UnionType::empty();
             }
@@ -139,7 +141,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             $code_base,
             $context,
             $should_catch_issue_exception
-        ))($node);
+        ))->{Element::VISIT_LOOKUP_TABLE[$node->kind] ?? 'handleMissingNodeKind'}($node);
     }
 
     /**
