@@ -13,9 +13,10 @@ use Phan\Language\Element\Clazz;
 interface AnalyzeFunctionCallCapability
 {
     /**
-     * @return \Closure[] maps FQSEN of function or method to a closure used to analyze the function in question.
-     *                    '\A::foo' or 'A::foo' as a key will override a method, and '\foo' or 'foo' as a key will override a function.
-     *                    Closure Type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : void {...}
+     * @return array<string,\Closure>
+     * maps FQSEN of function or method to a closure used to analyze the function in question.
+     * '\A::foo' or 'A::foo' as a key will override a method, and '\foo' or 'foo' as a key will override a function.
+     * Closure Type: function(CodeBase $code_base, Context $context, Func|Method $function, array $args) : void {...}
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array;
 }

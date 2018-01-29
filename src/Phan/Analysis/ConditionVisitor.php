@@ -377,7 +377,7 @@ class ConditionVisitor extends KindVisitorImplementation
      *
      * This contains Phan's logic for inferring the resulting union types of variables, e.g. in \is_array($x).
      *
-     * @return \Closure[] - The closures to call for a given
+     * @return array<string,\Closure> - The closures to call for a given global function
      */
     private static function initTypeModifyingClosuresForVisitCall() : array
     {

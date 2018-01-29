@@ -17,7 +17,7 @@ final class ArraySet
 
     /**
      * @param Type $object
-     * @return Type[]
+     * @return array<int,Type>
      * @suppress PhanUnreferencedPublicMethod callers inlined this for performanced.
      */
     public static function singleton($object) : array
@@ -29,7 +29,7 @@ final class ArraySet
 
     /**
      * @param Type[]|\Iterator|null $object_list
-     * @return Type[]
+     * @return array<int,Type>
      */
     public static function from_list($object_list = null) : array
     {

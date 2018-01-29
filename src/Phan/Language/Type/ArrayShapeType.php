@@ -60,7 +60,7 @@ final class ArrayShapeType extends ArrayType
     }
 
     /**
-     * @return ArrayType[]
+     * @return array<int,ArrayType>
      */
     public function asGenericArrayTypeInstances() : array
     {

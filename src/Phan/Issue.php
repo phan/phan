@@ -374,7 +374,7 @@ class Issue
     private static function templateToFormatString(
         string $template
     ) : string {
-        /** @param string[] $matches */
+        /** @param array<int,string> $matches */
         return preg_replace_callback('/{([A-Z_]+)}/', function (array $matches) use ($template): string {
             $key = $matches[1];
             $replacement_exists = \array_key_exists($key, self::uncolored_format_string_for_template);
@@ -392,7 +392,7 @@ class Issue
     }
 
     /**
-     * @return Issue[]
+     * @return array<string,Issue>
      */
     public static function issueMap()
     {
@@ -403,7 +403,7 @@ class Issue
         }
 
         /**
-         * @var Issue[]
+         * @var array<int,Issue>
          * Note: All type ids should be unique, and be grouped by the category.
          * (E.g. If the category is (1 << x), then the type_id should be x*1000 + y
          * If new type ids are added, existing ones should not be changed.
@@ -2079,7 +2079,7 @@ class Issue
     }
 
     /**
-     * @param Issue[] $error_list
+     * @param array<int,Issue> $error_list
      * @return void
      * @suppress PhanPluginUnusedVariable (error_map and unique_type_id_set)
      */

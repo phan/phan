@@ -43,20 +43,20 @@ class Clazz extends AddressableElement
     private $parent_type = null;
 
     /**
-     * @var FullyQualifiedClassName[]
+     * @var array<int,FullyQualifiedClassName>
      * A possibly empty list of interfaces implemented
      * by this class
      */
     private $interface_fqsen_list = [];
 
     /**
-     * @var FullyQualifiedClassName[]
+     * @var array<int,FullyQualifiedClassName>
      * A possibly empty list of traits used by this class
      */
     private $trait_fqsen_list = [];
 
     /**
-     * @var TraitAdaptations[]
+     * @var array<int,TraitAdaptations>
      * Maps lowercase fqsen of a method to the trait names which are hidden
      * and the trait aliasing info
      */
@@ -83,8 +83,8 @@ class Clazz extends AddressableElement
      * A fully qualified name for this class
      *
      * @param Type|null $parent_type
-     * @param FullyQualifiedClassName[] $interface_fqsen_list
-     * @param FullyQualifiedClassName[] $trait_fqsen_list
+     * @param array<int,FullyQualifiedClassName> $interface_fqsen_list
+     * @param array<int,FullyQualifiedClassName> $trait_fqsen_list
      */
     public function __construct(
         Context $context,
@@ -554,7 +554,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return FullyQualifiedClassName[]
+     * @return array<int,FullyQualifiedClassName>
      * Get the list of interfaces implemented by this class
      */
     public function getInterfaceFQSENList() : array
@@ -649,7 +649,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @param \Phan\Language\Element\Comment\Parameter[] $magic_property_map mapping from property name to this
+     * @param array<string,\Phan\Language\Element\Comment\Parameter> $magic_property_map mapping from property name to property
      * @param CodeBase $code_base
      * @return bool whether or not we defined it.
      */
@@ -687,7 +687,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @param \Phan\Language\Element\Comment\Method[] $magic_method_map mapping from method name to this.
+     * @param array<string,\Phan\Language\Element\Comment\Method> $magic_method_map mapping from method name to this.
      * @param CodeBase $code_base
      * @return bool whether or not we defined it.
      */
@@ -752,18 +752,6 @@ class Clazz extends AddressableElement
                 $this->getFQSEN(),
                 $name
             )
-        );
-    }
-
-    /**
-     * @return Property[]
-     * The list of properties defined on this class
-     */
-    public function getPropertyList(
-        CodeBase $code_base
-    ) {
-        return $code_base->getPropertyMapByFullyQualifiedClassName(
-            $this->getFQSEN()
         );
     }
 
@@ -974,7 +962,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return Property[]
+     * @return array<string,Property>
      * The list of properties on this class
      */
     public function getPropertyMap(CodeBase $code_base) : array
@@ -1156,7 +1144,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return ClassConstant[]
+     * @return array<string,ClassConstant>
      * The constants associated with this class
      */
     public function getConstantMap(CodeBase $code_base) : array
@@ -1358,7 +1346,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return Method[]
+     * @return array<string,Method>
      * A list of methods on this class
      */
     public function getMethodMap(CodeBase $code_base) : array
@@ -1532,7 +1520,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return FullyQualifiedClassName[]
+     * @return array<int,FullyQualifiedClassName>
      * A list of FQSEN's for included traits
      */
     public function getTraitFQSENList() : array
@@ -1726,7 +1714,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return FullyQualifiedClassName[]
+     * @return array<int,FullyQualifiedClassName>
      */
     public function getNonParentAncestorFQSENList()
     {
@@ -1737,7 +1725,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return FullyQualifiedClassName[]
+     * @return array<int,FullyQualifiedClassName>
      */
     public function getAncestorFQSENList()
     {
@@ -1755,11 +1743,11 @@ class Clazz extends AddressableElement
      * The entire code base from which we'll find ancestor
      * details
      *
-     * @param FullyQualifiedClassName[]
+     * @param array<int,FullyQualifiedClassName>
      * A list of class FQSENs to turn into a list of
      * Clazz objects
      *
-     * @return Clazz[]
+     * @return array<int,Clazz>
      */
     private function getClassListFromFQSENList(
         CodeBase $code_base,
@@ -1779,7 +1767,7 @@ class Clazz extends AddressableElement
      * The entire code base from which we'll find ancestor
      * details
      *
-     * @return Clazz[]
+     * @return array<int,Clazz>
      */
     public function getAncestorClassList(CodeBase $code_base)
     {
@@ -2121,7 +2109,7 @@ class Clazz extends AddressableElement
         };
 
         // Sum up counts for all dependent elements
-        $count += $list_count($this->getPropertyList($code_base));
+        $count += $list_count($this->getPropertyMap($code_base));
         $count += $list_count($this->getMethodMap($code_base));
         $count += $list_count($this->getConstantMap($code_base));
 
@@ -2138,7 +2126,7 @@ class Clazz extends AddressableElement
     }
 
     /**
-     * @return TemplateType[]
+     * @return array<string,TemplateType>
      * The set of all template types parameterizing this generic
      * class
      */
@@ -2236,7 +2224,7 @@ class Clazz extends AddressableElement
         return $string;
     }
 
-    /** @return string[] [string $namespace, string $text] */
+    /** @return array{0:string,1:string} [string $namespace, string $text] */
     public function toStubInfo(CodeBase $code_base) : array
     {
         $signature = $this->toStubSignature($code_base);

@@ -47,7 +47,7 @@ abstract class UnaddressableTypedElement
     private $phan_flags = 0;
 
     /**
-     * @var int[]
+     * @var array<string,int>
      * A set of issues types to be suppressed
      */
     private $suppress_issue_list = [];
@@ -244,7 +244,7 @@ abstract class UnaddressableTypedElement
     }
 
     /**
-     * @return int[]
+     * @return array<string,int>
      */
     public function getSuppressIssueList() : array
     {

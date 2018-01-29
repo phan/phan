@@ -30,12 +30,12 @@ class Ordering
      * The number of processes we'd like to divide work up
      * amongst.
      *
-     * @param string[] $analysis_file_list
+     * @param array<int,string> $analysis_file_list
      * A list of files that should be analyzed which will be
      * used to ignore any files outside of the list and to
      * draw from for any missing files.
      *
-     * @return string[][]
+     * @return array<int,array<int,string>>
      * A map from process_id to a list of files to be analyzed
      * on that process in stable ordering.
      */

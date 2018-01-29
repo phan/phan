@@ -88,7 +88,7 @@ final class StringFunctionPlugin extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      */
     private static function getAnalyzeFunctionCallClosuresStatic(CodeBase $code_base) : array
     {
@@ -222,7 +222,7 @@ final class StringFunctionPlugin extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      * @override
      */
     public function getAnalyzeFunctionCallClosures(CodeBase $code_base) : array

@@ -11,7 +11,7 @@ final class CheckstylePrinter implements BufferedPrinterInterface
     /** @var OutputInterface */
     private $output;
 
-    /** @var string[][] */
+    /** @var array<string,array<int,array>> */
     private $files = [];
 
     /** @param IssueInstance $instance */

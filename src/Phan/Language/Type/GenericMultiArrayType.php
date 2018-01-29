@@ -17,7 +17,7 @@ final class GenericMultiArrayType extends ArrayType
     const NAME = 'array';
 
     /**
-     * @var Type[]
+     * @var array<int,Type>
      * The list of possible types of every element in this array (2 or more)
      */
     private $element_types = [];
@@ -29,7 +29,7 @@ final class GenericMultiArrayType extends ArrayType
     private $key_type;
 
     /**
-     * @param Type[] $types
+     * @param array<int,Type> $types
      * The 2 or more possible types of every element in this array
      *
      * @param bool $is_nullable
@@ -72,7 +72,7 @@ final class GenericMultiArrayType extends ArrayType
     }
 
     /**
-     * @return GenericArrayType[]
+     * @return array<int,GenericArrayType>
      */
     public function asGenericArrayTypeInstances() : array
     {
@@ -82,7 +82,7 @@ final class GenericMultiArrayType extends ArrayType
     }
 
     /**
-     * @param Type[] $element_types
+     * @param array<int,Type> $element_types
      * @param bool $is_nullable
      * @return GenericMultiArrayType
      */
@@ -131,7 +131,7 @@ final class GenericMultiArrayType extends ArrayType
     }
 
     /**
-     * @return Type[]
+     * @return array<int,Type>
      * A variation of this type that is not generic.
      * i.e. 'int[]' becomes 'int'.
      */

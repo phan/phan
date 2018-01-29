@@ -26,7 +26,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
     private $context;
 
     /**
-     * @var Context[]
+     * @var array<int,Context>
      * A list of the contexts returned after depth-first
      * parsing of all first-level children of this node
      */
@@ -42,7 +42,7 @@ class ContextMergeVisitor extends KindVisitorImplementation
      * The context of the parser at the node for which we'd
      * like to determine a type
      *
-     * @param Context[] $child_context_list
+     * @param array<int,Context> $child_context_list
      * A list of the contexts returned after depth-first
      * parsing of all first-level children of this node
      */

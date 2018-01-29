@@ -378,7 +378,7 @@ class Method extends ClassElement implements FunctionInterface
             Comment::ON_METHOD
         );
 
-        // @var Parameter[]
+        // @var array<int,Parameter>
         // The list of parameters specified on the
         // method
         $parameter_list =

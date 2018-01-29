@@ -73,7 +73,7 @@ class ContextNode
     /**
      * Get a list of fully qualified names from a node
      *
-     * @return string[]
+     * @return array<int,string>
      */
     public function getQualifiedNameList() : array
     {
@@ -103,7 +103,7 @@ class ContextNode
     /**
      * Gets the FQSEN for a trait.
      * NOTE: does not validate that it is really used on a trait
-     * @return FQSEN[]
+     * @return array<int,FQSEN>
      */
     public function getTraitFQSENList() : array
     {
@@ -123,7 +123,7 @@ class ContextNode
     /**
      * Gets the FQSEN for a trait.
      * NOTE: does not validate that it is really used on a trait
-     * @param TraitAdaptations[] $adaptations_map
+     * @param array<string,TraitAdaptations> $adaptations_map
      * @return ?FQSEN (If this returns null, the caller is responsible for emitting an issue or falling back)
      */
     public function getTraitFQSEN(array $adaptations_map)
@@ -147,9 +147,9 @@ class ContextNode
      * Get a list of traits adaptations from a node of kind ast\AST_TRAIT_ADAPTATIONS
      * (with fully qualified names and `as`/`instead` info)
      *
-     * @param FQSEN[] $trait_fqsen_list TODO: use this for sanity check
+     * @param array<int,FQSEN> $trait_fqsen_list TODO: use this for sanity check
      *
-     * @return TraitAdaptations[] maps the lowercase trait fqsen to the corresponding adaptations.
+     * @return array<string,TraitAdaptations> maps the lowercase trait fqsen to the corresponding adaptations.
      */
     public function getTraitAdaptationsMap(array $trait_fqsen_list) : array
     {
@@ -182,7 +182,7 @@ class ContextNode
 
     /**
      * Handles a node of kind ast\AST_TRAIT_ALIAS, modifying the corresponding TraitAdaptations instance
-     * @param TraitAdaptations[] $adaptations_map
+     * @param array<string,TraitAdaptations> $adaptations_map
      * @param Node $adaptation_node
      * @return void
      */
@@ -241,7 +241,7 @@ class ContextNode
 
     /**
      * Handles a node of kind ast\AST_TRAIT_PRECEDENCE, modifying the corresponding TraitAdaptations instance
-     * @param TraitAdaptations[] $adaptations_map
+     * @param array<string,TraitAdaptations> $adaptations_map
      * @param Node $adaptation_node
      * @return void
      */
@@ -395,7 +395,7 @@ class ContextNode
      * @param ?string $custom_issue_type
      * If this exists, emit the given issue type (passing in union type as format arg) instead of the default issue type.
      *
-     * @return Clazz[]
+     * @return array<int,Clazz>
      * A list of classes representing the non-native types
      * associated with the given node
      *

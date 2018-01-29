@@ -13,7 +13,7 @@ interface IssueCollectorInterface
     public function collectIssue(IssueInstance $issue);
 
     /**
-     * @return IssueInstance[]
+     * @return array<int,IssueInstance>
      */
     public function getCollectedIssues():array;
 
@@ -21,7 +21,7 @@ interface IssueCollectorInterface
      * Remove all collected issues (from the parse phase) for the given file paths.
      * Called from daemon mode.
      *
-     * @param string[] $files - the relative paths to those files
+     * @param array<int,string> $files - the relative paths to those files
      * @return void
      */
     public function removeIssuesForFiles(array $files);

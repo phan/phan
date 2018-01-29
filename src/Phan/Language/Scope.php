@@ -23,12 +23,12 @@ abstract class Scope
     protected $fqsen = null;
 
     /**
-     * @var Variable[]
+     * @var array<string,Variable>
      */
     protected $variable_map = [];
 
     /**
-     * @var TemplateType[]
+     * @var array<string,TemplateType>
      * A map from template type identifiers to the
      * TemplateType that parameterizes the generic class
      * in this scope.
@@ -176,7 +176,7 @@ abstract class Scope
     }
 
     /**
-     * @return Variable[]
+     * @return array<string,Variable>
      * A map from name to Variable in this scope
      */
     public function getVariableMap() : array
@@ -267,7 +267,7 @@ abstract class Scope
     }
 
     /**
-     * @return TemplateType[]
+     * @return array<string,TemplateType>
      * The set of all template types parameterizing this generic
      * class
      */

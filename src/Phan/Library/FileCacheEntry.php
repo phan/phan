@@ -21,15 +21,15 @@ class FileCacheEntry
     }
 
     /**
-     * @return string[] a 1-based array of lines
+     * @return array<int,string> a 1-based array of lines
      */
     public function getLines() : array
     {
         $lines = $this->lines;
-        if (is_array($lines)) {
+        if (\is_array($lines)) {
             return $lines;
         }
-        $lines = preg_split("/^/m", $this->contents);
+        $lines = \preg_split("/^/m", $this->contents);
         unset($lines[0]);
         $this->lines = $lines;
         return $lines;

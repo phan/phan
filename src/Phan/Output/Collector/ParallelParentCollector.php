@@ -149,7 +149,7 @@ class ParallelParentCollector implements IssueCollectorInterface
     }
 
     /**
-     * @return IssueInstance[]
+     * @return array<int,IssueInstance>
      */
     public function getCollectedIssues() : array
     {

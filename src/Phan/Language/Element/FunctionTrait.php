@@ -68,7 +68,7 @@ trait FunctionTrait
     private $number_of_optional_real_parameters = 0;
 
     /**
-     * @var Parameter[]
+     * @var array<int,Parameter>
      * The list of parameters for this method
      * This will change while the method is being analyzed when the config quick_mode is false.
      */
@@ -87,28 +87,28 @@ trait FunctionTrait
     private $has_pass_by_reference_parameters = null;
 
     /**
-     * @var int[]
+     * @var array<int,int>
      * If the types for a parameter list were checked,
-     * this contains the recursion depth (smaller is earlier in recursion)
+     * this contains the recursion depth for a given integer hash (smaller is earlier in recursion)
      */
     private $checked_parameter_list_hashes = [];
 
     /**
-     * @var Parameter[]
+     * @var array<int,Parameter>
      * The list of *real* (not from phpdoc) parameters for this method.
      * This does not change after initialization.
      */
     private $real_parameter_list = [];
 
     /**
-     * @var UnionType[]
+     * @var array<string,UnionType>
      * The list of unmodified *phpdoc* parameter types for this method.
      * This does not change after initialization.
      */
     private $phpdoc_parameter_type_map = [];
 
     /**
-     * @var true[]
+     * @var array<string,true>
      * A set of parameter names that are output-only references
      */
     private $phpdoc_output_references = [];
@@ -318,7 +318,7 @@ trait FunctionTrait
     }
 
     /**
-     * @return Parameter[]
+     * @return array<int,Parameter>
      * A list of parameters on the method
      */
     public function getParameterList()
@@ -353,7 +353,7 @@ trait FunctionTrait
     }
 
     /**
-     * @param Parameter[] $parameter_list
+     * @param array<int,Parameter> $parameter_list
      * A list of parameters to set on this method
      * (When quick_mode is false, this is also called to temporarily
      * override parameter types, etc.)
@@ -408,7 +408,7 @@ trait FunctionTrait
     }
 
     /**
-     * @return Parameter[] $parameter_list
+     * @return array<int,Parameter> $parameter_list
      * A list of parameters (not from phpdoc) that were set on this method. The parameters will be cloned.
      */
     public function getRealParameterList()
@@ -420,7 +420,7 @@ trait FunctionTrait
     }
 
     /**
-     * @param Parameter[] $parameter_list
+     * @param array<int,Parameter> $parameter_list
      * A list of parameters (not from phpdoc) to set on this method. The parameters will be cloned.
      *
      * @return void
@@ -676,7 +676,7 @@ trait FunctionTrait
     }
 
     /**
-     * @param UnionType[] maps a subset of param names to the unmodified phpdoc parameter types. May differ from real parameter types
+     * @param array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types. May differ from real parameter types
      * @return void
      */
     public function setPHPDocParameterTypeMap(array $parameter_map)
@@ -695,7 +695,7 @@ trait FunctionTrait
     }
 
     /**
-     * @return string[] list of output references. Usually empty.
+     * @return array<int,string> list of output references. Usually empty.
      */
     public function getOutputReferenceParamNames() : array
     {
@@ -703,7 +703,7 @@ trait FunctionTrait
     }
 
     /**
-     * @return UnionType[] maps a subset of param names to the unmodified phpdoc parameter types.
+     * @return array<string,UnionType> maps a subset of param names to the unmodified phpdoc parameter types.
      */
     public function getPHPDocParameterTypeMap()
     {
@@ -751,7 +751,7 @@ trait FunctionTrait
      * As an optimization, this refrains from re-analyzing the method/function it has already been analyzed for those param types
      * (With an equal or larger remaining recursion depth)
      *
-     * @param Variable[] $parameter_list
+     * @param array<int,Variable> $parameter_list
      */
     public function analyzeWithNewParams(Context $context, CodeBase $code_base, array $parameter_list) : Context
     {
@@ -802,7 +802,7 @@ trait FunctionTrait
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param \ast\Node[]|int[]|string[] $args
+     * @param array<int,Node|int|string|float> $args
      */
     public function getDependentReturnType(CodeBase $code_base, Context $context, array $args) : UnionType
     {
@@ -830,7 +830,7 @@ trait FunctionTrait
      *
      * @param CodeBase $code_base
      * @param Context $context
-     * @param \ast\Node[]|int[]|string[] $args
+     * @param array<int,Node|int|string|float> $args
      * @return void
      */
     public function analyzeFunctionCall(CodeBase $code_base, Context $context, array $args)

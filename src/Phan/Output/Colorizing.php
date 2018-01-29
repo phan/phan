@@ -92,14 +92,14 @@ class Colorizing
 
     /**
      * @param string $template
-     * @param int[]|string[] $template_parameters
+     * @param array<int,int|string> $template_parameters
      */
     public static function colorizeTemplate(
         string $template,
         array $template_parameters
     ) : string {
         $i = 0;
-        /** @param string[] $matches */
+        /** @param array<int,string> $matches */
         return preg_replace_callback('/{([A-Z_]+)}|%[sdf]/', function (array $matches) use ($template, $template_parameters, &$i) : string {
             $j = $i++;
             if ($j >= count($template_parameters)) {

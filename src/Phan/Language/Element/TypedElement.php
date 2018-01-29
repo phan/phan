@@ -49,8 +49,9 @@ abstract class TypedElement implements TypedElementInterface
     private $context = null;
 
     /**
-     * @var int[]
-     * A set of issues types to be suppressed
+     * @var array<string,int>
+     * A set of issues types to be suppressed.
+     * Maps to the number of times an issue type was suppressed.
      */
     private $suppress_issue_list = [];
 
@@ -260,7 +261,7 @@ abstract class TypedElement implements TypedElementInterface
     }
 
     /**
-     * @return int[]
+     * @return array<string,int>
      */
     public function getSuppressIssueList() : array
     {
