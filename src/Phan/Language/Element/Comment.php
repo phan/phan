@@ -76,26 +76,26 @@ class Comment
     private $comment_flags = 0;
 
     /**
-     * @var CommentParameter[]
+     * @var array<int,CommentParameter>
      * A list of CommentParameters from var declarations
      */
     private $variable_list = [];
 
     /**
-     * @var CommentParameter[]
+     * @var array<int,CommentParameter>
      * A list of CommentParameters from param declarations
      */
     private $parameter_list = [];
 
     /**
-     * @var CommentParameter[]
+     * @var array<string,CommentParameter>
      * A map from variable name to CommentParameters from
      * param declarations
      */
     private $parameter_map = [];
 
     /**
-     * @var string[]
+     * @var array<int,string>
      * A list of template types parameterizing a generic class
      */
     private $template_type_list = [];
@@ -114,19 +114,19 @@ class Comment
     private $return_union_type = null;
 
     /**
-     * @var string[]
+     * @var array<int,string>
      * A list of issue types to be suppressed
      */
     private $suppress_issue_list = [];
 
     /**
-     * @var CommentParameter[]
+     * @var array<string,CommentParameter>
      * A mapping from magic property parameters to types.
      */
     private $magic_property_map = [];
 
     /**
-     * @var CommentMethod[]
+     * @var array<string,CommentMethod>
      * A mapping from magic methods to parsed parameters, name, and return types.
      */
     private $magic_method_map = [];
@@ -149,11 +149,11 @@ class Comment
      * - Flags::CLASS_FORBID_UNDECLARED_MAGIC_PROPERTIES
      * - Flags::CLASS_FORBID_UNDECLARED_MAGIC_METHODS
      *
-     * @param CommentParameter[] $variable_list
+     * @param array<int,CommentParameter> $variable_list
      *
-     * @param CommentParameter[] $parameter_list
+     * @param array<int,CommentParameter> $parameter_list
      *
-     * @param string[] $template_type_list
+     * @param array<int,string> $template_type_list
      * A list of template types parameterizing a generic class
      *
      * @param Option<Type>|None $inherited_type (Note: some issues with templates and narrowing signature types to phpdoc type, added None as a workaround)
@@ -161,12 +161,12 @@ class Comment
      *
      * @param UnionType $return_union_type
      *
-     * @param string[] $suppress_issue_list
+     * @param array<int,string> $suppress_issue_list
      * A list of tags for error type to be suppressed
      *
-     * @param CommentParameter[] $magic_property_list
+     * @param array<int,CommentParameter> $magic_property_list
      *
-     * @param CommentMethod[] $magic_method_list
+     * @param array<int,CommentMethod> $magic_method_list
      *
      * @param Option<Type>|None $closure_scope
      * For closures: Allows us to document the class of the object
@@ -302,7 +302,7 @@ class Comment
         $comment_lines_count = \count($lines);
 
         /**
-         * @param int[] $validTypes
+         * @param array<int,int> $validTypes
          * @return void
          */
         $check_compatible = function (string $paramName, array $validTypes, int $i, string $line) use ($code_base, $context, $comment_type, $lineno, $comment_lines_count) {
@@ -983,7 +983,7 @@ class Comment
     }
 
     /**
-     * @return CommentParameter[] (The leftover parameters without a name)
+     * @return array<int,CommentParameter> (The leftover parameters without a name)
      *
      * @suppress PhanUnreferencedPublicMethod
      */
@@ -993,7 +993,7 @@ class Comment
     }
 
     /**
-     * @return CommentParameter[] (maps the names of parameters to their values. Does not include parameters which didn't provide names)
+     * @return array<string,CommentParameter> (maps the names of parameters to their values. Does not include parameters which didn't provide names)
      *
      * @suppress PhanUnreferencedPublicMethod
      */
@@ -1003,7 +1003,7 @@ class Comment
     }
 
     /**
-     * @return TemplateType[]
+     * @return array<int,TemplateType>
      * A list of template types parameterizing a generic class
      */
     public function getTemplateTypeList() : array
@@ -1021,7 +1021,7 @@ class Comment
     }
 
     /**
-     * @return string[]
+     * @return array<int,string>
      * A set of issue names like 'PhanUnreferencedPublicMethod' to suppress
      */
     public function getSuppressIssueList() : array
@@ -1082,7 +1082,7 @@ class Comment
     }
 
     /**
-     * @return CommentParameter[] map from parameter name to parameter
+     * @return array<string,CommentParameter> map from parameter name to parameter
      */
     public function getMagicPropertyMap() : array
     {
@@ -1090,7 +1090,7 @@ class Comment
     }
 
     /**
-     * @return CommentMethod[] map from method name to method info
+     * @return array<string,CommentMethod> map from method name to method info
      */
     public function getMagicMethodMap() : array
     {
@@ -1098,7 +1098,7 @@ class Comment
     }
 
     /**
-     * @return CommentParameter[]
+     * @return array<int,CommentParameter>
      */
     public function getVariableList() : array
     {

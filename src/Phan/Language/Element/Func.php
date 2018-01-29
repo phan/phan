@@ -178,7 +178,7 @@ class Func extends AddressableElement implements FunctionInterface
         }
 
 
-        // @var Parameter[]
+        // @var array<int,Parameter>
         // The list of parameters specified on the
         // function
         $parameter_list = Parameter::listFromNode(
@@ -330,7 +330,7 @@ class Func extends AddressableElement implements FunctionInterface
         return $string;
     }
 
-    /** @return string[] [string $namespace, string $text] */
+    /** @return array{0:string,1:string} [string $namespace, string $text] */
     public function toStubInfo() : array
     {
         $stub = 'function ';

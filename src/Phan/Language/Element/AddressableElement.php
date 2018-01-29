@@ -208,7 +208,7 @@ abstract class AddressableElement extends TypedElement implements AddressableEle
     }
 
     /**
-     * @return FileRef[]
+     * @return array<string,FileRef>
      * A list of references to this typed structural element.
      */
     public function getReferenceList() : array

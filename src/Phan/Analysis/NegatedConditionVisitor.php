@@ -286,7 +286,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
     }
 
     /**
-     * @return \Closure[] (ConditionVisitor $cv, Node $var_node, Context $context) -> Context
+     * @return array<string,\Closure> (ConditionVisitor $cv, Node $var_node, Context $context) -> Context
      */
     private static function createNegationCallbackMap() : array
     {

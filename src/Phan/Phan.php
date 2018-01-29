@@ -77,7 +77,7 @@ class Phan implements IgnoredFilesFilterInterface
      * it to be initialized before any classes or files are
      * loaded.
      *
-     * @param \Closure string[] $file_path_lister
+     * @param \Closure $file_path_lister
      * Returns a list of files to scan (string[])
      *
      * @return bool
@@ -403,7 +403,7 @@ class Phan implements IgnoredFilesFilterInterface
      * A set of files to expand with the set of dependencies
      * on those files.
      *
-     * @return string[]
+     * @return array<int,string>
      * Get an expanded list of files and dependencies for
      * the given file list
      *

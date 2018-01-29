@@ -50,12 +50,12 @@ class UnionType implements \Serializable
         . '(\|' . Type::type_regex_or_this . ')*';
 
     /**
-     * @var Type[] - [int $type_object_id => Type $type]
+     * @var array<int,Type> - A list of unique types.
      */
     private $type_set;
 
     /**
-     * @param Type[] $type_list
+     * @param array<int,Type> $type_list
      * @param bool $is_unique - Whether or not this is already unique. Only set to true within UnionSet code.
      *
      * An optional list of types represented by this union
@@ -98,8 +98,8 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @param Type[] $type_list
-     * @return Type[]
+     * @param array<int,Type> $type_list
+     * @return array<int,Type>
      */
     public static function getUniqueTypes(array $type_list) : array
     {
@@ -161,7 +161,7 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @return string[]
+     * @return array<int,string>
      */
     private static function extractTypeParts(string $type_string) : array
     {
@@ -178,8 +178,8 @@ class UnionType implements \Serializable
     /**
      * Expands any GenericMultiArrayType instances in $types if necessary.
      *
-     * @param Type[] $types
-     * @return Type[]
+     * @param array<int,Type> $types
+     * @return array<int,Type>
      */
     public static function normalizeGenericMultiArrayTypes(array $types) : array
     {
@@ -410,7 +410,7 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @return Type[]
+     * @return array<int,Type>
      * The list of simple types associated with this
      * union type. Keys are consecutive.
      */
@@ -506,9 +506,10 @@ class UnionType implements \Serializable
     }
 
     /**
-     * @return UnionType[]
+     * @return array<int,UnionType>
      * A map from template type identifiers to the UnionType
      * to replace it with
+     * TODO: Is anything using this? This makes sense for Type but not UnionType.
      */
     public function getTemplateParameterTypeList() : array
     {
@@ -535,7 +536,7 @@ class UnionType implements \Serializable
      *
      * TODO: Defer resolving the template parameters until parse ends. Low priority.
      *
-     * @return UnionType[]
+     * @return array<string,UnionType>
      * A map from template type identifiers to the UnionType
      * to replace it with
      */
@@ -560,7 +561,7 @@ class UnionType implements \Serializable
 
 
     /**
-     * @param UnionType[] $template_parameter_type_map
+     * @param array<string,UnionType> $template_parameter_type_map
      * A map from template type identifiers to concrete types
      *
      * @return UnionType

@@ -7,7 +7,7 @@ namespace Phan;
 trait Profile
 {
     /**
-     * @var int[][]
+     * @var array<string,array<int,float>>
      */
     private static $label_delta_map = [];
 

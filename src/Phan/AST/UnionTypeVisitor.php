@@ -727,7 +727,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             && $children[0] instanceof Node
             && $children[0]->kind == \ast\AST_ARRAY_ELEM
         ) {
-            /** @var UnionType[] */
+            /** @var array<int,UnionType> */
             $element_types = [];
 
             $unique_string_type = null;
@@ -1859,7 +1859,7 @@ class UnionTypeVisitor extends AnalysisVisitor
             );
         }
 
-        $class_name = $node->children['name'];
+        $class_name = (string)$node->children['name'];
 
         if ('parent' === $class_name) {
             if (!$context->isInClassScope()) {
@@ -1997,7 +1997,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
      * @param bool $log_error whether or not to log errors while searching
-     * @return FunctionInterface[]
+     * @return array<int,FunctionInterface>
      */
     public static function functionLikeListFromNodeAndContext(CodeBase $code_base, Context $context, $node, bool $log_error) : array
     {
@@ -2026,7 +2026,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param CodeBase $code_base
      * @param Context $context
      * @param string|Node $node the node to fetch CallableType instances for.
-     * @return FullyQualifiedFunctionLikeName[]
+     * @return array<int,FullyQualifiedFunctionLikeName>
      * @suppress PhanUnreferencedPublicMethod may be used in the future.
      */
     public static function functionLikeFQSENListFromNodeAndContext(CodeBase $code_base, Context $context, $node) : array
@@ -2038,7 +2038,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param string|Node $class_or_expr
      * @param string $method_name
      *
-     * @return FullyQualifiedMethodName[]
+     * @return array<int,FullyQualifiedMethodName>
      * A list of CallableTypes associated with the given node
      */
     private function methodFQSENListFromObjectAndMethodName($class_or_expr, $method_name) : array
@@ -2188,7 +2188,7 @@ class UnionTypeVisitor extends AnalysisVisitor
      * @param string|Node $class_or_expr
      * @param string $method_name
      *
-     * @return FullyQualifiedMethodName[]
+     * @return array<int,FullyQualifiedMethodName>
      * A list of CallableTypes associated with the given node
      */
     private function methodFQSENListFromParts($class_or_expr, $method_name) : array
@@ -2287,7 +2287,7 @@ class UnionTypeVisitor extends AnalysisVisitor
     /**
      * @param string|Node $node
      *
-     * @return FullyQualifiedFunctionLikeName[]
+     * @return array<int,FullyQualifiedFunctionLikeName>
      * A list of CallableTypes associated with the given node
      *
      * @throws IssueException

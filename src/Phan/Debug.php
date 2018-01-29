@@ -256,7 +256,7 @@ class Debug
 
     /**
      * Source: https://github.com/nikic/php-ast/blob/master/util.php
-     * @return string[][][]
+     * @return array<int,array<int,array<int,string>>>
      * Return value is [string[][] $exclusive, string[][] $combinable]. Maps node id to flag id to name.
      */
     private static function getFlagInfo() : array

@@ -11,19 +11,19 @@ use Phan\Language\Element\Property;
 class ClassMap
 {
     /**
-     * @var ClassConstant[]
+     * @var array<string,ClassConstant>
      * A map from name to ClassConstant
      */
     private $class_constant_map = [];
 
     /**
-     * @var Property[]
+     * @var array<string,Property>
      * A map from name to Property
      */
     private $property_map = [];
 
     /**
-     * @var Method[]
+     * @var array<string,Method>
      * A map from name to Method
      */
     private $method_map = [];
@@ -52,7 +52,7 @@ class ClassMap
     }
 
     /**
-     * @return ClassConstant[]
+     * @return array<string,ClassConstant>
      */
     public function getClassConstantMap() : array
     {
@@ -86,7 +86,7 @@ class ClassMap
     }
 
     /**
-     * @return Property[]
+     * @return array<string,Property>
      */
     public function getPropertyMap() : array
     {
@@ -120,7 +120,7 @@ class ClassMap
     }
 
     /**
-     * @return Method[]
+     * @return array<string,Method>
      */
     public function getMethodMap() : array
     {

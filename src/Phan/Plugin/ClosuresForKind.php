@@ -14,7 +14,7 @@ use Phan\AST\Visitor\Element;
 class ClosuresForKind
 {
     /**
-     * @var \Closure[][] Maps a node kind to a list of 1 or more (unflattened) closures to execute on nodes of that kind.
+     * @var array<int,array<int,\Closure>> Maps a node kind to a list of 1 or more (unflattened) closures to execute on nodes of that kind.
      */
     private $closures = [];
 
@@ -36,7 +36,7 @@ class ClosuresForKind
     }
 
     /**
-     * @param int[] $kinds - A list of unique values of node kinds
+     * @param array<int,int> $kinds - A list of unique values of node kinds
      * @param \Closure $c - The closure to execute on each of those kinds
      *
      * Record the fact that a Closure needs to be the given subset of values of node->kind
@@ -59,7 +59,7 @@ class ClosuresForKind
 
     /**
      * @param \Closure $flattener
-     * @return \Closure[] (Maps a subset of node kinds to a closure to execute for that node kind.)
+     * @return array<int,\Closure> (Maps a subset of node kinds to a closure to execute for that node kind.)
      */
     public function getFlattenedClosures(\Closure $flattener)
     {

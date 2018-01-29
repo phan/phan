@@ -17,7 +17,7 @@ class PrinterFactory
 {
 
     /**
-     * @return string[]
+     * @return array<int,string>
      */
     public function getTypes():array
     {

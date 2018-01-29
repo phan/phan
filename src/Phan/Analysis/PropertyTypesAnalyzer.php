@@ -19,7 +19,7 @@ class PropertyTypesAnalyzer
      */
     public static function analyzePropertyTypes(CodeBase $code_base, Clazz $clazz)
     {
-        foreach ($clazz->getPropertyList($code_base) as $property) {
+        foreach ($clazz->getPropertyMap($code_base) as $property) {
             try {
                 $union_type = $property->getUnionType();
             } catch (IssueException $exception) {

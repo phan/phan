@@ -1060,7 +1060,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
         // Get the name of the static class being referenced
         $static_class = '';
         if ($node->children['class']->kind == \ast\AST_NAME) {
-            $static_class = $node->children['class']->children['name'];
+            $static_class = (string)$node->children['class']->children['name'];
         }
 
         $method = $this->getStaticMethodOrEmitIssue($node);
@@ -1896,7 +1896,7 @@ class PostOrderAnalysisVisitor extends AnalysisVisitor
      *
      * This is used when analyzing callbacks and closures, e.g. in array_map.
      *
-     * @param UnionType[] $argument_types
+     * @param array<int,UnionType> $argument_types
      * An AST node listing the arguments
      *
      * @param FunctionInterface $method

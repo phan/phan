@@ -233,7 +233,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
-     * @param Node[] $siblings
+     * @param array<int,Node> $siblings
      */
     private function getStatusOfSwitchCase(Node $case_node, int $index, array $siblings) : int
     {
@@ -540,7 +540,7 @@ final class BlockExitStatusChecker extends KindVisitorImplementation
     }
 
     /**
-     * @param \ast\Node[] $block
+     * @param array<int,Node> $block
      * @return int the exit status of a block (whether or not it would unconditionally exit, return, throw, etc.
      */
     private function computeStatusOfBlock(array $block) : int

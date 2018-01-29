@@ -34,7 +34,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
 {
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      */
     private static function getReturnTypeOverridesStatic(CodeBase $code_base) : array
     {
@@ -339,7 +339,7 @@ final class ArrayReturnTypeOverridePlugin extends PluginV2 implements
     }
 
     /**
-     * @return \Closure[]
+     * @return array<string,\Closure>
      */
     public function getReturnTypeOverrides(CodeBase $code_base) : array
     {
