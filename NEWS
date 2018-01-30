@@ -44,6 +44,9 @@ New Features(Analysis)
   Another example: `[$strKey => new MyClass(), $strKey2 => $unknown]` will be represented as
   `array<string,MyClass>|array<string,mixed>`.
   (If phan can't infer a type of a key or value, `mixed` gets added to that key or value.)
++ Improve analysis of try/catch/finally blocks (#1408)
+  Analyze catch blocks with the inferences about the try block.
+  Analyze a finally block with the inferences from the try and catch blocks.
 
 Bug fixes
 + Warn when attempting to call an instance method on an expression with type string (#1314).

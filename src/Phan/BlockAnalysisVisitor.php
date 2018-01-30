@@ -618,11 +618,6 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         \assert(!empty($context), 'Context cannot be null');
 
-        // We collect all child context so that the
-        // PostOrderAnalysisVisitor can optionally operate on
-        // them
-        $child_context_list = [];
-
         // With a context that is inside of the node passed
         // to this method, we analyze all children of the
         // node.
@@ -644,8 +639,24 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // Step into each try node and get an
         // updated context for the node
         $try_context = $this->analyzeAndGetUpdatedContext($try_context, $node, $try_node);
+
+        // Analyze the catch blocks and finally blocks with a mix of the types
+        // from the try block and the catch blocks.
+        // NOTE: when strict_mode = 1, variables that are only defined in some Contexts
+        // but not others will be treated as absent.
+        // TODO: Improve in future releases
         // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
-        $child_context_list[] = $try_context;
+        $original_context = $context;
+        $context = (new ContextMergeVisitor(
+            $this->code_base,
+            $context,
+            [$try_context]
+        ))->mergeTryContext($node);
+
+        // We collect all child context so that the
+        // PostOrderAnalysisVisitor can optionally operate on
+        // them
+        $catch_context_list = [$try_context];
 
         foreach ($node->children['catches']->children ?? [] as $catch_node) {
             // Note: ContextMergeVisitor expects to get each individual catch
@@ -664,38 +675,41 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             // updated context for the node
             $catch_context = $this->analyzeAndGetUpdatedContext($catch_context, $node, $catch_node);
             // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
-            $child_context_list[] = $catch_context;
+            $catch_context_list[] = $catch_context;
         }
 
-        $finally_node = $node->children['finally'] ?? null;
-        if ($finally_node) {
-            assert($finally_node instanceof Node);
-            // The conditions need to communicate to the outer
-            // scope for things like assigning veriables.
-            $finally_context = $context->withScope(
-                new BranchScope($context->getScope())
-            );
-
-            $finally_context->withLineNumberStart(
-                $finally_node->lineno ?? 0
-            );
-
-            // Step into each finally node and get an
-            // updated context for the node
-            $finally_context = $this->analyzeAndGetUpdatedContext($finally_context, $node, $finally_node);
-            // NOTE: We let ContextMergeVisitor->visitTry decide if the block exit status is valid.
-            $child_context_list[] = $finally_context;
-        }
-
-        if (count($child_context_list) > 0) {
+        // first context is the try. If there's a second context, it's a catch.
+        if (count($catch_context_list) >= 2) {
             // For switch/try statements, we need to merge the contexts
             // of all child context into a single scope based
             // on any possible branching structure
             $context = (new ContextMergeVisitor(
                 $this->code_base,
                 $context,
-                $child_context_list
-            ))($node);
+                $catch_context_list
+            ))->mergeCatchContext($node);
+        }
+
+        $finally_node = $node->children['finally'] ?? null;
+        if ($finally_node) {
+            assert($finally_node instanceof Node);
+            // Because finally is always executed, we reuse $context
+
+            // The conditions need to communicate to the outer
+            // scope for things like assigning veriables.
+            $context = $context->withScope(
+                new BranchScope($context->getScope())
+            );
+
+            $context->withLineNumberStart(
+                $finally_node->lineno ?? 0
+            );
+
+            // Step into each finally node and get an
+            // updated context for the node.
+            // Don't bother checking if finally unconditionally returns here
+            // If it does, dead code detection would also warn.
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $finally_node);
         }
 
         $context = $this->postOrderAnalyze($context, $node);
