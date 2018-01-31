@@ -50,9 +50,12 @@ class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor
                 continue;
             }
 
+            if ($condition instanceof Node) {
+                $this->context = $this->context->withLineNumberStart($condition->lineno);
+            }
             // evaluate the type of conditional expression
             $union_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $condition);
-            if (!self::isExclusivelyBoolTypes($union_type)) {
+            if (!$union_type->isExclusivelyBoolTypes()) {
                 $this->emit(
                     'PhanPluginNonBoolBranch',
                     'Non bool value of type {TYPE} evaluated in if clause',
@@ -63,18 +66,6 @@ class NonBoolBranchVisitor extends PluginAwareAnalysisVisitor
         return $this->context;
     }
 
-    private static function isExclusivelyBoolTypes(UnionType $union_type) : bool
-    {
-        if ($union_type->isEmpty()) {
-            return false;
-        }
-        foreach ($union_type->getTypeSet() as $type) {
-            if (!$type->getIsInBoolFamily() || $type->getIsNullable()) {
-                return false;
-            }
-        }
-        return true;
-    }
 }
 
 return new NonBoolBranchPlugin;

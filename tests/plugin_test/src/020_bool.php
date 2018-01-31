@@ -22,3 +22,11 @@ if (null) {
 } else if ($x = maybe_bool()) {
 } else if ($x = maybe_array()) {
 }
+
+if (maybe_bool() && (rand() % 2 > 0)) {
+    echo "True";
+}
+
+if (true && maybe_array()) {
+    echo "True";
+}

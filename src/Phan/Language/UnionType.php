@@ -1566,6 +1566,19 @@ class UnionType implements \Serializable
         });
     }
 
+    public function isExclusivelyBoolTypes() : bool
+    {
+        if ($this->isEmpty()) {
+            return false;
+        }
+        foreach ($this->type_set as $type) {
+            if (!$type->getIsInBoolFamily() || $type->getIsNullable()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Takes "a|b[]|c|d[]|e|array|ArrayAccess" and returns "a|c|e|ArrayAccess"
      *

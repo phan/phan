@@ -48,6 +48,9 @@ New Features(Analysis)
   Analyze catch blocks with the inferences about the try block.
   Analyze a finally block with the inferences from the try and catch blocks.
 
+Plugins
++ Fix bugs in NonBoolBranchPlugin and NonBoolInLogicalArithPlugin (#1413, #1410)
+
 Bug fixes
 + Warn when attempting to call an instance method on an expression with type string (#1314).
 + Fix a bug in `tool/make_stubs` when generating stubs of global functions.
