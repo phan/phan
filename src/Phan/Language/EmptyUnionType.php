@@ -876,4 +876,21 @@ final class EmptyUnionType extends UnionType
     {
         return $this;
     }
+
+    public function hasTopLevelArrayShapeTypeInstances() : bool
+    {
+        return false;
+    }
+
+    /** @override */
+    public function hasArrayShapeTypeInstances() : bool
+    {
+        return false;
+    }
+
+    /** @override */
+    public function withFlattenedArrayShapeTypeInstances() : UnionType
+    {
+        return $this;
+    }
 }

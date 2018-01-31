@@ -109,3 +109,4 @@ abstract class ScalarType extends NativeType
         return $this;
     }
 }
+\class_exists(IntType::class);

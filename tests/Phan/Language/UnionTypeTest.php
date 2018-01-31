@@ -107,7 +107,7 @@ class UnionTypeTest extends BaseTest
     {
         $this->assertUnionTypeStringEqual(
             '[1, 2, 3]',
-            'array<int,int>'
+            'array{0:int,1:int,2:int}'
         );
     }
 
@@ -115,7 +115,7 @@ class UnionTypeTest extends BaseTest
     {
         $this->assertUnionTypeStringEqual(
             '[1, "string"]',
-            'array<int,int>|array<int,string>'
+            'array{0:int,1:string}'
         );
     }
 

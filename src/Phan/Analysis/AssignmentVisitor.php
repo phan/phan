@@ -590,6 +590,8 @@ class AssignmentVisitor extends AnalysisVisitor
         if ($new_types->hasType(MixedType::instance(false))) {
             $new_types = $new_types->withoutType(MixedType::instance(false));
         }
+        $new_types = $new_types->withFlattenedArrayShapeTypeInstances();
+
         // TODO: Add an option to check individual types, not just the whole union type?
         //       If that is implemented, verify that generic arrays will properly cast to regular arrays (public $x = [];)
         $property->setUnionType($property_types->withUnionType($new_types));

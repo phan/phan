@@ -1743,7 +1743,7 @@ class ContextNode
                 $elements[$key_node] = $value_node;  // Check for float?
             } else {
                 $key = $this->getEquivalentPHPValueForNode($key_node, $flags);
-                if (is_scalar($key)) {
+                if (\is_scalar($key)) {
                     $elements[$key] = $value_node;
                 } else {
                     if (($flags & self::RESOLVE_KEYS_USE_FALLBACK_PLACEHOLDER) !== 0) {
@@ -1769,7 +1769,7 @@ class ContextNode
      *         If this could be resolved and we're certain of the value, this gets a raw PHP value for $node.
      *         Otherwise, this returns $node.
      */
-    private function getEquivalentPHPValueForNode($node, int $flags)
+    public function getEquivalentPHPValueForNode($node, int $flags)
     {
         if (!($node instanceof Node)) {
             return $node;
