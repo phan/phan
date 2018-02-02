@@ -1174,7 +1174,7 @@ return [
 'date_timezone_get' => ['DateTimeZone', 'obj'=>'DateTime'],
 'DateTimeZone::getLocation' => ['array'],
 'DateTimeZone::getName' => ['string'],
-'DateTimeZone::getOffset' => ['int', 'datetime'=>'DateTime'],
+'DateTimeZone::getOffset' => ['int', 'datetime'=>'DateTimeInterface'],
 'DateTimeZone::getTransitions' => ['array', 'timestamp_begin='=>'int', 'timestamp_end='=>'int'],
 'DateTimeZone::listAbbreviations' => ['array'],
 'DateTimeZone::listIdentifiers' => ['array', 'what='=>'int', 'country='=>'string'],
