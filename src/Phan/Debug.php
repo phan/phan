@@ -3,6 +3,7 @@ namespace Phan;
 
 use ast\Node;
 use ast\flags;
+use Phan\Analysis\BlockExitStatusChecker;
 
 /**
  * Debug utilities
@@ -238,8 +239,11 @@ class Debug
                 }
             }
 
-            if (\ast\kind_uses_flags($ast->kind) || $ast->flags != 0) {
-                $result .= "\n    flags: " . self::formatFlags($ast->kind, $ast->flags);
+            if (\ast\kind_uses_flags($ast->kind)) {
+                $flags_without_phan_additions = $ast->flags & ~BlockExitStatusChecker::STATUS_BITMASK;
+                if ($flags_without_phan_additions != 0) {
+                    $result .= "\n    flags: " . self::formatFlags($ast->kind, $ast->flags);
+                }
             }
             foreach ($ast->children as $i => $child) {
                 $result .= "\n    $i: " . str_replace("\n", "\n    ", self::astDump($child, $options));

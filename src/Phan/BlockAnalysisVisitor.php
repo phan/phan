@@ -465,19 +465,20 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $node->lineno ?? 0
         );
 
-        $context = $this->preOrderAnalyze($context, $node);
-
-        \assert(!empty($context), 'Context cannot be null');
+        // NOTE: This is different from other analysis visitors because analyzing 'cond' with `||` has side effects
+        // after supporting visitAnd() and visitOr() in BlockAnalysisVisitor
+        // TODO: Calling analyzeAndGetUpdatedContext before preOrderAnalyze is a hack.
 
         // TODO: This is redundant and has worse knowledge of the specific types of blocks than ConditionVisitor does.
-        // TODO: Implement a hybrid BlockAnalysisVisitor+ConditionVisitor that will do a better job of inferencesnand reducing false positives? (and reduce the redundant work)
-        // E.g. this falsely reports that value is guaranteed to be an array
-        // if (($chunk == $value
-        //     || (\is_array($value) && in_array($chunk, $value))
-        //     )
-        //     && $argv[$key-1][0] == '-'
-        //     || preg_match($regex, $chunk)
-        // ) {
+        // TODO: Implement a hybrid BlockAnalysisVisitor+ConditionVisitor that will do a better job of inferences and reducing false positives? (and reduce the redundant work)
+
+        // E.g. the below code would update the context of BlockAnalysisVisitor in BlockAnalysisVisitor->visitOr()
+        //
+        //     if (!(is_string($x) || $x === null)) {}
+        //
+        // But we want to let BlockAnalysisVisitor modify the context for cases such as the below:
+        //
+        // $result = !($x instanceof User) || $x->meetsCondition()
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext(
@@ -486,6 +487,10 @@ class BlockAnalysisVisitor extends AnalysisVisitor
                 $condition_node
             );
         }
+
+        $context = $this->preOrderAnalyze($context, $node);
+
+        \assert(!empty($context), 'Context cannot be null');
 
         if ($stmts_node = $node->children['stmts']) {
             if ($stmts_node instanceof Node) {
@@ -880,7 +885,7 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             $context = (new ContextMergeVisitor(
                 $this->code_base,
                 $context,
-                [$right_context]
+                [$context, $context_with_left_condition, $right_context]
             ))($node);
         }
 
@@ -927,21 +932,26 @@ class BlockAnalysisVisitor extends AnalysisVisitor
             if ($base_context_scope instanceof GlobalScope) {
                 $base_context = $context->withScope(new BranchScope($base_context_scope));
             }
-            $context_with_left_condition = (new NegatedConditionVisitor(
+            $context_with_false_left_condition = (new NegatedConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))($left_node);
+            $context_with_true_left_condition = (new ConditionVisitor(
                 $this->code_base,
                 $base_context
             ))($left_node);
         } else {
-            $context_with_left_condition = $context;
+            $context_with_false_left_condition = $context;
+            $context_with_true_left_condition = $context;
         }
 
         if ($right_node instanceof Node) {
-            $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
+            $right_context = $this->analyzeAndGetUpdatedContext($context_with_false_left_condition, $node, $right_node);
             $context = (new ContextMergeVisitor(
                 $this->code_base,
                 $context,
-                [$right_context]
-            ))($node);
+                [$context, $context_with_true_left_condition, $right_context]
+            ))->combineChildContextList();
         }
 
         $context = $this->postOrderAnalyze($context, $node);

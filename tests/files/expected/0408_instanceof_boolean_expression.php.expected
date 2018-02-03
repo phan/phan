@@ -1,0 +1,4 @@
+%s:18 PhanUndeclaredMethod Call to undeclared method \A::c
+%s:23 PhanUndeclaredMethod Call to undeclared method \A::d
+%s:33 PhanUndeclaredMethod Call to undeclared method \A::missingMethod
+%s:38 PhanUndeclaredMethod Call to undeclared method \A::otherMissingMethod
