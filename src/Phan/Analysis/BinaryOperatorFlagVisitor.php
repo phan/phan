@@ -230,6 +230,8 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             && !$right->hasArrayLike()
             && !$right_can_cast_to_array
             && !$right->isEmpty()
+            && !$right->containsNullable()
+            && !$left->hasAnyType($right->getTypeSet())  // TODO: Strict canCastToUnionType() variant?
         ) {
             Issue::maybeEmit(
                 $this->code_base,
@@ -242,6 +244,9 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             && !$left->hasArrayLike()
             && !$left_can_cast_to_array
             && !$left->isEmpty()
+            && !$left->containsNullable()
+            && !$right->hasAnyType($left->getTypeSet())  // TODO: Strict canCastToUnionType() variant?
+
         ) {
             Issue::maybeEmit(
                 $this->code_base,

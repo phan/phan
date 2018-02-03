@@ -469,6 +469,15 @@ class BlockAnalysisVisitor extends AnalysisVisitor
 
         \assert(!empty($context), 'Context cannot be null');
 
+        // TODO: This is redundant and has worse knowledge of the specific types of blocks than ConditionVisitor does.
+        // TODO: Implement a hybrid BlockAnalysisVisitor+ConditionVisitor that will do a better job of inferencesnand reducing false positives? (and reduce the redundant work)
+        // E.g. this falsely reports that value is guaranteed to be an array
+        // if (($chunk == $value
+        //     || (\is_array($value) && in_array($chunk, $value))
+        //     )
+        //     && $argv[$key-1][0] == '-'
+        //     || preg_match($regex, $chunk)
+        // ) {
         $condition_node = $node->children['cond'];
         if ($condition_node instanceof Node) {
             $context = $this->analyzeAndGetUpdatedContext(
@@ -798,6 +807,145 @@ class BlockAnalysisVisitor extends AnalysisVisitor
         // When coming out of a scoped element, we pop the
         // context to be the incoming context. Otherwise,
         // we pass our new context up to our parent
+        return $context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitBinaryOp(Node $node) : Context
+    {
+        $flags = ($node->flags ?? 0);
+        if ($flags === \ast\flags\BINARY_BOOL_AND) {
+            return $this->visitAnd($node);
+        } elseif ($flags === \ast\flags\BINARY_BOOL_OR) {
+            return $this->visitOr($node);
+        }
+        return $this->visit($node);
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse (for `&&` or `and` operator)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitAnd(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        $left_node = $node->children['left'];
+        $right_node = $node->children['right'];
+
+        // With (left) && (right)
+        // 1. Update context with any side effects of left
+        // 2. Create a context to analyze the right hand side with any inferences possible from left (e.g. ($x instanceof MyClass) && $x->foo()
+        // 3. Analyze the right hand side
+        // 4. Merge the possibly evaluated $right_context for the right hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
+
+        // TODO: Warn about non-node, they're guaranteed to be always false or true
+        if ($left_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $left_node);
+
+            $base_context = $context;
+            $base_context_scope = $base_context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $context->withScope(new BranchScope($base_context_scope));
+            }
+            $context_with_left_condition = (new ConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))($left_node);
+        } else {
+            $context_with_left_condition = $context;
+        }
+
+        if ($right_node instanceof Node) {
+            $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                [$right_context]
+            ))($node);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
+        return $context;
+    }
+
+    /**
+     * @param Node $node
+     * A node to parse (for `||` or `or` operator)
+     *
+     * @return Context
+     * A new or an unchanged context resulting from
+     * parsing the node
+     */
+    public function visitOr(Node $node) : Context
+    {
+        $context = $this->context->withLineNumberStart(
+            $node->lineno ?? 0
+        );
+
+        ConfigPluginSet::instance()->preAnalyzeNode(
+            $this->code_base,
+            $context,
+            $node
+        );
+
+        $left_node = $node->children['left'];
+        $right_node = $node->children['right'];
+
+        // With (left) || (right)
+        // 1. Update context with any side effects of left
+        // 2. Create a context to analyze the right hand side with any inferences possible from left (e.g. (!($x instanceof MyClass)) || $x->foo()
+        // 3. Analyze the right hand side
+        // 4. Merge the possibly evaluated $right_context for the right hand side into the original context. (The left_node is guaranteed to have been evaluated, so it becomes $context)
+
+        // TODO: Warn about non-node, they're guaranteed to be always false or true
+        if ($left_node instanceof Node) {
+            $context = $this->analyzeAndGetUpdatedContext($context, $node, $left_node);
+
+            $base_context = $context;
+            $base_context_scope = $base_context->getScope();
+            if ($base_context_scope instanceof GlobalScope) {
+                $base_context = $context->withScope(new BranchScope($base_context_scope));
+            }
+            $context_with_left_condition = (new NegatedConditionVisitor(
+                $this->code_base,
+                $base_context
+            ))($left_node);
+        } else {
+            $context_with_left_condition = $context;
+        }
+
+        if ($right_node instanceof Node) {
+            $right_context = $this->analyzeAndGetUpdatedContext($context_with_left_condition, $node, $right_node);
+            $context = (new ContextMergeVisitor(
+                $this->code_base,
+                $context,
+                [$right_context]
+            ))($node);
+        }
+
+        $context = $this->postOrderAnalyze($context, $node);
+
         return $context;
     }
 
