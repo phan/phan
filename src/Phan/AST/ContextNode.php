@@ -40,6 +40,10 @@ use Phan\Library\Some;
 use ast\Node;
 use ast;
 
+if (!\function_exists('spl_object_id')) {
+    require_once __DIR__ . '/../../spl_object_id.php';
+}
+
 /**
  * Methods for an AST node in context
  */
@@ -87,7 +91,7 @@ class ContextNode
                 $this->context,
                 $name_node
             ))->getQualifiedName();
-        }, $this->node->children ?? []);
+        }, $this->node->children);
     }
 
     /**
@@ -117,7 +121,7 @@ class ContextNode
                 $this->context,
                 $name_node
             ))->getTraitFQSEN([]);
-        }, $this->node->children ?? []);
+        }, $this->node->children);
     }
 
     /**
@@ -164,10 +168,10 @@ class ContextNode
 
         $adaptations_map = [];
         foreach ($trait_fqsen_list as $trait_fqsen) {
-            $adaptations_map[strtolower($trait_fqsen->__toString())] = new TraitAdaptations($trait_fqsen);
+            $adaptations_map[\strtolower($trait_fqsen->__toString())] = new TraitAdaptations($trait_fqsen);
         }
 
-        foreach ($this->node->children ?? [] as $adaptation_node) {
+        foreach ($this->node->children as $adaptation_node) {
             \assert($adaptation_node instanceof Node);
             if ($adaptation_node->kind === ast\AST_TRAIT_ALIAS) {
                 $this->handleTraitAlias($adaptations_map, $adaptation_node);
@@ -216,7 +220,7 @@ class ContextNode
             return;
         }
 
-        $fqsen_key = strtolower($trait_fqsen->__toString());
+        $fqsen_key = \strtolower($trait_fqsen->__toString());
 
         $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
         if ($adaptations_info === null) {
@@ -235,7 +239,7 @@ class ContextNode
         // Handle `use MyTrait { myMethod as private; }` by skipping the original method.
         // TODO: Do this a cleaner way.
         if (strcasecmp($trait_new_method_name, $trait_original_method_name) === 0) {
-            $adaptations_info->hidden_methods[strtolower($trait_original_method_name)] = true;
+            $adaptations_info->hidden_methods[\strtolower($trait_original_method_name)] = true;
         }
     }
 
@@ -264,7 +268,7 @@ class ContextNode
             throw new UnanalyzableException($trait_chosen_class_name_node, "This shouldn't happen. Could not determine trait fqsen for trait with higher precedence for method $trait_chosen_method_name");
         }
 
-        if (($adaptations_map[strtolower($trait_chosen_fqsen->__toString())] ?? null) === null) {
+        if (($adaptations_map[\strtolower($trait_chosen_fqsen->__toString())] ?? null) === null) {
             // This will probably correspond to a PHP fatal error, but keep going anyway.
             Issue::maybeEmit(
                 $this->code_base,
@@ -287,7 +291,7 @@ class ContextNode
                 throw new UnanalyzableException($trait_insteadof_class_name, "This shouldn't happen. Could not determine trait fqsen for trait with lower precedence for method $trait_chosen_method_name");
             }
 
-            $fqsen_key = strtolower($trait_insteadof_fqsen->__toString());
+            $fqsen_key = \strtolower($trait_insteadof_fqsen->__toString());
 
             $adaptations_info = $adaptations_map[$fqsen_key] ?? null;
             if ($adaptations_info === null) {
@@ -322,7 +326,7 @@ class ContextNode
             && ($node->kind != ast\AST_STATIC)
             && ($node->kind != ast\AST_MAGIC_CONST)
         ) {
-            $node = \array_values($node->children ?? [])[0];
+            $node = \array_values($node->children)[0];
         }
 
         if (!($node instanceof ast\Node)) {
@@ -338,7 +342,7 @@ class ContextNode
             // This is nonsense. Give up, but check if it's a type other than int/string.
             // (e.g. to catch typos such as $$this->foo = bar;)
             try {
-                $name_node_type = (new UnionTypeVisitor($this->code_base, $this->context, true))($name_node);
+                $name_node_type = UnionTypeVisitor::unionTypeFromNode($this->code_base, $this->context, $name_node, true);
             } catch (IssueException $exception) {
                 Issue::maybeEmitInstance(
                     $this->code_base,
@@ -349,10 +353,7 @@ class ContextNode
             }
             static $int_or_string_type;
             if ($int_or_string_type === null) {
-                $int_or_string_type = new UnionType();
-                $int_or_string_type->addType(StringType::instance(false));
-                $int_or_string_type->addType(IntType::instance(false));
-                $int_or_string_type->addType(NullType::instance(false));
+                $int_or_string_type = new UnionType([StringType::instance(false), IntType::instance(false), NullType::instance(false)]);
             }
             if (!$name_node_type->canCastToUnionType($int_or_string_type)) {
                 Issue::maybeEmit($this->code_base, $this->context, Issue::TypeSuspiciousIndirectVariable, $name_node->lineno ?? 0, (string)$name_node_type);
@@ -382,6 +383,67 @@ class ContextNode
     const CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME = 2;
 
     /**
+     * @return array{0:UnionType,1:Clazz[]}
+     */
+    public function getClassListInner(bool $ignore_missing_classes)
+    {
+        $node = $this->node;
+        if (!($node instanceof Node)) {
+            if (\is_string($node)) {
+                return [StringType::instance(false)->asUnionType(), []];
+            }
+            return [UnionType::empty(), []];
+        }
+        $context = $this->context;
+        $node_id = \spl_object_id($node);
+
+        $cached_result = $context->getCachedClassListOfNode($node_id);
+        if ($cached_result) {
+            // About 25% of requests are cache hits
+            return $cached_result;
+        }
+        $code_base = $this->code_base;
+        $union_type = UnionTypeVisitor::unionTypeFromClassNode(
+            $code_base,
+            $context,
+            $node
+        );
+        if ($union_type->isEmpty()) {
+            $result = [$union_type, []];
+            $context->setCachedClassListOfNode($node_id, $result);
+            return $result;
+        }
+
+        $class_list = [];
+        if ($ignore_missing_classes) {
+            try {
+                // TODO: Not sure why iterator_to_array would cause a test failure
+                foreach ($union_type->asClassList(
+                    $code_base,
+                    $context
+                ) as $clazz) {
+                    $class_list[] = $clazz;
+                }
+                $result = [$union_type, $class_list];
+                $context->setCachedClassListOfNode($node_id, $result);
+                return $result;
+            } catch (CodeBaseException $exception) {
+                // swallow it
+                // TODO: Is it appropriate to return class_list
+                return [$union_type, $class_list];
+            }
+        }
+        foreach ($union_type->asClassList(
+            $code_base,
+            $context
+        ) as $clazz) {
+            $class_list[] = $clazz;
+        }
+        $result = [$union_type, $class_list];
+        $context->setCachedClassListOfNode($node_id, $result);
+        return $result;
+    }
+    /**
      * @param bool $ignore_missing_classes
      * If set to true, missing classes will be ignored and
      * exceptions will be inhibited
@@ -405,33 +467,12 @@ class ContextNode
      */
     public function getClassList(bool $ignore_missing_classes = false, int $expected_type_categories = self::CLASS_LIST_ACCEPT_ANY, string $custom_issue_type = null) : array
     {
-        $union_type = $this->getClassUnionType();
+        [$union_type, $class_list] = $this->getClassListInner($ignore_missing_classes);
         if ($union_type->isEmpty()) {
             return [];
         }
 
-        $class_list = [];
-
-        if ($ignore_missing_classes) {
-            try {
-                foreach ($union_type->asClassList(
-                    $this->code_base,
-                    $this->context
-                ) as $clazz) {
-                    $class_list[] = $clazz;
-                }
-            } catch (CodeBaseException $exception) {
-                // swallow it
-            }
-        } else {
-            foreach ($union_type->asClassList(
-                $this->code_base,
-                $this->context
-            ) as $clazz) {
-                $class_list[] = $clazz;
-            }
-        }
-
+        // TODO: Should this check that count($cclass_list) > 0 instead? Or just always check?
         if (\count($class_list) === 0 && $expected_type_categories !== self::CLASS_LIST_ACCEPT_ANY) {
             if (!$union_type->hasTypeMatchingCallback(function (Type $type) use ($expected_type_categories) : bool {
                 return $type->isObject() || ($type instanceof MixedType) || ($expected_type_categories === self::CLASS_LIST_ACCEPT_OBJECT_OR_CLASS_NAME && $type instanceof StringType);
@@ -1181,7 +1222,7 @@ class ContextNode
         $property = new Property(
             $this->context,
             $property_name,
-            new UnionType(),
+            UnionType::empty(),
             $flags,
             $property_fqsen
         );

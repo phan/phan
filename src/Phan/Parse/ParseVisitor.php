@@ -54,12 +54,14 @@ class ParseVisitor extends ScopeVisitor
      * The global code base in which we store all
      * state
      */
+    /*
     public function __construct(
         CodeBase $code_base,
         Context $context
     ) {
         parent::__construct($code_base, $context);
     }
+     */
 
     /**
      * Visit a node with kind `\ast\AST_CLASS`
@@ -179,7 +181,7 @@ class ParseVisitor extends ScopeVisitor
         $extends_node = $node->children['extends'] ?? null;
         if ($extends_node instanceof Node) {
             $parent_class_name =
-                $extends_node->children['name'];
+                (string)$extends_node->children['name'];
 
             // Check to see if the name isn't fully qualified
             if ($extends_node->flags & \ast\flags\NAME_NOT_FQ) {
@@ -371,15 +373,15 @@ class ParseVisitor extends ScopeVisitor
                 }
             }
         } elseif ('__invoke' === $method_name) {
-            $class->getUnionType()->addType(
+            $class->setUnionType($class->getUnionType()->withType(
                 CallableType::instance(false)
-            );
+            ));
         } elseif ('__toString' === $method_name
             && !$this->context->getIsStrictTypes()
         ) {
-            $class->getUnionType()->addType(
+            $class->setUnionType($class->getUnionType()->withType(
                 StringType::instance(false)
-            );
+            ));
         }
 
 
@@ -417,7 +419,7 @@ class ParseVisitor extends ScopeVisitor
             Comment::ON_PROPERTY
         );
 
-        foreach ($node->children ?? [] as $i => $child_node) {
+        foreach ($node->children as $i => $child_node) {
             // Ignore children which are not property elements
             if (!$child_node
                 || $child_node->kind != \ast\AST_PROP_ELEM
@@ -448,13 +450,13 @@ class ParseVisitor extends ScopeVisitor
                     $this->context,
                     $child_node->children['default']
                 );
-                $union_type = new UnionType();
+                $union_type = UnionType::empty();
             }
 
             // Don't set 'null' as the type if that's the default
             // given that its the default default.
             if ($union_type->isType(NullType::instance(false))) {
-                $union_type = new UnionType();
+                $union_type = UnionType::empty();
             }
 
             $property_name = $child_node->children['name'];
@@ -510,9 +512,9 @@ class ParseVisitor extends ScopeVisitor
 
                 // Set the declared type to the doc-comment type and add
                 // |null if the default value is null
-                $property->getUnionType()->addUnionType(
+                $property->setUnionType($property->getUnionType()->withUnionType(
                     $variable->getUnionType()
-                );
+                ));
             }
 
             $property->setIsDeprecated($comment->isDeprecated());
@@ -545,7 +547,7 @@ class ParseVisitor extends ScopeVisitor
     {
         $class = $this->getContextClass();
 
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             \assert($child_node instanceof Node, 'expected class const element to be a Node');
             $name = $child_node->children['name'];
 
@@ -569,7 +571,7 @@ class ParseVisitor extends ScopeVisitor
                     ->withLineNumberStart($line_number_start)
                     ->withLineNumberEnd($child_node->endLineno ?? $line_number_start),
                 $name,
-                new UnionType(),
+                UnionType::empty(),
                 $node->flags ?? 0,
                 $fqsen
             );
@@ -610,7 +612,7 @@ class ParseVisitor extends ScopeVisitor
      */
     public function visitConstDecl(Node $node) : Context
     {
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             \assert($child_node instanceof Node);
 
             $this->addConstant(
@@ -769,7 +771,7 @@ class ParseVisitor extends ScopeVisitor
         if (Config::get_backward_compatibility_checks()) {
             $this->analyzeBackwardCompatibility($node);
 
-            foreach ($node->children['args']->children ?? [] as $arg_node) {
+            foreach ($node->children['args']->children as $arg_node) {
                 if ($arg_node instanceof Node) {
                     $this->analyzeBackwardCompatibility($arg_node);
                 }
@@ -793,7 +795,7 @@ class ParseVisitor extends ScopeVisitor
         $call = $node->children['class'];
 
         if ($call->kind == \ast\AST_NAME) {
-            $func_name = strtolower($call->children['name']);
+            $func_name = \strtolower($call->children['name']);
             if ($func_name == 'parent') {
                 // Make sure it is not a crazy dynamic parent method call
                 if (!($node->children['method'] instanceof Node)) {
@@ -834,6 +836,8 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * TODO: Defer analysis of the inside of methods until the class gets hydrated.
      */
     public function visitReturn(Node $node) : Context
     {
@@ -871,6 +875,8 @@ class ParseVisitor extends ScopeVisitor
      * @return Context
      * A new or an unchanged context resulting from
      * parsing the node
+     *
+     * TODO: Defer analysis of the inside of methods until the method/function gets hydrated.
      */
     public function visitYield(Node $node) : Context
     {
@@ -1029,8 +1035,8 @@ class ParseVisitor extends ScopeVisitor
             $line = $ftemp->current();
             \assert(\is_string($line));
             unset($ftemp);
-            if (strpos($line, '{') === false
-                || strpos($line, '}') === false
+            if (\strpos($line, '{') === false
+                || \strpos($line, '}') === false
             ) {
                 $this->emitIssue(
                     Issue::CompatibleExpressionPHP7,
@@ -1123,7 +1129,7 @@ class ParseVisitor extends ScopeVisitor
             $this->context
                 ->withLineNumberStart($node->lineno ?? 0),
             $name,
-            new UnionType(),
+            UnionType::empty(),
             $flags,
             $fqsen
         );
@@ -1205,4 +1211,22 @@ class ParseVisitor extends ScopeVisitor
         // Figure out if any of the aliases are wrong after analysis phase.
         $this->code_base->addClassAlias($original_fqsen, $alias_fqsen, $context, $node->lineno ?? 0);
     }
+
+    // common no-ops
+    /** @return Context */
+    public function visitArrayElem(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitVar(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitName(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitArgList(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitStmtList(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitProp(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitArray(Node $node) { return $this->context; }
+    /** @return Context */
+    public function visitBinaryOp(Node $node) { return $this->context; }
 }

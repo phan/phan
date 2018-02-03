@@ -24,6 +24,8 @@ class Parameter extends Variable
     const REFERENCE_READ_WRITE = 2;
     const REFERENCE_WRITE_ONLY = 3;
 
+    // __construct inherited from Variable
+
     /**
      * @var UnionType|null
      * The type of the default value if any
@@ -37,65 +39,18 @@ class Parameter extends Variable
     private $default_value = null;
 
     /**
-     * @param FileRef $file_ref
-     * The file and lines in which the unaddressable element lives
-     *
-     * @param string $name
-     * The name of the typed structural element
-     *
-     * @param UnionType $type
-     * A '|' delimited set of types satisfyped by this
-     * typed structural element.
-     *
-     * @param int $flags
-     * The flags property contains node specific flags. It is
-     * always defined, but for most nodes it is always zero.
-     * ast\kind_uses_flags() can be used to determine whether
-     * a certain kind has a meaningful flags value.
+     * @return static
      */
-    public function __construct(
-        FileRef $file_ref,
+    public static function create(
+        FileRef $context,
         string $name,
         UnionType $type,
         int $flags
     ) {
-        parent::__construct(
-            $file_ref,
-            $name,
-            $type,
-            $flags
-        );
-    }
-
-    /**
-     * After a clone is called on this object, clone our
-     * deep objects.
-     *
-     * @return null
-     */
-    public function __clone()
-    {
-        parent::__clone();
-        $this->default_value_type = $this->default_value_type
-            ? clone($this->default_value_type)
-            : $this->default_value_type;
-    }
-
-    /**
-     * @return static - non-variadic clone which can be modified.
-     */
-    public function cloneAsNonVariadic()
-    {
-        $result = clone($this);
-        if ($result->isVariadic() && !$result->isCloneOfVariadic()) {
-            $result->convertToNonVariadic();
-            $result->setPhanFlags(Flags::bitVectorWithState(
-                $result->getPhanFlags(),
-                Flags::IS_CLONE_OF_VARIADIC,
-                true
-            ));
+        if (Flags::bitVectorHasState($flags, \ast\flags\PARAM_VARIADIC)) {
+            return new VariadicParameter($context, $name, $type, $flags);
         }
-        return $result;
+        return new Parameter($context, $name, $type, $flags);
     }
 
     /**
@@ -176,7 +131,7 @@ class Parameter extends Variable
     ) : array {
         $parameter_list = [];
         $is_optional_seen = false;
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             $parameter =
                 Parameter::fromNode($context, $code_base, $child_node);
 
@@ -225,15 +180,13 @@ class Parameter extends Variable
         if ($reflection_parameter->isVariadic()) {
             $flags |= \ast\flags\PARAM_VARIADIC;
         }
-
-        $parameter = new Parameter(
+        $parameter = self::create(
             new Context(),
             $reflection_parameter->getName() ?? "arg",
             UnionType::fromReflectionType($reflection_parameter->getType()),
             $flags
         );
         if ($reflection_parameter->isOptional()) {
-            // TODO: check if ($reflection_parameter->isDefaultValueAvailable())
             $parameter->setDefaultValueType(
                 NullType::instance(false)->asUnionType()
             );
@@ -258,7 +211,7 @@ class Parameter extends Variable
         );
 
         // Create the skeleton parameter from what we know so far
-        $parameter = new Parameter(
+        $parameter = Parameter::create(
             $context,
             (string)$node->children['name'],
             $union_type,
@@ -297,15 +250,14 @@ class Parameter extends Variable
                     if ($default_node instanceof Node
                         && $default_node->kind === \ast\AST_ARRAY
                     ) {
-                        $union_type = new UnionType([
-                            ArrayType::instance(false),
-                        ]);
+                        $union_type = ArrayType::instance(false)->asUnionType();
                     } else {
                         // If we're in the parsing phase and we
                         // depend on a constant that isn't yet
                         // defined, give up and set it to
                         // bool|float|int|string to avoid having
                         // to handle a future type.
+                        // TODO: This can also be Null or an Array
                         $union_type = new UnionType([
                             BoolType::instance(false),
                             FloatType::instance(false),
@@ -333,10 +285,7 @@ class Parameter extends Variable
      */
     public function isOptional() : bool
     {
-        return (
-            $this->hasDefaultValue()
-            || $this->isVariadic()
-        );
+        return $this->hasDefaultValue();
     }
 
     /**
@@ -356,10 +305,7 @@ class Parameter extends Variable
      */
     public function isVariadic() : bool
     {
-        return Flags::bitVectorHasState(
-            $this->getFlags(),
-            \ast\flags\PARAM_VARIADIC
-        );
+        return false;
     }
 
     /**
@@ -374,25 +320,7 @@ class Parameter extends Variable
      */
     public function asNonVariadic()
     {
-        if (!$this->isVariadic()) {
-            return $this;
-        }
-        // TODO: Is it possible to cache this while maintaining
-        //       correctness? PostOrderAnalysisVisitor clones the
-        //       value to avoid it being reused.
-        //
-        // Also, figure out if the cloning still working correctly
-        // after this PR for fixing variadic args. Create a single
-        // Parameter instance for analyzing callers of the
-        // corresponding method/function.
-        // e.g. $this->getUnionType() is of type T[]
-        //      $this->non_variadic->getUnionType() is of type T
-        return new Parameter(
-            $this->getFileRef(),
-            $this->getName(),
-            $this->getNonVariadicUnionType(),
-            Flags::bitVectorWithState($this->getFlags(), \ast\flags\PARAM_VARIADIC, false)
-        );
+        return $this;
     }
 
     /**
@@ -403,37 +331,7 @@ class Parameter extends Variable
      */
     public function getNonVariadicUnionType() : UnionType
     {
-        $union_type = parent::getUnionType();
-        if ($this->isCloneOfVariadic()) {
-            return $union_type->nonArrayTypes();  // clones converted inner types to a generic array T[]. Convert it back to T.
-        }
-        return $union_type;
-    }
-
-    /**
-     * If this parameter is variadic (e.g. `DateTime ...$args`),
-     * then this returns the corresponding array type(s) of $args.
-     * (e.g. `DateTime[]`)
-     *
-     * NOTE: For analyzing the code within a function,
-     * code should pass $param->cloneAsNonVariadic() instead.
-     * Modifying/analyzing the clone should work without any bugs.
-     *
-     * TODO(Issue #376) : We will probably want to be able to modify
-     * the underlying variable, e.g. by creating
-     * `class UnionTypeGenericArrayView extends UnionType`.
-     * Otherwise, type inference of `...$args` based on the function
-     * source will be less effective without phpdoc types.
-     *
-     * @override
-     */
-    public function getUnionType() : UnionType
-    {
-        if ($this->isVariadic() && !$this->isCloneOfVariadic()) {
-            // TODO: Figure out why asNonEmptyGenericArrayTypes() causes test failures
-            return parent::getUnionType()->asGenericArrayTypes(GenericArrayType::KEY_INT);
-        }
-        return parent::getUnionType();
+        return self::getUnionType();
     }
 
     /**
@@ -441,9 +339,9 @@ class Parameter extends Variable
      * (We avoid bugs by adding new types to a variadic parameter if this is cloned.)
      * However, error messages still need to convert variadic parameters to a string.
      */
-    protected function isCloneOfVariadic() : bool
+    public function isCloneOfVariadic() : bool
     {
-        return Flags::bitVectorHasState($this->getPhanFlags(), Flags::IS_CLONE_OF_VARIADIC);
+        return false;
     }
 
     /**
@@ -456,7 +354,7 @@ class Parameter extends Variable
      */
     public function addUnionType(UnionType $union_type)
     {
-        parent::getUnionType()->addUnionType($union_type);
+        parent::setUnionType(self::getUnionType()->withUnionType($union_type));
     }
 
     /**
@@ -469,7 +367,7 @@ class Parameter extends Variable
      */
     public function addType(Type $type)
     {
-        parent::getUnionType()->addType($type);
+        parent::setUnionType(self::getUnionType()->withType($type));
     }
 
     /**

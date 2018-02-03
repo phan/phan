@@ -96,10 +96,6 @@ abstract class TypedElement implements TypedElementInterface
         $this->context = $this->context
             ? clone($this->context)
             : $this->context;
-
-        $this->type = $this->type
-            ? clone($this->type)
-            : $this->type;
     }
 
     /**
@@ -124,11 +120,13 @@ abstract class TypedElement implements TypedElementInterface
      * @param UnionType $type
      * Set the type of this element
      *
+     * TODO: A helper addUnionType(), accounting for variadic
+     *
      * @return void
      */
     public function setUnionType(UnionType $type)
     {
-        $this->type = clone($type);
+        $this->type = $type;
     }
 
     /**

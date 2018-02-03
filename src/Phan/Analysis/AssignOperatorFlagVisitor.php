@@ -48,7 +48,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
     {
         // AST_ASSIGN_OP uses \ast\flags\BINARY_* in ast versions >= 20.
         // NOTE: Some operations currently don't exist in any php version, such as `$x ||= 2;`, `$x xor= 2;`
-        return (new Element($node))->acceptBinaryFlagVisitor($this);
+        return Element::acceptBinaryFlagVisitor($node, $this);
     }
 
     /**
@@ -89,7 +89,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
                 $right
             );
 
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($left->hasType(IntType::instance(false))
             && $right->hasType(IntType::instance(false))
         ) {
@@ -100,10 +100,11 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
             return FloatType::instance(false)->asUnionType();
         }
 
-        return new UnionType([
+        static $int_or_float;
+        return $int_or_float ?? ($int_or_float = new UnionType([
             IntType::instance(false),
             FloatType::instance(false)
-        ]);
+        ]));
     }
 
     public function visitBinaryBitwiseAnd(Node $node)
@@ -184,7 +185,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
                 $right
             );
 
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($left->hasType(IntType::instance(false))
             && $right->hasType(IntType::instance(false))
         ) {
@@ -277,7 +278,7 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
                 Issue::TypeInvalidRightOperand,
                 $node->lineno ?? 0
             );
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($right_is_array
             && !$left->canCastToUnionType(ArrayType::instance(false)->asUnionType())
         ) {
@@ -287,16 +288,17 @@ class AssignOperatorFlagVisitor extends FlagVisitorImplementation
                 Issue::TypeInvalidLeftOperand,
                 $node->lineno ?? 0
             );
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($left_is_array || $right_is_array) {
             // If it is a '+' and we know one side is an array
             // and the other is unknown, assume array
             return ArrayType::instance(false)->asUnionType();
         }
 
-        return new UnionType([
+        static $int_or_float;
+        return $int_or_float ?? ($int_or_float = new UnionType([
             IntType::instance(false),
             FloatType::instance(false)
-        ]);
+        ]));
     }
 }

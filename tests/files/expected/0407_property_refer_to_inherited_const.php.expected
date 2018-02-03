@@ -1,0 +1,2 @@
+%s:34 PhanTypeMismatchArgument Argument 1 (e) is \BaseException407|\Exception|\Exception407|\Throwable but \expect_int() takes int defined at %s:25
+%s:41 PhanTypeMismatchArgument Argument 1 (e) is \BaseException407|\Exception|\Throwable but \expect_int() takes int defined at %s:25

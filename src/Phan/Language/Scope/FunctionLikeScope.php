@@ -1,12 +1,30 @@
 <?php declare(strict_types=1);
 namespace Phan\Language\Scope;
 
+use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\Language\FQSEN\FullyQualifiedFunctionName;
 use Phan\Language\FQSEN\FullyQualifiedMethodName;
 
 // TODO: Wrap this with a ClosureLikeScope
 class FunctionLikeScope extends ClosedScope
 {
+    /**
+     * @return bool
+     * True if we're in a class scope
+     */
+    public function isInClassScope() : bool
+    {
+        return $this->parent_scope->isInClassScope();
+    }
+
+    /**
+     * @return FullyQualifiedClassName
+     * Crawl the scope hierarchy to get a class FQSEN.
+     */
+    public function getClassFQSEN() : FullyQualifiedClassName
+    {
+        return $this->parent_scope->getClassFQSEN();
+    }
 
     /**
      * @return bool

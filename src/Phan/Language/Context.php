@@ -50,12 +50,16 @@ class Context extends FileRef
     private $scope;
 
     /**
+     * @var array<mixed,mixed>
+     * caches union types for a given node
+     */
+    private $cache  = [];
+
+    /**
      * Create a new context
      */
     public function __construct()
     {
-        $this->namespace = '';
-        $this->namespace_map = [];
         $this->scope = new GlobalScope;
     }
 
@@ -94,11 +98,11 @@ class Context extends FileRef
         if (count($name_parts) > 1) {
             // We're looking for a namespace if there's more than one part
             // Namespaces are case insensitive.
-            $namespace_map_key = strtolower($name_parts[0]);
+            $namespace_map_key = \strtolower($name_parts[0]);
             $flags = \ast\flags\USE_NORMAL;
         } else {
             if ($flags !== \ast\flags\USE_CONST) {
-                $namespace_map_key = strtolower($name_parts[0]);
+                $namespace_map_key = \strtolower($name_parts[0]);
             } else {
                 // Constants are case sensitive, and stored in a case sensitive manner.
                 $namespace_map_key = $name;
@@ -119,14 +123,14 @@ class Context extends FileRef
 
         // Look for the mapping on the part before a
         // slash
-        $name_parts = explode('\\', $name, 2);
+        $name_parts = \explode('\\', $name, 2);
         if (count($name_parts) > 1) {
-            $name = strtolower($name_parts[0]);
+            $name = \strtolower($name_parts[0]);
             $suffix = $name_parts[1];
             // In php, namespaces, functions, and classes are case insensitive.
             // However, constants are almost always case insensitive.
             if ($flags !== \ast\flags\USE_CONST) {
-                $suffix = strtolower($suffix);
+                $suffix = \strtolower($suffix);
             }
             // The name we're looking for is a namespace(USE_NORMAL).
             // The suffix has type $flags
@@ -135,7 +139,7 @@ class Context extends FileRef
             $suffix = '';
             $map_flags = $flags;
             if ($flags !== \ast\flags\USE_CONST) {
-                $name = strtolower($name);
+                $name = \strtolower($name);
             }
         }
 
@@ -184,7 +188,7 @@ class Context extends FileRef
         FullyQualifiedGlobalStructuralElement $target
     ) : Context {
         if ($flags !== \ast\flags\USE_CONST) {
-            $alias = strtolower($alias);
+            $alias = \strtolower($alias);
         } else {
             $last_part_index = \strrpos($alias, '\\');
             if ($last_part_index !== false) {
@@ -237,6 +241,8 @@ class Context extends FileRef
     public function setScope(Scope $scope)
     {
         $this->scope = $scope;
+        // TODO: Less aggressive? ConditionVisitor creates a lot of scopes
+        $this->cache = [];
     }
 
     /**
@@ -548,5 +554,86 @@ class Context extends FileRef
         }
 
         return $has_suppress_issue;
+    }
+
+    /**
+     * $this->cache is reused for multiple types of caches
+     * We xor the node ids with the following bits so that the values don't overlap.
+     * (The node id is based on \spl_object_id(), which is the object ID number.
+     *
+     * (This caching scheme makes a reasonable assumption
+     * that there are less than 1 billion Node objects on 32-bit systems,
+     * (It'd run out of memory with more than 4 bytes needed per Node)
+     * and less than (1 << 62) objects on 64-bit systems.)
+     *
+     * It also assumes that nodes won't be freed while this Context still exists
+     *
+     * 0x00(node_id) is used for getUnionTypeOfNodeIfCached(int $node_id, false)
+     * 0x10(node_id) is used for getUnionTypeOfNodeIfCached(int $node_id, true)
+     * 0x01(node_id) is used for getCachedClassListOfNode(int $node_id)
+     */
+    const HIGH_BIT_1 = (1 << (PHP_INT_SIZE * 8) - 1);
+    const HIGH_BIT_2 = (1 << (PHP_INT_SIZE * 8) - 2);
+
+    /**
+     * @param int $node_id \spl_object_id($node)
+     * @param bool $should_catch_issue_exception the value passed to UnionTypeVisitor
+     * @return ?UnionType
+     */
+    public function getUnionTypeOfNodeIfCached(int $node_id, bool $should_catch_issue_exception)
+    {
+        if ($should_catch_issue_exception) {
+            return $this->cache[$node_id] ?? null;
+        }
+        return $this->cache[$node_id ^ self::HIGH_BIT_1] ?? null;
+    }
+
+    /**
+     * TODO: This may be unsafe? Clear the cache after a function goes out of scope.
+     *
+     * A UnionType is only cached if there is no exception.
+     *
+     * @param int $node_id \spl_object_id($node)
+     * @param UnionType $type the type to cache.
+     * @param bool $should_catch_issue_exception the value passed to UnionTypeVisitor
+     * @return void
+     */
+    public function setCachedUnionTypeOfNode(int $node_id, UnionType $type, bool $should_catch_issue_exception)
+    {
+        if (!$should_catch_issue_exception) {
+            $this->cache[$node_id ^ self::HIGH_BIT_1] = $type;
+            // If we weren't suppressing exceptions and setCachedUnionTypeOfNode was called,
+            // that would mean that there were no exceptions to catch.
+            // So, that means the UnionType for should_catch_issue_exception = true will be the same
+        }
+        $this->cache[$node_id] = $type;
+    }
+
+    /**
+     * @param int $node_id
+     * @return ?array{0:UnionType,1:Clazz[]} $result
+     */
+    public function getCachedClassListOfNode(int $node_id)
+    {
+        return $this->cache[$node_id ^ self::HIGH_BIT_2] ?? null;
+    }
+
+    /**
+     * TODO: This may be unsafe? Clear the cache after a function goes out of scope.
+     * @param int $node_id \spl_object_id($node)
+     * @param array{0:UnionType,1:Clazz[]} $result
+     * @return void
+     */
+    public function setCachedClassListOfNode(int $node_id, array $result)
+    {
+        $this->cache[$node_id ^ self::HIGH_BIT_2] = $result;
+    }
+
+    /**
+     * @return void
+     */
+    public function clearCachedUnionTypes()
+    {
+        $this->cache = [];
     }
 }

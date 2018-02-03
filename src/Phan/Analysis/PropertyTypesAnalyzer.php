@@ -13,7 +13,7 @@ class PropertyTypesAnalyzer
 {
 
     /**
-     * Check to see if the given Clazz is a duplicate
+     * Check to see if the given properties have issues
      *
      * @return void
      */

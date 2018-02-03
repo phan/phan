@@ -196,7 +196,7 @@ class Clazz extends AddressableElement
 
         if ($class_name === "Traversable") {
             // Make sure that canCastToExpandedUnionType() works as expected for Traversable and its subclasses
-            $clazz->getUnionType()->addType(IterableType::instance(false));
+            $clazz->setUnionType($clazz->getUnionType()->withType(IterableType::instance(false)));
         }
 
         // Note: If there are multiple calls to Clazz->addProperty(),
@@ -358,7 +358,7 @@ class Clazz extends AddressableElement
                 $parent_type = Type::fromType(
                     $parent_type,
                     \array_map(function (UnionType $union_type) use ($template_type_map) : UnionType {
-                        return new UnionType(
+                        return UnionType::of(
                             \array_map(function (Type $type) use ($template_type_map) : Type {
                                 return $template_type_map[$type->getName()] ?? $type;
                             }, $union_type->getTypeSet())
@@ -371,9 +371,9 @@ class Clazz extends AddressableElement
         $this->parent_type = $parent_type;
 
         // Add the parent to the union type of this class
-        $this->getUnionType()->addUnionType(
-            $parent_type->asUnionType()
-        );
+        $this->setUnionType($this->getUnionType()->withType(
+            $parent_type
+        ));
     }
 
     /**
@@ -548,9 +548,9 @@ class Clazz extends AddressableElement
 
         // Add the interface to the union type of this
         // class
-        $this->getUnionType()->addUnionType(
+        $this->setUnionType($this->getUnionType()->withUnionType(
             UnionType::fromFullyQualifiedString((string)$fqsen)
-        );
+        ));
     }
 
     /**
@@ -783,20 +783,23 @@ class Clazz extends AddressableElement
             return false;
         }
         // NOTE: This gets the **unexpanded** union type (Should be 1 class and no parent classes).
-        $type_of_class_of_property = $property->getDefiningClassFQSEN()->asUnionType();
+        $type_of_class_of_property = $property->getDefiningClassFQSEN()->asType();
+        $accessing_class_type = $context->getClassFQSEN()->asType();
+
+        if ($type_of_class_of_property === $accessing_class_type) {
+            // Check for common case: Same class
+            return true;
+        }
 
         // We are in a class scope, and the property is either private or protected.
         if ($property->isPrivate()) {
-            $accessing_class_type = $context->getClassFQSEN()->asUnionType();
-            return $accessing_class_type->canCastToUnionType(
+            return $accessing_class_type->canCastToType(
                 $type_of_class_of_property
             );
         } else {
-            // TODO: Remove, should be unnecessary
-            $accessing_class_type = $context->getClassFQSEN()->asUnionType();
             // If the definition of the property is protected, then the subclasses of the defining class can access it.
             return $accessing_class_type->asExpandedTypes($code_base)->canCastToUnionType(
-                $type_of_class_of_property
+                $type_of_class_of_property->asUnionType()
             );
         }
     }
@@ -941,7 +944,7 @@ class Clazz extends AddressableElement
             $property = new Property(
                 $context,
                 $name,
-                new UnionType(),
+                UnionType::empty(),
                 0,
                 $property_fqsen
             );
@@ -1036,6 +1039,17 @@ class Clazz extends AddressableElement
         CodeBase $code_base,
         string $name
     ) : bool {
+        if ($code_base->hasClassConstantWithFQSEN(
+            FullyQualifiedClassConstantName::make(
+                $this->getFQSEN(),
+                $name
+            )
+        )) {
+            return true;
+        }
+        if (!$this->hydrateIndicatingFirstTime($code_base)) {
+            return false;
+        }
         return $code_base->hasClassConstantWithFQSEN(
             FullyQualifiedClassConstantName::make(
                 $this->getFQSEN(),
@@ -1296,7 +1310,7 @@ class Clazz extends AddressableElement
     ) : bool {
         // All classes have a constructor even if it hasn't
         // been declared yet
-        if (!$is_direct_invocation && '__construct' === strtolower($name)) {
+        if (!$is_direct_invocation && '__construct' === \strtolower($name)) {
             return true;
         }
 
@@ -1506,9 +1520,9 @@ class Clazz extends AddressableElement
         $this->trait_fqsen_list[] = $fqsen;
 
         // Add the trait to the union type of this class
-        $this->getUnionType()->addUnionType(
+        $this->setUnionType($this->getUnionType()->withUnionType(
             UnionType::fromFullyQualifiedString((string)$fqsen)
-        );
+        ));
     }
 
     /**
@@ -1516,7 +1530,7 @@ class Clazz extends AddressableElement
      */
     public function addTraitAdaptations(TraitAdaptations $trait_adaptations)
     {
-        $this->trait_adaptations_map[strtolower($trait_adaptations->getTraitFQSEN()->__toString())] = $trait_adaptations;
+        $this->trait_adaptations_map[\strtolower($trait_adaptations->getTraitFQSEN()->__toString())] = $trait_adaptations;
     }
 
     /**
@@ -1981,7 +1995,7 @@ class Clazz extends AddressableElement
         Clazz $class,
         $type_option
     ) {
-        $key = strtolower((string)$class->getFQSEN());
+        $key = \strtolower((string)$class->getFQSEN());
         if (!$this->isFirstExecution(
             __METHOD__ . ':' . $key
         )) {
@@ -2015,7 +2029,7 @@ class Clazz extends AddressableElement
         // Copy methods
         foreach ($class->getMethodMap($code_base) as $method) {
             if (!\is_null($trait_adaptations) && count($trait_adaptations->hidden_methods) > 0) {
-                $method_name_key = strtolower($method->getName());
+                $method_name_key = \strtolower($method->getName());
                 if (isset($trait_adaptations->hidden_methods[$method_name_key])) {
                     // TODO: Record that the method was hidden, and check later on that all method that were hidden were actually defined?
                     continue;

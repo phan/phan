@@ -282,7 +282,7 @@ class TypeTest extends BaseTest
         $expected_flattened_type = UnionType::fromStringInContext($normalized_union_type_string, new Context(), Type::FROM_PHPDOC);
         $this->assertInstanceOf(ArrayShapeType::class, $actual_type, "Failed to create expected class for $type_string");
         assert($actual_type instanceof ArrayShapeType);
-        $actual_flattened_type = new UnionType($actual_type->asGenericArrayTypeInstances());
+        $actual_flattened_type = UnionType::of($actual_type->asGenericArrayTypeInstances());
         $this->assertTrue($expected_flattened_type->isEqualTo($actual_flattened_type), "expected $actual_flattened_type to equal $expected_flattened_type");
     }
 

@@ -145,70 +145,46 @@ class Element
         }
     }
 
+    const VISIT_BINARY_LOOKUP_TABLE = [
+        \ast\flags\BINARY_ADD => 'visitBinaryAdd',
+        \ast\flags\BINARY_BITWISE_AND => 'visitBinaryBitwiseAnd',
+        \ast\flags\BINARY_BITWISE_OR => 'visitBinaryBitwiseOr',
+        \ast\flags\BINARY_BITWISE_XOR => 'visitBinaryBitwiseXor',
+        \ast\flags\BINARY_BOOL_XOR => 'visitBinaryBoolXor',
+        \ast\flags\BINARY_CONCAT => 'visitBinaryConcat',
+        \ast\flags\BINARY_DIV => 'visitBinaryDiv',
+        \ast\flags\BINARY_IS_EQUAL => 'visitBinaryIsEqual',
+        \ast\flags\BINARY_IS_IDENTICAL => 'visitBinaryIsIdentical',
+        \ast\flags\BINARY_IS_NOT_EQUAL => 'visitBinaryIsNotEqual',
+        \ast\flags\BINARY_IS_NOT_IDENTICAL => 'visitBinaryIsNotIdentical',
+        \ast\flags\BINARY_IS_SMALLER => 'visitBinaryIsSmaller',
+        \ast\flags\BINARY_IS_SMALLER_OR_EQUAL => 'visitBinaryIsSmallerOrEqual',
+        \ast\flags\BINARY_MOD => 'visitBinaryMod',
+        \ast\flags\BINARY_MUL => 'visitBinaryMul',
+        \ast\flags\BINARY_POW => 'visitBinaryPow',
+        \ast\flags\BINARY_SHIFT_LEFT => 'visitBinaryShiftLeft',
+        \ast\flags\BINARY_SHIFT_RIGHT => 'visitBinaryShiftRight',
+        \ast\flags\BINARY_SPACESHIP => 'visitBinarySpaceship',
+        \ast\flags\BINARY_SUB => 'visitBinarySub',
+        \ast\flags\BINARY_BOOL_AND => 'visitBinaryBoolAnd',
+        \ast\flags\BINARY_BOOL_OR => 'visitBinaryBoolOr',
+        \ast\flags\BINARY_COALESCE => 'visitBinaryCoalesce',
+        \ast\flags\BINARY_IS_GREATER => 'visitBinaryIsGreater',
+        \ast\flags\BINARY_IS_GREATER_OR_EQUAL => 'visitBinaryIsGreaterOrEqual',
+    ];
+
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
      */
-    public function acceptBinaryFlagVisitor(FlagVisitor $visitor)
+    public static function acceptBinaryFlagVisitor(Node $node, FlagVisitor $visitor)
     {
-        switch ($this->node->flags ?? 0) {
-            case \ast\flags\BINARY_ADD:
-                return $visitor->visitBinaryAdd($this->node);
-            case \ast\flags\BINARY_BITWISE_AND:
-                return $visitor->visitBinaryBitwiseAnd($this->node);
-            case \ast\flags\BINARY_BITWISE_OR:
-                return $visitor->visitBinaryBitwiseOr($this->node);
-            case \ast\flags\BINARY_BITWISE_XOR:
-                return $visitor->visitBinaryBitwiseXor($this->node);
-            case \ast\flags\BINARY_BOOL_XOR:
-                return $visitor->visitBinaryBoolXor($this->node);
-            case \ast\flags\BINARY_CONCAT:
-                return $visitor->visitBinaryConcat($this->node);
-            case \ast\flags\BINARY_DIV:
-                return $visitor->visitBinaryDiv($this->node);
-            case \ast\flags\BINARY_IS_EQUAL:
-                return $visitor->visitBinaryIsEqual($this->node);
-            case \ast\flags\BINARY_IS_IDENTICAL:
-                return $visitor->visitBinaryIsIdentical($this->node);
-            case \ast\flags\BINARY_IS_NOT_EQUAL:
-                return $visitor->visitBinaryIsNotEqual($this->node);
-            case \ast\flags\BINARY_IS_NOT_IDENTICAL:
-                return $visitor->visitBinaryIsNotIdentical($this->node);
-            case \ast\flags\BINARY_IS_SMALLER:
-                return $visitor->visitBinaryIsSmaller($this->node);
-            case \ast\flags\BINARY_IS_SMALLER_OR_EQUAL:
-                return $visitor->visitBinaryIsSmallerOrEqual($this->node);
-            case \ast\flags\BINARY_MOD:
-                return $visitor->visitBinaryMod($this->node);
-            case \ast\flags\BINARY_MUL:
-                return $visitor->visitBinaryMul($this->node);
-            case \ast\flags\BINARY_POW:
-                return $visitor->visitBinaryPow($this->node);
-            case \ast\flags\BINARY_SHIFT_LEFT:
-                return $visitor->visitBinaryShiftLeft($this->node);
-            case \ast\flags\BINARY_SHIFT_RIGHT:
-                return $visitor->visitBinaryShiftRight($this->node);
-            case \ast\flags\BINARY_SPACESHIP:
-                return $visitor->visitBinarySpaceship($this->node);
-            case \ast\flags\BINARY_SUB:
-                return $visitor->visitBinarySub($this->node);
-            case \ast\flags\BINARY_BOOL_AND:
-                return $visitor->visitBinaryBoolAnd($this->node);
-            case \ast\flags\BINARY_BOOL_OR:
-                return $visitor->visitBinaryBoolOr($this->node);
-            case \ast\flags\BINARY_COALESCE:
-                return $visitor->visitBinaryCoalesce($this->node);
-            case \ast\flags\BINARY_IS_GREATER:
-                return $visitor->visitBinaryIsGreater($this->node);
-            case \ast\flags\BINARY_IS_GREATER_OR_EQUAL:
-                return $visitor->visitBinaryIsGreaterOrEqual($this->node);
-            default:
-                \assert(
-                    false,
-                    "All flags must match. Found "
-                    . self::flagDescription($this->node)
-                );
-                break;
+        $fn_name = self::VISIT_BINARY_LOOKUP_TABLE[$node->flags] ?? null;
+        if (\is_string($fn_name)) {
+            return $visitor->{$fn_name}($node);
+        } else {
+            Debug::printNode($node);
+            \assert(false, "All flags must match. Found " . self::flagDescription($node));
         }
     }
 
@@ -269,6 +245,8 @@ class Element
     /**
      * Accepts a visitor that differentiates on the flag value
      * of the AST node.
+     *
+     * TODO: This is wrong, a parameter can be neither ref nor variadic, or both.
      *
      * @suppress PhanUnreferencedPublicMethod
      */

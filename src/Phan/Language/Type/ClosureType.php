@@ -42,20 +42,8 @@ final class ClosureType extends Type
     public function __clone()
     {
         assert($this->fqsen === null, 'should only clone null fqsen');
+        $this->singleton_union_type = null;
         // same as new static($this->namespace, $this->name, $this->template_parameter_type_list, $this->is_nullable);
-    }
-
-    /**
-     * @return UnionType
-     * A UnionType representing this and only this type
-     * @override so that cloning ClosureType won't break singleton_type_list
-     */
-    public function asUnionType() : UnionType
-    {
-        return new UnionType(
-            [$this],
-            true
-        );
     }
 
     public function hasKnownFQSEN() : bool

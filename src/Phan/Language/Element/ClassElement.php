@@ -7,9 +7,37 @@ use Phan\Language\Context;
 use Phan\Language\FQSEN;
 use Phan\Language\FQSEN\FullyQualifiedClassElement;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
+use Phan\Language\UnionType;
 
 abstract class ClassElement extends AddressableElement
 {
+    /** @var FullyQualifiedClassName */
+    private $class_fqsen;
+
+    public function __construct(
+        Context $context,
+        string $name,
+        UnionType $type,
+        int $flags,
+        FullyQualifiedClassElement $fqsen
+    ) {
+        parent::__construct($context, $name, $type, $flags, $fqsen);
+        $this->class_fqsen = $fqsen->getFullyQualifiedClassName();
+    }
+
+    /**
+     * @param FullyQualifiedClassElement $fqsen
+     * @return void
+     * @override
+     * @suppress PhanParamSignatureMismatch deliberately more specific
+     */
+    public function setFQSEN(FQSEN $fqsen)
+    {
+        \assert($fqsen instanceof FullyQualifiedClassElement);
+        parent::setFQSEN($fqsen);
+        $this->class_fqsen = $fqsen->getFullyQualifiedClassName();
+    }
+
     /**
      * @var FullyQualifiedClassElement|null
      * The FQSEN of this element where it is originally
@@ -87,14 +115,7 @@ abstract class ClassElement extends AddressableElement
      */
     public function getClassFQSEN() : FullyQualifiedClassName
     {
-        $fqsen = $this->getFQSEN();
-        if ($fqsen instanceof FullyQualifiedClassElement) {
-            return $fqsen->getFullyQualifiedClassName();
-        }
-
-        throw new \Exception(
-            "Cannot get defining class for non-class element $this"
-        );
+        return $this->class_fqsen;
     }
 
     /**
@@ -111,7 +132,7 @@ abstract class ClassElement extends AddressableElement
     public function getClass(
         CodeBase $code_base
     ) : Clazz {
-        $class_fqsen = $this->getClassFQSEN();
+        $class_fqsen = $this->class_fqsen;
 
         if (!$code_base->hasClassWithFQSEN($class_fqsen)) {
             throw new CodeBaseException(

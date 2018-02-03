@@ -5,6 +5,7 @@ use Phan\AST\UnionTypeVisitor;
 use Phan\Language\Type;
 use Phan\Language\Context;
 use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 use Phan\Language\FQSEN\FullyQualifiedClassName;
 use Phan\CodeBase;
 use Phan\Config;
@@ -281,23 +282,23 @@ final class GenericArrayType extends ArrayType
 
             $clazz = $code_base->getClassByFQSEN($class_fqsen);
 
-            $union_type->addUnionType(
+            $union_type = $union_type->withUnionType(
                 $clazz->getUnionType()->asGenericArrayTypes($this->key_type)
             );
 
             // Recurse up the tree to include all types
-            $recursive_union_type = new UnionType();
+            $recursive_union_type_builder = new UnionTypeBuilder();
             $representation = (string)$this;
             foreach ($union_type->getTypeSet() as $clazz_type) {
                 if ((string)$clazz_type != $representation) {
-                    $recursive_union_type->addUnionType(
+                    $recursive_union_type_builder->addUnionType(
                         $clazz_type->asExpandedTypes(
                             $code_base,
                             $recursion_depth + 1
                         )
                     );
                 } else {
-                    $recursive_union_type->addType($clazz_type);
+                    $recursive_union_type_builder->addType($clazz_type);
                 }
             }
 
@@ -306,13 +307,13 @@ final class GenericArrayType extends ArrayType
             $fqsen_aliases = $code_base->getClassAliasesByFQSEN($class_fqsen);
             foreach ($fqsen_aliases as $alias_fqsen_record) {
                 $alias_fqsen = $alias_fqsen_record->alias_fqsen;
-                $recursive_union_type->addUnionType(
-                    $alias_fqsen->asUnionType()->asGenericArrayTypes($this->key_type)
+                $recursive_union_type_builder->addType(
+                    $alias_fqsen->asType()->asGenericArrayType($this->key_type)
                 );
             }
-            return $recursive_union_type;
+            return $recursive_union_type_builder->getUnionType();
         });
-        return clone($union_type);
+        return $union_type;
     }
 
     public static function keyTypeFromUnionTypeKeys(UnionType $union_type) : int
@@ -352,7 +353,7 @@ final class GenericArrayType extends ArrayType
                 if ($behavior === self::CONVERT_KEY_MIXED_TO_INT_OR_STRING_UNION_TYPE) {
                     return new UnionType([$int_type, $string_type], true);
                 }
-                return new UnionType();
+                return UnionType::empty();
         }
     }
 

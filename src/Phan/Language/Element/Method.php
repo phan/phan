@@ -363,7 +363,7 @@ class Method extends ClassElement implements FunctionInterface
         $method = new Method(
             $context,
             (string)$node->children['name'],
-            new UnionType(),
+            UnionType::empty(),
             $node->flags ?? 0,
             $fqsen
         );
@@ -443,14 +443,14 @@ class Method extends ClassElement implements FunctionInterface
 
         // Add the syntax-level return type to the method's union type
         // if it exists
-        $return_union_type = new UnionType;
+        $return_union_type = UnionType::empty();
         if ($node->children['returnType'] !== null) {
             $return_union_type = UnionType::fromNode(
                 $context,
                 $code_base,
                 $node->children['returnType']
             );
-            $method->getUnionType()->addUnionType($return_union_type);
+            $method->setUnionType($method->getUnionType()->withUnionType($return_union_type));
         }
         $method->setRealReturnType($return_union_type);
 
@@ -467,13 +467,14 @@ class Method extends ClassElement implements FunctionInterface
                     //       or $this in the type because I'm guessing
                     //       it doesn't really matter. Apologies if it
                     //       ends up being an issue.
-                    $comment_return_union_type->addUnionType(
-                        $context->getClassFQSEN()->asUnionType()
+                    $comment_return_union_type = $comment_return_union_type->withType(
+                        $context->getClassFQSEN()->asType()
                     );
+                    // $comment->setReturnType($comment_return_union_type);
                 }
             }
 
-            $method->getUnionType()->addUnionType($comment_return_union_type);
+            $method->setUnionType($method->getUnionType()->withUnionType($comment_return_union_type));
             $method->setPHPDocReturnType($comment_return_union_type);
         }
 
@@ -494,8 +495,7 @@ class Method extends ClassElement implements FunctionInterface
         // If the type is 'static', add this context's class
         // to the return type
         if ($union_type->hasStaticType()) {
-            $union_type = clone($union_type);
-            $union_type->addType(
+            $union_type = $union_type->withType(
                 $this->getFQSEN()->getFullyQualifiedClassName()->asType()
             );
         }
@@ -503,10 +503,9 @@ class Method extends ClassElement implements FunctionInterface
         // If the type is a generic array of 'static', add
         // a generic array of this context's class to the return type
         if ($union_type->genericArrayElementTypes()->hasStaticType()) {
-            $union_type = clone($union_type);
             // TODO: Base this on the static array type...
             $key_type_enum = GenericArrayType::keyTypeFromUnionTypeKeys($union_type);
-            $union_type->addType(
+            $union_type = $union_type->withType(
                 $this->getFQSEN()->getFullyQualifiedClassName()->asType()->asGenericArrayType($key_type_enum)
             );
         }

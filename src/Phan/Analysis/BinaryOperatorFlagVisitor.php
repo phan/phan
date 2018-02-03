@@ -46,7 +46,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function __invoke(Node $node)
     {
-        return (new Element($node))->acceptBinaryFlagVisitor($this);
+        return Element::acceptBinaryFlagVisitor($node, $this);
     }
 
     /**
@@ -85,7 +85,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $right
             );
 
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($left->hasType(IntType::instance(false))
             && $right->hasType(IntType::instance(false))
         ) {
@@ -96,10 +96,11 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             return FloatType::instance(false)->asUnionType();
         }
 
-        return new UnionType([
+        static $int_or_float = null;
+        return $int_or_float ?? ($int_or_float = new UnionType([
             IntType::instance(false),
             FloatType::instance(false)
-        ]);
+        ]));
     }
 
     // Code can bitwise xor strings byte by byte in PHP
@@ -129,7 +130,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 $right
             );
 
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($left->hasType(IntType::instance(false))
             && $right->hasType(IntType::instance(false))
         ) {
@@ -417,7 +418,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 Issue::TypeInvalidRightOperand,
                 $node->lineno ?? 0
             );
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($right_is_array
             && !$left->canCastToUnionType(ArrayType::instance(false)->asUnionType())
         ) {
@@ -427,7 +428,7 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
                 Issue::TypeInvalidLeftOperand,
                 $node->lineno ?? 0
             );
-            return new UnionType();
+            return UnionType::empty();
         } elseif ($left_is_array || $right_is_array) {
             // If it is a '+' and we know one side is an array
             // and the other is unknown, assume array
@@ -478,8 +479,6 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
      */
     public function visitBinaryCoalesce(Node $node) : UnionType
     {
-        $union_type = new UnionType();
-
         $left_type = UnionTypeVisitor::unionTypeFromNode(
             $this->code_base,
             $this->context,
@@ -498,14 +497,6 @@ class BinaryOperatorFlagVisitor extends FlagVisitorImplementation
             $left_type = $left_type->nonNullableClone();
         }
 
-        $union_type->addUnionType(
-            $left_type
-        );
-
-        $union_type->addUnionType(
-            $right_type
-        );
-
-        return $union_type;
+        return $left_type->withUnionType($right_type);
     }
 }

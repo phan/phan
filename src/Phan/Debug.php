@@ -131,7 +131,7 @@ class Debug
 
         $string .= "\n";
 
-        foreach ($node->children ?? [] as $name => $child_node) {
+        foreach ($node->children as $name => $child_node) {
             $string .= self::nodeToString(
                 $child_node,
                 $name,

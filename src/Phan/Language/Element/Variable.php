@@ -146,7 +146,7 @@ class Variable extends UnaddressableTypedElement
         // Get the type of the assignment
         $union_type = $should_check_type
             ? UnionType::fromNode($context, $code_base, $node)
-            : new UnionType();
+            : UnionType::empty();
 
         $variable = new Variable(
             $context

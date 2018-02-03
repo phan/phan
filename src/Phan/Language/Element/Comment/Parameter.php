@@ -87,14 +87,14 @@ class Parameter
             $flags |= \ast\flags\PARAM_VARIADIC;
         }
         $union_type = $this->getUnionType();
-        $param = new \Phan\Language\Element\Parameter(
+        $param = \Phan\Language\Element\Parameter::create(
             $context,
             $this->getName(),
             $union_type,
             $flags
         );
         if ($this->has_default_value) {
-            $param->setDefaultValueType(clone($union_type));
+            $param->setDefaultValueType($union_type);
             // TODO: could setDefaultValue in a future PR. Would have to run \ast\parse_code on the default value, catch ParseError if necessary.
             // If given '= "Default"', then extract the default from '<?php ("Default");'
             // Then get the type from UnionTypeVisitor, for defaults such as SomeClass::CONST.

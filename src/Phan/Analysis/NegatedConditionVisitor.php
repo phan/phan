@@ -22,6 +22,7 @@ use Phan\Language\Type\ResourceType;
 use Phan\Language\Type\ScalarType;
 use Phan\Language\Type\StringType;
 use Phan\Language\UnionType;
+use Phan\Language\UnionTypeBuilder;
 use ast\Node;
 
 // TODO: Make $x != null remove FalseType and NullType from $x
@@ -246,7 +247,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
 
         $context = $this->context;
         if (self::isArgumentListWithVarAsFirstArgument($args)) {
-            $function_name = strtolower(ltrim($raw_function_name, '\\'));
+            $function_name = \strtolower(\ltrim($raw_function_name, '\\'));
             if (\count($args) !== 1) {
                 if (\strcasecmp($function_name, 'is_a') === 0) {
                     return $this->analyzeNegationOfVariableIsA($args, $context);
@@ -306,7 +307,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         });
                     },
                     function (UnionType $union_type) use ($base_class_name) : UnionType {
-                        $new_type = new UnionType();
+                        $new_type_builder = new UnionTypeBuilder();
                         $has_null = false;
                         $has_other_nullable_types = false;
                         // Add types which are not instances of $base_class_name
@@ -317,13 +318,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                             }
                             assert($type instanceof Type);
                             $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                            $new_type->addType($type);
+                            $new_type_builder->addType($type);
                         }
                         // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                         if ($has_null && !$has_other_nullable_types) {
-                            $new_type->addType(NullType::instance(false));
+                            $new_type_builder->addType(NullType::instance(false));
                         }
-                        return $new_type;
+                        return $new_type_builder->getUnionType();
                     },
                     false
                 );
@@ -342,7 +343,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     });
                 },
                 function (UnionType $union_type) : UnionType {
-                    $new_type = new UnionType();
+                    $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
                     // Add types which are not scalars
@@ -353,13 +354,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         }
                         assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                        $new_type->addType($type);
+                        $new_type_builder->addType($type);
                     }
                     // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                     if ($has_null && !$has_other_nullable_types) {
-                        $new_type->addType(NullType::instance(false));
+                        $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type;
+                    return $new_type_builder->getUnionType();
                 },
                 false
             );
@@ -376,7 +377,7 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     });
                 },
                 function (UnionType $union_type) : UnionType {
-                    $new_type = new UnionType();
+                    $new_type_builder = new UnionTypeBuilder();
                     $has_null = false;
                     $has_other_nullable_types = false;
                     // Add types which are not callable
@@ -387,13 +388,13 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                         }
                         assert($type instanceof Type);
                         $has_other_nullable_types = $has_other_nullable_types || $type->getIsNullable();
-                        $new_type->addType($type);
+                        $new_type_builder->addType($type);
                     }
                     // Add Null if some of the rejected types were were nullable, and none of the accepted types were nullable
                     if ($has_null && !$has_other_nullable_types) {
-                        $new_type->addType(NullType::instance(false));
+                        $new_type_builder->addType(NullType::instance(false));
                     }
-                    return $new_type;
+                    return $new_type_builder->getUnionType();
                 },
                 false
             );
@@ -470,14 +471,14 @@ class NegatedConditionVisitor extends KindVisitorImplementation
                     $context->setScope($context->getScope()->withVariable(new Variable(
                         $context->withLineNumberStart($var_node->lineno ?? 0),
                         $var_name,
-                        new UnionType(),
+                        UnionType::empty(),
                         $var_node->flags ?? 0
                     )));
                 }
                 $context->setScope($context->getScope()->withVariable(new Variable(
                     $context->withLineNumberStart($var_node->lineno ?? 0),
                     $var_name,
-                    new UnionType(),
+                    UnionType::empty(),
                     $var_node->flags ?? 0
                 )));
                 return $this->removeFalseyFromVariable($var_node, $context, true);

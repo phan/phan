@@ -98,7 +98,7 @@ class ClassMap
      */
     public function addMethod(Method $method)
     {
-        $this->method_map[strtolower(
+        $this->method_map[\strtolower(
             $method->getFQSEN()->getNameWithAlternateId()
         )] = $method;
     }
@@ -108,7 +108,7 @@ class ClassMap
      */
     public function hasMethodWithName(string $name) : bool
     {
-        return !empty($this->method_map[strtolower($name)]);
+        return isset($this->method_map[\strtolower($name)]);
     }
 
     /**
@@ -116,7 +116,7 @@ class ClassMap
      */
     public function getMethodByName(string $name) : Method
     {
-        return $this->method_map[strtolower($name)];
+        return $this->method_map[\strtolower($name)];
     }
 
     /**

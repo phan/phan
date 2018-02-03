@@ -62,7 +62,7 @@ class Prep
         $visit_node($node, $file_path);
 
         // Scan all children recursively
-        foreach ($node->children ?? [] as $child_node) {
+        foreach ($node->children as $child_node) {
             if (!($child_node instanceof Node)) {
                 continue;
             }
